@@ -2324,6 +2324,8 @@ const App = (() => {
   // CAREER ADVISOR VIEW
   // ═══════════════════════════════════════
   function renderCareerAdvisor(container) {
+    const searchKeyword = careerLastSearchKeyword;
+    const vnKeyword = encodeURIComponent(careerLastSearchKeyword);
     const chatHtml = careerChatHistory.map(msg => {
       const cls = msg.role === 'user' ? 'career-msg-user' : 'career-msg-ai';
       const icon = msg.role === 'user' ? '👤' : '💼';
