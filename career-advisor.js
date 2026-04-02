@@ -234,44 +234,20 @@ NGUYÊN TẮC:
   }
 
   // ─── Search Jobs (JSearch API — supports Vietnam + Remote) ───
-  async function searchJobs(query, location = '') {
+  async function searchJobs(query) {
     try {
       const params = new URLSearchParams();
       params.set('search', query);
-      params.set('limit', '10');
+      params.set('limit', '15');
       
-      // Search Vietnam first, then remote as fallback
-      const locations = location ? [location] : ['Vietnam', 'Remote'];
-      let allJobs = [];
-      
-      for (const loc of locations) {
-        params.set('location', loc);
-        const response = await fetch(`/api/jobs?${params.toString()}`);
-        if (!response.ok) continue;
-        
-        const data = await response.json();
-        const jobs = data.jobs || [];
-        
-        // Tag jobs with their search location for display
-        jobs.forEach(j => {
-          if (!j._searchLocation) j._searchLocation = loc;
-        });
-        
-        allJobs = allJobs.concat(jobs);
-        
-        // If we got enough results from VN, limit total
-        if (allJobs.length >= 10) break;
+      const response = await fetch(`/api/jobs?${params.toString()}`);
+      if (!response.ok) {
+        console.warn('[CareerAdvisor] Job API returned:', response.status);
+        return [];
       }
       
-      // Deduplicate by URL
-      const seen = new Set();
-      allJobs = allJobs.filter(j => {
-        if (seen.has(j.url)) return false;
-        seen.add(j.url);
-        return true;
-      });
-      
-      return allJobs.slice(0, 15); // Max 15 results
+      const data = await response.json();
+      return data.jobs || [];
     } catch (err) {
       console.error('[CareerAdvisor] Job search error:', err);
       return [];
