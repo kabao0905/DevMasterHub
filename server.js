@@ -80,68 +80,83 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── Job Search Proxy (JSearch API via RapidAPI) ───
+// ─── Job Search Proxy (FREE APIs — no key needed) ───
 app.get('/api/jobs', async (req, res) => {
-  if (!JSEARCH_API_KEY) {
-    return res.status(400).json({ error: 'JSearch API key not configured.' });
-  }
-
   try {
-    const { search, location = 'Vietnam', limit = 10, page = 1 } = req.query;
+    const { search, location = '', limit = 15 } = req.query;
     if (!search) return res.json({ jobs: [] });
 
-    const query = `${search} in ${location}`;
-    const params = new URLSearchParams({
-      query,
-      page: String(page),
-      num_pages: '1',
-      date_posted: 'all'
-    });
+    console.log(`[Jobs] Searching: "${search}" location: "${location}"`);
+    let allJobs = [];
 
-    const apiUrl = `https://jsearch.p.rapidapi.com/search?${params.toString()}`;
-    const response = await fetch(apiUrl, {
-      headers: {
-        'X-RapidAPI-Key': JSEARCH_API_KEY,
-        'X-RapidAPI-Host': 'jsearch.p.rapidapi.com'
+    // ── Source 1: Remotive API (free, no key) ──
+    try {
+      const remotiveUrl = `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(search)}&limit=20`;
+      console.log('[Jobs] Remotive:', remotiveUrl);
+      const remotiveRes = await fetch(remotiveUrl);
+      if (remotiveRes.ok) {
+        const remotiveData = await remotiveRes.json();
+        const remotiveJobs = (remotiveData.jobs || []).map(job => ({
+          title: job.title || 'Untitled',
+          company_name: job.company_name || 'Unknown',
+          company_logo: job.company_logo || null,
+          url: job.url || '#',
+          location: job.candidate_required_location || 'Worldwide',
+          is_remote: true,
+          employment_type: job.job_type || 'full_time',
+          salary: job.salary || '',
+          description_snippet: (job.description || '').replace(/<[^>]*>/g, '').substring(0, 200) + '...',
+          posted_at: job.publication_date || '',
+          source: 'Remotive',
+          tags: [job.category, 'Remote', job.job_type].filter(Boolean)
+        }));
+        allJobs = allJobs.concat(remotiveJobs);
+        console.log('[Jobs] Remotive found:', remotiveJobs.length);
       }
-    });
-    
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('JSearch API error:', response.status, errText);
-      return res.status(response.status).json({ error: 'JSearch API error' });
+    } catch (e) {
+      console.warn('[Jobs] Remotive failed:', e.message);
     }
 
-    const data = await response.json();
-    const rawJobs = data.data || [];
+    // ── Source 2: Arbeitnow API (free, no key) ──
+    try {
+      const arbeitnowUrl = `https://www.arbeitnow.com/api/job-board-api?search=${encodeURIComponent(search)}`;
+      console.log('[Jobs] Arbeitnow:', arbeitnowUrl);
+      const arbeitnowRes = await fetch(arbeitnowUrl);
+      if (arbeitnowRes.ok) {
+        const arbeitnowData = await arbeitnowRes.json();
+        const arbeitnowJobs = (arbeitnowData.data || []).map(job => ({
+          title: job.title || 'Untitled',
+          company_name: job.company_name || 'Unknown',
+          company_logo: null,
+          url: job.url || '#',
+          location: job.location || 'Remote',
+          is_remote: job.remote || false,
+          employment_type: 'FULLTIME',
+          salary: '',
+          description_snippet: (job.description || '').replace(/<[^>]*>/g, '').substring(0, 200) + '...',
+          posted_at: job.created_at || '',
+          source: 'Arbeitnow',
+          tags: (job.tags || []).slice(0, 3).concat(job.remote ? ['Remote'] : [])
+        }));
+        allJobs = allJobs.concat(arbeitnowJobs);
+        console.log('[Jobs] Arbeitnow found:', arbeitnowJobs.length);
+      }
+    } catch (e) {
+      console.warn('[Jobs] Arbeitnow failed:', e.message);
+    }
 
-    // Normalize to a consistent format for the frontend
-    const jobs = rawJobs.slice(0, parseInt(limit)).map(job => ({
-      title: job.job_title || 'Untitled',
-      company_name: job.employer_name || 'Unknown',
-      company_logo: job.employer_logo || null,
-      url: job.job_apply_link || job.job_google_link || '#',
-      location: job.job_city 
-        ? `${job.job_city}${job.job_state ? ', ' + job.job_state : ''}, ${job.job_country || ''}`
-        : (job.job_country || 'Remote'),
-      is_remote: job.job_is_remote || false,
-      employment_type: job.job_employment_type || 'FULLTIME',
-      salary: job.job_min_salary && job.job_max_salary
-        ? `$${Math.round(job.job_min_salary).toLocaleString()} - $${Math.round(job.job_max_salary).toLocaleString()}`
-        : (job.job_salary_period ? `${job.job_salary_period}` : ''),
-      description_snippet: (job.job_description || '').substring(0, 200) + '...',
-      posted_at: job.job_posted_at_datetime_utc || '',
-      source: job.job_publisher || 'JSearch',
-      tags: [
-        job.job_employment_type,
-        job.job_is_remote ? 'Remote' : 'Onsite',
-        job.job_country
-      ].filter(Boolean)
-    }));
+    // Deduplicate by URL
+    const seen = new Set();
+    allJobs = allJobs.filter(j => {
+      if (seen.has(j.url)) return false;
+      seen.add(j.url);
+      return true;
+    });
 
-    res.json({ jobs, total: data.data?.length || 0, source: 'jsearch' });
+    console.log('[Jobs] Total unique results:', allJobs.length);
+    res.json({ jobs: allJobs.slice(0, parseInt(limit)) });
   } catch (err) {
-    console.error('Job search error:', err);
+    console.error('[Jobs] Error:', err);
     res.status(500).json({ error: err.message });
   }
 });
