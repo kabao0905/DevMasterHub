@@ -923,6 +923,11 @@ const App = (() => {
     try {
       const existing = lesson.exercise || '';
       const newEx = await AIService.generateExercise(tech.name, level.name, lesson.title, lesson.theory, existing);
+      // Validate AI response — ensure required fields exist
+      if (!newEx || typeof newEx !== 'object') throw new Error('AI trả kết quả không hợp lệ');
+      newEx.title = newEx.title || `Bài tập AI: ${lesson.title}`;
+      newEx.description = newEx.description || newEx.content || newEx.task || newEx.exercise || 'Không có mô tả.';
+      if (!newEx.hints) newEx.hints = [];
       exerciseCache[lessonKey].aiExercises.push(newEx);
       exerciseCache[lessonKey].activeExIdx = exerciseCache[lessonKey].aiExercises.length;
       exerciseCache[lessonKey].feedback = null;
