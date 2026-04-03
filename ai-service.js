@@ -77,12 +77,16 @@ const AIService = (() => {
 
   // ─── Parse JSON from AI response (robust) ───
   function parseJSON(text) {
+    // Strip markdown code blocks first (```json ... ```)
+    let cleaned = text.trim();
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
     // Try direct parse
-    try { return JSON.parse(text); } catch {}
-    // Try extracting JSON block
-    const arrayMatch = text.match(/\[[\s\S]*\]/);
+    try { return JSON.parse(cleaned); } catch {}
+    // Try extracting JSON array
+    const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
     if (arrayMatch) { try { return JSON.parse(arrayMatch[0]); } catch {} }
-    const objMatch = text.match(/\{[\s\S]*\}/);
+    // Try extracting JSON object
+    const objMatch = cleaned.match(/\{[\s\S]*\}/);
     if (objMatch) { try { return JSON.parse(objMatch[0]); } catch {} }
     throw new Error('Cannot parse AI response as JSON');
   }
