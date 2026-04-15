@@ -447,6 +447,28 @@ ${projectContext}`;
     return await callClaude(system, conversationContext + userMessage, 0.7, 4096);
   }
 
+  // ─── Chat About Lesson (Theory/Quiz/Exercise helper) ───
+  async function chatAboutLesson(lessonContext, chatHistory, userMessage, tabContext) {
+    const tabLabels = { theory: 'lý thuyết', quiz: 'quiz/trắc nghiệm', exercise: 'bài tập', code: 'code example' };
+    const tabLabel = tabLabels[tabContext] || 'bài học';
+
+    const system = `Bạn là gia sư lập trình thân thiện và kiên nhẫn. Đang giúp học viên hiểu bài học.
+Trả lời ngắn gọn, dễ hiểu, có code example khi cần.
+KHÔNG trả lời bằng JSON. Trả lời bằng text thường, có thể dùng markdown.
+Hãy giải thích theo cách đơn giản nhất có thể, dùng ví dụ thực tế.
+Nếu học viên hỏi về ${tabLabel}, hãy tập trung giải thích phần đó.
+Nếu học viên gửi code, hãy phân tích và góp ý.
+
+Context bài học hiện tại:
+${lessonContext}`;
+
+    const conversationContext = chatHistory.length > 0
+      ? 'Lịch sử hội thoại:\n' + chatHistory.slice(-10).map(m => `${m.role === 'user' ? 'Học viên' : 'Gia sư'}: ${m.content}`).join('\n') + '\n\n'
+      : '';
+
+    return await callClaude(system, conversationContext + userMessage, 0.7, 4096);
+  }
+
   // ═══════════════════════════════════════════════════════════════
   // LOCAL CODE ANALYZER — Static analysis, NO AI, NO tokens, FREE
   // ═══════════════════════════════════════════════════════════════
@@ -913,5 +935,5 @@ Trả về JSON:
     return finalReview;
   }
 
-  return { checkHealth, isEnabled, generateQuiz, generateExercise, checkAnswer, generateProjectIdea, chatAboutProject, reviewProject, localAnalyze, localAnalyzeAll };
+  return { checkHealth, isEnabled, generateQuiz, generateExercise, checkAnswer, generateProjectIdea, chatAboutProject, chatAboutLesson, reviewProject, localAnalyze, localAnalyzeAll };
 })();

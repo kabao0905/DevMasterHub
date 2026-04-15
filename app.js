@@ -18,6 +18,7 @@ const App = (() => {
   // Quiz/Exercise caches per lesson
   const quizCache = {};    // key: "techId.levelId.lessonId" -> { questions, answers, submitted }
   const exerciseCache = {}; // key: same -> { aiExercises, userAnswer, feedback }
+  const lessonChatCache = {}; // key: "techId.levelId.lessonId" -> { messages: [{role, content}], sending: false }
 
   // ─── Project Lab State ───
   let projectSelectedLevel = null;
@@ -559,6 +560,7 @@ const App = (() => {
                 <h2 class="section-title">🔑 Điểm chính</h2>
                 <ul class="key-points">${lesson.keyPoints.map(kp => `<li>${kp}</li>`).join('')}</ul>
               </div>` : ''}
+            ${renderLessonChatBox(lessonKey, 'theory')}
           </div>
 
           <!-- CODE TAB -->
@@ -571,6 +573,7 @@ const App = (() => {
                 </div>
                 <pre class="code-block"><code class="language-${lesson.lang || 'javascript'}">${escapeHtml(lesson.code)}</code></pre>
               </div>` : '<div class="lesson-section glass-card"><p class="empty-hint">Chưa có code example cho bài này.</p></div>'}
+            ${renderLessonChatBox(lessonKey, 'code')}
           </div>
 
           <!-- QUIZ TAB -->
@@ -578,6 +581,7 @@ const App = (() => {
             <div id="quiz-container" data-key="${lessonKey}">
               ${renderQuizContent(lessonKey, tech, level, lesson)}
             </div>
+            ${renderLessonChatBox(lessonKey, 'quiz')}
           </div>
 
           <!-- EXERCISE TAB -->
@@ -585,6 +589,7 @@ const App = (() => {
             <div id="exercise-container" data-key="${lessonKey}">
               ${renderExerciseContent(lessonKey, tech, level, lesson)}
             </div>
+            ${renderLessonChatBox(lessonKey, 'exercise')}
           </div>
         </div>
 
@@ -1060,6 +1065,169 @@ const App = (() => {
     if (container) container.innerHTML = renderExerciseContent(lessonKey, tech, level, lesson);
     if (typeof Prism !== 'undefined') Prism.highlightAll();
     setTimeout(attachEditorToCurrentTextarea, 50);
+  }
+
+  // ═══════════════════════════════════════
+  // LESSON AI CHAT (Theory/Quiz/Exercise)
+  // ═══════════════════════════════════════
+  function renderLessonChatBox(lessonKey, tabId) {
+    const cache = lessonChatCache[lessonKey];
+    const messages = cache ? cache.messages : [];
+    const sending = cache ? cache.sending : false;
+    const chatId = `lesson-chat-${tabId}`;
+
+    const tabEmojis = { theory: '📖', code: '💻', quiz: '🎯', exercise: '🏋️' };
+    const tabLabels = { theory: 'lý thuyết', code: 'code', quiz: 'quiz', exercise: 'bài tập' };
+
+    const messagesHtml = messages.map(m => {
+      if (m.role === 'user') {
+        return `<div class="lchat-msg lchat-user"><div class="lchat-bubble lchat-bubble-user">${escapeHtml(m.content)}</div></div>`;
+      } else {
+        return `<div class="lchat-msg lchat-ai"><div class="lchat-avatar">🤖</div><div class="lchat-bubble lchat-bubble-ai">${formatLessonChatMessage(m.content)}</div></div>`;
+      }
+    }).join('');
+
+    return `
+      <div class="lesson-chat-section glass-card" id="${chatId}">
+        <div class="lchat-header" onclick="App.toggleLessonChat('${chatId}')">
+          <h3>🤖 Hỏi AI về ${tabLabels[tabId] || 'bài học'}</h3>
+          <span class="lchat-toggle" id="${chatId}-toggle">▼</span>
+        </div>
+        <div class="lchat-body" id="${chatId}-body">
+          <div class="lchat-messages" id="${chatId}-messages">
+            ${messages.length === 0 ? `
+              <div class="lchat-welcome">
+                <p>💡 Hỏi AI bất cứ điều gì về phần <strong>${tabLabels[tabId]}</strong> này!</p>
+                <div class="lchat-suggestions">
+                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}','Giải thích đơn giản phần này cho mình')">Giải thích đơn giản</button>
+                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}','Cho mình thêm ví dụ')">Thêm ví dụ</button>
+                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}','Phần nào quan trọng nhất?')">Phần quan trọng nhất?</button>
+                </div>
+              </div>` : messagesHtml}
+          </div>
+          <div class="lchat-input-row">
+            <textarea class="lchat-input" id="${chatId}-input" placeholder="Hỏi AI về ${tabLabels[tabId]}..." rows="1" 
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();App.sendLessonChat('${lessonKey}','${tabId}')}"
+              ${sending ? 'disabled' : ''}></textarea>
+            <button class="lchat-send-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}')" ${sending ? 'disabled' : ''}>
+              ${sending ? '<span class="lchat-spinner"></span>' : '➤'}
+            </button>
+          </div>
+          ${messages.length > 0 ? `<button class="lchat-clear-btn" onclick="App.clearLessonChat('${lessonKey}','${tabId}')">🗑️ Xóa hội thoại</button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function formatLessonChatMessage(text) {
+    if (!text) return '';
+    let html = text;
+    // Code blocks ```lang ... ```
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre class="lchat-code"><code class="language-${lang || 'plaintext'}">${escapeHtml(code.trim())}</code></pre>`;
+    });
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code class="lchat-inline-code">$1</code>');
+    // Bold
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // Line breaks
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
+  function toggleLessonChat(chatId) {
+    const body = document.getElementById(`${chatId}-body`);
+    const toggle = document.getElementById(`${chatId}-toggle`);
+    if (body && toggle) {
+      body.classList.toggle('collapsed');
+      toggle.textContent = body.classList.contains('collapsed') ? '▶' : '▼';
+    }
+  }
+
+  async function sendLessonChat(lessonKey, tabId, prefillMsg) {
+    const chatId = `lesson-chat-${tabId}`;
+    const inputEl = document.getElementById(`${chatId}-input`);
+    const userMessage = prefillMsg || (inputEl ? inputEl.value.trim() : '');
+    if (!userMessage) return;
+
+    // Init cache
+    if (!lessonChatCache[lessonKey]) {
+      lessonChatCache[lessonKey] = { messages: [], sending: false };
+    }
+    const cache = lessonChatCache[lessonKey];
+    if (cache.sending) return;
+
+    // Add user message
+    cache.messages.push({ role: 'user', content: userMessage });
+    cache.sending = true;
+
+    // Re-render chat messages (optimistic)
+    const messagesEl = document.getElementById(`${chatId}-messages`);
+    if (messagesEl) {
+      messagesEl.innerHTML = cache.messages.map(m => {
+        if (m.role === 'user') {
+          return `<div class="lchat-msg lchat-user"><div class="lchat-bubble lchat-bubble-user">${escapeHtml(m.content)}</div></div>`;
+        } else {
+          return `<div class="lchat-msg lchat-ai"><div class="lchat-avatar">🤖</div><div class="lchat-bubble lchat-bubble-ai">${formatLessonChatMessage(m.content)}</div></div>`;
+        }
+      }).join('') + `<div class="lchat-msg lchat-ai"><div class="lchat-avatar">🤖</div><div class="lchat-bubble lchat-bubble-ai lchat-typing">Đang suy nghĩ<span class="dot-anim">...</span></div></div>`;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    if (inputEl) { inputEl.value = ''; inputEl.disabled = true; }
+
+    // Build lesson context
+    const [techId, levelId, lessonId] = lessonKey.split('.');
+    const tech = window.DATA?.find(t => t.id === techId);
+    const level = tech?.levels?.find(l => l.id === levelId);
+    const lesson = level?.lessons?.find(l => l.id === lessonId);
+
+    let lessonContext = `Công nghệ: ${tech?.name || techId}\nCấp độ: ${level?.name || levelId}\nBài học: ${lesson?.title || lessonId}`;
+    if (lesson?.theory) lessonContext += `\n\nLý thuyết:\n${lesson.theory.substring(0, 2000)}`;
+    if (lesson?.code) lessonContext += `\n\nCode example:\n${lesson.code.substring(0, 1000)}`;
+    if (lesson?.exercise) lessonContext += `\n\nBài tập gốc:\n${lesson.exercise.substring(0, 500)}`;
+
+    try {
+      const aiResponse = await AIService.chatAboutLesson(lessonContext, cache.messages.slice(0, -1), userMessage, tabId);
+      cache.messages.push({ role: 'assistant', content: aiResponse });
+    } catch (err) {
+      cache.messages.push({ role: 'assistant', content: `⚠️ Lỗi: ${err.message}. Thử lại nhé!` });
+    }
+
+    cache.sending = false;
+
+    // Re-render
+    if (messagesEl) {
+      messagesEl.innerHTML = cache.messages.map(m => {
+        if (m.role === 'user') {
+          return `<div class="lchat-msg lchat-user"><div class="lchat-bubble lchat-bubble-user">${escapeHtml(m.content)}</div></div>`;
+        } else {
+          return `<div class="lchat-msg lchat-ai"><div class="lchat-avatar">🤖</div><div class="lchat-bubble lchat-bubble-ai">${formatLessonChatMessage(m.content)}</div></div>`;
+        }
+      }).join('');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    if (inputEl) inputEl.disabled = false;
+    if (typeof Prism !== 'undefined') Prism.highlightAll();
+  }
+
+  function clearLessonChat(lessonKey, tabId) {
+    delete lessonChatCache[lessonKey];
+    const chatId = `lesson-chat-${tabId}`;
+    const messagesEl = document.getElementById(`${chatId}-messages`);
+    if (messagesEl) {
+      messagesEl.innerHTML = `
+        <div class="lchat-welcome">
+          <p>💡 Hỏi AI bất cứ điều gì!</p>
+          <div class="lchat-suggestions">
+            <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}','Giải thích đơn giản phần này cho mình')">Giải thích đơn giản</button>
+            <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}','Cho mình thêm ví dụ')">Thêm ví dụ</button>
+          </div>
+        </div>`;
+    }
+    // Remove clear button
+    const clearBtn = document.querySelector(`#${chatId} .lchat-clear-btn`);
+    if (clearBtn) clearBtn.remove();
   }
 
   // ═══════════════════════════════════════
@@ -2613,6 +2781,10 @@ const App = (() => {
     clearAnswer,
     toggleHints,
     toggleSolution,
+    // Lesson Chat
+    sendLessonChat,
+    clearLessonChat,
+    toggleLessonChat,
     // Auth
     switchAuthTab,
     handleAuth,
