@@ -448,7 +448,7 @@ ${projectContext}`;
   }
 
   // ─── Chat About Lesson (Theory/Quiz/Exercise helper) ───
-  async function chatAboutLesson(lessonContext, chatHistory, userMessage, tabContext) {
+  async function chatAboutLesson(lessonContext, chatHistory, userMessage, tabContext, quizSubmitted) {
     const tabLabels = { theory: 'lý thuyết', quiz: 'quiz/trắc nghiệm', exercise: 'bài tập', code: 'code example' };
     const tabLabel = tabLabels[tabContext] || 'bài học';
 
@@ -469,12 +469,15 @@ ${tabContext === 'exercise' ? `
 ✅ CHỈ ĐƯỢC: Cho code ví dụ NGẮN minh họa khái niệm (KHÁC với bài tập), KHÔNG phải đáp án.
 ✅ Nếu học viên gửi code của họ, hãy review và chỉ ra lỗi/gợi ý cải thiện — NHƯNG KHÔNG viết lại toàn bộ code.
 ✅ Hướng dẫn theo kiểu Socratic: đặt câu hỏi dẫn dắt thay vì cho đáp án.
-Ví dụ đúng: "Bạn thử nghĩ xem constructor cần lưu gì vào biến private?" thay vì viết sẵn code.
-` : ''}${tabContext === 'quiz' ? `
-🚫 NGHIÊM CẤM nói đáp án đúng của câu quiz.
+` : ''}${tabContext === 'quiz' && !quizSubmitted ? `
+🚫 NGHIÊM CẤM nói đáp án đúng của câu quiz — học viên CHƯA NỘP BÀI.
 🚫 NGHIÊM CẤM nói "đáp án là A/B/C/D" hay chỉ ra option đúng.
 ✅ CHỈ ĐƯỢC: Giải thích khái niệm liên quan để học viên TỰ CHỌN đáp án.
-✅ Nếu học viên hỏi "câu này đáp án là gì" → Từ chối, giải thích concept và để họ tự trả lời.
+` : ''}${tabContext === 'quiz' && quizSubmitted ? `
+✅ Học viên ĐÃ NỘP BÀI quiz. Bạn ĐƯỢC PHÉP thảo luận đáp án đúng/sai.
+✅ Hãy giải thích TẠI SAO đáp án đúng là đúng, và tại sao các đáp án sai là sai.
+✅ Nếu học viên hỏi "sao câu X đáp án là Y" → Giải thích chi tiết và rõ ràng.
+✅ Dùng ví dụ code minh họa để học viên hiểu sâu hơn.
 ` : ''}${tabContext === 'theory' || tabContext === 'code' ? `
 ✅ Tab lý thuyết/code: Thoải mái giải thích, cho ví dụ, minh họa code.
 ✅ Có thể cho code example để minh họa khái niệm.

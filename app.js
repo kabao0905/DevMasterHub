@@ -1204,12 +1204,26 @@ const App = (() => {
       }
     } else if (tabId === 'quiz') {
       const qCache = quizCache[lessonKey];
+      const quizSubmitted = qCache?.submitted || false;
       if (qCache?.questions?.length) {
-        lessonContext += `\n\n★★★ CÂU HỎI QUIZ MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n${qCache.questions.map((q, i) => {
+        lessonContext += `\n\n★★★ CÂU HỎI QUIZ MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★`;
+        lessonContext += `\nTrạng thái: ${quizSubmitted ? 'ĐÃ NỘP BÀI' : 'CHƯA NỘP'}`;
+        lessonContext += '\n' + qCache.questions.map((q, i) => {
           let qText = `Câu ${i + 1}: ${q.question || q.q}`;
           if (q.options) qText += '\n' + q.options.map((o, j) => `  ${String.fromCharCode(65 + j)}. ${o}`).join('\n');
+          if (quizSubmitted) {
+            // After submission: include correct answer + student's answer
+            const correctIdx = q.correct ?? q.answer;
+            if (correctIdx !== undefined) qText += `\n  → Đáp án đúng: ${String.fromCharCode(65 + correctIdx)}`;
+            const studentAnswer = qCache.answers?.[i];
+            if (studentAnswer !== undefined) {
+              const isCorrect = studentAnswer === correctIdx;
+              qText += `\n  → Học viên chọn: ${String.fromCharCode(65 + studentAnswer)} (${isCorrect ? '✅ Đúng' : '❌ Sai'})`;
+            }
+            if (q.explanation) qText += `\n  → Giải thích: ${q.explanation}`;
+          }
           return qText;
-        }).join('\n\n')}`;
+        }).join('\n\n');
       }
       // Theory as background
       if (lesson?.theory) {
@@ -1231,9 +1245,11 @@ const App = (() => {
         lessonContext += `\n\n=== ĐIỂM CHÍNH ===\n${lesson.keyPoints.map((kp, i) => `${i + 1}. ${stripHtml(kp)}`).join('\n')}`;
       }
     }
+    // Determine if quiz was submitted (for AI prompt rules)
+    const isQuizSubmitted = tabId === 'quiz' && quizCache[lessonKey]?.submitted;
 
     try {
-      const aiResponse = await AIService.chatAboutLesson(lessonContext, cache.messages.slice(0, -1), userMessage, tabId);
+      const aiResponse = await AIService.chatAboutLesson(lessonContext, cache.messages.slice(0, -1), userMessage, tabId, isQuizSubmitted);
       cache.messages.push({ role: 'assistant', content: aiResponse });
     } catch (err) {
       cache.messages.push({ role: 'assistant', content: `⚠️ Lỗi: ${err.message}. Thử lại nhé!` });
