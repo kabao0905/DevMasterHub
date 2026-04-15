@@ -1176,16 +1176,52 @@ const App = (() => {
     }
     if (inputEl) { inputEl.value = ''; inputEl.disabled = true; }
 
-    // Build lesson context
+    // Build lesson context — include FULL content the student is currently seeing
     const [techId, levelId, lessonId] = lessonKey.split('.');
     const tech = window.DATA?.find(t => t.id === techId);
     const level = tech?.levels?.find(l => l.id === levelId);
     const lesson = level?.lessons?.find(l => l.id === lessonId);
+    const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
     let lessonContext = `Công nghệ: ${tech?.name || techId}\nCấp độ: ${level?.name || levelId}\nBài học: ${lesson?.title || lessonId}`;
-    if (lesson?.theory) lessonContext += `\n\nLý thuyết:\n${lesson.theory.substring(0, 2000)}`;
-    if (lesson?.code) lessonContext += `\n\nCode example:\n${lesson.code.substring(0, 1000)}`;
-    if (lesson?.exercise) lessonContext += `\n\nBài tập gốc:\n${lesson.exercise.substring(0, 500)}`;
+
+    // Always include theory as base context (stripped of HTML)
+    if (lesson?.theory) {
+      lessonContext += `\n\n=== NỘI DUNG LÝ THUYẾT CỦA BÀI HỌC ===\n${stripHtml(lesson.theory).substring(0, 3000)}`;
+    }
+    if (lesson?.keyPoints?.length) {
+      lessonContext += `\n\n=== ĐIỂM CHÍNH ===\n${lesson.keyPoints.map((kp, i) => `${i + 1}. ${stripHtml(kp)}`).join('\n')}`;
+    }
+
+    // Tab-specific context
+    if (tabId === 'code' && lesson?.code) {
+      lessonContext += `\n\n=== CODE EXAMPLE MÀ HỌC VIÊN ĐANG XEM ===\n\`\`\`${lesson.lang || 'javascript'}\n${lesson.code}\n\`\`\``;
+    }
+    if (tabId === 'quiz') {
+      const qCache = quizCache[lessonKey];
+      if (qCache?.questions?.length) {
+        lessonContext += `\n\n=== CÂU HỎI QUIZ HIỆN TẠI ===\n${qCache.questions.map((q, i) => {
+          let qText = `Câu ${i + 1}: ${q.question || q.q}`;
+          if (q.options) qText += '\n' + q.options.map((o, j) => `  ${String.fromCharCode(65 + j)}. ${o}`).join('\n');
+          return qText;
+        }).join('\n\n')}`;
+      }
+    }
+    if (tabId === 'exercise') {
+      const eCache = exerciseCache[lessonKey];
+      const currentEx = eCache?.activeExIdx > 0 ? eCache.aiExercises[eCache.activeExIdx - 1] : null;
+      if (currentEx) {
+        lessonContext += `\n\n=== BÀI TẬP AI HIỆN TẠI ===\nTiêu đề: ${currentEx.title}\nMô tả: ${currentEx.description}`;
+        if (currentEx.sampleInput) lessonContext += `\nInput mẫu: ${currentEx.sampleInput}`;
+        if (currentEx.expectedOutput) lessonContext += `\nOutput mong đợi: ${currentEx.expectedOutput}`;
+      } else if (lesson?.exercise) {
+        lessonContext += `\n\n=== BÀI TẬP GỐC ===\n${stripHtml(lesson.exercise).substring(0, 1500)}`;
+      }
+      // Include student's current answer if any
+      if (eCache?.userAnswer) {
+        lessonContext += `\n\n=== CODE/ĐÁP ÁN HỌC VIÊN ĐÃ VIẾT ===\n${eCache.userAnswer.substring(0, 1500)}`;
+      }
+    }
 
     try {
       const aiResponse = await AIService.chatAboutLesson(lessonContext, cache.messages.slice(0, -1), userMessage, tabId);
