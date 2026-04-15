@@ -1200,7 +1200,8 @@ const App = (() => {
     if (tabId === 'quiz') {
       const qCache = quizCache[lessonKey];
       if (qCache?.questions?.length) {
-        lessonContext += `\n\n=== CÂU HỎI QUIZ HIỆN TẠI ===\n${qCache.questions.map((q, i) => {
+        // Send questions and options but NOT the correct answers
+        lessonContext += `\n\n=== CÂU HỎI QUIZ HIỆN TẠI (CHỈ CÂU HỎI, KHÔNG CÓ ĐÁP ÁN) ===\n${qCache.questions.map((q, i) => {
           let qText = `Câu ${i + 1}: ${q.question || q.q}`;
           if (q.options) qText += '\n' + q.options.map((o, j) => `  ${String.fromCharCode(65 + j)}. ${o}`).join('\n');
           return qText;
@@ -1211,15 +1212,15 @@ const App = (() => {
       const eCache = exerciseCache[lessonKey];
       const currentEx = eCache?.activeExIdx > 0 ? eCache.aiExercises[eCache.activeExIdx - 1] : null;
       if (currentEx) {
-        lessonContext += `\n\n=== BÀI TẬP AI HIỆN TẠI ===\nTiêu đề: ${currentEx.title}\nMô tả: ${currentEx.description}`;
-        if (currentEx.sampleInput) lessonContext += `\nInput mẫu: ${currentEx.sampleInput}`;
-        if (currentEx.expectedOutput) lessonContext += `\nOutput mong đợi: ${currentEx.expectedOutput}`;
+        // Send title + description ONLY — NO expected output, NO sample solution
+        lessonContext += `\n\n=== BÀI TẬP HIỆN TẠI (CHỈ ĐỀ BÀI) ===\nTiêu đề: ${currentEx.title}\nMô tả: ${currentEx.description}`;
+        if (currentEx.hints?.length) lessonContext += `\nGợi ý có sẵn: ${currentEx.hints.join(', ')}`;
       } else if (lesson?.exercise) {
-        lessonContext += `\n\n=== BÀI TẬP GỐC ===\n${stripHtml(lesson.exercise).substring(0, 1500)}`;
+        lessonContext += `\n\n=== BÀI TẬP GỐC (CHỈ ĐỀ BÀI) ===\n${stripHtml(lesson.exercise).substring(0, 1500)}`;
       }
-      // Include student's current answer if any
+      // Include student's current code for review  
       if (eCache?.userAnswer) {
-        lessonContext += `\n\n=== CODE/ĐÁP ÁN HỌC VIÊN ĐÃ VIẾT ===\n${eCache.userAnswer.substring(0, 1500)}`;
+        lessonContext += `\n\n=== CODE HỌC VIÊN ĐÃ VIẾT (review nhưng KHÔNG viết lại) ===\n${eCache.userAnswer.substring(0, 1500)}`;
       }
     }
 
