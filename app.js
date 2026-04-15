@@ -1185,42 +1185,50 @@ const App = (() => {
 
     let lessonContext = `Công nghệ: ${tech?.name || techId}\nCấp độ: ${level?.name || levelId}\nBài học: ${lesson?.title || lessonId}`;
 
-    // Always include theory as base context (stripped of HTML)
-    if (lesson?.theory) {
-      lessonContext += `\n\n=== NỘI DUNG LÝ THUYẾT CỦA BÀI HỌC ===\n${stripHtml(lesson.theory).substring(0, 3000)}`;
-    }
-    if (lesson?.keyPoints?.length) {
-      lessonContext += `\n\n=== ĐIỂM CHÍNH ===\n${lesson.keyPoints.map((kp, i) => `${i + 1}. ${stripHtml(kp)}`).join('\n')}`;
-    }
-
-    // Tab-specific context
-    if (tabId === 'code' && lesson?.code) {
-      lessonContext += `\n\n=== CODE EXAMPLE MÀ HỌC VIÊN ĐANG XEM ===\n\`\`\`${lesson.lang || 'javascript'}\n${lesson.code}\n\`\`\``;
-    }
-    if (tabId === 'quiz') {
+    // ──── PRIMARY CONTEXT: What the student is CURRENTLY looking at ────
+    if (tabId === 'exercise') {
+      const eCache = exerciseCache[lessonKey];
+      const currentEx = eCache?.activeExIdx > 0 ? eCache.aiExercises[eCache.activeExIdx - 1] : null;
+      if (currentEx) {
+        lessonContext += `\n\n★★★ BÀI TẬP MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\nTiêu đề: ${currentEx.title}\nMô tả chi tiết: ${currentEx.description}`;
+        if (currentEx.hints?.length) lessonContext += `\nGợi ý: ${currentEx.hints.join(', ')}`;
+      } else if (lesson?.exercise) {
+        lessonContext += `\n\n★★★ BÀI TẬP GỐC MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n${stripHtml(lesson.exercise).substring(0, 1500)}`;
+      }
+      if (eCache?.userAnswer) {
+        lessonContext += `\n\n=== CODE HỌC VIÊN ĐÃ VIẾT ===\n${eCache.userAnswer.substring(0, 1500)}`;
+      }
+      // Theory as background only
+      if (lesson?.theory) {
+        lessonContext += `\n\n--- Lý thuyết tham khảo (phụ) ---\n${stripHtml(lesson.theory).substring(0, 1000)}`;
+      }
+    } else if (tabId === 'quiz') {
       const qCache = quizCache[lessonKey];
       if (qCache?.questions?.length) {
-        // Send questions and options but NOT the correct answers
-        lessonContext += `\n\n=== CÂU HỎI QUIZ HIỆN TẠI (CHỈ CÂU HỎI, KHÔNG CÓ ĐÁP ÁN) ===\n${qCache.questions.map((q, i) => {
+        lessonContext += `\n\n★★★ CÂU HỎI QUIZ MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n${qCache.questions.map((q, i) => {
           let qText = `Câu ${i + 1}: ${q.question || q.q}`;
           if (q.options) qText += '\n' + q.options.map((o, j) => `  ${String.fromCharCode(65 + j)}. ${o}`).join('\n');
           return qText;
         }).join('\n\n')}`;
       }
-    }
-    if (tabId === 'exercise') {
-      const eCache = exerciseCache[lessonKey];
-      const currentEx = eCache?.activeExIdx > 0 ? eCache.aiExercises[eCache.activeExIdx - 1] : null;
-      if (currentEx) {
-        // Send title + description ONLY — NO expected output, NO sample solution
-        lessonContext += `\n\n=== BÀI TẬP HIỆN TẠI (CHỈ ĐỀ BÀI) ===\nTiêu đề: ${currentEx.title}\nMô tả: ${currentEx.description}`;
-        if (currentEx.hints?.length) lessonContext += `\nGợi ý có sẵn: ${currentEx.hints.join(', ')}`;
-      } else if (lesson?.exercise) {
-        lessonContext += `\n\n=== BÀI TẬP GỐC (CHỈ ĐỀ BÀI) ===\n${stripHtml(lesson.exercise).substring(0, 1500)}`;
+      // Theory as background
+      if (lesson?.theory) {
+        lessonContext += `\n\n--- Lý thuyết tham khảo (phụ) ---\n${stripHtml(lesson.theory).substring(0, 1000)}`;
       }
-      // Include student's current code for review  
-      if (eCache?.userAnswer) {
-        lessonContext += `\n\n=== CODE HỌC VIÊN ĐÃ VIẾT (review nhưng KHÔNG viết lại) ===\n${eCache.userAnswer.substring(0, 1500)}`;
+    } else if (tabId === 'code') {
+      if (lesson?.code) {
+        lessonContext += `\n\n★★★ CODE EXAMPLE MÀ HỌC VIÊN ĐANG XEM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n\`\`\`${lesson.lang || 'javascript'}\n${lesson.code}\n\`\`\``;
+      }
+      if (lesson?.theory) {
+        lessonContext += `\n\n--- Lý thuyết tham khảo (phụ) ---\n${stripHtml(lesson.theory).substring(0, 1500)}`;
+      }
+    } else {
+      // Theory tab — theory IS the primary content
+      if (lesson?.theory) {
+        lessonContext += `\n\n★★★ NỘI DUNG LÝ THUYẾT (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n${stripHtml(lesson.theory).substring(0, 3000)}`;
+      }
+      if (lesson?.keyPoints?.length) {
+        lessonContext += `\n\n=== ĐIỂM CHÍNH ===\n${lesson.keyPoints.map((kp, i) => `${i + 1}. ${stripHtml(kp)}`).join('\n')}`;
       }
     }
 
