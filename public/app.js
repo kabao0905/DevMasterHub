@@ -3169,16 +3169,28 @@ const App = (() => {
     const box = document.getElementById('ai-challenge-box');
     if (box) box.innerHTML = renderAiChallenge();
 
+    // Lay danh sach lenh va tep tu CHINH terminal. Truoc kia cho nay ghi tay mot
+    // danh sach rieng nen lech thuc te: AI ra de bang netstat/ps/chmod trong khi
+    // terminal chua cai, hoc vien go vao chi nhan "command not found".
+    const coTerm = typeof CyberTerminal !== 'undefined';
+    const dsLenh = coTerm && CyberTerminal.commandNames ? CyberTerminal.commandNames().join(', ') : '';
+    const dsTep = coTerm && CyberTerminal.filePaths ? CyberTerminal.filePaths().join(', ') : '';
+
     const system = [
       'Ban ra de thu thach Linux va an ninh mang cho hoc vien Viet Nam.',
-      'De phai lam duoc bang cac lenh Linux co ban trong mot terminal gia lap:',
-      'ls, cd, cat, grep, chmod, chown, find, ps, netstat, nmap, whoami, sudo.',
+      dsLenh ? 'Terminal gia lap CHI co dung nhung lenh sau, khong co lenh nao khac:' : '',
+      dsLenh ? dsLenh + '.' : '',
+      dsLenh ? 'De bai can toi bat ky lenh nao ngoai danh sach tren la de KHONG giai duoc,' : '',
+      dsLenh ? 'nen tuyet doi khong ra de nhu vay (khong dung chmod, chown, sudo, ss, lsof, top, awk).' : '',
+      dsTep ? 'He thong tep chi co dung nhung tep sau:' : '',
+      dsTep ? dsTep + '.' : '',
+      dsTep ? 'Chi duoc nhac toi tep co trong danh sach, khong duoc bia duong dan moi.' : '',
       'CHI tra ve JSON thuan, khong bao markdown:',
       '{"title":"...","level":"De|Trung binh|Kho","scenario":"boi canh 2-3 cau",',
       '"steps":["buoc 1","buoc 2"],"hint":"goi y mot lenh cu the"}',
       'Viet bang tieng Viet co dau day du.',
       'Viet ngan gon: title duoi 60 ky tu, scenario duoi 300 ky tu, toi da 4 buoc.'
-    ].join('\n');
+    ].filter(Boolean).join('\n');
 
     try {
       const headers = { 'Content-Type': 'application/json' };

@@ -6,7 +6,7 @@ const CyberTerminal = (() => {
   let userScore = 0;
 
   const VFS = {
-    '/': { type: 'dir', children: ['home', 'etc', 'var', 'bin', 'flag'] },
+    '/': { type: 'dir', children: ['home', 'etc', 'var', 'bin', 'usr', 'flag'] },
     '/home': { type: 'dir', children: ['hacker'] },
     '/home/hacker': {
       type: 'dir',
@@ -32,7 +32,12 @@ const CyberTerminal = (() => {
       type: 'file',
       content: '#!/bin/bash\necho "Scanning local subnet..."\nnmap 192.168.1.100\n'
     },
-    '/etc': { type: 'dir', children: ['passwd', 'shadow', 'hosts'] },
+    '/etc': { type: 'dir', children: ['passwd', 'shadow', 'hosts', '.hidden'] },
+    '/etc/.hidden': { type: 'dir', children: ['backdoor.conf'] },
+    '/etc/.hidden/backdoor.conf': {
+      type: 'file',
+      content: '# cai dat cua tien trinh .sysupdate\nlisten_port=4444\nexfil_host=10.0.0.66\nauth_key=FLAG{devmaster_backdoor_port_4444_found}'
+    },
     '/etc/passwd': {
       type: 'file',
       content: 'root:x:0:0:root:/root:/bin/bash\nhacker:x:1000:1000:Hacker:/home/hacker:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin'
@@ -45,8 +50,33 @@ const CyberTerminal = (() => {
       type: 'file',
       content: '127.0.0.1 localhost\n192.168.1.100 target-bank-api.local'
     },
+    '/bin': { type: 'dir', children: ['bash', 'nc'] },
+    '/bin/bash': {
+      type: 'file',
+      content: '(tệp nhị phân ELF 64-bit — không đọc được bằng cat)'
+    },
+    '/bin/nc': {
+      type: 'file',
+      content: '(tệp nhị phân ELF 64-bit — netcat, công cụ kẻ tấn công hay dùng để mở backdoor)'
+    },
+    '/flag': { type: 'dir', children: ['README.txt'] },
+    '/flag/README.txt': {
+      type: 'file',
+      content: 'Cờ không để sẵn ở đây đâu.\nHãy tự truy tìm trong hệ thống bằng: ls -la, cat, grep, find, ps, netstat, nmap, curl.'
+    },
+    '/usr': { type: 'dir', children: ['local'] },
+    '/usr/local': { type: 'dir', children: ['bin'] },
+    '/usr/local/bin': { type: 'dir', children: ['.sysupdate'] },
+    '/usr/local/bin/.sysupdate': {
+      type: 'file',
+      content: '#!/bin/sh\n# tien trinh la: mo cong 4444 cho ke tan cong ket noi vao\nnc -lvnp 4444 -e /bin/bash'
+    },
     '/var': { type: 'dir', children: ['log', 'www'] },
     '/var/log': { type: 'dir', children: ['auth.log', 'nginx.log'] },
+    '/var/log/nginx.log': {
+      type: 'file',
+      content: '10.0.0.5 - - [20/Feb/2026:14:05:22] "GET /admin.php?debug=1 HTTP/1.1" 200 512\n10.0.0.66 - - [20/Feb/2026:14:06:03] "POST /upload.php HTTP/1.1" 200 88\n10.0.0.66 - - [20/Feb/2026:14:06:40] "GET /shell.php?cmd=whoami HTTP/1.1" 200 12'
+    },
     '/var/log/auth.log': {
       type: 'file',
       content: 'Feb 20 14:02:11 dev-srv sshd[124]: Failed password for invalid user admin from 10.0.0.5\nFeb 20 14:03:00 dev-srv sshd[125]: Accepted password for root with token FLAG{devmaster_log_analyst_pro}'
@@ -55,6 +85,10 @@ const CyberTerminal = (() => {
     '/var/www/html': {
       type: 'dir',
       children: ['index.php', 'config.php']
+    },
+    '/var/www/html/index.php': {
+      type: 'file',
+      content: '<?php\n  include "config.php";\n  echo "<h1>DevMaster Target Portal</h1>";\n?>'
     },
     '/var/www/html/config.php': {
       type: 'file',
@@ -102,7 +136,41 @@ const CyberTerminal = (() => {
       hint: 'Dùng lệnh: cat /var/www/html/config.php',
       flag: 'FLAG{devmaster_sql_injection_master}',
       points: 200
+    },
+    {
+      id: 'ctf-6',
+      title: '🐚 Challenge 6: Truy Tìm Backdoor Ẩn',
+      desc: 'Máy chủ mở một cổng lạ và có tiến trình chạy ngầm. Lần theo cổng đó để tìm tệp cấu hình của kẻ tấn công.',
+      hint: 'Dùng: netstat -tuln → ps aux → cat tệp cấu hình mà tiến trình lạ đang dùng',
+      flag: 'FLAG{devmaster_backdoor_port_4444_found}',
+      points: 250
     }
+  ];
+
+  /**
+   * Danh sach lenh CO THAT cua terminal gia lap. Day la nguon duy nhat:
+   * lenh "help" in ra tu day, va cau lenh mo ta gui cho AI cung lay tu day.
+   * Truoc kia hai cho ghi tay rieng nen lech nhau — AI ra de bang netstat/ps
+   * trong khi terminal chua cai, hoc vien go vao thi "command not found".
+   */
+  const COMMANDS = [
+    { name: 'ls',      usage: 'ls [-la] [path]',        desc: 'Liệt kê danh sách thư mục / tệp tin' },
+    { name: 'cd',      usage: 'cd <path>',              desc: 'Chuyển đổi thư mục làm việc' },
+    { name: 'pwd',     usage: 'pwd',                    desc: 'Hiển thị đường dẫn thư mục hiện tại' },
+    { name: 'cat',     usage: 'cat <file>',             desc: 'Đọc nội dung tệp tin' },
+    { name: 'grep',    usage: 'grep <pattern> <file>',  desc: 'Tìm kiếm chuỗi trong tệp tin' },
+    { name: 'find',    usage: 'find <path> -name <ten>', desc: 'Tìm tệp theo tên trong cả cây thư mục' },
+    { name: 'ps',      usage: 'ps [aux]',               desc: 'Liệt kê các tiến trình đang chạy' },
+    { name: 'netstat', usage: 'netstat [-tuln]',        desc: 'Xem các cổng mạng đang mở' },
+    { name: 'base64',  usage: 'base64 -d <file|str>',   desc: 'Giải mã chuỗi Base64' },
+    { name: 'nmap',    usage: 'nmap <target>',          desc: 'Quét cổng dịch vụ mạng' },
+    { name: 'curl',    usage: 'curl <url>',             desc: 'Gửi request HTTP tới web server' },
+    { name: 'whoami',  usage: 'whoami',                 desc: 'Hiển thị người dùng hiện tại' },
+    { name: 'id',      usage: 'id',                     desc: 'Xem uid / gid / nhóm của người dùng' },
+    { name: 'uname',   usage: 'uname -a',               desc: 'Xem thông tin kernel Linux ảo' },
+    { name: 'clear',   usage: 'clear',                  desc: 'Xóa màn hình terminal' },
+    { name: 'help',    usage: 'help',                   desc: 'Xem danh sách lệnh này' },
+    { name: 'submit',  usage: 'submit <flag>',          desc: 'Nộp cờ CTF để nhận điểm XP' }
   ];
 
   function executeCommand(input) {
@@ -116,22 +184,12 @@ const CyberTerminal = (() => {
     const args = parts.slice(1);
 
     switch (cmd) {
-      case 'help':
-        return `
-📋 CÁC LỆNH HỆ THỐNG ĐƯỢC HỖ TRỢ:
-  • ls [-la] [path]        : Liệt kê danh sách thư mục / tệp tin
-  • cd <path>              : Chuyển đổi thư mục làm việc
-  • pwd                    : Hiển thị đường dẫn thư mục hiện tại
-  • cat <file>             : Đọc nội dung tệp tin
-  • grep <pattern> <file>  : Tìm kiếm chuỗi trong tệp tin
-  • base64 -d <file|str>   : Giải mã chuỗi Base64
-  • nmap <target>          : Quét cổng dịch vụ mạng
-  • curl <url>             : Gửi request HTTP tới web server
-  • whoami / id            : Hiển thị người dùng hiện tại
-  • uname -a               : Xem thông tin kernel Linux ảo
-  • clear                  : Xóa màn hình terminal
-  • submit <flag>          : Nộp cờ CTF để nhận điểm XP
-`;
+      case 'help': {
+        const rong = Math.max(...COMMANDS.map(c => c.usage.length));
+        return '\n📋 CÁC LỆNH HỆ THỐNG ĐƯỢC HỖ TRỢ:\n'
+          + COMMANDS.map(c => '  • ' + c.usage.padEnd(rong + 2) + ': ' + c.desc).join('\n')
+          + '\n';
+      }
 
       case 'pwd':
         return currentDir;
@@ -153,11 +211,15 @@ const CyberTerminal = (() => {
         return '';
 
       case 'ls': {
-        const targetPath = args[0] && !args[0].startsWith('-') ? resolvePath(args[0]) : currentDir;
+        // Duong dan la doi so dau tien KHONG phai co, nen 'ls -la /etc' doc dung /etc
+        const duongDan = args.find(a => !a.startsWith('-'));
+        const targetPath = duongDan ? resolvePath(duongDan) : currentDir;
         const entry = VFS[targetPath];
-        if (!entry) return `ls: cannot access '${args[0] || targetPath}': No such file or directory`;
-        if (entry.type === 'file') return args[0] || targetPath;
-        const list = entry.children || [];
+        if (!entry) return `ls: cannot access '${duongDan || targetPath}': No such file or directory`;
+        if (entry.type === 'file') return duongDan || targetPath;
+        // Tep bat dau bang dau cham la tep an: chi hien khi co -a (nhu Linux that)
+        const hienAn = args.some(a => a.startsWith('-') && a.includes('a'));
+        const list = (entry.children || []).filter(x => hienAn || !x.startsWith('.'));
         return list.map(item => {
           const itemPath = targetPath === '/' ? '/' + item : targetPath + '/' + item;
           const isDir = VFS[itemPath]?.type === 'dir';
@@ -248,6 +310,44 @@ X-Flag-Header: FLAG{devmaster_curl_headers_found}
 `;
       }
 
+      case 'ps': {
+        return `
+  PID TTY          TIME CMD
+    1 ?        00:00:03 /sbin/init
+  301 ?        00:00:00 dhclient
+  412 ?        00:00:00 sshd: /usr/sbin/sshd -D
+  878 ?        00:00:01 apache2 -k start
+ 1102 ?        00:00:02 mysqld --datadir=/var/lib/mysql
+ 1337 ?        00:04:52 /usr/local/bin/.sysupdate --port 4444 --conf /etc/.hidden/backdoor.conf
+ 2051 pts/0    00:00:00 bash
+ 2088 pts/0    00:00:00 ps
+`;
+      }
+
+      case 'netstat': {
+        return `
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address        Foreign Address   State    PID/Program name
+tcp        0      0 0.0.0.0:22           0.0.0.0:*         LISTEN   412/sshd
+tcp        0      0 0.0.0.0:80           0.0.0.0:*         LISTEN   878/apache2
+tcp        0      0 0.0.0.0:8080         0.0.0.0:*         LISTEN   878/apache2
+tcp        0      0 127.0.0.1:3306       0.0.0.0:*         LISTEN   1102/mysqld
+tcp        0      0 0.0.0.0:4444         0.0.0.0:*         LISTEN   1337/.sysupdate
+udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
+`;
+      }
+
+      case 'find': {
+        const goc = args[0] && !args[0].startsWith('-') ? resolvePath(args[0]) : currentDir;
+        if (!VFS[goc]) return `find: '${args[0] || goc}': No such file or directory`;
+        const viTri = args.indexOf('-name');
+        const mau = viTri !== -1 ? (args[viTri + 1] || '').replace(/['"]/g, '') : null;
+        const duong = [];
+        thuThapDuongDan(goc, duong);
+        const ket = mau ? duong.filter(d => khopTenTep(d.split('/').pop(), mau)) : duong;
+        return ket.join('\n') || `find: không có tệp nào khớp "${mau}"`;
+      }
+
       case 'submit': {
         const submittedFlag = args[0];
         if (!submittedFlag) return 'submit: usage: submit FLAG{...}';
@@ -257,6 +357,24 @@ X-Flag-Header: FLAG{devmaster_curl_headers_found}
       default:
         return `bash: ${cmd}: command not found. Gõ "help" để xem danh sách lệnh.`;
     }
+  }
+
+  /** Duyet ca cay thu muc, gom moi duong dan lai */
+  function thuThapDuongDan(goc, ra) {
+    ra.push(goc);
+    const e = VFS[goc];
+    if (!e || e.type !== 'dir') return;
+    for (const con of e.children || []) {
+      thuThapDuongDan(goc === '/' ? '/' + con : goc + '/' + con, ra);
+    }
+  }
+
+  /** So khop ten tep voi mau co dau *, vi du "*.conf" hay ".sys*" */
+  function khopTenTep(ten, mau) {
+    const re = new RegExp('^' + mau.split('*')
+      .map(x => x.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+      .join('.*') + '$');
+    return re.test(ten);
   }
 
   function resolvePath(p) {
@@ -438,6 +556,8 @@ X-Flag-Header: FLAG{devmaster_curl_headers_found}
 
   return {
     renderStudio,
+    commandNames: () => COMMANDS.map(c => c.name),
+    filePaths: () => Object.keys(VFS).filter(k => VFS[k].type === 'file'),
     executeCommand,
     checkFlag,
     submitFlagInput
