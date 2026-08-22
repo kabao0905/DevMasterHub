@@ -952,6 +952,8 @@ const App = (() => {
     // neu khong React se nhan code vao script.js va khong chay.
     const entry = techId === 'react' ? 'App.jsx'
                 : techId === 'vue' ? 'App.js'
+                : techId === 'typescript' ? 'main.ts'
+                : techId === 'dsa' ? 'main.js'
                 : 'script.js';
     return [{ name: entry, code: raw }];
   }
@@ -1114,8 +1116,10 @@ const App = (() => {
     // Bai hoc frontend: mo trinh soan thao chia doi man hinh ngay trong bai tap.
     // Nap san code mau cua chinh bai hoc de hoc vien sua tiep, khong phai
     // bat dau tu trang giay trang.
-    // Angular can buoc build nen khong chay duoc trong sandbox trinh duyet -> khong gan
-    const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind'];
+    // Angular can buoc build nen khong chay duoc trong sandbox trinh duyet -> khong gan.
+    // typescript va dsa dung che do console: ket qua la van ban in ra,
+    // khong phai trang web, nen Sandpack se hien console thay vi khung hien thi.
+    const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind', 'typescript', 'dsa'];
     if (TECH_FRONTEND.includes(tech.id)) {
       const seed = seedFilesFromLesson(lesson, tech.id);
       setTimeout(() => {

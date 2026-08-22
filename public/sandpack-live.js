@@ -189,6 +189,83 @@ createApp({
 }).mount('#app');`
       }
     },
+    typescript: {
+      label: 'TypeScript',
+      mode: 'console',
+      libs: ['https://unpkg.com/typescript@5.4.5/lib/typescript.js'],
+      entry: 'main.ts',
+      files: {
+        'main.ts': `// TypeScript duoc bien dich ngay trong trinh duyet,
+// ket qua console.log hien o khung ben phai.
+
+interface NguoiDung {
+  ten: string;
+  tuoi: number;
+  kyNang: string[];
+}
+
+function moTa(u: NguoiDung): string {
+  return \`\${u.ten}, \${u.tuoi} tuoi, biet \${u.kyNang.length} ky nang\`;
+}
+
+const an: NguoiDung = {
+  ten: 'An',
+  tuoi: 25,
+  kyNang: ['TypeScript', 'React']
+};
+
+console.log(moTa(an));
+
+// Thu bo dong duoi ra khoi comment de xem TypeScript bao loi kieu
+// const sai: NguoiDung = { ten: 'Binh' };
+
+// Generic
+function dauTien<T>(mang: T[]): T | undefined {
+  return mang[0];
+}
+console.log(dauTien([10, 20, 30]));
+console.log(dauTien(['a', 'b']));`
+      }
+    },
+    js: {
+      label: 'JavaScript',
+      mode: 'console',
+      libs: [],
+      entry: 'main.js',
+      files: {
+        'main.js': `// Ket qua console.log hien o khung ben phai.
+
+// O(1) — khong phu thuoc kich thuoc mang
+function layPhanTuDau(arr) {
+  return arr[0];
+}
+
+// O(n) — duyet het mang mot lan
+function tongMang(arr) {
+  let tong = 0;
+  for (const x of arr) tong += x;
+  return tong;
+}
+
+// O(log n) — tim kiem nhi phan
+function timNhiPhan(arr, dich) {
+  let trai = 0, phai = arr.length - 1;
+  while (trai <= phai) {
+    const giua = Math.floor((trai + phai) / 2);
+    if (arr[giua] === dich) return giua;
+    if (arr[giua] < dich) trai = giua + 1;
+    else phai = giua - 1;
+  }
+  return -1;
+}
+
+const so = [1, 3, 5, 7, 9, 11, 13];
+console.log('phan tu dau :', layPhanTuDau(so));
+console.log('tong        :', tongMang(so));
+console.log('vi tri cua 9:', timNhiPhan(so, 9));
+console.log('vi tri cua 4:', timNhiPhan(so, 4));`
+      }
+    },
     tailwind: {
       label: 'Tailwind CSS',
       libs: ['https://cdn.tailwindcss.com'],
@@ -226,8 +303,12 @@ document.getElementById('btn').addEventListener('click', () => {
     if (techId === 'react') return 'react';
     if (techId === 'vue') return 'vue';
     if (techId === 'tailwind') return 'tailwind';
+    if (techId === 'typescript') return 'typescript';
+    if (techId === 'dsa') return 'js';
     return 'html';
   }
+
+  const isConsoleMode = () => (PRESETS[preset] || PRESETS.html).mode === 'console';
 
   const VIEWPORTS = {
     desktop: { label: 'Desktop', w: null, icon: '🖥️' },
@@ -253,6 +334,11 @@ document.getElementById('btn').addEventListener('click', () => {
   // ─── Ghep 3 file thanh mot tai lieu HTML hoan chinh ───
   function buildDocument() {
     const P = PRESETS[preset] || PRESETS.html;
+
+    // Che do console: khong co trang web de hien thi, chi chay code va in ket qua.
+    // Van dung iframe sandbox de code chay tach biet khoi trang chinh.
+    if (P.mode === 'console') return buildConsoleDocument(P);
+
     const html = files['index.html'] || '';
     const css = files['style.css'] || '';
     const js = files[P.entry] || '';
@@ -316,6 +402,136 @@ document.getElementById('btn').addEventListener('click', () => {
     return { doc, token };
   }
 
+  /**
+   * Trang cho che do console. Nguon duoc dat trong the text/plain roi doc ra,
+   * khong noi chuoi vao script — noi chuoi se vo neu code chua </script>.
+   */
+  function buildConsoleDocument(P) {
+    const token = 'sp' + (++frameId);
+    const src = files[P.entry] || '';
+    const isTs = P.entry.endsWith('.ts');
+
+    const bridge = `
+<script>
+(function () {
+  var send = function (level, args) {
+    try {
+      parent.postMessage({ __sandpack: '${token}', level: level, args: args.map(function (a) {
+        try {
+          if (a instanceof Error) return a.name + ': ' + a.message;
+          return typeof a === 'object' ? JSON.stringify(a) : String(a);
+        } catch (e) { return String(a); }
+      }) }, '*');
+    } catch (e) {}
+  };
+  ['log', 'warn', 'error', 'info'].forEach(function (lv) {
+    var orig = console[lv];
+    console[lv] = function () { send(lv, [].slice.call(arguments)); orig.apply(console, arguments); };
+  });
+  window.addEventListener('error', function (e) { send('error', [e.message + ' (dòng ' + e.lineno + ')']); });
+})();
+<\/script>`;
+
+    const runner = isTs ? `
+<script>
+(function () {
+  var src = document.getElementById('__src').textContent;
+  var BASE = 'https://unpkg.com/typescript@5.4.5/lib/';
+  var ROOT = 'lib.es2020.full.d.ts';
+  var files = {};
+
+  // lib.es2020.full.d.ts chi tro toi cac lib khac bang /// <reference lib="..." />
+  // nen phai tai de quy het chuoi truoc, roi moi tao program.
+  function tai(name) {
+    if (files[name] !== undefined) return Promise.resolve();
+    files[name] = '';
+    return fetch(BASE + name)
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (text) {
+        files[name] = text;
+        var refs = [];
+        var re = /\\/\\/\\/\\s*<reference\\s+lib=["']([^"']+)["']/g, m;
+        while ((m = re.exec(text)) !== null) refs.push('lib.' + m[1] + '.d.ts');
+        return Promise.all(refs.map(tai));
+      })
+      .catch(function () { files[name] = ''; });
+  }
+
+  function chay(outputText) {
+    try { (0, eval)(outputText); }
+    catch (e) { console.error(e.message); }
+  }
+
+  tai(ROOT).then(function () {
+    var libNames = Object.keys(files).filter(function (n) { return files[n]; });
+    files['main.ts'] = src;
+
+    var opts = {
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.None,
+      strict: true,
+      skipLibCheck: true,
+      noEmitOnError: false
+    };
+    var host = {
+      getSourceFile: function (name, lang) {
+        if (files[name] === undefined) return undefined;
+        return ts.createSourceFile(name, files[name], lang, true);
+      },
+      getDefaultLibFileName: function () { return ROOT; },
+      writeFile: function () {},
+      getCurrentDirectory: function () { return ''; },
+      getDirectories: function () { return []; },
+      fileExists: function (n) { return files[n] !== undefined; },
+      readFile: function (n) { return files[n]; },
+      getCanonicalFileName: function (n) { return n; },
+      useCaseSensitiveFileNames: function () { return true; },
+      getNewLine: function () { return String.fromCharCode(10); }
+    };
+
+    var program = ts.createProgram(libNames.concat(['main.ts']), opts, host);
+    var diags = ts.getPreEmitDiagnostics(program).filter(function (d) {
+      return d.file && d.file.fileName === 'main.ts';
+    });
+
+    diags.forEach(function (d) {
+      var msg = ts.flattenDiagnosticMessageText(d.messageText, ' ');
+      var pos = d.start !== undefined
+        ? d.file.getLineAndCharacterOfPosition(d.start) : null;
+      console.error('Lỗi kiểu' + (pos ? ' (dòng ' + (pos.line + 1) + ')' : '') + ': ' + msg);
+    });
+
+    chay(ts.transpileModule(src, { compilerOptions: opts }).outputText);
+  }).catch(function () {
+    console.warn('Không tải được thư viện kiểu — code vẫn chạy nhưng không kiểm tra kiểu.');
+    chay(ts.transpileModule(src, {
+      compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.None }
+    }).outputText);
+  });
+})();
+<\/script>` : `
+<script>
+(function () {
+  try { (0, eval)(document.getElementById('__src').textContent); }
+  catch (e) { console.error(e.message); }
+})();
+<\/script>`;
+
+    const libTags = (P.libs || []).map(u => `<script src="${u}"><\/script>`).join('\n');
+
+    const doc = [
+      '<!doctype html><html><head><meta charset="utf-8">',
+      bridge,
+      libTags,
+      '</head><body>',
+      '<script type="text/plain" id="__src">', src, '<\/script>',
+      runner,
+      '</body></html>'
+    ].join('\n');
+
+    return { doc, token };
+  }
+
   let currentToken = null;
 
   function onMessage(e) {
@@ -355,6 +571,9 @@ document.getElementById('btn').addEventListener('click', () => {
 
     if (techId !== undefined) preset = presetFor(techId);
     const P = PRESETS[preset] || PRESETS.html;
+    const consoleMode = P.mode === 'console';
+    // Khong co trang web thi khong the thiet ke truc quan
+    if (consoleMode) designMode = false;
 
     if (!Object.keys(files).length || techId !== undefined) files = { ...P.files };
     if (Array.isArray(initialFiles) && initialFiles.length) {
@@ -363,9 +582,13 @@ document.getElementById('btn').addEventListener('click', () => {
     }
     logs = [];
     loadedFile = null;
+    // Moi preset co bo file khac nhau. Neu file dang mo khong ton tai trong
+    // preset moi (vi du doi sang TypeScript chi co main.ts) thi phai chuyen
+    // sang file dau tien, neu khong o soan thao se trong tron.
+    if (!(active in files)) active = Object.keys(files)[0];
 
     el.innerHTML = `
-      <div class="sp${designMode ? ' design' : ''}" id="sp-root" style="--sp-split:${split}%">
+      <div class="sp${designMode ? ' design' : ''}${consoleMode ? ' console-mode' : ''}" id="sp-root" style="--sp-split:${split}%">
         <div class="sp-pane sp-left">
           <div class="sp-head">
             <div class="sp-tabs" role="tablist">
@@ -394,6 +617,7 @@ document.getElementById('btn').addEventListener('click', () => {
 
         <div class="sp-pane sp-right">
           <div class="sp-head">
+            ${consoleMode ? '<span class="sp-live"><i></i>Kết quả chạy code</span>' : `
             <button class="sp-design-toggle${designMode ? ' on' : ''}"
                     onclick="SandpackLive.toggleDesign()"
                     aria-pressed="${designMode}"
@@ -405,9 +629,10 @@ document.getElementById('btn').addEventListener('click', () => {
                 <button class="sp-vp${k === viewport ? ' active' : ''}"
                         onclick="SandpackLive.setViewport('${k}')"
                         title="${v.label}${v.w ? ' — ' + v.w + 'px' : ''}">${v.icon}</button>`).join('')}
-            </div>
+            </div>`}
+            <button class="sp-run" onclick="SandpackLive.refresh()" title="Chạy lại">▶ Chạy</button>
           </div>
-          <div class="sp-stage" id="sp-stage">
+          <div class="sp-stage${consoleMode ? ' hidden-stage' : ''}" id="sp-stage">
             <iframe id="sp-frame" class="sp-frame" title="Kết quả xem trước"
                     sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe>
           </div>
@@ -427,8 +652,8 @@ document.getElementById('btn').addEventListener('click', () => {
             </div>
             <div class="dm-panel" id="dm-panel"></div>
           </div>
-          <details class="sp-console-box"${designMode ? '' : ' open'}>
-            <summary>Console <span class="sp-count" id="sp-log-count"></span></summary>
+          <details class="sp-console-box${consoleMode ? ' full' : ''}" ${(consoleMode || !designMode) ? 'open' : ''}>
+            <summary>${consoleMode ? 'Kết quả in ra' : 'Console'} <span class="sp-count" id="sp-log-count"></span></summary>
             <div class="sp-console" id="sp-console"></div>
           </details>
         </div>
