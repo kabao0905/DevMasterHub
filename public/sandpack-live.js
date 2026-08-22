@@ -579,6 +579,10 @@ document.getElementById('btn').addEventListener('click', () => {
     if (Array.isArray(initialFiles) && initialFiles.length) {
       files = { ...P.files };
       for (const f of initialFiles) if (f && f.name) files[f.name] = f.code || '';
+      // Mo san file chua code cua bai hoc, khong phai index.html boi san —
+      // nguoi hoc phai thay ngay code cua bai minh dang hoc.
+      const dau = initialFiles.find(f => f && f.name && f.name in files);
+      if (dau) active = dau.name;
     }
     logs = [];
     loadedFile = null;

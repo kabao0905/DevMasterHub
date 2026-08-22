@@ -780,6 +780,16 @@ const App = (() => {
           <span class="progress-text">${p.completed}/${p.total} ${typeof I18n !== 'undefined' ? I18n.t('lessonsUnit') : 'bài học'} · ${p.percent}%</span>
         </div>
       </div>
+      ${tech.id !== 'cybersecurity' ? '' : `
+      <div class="challenge-entry" onclick="App.goToChallenge()" role="button" tabindex="0"
+           onkeydown="if(event.key==='Enter')App.goToChallenge()">
+        <span class="challenge-entry-icon">🚩</span>
+        <div class="challenge-entry-text">
+          <strong>${I18n.t('challengeNav')}</strong>
+          <small>${I18n.t('challengeEntryHint')}</small>
+        </div>
+        <span class="challenge-entry-go">→</span>
+      </div>`}
       <div class="roadmap-timeline">`;
 
     tech.levels.forEach((level, idx) => {
@@ -936,6 +946,62 @@ const App = (() => {
   }
 
   /** Dung 3 file khoi tao cho Sandpack tu code mau cua bai hoc */
+  /**
+   * Chuyen code mau cua bai hoc thanh code chay duoc trong sandbox.
+   * Bai hoc viet theo kieu du an that (import/export), con sandbox nap thu vien
+   * tu CDN nen React/Vue la bien toan cuc — de nguyen se loi "Unexpected token export".
+   */
+  function adaptLessonCode(raw, techId) {
+    let code = String(raw || '');
+
+    // Bo cac dong import: thu vien da co san duoi dang bien toan cuc
+    // [^;] khop duoc ca ky tu xuong dong, nen bat duoc import viet nhieu dong
+    code = code
+      .replace(/^[ \t]*import\s+[^;]*?from\s+['"][^'"]+['"]\s*;?/gm, '')
+      .replace(/^[ \t]*import\s+['"][^'"]+['"]\s*;?/gm, '');
+
+    // Bo tu khoa export nhung GIU lai phan khai bao phia sau
+    code = code
+      .replace(/^[ \t]*export\s+default\s+(async\s+)?function\b/gm, '$1function')
+      .replace(/^[ \t]*export\s+default\s+class\b/gm, 'class')
+      .replace(/^[ \t]*export\s+default\s+/gm, 'const __default = ')
+      .replace(/^[ \t]*export\s+(?=(async\s+)?(const|let|var|function|class)\b)/gm, '');
+
+    // Bo dong "export { A, B };" con sot
+    code = code.replace(/^[ \t]*export\s*\{[^}]*\};?[ \t]*$/gm, '');
+
+    if (techId === 'react') {
+      // Neu bai hoc khong tu goi render thi tu gan component vao trang
+      if (!/ReactDOM\s*\.\s*(render|createRoot)/.test(code)) {
+        const ten = timComponentGoc(code);
+        if (ten) {
+          code += `\n\nReactDOM.createRoot(document.getElementById('root')).render(<${ten} />);\n`;
+        }
+      }
+      // Bai hoc hay dung useState truc tiep thay vi React.useState
+      if (/\buseState\b/.test(code) && !/React\s*\.\s*useState/.test(code)
+          && !/const\s*\{[^}]*useState/.test(code)) {
+        code = 'const { useState, useEffect, useRef, useMemo, useCallback, useContext } = React;\n\n' + code;
+      }
+    }
+
+    if (techId === 'vue' && !/createApp\s*\(/.test(code)) {
+      code = 'const { createApp, ref, reactive, computed, watch, onMounted } = Vue;\n\n' + code;
+    }
+
+    return code.replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  /** Tim component de gan vao trang: uu tien ten App, khong thi lay cai cuoi cung */
+  function timComponentGoc(code) {
+    if (/function\s+App\b/.test(code) || /const\s+App\s*=/.test(code)) return 'App';
+    const ds = [];
+    const re = /(?:function|const|class)\s+([A-Z][A-Za-z0-9_]*)/g;
+    let m;
+    while ((m = re.exec(code)) !== null) ds.push(m[1]);
+    return ds.length ? ds[ds.length - 1] : null;
+  }
+
   function seedFilesFromLesson(lesson, techId) {
     const raw = String(lesson && lesson.code || '').trim();
     if (!raw) return null;
@@ -955,7 +1021,7 @@ const App = (() => {
                 : techId === 'typescript' ? 'main.ts'
                 : techId === 'dsa' ? 'main.js'
                 : 'script.js';
-    return [{ name: entry, code: raw }];
+    return [{ name: entry, code: adaptLessonCode(raw, techId) }];
   }
 
   function renderQuizContent(lessonKey, tech, level, lesson) {
@@ -1718,7 +1784,7 @@ const App = (() => {
       setTimeout(attachEditorToCurrentTextarea, 50);
       if (currentTech === 'cybersecurity' && typeof CyberTerminal !== 'undefined') {
         setTimeout(() => {
-          CyberTerminal.renderStudio('lesson-cyber-terminal-mount');
+          CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false });
         }, 60);
       }
     }
@@ -1763,9 +1829,6 @@ const App = (() => {
       </div>
       <div class="sidebar-item" data-view="my-projects" onclick="App.goToMyProjects()">
         <span class="sidebar-icon">📁</span><span class="sidebar-text">${typeof I18n !== 'undefined' ? I18n.t('myProjects') : 'My Projects'}</span>
-      </div>
-      <div class="sidebar-item" data-view="challenge" onclick="App.goToChallenge()">
-        <span class="sidebar-icon">🚩</span><span class="sidebar-text">${typeof I18n !== 'undefined' ? I18n.t('challengeNav') : 'Thử thách'}</span>
       </div>
       <div class="sidebar-item" data-view="career" onclick="App.goToCareer()">
         <span class="sidebar-icon">💼</span><span class="sidebar-text">${typeof I18n !== 'undefined' ? I18n.t('careerAdvisor') : 'Tư vấn Việc làm'}</span>
@@ -2991,6 +3054,7 @@ const App = (() => {
     if (!container) return;
     container.innerHTML = `
       <div class="challenge-view">
+        <button class="btn-back" onclick="App.openRoadmap('cybersecurity')">← ${I18n.t('back')}</button>
         <div class="page-header">
           <h1 class="page-title">${I18n.t('challengeTitle')}</h1>
           <p class="page-subtitle">${I18n.t('challengeSubtitle')}</p>

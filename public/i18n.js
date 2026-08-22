@@ -226,7 +226,8 @@ const I18n = (() => {
     "aiChallengeBtn": "Ra đề mới",
     "aiChallengeLoading": "AI đang nghĩ đề…",
     "needLogin": "Bạn cần đăng nhập để dùng tính năng này.",
-    "aiBusy": "AI đang bận, thử lại sau ít phút."
+    "aiBusy": "AI đang bận, thử lại sau ít phút.",
+    "challengeEntryHint": "Luyện lệnh Linux trên terminal ảo và săn cờ FLAG"
   },
   "en": {
     "tutorHeader": "Ask AI Tutor about",
@@ -441,7 +442,8 @@ const I18n = (() => {
     "aiChallengeBtn": "New challenge",
     "aiChallengeLoading": "AI is writing a challenge…",
     "needLogin": "You need to sign in to use this feature.",
-    "aiBusy": "The AI is busy, try again in a moment."
+    "aiBusy": "The AI is busy, try again in a moment.",
+    "challengeEntryHint": "Practice Linux commands in a virtual terminal and capture flags"
   },
   "ja": {
     "tutorHeader": "AIチューターに質問:",
@@ -656,7 +658,8 @@ const I18n = (() => {
     "aiChallengeBtn": "新しい問題",
     "aiChallengeLoading": "AIが問題を考えています…",
     "needLogin": "この機能を使うにはログインが必要です。",
-    "aiBusy": "AIが混み合っています。少し待ってからお試しください。"
+    "aiBusy": "AIが混み合っています。少し待ってからお試しください。",
+    "challengeEntryHint": "仮想ターミナルで Linux コマンドを練習し、フラグを獲得"
   },
   "ko": {
     "tutorHeader": "AI 튜터에게 질문하기",
@@ -871,7 +874,8 @@ const I18n = (() => {
     "aiChallengeBtn": "새 문제",
     "aiChallengeLoading": "AI가 문제를 만드는 중…",
     "needLogin": "이 기능을 사용하려면 로그인이 필요합니다.",
-    "aiBusy": "AI가 바쁩니다. 잠시 후 다시 시도하세요."
+    "aiBusy": "AI가 바쁩니다. 잠시 후 다시 시도하세요.",
+    "challengeEntryHint": "가상 터미널에서 리눅스 명령어를 연습하고 플래그 찾기"
   },
   "zh": {
     "tutorHeader": "向 AI 导师提问",
@@ -1086,7 +1090,8 @@ const I18n = (() => {
     "aiChallengeBtn": "出新题",
     "aiChallengeLoading": "AI 正在出题…",
     "needLogin": "使用此功能需要先登录。",
-    "aiBusy": "AI 正忙，请稍后再试。"
+    "aiBusy": "AI 正忙，请稍后再试。",
+    "challengeEntryHint": "在虚拟终端练习 Linux 命令并夺取旗帜"
   },
   "fr": {
     "tutorHeader": "Poser une question au tuteur IA sur",
@@ -1301,7 +1306,8 @@ const I18n = (() => {
     "aiChallengeBtn": "Nouveau défi",
     "aiChallengeLoading": "L'IA prépare un défi…",
     "needLogin": "Vous devez vous connecter pour utiliser cette fonction.",
-    "aiBusy": "L'IA est occupée, réessayez dans un instant."
+    "aiBusy": "L'IA est occupée, réessayez dans un instant.",
+    "challengeEntryHint": "Entraînez-vous aux commandes Linux et capturez les drapeaux"
   },
   "de": {
     "tutorHeader": "KI-Tutor fragen zu",
@@ -1516,7 +1522,8 @@ const I18n = (() => {
     "aiChallengeBtn": "Neue Aufgabe",
     "aiChallengeLoading": "Die KI erstellt eine Aufgabe…",
     "needLogin": "Zum Nutzen dieser Funktion musst du dich anmelden.",
-    "aiBusy": "Die KI ist ausgelastet, versuche es gleich noch einmal."
+    "aiBusy": "Die KI ist ausgelastet, versuche es gleich noch einmal.",
+    "challengeEntryHint": "Übe Linux-Befehle und sammle Flags"
   },
   "es": {
     "tutorHeader": "Pregunta al tutor de IA sobre",
@@ -1731,7 +1738,8 @@ const I18n = (() => {
     "aiChallengeBtn": "Nuevo reto",
     "aiChallengeLoading": "La IA está creando un reto…",
     "needLogin": "Necesitas iniciar sesión para usar esta función.",
-    "aiBusy": "La IA está ocupada, inténtalo de nuevo en un momento."
+    "aiBusy": "La IA está ocupada, inténtalo de nuevo en un momento.",
+    "challengeEntryHint": "Practica comandos de Linux y captura banderas"
   }
 };
 
