@@ -21,7 +21,6 @@ const App = (() => {
   let projectChatSending = false;
   let projectFiles = [{ name: 'main.js', lang: 'javascript', code: '' }];
   let projectActiveFileIdx = 0;
-  let activeStudioTab = 'code';
   let projectReview = null;
   let projectTopic = '';
   let projectTopicLevel = null;
@@ -930,6 +929,20 @@ const App = (() => {
     }
   }
 
+  /** Dung 3 file khoi tao cho Sandpack tu code mau cua bai hoc */
+  function seedFilesFromLesson(lesson) {
+    const raw = String(lesson && lesson.code || '').trim();
+    if (!raw) return null;
+
+    // Bai HTML/CSS: code mau thuong da la mot trang hoan chinh
+    if (/<html|<!doctype/i.test(raw)) return [{ name: 'index.html', code: raw }];
+    if (/^\s*[.#a-zA-Z][^{]*\{[^}]*:/.test(raw) && !/function|=>|const |let /.test(raw)) {
+      return [{ name: 'style.css', code: raw }];
+    }
+    // Con lai coi la JavaScript
+    return [{ name: 'script.js', code: raw }];
+  }
+
   function renderQuizContent(lessonKey, tech, level, lesson) {
     const cache = quizCache[lessonKey];
     const isVi = (typeof I18n !== 'undefined' ? I18n.getLang() : 'vi') === 'vi';
@@ -1082,6 +1095,28 @@ const App = (() => {
             <div class="exercise-description">${escapeHtml(lesson.exercise || 'Mở Terminal bên dưới, sử dụng các lệnh Linux và công cụ bảo mật để hoàn thành thử thách và săn cờ FLAG{...}')}</div>
           </div>
           <div id="lesson-cyber-terminal-mount"></div>
+        </div>`;
+    }
+
+    // Bai hoc frontend: mo trinh soan thao chia doi man hinh ngay trong bai tap.
+    // Nap san code mau cua chinh bai hoc de hoc vien sua tiep, khong phai
+    // bat dau tu trang giay trang.
+    const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'angular', 'tailwind'];
+    if (TECH_FRONTEND.includes(tech.id)) {
+      const seed = seedFilesFromLesson(lesson);
+      setTimeout(() => {
+        if (typeof SandpackLive !== 'undefined') {
+          SandpackLive.renderStudio('lesson-sandpack-mount', seed);
+        }
+      }, 50);
+
+      return `
+        <div class="lesson-practice-wrapper">
+          <div class="lesson-section glass-card" style="margin-bottom:14px;border-left:4px solid #58a6ff">
+            <h2 class="section-title" style="color:#58a6ff;margin-bottom:6px">🎨 Thực hành trực tiếp</h2>
+            <div class="exercise-description">${escapeHtml(lesson.exercise || 'Sửa code bên trái, trang web bên phải đổi ngay. Bật nút Thiết kế để bấm chọn và chỉnh trực tiếp trên trang.')}</div>
+          </div>
+          <div id="lesson-sandpack-mount"></div>
         </div>`;
     }
 
@@ -2074,95 +2109,6 @@ const App = (() => {
       </div>`;
   }
 
-  function autoSelectStudioTab(idea) {
-    if (!idea) return 'code';
-
-    // StudioRouter cham diem tat ca cac mien roi chon mien cao nhat, thay vi
-    // lay tu khoa nao gap truoc. Cach cu day nham "REST API cho bang xep hang
-    // game" vao studio Game du no la project backend.
-    if (typeof StudioRouter !== 'undefined') {
-      const r = StudioRouter.classify(idea, projectTopic);
-      console.log('[Studio] chon "' + r.tab + '" — ' + r.reason);
-      return r.tab;
-    }
-
-    // Du phong neu chua nap duoc StudioRouter
-    const text = ((idea.name || '') + ' ' + (idea.description || '') + ' ' +
-                  (idea.techStack || []).join(' ') + ' ' + (projectTopic || '')).toLowerCase();
-    if (text.includes('game')) return 'game';
-    if (text.includes('security') || text.includes('ctf')) return 'cyber';
-    if (text.includes('llm') || text.includes('chatbot')) return 'ai-llm';
-    if (text.includes('api')) return 'api-test';
-    if (text.includes('sql') || text.includes('database')) return 'sql';
-    if (text.includes('html') || text.includes('css') || text.includes('react')) return 'sandpack';
-    return 'code';
-  }
-
-  function runProjectSandbox() {
-    saveCurrentFileCode();
-    const htmlFile = projectFiles.find(f => f.lang === 'html' || f.name.endsWith('.html')) || { code: '' };
-    const cssFile = projectFiles.find(f => f.lang === 'css' || f.name.endsWith('.css')) || { code: '' };
-    const jsFile = projectFiles.find(f => f.lang === 'javascript' || f.name.endsWith('.js')) || { code: '' };
-
-    const container = document.getElementById('project-preview-frame-container');
-    if (container && typeof SandboxRunner !== 'undefined') {
-      SandboxRunner.runWebCode({ html: htmlFile.code, css: cssFile.code, js: jsFile.code }, container);
-      SandboxRunner.renderConsoleDrawer('project-console-drawer');
-    }
-  }
-
-  function switchStudioTab(tab) {
-    activeStudioTab = tab;
-    render();
-    if (tab === 'sandpack' && typeof SandpackLive !== 'undefined') {
-      setTimeout(() => {
-        SandpackLive.renderStudio('sandpack-studio-mount', projectFiles);
-      }, 50);
-    } else if (tab === 'visual' && typeof VisualBuilder !== 'undefined') {
-      setTimeout(() => {
-        VisualBuilder.renderStudio('visual-studio-mount');
-        VisualBuilder.init([], (html) => {
-          const activeFile = projectFiles[projectActiveFileIdx];
-          if (activeFile && (activeFile.lang === 'html' || activeFile.name.endsWith('.html'))) {
-            activeFile.code = html;
-          }
-        });
-      }, 50);
-    } else if (tab === 'ai-llm' && typeof AiLlmStudio !== 'undefined') {
-      setTimeout(() => {
-        AiLlmStudio.renderStudio('ai-llm-studio-mount');
-      }, 50);
-    } else if (tab === 'cyber' && typeof CyberTerminal !== 'undefined') {
-      setTimeout(() => {
-        CyberTerminal.renderStudio('cyber-studio-mount');
-      }, 50);
-    } else if (tab === 'api-test' && typeof ApiTester !== 'undefined') {
-      setTimeout(() => {
-        ApiTester.renderStudio('api-tester-mount');
-      }, 50);
-    } else if (tab === 'sql' && typeof SqlStudio !== 'undefined') {
-      setTimeout(() => {
-        SqlStudio.renderStudio('sql-studio-mount');
-      }, 50);
-    } else if (tab === 'game' && typeof GameBuilder !== 'undefined') {
-      setTimeout(() => {
-        GameBuilder.renderStudio('game-studio-mount');
-        GameBuilder.init(null, (matrixCode) => {
-          let mapFile = projectFiles.find(f => f.name === 'map.js' || f.name === 'game.js');
-          if (!mapFile) {
-            projectFiles.push({ name: 'map.js', lang: 'javascript', code: matrixCode });
-          } else {
-            mapFile.code = matrixCode;
-          }
-        });
-      }, 50);
-    } else if (tab === 'preview' && typeof SandboxRunner !== 'undefined') {
-      setTimeout(() => {
-        runProjectSandbox();
-      }, 50);
-    }
-  }
-
   function renderSubmitPanel() {
     const statusLabels = { excellent: (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? '🎉 Excellent!' : '🎉 Xuất sắc!'), good: (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? '👍 Good!' : '👍 Tốt!'), partial: (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? '💪 Needs improvement' : '💪 Cần cải thiện'), needs_work: (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? '📝 Needs redo' : '📝 Cần làm lại') };
     const statusColors = { excellent: '#2ecc71', good: '#43e97b', partial: '#f1c40f', needs_work: '#e74c3c' };
@@ -2184,55 +2130,9 @@ const App = (() => {
     let html = `
       <div class="project-submit-section">
         <div class="lesson-section glass-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h2 class="section-title" style="margin:0">🚀 DevMaster Multi-Domain Studio & Workspace</h2>
-          </div>
+          <!-- khu soan code cua project -->`;
 
-          <!-- Studio Navigation Bar -->
-          <div class="studio-tab-bar">
-            <button class="studio-tab-btn ${activeStudioTab === 'code' ? 'active' : ''}" onclick="App.switchStudioTab('code')">💻 Code Editor</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'sandpack' ? 'active' : ''}" onclick="App.switchStudioTab('sandpack')">⚡ Sandpack (Live Split)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'visual' ? 'active' : ''}" onclick="App.switchStudioTab('visual')">🎨 Visual Builder (Figma)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'ai-llm' ? 'active' : ''}" onclick="App.switchStudioTab('ai-llm')">🧠 AI Thinking (CoT)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'cyber' ? 'active' : ''}" onclick="App.switchStudioTab('cyber')">🛡️ Cyber Terminal (CTF)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'api-test' ? 'active' : ''}" onclick="App.switchStudioTab('api-test')">⚙️ API Tester (Postman)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'sql' ? 'active' : ''}" onclick="App.switchStudioTab('sql')">🗄️ SQL Studio (ERD)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'game' ? 'active' : ''}" onclick="App.switchStudioTab('game')">🎮 Game Studio (2D)</button>
-            <button class="studio-tab-btn ${activeStudioTab === 'preview' ? 'active' : ''}" onclick="App.switchStudioTab('preview')">⚡ Live Preview</button>
-            <button class="studio-tab-btn studio-run-trigger" onclick="App.runProjectSandbox();App.switchStudioTab('preview')">▶️ Chạy Thử Sandbox</button>
-          </div>`;
-
-    if (activeStudioTab === 'sandpack') {
-      html += `<div id="sandpack-studio-mount"></div>`;
-      setTimeout(() => { if (typeof SandpackLive !== 'undefined') SandpackLive.renderStudio('sandpack-studio-mount', projectFiles); }, 20);
-    } else if (activeStudioTab === 'visual') {
-      html += `<div id="visual-studio-mount"></div>`;
-      setTimeout(() => { if (typeof VisualBuilder !== 'undefined') VisualBuilder.renderStudio('visual-studio-mount'); }, 20);
-    } else if (activeStudioTab === 'ai-llm') {
-      html += `<div id="ai-llm-studio-mount"></div>`;
-      setTimeout(() => { if (typeof AiLlmStudio !== 'undefined') AiLlmStudio.renderStudio('ai-llm-studio-mount'); }, 20);
-    } else if (activeStudioTab === 'cyber') {
-      html += `<div id="cyber-studio-mount"></div>`;
-      setTimeout(() => { if (typeof CyberTerminal !== 'undefined') CyberTerminal.renderStudio('cyber-studio-mount'); }, 20);
-    } else if (activeStudioTab === 'api-test') {
-      html += `<div id="api-tester-mount"></div>`;
-      setTimeout(() => { if (typeof ApiTester !== 'undefined') ApiTester.renderStudio('api-tester-mount'); }, 20);
-    } else if (activeStudioTab === 'sql') {
-      html += `<div id="sql-studio-mount"></div>`;
-      setTimeout(() => { if (typeof SqlStudio !== 'undefined') SqlStudio.renderStudio('sql-studio-mount'); }, 20);
-    } else if (activeStudioTab === 'game') {
-      html += `<div id="game-studio-mount"></div>`;
-      setTimeout(() => { if (typeof GameBuilder !== 'undefined') GameBuilder.renderStudio('game-studio-mount'); }, 20);
-    } else if (activeStudioTab === 'preview') {
-      html += `
-        <div class="preview-studio-view" style="display:flex;flex-direction:column;gap:14px">
-          <div style="height:360px;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #30363d" id="project-preview-frame-container"></div>
-          <div id="project-console-drawer"></div>
-        </div>`;
-      setTimeout(() => { runProjectSandbox(); }, 50);
-    } else {
-
-      html += `
+    html += `
           <div class="file-tabs-bar">
             <div class="file-tabs-list">
               ${projectFiles.map((f, i) => `
@@ -2259,7 +2159,6 @@ const App = (() => {
             <span>📝 ${totalLines} dòng code</span>
             <span>${totalChars > 400000 ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? '⚠️ Very large - AI will summarize automatically' : '⚠️ Rất lớn - AI sẽ rút gọn tự động') : totalChars > 200000 ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? '📦 Large file' : '📦 File lớn') : '✅ OK'}</span>
           </div>`;
-    }
 
     html += `
           <div class="answer-actions" style="margin-top:16px">
@@ -2267,9 +2166,6 @@ const App = (() => {
               <button class="btn-ai btn-check" onclick="App.submitProject()" id="btn-submit-project">
                 <span class="btn-ai-icon">🤖</span> AI Chấm Toàn Diện Project (${projectFiles.length} file)
               </button>` : ''}
-            <button class="btn-ai" style="background:#238636;color:#fff" onclick="App.runProjectSandbox();App.switchStudioTab('preview')">
-              ▶️ Chạy Thử Sandbox
-            </button>
             <button class="btn-clear-answer" onclick="App.clearAllProjectFiles()">🗑️ Xóa tất cả</button>
           </div>
         </div>
@@ -2685,9 +2581,7 @@ const App = (() => {
 
     try {
       projectIdea = await AIService.generateProjectIdea(projectSelectedLevel);
-      activeStudioTab = autoSelectStudioTab(projectIdea);
       render();
-      switchStudioTab(activeStudioTab);
     } catch (err) {
       const main2 = document.getElementById('main-content');
       if (main2) {
@@ -2740,9 +2634,7 @@ const App = (() => {
 
     try {
       projectIdea = await AIService.generateProjectIdea(projectTopicLevel, projectTopic);
-      activeStudioTab = autoSelectStudioTab(projectIdea);
       render();
-      switchStudioTab(activeStudioTab);
     } catch (err) {
       const main2 = document.getElementById('main-content');
       if (main2) {
@@ -3502,8 +3394,6 @@ const App = (() => {
     viewProject,
 
     selectProjectLevel,
-    switchStudioTab,
-    runProjectSandbox,
     runExerciseSandbox,
     generateProjectByLevel,
     generateProjectByTopic,
