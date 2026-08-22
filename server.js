@@ -84,7 +84,14 @@ app.use(express.static(PUBLIC_DIR, {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.txt')) res.type('text/plain; charset=utf-8');
 
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    // File .js/.css/anh duoc gan ?v=<mtime> trong index.html nen cache dai han an toan.
+    // Rieng .html KHONG the phá cache bang query (nguoi dung go thang URL),
+    // nen phai revalidate moi lan — neu khong, sua trang la nguoi dung ket ban cu.
+    if (/[.](html?)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
   }
 }));
 
@@ -829,13 +836,13 @@ function loadCurriculum() {
     vm.runInContext('globalThis.__C = typeof CURRICULUM !== "undefined" ? CURRICULUM : null;', ctx);
     return { ...(sandbox.CURRICULUM || {}), ...(ctx.__C || {}) };
   } catch (err) {
-    console.warn('[SEO] Khong nap duoc CURRICULUM:', err.message);
+    console.warn('[SEO] Không nạp được CURRICULUM:', err.message);
     return {};
   }
 }
 
 const CURRICULUM = loadCurriculum();
-console.log(`[SEO] Da nap ${Object.keys(CURRICULUM).length} cong nghe cho sitemap va meta`);
+console.log(`[SEO] Đã nạp ${Object.keys(CURRICULUM).length} công nghệ cho sitemap và meta`);
 
 const DEFAULT_TITLE = 'DevMaster Hub \u2014 N\u1ec1n T\u1ea3ng H\u1ecdc L\u1eadp Tr\u00ecnh To\u00e0n Di\u1ec7n T\u1eeb Newbie \u0110\u1ebfn Senior';
 const DEFAULT_DESC = 'H\u1ecdc l\u1eadp tr\u00ecnh th\u1ef1c chi\u1ebfn v\u1edbi 34 l\u1ed9 tr\u00ecnh v\u00e0 348 b\u00e0i h\u1ecdc: Python, JavaScript, React, Node.js, Java, C++, Go, Rust, DevOps, SQL. C\u00f3 tr\u00ecnh ch\u1ea1y code, tr\u1eafc nghi\u1ec7m v\u00e0 AI Tutor k\u00e8m 1-1.';
@@ -956,7 +963,7 @@ app.get('/sitemap.xml', (req, res) => {
 });
 
 app.use('/api', (req, res) => {
-  res.status(404).json({ error: 'Endpoint khong ton tai' });
+  res.status(404).json({ error: 'Endpoint không tồn tại' });
 });
 
 app.get('*', (req, res) => {

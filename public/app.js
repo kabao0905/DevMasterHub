@@ -2076,26 +2076,25 @@ const App = (() => {
 
   function autoSelectStudioTab(idea) {
     if (!idea) return 'code';
-    const text = ((idea.name || '') + ' ' + (idea.description || '') + ' ' + (idea.techStack || []).join(' ') + ' ' + (projectTopic || '')).toLowerCase();
 
-    if (text.includes('game') || text.includes('phaser') || text.includes('canvas') || text.includes('arcade') || text.includes('tilemap')) {
-      return 'game';
+    // StudioRouter cham diem tat ca cac mien roi chon mien cao nhat, thay vi
+    // lay tu khoa nao gap truoc. Cach cu day nham "REST API cho bang xep hang
+    // game" vao studio Game du no la project backend.
+    if (typeof StudioRouter !== 'undefined') {
+      const r = StudioRouter.classify(idea, projectTopic);
+      console.log('[Studio] chon "' + r.tab + '" — ' + r.reason);
+      return r.tab;
     }
-    if (text.includes('cyber') || text.includes('security') || text.includes('ctf') || text.includes('hack') || text.includes('linux') || text.includes('exploit')) {
-      return 'cyber';
-    }
-    if (text.includes('ai') || text.includes('llm') || text.includes('chat') || text.includes('gpt') || text.includes('rag') || text.includes('nlp') || text.includes('machine learning') || text.includes('deep learning')) {
-      return 'ai-llm';
-    }
-    if (text.includes('api') || text.includes('rest') || text.includes('graphql') || text.includes('endpoint') || text.includes('microservice') || text.includes('backend')) {
-      return 'api-test';
-    }
-    if (text.includes('sql') || text.includes('database') || text.includes('csdl') || text.includes('postgres') || text.includes('mongo') || text.includes('sqlite') || text.includes('crud')) {
-      return 'sql';
-    }
-    if (text.includes('web') || text.includes('html') || text.includes('css') || text.includes('react') || text.includes('vue') || text.includes('frontend') || text.includes('ui') || text.includes('landing page')) {
-      return 'sandpack';
-    }
+
+    // Du phong neu chua nap duoc StudioRouter
+    const text = ((idea.name || '') + ' ' + (idea.description || '') + ' ' +
+                  (idea.techStack || []).join(' ') + ' ' + (projectTopic || '')).toLowerCase();
+    if (text.includes('game')) return 'game';
+    if (text.includes('security') || text.includes('ctf')) return 'cyber';
+    if (text.includes('llm') || text.includes('chatbot')) return 'ai-llm';
+    if (text.includes('api')) return 'api-test';
+    if (text.includes('sql') || text.includes('database')) return 'sql';
+    if (text.includes('html') || text.includes('css') || text.includes('react')) return 'sandpack';
     return 'code';
   }
 
