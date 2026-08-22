@@ -3095,6 +3095,74 @@ const App = (() => {
       </div>`;
   }
 
+  /**
+   * Dong lai chuoi va cac ngoac con dang mo trong mot doan JSON bi cat ngang.
+   */
+  function dongNgoacJson(doan) {
+    let trongChuoi = false, thoat = false;
+    const chong = [];
+    for (let i = 0; i < doan.length; i++) {
+      const c = doan[i];
+      if (thoat) { thoat = false; continue; }
+      if (c === '\\') { if (trongChuoi) thoat = true; continue; }
+      if (c === '"') { trongChuoi = !trongChuoi; continue; }
+      if (trongChuoi) continue;
+      if (c === '{' || c === '[') chong.push(c);
+      else if (c === '}' || c === ']') chong.pop();
+    }
+    if (thoat) return null;
+
+    let out = doan;
+    if (trongChuoi) out += '"';
+
+    // Bo phan thua o duoi: dau phay le, hoac cap "khoa": chua kip co gia tri
+    let truoc;
+    do {
+      truoc = out;
+      out = out.replace(/[\s,]+$/, '');
+      out = out.replace(/"(?:[^"\\]|\\.)*"\s*:\s*$/, '');
+      out = out.replace(/[\s,]+$/, '');
+    } while (out !== truoc);
+
+    for (let i = chong.length - 1; i >= 0; i--) out += chong[i] === '{' ? '}' : ']';
+    return out;
+  }
+
+  /**
+   * Doc JSON tu cau tra loi cua AI. Khi AI cham tran so token, cau tra loi bi
+   * cat ngang giua dau nhay va JSON.parse nem "Unterminated string in JSON".
+   * Ham nay va lai bang cach dong cac ngoac con mo, lui dan diem cat cho toi
+   * khi doc duoc — nen van giu lai duoc phan de bai da kip sinh ra.
+   */
+  function parseJsonLoose(raw) {
+    let s = String(raw || '')
+      .replace(/^\uFEFF/, '')
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/```\s*$/, '')
+      .trim();
+
+    const dau = s.indexOf('{');
+    if (dau === -1) return null;
+    s = s.slice(dau);
+
+    try {
+      const kq = JSON.parse(s);
+      if (kq && typeof kq === 'object') return kq;
+    } catch (e) { /* roi xuong phan va lai ben duoi */ }
+
+    for (let end = s.length; end > 1; end--) {
+      const ch = s[end - 1];
+      if (end !== s.length && ch !== ',' && ch !== '"' && ch !== '}' && ch !== ']') continue;
+      const ung = dongNgoacJson(s.slice(0, end));
+      if (!ung) continue;
+      try {
+        const kq = JSON.parse(ung);
+        if (kq && typeof kq === 'object' && !Array.isArray(kq)) return kq;
+      } catch (e2) { /* thu diem cat ngan hon */ }
+    }
+    return null;
+  }
+
   async function generateChallenge() {
     if (aiChallengeBusy) return;
     aiChallengeBusy = true;
@@ -3108,7 +3176,8 @@ const App = (() => {
       'CHI tra ve JSON thuan, khong bao markdown:',
       '{"title":"...","level":"De|Trung binh|Kho","scenario":"boi canh 2-3 cau",',
       '"steps":["buoc 1","buoc 2"],"hint":"goi y mot lenh cu the"}',
-      'Viet bang tieng Viet co dau day du.'
+      'Viet bang tieng Viet co dau day du.',
+      'Viet ngan gon: title duoi 60 ky tu, scenario duoi 300 ky tu, toi da 4 buoc.'
     ].join('\n');
 
     try {
@@ -3121,15 +3190,16 @@ const App = (() => {
         body: JSON.stringify({
           system,
           messages: [{ role: 'user', content: 'Ra mot thu thach moi, khac cac de truoc do.' }],
-          temperature: 1.0, max_tokens: 600, taskType: 'general'
+          temperature: 1.0, max_tokens: 1100, taskType: 'general'
         })
       });
       if (res.status === 401) throw new Error(I18n.t('needLogin'));
       if (!res.ok) throw new Error(I18n.t('aiBusy'));
       const data = await res.json();
       let text = (data.content && data.content[0] && data.content[0].text) || '';
-      text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
-      aiChallenge = JSON.parse(text);
+      const de = parseJsonLoose(text);
+      if (!de || !de.title) throw new Error(I18n.t('aiChallengeBad'));
+      aiChallenge = de;
     } catch (e) {
       aiChallenge = { title: '⚠️ ' + e.message, scenario: '', steps: [], hint: '' };
     } finally {

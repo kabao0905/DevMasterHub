@@ -225,6 +225,7 @@ const I18n = (() => {
     "aiChallengeHint": "Mỗi lần bấm là một đề khác, làm được bằng các lệnh Linux cơ bản.",
     "aiChallengeBtn": "Ra đề mới",
     "aiChallengeLoading": "AI đang nghĩ đề…",
+    "aiChallengeBad": "AI trả lời không đúng định dạng. Bấm 'Ra đề mới' để thử lại.",
     "needLogin": "Bạn cần đăng nhập để dùng tính năng này.",
     "aiBusy": "AI đang bận, thử lại sau ít phút.",
     "challengeEntryHint": "Luyện lệnh Linux trên terminal ảo và săn cờ FLAG"
@@ -441,6 +442,7 @@ const I18n = (() => {
     "aiChallengeHint": "Each click gives a different challenge, solvable with basic Linux commands.",
     "aiChallengeBtn": "New challenge",
     "aiChallengeLoading": "AI is writing a challenge…",
+    "aiChallengeBad": "The AI reply was not in the expected format. Click 'New challenge' to try again.",
     "needLogin": "You need to sign in to use this feature.",
     "aiBusy": "The AI is busy, try again in a moment.",
     "challengeEntryHint": "Practice Linux commands in a virtual terminal and capture flags"
@@ -657,6 +659,7 @@ const I18n = (() => {
     "aiChallengeHint": "押すたびに違う問題が出ます。基本的な Linux コマンドで解けます。",
     "aiChallengeBtn": "新しい問題",
     "aiChallengeLoading": "AIが問題を考えています…",
+    "aiChallengeBad": "AIの回答が正しい形式ではありません。「新しい問題」を押して再試行してください。",
     "needLogin": "この機能を使うにはログインが必要です。",
     "aiBusy": "AIが混み合っています。少し待ってからお試しください。",
     "challengeEntryHint": "仮想ターミナルで Linux コマンドを練習し、フラグを獲得"
@@ -873,6 +876,7 @@ const I18n = (() => {
     "aiChallengeHint": "누를 때마다 다른 문제가 나오며, 기본 리눅스 명령어로 풀 수 있습니다.",
     "aiChallengeBtn": "새 문제",
     "aiChallengeLoading": "AI가 문제를 만드는 중…",
+    "aiChallengeBad": "AI 응답 형식이 올바르지 않습니다. '새 문제'를 눌러 다시 시도하세요.",
     "needLogin": "이 기능을 사용하려면 로그인이 필요합니다.",
     "aiBusy": "AI가 바쁩니다. 잠시 후 다시 시도하세요.",
     "challengeEntryHint": "가상 터미널에서 리눅스 명령어를 연습하고 플래그 찾기"
@@ -1089,6 +1093,7 @@ const I18n = (() => {
     "aiChallengeHint": "每次点击都是不同的题目，用基础 Linux 命令即可完成。",
     "aiChallengeBtn": "出新题",
     "aiChallengeLoading": "AI 正在出题…",
+    "aiChallengeBad": "AI 返回的格式不正确。请点击『出新题』重试。",
     "needLogin": "使用此功能需要先登录。",
     "aiBusy": "AI 正忙，请稍后再试。",
     "challengeEntryHint": "在虚拟终端练习 Linux 命令并夺取旗帜"
@@ -1305,6 +1310,7 @@ const I18n = (() => {
     "aiChallengeHint": "Chaque clic donne un défi différent, réalisable avec des commandes Linux de base.",
     "aiChallengeBtn": "Nouveau défi",
     "aiChallengeLoading": "L'IA prépare un défi…",
+    "aiChallengeBad": "La réponse de l'IA n'a pas le bon format. Cliquez sur « Nouveau défi » pour réessayer.",
     "needLogin": "Vous devez vous connecter pour utiliser cette fonction.",
     "aiBusy": "L'IA est occupée, réessayez dans un instant.",
     "challengeEntryHint": "Entraînez-vous aux commandes Linux et capturez les drapeaux"
@@ -1521,6 +1527,7 @@ const I18n = (() => {
     "aiChallengeHint": "Jeder Klick liefert eine andere Aufgabe, lösbar mit einfachen Linux-Befehlen.",
     "aiChallengeBtn": "Neue Aufgabe",
     "aiChallengeLoading": "Die KI erstellt eine Aufgabe…",
+    "aiChallengeBad": "Die KI-Antwort hat nicht das erwartete Format. Klicke auf „Neue Aufgabe“, um es erneut zu versuchen.",
     "needLogin": "Zum Nutzen dieser Funktion musst du dich anmelden.",
     "aiBusy": "Die KI ist ausgelastet, versuche es gleich noch einmal.",
     "challengeEntryHint": "Übe Linux-Befehle und sammle Flags"
@@ -1737,6 +1744,7 @@ const I18n = (() => {
     "aiChallengeHint": "Cada clic da un reto distinto, resoluble con comandos básicos de Linux.",
     "aiChallengeBtn": "Nuevo reto",
     "aiChallengeLoading": "La IA está creando un reto…",
+    "aiChallengeBad": "La respuesta de la IA no tiene el formato correcto. Pulsa « Nuevo reto » para intentarlo de nuevo.",
     "needLogin": "Necesitas iniciar sesión para usar esta función.",
     "aiBusy": "La IA está ocupada, inténtalo de nuevo en un momento.",
     "challengeEntryHint": "Practica comandos de Linux y captura banderas"
