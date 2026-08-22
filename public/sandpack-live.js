@@ -64,12 +64,178 @@ document.getElementById('btn').addEventListener('click', () => {
 });`
   };
 
+  /**
+   * Moi cong nghe co bo file va thu vien rieng.
+   * Bai React ma mo ra trang HTML thuan thi hoc vien khong hoc duoc gi.
+   */
+  const PRESETS = {
+    html: {
+      label: 'HTML / CSS',
+      files: DEFAULT_FILES,
+      libs: [],
+      entry: 'script.js'
+    },
+    react: {
+      label: 'React',
+      libs: [
+        'https://unpkg.com/react@18/umd/react.development.js',
+        'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
+        'https://unpkg.com/@babel/standalone/babel.min.js'
+      ],
+      entry: 'App.jsx',
+      files: {
+        'index.html': `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>`,
+        'style.css': `body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: system-ui, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+.card {
+  width: 260px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #1e293b;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.card img { width: 100%; border-radius: 10px; }
+.card h3 { margin: 12px 0 6px; color: #38bdf8; }
+.card p { margin: 0; font-size: 14px; color: #94a3b8; }`,
+        'App.jsx': `function Card({ image, title, description }) {
+  return (
+    <div className="card">
+      <img src={image} alt={title} />
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  );
+}
+
+function App() {
+  const [dem, setDem] = React.useState(0);
+
+  return (
+    <div>
+      <Card
+        image="https://picsum.photos/seed/devmaster/300/180"
+        title="Component Card"
+        description="Sua code ben trai, ket qua ben phai doi ngay."
+      />
+      <button onClick={() => setDem(dem + 1)} style={{ marginTop: 12 }}>
+        Da bam {dem} lan
+      </button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);`
+      }
+    },
+    vue: {
+      label: 'Vue',
+      libs: ['https://unpkg.com/vue@3/dist/vue.global.js'],
+      entry: 'App.js',
+      files: {
+        'index.html': `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>`,
+        'style.css': `body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: system-ui, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+.box { padding: 24px 32px; border-radius: 14px; background: #1e293b; text-align: center; }
+h2 { margin: 0 0 10px; color: #42b883; }
+button { margin-top: 10px; padding: 8px 18px; border: 0; border-radius: 8px;
+         background: #42b883; color: #fff; cursor: pointer; }`,
+        'App.js': `const { createApp, ref } = Vue;
+
+createApp({
+  setup() {
+    const dem = ref(0);
+    const tang = () => dem.value++;
+    return { dem, tang };
+  },
+  template: \`
+    <div class="box">
+      <h2>Xin chao Vue</h2>
+      <p>Da bam {{ dem }} lan</p>
+      <button @click="tang">Bam thu</button>
+    </div>
+  \`
+}).mount('#app');`
+      }
+    },
+    tailwind: {
+      label: 'Tailwind CSS',
+      libs: ['https://cdn.tailwindcss.com'],
+      entry: 'script.js',
+      files: {
+        'index.html': `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+</head>
+<body class="min-h-screen grid place-items-center bg-slate-900 text-slate-100">
+  <div class="p-8 rounded-2xl bg-slate-800 shadow-2xl text-center">
+    <h1 class="text-3xl font-bold text-sky-400">Xin chao Tailwind</h1>
+    <p class="mt-2 text-slate-400">Sua class ben trai, giao dien ben phai doi ngay.</p>
+    <button id="btn" class="mt-4 px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 font-medium">
+      Bam thu
+    </button>
+    <p id="out" class="mt-3 text-sm text-slate-400"></p>
+  </div>
+</body>
+</html>`,
+        'style.css': `/* Tailwind lo phan lon giao dien.
+   File nay danh cho CSS tu viet them. */`,
+        'script.js': `let n = 0;
+document.getElementById('btn').addEventListener('click', () => {
+  n++;
+  document.getElementById('out').textContent = 'Da bam ' + n + ' lan';
+});`
+      }
+    }
+  };
+
+  /** Chon preset theo id cong nghe cua bai hoc */
+  function presetFor(techId) {
+    if (techId === 'react') return 'react';
+    if (techId === 'vue') return 'vue';
+    if (techId === 'tailwind') return 'tailwind';
+    return 'html';
+  }
+
   const VIEWPORTS = {
     desktop: { label: 'Desktop', w: null, icon: '🖥️' },
     tablet: { label: 'Tablet', w: 768, icon: '💻' },
     mobile: { label: 'Mobile', w: 375, icon: '📱' }
   };
 
+  let preset = 'html';
   let files = { ...DEFAULT_FILES };
   let active = 'index.html';
   let loadedFile = null;   // file dang thuc su nam trong textarea
@@ -86,9 +252,10 @@ document.getElementById('btn').addEventListener('click', () => {
 
   // ─── Ghep 3 file thanh mot tai lieu HTML hoan chinh ───
   function buildDocument() {
+    const P = PRESETS[preset] || PRESETS.html;
     const html = files['index.html'] || '';
     const css = files['style.css'] || '';
-    const js = files['script.js'] || '';
+    const js = files[P.entry] || '';
     const token = 'sp' + (++frameId);
 
     // Cau noi console: khung xem truoc chay o origin rieng nen chi postMessage duoc
@@ -117,18 +284,27 @@ document.getElementById('btn').addEventListener('click', () => {
 
     let doc = html;
     const styleTag = `<style>\n${css}\n</style>`;
-    const scriptTag = `<script>\n${js}\n<\/script>`;
+    // JSX phai chay qua Babel, con lai la script thuong
+    const scriptType = P.entry.endsWith('.jsx') ? ' type="text/babel"' : '';
+    const scriptTag = `<script${scriptType}>\n${js}\n<\/script>`;
+    const libTags = (P.libs || []).map(u => `<script src="${u}"><\/script>`).join('\n');
 
     // thay <link href="style.css"> bang style thuc te
     doc = doc.replace(/<link[^>]*href=["']style\.css["'][^>]*>/i, styleTag);
-    // thay <script src="script.js"> bang script thuc te
-    doc = doc.replace(/<script[^>]*src=["']script\.js["'][^>]*>\s*<\/script>/i, scriptTag);
+    // thay the script tro toi file entry bang noi dung thuc te
+    const entryRe = new RegExp('<script[^>]*src=["\']' +
+      P.entry.replace('.', '\\.') + '["\'][^>]*>\\s*<\\/script>', 'i');
+    doc = doc.replace(entryRe, scriptTag);
 
     if (!/<style/i.test(doc) && css) {
       doc = doc.includes('</head>') ? doc.replace('</head>', styleTag + '</head>') : styleTag + doc;
     }
     if (!doc.includes(scriptTag) && js) {
       doc = doc.includes('</body>') ? doc.replace('</body>', scriptTag + '</body>') : doc + scriptTag;
+    }
+    // Thu vien phai nap TRUOC code cua hoc vien
+    if (libTags) {
+      doc = doc.includes('</head>') ? doc.replace('</head>', libTags + '</head>') : libTags + doc;
     }
 
     let extra = bridge;
@@ -172,13 +348,17 @@ document.getElementById('btn').addEventListener('click', () => {
   }
 
   // ─────────────────────────────────────────────────────────
-  function renderStudio(id, initialFiles) {
+  function renderStudio(id, initialFiles, techId) {
     hostId = id;
     const el = document.getElementById(id);
     if (!el) return;
 
+    if (techId !== undefined) preset = presetFor(techId);
+    const P = PRESETS[preset] || PRESETS.html;
+
+    if (!Object.keys(files).length || techId !== undefined) files = { ...P.files };
     if (Array.isArray(initialFiles) && initialFiles.length) {
-      files = { ...DEFAULT_FILES };
+      files = { ...P.files };
       for (const f of initialFiles) if (f && f.name) files[f.name] = f.code || '';
     }
     logs = [];
@@ -380,7 +560,7 @@ document.getElementById('btn').addEventListener('click', () => {
   }
 
   function reset() {
-    files = { ...DEFAULT_FILES };
+    files = { ...(PRESETS[preset] || PRESETS.html).files };
     renderStudio(hostId);
   }
 
@@ -427,6 +607,8 @@ document.getElementById('btn').addEventListener('click', () => {
     setViewport, startDrag, dividerKey, reset, refresh,
     toggleDesign, applyStyle, replaceFile,
     isDesignMode: () => designMode,
+    getPreset: () => preset,
+    PRESETS,
     getFiles: () => ({ ...files })
   };
 })();

@@ -217,7 +217,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% Cần Chuẩn Bị Project",
     "mrNeedProjectDesc": "Khá phù hợp, hãy hoàn thành thêm 1 project thực tế để tăng cơ hội trúng tuyển.",
     "mrReadyTitle": "🟢 {rate}% Sẵn Sàng Ứng Tuyển",
-    "mrReadyDesc": "Kỹ năng của bạn đáp ứng tốt yêu cầu công việc."
+    "mrReadyDesc": "Kỹ năng của bạn đáp ứng tốt yêu cầu công việc.",
+    "challengeNav": "Thử thách",
+    "challengeTitle": "🚩 Thử thách Linux & An ninh mạng",
+    "challengeSubtitle": "Luyện lệnh Linux trên terminal ảo và săn cờ FLAG. Bấm nút bên dưới để AI ra đề mới.",
+    "aiChallengeTitle": "Đề bài do AI ra",
+    "aiChallengeHint": "Mỗi lần bấm là một đề khác, làm được bằng các lệnh Linux cơ bản.",
+    "aiChallengeBtn": "Ra đề mới",
+    "aiChallengeLoading": "AI đang nghĩ đề…",
+    "needLogin": "Bạn cần đăng nhập để dùng tính năng này.",
+    "aiBusy": "AI đang bận, thử lại sau ít phút."
   },
   "en": {
     "tutorHeader": "Ask AI Tutor about",
@@ -423,7 +432,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% Need Practical Project Portfolio",
     "mrNeedProjectDesc": "Good fit — complete one more practical project to boost your chances.",
     "mrReadyTitle": "🟢 {rate}% Ready to Apply",
-    "mrReadyDesc": "Your skill profile strongly aligns with the job requirements."
+    "mrReadyDesc": "Your skill profile strongly aligns with the job requirements.",
+    "challengeNav": "Challenges",
+    "challengeTitle": "🚩 Linux & Security Challenges",
+    "challengeSubtitle": "Practice Linux commands in a virtual terminal and capture flags. Click below for a fresh AI-generated challenge.",
+    "aiChallengeTitle": "AI-generated challenge",
+    "aiChallengeHint": "Each click gives a different challenge, solvable with basic Linux commands.",
+    "aiChallengeBtn": "New challenge",
+    "aiChallengeLoading": "AI is writing a challenge…",
+    "needLogin": "You need to sign in to use this feature.",
+    "aiBusy": "The AI is busy, try again in a moment."
   },
   "ja": {
     "tutorHeader": "AIチューターに質問:",
@@ -629,7 +647,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% 実践プロジェクトの準備が必要",
     "mrNeedProjectDesc": "良い適合です。採用の可能性を高めるため、実践プロジェクトをもう1件仕上げましょう。",
     "mrReadyTitle": "🟢 {rate}% 応募準備完了",
-    "mrReadyDesc": "あなたのスキルは求人要件によく合致しています。"
+    "mrReadyDesc": "あなたのスキルは求人要件によく合致しています。",
+    "challengeNav": "チャレンジ",
+    "challengeTitle": "🚩 Linux とセキュリティのチャレンジ",
+    "challengeSubtitle": "仮想ターミナルで Linux コマンドを練習し、フラグを獲得しましょう。下のボタンで AI が新しい問題を出します。",
+    "aiChallengeTitle": "AIが作る問題",
+    "aiChallengeHint": "押すたびに違う問題が出ます。基本的な Linux コマンドで解けます。",
+    "aiChallengeBtn": "新しい問題",
+    "aiChallengeLoading": "AIが問題を考えています…",
+    "needLogin": "この機能を使うにはログインが必要です。",
+    "aiBusy": "AIが混み合っています。少し待ってからお試しください。"
   },
   "ko": {
     "tutorHeader": "AI 튜터에게 질문하기",
@@ -835,7 +862,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% 실전 프로젝트 준비 필요",
     "mrNeedProjectDesc": "적합도가 좋습니다. 합격 가능성을 높이려면 실전 프로젝트를 하나 더 완성하세요.",
     "mrReadyTitle": "🟢 {rate}% 지원 준비 완료",
-    "mrReadyDesc": "보유 역량이 채용 요건과 잘 맞습니다."
+    "mrReadyDesc": "보유 역량이 채용 요건과 잘 맞습니다.",
+    "challengeNav": "챌린지",
+    "challengeTitle": "🚩 리눅스 & 보안 챌린지",
+    "challengeSubtitle": "가상 터미널에서 리눅스 명령어를 연습하고 플래그를 찾아보세요. 아래 버튼을 누르면 AI가 새 문제를 냅니다.",
+    "aiChallengeTitle": "AI가 만든 문제",
+    "aiChallengeHint": "누를 때마다 다른 문제가 나오며, 기본 리눅스 명령어로 풀 수 있습니다.",
+    "aiChallengeBtn": "새 문제",
+    "aiChallengeLoading": "AI가 문제를 만드는 중…",
+    "needLogin": "이 기능을 사용하려면 로그인이 필요합니다.",
+    "aiBusy": "AI가 바쁩니다. 잠시 후 다시 시도하세요."
   },
   "zh": {
     "tutorHeader": "向 AI 导师提问",
@@ -1041,7 +1077,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% 需要准备实战项目",
     "mrNeedProjectDesc": "匹配度不错，再完成一个实战项目可以提高录取几率。",
     "mrReadyTitle": "🟢 {rate}% 可以投递",
-    "mrReadyDesc": "你的技能与职位要求高度契合。"
+    "mrReadyDesc": "你的技能与职位要求高度契合。",
+    "challengeNav": "挑战",
+    "challengeTitle": "🚩 Linux 与网络安全挑战",
+    "challengeSubtitle": "在虚拟终端练习 Linux 命令并夺取旗帜。点击下方按钮让 AI 出新题。",
+    "aiChallengeTitle": "AI 出的题目",
+    "aiChallengeHint": "每次点击都是不同的题目，用基础 Linux 命令即可完成。",
+    "aiChallengeBtn": "出新题",
+    "aiChallengeLoading": "AI 正在出题…",
+    "needLogin": "使用此功能需要先登录。",
+    "aiBusy": "AI 正忙，请稍后再试。"
   },
   "fr": {
     "tutorHeader": "Poser une question au tuteur IA sur",
@@ -1247,7 +1292,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% Portfolio de projets à étoffer",
     "mrNeedProjectDesc": "Bon profil — terminez un projet concret de plus pour augmenter vos chances.",
     "mrReadyTitle": "🟢 {rate}% Prêt à postuler",
-    "mrReadyDesc": "Vos compétences correspondent bien aux exigences du poste."
+    "mrReadyDesc": "Vos compétences correspondent bien aux exigences du poste.",
+    "challengeNav": "Défis",
+    "challengeTitle": "🚩 Défis Linux et sécurité",
+    "challengeSubtitle": "Entraînez-vous aux commandes Linux dans un terminal virtuel et capturez les drapeaux. Cliquez ci-dessous pour un nouveau défi généré par l'IA.",
+    "aiChallengeTitle": "Défi généré par l'IA",
+    "aiChallengeHint": "Chaque clic donne un défi différent, réalisable avec des commandes Linux de base.",
+    "aiChallengeBtn": "Nouveau défi",
+    "aiChallengeLoading": "L'IA prépare un défi…",
+    "needLogin": "Vous devez vous connecter pour utiliser cette fonction.",
+    "aiBusy": "L'IA est occupée, réessayez dans un instant."
   },
   "de": {
     "tutorHeader": "KI-Tutor fragen zu",
@@ -1453,7 +1507,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% Praxisprojekte fehlen noch",
     "mrNeedProjectDesc": "Gute Passung — schließe ein weiteres Praxisprojekt ab, um deine Chancen zu erhöhen.",
     "mrReadyTitle": "🟢 {rate}% Bereit zur Bewerbung",
-    "mrReadyDesc": "Dein Profil passt gut zu den Anforderungen der Stelle."
+    "mrReadyDesc": "Dein Profil passt gut zu den Anforderungen der Stelle.",
+    "challengeNav": "Challenges",
+    "challengeTitle": "🚩 Linux- und Security-Challenges",
+    "challengeSubtitle": "Übe Linux-Befehle in einem virtuellen Terminal und sammle Flags. Klicke unten für eine neue KI-Challenge.",
+    "aiChallengeTitle": "Von der KI erstellte Aufgabe",
+    "aiChallengeHint": "Jeder Klick liefert eine andere Aufgabe, lösbar mit einfachen Linux-Befehlen.",
+    "aiChallengeBtn": "Neue Aufgabe",
+    "aiChallengeLoading": "Die KI erstellt eine Aufgabe…",
+    "needLogin": "Zum Nutzen dieser Funktion musst du dich anmelden.",
+    "aiBusy": "Die KI ist ausgelastet, versuche es gleich noch einmal."
   },
   "es": {
     "tutorHeader": "Pregunta al tutor de IA sobre",
@@ -1659,7 +1722,16 @@ const I18n = (() => {
     "mrNeedProjectTitle": "🟡 65% Falta portafolio de proyectos",
     "mrNeedProjectDesc": "Buen encaje: completa un proyecto práctico más para mejorar tus opciones.",
     "mrReadyTitle": "🟢 {rate}% Listo para postular",
-    "mrReadyDesc": "Tus competencias encajan bien con los requisitos del puesto."
+    "mrReadyDesc": "Tus competencias encajan bien con los requisitos del puesto.",
+    "challengeNav": "Retos",
+    "challengeTitle": "🚩 Retos de Linux y seguridad",
+    "challengeSubtitle": "Practica comandos de Linux en una terminal virtual y captura banderas. Pulsa abajo para un reto nuevo generado por la IA.",
+    "aiChallengeTitle": "Reto generado por la IA",
+    "aiChallengeHint": "Cada clic da un reto distinto, resoluble con comandos básicos de Linux.",
+    "aiChallengeBtn": "Nuevo reto",
+    "aiChallengeLoading": "La IA está creando un reto…",
+    "needLogin": "Necesitas iniciar sesión para usar esta función.",
+    "aiBusy": "La IA está ocupada, inténtalo de nuevo en un momento."
   }
 };
 

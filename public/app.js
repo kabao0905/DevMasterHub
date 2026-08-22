@@ -338,6 +338,8 @@ const App = (() => {
       return { view: 'roadmap', tech: segments[1] || null, level: segments[2] || null };
     } else if (primary === 'lesson') {
       return { view: 'lesson', tech: segments[1] || null, level: segments[2] || null, lesson: segments[3] || null };
+    } else if (primary === 'challenge') {
+      return { view: 'challenge' };
     } else if (primary === 'career') {
       return { view: 'career' };
     } else if (primary === 'project') {
@@ -420,13 +422,17 @@ const App = (() => {
         case 'project-level': renderProjectByLevel(main); break;
         case 'project-topic': renderProjectByTopic(main); break;
         case 'saved-ideas': renderSavedIdeas(main); break;
-        case 'career': renderCareerAdvisor(main); break;
+        case 'challenge': renderChallenge(main); break;
+      case 'career': renderCareerAdvisor(main); break;
         case 'my-projects': renderMyProjects(main); break;
         default: if (isAuthenticated) renderDashboard(main); else renderAuthScreen(main);
       }
       if (typeof Prism !== 'undefined') Prism.highlightAll();
+      if (currentView === 'challenge' && typeof CyberTerminal !== 'undefined') {
+        setTimeout(() => CyberTerminal.renderStudio('challenge-terminal-mount', { challenges: true }), 50);
+      }
       if (currentView === 'lesson' && currentTech === 'cybersecurity' && activeTab === 'exercise' && typeof CyberTerminal !== 'undefined') {
-        setTimeout(() => CyberTerminal.renderStudio('lesson-cyber-terminal-mount'), 50);
+        setTimeout(() => CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false }), 50);
       }
       updateDynamicSchemaOrg();
     };
@@ -930,17 +936,24 @@ const App = (() => {
   }
 
   /** Dung 3 file khoi tao cho Sandpack tu code mau cua bai hoc */
-  function seedFilesFromLesson(lesson) {
+  function seedFilesFromLesson(lesson, techId) {
     const raw = String(lesson && lesson.code || '').trim();
     if (!raw) return null;
 
-    // Bai HTML/CSS: code mau thuong da la mot trang hoan chinh
+    // Trang HTML hoan chinh thi de nguyen vao index.html
     if (/<html|<!doctype/i.test(raw)) return [{ name: 'index.html', code: raw }];
-    if (/^\s*[.#a-zA-Z][^{]*\{[^}]*:/.test(raw) && !/function|=>|const |let /.test(raw)) {
+
+    // CSS thuan
+    if (/^\s*[.#a-zA-Z][^{]*\{[^}]*:/.test(raw) && !/function|=>|const |let |import /.test(raw)) {
       return [{ name: 'style.css', code: raw }];
     }
-    // Con lai coi la JavaScript
-    return [{ name: 'script.js', code: raw }];
+
+    // Code cua bai hoc phai vao dung file entry cua cong nghe do,
+    // neu khong React se nhan code vao script.js va khong chay.
+    const entry = techId === 'react' ? 'App.jsx'
+                : techId === 'vue' ? 'App.js'
+                : 'script.js';
+    return [{ name: entry, code: raw }];
   }
 
   function renderQuizContent(lessonKey, tech, level, lesson) {
@@ -1084,14 +1097,14 @@ const App = (() => {
     if (tech.id === 'cybersecurity') {
       setTimeout(() => {
         if (typeof CyberTerminal !== 'undefined') {
-          CyberTerminal.renderStudio('lesson-cyber-terminal-mount');
+          CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false });
         }
       }, 50);
 
       return `
         <div class="cyber-exercise-wrapper">
           <div class="lesson-section glass-card" style="margin-bottom:14px;border-left:4px solid #f85149">
-            <h2 class="section-title" style="color:#f85149;margin-bottom:6px">🛡️ Thử Thách Phòng Lab Linux & CTF Săn Cờ</h2>
+            <h2 class="section-title" style="color:#f85149;margin-bottom:6px">🖥️ Thực hành trên Terminal</h2>
             <div class="exercise-description">${escapeHtml(lesson.exercise || 'Mở Terminal bên dưới, sử dụng các lệnh Linux và công cụ bảo mật để hoàn thành thử thách và săn cờ FLAG{...}')}</div>
           </div>
           <div id="lesson-cyber-terminal-mount"></div>
@@ -1101,12 +1114,13 @@ const App = (() => {
     // Bai hoc frontend: mo trinh soan thao chia doi man hinh ngay trong bai tap.
     // Nap san code mau cua chinh bai hoc de hoc vien sua tiep, khong phai
     // bat dau tu trang giay trang.
-    const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'angular', 'tailwind'];
+    // Angular can buoc build nen khong chay duoc trong sandbox trinh duyet -> khong gan
+    const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind'];
     if (TECH_FRONTEND.includes(tech.id)) {
-      const seed = seedFilesFromLesson(lesson);
+      const seed = seedFilesFromLesson(lesson, tech.id);
       setTimeout(() => {
         if (typeof SandpackLive !== 'undefined') {
-          SandpackLive.renderStudio('lesson-sandpack-mount', seed);
+          SandpackLive.renderStudio('lesson-sandpack-mount', seed, tech.id);
         }
       }, 50);
 
@@ -1745,6 +1759,9 @@ const App = (() => {
       </div>
       <div class="sidebar-item" data-view="my-projects" onclick="App.goToMyProjects()">
         <span class="sidebar-icon">📁</span><span class="sidebar-text">${typeof I18n !== 'undefined' ? I18n.t('myProjects') : 'My Projects'}</span>
+      </div>
+      <div class="sidebar-item" data-view="challenge" onclick="App.goToChallenge()">
+        <span class="sidebar-icon">🚩</span><span class="sidebar-text">${typeof I18n !== 'undefined' ? I18n.t('challengeNav') : 'Thử thách'}</span>
       </div>
       <div class="sidebar-item" data-view="career" onclick="App.goToCareer()">
         <span class="sidebar-icon">💼</span><span class="sidebar-text">${typeof I18n !== 'undefined' ? I18n.t('careerAdvisor') : 'Tư vấn Việc làm'}</span>
@@ -2960,6 +2977,100 @@ const App = (() => {
     }
   }
 
+  // ═══════════════════════════════════════
+  // THU THACH — chi co Linux terminal + CTF + AI sinh de
+  // ═══════════════════════════════════════
+  let aiChallenge = null;
+  let aiChallengeBusy = false;
+
+  function renderChallenge(container) {
+    if (!container) return;
+    container.innerHTML = `
+      <div class="challenge-view">
+        <div class="page-header">
+          <h1 class="page-title">${I18n.t('challengeTitle')}</h1>
+          <p class="page-subtitle">${I18n.t('challengeSubtitle')}</p>
+        </div>
+
+        <div class="lesson-section glass-card" style="margin-bottom:16px">
+          <div class="ai-challenge-bar">
+            <div>
+              <h3 style="margin:0 0 4px;font-size:14px">${I18n.t('aiChallengeTitle')}</h3>
+              <p style="margin:0;font-size:12px;color:var(--text-muted)">${I18n.t('aiChallengeHint')}</p>
+            </div>
+            <button class="btn-ai btn-check" id="btn-gen-challenge" onclick="App.generateChallenge()">
+              <span class="btn-ai-icon">🎲</span> ${I18n.t('aiChallengeBtn')}
+            </button>
+          </div>
+          <div id="ai-challenge-box">${renderAiChallenge()}</div>
+        </div>
+
+        <div id="challenge-terminal-mount"></div>
+      </div>`;
+  }
+
+  function renderAiChallenge() {
+    if (aiChallengeBusy) {
+      return `<div class="ai-challenge-card loading">${I18n.t('aiChallengeLoading')}</div>`;
+    }
+    if (!aiChallenge) return '';
+    const c = aiChallenge;
+    return `
+      <div class="ai-challenge-card">
+        <div class="ai-challenge-head">
+          <strong>${escapeHtml(c.title || '')}</strong>
+          <span class="ai-challenge-level">${escapeHtml(c.level || '')}</span>
+        </div>
+        <p>${escapeHtml(c.scenario || '')}</p>
+        ${(c.steps || []).length ? `<ol>${c.steps.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol>` : ''}
+        ${c.hint ? `<div class="ai-challenge-hint">💡 ${escapeHtml(c.hint)}</div>` : ''}
+      </div>`;
+  }
+
+  async function generateChallenge() {
+    if (aiChallengeBusy) return;
+    aiChallengeBusy = true;
+    const box = document.getElementById('ai-challenge-box');
+    if (box) box.innerHTML = renderAiChallenge();
+
+    const system = [
+      'Ban ra de thu thach Linux va an ninh mang cho hoc vien Viet Nam.',
+      'De phai lam duoc bang cac lenh Linux co ban trong mot terminal gia lap:',
+      'ls, cd, cat, grep, chmod, chown, find, ps, netstat, nmap, whoami, sudo.',
+      'CHI tra ve JSON thuan, khong bao markdown:',
+      '{"title":"...","level":"De|Trung binh|Kho","scenario":"boi canh 2-3 cau",',
+      '"steps":["buoc 1","buoc 2"],"hint":"goi y mot lenh cu the"}',
+      'Viet bang tieng Viet co dau day du.'
+    ].join('\n');
+
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (typeof AuthService !== 'undefined' && AuthService.isConfigured && AuthService.isConfigured()) {
+        Object.assign(headers, await AuthService.authHeaders());
+      }
+      const res = await fetch('/api/ai', {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          system,
+          messages: [{ role: 'user', content: 'Ra mot thu thach moi, khac cac de truoc do.' }],
+          temperature: 1.0, max_tokens: 600, taskType: 'general'
+        })
+      });
+      if (res.status === 401) throw new Error(I18n.t('needLogin'));
+      if (!res.ok) throw new Error(I18n.t('aiBusy'));
+      const data = await res.json();
+      let text = (data.content && data.content[0] && data.content[0].text) || '';
+      text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+      aiChallenge = JSON.parse(text);
+    } catch (e) {
+      aiChallenge = { title: '⚠️ ' + e.message, scenario: '', steps: [], hint: '' };
+    } finally {
+      aiChallengeBusy = false;
+      const b = document.getElementById('ai-challenge-box');
+      if (b) b.innerHTML = renderAiChallenge();
+    }
+  }
+
   function renderCareerAdvisor(container) {
     const searchKeyword = careerLastSearchKeyword;
     const cleanKeyword = (careerLastSearchKeyword || '')
@@ -3349,6 +3460,8 @@ const App = (() => {
     goToProject: () => { resetProjectState(); projectSelectedLevel = null; projectTopic = ''; navigateTo('project'); },
     goToProjectLevel: () => { resetProjectState(); projectSelectedLevel = null; navigateTo('project-level'); },
     goToProjectTopic: () => { resetProjectState(); navigateTo('project-topic'); },
+    goToChallenge: () => navigateTo('challenge'),
+    generateChallenge,
     goToCareer: () => navigateTo('career'),
     goToMyProjects: () => { selectedProjectView = null; navigateTo('my-projects'); },
     openRoadmap: (techId) => navigateTo('roadmap', { tech: techId }),

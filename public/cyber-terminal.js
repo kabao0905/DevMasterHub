@@ -308,12 +308,20 @@ X-Flag-Header: FLAG{devmaster_curl_headers_found}
     });
   }
 
-  function renderStudio(containerId) {
+  /**
+   * @param {string} containerId
+   * @param {object} opts { challenges: true|false }
+   *   Trong BAI HOC chi hien terminal de lam dung bai tap cua bai do.
+   *   Bang thu thach CTF thuoc ve muc "Thu thach" rieng, khong lien quan
+   *   toi bai dang hoc nen khong hien o day.
+   */
+  function renderStudio(containerId, opts) {
     const container = document.getElementById(containerId);
     if (!container) return;
+    const showChallenges = !opts || opts.challenges !== false;
 
     container.innerHTML = `
-      <div class="cyber-studio-layout">
+      <div class="cyber-studio-layout${showChallenges ? '' : ' terminal-only'}">
         <!-- 1. LEFT: Terminal Window (xterm style) -->
         <div class="cyber-terminal-panel">
           <div class="terminal-window-header">
@@ -339,6 +347,7 @@ X-Flag-Header: FLAG{devmaster_curl_headers_found}
           </div>
         </div>
 
+        ${!showChallenges ? '' : `
         <!-- 2. RIGHT: CTF Challenges & Scoreboard -->
         <div class="cyber-ctf-panel">
           <div class="ctf-header">
@@ -366,7 +375,7 @@ X-Flag-Header: FLAG{devmaster_curl_headers_found}
               </div>
             `).join('')}
           </div>
-        </div>
+        </div>`}
       </div>
     `;
 
