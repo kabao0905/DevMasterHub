@@ -1162,6 +1162,14 @@ const App = (() => {
     const showHints = cache.showHints || false;
     const showSolution = cache.showSolution || false;
 
+    // Bai hoc nao co phong lab thi dung lab thay cho o van ban tu do.
+    // Bai chua co lab van giu nguyen luong cu — khong dap bo thu dang chay.
+    const lab = (typeof LabRunner !== 'undefined') ? LabRunner.timLab(lessonKey) : null;
+    if (lab) {
+      setTimeout(() => LabRunner.render('lab-mount', lab), 50);
+      return '<div id="lab-mount"></div>';
+    }
+
     if (tech.id === 'cybersecurity') {
       setTimeout(() => {
         if (typeof CyberTerminal !== 'undefined') {
