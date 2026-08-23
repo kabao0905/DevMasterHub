@@ -5,7 +5,7 @@ const CyberTerminal = (() => {
   let capturedFlags = new Set();
   let userScore = 0;
 
-  const VFS = {
+  const VFS_MACDINH = {
     '/': { type: 'dir', children: ['home', 'etc', 'var', 'bin', 'usr', 'flag'] },
     '/home': { type: 'dir', children: ['hacker'] },
     '/home/hacker': {
@@ -95,6 +95,32 @@ const CyberTerminal = (() => {
       content: '<?php\n$db_host = "localhost";\n$db_user = "root";\n$db_pass = "SQLi_FLAG{devmaster_sql_injection_master}";\n?>'
     }
   };
+
+  // He thong tep la du lieu nap duoc, khong con la hang so dung chung.
+  // Moi phong lab nap bo tep rieng; bo San co la mac dinh.
+  let VFS = saoChepSau(VFS_MACDINH);
+
+  /** Sao chep sau de lab khong lam ban du lieu goc */
+  function saoChepSau(o) {
+    return JSON.parse(JSON.stringify(o));
+  }
+
+  /** Thay toan bo he thong tep bang bo moi */
+  function loadFs(duLieu) {
+    VFS = saoChepSau(duLieu || VFS_MACDINH);
+    currentDir = VFS['/home/hacker'] ? '/home/hacker' : '/';
+    return VFS;
+  }
+
+  /** Tra ve he thong tep dang dung — ham kiem cua phong lab doc truc tiep tu day */
+  function getFs() {
+    return VFS;
+  }
+
+  /** Nap lai bo tep San co */
+  function resetFs() {
+    return loadFs(VFS_MACDINH);
+  }
 
   const CHALLENGES = [
     {
@@ -558,6 +584,9 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
     renderStudio,
     commandNames: () => COMMANDS.map(c => c.name),
     filePaths: () => Object.keys(VFS).filter(k => VFS[k].type === 'file'),
+    loadFs,
+    getFs,
+    resetFs,
     executeCommand,
     checkFlag,
     submitFlagInput
