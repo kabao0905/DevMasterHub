@@ -197,6 +197,8 @@ const CyberTerminal = (() => {
     { name: 'base64',  usage: 'base64 -d <file|str>',   desc: 'Giải mã chuỗi Base64' },
     { name: 'nmap',    usage: 'nmap <target>',          desc: 'Quét cổng dịch vụ mạng' },
     { name: 'curl',    usage: 'curl <url>',             desc: 'Gửi request HTTP tới web server' },
+    { name: 'nginx',     usage: 'nginx -t',                 desc: 'Kiểm tra cú pháp tệp cấu hình Nginx' },
+    { name: 'systemctl', usage: 'systemctl <lệnh> nginx',   desc: 'Xem trạng thái / nạp lại dịch vụ Nginx' },
     { name: 'whoami',  usage: 'whoami',                 desc: 'Hiển thị người dùng hiện tại' },
     { name: 'id',      usage: 'id',                     desc: 'Xem uid / gid / nhóm của người dùng' },
     { name: 'uname',   usage: 'uname -a',               desc: 'Xem thông tin kernel Linux ảo' },
@@ -336,21 +338,35 @@ Nmap done: 1 IP address (1 host up) scanned in 1.48 seconds
       }
 
       case 'curl': {
-        const url = args[0] || 'http://localhost';
-        return `
-HTTP/1.1 200 OK
-Server: DevMaster-Server/2026
-Content-Type: text/html; charset=UTF-8
-X-Flag-Header: FLAG{devmaster_curl_headers_found}
+        // Truoc day tra ve doan HTML viet cung. Gio doc root trong cau hinh
+        // hien tai roi mo tep tuong ung — sua cau hinh la ket qua doi theo.
+        const url = args.find(a => !a.startsWith('-')) || 'http://localhost';
+        // Bo scheme roi lay phan tu dau gach cheo dau tien tro di.
+        // Neu khong co gach cheo nao ("localhost", "localhost:80") thi la trang goc.
+        const khongScheme = url.replace(/^[a-z]+:\/\//i, '');
+        const viTri = khongScheme.indexOf('/');
+        const duongDanUrl = viTri === -1 ? '/' : (khongScheme.slice(viTri) || '/');
 
-<!DOCTYPE html>
-<html>
-<body>
-  <h1>DevMaster Target Portal</h1>
-  <p>Secure Portal System v2.1</p>
-</body>
-</html>
-`;
+        const cuPhap = kiemCuPhapNginx();
+        if (!cuPhap.dat) {
+          return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
+               + `(cấu hình Nginx đang lỗi — chạy "nginx -t" để xem chi tiết)`;
+        }
+
+        const root = docRootNginx();
+        if (!root) {
+          return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
+               + `(không tìm thấy chỉ thị root trong ${NGINX_CONF})`;
+        }
+
+        const duongTep = duongDanUrl === '/' ? root + '/index.html' : root + duongDanUrl;
+        const tep = VFS[normalize(duongTep)];
+        if (!tep || tep.type !== 'file') {
+          return `HTTP/1.1 404 Not Found\n\n<h1>404 Not Found</h1>\n`
+               + `(không có ${duongTep})`;
+        }
+
+        return `HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\n\n${tep.content}`;
       }
 
       case 'ps': {
@@ -446,6 +462,38 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
         return '';
       }
 
+      case 'nginx': {
+        if (!args.includes('-t')) return 'nginx: usage: nginx -t';
+        const kq = kiemCuPhapNginx();
+        if (kq.dat) {
+          return `nginx: the configuration file ${NGINX_CONF} syntax is ok\n`
+               + `nginx: configuration file ${NGINX_CONF} test is successful`;
+        }
+        return `nginx: [emerg] ${kq.nhan}${kq.dong ? ' (dòng ' + kq.dong + ')' : ''} trong ${NGINX_CONF}\n`
+             + `nginx: configuration file ${NGINX_CONF} test failed`;
+      }
+
+      case 'systemctl': {
+        const hanhDong = args[0];
+        const dichVu = (args[1] || '').replace(/\.service$/, '');
+        if (dichVu !== 'nginx') return `Unit ${args[1] || '(trống)'} could not be found.`;
+        if (hanhDong === 'status') {
+          return `● nginx.service - A high performance web server\n`
+               + `     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n`
+               + `     Active: active (running)\n`
+               + `   Main PID: 878 (nginx)`;
+        }
+        if (hanhDong === 'reload' || hanhDong === 'restart') {
+          const kq = kiemCuPhapNginx();
+          if (!kq.dat) {
+            return `Job for nginx.service failed.\n`
+                 + `Xem chi tiết bằng: nginx -t`;
+          }
+          return '';
+        }
+        return `systemctl: hành động "${hanhDong}" chưa được hỗ trợ (dùng status, reload, restart)`;
+      }
+
       case 'submit': {
         const submittedFlag = args[0];
         if (!submittedFlag) return 'submit: usage: submit FLAG{...}';
@@ -473,6 +521,44 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
       .map(x => x.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
       .join('.*') + '$');
     return re.test(ten);
+  }
+
+  const NGINX_CONF = '/etc/nginx/nginx.conf';
+
+  /**
+   * Kiem cu phap nginx.conf o muc rut gon: can bang dau ngoac va dau cham phay.
+   * Khong hieu het cu phap that cua Nginx — du de hoc vien nhan ra loi thuong gap.
+   */
+  function kiemCuPhapNginx() {
+    const tep = VFS[NGINX_CONF];
+    if (!tep || tep.type !== 'file') {
+      return { dat: false, nhan: `không mở được ${NGINX_CONF}` };
+    }
+    const dong = String(tep.content || '').split('\n');
+    let mo = 0;
+    for (let i = 0; i < dong.length; i++) {
+      const d = dong[i].replace(/#.*$/, '').trim();
+      if (!d) continue;
+      for (const c of d) {
+        if (c === '{') mo++;
+        else if (c === '}') mo--;
+        if (mo < 0) return { dat: false, dong: i + 1, nhan: 'thừa dấu ngoặc đóng' };
+      }
+      // Dong khai bao chi thi (khong mo/dong khoi) phai ket thuc bang dau cham phay
+      if (!/[{}]$/.test(d) && !d.endsWith(';')) {
+        return { dat: false, dong: i + 1, nhan: 'thiếu dấu chấm phẩy ở cuối dòng' };
+      }
+    }
+    if (mo > 0) return { dat: false, nhan: `thiếu ${mo} dấu ngoặc đóng` };
+    return { dat: true };
+  }
+
+  /** Doc chi thi root trong nginx.conf; khong co thi tra ve null */
+  function docRootNginx() {
+    const tep = VFS[NGINX_CONF];
+    if (!tep) return null;
+    const m = String(tep.content || '').match(/^\s*root\s+([^\s;]+)\s*;/m);
+    return m ? m[1] : null;
   }
 
   /** Noi mot ten con vao danh sach children cua thu muc cha */
