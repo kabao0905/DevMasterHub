@@ -186,6 +186,12 @@ const CyberTerminal = (() => {
     { name: 'cat',     usage: 'cat <file>',             desc: 'Đọc nội dung tệp tin' },
     { name: 'grep',    usage: 'grep <pattern> <file>',  desc: 'Tìm kiếm chuỗi trong tệp tin' },
     { name: 'find',    usage: 'find <path> -name <ten>', desc: 'Tìm tệp theo tên trong cả cây thư mục' },
+    { name: 'echo',    usage: 'echo "..." > <file>',    desc: 'Ghi văn bản vào tệp (>> để nối thêm)' },
+    { name: 'nano',    usage: 'nano <file>',            desc: 'Mở ô soạn thảo để sửa tệp nhiều dòng' },
+    { name: 'mkdir',   usage: 'mkdir -p <path>',        desc: 'Tạo thư mục, tự tạo cả thư mục cha' },
+    { name: 'rm',      usage: 'rm [-r] <path>',         desc: 'Xóa tệp hoặc thư mục' },
+    { name: 'cp',      usage: 'cp <nguồn> <đích>',      desc: 'Sao chép tệp' },
+    { name: 'mv',      usage: 'mv <nguồn> <đích>',      desc: 'Di chuyển hoặc đổi tên tệp' },
     { name: 'ps',      usage: 'ps [aux]',               desc: 'Liệt kê các tiến trình đang chạy' },
     { name: 'netstat', usage: 'netstat [-tuln]',        desc: 'Xem các cổng mạng đang mở' },
     { name: 'base64',  usage: 'base64 -d <file|str>',   desc: 'Giải mã chuỗi Base64' },
@@ -205,6 +211,17 @@ const CyberTerminal = (() => {
     history.push(raw);
     historyIdx = history.length;
 
+    // Chuyen huong ket qua ra tep: <lenh> > tep  hoac  <lenh> >> tep.
+    // Lam o day de moi lenh deu chuyen huong duoc, khong rieng echo.
+    const ch = raw.match(/^(.*?)\s*(>>?)\s*(\S+)\s*$/);
+    if (ch && ch[1].trim()) {
+      const ketQua = String(chayLenh(ch[1].trim()) || '').replace(/^\n+|\n+$/g, '');
+      return ghiTep(resolvePath(ch[3]), ketQua + '\n', ch[2] === '>>') || '';
+    }
+    return chayLenh(raw);
+  }
+
+  function chayLenh(raw) {
     const parts = raw.split(' ').filter(Boolean);
     const cmd = parts[0].toLowerCase();
     const args = parts.slice(1);
@@ -374,6 +391,61 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
         return ket.join('\n') || `find: không có tệp nào khớp "${mau}"`;
       }
 
+      case 'echo': {
+        // Bo cap dau nhay bao quanh neu co
+        return args.join(' ').replace(/^["']/, '').replace(/["']$/, '');
+      }
+
+      case 'mkdir': {
+        const p = args.find(a => !a.startsWith('-'));
+        if (!p) return 'mkdir: missing operand';
+        const duong = resolvePath(p);
+        if (VFS[duong]) return `mkdir: cannot create directory '${p}': File exists`;
+        taoThuMuc(duong);
+        return '';
+      }
+
+      case 'nano': {
+        const p = args.find(a => !a.startsWith('-'));
+        if (!p) return 'nano: missing filename';
+        const duong = resolvePath(p);
+        const cu = (VFS[duong] && VFS[duong].content) || '';
+        moOSoanThao(duong, cu);
+        return '';
+      }
+
+      case 'rm': {
+        const p = args.find(a => !a.startsWith('-'));
+        if (!p) return 'rm: missing operand';
+        const duong = resolvePath(p);
+        if (!VFS[duong]) return `rm: cannot remove '${p}': No such file or directory`;
+        const deQuy = args.some(a => a.startsWith('-') && (a.includes('r') || a.includes('R')));
+        if (VFS[duong].type === 'dir' && !deQuy) return `rm: cannot remove '${p}': Is a directory`;
+        for (const k of Object.keys(VFS)) {
+          if (k === duong || k.startsWith(duong + '/')) delete VFS[k];
+        }
+        const [cha, ten] = tachDuong(duong);
+        goKhoiCha(cha, ten);
+        return '';
+      }
+
+      case 'cp':
+      case 'mv': {
+        if (args.length < 2) return `${cmd}: usage: ${cmd} <nguon> <dich>`;
+        const nguon = resolvePath(args[0]);
+        const dich = resolvePath(args[1]);
+        if (!VFS[nguon]) return `${cmd}: cannot stat '${args[0]}': No such file or directory`;
+        if (VFS[nguon].type === 'dir') return `${cmd}: '${args[0]}': la thu muc, chua ho tro`;
+        const loi = ghiTep(dich, VFS[nguon].content || '', false);
+        if (loi) return `${cmd}: ${loi}`;
+        if (cmd === 'mv') {
+          delete VFS[nguon];
+          const [cha, ten] = tachDuong(nguon);
+          goKhoiCha(cha, ten);
+        }
+        return '';
+      }
+
       case 'submit': {
         const submittedFlag = args[0];
         if (!submittedFlag) return 'submit: usage: submit FLAG{...}';
@@ -401,6 +473,96 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
       .map(x => x.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
       .join('.*') + '$');
     return re.test(ten);
+  }
+
+  /** Noi mot ten con vao danh sach children cua thu muc cha */
+  function themVaoCha(cha, ten) {
+    if (!VFS[cha]) VFS[cha] = { type: 'dir', children: [] };
+    if (!VFS[cha].children) VFS[cha].children = [];
+    if (!VFS[cha].children.includes(ten)) VFS[cha].children.push(ten);
+  }
+
+  /** Go mot ten con khoi danh sach children cua thu muc cha */
+  function goKhoiCha(cha, ten) {
+    if (VFS[cha] && VFS[cha].children) {
+      VFS[cha].children = VFS[cha].children.filter(x => x !== ten);
+    }
+  }
+
+  /** Tach duong dan thanh [thu muc cha, ten] */
+  function tachDuong(duong) {
+    const i = duong.lastIndexOf('/');
+    return [duong.slice(0, i) || '/', duong.slice(i + 1)];
+  }
+
+  /** Tao thu muc va moi thu muc cha con thieu */
+  function taoThuMuc(duong) {
+    const phan = duong.split('/').filter(Boolean);
+    let hienTai = '';
+    for (const ten of phan) {
+      const cha = hienTai || '/';
+      hienTai = hienTai + '/' + ten;
+      if (!VFS[hienTai]) VFS[hienTai] = { type: 'dir', children: [] };
+      themVaoCha(cha, ten);
+    }
+  }
+
+  /** Ghi noi dung vao tep. Tra ve null neu xong, hoac chuoi loi. */
+  function ghiTep(duong, noiDung, noiThem) {
+    const [cha, ten] = tachDuong(duong);
+    if (!ten) return 'khong ghi duoc vao thu muc goc';
+    if (!VFS[cha]) taoThuMuc(cha);
+    if (VFS[cha].type !== 'dir') return `khong ghi duoc: ${cha} khong phai thu muc`;
+    if (VFS[duong] && VFS[duong].type === 'dir') return `khong ghi duoc: ${duong} la thu muc`;
+    const cu = (noiThem && VFS[duong] && VFS[duong].content) || '';
+    VFS[duong] = { type: 'file', content: cu + noiDung };
+    themVaoCha(cha, ten);
+    return null;
+  }
+
+  /** Ghi noi dung tu o soan thao nano. Mo ra ngoai de bo kiem goi truc tiep. */
+  function luuTuSoanThao(duong, noiDung) {
+    return ghiTep(duong, String(noiDung), false);
+  }
+
+  /**
+   * nano mo mot cua so noi de len terminal, co nut Luu / Huy.
+   * Khong mo phong giao dien nano that voi Ctrl+O / Ctrl+X — nguoi moi
+   * se mac ket o cho thoat ra.
+   */
+  function moOSoanThao(duong, noiDungCu) {
+    if (typeof document === 'undefined' || !document.body) return;
+    const lop = document.createElement('div');
+    lop.className = 'nano-overlay';
+    lop.innerHTML = `
+      <div class="nano-box">
+        <div class="nano-head">📝 Đang sửa: <code>${duong}</code></div>
+        <textarea class="nano-area" spellcheck="false"></textarea>
+        <div class="nano-actions">
+          <button class="nano-save">💾 Lưu</button>
+          <button class="nano-cancel">Hủy</button>
+        </div>
+      </div>`;
+    document.body.appendChild(lop);
+    const o = lop.querySelector('.nano-area');
+    o.value = noiDungCu;
+    o.focus();
+    lop.querySelector('.nano-cancel').onclick = () => lop.remove();
+    lop.querySelector('.nano-save').onclick = () => {
+      luuTuSoanThao(duong, o.value);
+      lop.remove();
+      inRaTerminal(`Đã lưu ${duong}`);
+    };
+  }
+
+  /** In mot dong ket qua ra terminal ngoai luong lenh binh thuong */
+  function inRaTerminal(vanBan) {
+    const khung = document.getElementById('terminal-lines');
+    if (!khung) return;
+    const d = document.createElement('div');
+    d.className = 'term-line';
+    d.textContent = vanBan;
+    khung.appendChild(d);
   }
 
   function resolvePath(p) {
@@ -587,6 +749,7 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
     loadFs,
     getFs,
     resetFs,
+    luuTuSoanThao,
     executeCommand,
     checkFlag,
     submitFlagInput

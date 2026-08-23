@@ -45,3 +45,77 @@ test('getFs tra ve he thong tep dang dung', () => {
   T.loadFs(FS_THU);
   assert.ok(T.getFs()['/home/hacker/ghichu.txt'], 'getFs phai thay tep cua lab');
 });
+
+// ── Task 2: nhom lenh ghi ──
+
+test('mkdir -p tao ca cay thu muc', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.executeCommand('mkdir -p /var/www/site');
+  assert.strictEqual(T.getFs()['/var/www/site'].type, 'dir');
+  assert.strictEqual(T.getFs()['/var'].type, 'dir', 'phai tao ca thu muc cha');
+  assert.ok(T.getFs()['/'].children.includes('var'), 'phai noi vao children cua cha');
+  assert.ok(String(T.executeCommand('ls /var')).includes('www'));
+});
+
+test('echo ghi de vao tep', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.executeCommand('mkdir -p /var/www/site');
+  T.executeCommand('echo "Xin chào" > /var/www/site/index.html');
+  assert.match(String(T.executeCommand('cat /var/www/site/index.html')), /Xin chào/);
+});
+
+test('echo >> ghi noi them', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.executeCommand('echo "dong 1" > /tmp.txt');
+  T.executeCommand('echo "dong 2" >> /tmp.txt');
+  const ra = String(T.executeCommand('cat /tmp.txt'));
+  assert.match(ra, /dong 1/);
+  assert.match(ra, /dong 2/);
+});
+
+test('chuyen huong dung duoc cho moi lenh, khong rieng echo', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.executeCommand('ls /home/hacker > /ds.txt');
+  assert.match(String(T.executeCommand('cat /ds.txt')), /ghichu\.txt/);
+});
+
+test('luuTuSoanThao ghi noi dung nhieu dong', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  const loi = T.luuTuSoanThao('/etc/thu.conf', 'dong mot\ndong hai\n');
+  assert.strictEqual(loi, null);
+  assert.match(String(T.executeCommand('cat /etc/thu.conf')), /dong hai/);
+});
+
+test('rm xoa tep va go khoi children cua cha', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.executeCommand('rm /home/hacker/ghichu.txt');
+  assert.match(String(T.executeCommand('cat /home/hacker/ghichu.txt')), /No such file/);
+  assert.ok(!String(T.executeCommand('ls /home/hacker')).includes('ghichu.txt'),
+    'ls van con thay tep da xoa');
+});
+
+test('cp va mv', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.executeCommand('cp /home/hacker/ghichu.txt /home/hacker/ban-sao.txt');
+  assert.match(String(T.executeCommand('cat /home/hacker/ban-sao.txt')), /noi dung cua lab thu/);
+  T.executeCommand('mv /home/hacker/ban-sao.txt /home/hacker/doi-ten.txt');
+  assert.match(String(T.executeCommand('cat /home/hacker/doi-ten.txt')), /noi dung cua lab thu/);
+  assert.match(String(T.executeCommand('cat /home/hacker/ban-sao.txt')), /No such file/);
+});
+
+test('moi lenh ghi deu co trong bang COMMANDS', () => {
+  const T = napTerminal();
+  const ten = T.commandNames();
+  for (const c of ['echo', 'nano', 'mkdir', 'rm', 'cp', 'mv']) {
+    assert.ok(ten.includes(c), 'thieu ' + c + ' trong bang COMMANDS');
+    assert.ok(!String(T.executeCommand(c)).includes('command not found'),
+      c + ' quang cao nhung khong co ban cai');
+  }
+});
