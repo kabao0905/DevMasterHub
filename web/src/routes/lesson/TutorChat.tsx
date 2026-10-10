@@ -74,8 +74,9 @@ export function TutorChat({ bai, tab, quiz }: { bai: BaiDangMo; tab: TabBai; qui
   }
 
   function khiGo(e: KeyboardEvent<HTMLTextAreaElement>) {
-    // Dang go chu co dau (IME) thi Enter la chot chu, khong phai gui
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+    // Dang go chu co dau (IME) thi Enter la chot chu, khong phai gui.
+    // Safari bao isComposing = false o phim Enter chot chu nhung keyCode = 229.
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
       hoi(nhap);
     }

@@ -1,4 +1,4 @@
-import { act, screen, within, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
 import { giaSupabase } from '@/test/gia-supabase';
@@ -108,9 +108,14 @@ test('nguoi hoc tieng Anh: ly thuyet duoc dich may va ban dich cung duoc lam sac
 });
 
 test('may dich loi thi giu ban goc', async () => {
-  mo('/lesson/python/newbie/a', { lang: 'en', dich: () => new Response('', { status: 429 }) });
+  let lanDich = 0;
+  mo('/lesson/python/newbie/a', { lang: 'en', dich: () => { lanDich++; return new Response('', { status: 429 }); } });
   const panel = await screen.findByRole('tabpanel');
-  expect(await within(panel).findByText(/giá trị/)).toBeInTheDocument();
+  // Doi may dich tra loi loi xong (het "Dang dich") roi moi kiem — khong phai luc chua kip goi
+  await waitFor(() => expect(lanDich).toBeGreaterThan(0));
+  await waitFor(() => expect(screen.queryByText('Đang dịch…')).not.toBeInTheDocument());
+  expect(within(panel).getByText(/giá trị/)).toBeInTheDocument();
+  expect(within(panel).getByText('#include <iostream> để dùng cout')).toBeInTheDocument();
 });
 
 test('tab Code: to mau, co nut chep, tab nam tren URL; bai khong co code thi noi ro', async () => {
@@ -253,4 +258,15 @@ test('doi tab bai hoc khong cuon trang len dau', async () => {
   await u.click(screen.getByRole('tab', { name: /Code Lab/ }));
   await screen.findByRole('button', { name: /Sao chép/ });
   expect(window.scrollTo).not.toHaveBeenCalled();
+});
+
+test('gia su: Enter luc dang go chu co dau tren Safari (keyCode 229) khong gui', async () => {
+  const { goiAi } = mo('/lesson/python/newbie/a', { ai: () => traText('ok') });
+  const chat = await screen.findByRole('region', { name: /Hỏi Gia sư AI/ });
+  const o = within(chat).getByRole('textbox');
+  fireEvent.change(o, { target: { value: 'Vòng lặ' } });
+  fireEvent.keyDown(o, { key: 'Enter', keyCode: 229 });
+  await new Promise(r => setTimeout(r, 30));
+  expect(goiAi).toHaveLength(0);
+  expect(o).toHaveValue('Vòng lặ');
 });
