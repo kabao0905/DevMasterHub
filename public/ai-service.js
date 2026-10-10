@@ -935,5 +935,46 @@ Trả về JSON:
     return finalReview;
   }
 
-  return { checkHealth, isEnabled, generateQuiz, generateExercise, checkAnswer, generateProjectIdea, chatAboutProject, chatAboutLesson, reviewProject, localAnalyze, localAnalyzeAll };
+  /**
+   * Chuyen ket qua reviewProject thanh ban nop cho AuthService.saveProjectSubmission.
+   * Dat canh reviewProject vi chi noi day biet hinh dang ket qua cham: summary la
+   * CHUOI nhan xet, diem tong nam o score, 5 tieu chi /20 nam o criteria.
+   */
+  function buildSubmission({ review, idea, files, difficulty, topic }) {
+    const tieuChi = Array.isArray(review && review.criteria) ? review.criteria : [];
+    // Tim tieu chi theo ten; AI doi ten thi lui ve vi tri trong prompt synthesizeReview
+    const diem = (mau, viTri) => {
+      const c = tieuChi.find(x => mau.test(String(x && x.name))) || tieuChi[viTri];
+      const so = Number(c && c.score);
+      return Number.isFinite(so) ? so : null;
+    };
+    const thang100 = so => (so == null ? null : Math.round(so * 5));
+
+    const cauTruc = diem(/cấu trúc|structure/i, 0);
+    const xuLyLoi = diem(/error|lỗi/i, 3);
+    const thucHanh = cauTruc == null || xuLyLoi == null
+      ? (cauTruc ?? xuLyLoi)
+      : (cauTruc + xuLyLoi) / 2;
+    const tong = Number(review && review.score);
+
+    return {
+      projectName: (idea && idea.name) || 'Unnamed',
+      projectDescription: (idea && idea.description) || '',
+      difficultyLevel: difficulty || (idea && idea.difficulty) || 'mid',
+      topic: topic || '',
+      files: (files || []).map(f => ({ name: f.name, lang: f.lang, code: f.code })),
+      review,
+      scoreOverall: Number.isFinite(tong) ? Math.round(tong) : null,
+      scoreCodeQuality: thang100(diem(/quality|chất lượng/i, 1)),
+      scoreFunctionality: thang100(diem(/logic|algorithm|thuật toán/i, 2)),
+      scoreBestPractices: thang100(thucHanh),
+      scoreCreativity: thang100(diem(/creativ|sáng tạo|bonus/i, 4)),
+      aiFeedback: typeof (review && review.summary) === 'string' ? review.summary : '',
+      aiStrengths: (review && review.strengths) || [],
+      aiImprovements: (review && review.improvements) || [],
+      languagesUsed: [...new Set((files || []).map(f => f.lang).filter(Boolean))]
+    };
+  }
+
+  return { checkHealth, isEnabled, generateQuiz, generateExercise, checkAnswer, generateProjectIdea, chatAboutProject, chatAboutLesson, reviewProject, buildSubmission, localAnalyze, localAnalyzeAll };
 })();

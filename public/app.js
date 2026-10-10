@@ -34,6 +34,7 @@ const App = (() => {
   let careerJobsCollapsed = true;
 
   let myProjectsList = [];
+  let myProjectsLoaded = false;
   let selectedProjectView = null;
 
   const $ = (sel) => document.querySelector(sel);
@@ -79,18 +80,18 @@ const App = (() => {
             localStorage.setItem('devmaster_hub_profile_cache', JSON.stringify(currentUserProfile));
             progress = await AuthService.loadProgress();
             localStorage.setItem('devmaster_hub_progress_cache', JSON.stringify(progress));
-            const ideas = await AuthService.loadSavedIdeas();
-            if (ideas && ideas.length > 0) {
-              savedIdeas = ideas;
-              localStorage.setItem('devmaster_hub_ideas_cache', JSON.stringify(savedIdeas));
-            }
+            // Server la nguon dung: danh sach rong nghia la nguoi dung da xoa het,
+            // khong duoc giu lai cache cu (truoc day idea da xoa song lai sau khi tai trang)
+            savedIdeas = (await AuthService.loadSavedIdeas()) || [];
+            persistSavedIdeas();
           } catch(e) {
             console.warn('[Auth Sync]', e);
           }
 
           renderSidebar();
 
-          if (!initialAuthResolved) {
+          // Dang nhap tu man hinh auth cung phai vao app, khong chi lan nap trang dau tien
+          if (!initialAuthResolved || currentView === 'auth') {
             initialAuthResolved = true;
             if (currentView === 'auth') {
               const target = (initialRoute.view && initialRoute.view !== 'auth') ? initialRoute : { view: 'dashboard' };
@@ -107,6 +108,7 @@ const App = (() => {
           currentUserProfile = null;
           progress = {};
           savedIdeas = [];
+          xoaDuLieuNguoiDung();
           try {
             localStorage.removeItem('devmaster_hub_profile_cache');
             localStorage.removeItem('devmaster_hub_progress_cache');
@@ -135,6 +137,26 @@ const App = (() => {
       if (e.state) restoreState(e.state);
       else restoreState(parseCurrentUrl());
     });
+  }
+
+  // Dang xuat tren may dung chung: moi thu rieng cua nguoi vua thoat phai roi khoi
+  // bo nho, neu khong nguoi dang nhap sau se thay chat tu van / project cua ho.
+  function xoaDuLieuNguoiDung() {
+    careerChatHistory = [];
+    careerJobResults = [];
+    careerLastSearchKeyword = '';
+    careerDraftInput = '';
+    myProjectsList = [];
+    myProjectsLoaded = false;
+    selectedProjectView = null;
+    for (const kho of [quizCache, exerciseCache, lessonChatCache]) {
+      Object.keys(kho).forEach(k => delete kho[k]);
+    }
+    resetProjectState();
+    projectTopic = '';
+    projectSelectedLevel = null;
+    projectTopicLevel = null;
+    if (typeof CareerAdvisor !== 'undefined') CareerAdvisor.rewindChat(0);
   }
 
   function setupMobileSidebar() {
@@ -196,25 +218,18 @@ const App = (() => {
     });
   }
 
-  function loadProgress() {
-
-  }
-
+  // Chi luu cache tren may. Ghi len server do markLessonComplete lo tung bai mot —
+  // truoc day ham nay upsert TOAN BO tien do moi lan bam, ghi de completed_at cua moi bai cu.
   function saveProgress() {
     try {
       localStorage.setItem('devmaster_hub_progress_cache', JSON.stringify(progress));
     } catch(e) {}
-    if (isAuthenticated && AuthService.isConfigured()) {
-      AuthService.saveProgress(progress).catch(e => console.warn('[Progress] Save error:', e));
-    }
-  }
-
-  function loadSavedIdeas() {
-
   }
 
   function persistSavedIdeas() {
-
+    try {
+      localStorage.setItem('devmaster_hub_ideas_cache', JSON.stringify(savedIdeas));
+    } catch(e) {}
   }
 
   function saveCurrentIdea() {
@@ -234,6 +249,7 @@ const App = (() => {
       level: projectSelectedLevel || projectTopicLevel || null
     };
     savedIdeas.unshift(saved);
+    persistSavedIdeas();
     if (isAuthenticated) AuthService.saveIdea(saved).catch(e => console.warn('[Ideas] Save error:', e));
 
     const btn = document.querySelector('.btn-save-idea');
@@ -249,6 +265,7 @@ const App = (() => {
 
   function deleteSavedIdea(id) {
     savedIdeas = savedIdeas.filter(s => s.id !== id);
+    persistSavedIdeas();
     if (isAuthenticated) AuthService.deleteIdea(id).catch(e => console.warn('[Ideas] Delete error:', e));
     render();
   }
@@ -430,9 +447,6 @@ const App = (() => {
       if (typeof Prism !== 'undefined') Prism.highlightAll();
       if (currentView === 'challenge' && typeof CyberTerminal !== 'undefined') {
         setTimeout(() => CyberTerminal.renderStudio('challenge-terminal-mount', { challenges: true }), 50);
-      }
-      if (currentView === 'lesson' && currentTech === 'cybersecurity' && activeTab === 'exercise' && typeof CyberTerminal !== 'undefined') {
-        setTimeout(() => CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false }), 50);
       }
       updateDynamicSchemaOrg();
     };
@@ -936,9 +950,9 @@ const App = (() => {
 
     container.innerHTML = html;
 
-    if (activeTab === 'exercise') {
-      setTimeout(attachEditorToCurrentTextarea, 50);
-    }
+    // innerHTML vua tao lai cac o gan -> cong cu cu da mat, cho phep gan lai
+    daGanCongCu = false;
+    if (activeTab === 'exercise') ganCongCuBaiTap();
 
     if (typeof I18n !== 'undefined' && I18n.getLang() !== 'vi') {
       setTimeout(() => App.triggerDynamicContentTranslation(activeTab), 50);
@@ -1153,6 +1167,44 @@ const App = (() => {
     }
   }
 
+  // Bai hoc frontend: mo trinh soan thao chia doi man hinh ngay trong bai tap.
+  // Nap san code mau cua chinh bai hoc de hoc vien sua tiep, khong phai
+  // bat dau tu trang giay trang.
+  // Angular can buoc build nen khong chay duoc trong sandbox trinh duyet -> khong gan.
+  // typescript va dsa dung che do console: ket qua la van ban in ra,
+  // khong phai trang web, nen Sandpack se hien console thay vi khung hien thi.
+  const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind', 'typescript', 'dsa'];
+
+  function timLabCuaBai(lessonKey) {
+    return (typeof LabRunner !== 'undefined') ? LabRunner.timLab(lessonKey) : null;
+  }
+
+  // Sandpack (React + Babel, TypeScript ~9MB), terminal va lab rat nang: truoc day
+  // moi lan mo bai hoc deu tai ngay ca khi hoc vien chi doc Ly thuyet, con terminal
+  // bi ve lai 2-3 lan (xoa man hinh moi lan doi tab). Gio chi gan khi vao tab
+  // Bai tap, va chi mot lan cho moi lan ve bai hoc.
+  let daGanCongCu = false;
+
+  function ganCongCuBaiTap() {
+    if (daGanCongCu || currentView !== 'lesson') return;
+    const tech = CURRICULUM[currentTech];
+    const level = tech && Array.isArray(tech.levels) ? tech.levels.find(l => l.id === currentLevel) : null;
+    const lesson = level ? level.lessons.find(ls => ls.id === currentLesson) : null;
+    if (!lesson) return;
+    daGanCongCu = true;
+
+    const lab = timLabCuaBai(`${tech.id}.${level.id}.${lesson.id}`);
+    if (lab) {
+      LabRunner.render('lab-mount', lab);
+    } else if (tech.id === 'cybersecurity') {
+      if (typeof CyberTerminal !== 'undefined') CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false });
+    } else if (TECH_FRONTEND.includes(tech.id)) {
+      if (typeof SandpackLive !== 'undefined') SandpackLive.renderStudio('lesson-sandpack-mount', seedFilesFromLesson(lesson, tech.id), tech.id);
+    } else {
+      attachEditorToCurrentTextarea();
+    }
+  }
+
   function renderExerciseContent(lessonKey, tech, level, lesson) {
     const cache = exerciseCache[lessonKey] || {};
     const userAnswer = cache.userAnswer || '';
@@ -1162,21 +1214,12 @@ const App = (() => {
     const showHints = cache.showHints || false;
     const showSolution = cache.showSolution || false;
 
+    // Ham nay chi dung HTML. Lab/terminal/Sandpack duoc gan sau, trong ganCongCuBaiTap(),
+    // khi hoc vien thuc su mo tab Bai tap.
     // Bai hoc nao co phong lab thi dung lab thay cho o van ban tu do.
-    // Bai chua co lab van giu nguyen luong cu — khong dap bo thu dang chay.
-    const lab = (typeof LabRunner !== 'undefined') ? LabRunner.timLab(lessonKey) : null;
-    if (lab) {
-      setTimeout(() => LabRunner.render('lab-mount', lab), 50);
-      return '<div id="lab-mount"></div>';
-    }
+    if (timLabCuaBai(lessonKey)) return '<div id="lab-mount"></div>';
 
     if (tech.id === 'cybersecurity') {
-      setTimeout(() => {
-        if (typeof CyberTerminal !== 'undefined') {
-          CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false });
-        }
-      }, 50);
-
       return `
         <div class="cyber-exercise-wrapper">
           <div class="lesson-section glass-card" style="margin-bottom:14px;border-left:4px solid #f85149">
@@ -1187,21 +1230,7 @@ const App = (() => {
         </div>`;
     }
 
-    // Bai hoc frontend: mo trinh soan thao chia doi man hinh ngay trong bai tap.
-    // Nap san code mau cua chinh bai hoc de hoc vien sua tiep, khong phai
-    // bat dau tu trang giay trang.
-    // Angular can buoc build nen khong chay duoc trong sandbox trinh duyet -> khong gan.
-    // typescript va dsa dung che do console: ket qua la van ban in ra,
-    // khong phai trang web, nen Sandpack se hien console thay vi khung hien thi.
-    const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind', 'typescript', 'dsa'];
     if (TECH_FRONTEND.includes(tech.id)) {
-      const seed = seedFilesFromLesson(lesson, tech.id);
-      setTimeout(() => {
-        if (typeof SandpackLive !== 'undefined') {
-          SandpackLive.renderStudio('lesson-sandpack-mount', seed, tech.id);
-        }
-      }, 50);
-
       return `
         <div class="lesson-practice-wrapper">
           <div class="lesson-section glass-card" style="margin-bottom:14px;border-left:4px solid #58a6ff">
@@ -1240,10 +1269,16 @@ const App = (() => {
       return html;
     }
 
+    // De bai goc la HTML cua giao trinh (tin duoc); bai tap do AI sinh va nhan xet
+    // cham bai la van ban tu model — phai thoat truoc khi dua vao innerHTML.
+    const tuGiaoTrinh = activeExIdx === 0;
+    const md = s => HtmlUtils.formatChatMarkdown(String(s ?? ''));
+    const dsChuoi = x => (Array.isArray(x) ? x : (x ? [x] : []));
+
     html += `
       <div class="lesson-section glass-card exercise-section">
-        <h2 class="section-title">📋 ${currentExercise.title}</h2>
-        <div class="exercise-description">${currentExercise.description}</div>
+        <h2 class="section-title">📋 ${tuGiaoTrinh ? currentExercise.title : escapeHtml(currentExercise.title)}</h2>
+        <div class="exercise-description">${tuGiaoTrinh ? currentExercise.description : md(currentExercise.description)}</div>
 
         ${currentExercise.sampleInput ? `<div class="exercise-io"><strong>Input mẫu:</strong><pre>${escapeHtml(currentExercise.sampleInput)}</pre></div>` : ''}
         ${currentExercise.expectedOutput ? `<div class="exercise-io"><strong>Output mong đợi:</strong><pre>${escapeHtml(currentExercise.expectedOutput)}</pre></div>` : ''}
@@ -1252,7 +1287,7 @@ const App = (() => {
           <button class="btn-hints" onclick="App.toggleHints('${lessonKey}')">
             ${showHints ? I18n.t('hideHints') : I18n.t('showHintsBtn')} (${currentExercise.hints.length})
           </button>
-          ${showHints ? `<div class="hints-list">${currentExercise.hints.map((h, i) => `<div class="hint-item">💡 ${h}</div>`).join('')}</div>` : ''}
+          ${showHints ? `<div class="hints-list">${dsChuoi(currentExercise.hints).map(h => `<div class="hint-item">💡 ${md(h)}</div>`).join('')}</div>` : ''}
         ` : ''}
       </div>`;
 
@@ -1276,18 +1311,21 @@ const App = (() => {
 
     if (feedback) {
       const statusColors = { correct: '#2ecc71', partial: '#f1c40f', incorrect: '#e74c3c' };
+      const diem = Math.max(0, Math.min(100, Number(feedback.score) || 0));
+      const loi = dsChuoi(feedback.errors);
+      const goiY = dsChuoi(feedback.suggestions);
       html += `
         <div class="lesson-section glass-card feedback-section" style="border-left:4px solid ${statusColors[feedback.status] || '#58a6ff'}">
           <div class="feedback-header">
-            <h2 class="section-title">${feedback.status === 'correct' ? '🎉' : feedback.status === 'partial' ? '👍' : '💪'} Kết quả: ${feedback.score}/100</h2>
+            <h2 class="section-title">${feedback.status === 'correct' ? '🎉' : feedback.status === 'partial' ? '👍' : '💪'} Kết quả: ${diem}/100</h2>
             <div class="feedback-score-bar">
-              <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${feedback.score}%;background:${statusColors[feedback.status] || '#58a6ff'}"></div></div>
+              <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${diem}%;background:${statusColors[feedback.status] || '#58a6ff'}"></div></div>
             </div>
           </div>
           <div class="feedback-body">
-            <p class="feedback-text">${feedback.feedback || ''}</p>
-            ${feedback.errors && feedback.errors.length ? `<div class="feedback-errors"><strong>❌ Lỗi:</strong><ul>${feedback.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>` : ''}
-            ${feedback.suggestions && feedback.suggestions.length ? `<div class="feedback-suggestions"><strong>💡 Gợi ý:</strong><ul>${feedback.suggestions.map(s => `<li>${s}</li>`).join('')}</ul></div>` : ''}
+            <div class="feedback-text">${md(feedback.feedback)}</div>
+            ${loi.length ? `<div class="feedback-errors"><strong>❌ Lỗi:</strong><ul>${loi.map(e => `<li>${md(e)}</li>`).join('')}</ul></div>` : ''}
+            ${goiY.length ? `<div class="feedback-suggestions"><strong>💡 Gợi ý:</strong><ul>${goiY.map(s => `<li>${md(s)}</li>`).join('')}</ul></div>` : ''}
             ${feedback.correctedCode ? `
               <div class="feedback-code">
                 <strong>✅ Code đã sửa:</strong>
@@ -1343,7 +1381,7 @@ const App = (() => {
         container.innerHTML = `
           <div class="ai-error glass-card">
             <span class="error-icon">⚠️</span>
-            <p>Lỗi tạo quiz: ${err.message}</p>
+            <p>Lỗi tạo quiz: ${escapeHtml(err.message)}</p>
             <button class="btn-ai" onclick="App.generateQuiz('${lessonKey}')">Thử lại</button>
           </div>`;
       }
@@ -1415,7 +1453,7 @@ const App = (() => {
         container.innerHTML = `
           <div class="ai-error glass-card">
             <span class="error-icon">⚠️</span>
-            <p>Lỗi tạo bài tập: ${err.message}</p>
+            <p>Lỗi tạo bài tập: ${escapeHtml(err.message)}</p>
             <button class="btn-ai" onclick="App.generateExercise('${lessonKey}')">Thử lại</button>
           </div>`;
       }
@@ -1555,11 +1593,8 @@ const App = (() => {
     const tabLabel = getTabLabel(tabId);
     const tutorHeader = typeof I18n !== 'undefined' ? I18n.t('tutorHeader') : 'Hỏi Gia sư AI về';
     const tutorWelcome = typeof I18n !== 'undefined' ? I18n.t('tutorWelcome') : 'Hỏi AI bất cứ điều gì về phần này!';
-    const explainSimply = typeof I18n !== 'undefined' ? I18n.t('explainSimply') : 'Giải thích đơn giản phần này cho mình';
     const explainSimplyBtn = typeof I18n !== 'undefined' ? I18n.t('explainSimplyBtn') : 'Giải thích đơn giản';
-    const moreExamples = typeof I18n !== 'undefined' ? I18n.t('moreExamples') : 'Cho mình thêm ví dụ minh họa thực tế';
     const moreExamplesBtn = typeof I18n !== 'undefined' ? I18n.t('moreExamplesBtn') : 'Thêm ví dụ';
-    const keyTakeaways = typeof I18n !== 'undefined' ? I18n.t('keyTakeaways') : 'Điểm mấu chốt quan trọng nhất cần nhớ là gì?';
     const keyTakeawaysBtn = typeof I18n !== 'undefined' ? I18n.t('keyTakeawaysBtn') : 'Phần quan trọng nhất?';
     const askAiPlaceholder = typeof I18n !== 'undefined' ? I18n.t('askAiPlaceholder') : 'Hỏi AI về bài học...';
     const clearChatText = typeof I18n !== 'undefined' ? I18n.t('clearLessonChat') : '🗑️ Xóa hội thoại';
@@ -1584,9 +1619,9 @@ const App = (() => {
               <div class="lchat-welcome">
                 <p>💡 ${tutorWelcome}</p>
                 <div class="lchat-suggestions">
-                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}', '${escapeHtml(explainSimply)}')">${explainSimplyBtn}</button>
-                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}', '${escapeHtml(moreExamples)}')">${moreExamplesBtn}</button>
-                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}', '${escapeHtml(keyTakeaways)}')">${keyTakeawaysBtn}</button>
+                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}', I18n.t('explainSimply'))">${explainSimplyBtn}</button>
+                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}', I18n.t('moreExamples'))">${moreExamplesBtn}</button>
+                  <button class="lchat-suggest-btn" onclick="App.sendLessonChat('${lessonKey}','${tabId}', I18n.t('keyTakeaways'))">${keyTakeawaysBtn}</button>
                 </div>
               </div>` : messagesHtml}
           </div>
@@ -1604,21 +1639,7 @@ const App = (() => {
   }
 
   function formatLessonChatMessage(text) {
-    if (!text) return '';
-    let html = text;
-
-    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-      return `<pre class="lchat-code"><code class="language-${lang || 'plaintext'}">${escapeHtml(code.trim())}</code></pre>`;
-    });
-
-    html = html.replace(/`([^`]+)`/g, '<code class="lchat-inline-code">$1</code>');
-
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-    html = html.replace(/\n/g, '<br>');
-    return html;
+    return HtmlUtils.formatChatMarkdown(text, { preClass: 'lchat-code', inlineClass: 'lchat-inline-code' });
   }
 
   function toggleLessonChat(chatId) {
@@ -1788,14 +1809,7 @@ const App = (() => {
 
     if (typeof Prism !== 'undefined') Prism.highlightAll();
 
-    if (tabId === 'exercise') {
-      setTimeout(attachEditorToCurrentTextarea, 50);
-      if (currentTech === 'cybersecurity' && typeof CyberTerminal !== 'undefined') {
-        setTimeout(() => {
-          CyberTerminal.renderStudio('lesson-cyber-terminal-mount', { challenges: false });
-        }, 60);
-      }
-    }
+    if (tabId === 'exercise') ganCongCuBaiTap();
 
     updateDynamicSchemaOrg();
   }
@@ -2099,11 +2113,8 @@ const App = (() => {
     if (editor) enhanceCodeEditor(editor);
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-    return str.replace(/[&<>"']/g, c => map[c]);
-  }
+  // Mot ham thoat duy nhat cho ca file (truoc day co hai ban, ban sau ghi de ban truoc)
+  const escapeHtml = HtmlUtils.escapeHtml;
 
   function copyCode(btn) {
     const code = decodeURIComponent(btn.dataset.code);
@@ -2163,6 +2174,16 @@ const App = (() => {
     </button>`;
   }
 
+  // Mot ham ve tin nhan cho ca renderChatPanel lan refreshChatUI (truoc day chep doi)
+  function veTinNhanDuAn(msg) {
+    const isUser = msg.role === 'user';
+    return `
+      <div class="chat-message ${isUser ? 'user-msg' : 'ai-msg'}">
+        <div class="chat-avatar">${isUser ? '👤' : '🤖'}</div>
+        <div class="chat-bubble">${HtmlUtils.formatChatMarkdown(msg.content)}</div>
+      </div>`;
+  }
+
   function renderChatPanel() {
     return `
       <div class="project-chat-section">
@@ -2171,22 +2192,7 @@ const App = (() => {
           <div class="chat-messages" id="project-chat-messages">
             ${projectChatHistory.length === 0
               ? `<div class="chat-empty">${typeof I18n !== 'undefined' ? I18n.t('askAiAboutProject') : 'Hỏi AI bất cứ điều gì về project này...'}</div>`
-              : projectChatHistory.map(msg => {
-                  const isUser = msg.role === 'user';
-                  let content = escapeHtml(msg.content);
-
-                  content = content.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code.trim()}</code></pre>`);
-                  content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-                  content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-                  content = content.replace(/\n/g, '<br>');
-                  return `
-                    <div class="chat-message ${isUser ? 'user-msg' : 'ai-msg'}">
-                      <div class="chat-avatar">${isUser ? '👤' : '🤖'}</div>
-                      <div class="chat-bubble">${content}</div>
-                    </div>`;
-                }).join('')}
+              : projectChatHistory.map(veTinNhanDuAn).join('')}
             ${projectChatSending ? `
               <div class="chat-message ai-msg">
                 <div class="chat-avatar">🤖</div>
@@ -2682,7 +2688,7 @@ const App = (() => {
           errorDiv.className = 'ai-error glass-card';
           errorDiv.innerHTML = `
             <span class="error-icon">⚠️</span>
-            <p>${isVi ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? 'Error' : 'Lỗi') : 'Error'}: ${err.message}</p>
+            <p>${isVi ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? 'Error' : 'Lỗi') : 'Error'}: ${escapeHtml(err.message)}</p>
             <button class="btn-ai" onclick="App.generateProjectByLevel()">${isVi ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? 'Retry' : 'Thử lại') : 'Retry'}</button>`;
         }
       }
@@ -2735,7 +2741,7 @@ const App = (() => {
           errorDiv.className = 'ai-error glass-card';
           errorDiv.innerHTML = `
             <span class="error-icon">⚠️</span>
-            <p>Lỗi: ${err.message}</p>
+            <p>Lỗi: ${escapeHtml(err.message)}</p>
             <button class="btn-ai" onclick="App.generateProjectByTopic()">Thử lại</button>`;
         }
       }
@@ -2775,7 +2781,7 @@ const App = (() => {
             const half = 3800;
             code = code.slice(0, half) + '\n\n// ... (middle section omitted for brevity) ...\n\n' + code.slice(-half);
           }
-          return `\n--- File: ${f.name} (${f.language}, ${f.code.split('\\n').length} lines) ---\n${code}`;
+          return `\n--- File: ${f.name} (${f.lang}, ${f.code.split('\n').length} lines) ---\n${code}`;
         }).join('\n');
       const context = `Project: ${projectIdea.name}\nMô tả: ${projectIdea.description}\nYêu cầu: ${(projectIdea.requirements || []).join(', ')}${codeContext ? '\n\n📁 Code hiện tại của học viên:' + codeContext : ''}`;
       const reply = await AIService.chatAboutProject(context, projectChatHistory.slice(0, -1), userMsg);
@@ -2796,19 +2802,7 @@ const App = (() => {
     if (projectChatHistory.length === 0 && !projectChatSending) {
       html = `<div class="chat-empty">${typeof I18n !== 'undefined' ? I18n.t('askAiAboutProject') : 'Hỏi AI bất cứ điều gì về project này...'}</div>`;
     } else {
-      html = projectChatHistory.map(msg => {
-        const isUser = msg.role === 'user';
-        let content = escapeHtml(msg.content);
-        content = content.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code.trim()}</code></pre>`);
-        content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
-        content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        content = content.replace(/\n/g, '<br>');
-        return `
-          <div class="chat-message ${isUser ? 'user-msg' : 'ai-msg'}">
-            <div class="chat-avatar">${isUser ? '👤' : '🤖'}</div>
-            <div class="chat-bubble">${content}</div>
-          </div>`;
-      }).join('');
+      html = projectChatHistory.map(veTinNhanDuAn).join('');
 
       if (projectChatSending) {
         html += `
@@ -2861,25 +2855,18 @@ const App = (() => {
       projectReview = await AIService.reviewProject(projectIdea, projectFiles, onProgress);
 
       if (isAuthenticated && projectReview) {
-        const review = projectReview;
-        const submission = {
-          project_name: projectIdea.name || 'Unnamed',
-          project_description: projectIdea.description || '',
-          difficulty_level: projectSelectedLevel || projectTopicLevel || 'mid',
-          topic: projectTopic || currentTech || '',
-          files: projectFiles.map(f => ({ name: f.name, lang: f.lang, code: f.code })),
-          review: review,
-          score_overall: review.summary?.overallScore || null,
-          score_code_quality: review.summary?.codeQuality || null,
-          score_functionality: review.summary?.functionality || null,
-          score_best_practices: review.summary?.bestPractices || null,
-          score_creativity: review.summary?.creativity || null,
-          ai_feedback: review.summary?.overallFeedback || '',
-          ai_strengths: review.summary?.strengths || [],
-          ai_improvements: review.summary?.improvements || [],
-          languages_used: [...new Set(projectFiles.map(f => f.lang).filter(Boolean))]
-        };
-        AuthService.saveProjectSubmission(submission).catch(e => console.warn('[Project] Save error:', e));
+        // Ban cu gui khoa snake_case trong khi saveProjectSubmission doc camelCase:
+        // project_name thanh undefined, vi pham NOT NULL nen khong bai nao duoc luu.
+        const submission = AIService.buildSubmission({
+          review: projectReview,
+          idea: projectIdea,
+          files: projectFiles,
+          difficulty: projectSelectedLevel || projectTopicLevel || 'mid',
+          topic: projectTopic || currentTech || ''
+        });
+        AuthService.saveProjectSubmission(submission)
+          .then(() => { myProjectsLoaded = false; })
+          .catch(e => console.warn('[Project] Save error:', e));
       }
       render();
     } catch (err) {
@@ -3041,7 +3028,7 @@ const App = (() => {
     } catch (err) {
       errorEl.textContent = err.message;
       btn.disabled = false;
-      btn.textContent = authMode === 'login' ? (isViSubmit ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? 'Login' : 'Đăng nhập') : 'Login') : (isViSubmit ? (typeof I18n !== 'undefined' && I18n.getLang() === 'en' ? 'Register' : 'Đăng ký') : 'Register');
+      btn.textContent = I18n.t(authMode === 'login' ? 'authLogin' : 'authRegister');
     }
     return false;
   }
@@ -3293,16 +3280,16 @@ const App = (() => {
             const badgeBorder = job.status === 'ready' ? 'rgba(46, 160, 67, 0.4)' : (job.status === 'gap' ? 'rgba(210, 153, 34, 0.4)' : 'rgba(248, 81, 73, 0.4)');
 
             return `
-            <a href="${job.url}" target="_blank" class="career-job-card" style="position:relative;border:1px solid ${badgeBorder}">
+            <a href="${escapeHtml(HtmlUtils.safeUrl(job.url))}" target="_blank" rel="noopener noreferrer" class="career-job-card" style="position:relative;border:1px solid ${badgeBorder}">
               ${job.badgeText ? `
                 <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;color:${badgeColor};background:${badgeBg};margin-bottom:10px;border:1px solid ${badgeBorder}">
                   ${escapeHtml(job.badgeText)}
                 </div>` : ''}
               <div class="career-job-header">
-                ${job.company_logo ? `<img src="${job.company_logo}" alt="" class="career-job-logo" onerror="this.style.display='none'"/>` : '<div class="career-job-logo-placeholder">🏢</div>'}
+                ${HtmlUtils.safeUrl(job.company_logo) !== '#' ? `<img src="${escapeHtml(HtmlUtils.safeUrl(job.company_logo))}" alt="" class="career-job-logo" onerror="this.style.display='none'"/>` : '<div class="career-job-logo-placeholder">🏢</div>'}
                 <div>
                   <div class="career-job-company">${escapeHtml(job.company_name)}</div>
-                  <div class="career-job-source">${escapeHtml(job.source || 'JSearch')}</div>
+                  <div class="career-job-source">${escapeHtml(job.source || '')}</div>
                 </div>
               </div>
               <div class="career-job-title">${escapeHtml(job.title)}</div>
@@ -3553,11 +3540,16 @@ const App = (() => {
         <div class="myprojects-list">${listHtml}</div>
       </div>`;
 
-    if (myProjectsList.length === 0 && isAuthenticated) {
+    // Dung co "da tai" thay vi "danh sach rong": nguoi chua nop bai nao thi danh sach
+    // luon rong, lay do lam dieu kien la goi Supabase lap lai vo han.
+    if (!myProjectsLoaded && isAuthenticated) {
+      myProjectsLoaded = true;
       AuthService.getProjectSubmissions().then(projects => {
-        if (currentView !== 'my-projects') return;
-        myProjectsList = projects;
-        renderMyProjects(container);
+        myProjectsList = projects || [];
+        if (currentView === 'my-projects' && !selectedProjectView) renderMyProjects(container);
+      }).catch(e => {
+        myProjectsLoaded = false;
+        console.warn('[MyProjects] Load error:', e);
       });
     }
   }
@@ -3597,19 +3589,8 @@ const App = (() => {
     render();
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
   function formatMarkdown(text) {
-    if (!text) return '';
-
-    return escapeHtml(text)
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\n/g, '<br>');
+    return HtmlUtils.formatChatMarkdown(text);
   }
 
   return {
@@ -3621,7 +3602,7 @@ const App = (() => {
     goToChallenge: () => navigateTo('challenge'),
     generateChallenge,
     goToCareer: () => navigateTo('career'),
-    goToMyProjects: () => { selectedProjectView = null; navigateTo('my-projects'); },
+    goToMyProjects: () => { selectedProjectView = null; myProjectsLoaded = false; navigateTo('my-projects'); },
     openRoadmap: (techId) => navigateTo('roadmap', { tech: techId }),
     openLesson: (techId, levelId, lessonId) => navigateTo('lesson', { tech: techId, level: levelId, lesson: lessonId }),
     goBack: () => {

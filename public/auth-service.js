@@ -163,28 +163,6 @@ const AuthService = (() => {
     return progress;
   }
 
-  async function saveProgress(progress) {
-    if (!supabase || !currentUser) return;
-
-    const upserts = Object.entries(progress).map(([key, completed]) => {
-      const [tech_id, level_id, lesson_id] = key.split('.');
-      return {
-        user_id: currentUser.id,
-        tech_id,
-        level_id,
-        lesson_id,
-        completed: !!completed,
-        completed_at: completed ? new Date().toISOString() : null
-      };
-    });
-
-    if (upserts.length > 0) {
-      await supabase
-        .from('lesson_progress')
-        .upsert(upserts, { onConflict: 'user_id,tech_id,level_id,lesson_id' });
-    }
-  }
-
   async function markLessonComplete(techId, levelId, lessonId, completed) {
     if (!supabase || !currentUser) return;
     await supabase.from('lesson_progress').upsert({
@@ -391,7 +369,6 @@ const AuthService = (() => {
     updateProfile,
 
     loadProgress,
-    saveProgress,
     markLessonComplete,
     startLearningSession,
     endLearningSession,

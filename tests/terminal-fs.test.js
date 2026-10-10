@@ -119,3 +119,24 @@ test('moi lenh ghi deu co trong bang COMMANDS', () => {
       c + ' quang cao nhung khong co ban cai');
   }
 });
+
+test('ve terminal ngoai phong lab (CTF, bai An ninh mang) thi dung lai bo tep San co', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);   // vua di qua phong lab
+  T.renderStudio('challenge-terminal-mount', { challenges: true });
+  assert.match(String(T.executeCommand('cat /home/hacker/flag1.txt')), /FLAG\{/);
+});
+
+test('terminal cua phong lab giu bo tep cua lab', () => {
+  const T = napTerminal();
+  T.loadFs(FS_THU);
+  T.renderStudio('lab-terminal-mount', { challenges: false, lab: true });
+  assert.match(String(T.executeCommand('cat /home/hacker/ghichu.txt')), /noi dung cua lab thu/);
+});
+
+test('ve lai terminal San co khong xoa cong viec dang lam tren bo San co', () => {
+  const T = napTerminal();
+  T.executeCommand('mkdir /home/hacker/viec');
+  T.renderStudio('challenge-terminal-mount', { challenges: true });
+  assert.doesNotMatch(String(T.executeCommand('ls /home/hacker/viec')), /No such file/);
+});

@@ -6,6 +6,12 @@ const CareerAdvisor = (() => {
   let cachedStats = null;
   let activeAbortController = null;
 
+  // \b cua JavaScript chi hieu ky tu ASCII: \bđà nẵng\b khong bao gio khop.
+  // Ranh gioi tu o day tinh theo moi chu cai Unicode.
+  const tuRieng = (nguon, co = 'iu') =>
+    new RegExp('(?<![\\p{L}\\p{N}_])(?:' + nguon + ')(?![\\p{L}\\p{N}_])', co);
+  const DIA_DIEM_VN = 'tp\\.?\\s*hcm|tp\\s*hồ chí minh|hồ chí minh|ho chi minh|hcm|saigon|sài gòn|hà nội|ha noi|hn|đà nẵng|da nang|vietnam|việt nam|vn';
+
   function abortMessage() {
     if (activeAbortController) {
       activeAbortController.abort();
@@ -75,7 +81,7 @@ const CareerAdvisor = (() => {
         if (stats.projects && stats.projects.length > 0) {
           parts.push(`\n🚀 Dự án thực tế (Project Lab) đã nộp (${stats.projects.length} dự án):`);
           stats.projects.forEach(p => {
-            parts.push(`  - ${p.title || 'Project'} (${p.tech || 'Tech'}): Điểm đánh giá ${p.score_overall || 0}/100`);
+            parts.push(`  - ${p.project_name || 'Project'} (${p.topic || (p.languages_used || []).join(', ') || 'Tech'}): Điểm đánh giá ${p.score_overall ?? '?'}/100`);
           });
           if (stats.averageProjectScore) {
             parts.push(`⭐ Điểm dự án trung bình: ${stats.averageProjectScore}/100`);
@@ -208,11 +214,11 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
       if (searchMatch) {
         usedSearchKeyword = searchMatch[1].trim();
 
-        const userAskedLocation = /\b(hcm|tp\.?\s*hcm|hồ chí minh|saigon|sài gòn|hà nội|ha noi|hn|đà nẵng|da nang|dn|vietnam|việt nam|vn|remote)\b/i.test(userMessage);
+        const userAskedLocation = tuRieng(DIA_DIEM_VN + '|dn|remote').test(userMessage);
         if (!userAskedLocation) {
 
           usedSearchKeyword = usedSearchKeyword
-            .replace(/\b(tp\.?\s*hcm|tp\s*hồ chí minh|hồ chí minh|hcm|saigon|sài gòn|hà nội|ha noi|hn|đà nẵng|da nang|vietnam|việt nam|vn)\b/gi, '')
+            .replace(tuRieng(DIA_DIEM_VN, 'giu'), '')
             .replace(/\s+/g, ' ')
             .trim();
         }
@@ -298,13 +304,13 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     };
 
     let locSuffix = '';
-    if (/\b(hcm|tp\.?\s*hcm|hồ chí minh|ho chi minh|sài gòn|saigon)\b/i.test(msg)) {
+    if (tuRieng('tp\\.?\\s*hcm|hcm|hồ chí minh|ho chi minh|sài gòn|saigon').test(msg)) {
       locSuffix = ' TP.HCM';
-    } else if (/\b(hà nội|ha noi|hn)\b/i.test(msg)) {
+    } else if (tuRieng('hà nội|ha noi|hn').test(msg)) {
       locSuffix = ' Hà Nội';
-    } else if (/\b(đà nẵng|da nang)\b/i.test(msg)) {
+    } else if (tuRieng('đà nẵng|da nang').test(msg)) {
       locSuffix = ' Đà Nẵng';
-    } else if (/\b(remote|nước ngoài|từ xa)\b/i.test(msg)) {
+    } else if (tuRieng('remote|nước ngoài|từ xa').test(msg)) {
       locSuffix = ' Remote';
     }
 
@@ -364,6 +370,13 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     let statusClass = 'match-gap';
     let fitRecommendation = I18n.t('mr50Desc');
 
+    // Phai khai bao truoc nhanh !hasLearnedRelevantTech: nhanh do doc isSenior,
+    // dat sau thi dinh TDZ va ca danh sach viec lam bi nuot thanh rong.
+    const isIntern = title.includes('intern') || title.includes('thực tập') || title.includes('trainee');
+    const isFresher = title.includes('fresher') || title.includes('entry') || title.includes('graduate');
+    const isJunior = title.includes('junior') || title.includes('associate');
+    const isSenior = title.includes('senior') || title.includes('lead') || title.includes('principal') || title.includes('staff') || title.includes('head') || title.includes('manager');
+
     if (!hasLearnedRelevantTech) {
       if (isSenior) {
         matchRate = 15;
@@ -380,11 +393,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
       }
       return { matchRate, status, badgeText, statusClass, fitRecommendation };
     }
-
-    const isIntern = title.includes('intern') || title.includes('thực tập') || title.includes('trainee');
-    const isFresher = title.includes('fresher') || title.includes('entry') || title.includes('graduate');
-    const isJunior = title.includes('junior') || title.includes('associate');
-    const isSenior = title.includes('senior') || title.includes('lead') || title.includes('principal') || title.includes('staff') || title.includes('head') || title.includes('manager');
 
     if (totalLessons < 15) {
 

@@ -78,9 +78,9 @@ document.getElementById('btn').addEventListener('click', () => {
     react: {
       label: 'React',
       libs: [
-        'https://unpkg.com/react@18/umd/react.development.js',
-        'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
-        'https://unpkg.com/@babel/standalone/babel.min.js'
+        'https://unpkg.com/react@18.3.1/umd/react.development.js',
+        'https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js',
+        'https://unpkg.com/@babel/standalone@7.29.9/babel.min.js'
       ],
       entry: 'App.jsx',
       files: {
@@ -145,7 +145,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);`
     },
     vue: {
       label: 'Vue',
-      libs: ['https://unpkg.com/vue@3/dist/vue.global.js'],
+      libs: ['https://unpkg.com/vue@3.5.43/dist/vue.global.js'],
       entry: 'App.js',
       files: {
         'index.html': `<!DOCTYPE html>
@@ -268,7 +268,7 @@ console.log('vi tri cua 4:', timNhiPhan(so, 4));`
     },
     tailwind: {
       label: 'Tailwind CSS',
-      libs: ['https://cdn.tailwindcss.com'],
+      libs: ['https://cdn.tailwindcss.com/3.4.19'],
       entry: 'script.js',
       files: {
         'index.html': `<!DOCTYPE html>
@@ -375,22 +375,26 @@ document.getElementById('btn').addEventListener('click', () => {
     const scriptTag = `<script${scriptType}>\n${js}\n<\/script>`;
     const libTags = (P.libs || []).map(u => `<script src="${u}"><\/script>`).join('\n');
 
+    // Chuoi thay the LUON truyen qua ham: replace(a, chuoi) hieu $$, $&, $' trong
+    // chuoi la ky hieu dac biet, nen code `Giá: $${gia}` cua hoc vien mat dau $.
+    const chen = (tim, them) => doc.replace(tim, () => them);
+
     // thay <link href="style.css"> bang style thuc te
-    doc = doc.replace(/<link[^>]*href=["']style\.css["'][^>]*>/i, styleTag);
+    doc = chen(/<link[^>]*href=["']style\.css["'][^>]*>/i, styleTag);
     // thay the script tro toi file entry bang noi dung thuc te
     const entryRe = new RegExp('<script[^>]*src=["\']' +
       P.entry.replace('.', '\\.') + '["\'][^>]*>\\s*<\\/script>', 'i');
-    doc = doc.replace(entryRe, scriptTag);
+    doc = chen(entryRe, scriptTag);
 
     if (!/<style/i.test(doc) && css) {
-      doc = doc.includes('</head>') ? doc.replace('</head>', styleTag + '</head>') : styleTag + doc;
+      doc = doc.includes('</head>') ? chen('</head>', styleTag + '</head>') : styleTag + doc;
     }
     if (!doc.includes(scriptTag) && js) {
-      doc = doc.includes('</body>') ? doc.replace('</body>', scriptTag + '</body>') : doc + scriptTag;
+      doc = doc.includes('</body>') ? chen('</body>', scriptTag + '</body>') : doc + scriptTag;
     }
     // Thu vien phai nap TRUOC code cua hoc vien
     if (libTags) {
-      doc = doc.includes('</head>') ? doc.replace('</head>', libTags + '</head>') : libTags + doc;
+      doc = doc.includes('</head>') ? chen('</head>', libTags + '</head>') : libTags + doc;
     }
 
     let extra = bridge;
@@ -398,7 +402,7 @@ document.getElementById('btn').addEventListener('click', () => {
     if (designMode && typeof DesignMode !== 'undefined') {
       extra += DesignMode.injectScript(token);
     }
-    doc = doc.includes('</head>') ? doc.replace('</head>', extra + '</head>') : extra + doc;
+    doc = doc.includes('</head>') ? chen('</head>', extra + '</head>') : extra + doc;
     return { doc, token };
   }
 

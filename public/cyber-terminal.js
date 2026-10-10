@@ -99,6 +99,10 @@ const CyberTerminal = (() => {
   // He thong tep la du lieu nap duoc, khong con la hang so dung chung.
   // Moi phong lab nap bo tep rieng; bo San co la mac dinh.
   let VFS = saoChepSau(VFS_MACDINH);
+  // VFS la bien dung chung cho moi terminal tren trang. Phai nho dang nap bo cua lab
+  // de terminal CTF ve sau biet ma tra lai bo San co (truoc day CTF chay tren bo
+  // Nginx, khong con tep co nao cho toi khi tai lai trang).
+  let dangDungBoLab = false;
 
   /** Sao chep sau de lab khong lam ban du lieu goc */
   function saoChepSau(o) {
@@ -108,6 +112,7 @@ const CyberTerminal = (() => {
   /** Thay toan bo he thong tep bang bo moi */
   function loadFs(duLieu) {
     VFS = saoChepSau(duLieu || VFS_MACDINH);
+    dangDungBoLab = !!duLieu && duLieu !== VFS_MACDINH;
     currentDir = VFS['/home/hacker'] ? '/home/hacker' : '/';
     return VFS;
   }
@@ -706,8 +711,10 @@ udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
    *   Trong BAI HOC chi hien terminal de lam dung bai tap cua bai do.
    *   Bang thu thach CTF thuoc ve muc "Thu thach" rieng, khong lien quan
    *   toi bai dang hoc nen khong hien o day.
+   *   opts.lab = true: terminal cua phong lab, dung bo tep lab vua nap bang loadFs.
    */
   function renderStudio(containerId, opts) {
+    if (!(opts && opts.lab) && dangDungBoLab) resetFs();
     const container = document.getElementById(containerId);
     if (!container) return;
     const showChallenges = !opts || opts.challenges !== false;

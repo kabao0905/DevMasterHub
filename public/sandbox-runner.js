@@ -36,7 +36,9 @@ const SandboxRunner = (() => {
     iframeContainerEl.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.className = 'sandbox-preview-frame';
-    iframe.setAttribute('sandbox', 'allow-scripts allow-modals allow-same-origin');
+    // Khong them allow-same-origin: srcdoc + allow-scripts + allow-same-origin cho code
+    // trong khung doc parent.localStorage, tuc lay duoc token Supabase (giong loi da sua o sandpack-live.js)
+    iframe.setAttribute('sandbox', 'allow-scripts allow-modals');
     iframe.style.width = '100%';
     iframe.style.height = '100%';
     iframe.style.border = 'none';

@@ -313,9 +313,13 @@ const DesignMode = (() => {
       ? `Người dùng đang chọn phần tử <${current.tag}> có selector "${current.selector}".`
       : 'Người dùng chưa chọn phần tử nào cụ thể.';
 
+    // Gui DUNG bo file dang mo: bai React co App.jsx, bai Vue co App.js — truoc day
+    // chi gui script.js nen AI khong he thay code component.
+    const tenFile = Object.keys(files);
+
     const system = [
       'Bạn là trợ lý sửa giao diện web cho một nền tảng dạy lập trình.',
-      'Người học có 3 file: index.html, style.css, script.js.',
+      `Người học có ${tenFile.length} file: ${tenFile.join(', ')}.`,
       'Hãy TỰ QUYẾT ĐỊNH phạm vi sửa dựa trên yêu cầu: nếu họ nói về một phần tử cụ thể',
       'thì chỉ sửa CSS của phần tử đó; nếu họ yêu cầu đổi cả giao diện thì được phép',
       'viết lại cả file.',
@@ -336,9 +340,7 @@ const DesignMode = (() => {
       '',
       'YÊU CẦU CỦA NGƯỜI DÙNG: ' + req,
       '',
-      '--- index.html ---', files['index.html'] || '',
-      '--- style.css ---', files['style.css'] || '',
-      '--- script.js ---', files['script.js'] || ''
+      ...tenFile.flatMap(ten => [`--- ${ten} ---`, files[ten] || ''])
     ].join('\n');
 
     try {
@@ -377,7 +379,7 @@ const DesignMode = (() => {
         if (e.type === 'css' && e.selector && e.props) {
           SandpackLive.applyStyle(e.selector, e.props, true);
           applied++;
-        } else if (e.type === 'file' && e.file && typeof e.content === 'string') {
+        } else if (e.type === 'file' && tenFile.includes(e.file) && typeof e.content === 'string') {
           SandpackLive.replaceFile(e.file, e.content);
           applied++;
         }

@@ -138,7 +138,7 @@ const LabRunner = (() => {
 
     if (typeof CyberTerminal !== 'undefined') {
       CyberTerminal.loadFs(lab.fs);
-      CyberTerminal.renderStudio('lab-terminal-mount', { challenges: false });
+      CyberTerminal.renderStudio('lab-terminal-mount', { challenges: false, lab: true });
     }
   }
 
