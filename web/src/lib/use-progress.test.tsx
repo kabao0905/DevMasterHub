@@ -185,3 +185,13 @@ test('dang xuat khi lan ghi chua xong: khong ghi tien do nguoi cu vao cache cua 
   await act(async () => { tha(); await new Promise(r => setTimeout(r, 30)); });
   expect(localStorage.getItem('devmaster_hub_progress_cache')).toBeNull();
 });
+
+test('Back tu trang app cu ve trang React lay tu bfcache thi tai lai tien do (app cu vua ghi)', async () => {
+  const gia = giaSupabase({ bang: { lesson_progress: [] } });
+  const { result } = moHook(gia);
+  act(() => gia.phat('SIGNED_IN', { user: { id: 'u1' } }));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  gia.truyVan.length = 0;
+  act(() => { window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); });
+  await waitFor(() => expect(gia.truyVan.some(q => q.bang === 'lesson_progress' && q.op === 'select')).toBe(true));
+});

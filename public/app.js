@@ -337,12 +337,18 @@ const App = (() => {
     }
   }
 
+  // Lan ghi tien do dang gui: tai trang sang app React luc nay se huy request, mat dau tick
+  let ghiTienDoDangCho = null;
+
   function toggleLessonComplete(techId, levelId, lessonId) {
     const key = `${techId}.${levelId}.${lessonId}`;
     progress[key] = !progress[key];
     saveProgress();
     if (isAuthenticated) {
-      AuthService.markLessonComplete(techId, levelId, lessonId, progress[key]).catch(e => console.warn('[Progress] Mark error:', e));
+      const lanGhi = Promise.resolve(AuthService.markLessonComplete(techId, levelId, lessonId, progress[key]))
+        .catch(e => console.warn('[Progress] Mark error:', e));
+      ghiTienDoDangCho = lanGhi;
+      lanGhi.then(() => { if (ghiTienDoDangCho === lanGhi) ghiTienDoDangCho = null; });
     }
     updateStats();
     return progress[key];
@@ -458,7 +464,10 @@ const App = (() => {
     // coi moi trang bai hoc la chuyen huong toi /auth.
     if (!taiCho && (window.__REACT_VIEWS || []).includes(view)) {
       catViecDangLam();
-      window.location.assign(path);
+      // Vua tick hoan thanh roi bam roadmap/Escape: cho lan ghi xong (toi da 3 giay) roi moi roi trang
+      const choGhi = ghiTienDoDangCho;
+      if (choGhi) Promise.race([choGhi, new Promise(r => setTimeout(r, 3000))]).then(() => window.location.assign(path));
+      else window.location.assign(path);
       return;
     }
 

@@ -64,6 +64,7 @@ function docNguon(tenFile) {
  */
 function giaSupabase(duLieu = {}) {
   const ghi = [];
+  const treo = {};
   const doc = [];   // moi truy van select da chay, de dem so lan goi
   let goiLai = null;
   let phien = null;
@@ -92,8 +93,10 @@ function giaSupabase(duLieu = {}) {
           data = tt.motDong && Array.isArray(tt.payload) ? tt.payload[0] : tt.payload;
         }
         // Tra ve o luot su kien sau nhu mang that; vong lap goi lai vo han se
-        // hien ra thanh so lan goi tang dan thay vi treo ca tien trinh kiem
-        return new Promise(r => setImmediate(() => r({ data, error: null }))).then(ok, loi);
+        // hien ra thanh so lan goi tang dan thay vi treo ca tien trinh kiem.
+        // treo[bang]: lenh ghi vao bang do cho Promise nay (mo phong mang cham)
+        const doi = tt.op === 'select' ? undefined : treo[bang];
+        return Promise.resolve(doi).then(() => new Promise(r => setImmediate(() => r({ data, error: null })))).then(ok, loi);
       }
     };
     return b;
@@ -113,6 +116,7 @@ function giaSupabase(duLieu = {}) {
     client,
     ghi,
     doc,
+    treo,
     dangNhap(user) {
       phien = { user, access_token: 'tok' };
       if (goiLai) goiLai('SIGNED_IN', phien);

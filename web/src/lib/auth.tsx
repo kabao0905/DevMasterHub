@@ -66,6 +66,18 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
     };
   }, [client, xoaDuLieuNguoiDung]);
 
+  // Back tu trang app cu: trinh duyet co the tra lai trang React tu bfcache (khong chay lai gi),
+  // trong khi app cu vua ghi tien do/ho so — tai lai du lieu nguoi dung
+  useEffect(() => {
+    function khiHienLai(e: PageTransitionEvent) {
+      if (!e.persisted) return;
+      void qc.invalidateQueries({ queryKey: ['progress'] });
+      void qc.invalidateQueries({ queryKey: ['profile'] });
+    }
+    window.addEventListener('pageshow', khiHienLai);
+    return () => window.removeEventListener('pageshow', khiHienLai);
+  }, [qc]);
+
   const { data: profile = null } = useQuery({
     queryKey: ['profile', user?.id],
     enabled: !!user,

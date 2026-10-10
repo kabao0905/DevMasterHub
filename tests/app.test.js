@@ -320,3 +320,27 @@ test('co app React: nguoi khac dang nhap trong cung tab khong nhan viec dang lam
   const b = await moTrongTab(phien, '/project-level', 'u2');
   assert.ok(!b.main.innerHTML.includes('bi mat cua an'));
 });
+
+test('co app React: vua tick hoan thanh roi sang trang React thi cho ghi xong moi tai trang', async () => {
+  const db = giaSupabase({ profiles: [{ id: 'u1', username: 'an' }] });
+  const a = napApp({
+    curriculum: baiHoc('python'), supabase: db.client, duongDan: '/lesson/python/newbie/l1',
+    dichVu: { __REACT_VIEWS: ['dashboard', 'auth', 'roadmap'] }
+  });
+  const diToi = [];
+  a.sb.location.assign = u => diToi.push(u);
+  a.App.init();
+  await choXong();
+  db.dangNhap({ id: 'u1' });
+  await choXong();
+
+  let tha;
+  db.treo.lesson_progress = new Promise(r => { tha = r; });
+  a.App.markComplete('python', 'newbie', 'l1');
+  a.App.openRoadmap('python');
+  await choXong();
+  assert.deepStrictEqual(diToi, [], 'roi trang khi lan ghi tien do chua gui xong thi mat dau tick');
+  tha();
+  await choXong();
+  assert.deepStrictEqual(diToi, ['/roadmap/python']);
+});
