@@ -43,6 +43,7 @@ const App = (() => {
   function init() {
     bindEvents();
     setupMobileSidebar();
+    window.addEventListener('pagehide', catViecDangLam);
 
     if (typeof AIService !== 'undefined') {
       AIService.checkHealth().then(h => {
@@ -74,6 +75,8 @@ const App = (() => {
       AuthService.onAuthChange(async (event, user) => {
         if (user) {
           isAuthenticated = true;
+          maNguoiDung = user.id;
+          layLaiViecDangLam(user.id);
 
           try {
             currentUserProfile = await AuthService.getProfile();
@@ -142,7 +145,55 @@ const App = (() => {
 
   // Dang xuat tren may dung chung: moi thu rieng cua nguoi vua thoat phai roi khoi
   // bo nho, neu khong nguoi dang nhap sau se thay chat tu van / project cua ho.
+  // Viec dang lam do chi nam trong bo nho. Sang trang cua app React la tai trang moi, nen cat
+  // tam vao sessionStorage cua tab (gan id nguoi dung) roi lay lai khi app cu mo lai.
+  const KHOA_VIEC_DANG_LAM = 'devmaster_hub_legacy_session';
+  let maNguoiDung = null;
+
+  function catViecDangLam() {
+    if (!isAuthenticated || !maNguoiDung) return;
+    saveCurrentFileCode();
+    const dapAn = $('#answer-editor');
+    const baiDangMo = $('#exercise-container')?.dataset.key;
+    if (dapAn && baiDangMo && exerciseCache[baiDangMo]) exerciseCache[baiDangMo].userAnswer = dapAn.value;
+    const viec = {
+      quizCache, exerciseCache, lessonChatCache,
+      projectSelectedLevel, projectIdea, projectChatHistory, projectFiles, projectActiveFileIdx,
+      projectReview, projectTopic, projectTopicLevel,
+      careerDraftInput, careerJobResults, careerLastSearchKeyword, careerJobsCollapsed
+    };
+    try { sessionStorage.setItem(KHOA_VIEC_DANG_LAM, JSON.stringify({ uid: maNguoiDung, viec })); } catch (e) {}
+  }
+
+  function layLaiViecDangLam(uid) {
+    let goi = null;
+    try {
+      goi = JSON.parse(sessionStorage.getItem(KHOA_VIEC_DANG_LAM) || 'null');
+      sessionStorage.removeItem(KHOA_VIEC_DANG_LAM);
+    } catch (e) {}
+    if (!goi || goi.uid !== uid || !goi.viec) return;
+    const v = goi.viec;
+    Object.assign(quizCache, v.quizCache);
+    Object.assign(exerciseCache, v.exerciseCache);
+    // Tin nhan dang gui do dang thi khong con ai cho tra loi nua
+    for (const [k, c] of Object.entries(v.lessonChatCache || {})) lessonChatCache[k] = { ...c, sending: false };
+    projectSelectedLevel = v.projectSelectedLevel ?? null;
+    projectIdea = v.projectIdea ?? null;
+    projectChatHistory = Array.isArray(v.projectChatHistory) ? v.projectChatHistory : [];
+    if (Array.isArray(v.projectFiles) && v.projectFiles.length) projectFiles = v.projectFiles;
+    projectActiveFileIdx = Math.min(v.projectActiveFileIdx || 0, projectFiles.length - 1);
+    projectReview = v.projectReview ?? null;
+    projectTopic = v.projectTopic || '';
+    projectTopicLevel = v.projectTopicLevel ?? null;
+    careerDraftInput = v.careerDraftInput || '';
+    careerJobResults = Array.isArray(v.careerJobResults) ? v.careerJobResults : [];
+    careerLastSearchKeyword = v.careerLastSearchKeyword || '';
+    careerJobsCollapsed = v.careerJobsCollapsed !== false;
+  }
+
   function xoaDuLieuNguoiDung() {
+    maNguoiDung = null;
+    try { sessionStorage.removeItem(KHOA_VIEC_DANG_LAM); } catch (e) {}
     careerChatHistory = [];
     careerJobResults = [];
     careerLastSearchKeyword = '';
@@ -406,6 +457,7 @@ const App = (() => {
     // de dang nhap xong quay lai dung link, Back khong bi day di lai, va may tim kiem khong
     // coi moi trang bai hoc la chuyen huong toi /auth.
     if (!taiCho && (window.__REACT_VIEWS || []).includes(view)) {
+      catViecDangLam();
       window.location.assign(path);
       return;
     }

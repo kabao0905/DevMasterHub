@@ -28,7 +28,7 @@ test('dang ky kiem tra dau vao truoc khi goi Supabase', async () => {
   expect(client.auth.signUp).not.toHaveBeenCalled();
 });
 
-test('dang xuat xoa cache truy van va cache localStorage cua nguoi vua thoat', async () => {
+test('dang xuat xoa cache truy van, cache localStorage va viec dang lam do app cu cat tam', async () => {
   const { client, phat } = giaSupabase();
   const { result, qc } = moAuth(client);
   act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
@@ -36,6 +36,7 @@ test('dang xuat xoa cache truy van va cache localStorage cua nguoi vua thoat', a
   qc.setQueryData(['progress', 'u1'], ['python.newbie.a']);
   localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true}');
   localStorage.setItem('devmaster_hub_profile_cache', '{}');
+  sessionStorage.setItem('devmaster_hub_legacy_session', '{"uid":"u1","viec":{}}');
 
   await act(() => result.current.logout());
 
@@ -43,6 +44,7 @@ test('dang xuat xoa cache truy van va cache localStorage cua nguoi vua thoat', a
   expect(qc.getQueryData(['progress', 'u1'])).toBeUndefined();
   expect(localStorage.getItem('devmaster_hub_progress_cache')).toBeNull();
   expect(localStorage.getItem('devmaster_hub_profile_cache')).toBeNull();
+  expect(sessionStorage.getItem('devmaster_hub_legacy_session')).toBeNull();
 });
 
 test('dang xuat tu tab khac (su kien SIGNED_OUT) cung xoa cache', async () => {

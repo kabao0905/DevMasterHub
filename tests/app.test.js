@@ -284,3 +284,39 @@ test('co app React: Dashboard va dang xuat tai trang moi sang React, view khac v
 
   assert.deepStrictEqual(diToi, ['/', '/auth']);
 });
+
+// Mot tab: sessionStorage giu qua cac lan tai trang, Supabase giu phien dang nhap
+async function moTrongTab(phien, duongDan, nguoiDung = 'u1') {
+  const yTuong = { id: 'y1', source: 'level', level: 'newbie', idea: { name: 'Máy tính bỏ túi', description: 'Cộng trừ nhân chia', difficulty: 'newbie' } };
+  const db = giaSupabase({ profiles: [{ id: nguoiDung, username: nguoiDung }], saved_ideas: [yTuong] });
+  const a = napApp({ supabase: db.client, duongDan, phien, dichVu: { __REACT_VIEWS: ['dashboard', 'auth'] } });
+  a.sb.location.assign = () => {};
+  a.App.init();
+  await choXong();
+  db.dangNhap({ id: nguoiDung });
+  await choXong();
+  return a;
+}
+
+test('co app React: code dang go o Project Lab con nguyen sau khi sang Dashboard roi bam Back', async () => {
+  const phien = {};
+  const a = await moTrongTab(phien, '/project');
+  a.App.loadSavedIdea('y1');
+  a.tao('project-code-editor').value = 'print("dang lam do")';
+  a.App.goToDashboard();                       // sang React = tai trang moi
+
+  const b = await moTrongTab(phien, '/project-level');
+  assert.ok(b.main.innerHTML.includes('print(&quot;dang lam do&quot;)'), 'code dang go bi mat');
+  assert.ok(b.main.innerHTML.includes('Máy tính bỏ túi'));
+});
+
+test('co app React: nguoi khac dang nhap trong cung tab khong nhan viec dang lam cua nguoi truoc', async () => {
+  const phien = {};
+  const a = await moTrongTab(phien, '/project');
+  a.App.loadSavedIdea('y1');
+  a.tao('project-code-editor').value = 'bi mat cua an';
+  a.App.goToDashboard();
+
+  const b = await moTrongTab(phien, '/project-level', 'u2');
+  assert.ok(!b.main.innerHTML.includes('bi mat cua an'));
+});

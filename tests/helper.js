@@ -6,6 +6,15 @@ const vm = require('node:vm');
 
 const PUB = path.join(__dirname, '..', 'public');
 
+/** Gia localStorage/sessionStorage; truyen cung `kho` de hai lan nap trang dung chung du lieu */
+function khoLuu(kho = {}) {
+  return {
+    getItem: k => (k in kho ? kho[k] : null),
+    setItem: (k, v) => { kho[k] = String(v); },
+    removeItem: k => { delete kho[k]; }
+  };
+}
+
 function hopCat() {
   const sb = {
     console,
@@ -22,14 +31,8 @@ function hopCat() {
       createElement: () => ({ style: {}, classList: { add() {}, remove() {} }, appendChild() {}, remove() {} }),
       body: { appendChild() {} }
     },
-    localStorage: (() => {
-      const kho = {};
-      return {
-        getItem: k => (k in kho ? kho[k] : null),
-        setItem: (k, v) => { kho[k] = String(v); },
-        removeItem: k => { delete kho[k]; }
-      };
-    })()
+    localStorage: khoLuu(),
+    sessionStorage: khoLuu()
   };
   sb.window = sb;
   sb.globalThis = sb;
@@ -138,8 +141,10 @@ function phanTuGia(id) {
  * `dichVu`; neu muon dung AuthService that thi truyen `supabase` (giaSupabase().client).
  * setTimeout/requestAnimationFrame chi xep hang; goi chayHenGio() de chay het.
  */
-function napApp({ curriculum = {}, dichVu = {}, supabase = null, luuTru = {}, duongDan = '/' } = {}) {
+function napApp({ curriculum = {}, dichVu = {}, supabase = null, luuTru = {}, duongDan = '/', phien } = {}) {
   const sb = hopCat();
+  // sessionStorage cua tab: song qua cac lan tai trang trong cung tab
+  if (phien) sb.sessionStorage = khoLuu(phien);
   const henGio = [];
   const phanTu = {};
   const canhBao = [];

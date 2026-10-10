@@ -10,6 +10,8 @@ export type HoSo = { id: string; username: string; display_name: string | null }
 
 /** Cache cua app cu tren may; phai xoa khi dang xuat de nguoi sau khong thay */
 const KHOA_CACHE = ['devmaster_hub_profile_cache', 'devmaster_hub_progress_cache', 'devmaster_hub_ideas_cache'];
+/** Viec dang lam do app cu cat tam khi sang app React (xem catViecDangLam trong public/app.js) */
+const KHOA_VIEC_DANG_LAM = 'devmaster_hub_legacy_session';
 const emailTu = (ten: string) => `${ten}@devmaster.hub`;
 
 type GiaTri = {
@@ -35,6 +37,7 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
     for (const k of KHOA_CACHE) {
       try { localStorage.removeItem(k); } catch { /* bo qua */ }
     }
+    try { sessionStorage.removeItem(KHOA_VIEC_DANG_LAM); } catch { /* bo qua */ }
   }, [qc]);
 
   useEffect(() => {
