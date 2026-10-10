@@ -1,8 +1,8 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const vm = require('vm');
 const { napEnv } = require('./lib/env.js');
+const { napGiaoTrinh } = require('./lib/curriculum.js');
 const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC } = require('./lib/ai-guard.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
@@ -713,22 +713,7 @@ app.post('/api/crawl', sameOrigin, requireUser, rateLimit({ max: 10, scope: 'cra
 
 function loadCurriculum() {
   try {
-    const names = fs.readdirSync(PUBLIC_DIR);
-    const ordered = [
-      'data.js',
-      ...names.filter(f => /^data-.*\.js$/.test(f) && f !== 'data-extra.js').sort(),
-      'data-extra.js'
-    ].filter(f => names.includes(f));
-
-    const sandbox = { console: { log() {}, warn() {}, error() {} } };
-    sandbox.window = sandbox;
-    sandbox.globalThis = sandbox;
-    const ctx = vm.createContext(sandbox);
-    for (const f of ordered) {
-      vm.runInContext(fs.readFileSync(path.join(PUBLIC_DIR, f), 'utf8'), ctx, { filename: f });
-    }
-    vm.runInContext('globalThis.__C = typeof CURRICULUM !== "undefined" ? CURRICULUM : null;', ctx);
-    return { ...(sandbox.CURRICULUM || {}), ...(ctx.__C || {}) };
+    return napGiaoTrinh(PUBLIC_DIR);
   } catch (err) {
     console.warn('[SEO] Không nạp được CURRICULUM:', err.message);
     return {};

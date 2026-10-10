@@ -13870,6 +13870,8 @@ const I18n = (() => {
   }
 
   const api = {
+    // Du lieu tho cho scripts/xuat-du-lieu.mjs xuat ra JSON cho app React
+    _duLieu: { translations, canonicalTitles, techDescriptions, LANGUAGES },
     translateDynamic,
     getLang: () => currentLang,
     getLanguages,

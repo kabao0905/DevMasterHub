@@ -11,6 +11,7 @@ function hopCat() {
     console,
     URL,
     URLSearchParams,
+    navigator: { language: 'vi' },
     atob: s => Buffer.from(s, 'base64').toString('utf8'),
     btoa: s => Buffer.from(s, 'utf8').toString('base64'),
     setTimeout: () => 0,
