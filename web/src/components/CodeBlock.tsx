@@ -1,0 +1,42 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
+import { tenNgonNgu, toMauCode } from '@/lib/highlight';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+/** Khoi code da to mau, co nut chep */
+export function CodeBlock({ code, lang, className }: { code: string; lang?: string; className?: string }) {
+  const { t } = useT();
+  const [daChep, datDaChep] = useState(false);
+  // toMauCode tra HTML da escape tung token nen chen duoc
+  const html = useMemo(() => toMauCode(code, lang), [code, lang]);
+
+  useEffect(() => {
+    if (!daChep) return;
+    const h = setTimeout(() => datDaChep(false), 2000);
+    return () => clearTimeout(h);
+  }, [daChep]);
+
+  async function chep() {
+    try {
+      await navigator.clipboard.writeText(code);
+      datDaChep(true);
+    } catch {
+      toast.error(t('copyFailed'));
+    }
+  }
+
+  return (
+    <div className={cn('relative overflow-hidden rounded-xl border bg-code', className)}>
+      <Button variant="ghost" size="sm" onClick={chep}
+        className="absolute top-2 right-2 h-7 bg-background/60 px-2 text-xs text-muted-foreground backdrop-blur hover:text-foreground">
+        {daChep ? <><Check aria-hidden="true" />{t('copied')}</> : t('copyCode')}
+      </Button>
+      <pre className="overflow-x-auto p-4 pr-28 font-mono text-[13px] leading-relaxed">
+        <code className={`language-${tenNgonNgu(lang) || 'plaintext'}`} dangerouslySetInnerHTML={{ __html: html }} />
+      </pre>
+    </div>
+  );
+}

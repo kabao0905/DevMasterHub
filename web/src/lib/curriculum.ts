@@ -47,3 +47,25 @@ export function timBaiHoc(ds: MucTimKiem[], q: string, gioiHan = 50): MucTimKiem
   }
   return ra;
 }
+
+/** Noi dung day du cua mot bai (curriculum/<tech>.json) */
+export type BaiDayDu = BaiTomTat & { theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string };
+export type CapDayDu = Omit<CapTomTat, 'lessons'> & { lessons: BaiDayDu[] };
+export type CongNgheDayDu = Omit<CongNgheTomTat, 'levels'> & { levels: CapDayDu[] };
+
+/** So khop dung id — khong tra kieu CURRICULUM[id] vi "constructor" cung la thuoc tinh co that */
+export function timCongNghe<T extends { id: string }>(ds: T[], id: string): T | undefined {
+  return ds.find(x => x.id === id);
+}
+
+type ViTri<C, B> = { level: C; lesson: B };
+
+/** Bai dang mo cung bai truoc/sau, noi lien qua ranh gioi cap (bai cuoi Newbie -> bai dau Junior) */
+export function viTriBai<B extends { id: string }, C extends { id: string; lessons: B[] }>(
+  tech: { levels: C[] }, levelId: string, lessonId: string
+): (ViTri<C, B> & { truoc: ViTri<C, B> | null; sau: ViTri<C, B> | null }) | null {
+  const phang = tech.levels.flatMap(level => level.lessons.map(lesson => ({ level, lesson })));
+  const i = phang.findIndex(x => x.level.id === levelId && x.lesson.id === lessonId);
+  if (i < 0) return null;
+  return { ...phang[i], truoc: phang[i - 1] ?? null, sau: phang[i + 1] ?? null };
+}

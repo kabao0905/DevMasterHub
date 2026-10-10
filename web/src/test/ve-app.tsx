@@ -7,6 +7,7 @@ import { cacRoute } from '@/router';
 import { AuthProvider } from '@/lib/auth';
 import { I18nProvider } from '@/lib/i18n';
 import { BAN_DICH_VI } from './ban-dich-vi';
+import { Toaster } from '@/components/ui/sonner';
 import type { giaSupabase } from './gia-supabase';
 
 export function veApp(duongDan: string, { gia, json = {} }: { gia: ReturnType<typeof giaSupabase>; json?: Record<string, unknown> }) {
@@ -24,6 +25,7 @@ export function veApp(duongDan: string, { gia, json = {} }: { gia: ReturnType<ty
       <I18nProvider taiBanDich={async () => BAN_DICH_VI}>
         <AuthProvider client={gia.client}>
           <RouterProvider router={router} />
+          <Toaster />
         </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>

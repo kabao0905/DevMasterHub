@@ -6,6 +6,7 @@ import { taoRouter } from './router';
 import { AuthProvider } from './lib/auth';
 import { I18nProvider } from './lib/i18n';
 import { duongDanTuHashCu } from './lib/legacy-hash';
+import { Toaster } from './components/ui/sonner';
 import './styles/globals.css';
 
 // Link cu dang /#roadmap/python: chuyen sang duong dan that truoc khi ve gi
@@ -23,6 +24,7 @@ if (tuHash) {
         <I18nProvider>
           <AuthProvider>
             <RouterProvider router={taoRouter()} />
+            <Toaster position="bottom-right" />
           </AuthProvider>
         </I18nProvider>
       </QueryClientProvider>
