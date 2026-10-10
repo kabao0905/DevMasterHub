@@ -12,6 +12,7 @@ import { LevelLadder, CHU_CAP } from '@/components/LevelLadder';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LoadError } from '@/components/LoadError';
 import { SearchResults } from './SearchResults';
 import { cn } from '@/lib/utils';
 
@@ -53,7 +54,7 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
 
 export function DashboardPage() {
   const { t } = useT();
-  const { data: ds = [], isLoading } = useCurriculumIndex();
+  const { data: ds = [], isLoading, isError, refetch } = useCurriculumIndex();
   const { done } = useProgress();
   const [q, datQ] = useState('');
   const qTre = useDeferredValue(q);
@@ -68,12 +69,25 @@ export function DashboardPage() {
     return [...m].filter(([, x]) => x.length);
   }, [ds]);
 
+  const tieuDe = (
+    <header className="space-y-1">
+      <h1 className="text-3xl font-bold tracking-tight">{t('dashboardTitle')}</h1>
+      <p className="text-muted-foreground">{t('dashboardSubtitle')}</p>
+    </header>
+  );
+
+  if (isError) {
+    return (
+      <div className="space-y-10">
+        {tieuDe}
+        <LoadError onRetry={() => refetch()} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">{t('dashboardTitle')}</h1>
-        <p className="text-muted-foreground">{t('dashboardSubtitle')}</p>
-      </header>
+      {tieuDe}
 
       {isLoading ? <Skeleton className="h-44 w-full rounded-2xl" /> : <HocTiep viTri={keTiep} done={done} />}
 

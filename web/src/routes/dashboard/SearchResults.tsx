@@ -4,14 +4,16 @@ import { useSearchIndex } from '@/lib/use-curriculum';
 import { timBaiHoc, type CongNgheTomTat } from '@/lib/curriculum';
 import { CHU_CAP } from '@/components/LevelLadder';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LoadError } from '@/components/LoadError';
 import { cn } from '@/lib/utils';
 
 export function SearchResults({ q, ds }: { q: string; ds: CongNgheTomTat[] }) {
   const { t, translateTitle } = useT();
-  const { data, isLoading } = useSearchIndex(true);
+  const { data, isLoading, isError, refetch } = useSearchIndex(true);
   const ketQua = useMemo(() => timBaiHoc(data ?? [], q), [data, q]);
   const theoId = useMemo(() => new Map(ds.map(x => [x.id, x])), [ds]);
 
+  if (isError) return <LoadError onRetry={() => refetch()} />;
   if (isLoading) {
     return <div className="space-y-2" aria-busy="true">{[0, 1, 2].map(i => <Skeleton key={i} className="h-14 w-full" />)}</div>;
   }

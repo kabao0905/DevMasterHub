@@ -142,3 +142,29 @@ test('chua dang nhap mo / thi giu tieu de trang chu (may tim kiem doc trang nay 
   await screen.findByRole('button', { name: 'Đăng nhập' });
   await waitFor(() => expect(document.title).toBe('DevMaster Hub — Nền Tảng Học Lập Trình Toàn Diện Từ Newbie Đến Senior'));
 });
+
+const fetchTu = (json: Record<string, unknown>) => vi.fn(async (url: string) => (
+  json[url] === undefined ? { ok: false, status: 503, json: async () => null } : { ok: true, status: 200, json: async () => json[url] }
+));
+
+test('dashboard: tai danh sach cong nghe loi thi bao loi kem nut Thu lai, khong hien trang rong', async () => {
+  const u = userEvent.setup();
+  veApp('/', { gia: daDangNhap(), json: { '/api/health': { aiEnabled: true } } });
+  const main = await screen.findByRole('main');
+  expect(await within(main).findByRole('alert')).toHaveTextContent('Không tải được dữ liệu');
+  vi.stubGlobal('fetch', fetchTu(JSON_GIA));
+  await u.click(within(main).getByRole('button', { name: 'Thử lại' }));
+  expect(await within(main).findByRole('link', { name: /Python/ })).toBeInTheDocument();
+});
+
+test('tim kiem: tai chi muc loi thi bao loi, khong noi la khong co ket qua', async () => {
+  const u = userEvent.setup();
+  veApp('/', { gia: daDangNhap(), json: { '/curriculum/index.json': INDEX } });
+  await u.type(await screen.findByRole('searchbox'), 'vong lap');
+  const main = screen.getByRole('main');
+  expect(await within(main).findByRole('alert')).toHaveTextContent('Không tải được dữ liệu');
+  expect(within(main).queryByText(/Không tìm thấy kết quả/)).not.toBeInTheDocument();
+  vi.stubGlobal('fetch', fetchTu(JSON_GIA));
+  await u.click(within(main).getByRole('button', { name: 'Thử lại' }));
+  expect(await within(main).findByRole('link', { name: /Vòng lặp/ })).toBeInTheDocument();
+});

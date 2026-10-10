@@ -1,6 +1,7 @@
 // Ban dich cho app React. Du lieu xuat tu public/i18n.js (scripts/xuat-du-lieu.mjs),
 // moi ngon ngu mot file /i18n/<lang>.json da gop san du phong "ngon ngu > en > vi".
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 export type NgonNgu = { name: string; flag: string; code: string };
 export type BanDich = {
@@ -55,16 +56,18 @@ const I18nContext = createContext<GiaTri | null>(null);
 
 export function I18nProvider({ children, taiBanDich = taiMacDinh }: { children: ReactNode; taiBanDich?: (lang: string) => Promise<BanDich> }) {
   const [lang, datLang] = useState(ngonNguBanDau);
-  // Giu ban dich cu trong luc tai ban moi de giao dien khong nhay ve khoa tho
-  const [banDich, datBanDich] = useState<BanDich | null>(null);
-
-  useEffect(() => {
-    let huy = false;
-    taiBanDich(lang)
-      .then(b => { if (!huy) datBanDich(b); })
-      .catch(err => console.warn('[i18n]', err));
-    return () => { huy = true; };
-  }, [lang, taiBanDich]);
+  const q = useQuery({
+    queryKey: ['i18n', lang],
+    queryFn: () => taiBanDich(lang),
+    staleTime: Infinity,
+    // Mang chap chon thi thu them 2 lan (0.5s, 1s) truoc khi bao loi
+    retry: 2,
+    retryDelay: n => 500 * 2 ** n,
+    // Giu ban dich cu trong luc tai ban moi de giao dien khong nhay ve khoa tho
+    placeholderData: keepPreviousData
+  });
+  const banDich = q.data ?? null;
+  useEffect(() => { if (q.isError) console.warn('[i18n]', q.error); }, [q.isError, q.error]);
 
   const setLang = useCallback((l: string) => {
     if (!hoTro(l)) return;
@@ -88,6 +91,21 @@ export function I18nProvider({ children, taiBanDich = taiMacDinh }: { children: 
     };
   }, [banDich, lang, setLang]);
 
+  // Khong co ban dich nao de dung: chu viet tay hai thu tieng, khong qua t()
+  if (!giaTri && q.isError) {
+    return (
+      <div role="alert" className="grid min-h-dvh place-items-center bg-background p-6 text-center">
+        <div className="max-w-sm space-y-4">
+          <p className="font-medium">Không tải được giao diện. Kiểm tra kết nối mạng rồi thử lại.</p>
+          <p lang="en" className="text-sm text-muted-foreground">Couldn&apos;t load the interface. Check your connection and try again.</p>
+          <button type="button" onClick={() => q.refetch()}
+            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring">
+            Thử lại / Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
   // Chua co ban dich nao thi chua ve gi: tranh nhay chu tho "dashboardTitle" len man hinh
   if (!giaTri) return null;
   return <I18nContext.Provider value={giaTri}>{children}</I18nContext.Provider>;
