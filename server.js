@@ -1,8 +1,10 @@
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const { napEnv } = require('./lib/env.js');
 const { napGiaoTrinh } = require('./lib/curriculum.js');
+const { laUrlReact, VIEW_REACT } = require('./lib/route-owner.js');
 const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC } = require('./lib/ai-guard.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
@@ -32,6 +34,15 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nlkljhpqwepabglrqkmz.s
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_0s-SglEeMENWRqgbC2QWuQ_w0pzWJMe';
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
+// App React: dev = Vite nhung trong Express (`node server.js --dev`), prod = ban build trong dist/.
+// Chua build (vd. Render chua doi Build Command) thi moi URL lui ve app cu.
+const DIST_DIR = process.env.DIST_DIR || path.join(__dirname, 'dist');
+const CHE_DO_DEV = process.argv.includes('--dev');
+const REACT_HTML = CHE_DO_DEV ? null : (() => {
+  try { return fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf8'); } catch { return null; }
+})();
+let vite = null;
+const coAppReact = () => (CHE_DO_DEV ? !!vite : !!REACT_HTML);
 const BASE_URL = (process.env.BASE_URL || 'https://devmaster-hub.onrender.com').replace(/\/$/, '');
 const ALLOWED_ORIGINS = [BASE_URL, 'http://localhost:' + PORT, 'http://127.0.0.1:' + PORT];
 
@@ -47,6 +58,20 @@ app.use((req, res, next) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
+
+// Dev: Vite phuc vu /src, /@vite, HMR va file trong web/public (JSON giao trinh)
+app.use((req, res, next) => (vite && !req.path.startsWith('/api') ? vite.middlewares(req, res, next) : next()));
+
+// Prod: file cua ban build. Ten trong assets/ co hash nen cache 1 nam; JSON giao trinh thi kiem lai moi lan.
+if (!CHE_DO_DEV) {
+  app.use(express.static(DIST_DIR, {
+    index: false,
+    setHeaders: (res, filePath) => {
+      const coHash = /[\\/]assets[\\/][^\\/]+-[A-Za-z0-9_-]{6,}\.[a-z0-9]+$/i.test(filePath);
+      res.setHeader('Cache-Control', coHash ? 'public, max-age=31536000, immutable' : 'no-cache');
+    }
+  }));
+}
 
 app.use(express.static(PUBLIC_DIR, {
   index: false,
@@ -799,13 +824,14 @@ function escapeAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function renderIndex(urlPath) {
+/** Chen title/description/canonical/og/twitter theo URL vao mot template HTML (app cu hoac React) */
+function chenMeta(template, urlPath) {
   const { title, desc, url } = metaForPath(urlPath);
   const t = escapeAttr(title), d = escapeAttr(desc), u = escapeAttr(url);
   // Gia tri chen vao di qua ham: chuoi thay the hieu $' $` $& la ky hieu dac biet,
   // ma url lay tu duong dan nguoi dung go — "/x$'" tung lam ca trang bi nhan ban.
   const gan = giaTri => (_, dau) => dau + giaTri;
-  return INDEX_HTML
+  return template
     .replace(/<title>[\s\S]*?<\/title>/, () => `<title>${t}</title>`)
     .replace(/(<link rel="canonical" href=")[^"]*/, gan(u))
     .replace(/(<meta property="og:url" content=")[^"]*/, gan(u))
@@ -815,6 +841,20 @@ function renderIndex(urlPath) {
     .replace(/(<meta name="description" content=")[^"]*/, gan(d))
     .replace(/(<meta property="og:description" content=")[^"]*/, gan(d))
     .replace(/(<meta name="twitter:description" content=")[^"]*/, gan(d));
+}
+
+/** Trang app cu. Khi co app React, bao cho app cu biet view nao phai tai trang moi de sang React */
+function renderIndex(urlPath) {
+  const html = chenMeta(INDEX_HTML, urlPath);
+  if (!coAppReact()) return html;
+  return html.replace('</head>', () => `<script>window.__REACT_VIEWS=${JSON.stringify(VIEW_REACT)}</script></head>`);
+}
+
+async function renderReact(req) {
+  const template = CHE_DO_DEV
+    ? await vite.transformIndexHtml(req.originalUrl, fs.readFileSync(path.join(__dirname, 'web', 'index.html'), 'utf8'))
+    : REACT_HTML;
+  return chenMeta(template, req.path);
 }
 
 app.get('/sitemap.xml', (req, res) => {
@@ -848,19 +888,41 @@ app.use('/api', (req, res) => {
   res.status(404).json({ error: 'Endpoint không tồn tại' });
 });
 
-app.get('*', (req, res) => {
+app.get('*', async (req, res, next) => {
 
   const looksLikeFile = /[.][a-z0-9]{1,8}$/i.test(req.path);
   const hasDotSegment = req.path.split('/').some(seg => seg.startsWith('.'));
   if (looksLikeFile || hasDotSegment) {
     return res.status(404).type('text/plain; charset=utf-8').send('404 Not Found');
   }
-  res.type('html').set('Cache-Control', 'no-cache').send(renderIndex(req.path));
+  try {
+    const html = laUrlReact(req.path) && coAppReact() ? await renderReact(req) : renderIndex(req.path);
+    res.type('html').set('Cache-Control', 'no-cache').send(html);
+  } catch (err) {
+    next(err);
+  }
 });
+
+async function khoiDong() {
+  const server = http.createServer(app);
+  if (CHE_DO_DEV) {
+    const { createServer } = await import('vite');
+    vite = await createServer({
+      configFile: path.join(__dirname, 'web', 'vite.config.mts'),
+      server: { middlewareMode: true, hmr: { server } },
+      appType: 'custom'
+    });
+  } else if (!REACT_HTML) {
+    console.warn(`ℹ️ Chưa có bản build React (${path.join(DIST_DIR, 'index.html')}) — mọi trang dùng app cũ. Chạy: npm run build`);
+  }
+  server.listen(PORT, inBangKhoiDong);
+}
 
 // Bo kiem require file nay de lay app ma khong mo cong
 module.exports = app;
-if (require.main === module) app.listen(PORT, () => {
+if (require.main === module) khoiDong();
+
+function inBangKhoiDong() {
   console.log('');
   console.log('  ╔══════════════════════════════════════════════════════════╗');
   console.log('  ║   🚀 DevMaster Hub — Smart AI Platform & Learning Hub   ║');
@@ -871,7 +933,8 @@ if (require.main === module) app.listen(PORT, () => {
   console.log(`  ║   🤖 Groq:       ${GROQ_API_KEY ? '✅ Enabled' : '❌ Disabled'}                              ║`);
   console.log(`  ║   🤖 OpenRouter: ${OPENROUTER_API_KEY ? '✅ Enabled' : '❌ Disabled'}                              ║`);
   console.log(`  ║   🤖 Claude:     ${CLAUDE_API_KEY ? '✅ Enabled' : '❌ Disabled'}                              ║`);
+  console.log(`  ║   ⚛️  React:     ${CHE_DO_DEV ? 'Vite dev (HMR)' : (REACT_HTML ? 'dist/ (bản build)' : 'chưa build — dùng app cũ')}`);
   console.log(`  ║   💼 Jobs:       ⚡ VietnamWorks, RemoteOK, Arbeitnow, Remotive ║`);
   console.log('  ╚══════════════════════════════════════════════════════════╝');
   console.log('');
-});
+}
