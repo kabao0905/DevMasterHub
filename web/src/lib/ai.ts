@@ -1,0 +1,164 @@
+// Goi AI qua /api/ai cua server (server giu khoa API, kiem dang nhap va gioi han luot).
+import type { SupabaseLike } from './auth';
+import type { BaiDayDu } from './curriculum';
+import { chiThiNgonNgu, promptGiaSu, promptQuiz, QUIZ_SYSTEM, type TabBai } from './ai-prompts';
+
+export type { TabBai } from './ai-prompts';
+
+type ThamSoGoi = {
+  system: string;
+  user: string;
+  taskType: string;
+  lang: string;
+  temperature?: number;
+  maxTokens?: number;
+  signal?: AbortSignal;
+  /** Cho giua cac lan thu lai; bai kiem truyen ham khong cho */
+  cho?: (ms: number) => Promise<void>;
+};
+
+const choThat = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+const HET_GIO_MS = 100_000;
+
+function tinHieu(signal?: AbortSignal): AbortSignal {
+  const hetGio = AbortSignal.timeout(HET_GIO_MS);
+  return signal && typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, hetGio]) : signal ?? hetGio;
+}
+
+export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string> {
+  const cho = p.cho ?? choThat;
+  const { data } = await client.auth.getSession();
+  const token = data.session?.access_token;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const body = JSON.stringify({
+    system: p.system + chiThiNgonNgu(p.lang),
+    messages: [{ role: 'user', content: p.user }],
+    temperature: p.temperature ?? 0.7,
+    max_tokens: p.maxTokens ?? 4096,
+    taskType: p.taskType
+  });
+  const signal = tinHieu(p.signal);
+
+  let quaTai = 0;
+  let loiMang = 0;
+  for (;;) {
+    let r: Response;
+    try {
+      r = await fetch('/api/ai', { method: 'POST', headers, body, signal });
+    } catch (e) {
+      // Mat mang thoang qua: thu lai mot lan (khong thu khi nguoi dung huy)
+      if (e instanceof TypeError && loiMang++ < 1 && !signal.aborted) { await cho(2000); continue; }
+      throw e;
+    }
+    if ((r.status === 429 || r.status === 529) && quaTai < 2) {
+      const sau = Number(r.headers.get('Retry-After'));
+      await cho(Math.min(sau > 0 ? sau * 1000 : 2000 * 2 ** quaTai, 8000));
+      quaTai++;
+      continue;
+    }
+    const json = (await r.json().catch(() => null)) as { error?: string; content?: { text?: string }[] } | null;
+    if (r.status === 401) throw new Error(json?.error || 'Bạn cần đăng nhập để dùng tính năng AI.');
+    if (!r.ok) throw new Error(json?.error || `AI API Error: ${r.status}`);
+    const text = json?.content?.[0]?.text;
+    if (!text) throw new Error('AI không trả lời. Thử lại nhé.');
+    return text;
+  }
+}
+
+/** AI hay boc JSON trong ``` hoac them chu thua: thu lan luot tung cach doc */
+export function docJson(text: string): unknown {
+  const sach = text.trim().replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+  try { return JSON.parse(sach); } catch { /* thu cach khac */ }
+  const mang = sach.match(/\[[\s\S]*\]/);
+  if (mang) { try { return JSON.parse(mang[0]); } catch { /* thu cach khac */ } }
+  const doiTuong = sach.match(/\{[\s\S]*\}/);
+  if (doiTuong) { try { return JSON.parse(doiTuong[0]); } catch { /* het cach */ } }
+  throw new Error('Cannot parse AI response as JSON');
+}
+
+export const boThe = (html: string | undefined) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+export type CauHoi = { question: string; code?: string; options: string[]; correct: number; explanation: string };
+export type TrangThaiQuiz = { questions: CauHoi[]; answers: Record<number, number>; submitted: boolean };
+
+const chuoiCoChu = (x: unknown): x is string => typeof x === 'string' && x.trim() !== '';
+
+/** Cau hoi AI tao chi dung duoc khi du truong va dap an dung nam trong danh sach lua chon */
+function laCauHopLe(x: unknown): x is CauHoi {
+  if (!x || typeof x !== 'object') return false;
+  const q = x as Record<string, unknown>;
+  const opts = q.options;
+  return chuoiCoChu(q.question) && chuoiCoChu(q.explanation)
+    && Array.isArray(opts) && opts.length >= 3 && opts.length <= 6 && opts.every(o => typeof o === 'string')
+    && Number.isInteger(q.correct) && (q.correct as number) >= 0 && (q.correct as number) < opts.length
+    && (q.code === undefined || typeof q.code === 'string');
+}
+
+type BaiChoAi = { tech: { name: string }; level: { name: string }; lesson: BaiDayDu };
+
+export async function taoQuiz(client: SupabaseLike, { tech, level, lesson, lang, soCau = 4, signal, cho }:
+  BaiChoAi & { lang: string; soCau?: number; signal?: AbortSignal; cho?: ThamSoGoi['cho'] }): Promise<CauHoi[]> {
+  const text = await goiAi(client, {
+    system: QUIZ_SYSTEM,
+    user: promptQuiz({ congNghe: tech.name, capDo: level.name, baiHoc: lesson.title, lyThuyet: boThe(lesson.theory), soCau }),
+    temperature: 0.85, maxTokens: 4096, taskType: 'quiz', lang, signal, cho
+  });
+  let ds: unknown;
+  try { ds = docJson(text); } catch { ds = null; }
+  const hopLe = Array.isArray(ds) ? ds.filter(laCauHopLe).slice(0, soCau) : [];
+  if (!hopLe.length) throw new Error('AI trả về quiz không hợp lệ');
+  return hopLe.map(q => ({ question: q.question, code: q.code, options: q.options, correct: q.correct, explanation: q.explanation }));
+}
+
+const chuCai = (i: number) => String.fromCharCode(65 + i);
+
+/** Noi dung bai gui kem cau hoi cho gia su, theo tab hoc vien DANG mo (app cu ket o tab ly thuyet) */
+export function nguCanhBai({ tech, level, lesson, tab, quiz }: BaiChoAi & { tab: TabBai; quiz?: TrangThaiQuiz }): string {
+  let s = `Công nghệ: ${tech.name}\nCấp độ: ${level.name}\nBài học: ${lesson.title}`;
+  const lyThuyet = (n: number) => (lesson.theory ? `\n\n--- Lý thuyết tham khảo (phụ) ---\n${boThe(lesson.theory).substring(0, n)}` : '');
+
+  if (tab === 'quiz') {
+    if (quiz?.questions.length) {
+      s += '\n\n★★★ CÂU HỎI QUIZ MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★';
+      s += `\nTrạng thái: ${quiz.submitted ? 'ĐÃ NỘP BÀI' : 'CHƯA NỘP'}`;
+      s += '\n' + quiz.questions.map((q, i) => {
+        let t = `Câu ${i + 1}: ${q.question}`;
+        if (q.code) t += `\n${q.code}`;
+        t += '\n' + q.options.map((o, j) => `  ${chuCai(j)}. ${o}`).join('\n');
+        if (quiz.submitted) {
+          t += `\n  → Đáp án đúng: ${chuCai(q.correct)}`;
+          const chonCua = quiz.answers[i];
+          if (chonCua !== undefined) t += `\n  → Học viên chọn: ${chuCai(chonCua)} (${chonCua === q.correct ? 'đúng' : 'sai'})`;
+          t += `\n  → Giải thích: ${q.explanation}`;
+        }
+        return t;
+      }).join('\n\n');
+    }
+    return s + lyThuyet(1000);
+  }
+  if (tab === 'code') {
+    if (lesson.code) s += `\n\n★★★ CODE EXAMPLE MÀ HỌC VIÊN ĐANG XEM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n\`\`\`${lesson.lang || 'javascript'}\n${lesson.code}\n\`\`\``;
+    return s + lyThuyet(1500);
+  }
+  if (tab === 'exercise') {
+    if (lesson.exercise) s += `\n\n★★★ BÀI TẬP GỐC MÀ HỌC VIÊN ĐANG LÀM (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n${boThe(lesson.exercise).substring(0, 1500)}`;
+    return s + lyThuyet(1000);
+  }
+  if (lesson.theory) s += `\n\n★★★ NỘI DUNG LÝ THUYẾT (ĐÂY LÀ NỘI DUNG CHÍNH) ★★★\n${boThe(lesson.theory).substring(0, 3000)}`;
+  if (lesson.keyPoints?.length) s += `\n\n=== ĐIỂM CHÍNH ===\n${lesson.keyPoints.map((kp, i) => `${i + 1}. ${boThe(kp)}`).join('\n')}`;
+  return s;
+}
+
+export type TinNhan = { role: 'user' | 'assistant'; content: string };
+
+export async function hoiGiaSu(client: SupabaseLike, { nguCanh, lichSu, cauHoi, tab, daNopQuiz, lang, signal, cho }: {
+  nguCanh: string; lichSu: TinNhan[]; cauHoi: string; tab: TabBai; daNopQuiz: boolean; lang: string;
+  signal?: AbortSignal; cho?: ThamSoGoi['cho'];
+}): Promise<string> {
+  const gan = lichSu.slice(-10);
+  const truoc = gan.length
+    ? 'Lịch sử hội thoại:\n' + gan.map(m => `${m.role === 'user' ? 'Học viên' : 'Gia sư'}: ${m.content}`).join('\n') + '\n\n'
+    : '';
+  return goiAi(client, { system: promptGiaSu(nguCanh, tab, daNopQuiz), user: truoc + cauHoi, temperature: 0.7, maxTokens: 4096, taskType: 'tutor', lang, signal, cho });
+}
