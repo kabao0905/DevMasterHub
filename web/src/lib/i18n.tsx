@@ -68,11 +68,12 @@ export function I18nProvider({ children, taiBanDich = taiMacDinh }: { children: 
   });
   const banDich = q.data ?? null;
   useEffect(() => { if (q.isError) console.warn('[i18n]', q.error); }, [q.isError, q.error]);
+  // Ca luc mo trang (ngon ngu da luu), khong chi khi doi: trinh doc man hinh va goi y dich dua vao day
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   const setLang = useCallback((l: string) => {
     if (!hoTro(l)) return;
     try { localStorage.setItem(KHOA_NGON_NGU, l); } catch { /* bo qua */ }
-    document.documentElement.lang = l;
     datLang(l);
   }, []);
 

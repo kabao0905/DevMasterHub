@@ -78,3 +78,11 @@ test('tai ban dich loi han thi bao loi kem nut Thu lai, khong de trang trang', a
   await userEvent.click(nut);
   expect(await screen.findByText('Xin chào An')).toBeInTheDocument();
 });
+
+test('mo trang voi ngon ngu da luu thi <html lang> dung ngay tu dau (giong doc man hinh, goi y dich cua trinh duyet)', async () => {
+  document.documentElement.lang = 'vi';
+  localStorage.setItem('devmaster_hub_lang', 'en');
+  veI18n(async l => BAN[l]);
+  await screen.findByText('Hello An');
+  expect(document.documentElement.lang).toBe('en');
+});
