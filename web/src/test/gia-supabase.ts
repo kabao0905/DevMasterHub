@@ -5,7 +5,7 @@ import type { SupabaseLike } from '@/lib/auth';
 
 type TrangThai = { bang: string; op: string; payload: unknown; dieuKien: [string, unknown][]; motDong: boolean };
 
-export function giaSupabase({ bang = {}, loiDangNhap }: { bang?: Record<string, unknown[]>; loiDangNhap?: string } = {}) {
+export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung }: { bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string } } = {}) {
   let phat: ((e: string, s: unknown) => void) | null = null;
   const truyVan: TrangThai[] = [];
 
@@ -34,15 +34,23 @@ export function giaSupabase({ bang = {}, loiDangNhap }: { bang?: Record<string, 
 
   const client = {
     auth: {
-      getSession: vi.fn(async () => ({ data: { session: null } })),
+      getSession: vi.fn(async () => ({ data: { session: nguoiDung ? { user: nguoiDung } : null } })),
       onAuthStateChange: vi.fn((f: (e: string, s: unknown) => void) => {
         phat = f;
         return { data: { subscription: { unsubscribe() {} } } };
       }),
-      signInWithPassword: vi.fn(async () => (loiDangNhap
-        ? { data: { user: null }, error: { message: loiDangNhap } }
-        : { data: { user: { id: 'u1' } }, error: null })),
-      signUp: vi.fn(async () => ({ data: { user: { id: 'u2' } }, error: null })),
+      // Nhu Supabase that: dang nhap/dang ky thanh cong thi phat su kien SIGNED_IN
+      signInWithPassword: vi.fn(async () => {
+        if (loiDangNhap) return { data: { user: null }, error: { message: loiDangNhap } };
+        const user = { id: 'u1' };
+        phat?.('SIGNED_IN', { user });
+        return { data: { user }, error: null };
+      }),
+      signUp: vi.fn(async () => {
+        const user = { id: 'u2' };
+        phat?.('SIGNED_IN', { user });
+        return { data: { user }, error: null };
+      }),
       signOut: vi.fn(async () => { phat?.('SIGNED_OUT', null); return { error: null }; })
     },
     from: vi.fn(tao)
