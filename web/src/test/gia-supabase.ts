@@ -1,13 +1,15 @@
 // Client Supabase gia cho bai kiem: chi nhung ham app goi toi.
 // Lenh doc tra du lieu tu `bang[tenBang]`; moi truy van da chay ghi vao `truyVan`.
 // `treo[tenBang]`: Promise phai xong truoc khi truy van bang do tra ket qua (mo phong mang cham).
+// `loiGhi[tenBang]`: lenh ghi (insert/upsert/update/delete) vao bang do tra { error } nhu Supabase that.
 import { vi } from 'vitest';
 import type { SupabaseLike } from '@/lib/auth';
 
-type TrangThai = { bang: string; op: string; payload: unknown; dieuKien: [string, unknown][]; motDong: boolean };
+type TrangThai = { bang: string; op: string; payload: unknown; tuyChon?: unknown; dieuKien: [string, unknown][]; motDong: boolean };
 
-export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {} }: {
-  bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string }; treo?: Record<string, Promise<unknown>>;
+export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiGhi = {} }: {
+  bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string };
+  treo?: Record<string, Promise<unknown> | undefined>; loiGhi?: Record<string, string>;
 } = {}) {
   let phat: ((e: string, s: unknown) => void) | null = null;
   const truyVan: TrangThai[] = [];
@@ -22,14 +24,15 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {} }: {
       single: () => { tt.motDong = true; return b; },
       maybeSingle: () => { tt.motDong = true; return b; },
       insert: (p: unknown) => { tt.op = 'insert'; tt.payload = p; return b; },
-      upsert: (p: unknown) => { tt.op = 'upsert'; tt.payload = p; return b; },
+      upsert: (p: unknown, tuyChon?: unknown) => { tt.op = 'upsert'; tt.payload = p; tt.tuyChon = tuyChon; return b; },
       update: (p: unknown) => { tt.op = 'update'; tt.payload = p; return b; },
       delete: () => { tt.op = 'delete'; return b; },
       then: (ok: (v: unknown) => unknown, loi?: (e: unknown) => unknown) => {
         truyVan.push(tt);
         const v = bang[tenBang] ?? [];
         const data = tt.op === 'select' ? (tt.motDong ? (v[0] ?? null) : v) : tt.payload;
-        return Promise.resolve(treo[tenBang]).then(() => ({ data, error: null })).then(ok, loi);
+        const error = tt.op !== 'select' && loiGhi[tenBang] ? { message: loiGhi[tenBang] } : null;
+        return Promise.resolve(treo[tenBang]).then(() => ({ data: error ? null : data, error })).then(ok, loi);
       }
     };
     return b;
@@ -62,6 +65,8 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {} }: {
   return {
     client: client as unknown as SupabaseLike & typeof client,
     truyVan,
+    treo,
+    loiGhi,
     phat: (e: string, s: unknown) => phat?.(e, s)
   };
 }

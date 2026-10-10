@@ -49,6 +49,7 @@ export const BAN_DICH_VI: BanDich = {
     "pickRoadmap": "Chọn một lộ trình bên dưới để bắt đầu",
     "openMenu": "Mở menu",
     "levelProgress": "{level}: {done}/{total} bài",
+    "progressSaveFailed": "Không lưu được tiến độ. Thử lại sau.",
     "copyCode": "📋 Sao chép",
     "copied": "Đã chép",
     "copyFailed": "Không chép được",
