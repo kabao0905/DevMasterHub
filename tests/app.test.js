@@ -236,3 +236,19 @@ test('dang xuat roi nguoi khac dang nhap thi khong thay chat tu van cua nguoi tr
   await choXong();
   assert.ok(!a.main.innerHTML.includes('Bí mật của An'), 'Binh thay chat cua An');
 });
+
+test('co app React: di toi Dashboard va dang nhap thi tai trang moi, view khac van o lai app cu', () => {
+  const a = napApp({
+    curriculum: baiHoc('python'),
+    dichVu: { AuthService: authTat, __REACT_VIEWS: ['dashboard', 'auth'] }
+  });
+  const diToi = [];
+  a.sb.location.assign = u => diToi.push(u);
+
+  a.App.init();                 // chua dang nhap -> sang trang dang nhap cua React
+  a.App.goToDashboard();
+  a.App.openRoadmap('python');
+
+  assert.deepStrictEqual(diToi, ['/auth', '/']);
+  assert.ok(a.main.innerHTML.includes('python'), 'roadmap phai do app cu ve');
+});

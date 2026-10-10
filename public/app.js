@@ -399,6 +399,13 @@ const App = (() => {
       path = `/project-topic/${data.topic}`;
     }
 
+    // View da chuyen sang app React (server bao qua window.__REACT_VIEWS): phai tai trang moi
+    // de server tra app React. Khong co co (chua build React) thi app cu tu ve nhu truoc.
+    if ((window.__REACT_VIEWS || []).includes(view)) {
+      window.location.assign(path);
+      return;
+    }
+
     history.pushState({ view, ...data }, '', path);
     render();
     updateSidebarActive();
