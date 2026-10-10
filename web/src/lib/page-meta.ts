@@ -1,6 +1,9 @@
 // Server da chen meta cho lan tai dau; khi di chuyen trong SPA thi cap nhat o day.
 import { useEffect } from 'react';
 
+/** Trung DEFAULT_TITLE cua server: tieu de trang chu va trang dang nhap */
+export const TIEU_DE_TRANG_CHU = 'DevMaster Hub — Nền Tảng Học Lập Trình Toàn Diện Từ Newbie Đến Senior';
+
 function datThuocTinh(chon: string, thuocTinh: string, giaTri?: string) {
   if (giaTri === undefined) return;
   document.querySelectorAll(chon).forEach(el => el.setAttribute(thuocTinh, giaTri));

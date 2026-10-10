@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
-import { usePageMeta } from '@/lib/page-meta';
+import { TIEU_DE_TRANG_CHU, usePageMeta } from '@/lib/page-meta';
 import { BrandMark } from '@/components/BrandMark';
 import { MAU_CAP } from '@/components/LevelLadder';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,8 @@ export function AuthPage() {
   const [loi, datLoi] = useState('');
   const [dangGui, datDangGui] = useState(false);
 
-  usePageMeta({ title: `${t('authLogin')} | DevMaster Hub` });
+  // Nguoi chua dang nhap (ca may tim kiem) mo / se thay trang nay: giu tieu de trang chu
+  usePageMeta({ title: TIEU_DE_TRANG_CHU });
 
   if (!loading && user && !dangGui) return <Navigate to="/" replace />;
 

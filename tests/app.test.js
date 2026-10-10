@@ -237,18 +237,50 @@ test('dang xuat roi nguoi khac dang nhap thi khong thay chat tu van cua nguoi tr
   assert.ok(!a.main.innerHTML.includes('Bí mật của An'), 'Binh thay chat cua An');
 });
 
-test('co app React: di toi Dashboard va dang nhap thi tai trang moi, view khac van o lai app cu', () => {
+test('co app React: mo link sau khi chua dang nhap thi dang nhap ngay tai cho, xong quay lai dung bai', async () => {
+  const db = giaSupabase({ profiles: [{ id: 'u1', username: 'an' }] });
   const a = napApp({
     curriculum: baiHoc('python'),
-    dichVu: { AuthService: authTat, __REACT_VIEWS: ['dashboard', 'auth'] }
+    supabase: db.client,
+    duongDan: '/lesson/python/newbie/l1',
+    dichVu: { __REACT_VIEWS: ['dashboard', 'auth'] }
   });
   const diToi = [];
   a.sb.location.assign = u => diToi.push(u);
 
-  a.App.init();                 // chua dang nhap -> sang trang dang nhap cua React
+  a.App.init();
+  await choXong();
+  // Tai trang sang /auth thi mat link sau, Back quay lai bi day di tiep, va may tim kiem
+  // coi moi trang bai hoc la chuyen huong toi /auth
+  assert.deepStrictEqual(diToi, []);
+  assert.ok(a.main.innerHTML.includes('auth-form'), 'phai hien man dang nhap ngay tai cho');
+
+  db.dangNhap({ id: 'u1' });
+  await choXong();
+  assert.ok(a.main.innerHTML.includes('Bài 1'), 'dang nhap xong phai quay lai bai dang mo');
+  assert.deepStrictEqual(diToi, []);
+});
+
+test('co app React: Dashboard va dang xuat tai trang moi sang React, view khac van o lai app cu', async () => {
+  const db = giaSupabase({ profiles: [{ id: 'u1', username: 'an' }] });
+  const a = napApp({
+    curriculum: baiHoc('python'),
+    supabase: db.client,
+    duongDan: '/roadmap/python',
+    dichVu: { __REACT_VIEWS: ['dashboard', 'auth'] }
+  });
+  const diToi = [];
+  a.sb.location.assign = u => diToi.push(u);
+  a.App.init();
+  await choXong();
+  db.dangNhap({ id: 'u1' });
+  await choXong();
+
   a.App.goToDashboard();
   a.App.openRoadmap('python');
-
-  assert.deepStrictEqual(diToi, ['/auth', '/']);
   assert.ok(a.main.innerHTML.includes('python'), 'roadmap phai do app cu ve');
+  await a.Auth.logout();
+  await choXong();
+
+  assert.deepStrictEqual(diToi, ['/', '/auth']);
 });

@@ -116,8 +116,9 @@ const App = (() => {
           } catch(e) {}
 
           if (!initialAuthResolved || currentView !== 'auth') {
+            const lanDau = !initialAuthResolved;
             initialAuthResolved = true;
-            navigateTo('auth');
+            navigateTo('auth', {}, { taiCho: lanDau });
           }
         }
       });
@@ -126,11 +127,11 @@ const App = (() => {
         if (!session && !initialAuthResolved) {
           initialAuthResolved = true;
           isAuthenticated = false;
-          navigateTo('auth');
+          navigateTo('auth', {}, { taiCho: true });
         }
       });
     } else {
-      navigateTo('auth');
+      navigateTo('auth', {}, { taiCho: true });
     }
 
     window.addEventListener('popstate', (e) => {
@@ -375,7 +376,7 @@ const App = (() => {
     return { view: 'dashboard' };
   }
 
-  function navigateTo(view, data = {}) {
+  function navigateTo(view, data = {}, { taiCho = false } = {}) {
     currentView = view;
     if (data.tech !== undefined) {
       currentTech = data.tech;
@@ -401,7 +402,10 @@ const App = (() => {
 
     // View da chuyen sang app React (server bao qua window.__REACT_VIEWS): phai tai trang moi
     // de server tra app React. Khong co co (chua build React) thi app cu tu ve nhu truoc.
-    if ((window.__REACT_VIEWS || []).includes(view)) {
+    // taiCho: man dang nhap tu hien khi mo trang ma chua dang nhap — ve ngay tai day nhu truoc
+    // de dang nhap xong quay lai dung link, Back khong bi day di lai, va may tim kiem khong
+    // coi moi trang bai hoc la chuyen huong toi /auth.
+    if (!taiCho && (window.__REACT_VIEWS || []).includes(view)) {
       window.location.assign(path);
       return;
     }

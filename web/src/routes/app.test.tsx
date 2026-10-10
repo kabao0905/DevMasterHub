@@ -136,3 +136,9 @@ test('dang o trong app ma di toi URL cua app cu thi tai trang that de server tra
   await act(() => router.navigate('/career?x=1'));
   await waitFor(() => expect(thay).toHaveBeenCalledWith('/career?x=1'));
 });
+
+test('chua dang nhap mo / thi giu tieu de trang chu (may tim kiem doc trang nay nhu nguoi chua dang nhap)', async () => {
+  veApp('/', { gia: giaSupabase(), json: JSON_GIA });
+  await screen.findByRole('button', { name: 'Đăng nhập' });
+  await waitFor(() => expect(document.title).toBe('DevMaster Hub — Nền Tảng Học Lập Trình Toàn Diện Từ Newbie Đến Senior'));
+});
