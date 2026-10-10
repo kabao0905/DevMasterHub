@@ -25,6 +25,15 @@ function tinHieu(signal?: AbortSignal): AbortSignal {
   return signal && typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, hetGio]) : signal ?? hetGio;
 }
 
+/** "Failed to fetch", "signal timed out" la loi cua trinh duyet: doi thanh cau nguoi hoc hieu duoc */
+function loiDeHieu(e: unknown, signalNguoiDung?: AbortSignal): unknown {
+  if (signalNguoiDung?.aborted) return e; // nguoi dung tu huy (roi trang...): de nguyen cho noi goi bo qua
+  const ten = e instanceof Error || e instanceof DOMException ? e.name : '';
+  if (ten === 'TimeoutError' || ten === 'AbortError') return new Error('AI phản hồi quá lâu. Thử lại sau ít phút.');
+  if (e instanceof TypeError) return new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.');
+  return e;
+}
+
 export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string> {
   const cho = p.cho ?? choThat;
   const { data } = await client.auth.getSession();
@@ -49,7 +58,7 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
     } catch (e) {
       // Mat mang thoang qua: thu lai mot lan (khong thu khi nguoi dung huy)
       if (e instanceof TypeError && loiMang++ < 1 && !signal.aborted) { await cho(2000); continue; }
-      throw e;
+      throw loiDeHieu(e, p.signal);
     }
     if ((r.status === 429 || r.status === 529) && quaTai < 2) {
       const sau = Number(r.headers.get('Retry-After'));
@@ -91,9 +100,11 @@ function laCauHopLe(x: unknown): x is CauHoi {
   const opts = q.options;
   return chuoiCoChu(q.question) && chuoiCoChu(q.explanation)
     && Array.isArray(opts) && opts.length >= 3 && opts.length <= 6 && opts.every(o => typeof o === 'string')
-    && Number.isInteger(q.correct) && (q.correct as number) >= 0 && (q.correct as number) < opts.length
-    && (q.code === undefined || typeof q.code === 'string');
+    && Number.isInteger(q.correct) && (q.correct as number) >= 0 && (q.correct as number) < opts.length;
 }
+
+/** AI hay ghi "code": null (hoac "") cho cau khong co code: coi nhu khong co */
+const codeHopLe = (x: unknown) => (typeof x === 'string' && x.trim() !== '' ? x : undefined);
 
 type BaiChoAi = { tech: { name: string }; level: { name: string }; lesson: BaiDayDu };
 
@@ -108,7 +119,7 @@ export async function taoQuiz(client: SupabaseLike, { tech, level, lesson, lang,
   try { ds = docJson(text); } catch { ds = null; }
   const hopLe = Array.isArray(ds) ? ds.filter(laCauHopLe).slice(0, soCau) : [];
   if (!hopLe.length) throw new Error('AI trả về quiz không hợp lệ');
-  return hopLe.map(q => ({ question: q.question, code: q.code, options: q.options, correct: q.correct, explanation: q.explanation }));
+  return hopLe.map(q => ({ question: q.question, code: codeHopLe(q.code), options: q.options, correct: q.correct, explanation: q.explanation }));
 }
 
 const chuCai = (i: number) => String.fromCharCode(65 + i);

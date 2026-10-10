@@ -5,13 +5,13 @@ const client = { auth: { getSession: async () => ({ data: { session: { access_to
 const khongCho = vi.fn(async () => {});
 
 type GoiFetch = { url: string; init: RequestInit };
-function giaFetch(...traLoi: (Response | Error)[]) {
+function giaFetch(...traLoi: (Response | Error | DOMException)[]) {
   const goi: GoiFetch[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init: RequestInit) => {
     goi.push({ url, init });
     const r = traLoi.shift();
     if (!r) throw new Error('het tra loi gia');
-    if (r instanceof Error) throw r;
+    if (!(r instanceof Response)) throw r;
     return r;
   }));
   return goi;
@@ -108,4 +108,20 @@ test('hoi gia su: chi gui 10 tin gan nhat, nhan theo vai, quy tac khong lo dap a
   expect(b.taskType).toBe('tutor');
   expect(b.system).toContain('NGHIÊM CẤM nói đáp án đúng');
   expect(b.system).toContain('NC');
+});
+
+test('tao quiz: AI ghi "code": null cho cau khong co code thi van nhan cau do', async () => {
+  giaFetch(traText(JSON.stringify([cau({ code: null }), cau({ code: '' }), cau({ code: 'x = 1' })])));
+  const q = await taoQuiz(client, { ...BAI, lang: 'vi' });
+  expect(q).toHaveLength(3);
+  expect(q.map(x => x.code)).toEqual([undefined, undefined, 'x = 1']);
+});
+
+test('loi mang/het gio hien bang loi de hieu, khong phai "Failed to fetch" hay "signal timed out"', async () => {
+  giaFetch(new TypeError('Failed to fetch'), new TypeError('Failed to fetch'));
+  await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', cho: khongCho }))
+    .rejects.toThrow('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.');
+  giaFetch(new DOMException('signal timed out', 'TimeoutError'));
+  await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', cho: khongCho }))
+    .rejects.toThrow('AI phản hồi quá lâu. Thử lại sau ít phút.');
 });
