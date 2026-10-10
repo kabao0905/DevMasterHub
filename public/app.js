@@ -3658,6 +3658,7 @@ const App = (() => {
 
   return {
     init,
+    navigateTo,
     goToDashboard: () => navigateTo('dashboard'),
     goToProject: () => { resetProjectState(); projectSelectedLevel = null; projectTopic = ''; navigateTo('project'); },
     goToProjectLevel: () => { resetProjectState(); projectSelectedLevel = null; navigateTo('project-level'); },
