@@ -2,7 +2,8 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const { laUrlReact, VIEW_REACT } = require('../lib/route-owner.js');
 
-test('dot 1: trang chu va dang nhap thuoc app React', () => {
+test('trang chu, dang nhap va roadmap thuoc app React', () => {
+  for (const p of ['/roadmap', '/roadmap/python', '/roadmap/python/', '/roadmap/python/junior', '/roadmap/python?x=1']) assert.ok(laUrlReact(p), p);
   assert.ok(laUrlReact('/'));
   assert.ok(laUrlReact('/auth'));
   assert.ok(laUrlReact('/auth/'));
@@ -10,13 +11,13 @@ test('dot 1: trang chu va dang nhap thuoc app React', () => {
 });
 
 test('cac trang chua chuyen van thuoc app cu', () => {
-  for (const p of ['/roadmap/python', '/lesson/python/newbie/l1', '/career', '/project', '/authx', '/auth/khac']) {
+  for (const p of ['/lesson/python/newbie/l1', '/career', '/project', '/authx', '/auth/khac', '/roadmapx', '/roadmap/a/b/c']) {
     assert.ok(!laUrlReact(p), p);
   }
 });
 
 test('ten view cua app cu tuong ung voi URL da chuyen', () => {
-  assert.deepStrictEqual(VIEW_REACT, ['dashboard', 'auth']);
+  assert.deepStrictEqual(VIEW_REACT, ['dashboard', 'auth', 'roadmap']);
 });
 
 test('moi view trong VIEW_REACT, app cu di toi dung URL server giao cho React (lech nhau = tai lai vo han)', () => {

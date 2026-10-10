@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useT } from '@/lib/i18n';
 import { tienDoCongNghe } from '@/lib/progress';
 import type { CongNgheTomTat } from '@/lib/curriculum';
@@ -7,8 +8,8 @@ export function TechCard({ tech, done }: { tech: CongNgheTomTat; done: Set<strin
   const { t, techDesc } = useT();
   const td = tienDoCongNghe(tech, done);
   return (
-    <a
-      href={`/roadmap/${tech.id}`}
+    <Link
+      to={`/roadmap/${tech.id}`}
       className="group flex flex-col gap-4 rounded-xl border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <div className="flex items-start gap-3">
@@ -31,6 +32,6 @@ export function TechCard({ tech, done }: { tech: CongNgheTomTat; done: Set<strin
           <span className={td.phanTram > 0 ? 'font-medium text-foreground' : undefined}>{td.phanTram}%</span>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }

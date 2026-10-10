@@ -1,0 +1,16 @@
+import { Link } from 'react-router';
+import { useT } from '@/lib/i18n';
+import { Button } from '@/components/ui/button';
+
+/** Khong tim thay noi dung trong khung app (id cong nghe/bai la): noi ro va cho duong quay ve */
+export function NotFoundPanel({ ve = '/', nhanVe }: { ve?: string; nhanVe?: string }) {
+  const { t } = useT();
+  return (
+    <div className="rounded-2xl border border-dashed p-8">
+      <h1 className="text-xl font-semibold">{t('pageNotFound')}</h1>
+      <Button asChild variant="outline" className="mt-5">
+        <Link to={ve}>{nhanVe ?? t('dashboard')}</Link>
+      </Button>
+    </div>
+  );
+}

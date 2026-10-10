@@ -20,6 +20,15 @@ export const CHU_CAP: Record<string, string> = {
   master: 'text-level-master'
 };
 
+/** Nen nhat cung mau cap (badge, nut tren timeline) */
+export const NEN_CAP: Record<string, string> = {
+  newbie: 'bg-level-newbie/15',
+  junior: 'bg-level-junior/15',
+  mid: 'bg-level-mid/15',
+  senior: 'bg-level-senior/15',
+  master: 'bg-level-master/15'
+};
+
 type Props = {
   levels: CapTomTat[];
   theoCap: { capId: string; xong: number; tong: number }[];

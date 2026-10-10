@@ -99,11 +99,12 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
               {techs.map(tech => {
                 const { phanTram } = tienDoCongNghe(tech, done);
                 return (
-                  <a key={tech.id} href={`/roadmap/${tech.id}`} className={cn(lopMuc, 'py-1.5')}>
+                  <NavLink key={tech.id} to={`/roadmap/${tech.id}`}
+                    className={({ isActive }) => cn(lopMuc, 'py-1.5', isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
                     <span className="w-5 text-center" aria-hidden="true">{tech.icon}</span>
                     <span className="flex-1 truncate">{tech.name}</span>
                     {phanTram > 0 && <span className="text-xs tabular-nums text-muted-foreground">{phanTram}%</span>}
-                  </a>
+                  </NavLink>
                 );
               })}
             </div>

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, useLocation, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate, useLocation, type RouteObject } from 'react-router';
 import { AppShell } from '@/components/AppShell';
 import { RequireAuth } from '@/components/RequireAuth';
 import { AuthPage } from '@/routes/auth/AuthPage';
 import { DashboardPage } from '@/routes/dashboard/DashboardPage';
 import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
+import { RoadmapPage } from '@/routes/roadmap/RoadmapPage';
 import { dieuHuong } from '@/lib/dieu-huong';
 
 /** URL khong thuoc app React: tai trang that de server tra app cu (xem lib/route-owner.js) */
@@ -21,7 +22,11 @@ export const cacRoute: RouteObject[] = [
   { path: '/auth', element: <AuthPage /> },
   {
     element: <RequireAuth><AppShell /></RequireAuth>,
-    children: [{ index: true, element: <DashboardPage /> }]
+    children: [
+      { index: true, element: <DashboardPage /> },
+      { path: 'roadmap', element: <Navigate to="/" replace /> },
+      { path: 'roadmap/:tech/:level?', element: <RoadmapPage /> }
+    ]
   },
   { path: '*', element: <SangAppCu /> }
 ];
