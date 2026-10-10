@@ -64,3 +64,36 @@ test('nap ho so cua nguoi dang dang nhap', async () => {
   act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
   await waitFor(() => expect(result.current.profile?.username).toBe('an'));
 });
+
+test('mo trang ma phien cu da het han (INITIAL_SESSION rong, khong co SIGNED_OUT) cung xoa cache cua nguoi truoc', async () => {
+  localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true}');
+  localStorage.setItem('devmaster_hub_profile_cache', '{"id":"u1"}');
+  const { client, phat } = giaSupabase();
+  client.auth.getSession.mockImplementation(() => new Promise(() => {}));   // su kien den truoc
+  moAuth(client);
+  act(() => phat('INITIAL_SESSION', null));
+  await waitFor(() => expect(localStorage.getItem('devmaster_hub_progress_cache')).toBeNull());
+  expect(localStorage.getItem('devmaster_hub_profile_cache')).toBeNull();
+});
+
+test('getSession tra ve rong luc mo trang cung xoa cache cua nguoi truoc', async () => {
+  localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true}');
+  const { client } = giaSupabase();
+  const { result } = moAuth(client);
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(localStorage.getItem('devmaster_hub_progress_cache')).toBeNull();
+});
+
+test('dang xuat chi xoa du lieu cua nguoi dung, giu ban dich va giao trinh (khong tai lai)', async () => {
+  const { client, phat } = giaSupabase();
+  const { result, qc } = moAuth(client);
+  act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
+  await waitFor(() => expect(result.current.user?.id).toBe('u1'));
+  qc.setQueryData(['i18n', 'vi'], { ui: {} });
+  qc.setQueryData(['curriculum', 'index'], []);
+  qc.setQueryData(['profile', 'u1'], { id: 'u1' });
+  await act(() => result.current.logout());
+  expect(qc.getQueryData(['profile', 'u1'])).toBeUndefined();
+  expect(qc.getQueryData(['i18n', 'vi'])).toBeDefined();
+  expect(qc.getQueryData(['curriculum', 'index'])).toBeDefined();
+});

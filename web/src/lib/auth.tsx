@@ -12,6 +12,8 @@ export type HoSo = { id: string; username: string; display_name: string | null }
 const KHOA_CACHE = ['devmaster_hub_profile_cache', 'devmaster_hub_progress_cache', 'devmaster_hub_ideas_cache'];
 /** Viec dang lam do app cu cat tam khi sang app React (xem catViecDangLam trong public/app.js) */
 const KHOA_VIEC_DANG_LAM = 'devmaster_hub_legacy_session';
+/** Truy van dung chung cho moi nguoi: doi nguoi dung khong can xoa, khoi tai lai */
+const TRUY_VAN_CONG_KHAI = new Set(['i18n', 'curriculum']);
 const emailTu = (ten: string) => `${ten}@devmaster.hub`;
 
 type GiaTri = {
@@ -33,7 +35,8 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
   const daCoSuKien = useRef(false);
 
   const xoaDuLieuNguoiDung = useCallback(() => {
-    qc.clear();
+    // Huy luon truy van dang chay: ket qua ve muon khong duoc ghi vao cache cua may (xem use-progress)
+    qc.removeQueries({ predicate: q => !TRUY_VAN_CONG_KHAI.has(String(q.queryKey[0])) });
     for (const k of KHOA_CACHE) {
       try { localStorage.removeItem(k); } catch { /* bo qua */ }
     }
@@ -47,13 +50,15 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
       if (!song || daCoSuKien.current) return;
       setUser(data.session?.user ?? null);
       setLoading(false);
+      if (!data.session) xoaDuLieuNguoiDung();
     });
     // Khong goi ham Supabase khac trong callback nay (co the khoa lan nhau) — chi doi state
-    const { data } = client.auth.onAuthStateChange((event, session) => {
+    const { data } = client.auth.onAuthStateChange((_event, session) => {
       daCoSuKien.current = true;
       setUser(session?.user ?? null);
       setLoading(false);
-      if (event === 'SIGNED_OUT') xoaDuLieuNguoiDung();
+      // Moi lan khong co phien (ke ca phien cu het han luc mo trang, khong co SIGNED_OUT) — giong app cu
+      if (!session) xoaDuLieuNguoiDung();
     });
     return () => {
       song = false;

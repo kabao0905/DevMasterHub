@@ -1,11 +1,14 @@
 // Client Supabase gia cho bai kiem: chi nhung ham app goi toi.
 // Lenh doc tra du lieu tu `bang[tenBang]`; moi truy van da chay ghi vao `truyVan`.
+// `treo[tenBang]`: Promise phai xong truoc khi truy van bang do tra ket qua (mo phong mang cham).
 import { vi } from 'vitest';
 import type { SupabaseLike } from '@/lib/auth';
 
 type TrangThai = { bang: string; op: string; payload: unknown; dieuKien: [string, unknown][]; motDong: boolean };
 
-export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung }: { bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string } } = {}) {
+export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {} }: {
+  bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string }; treo?: Record<string, Promise<unknown>>;
+} = {}) {
   let phat: ((e: string, s: unknown) => void) | null = null;
   const truyVan: TrangThai[] = [];
 
@@ -26,7 +29,7 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung }: { bang?: Reco
         truyVan.push(tt);
         const v = bang[tenBang] ?? [];
         const data = tt.op === 'select' ? (tt.motDong ? (v[0] ?? null) : v) : tt.payload;
-        return Promise.resolve({ data, error: null }).then(ok, loi);
+        return Promise.resolve(treo[tenBang]).then(() => ({ data, error: null })).then(ok, loi);
       }
     };
     return b;

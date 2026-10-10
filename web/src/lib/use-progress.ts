@@ -24,16 +24,19 @@ export function useProgress() {
     enabled: !!user,
     // Hien ngay tien do da luu tren may trong luc cho Supabase
     placeholderData: user ? docCache : undefined,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const { data, error } = await client
         .from('lesson_progress')
         .select('tech_id, level_id, lesson_id, completed')
         .eq('user_id', user!.id);
       if (error) throw error;
       const khoa = ((data as Dong[] | null) || []).filter(r => r.completed).map(r => khoaBai(r.tech_id, r.level_id, r.lesson_id));
-      try {
-        localStorage.setItem(KHOA_TIEN_DO, JSON.stringify(Object.fromEntries(khoa.map(k => [k, true]))));
-      } catch { /* het cho luu */ }
+      // Da dang xuat trong luc cho (truy van bi huy): khong ghi tien do nguoi cu cho nguoi sau thay
+      if (!signal.aborted) {
+        try {
+          localStorage.setItem(KHOA_TIEN_DO, JSON.stringify(Object.fromEntries(khoa.map(k => [k, true]))));
+        } catch { /* het cho luu */ }
+      }
       return khoa;
     }
   });
