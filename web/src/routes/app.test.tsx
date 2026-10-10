@@ -168,3 +168,18 @@ test('tim kiem: tai chi muc loi thi bao loi, khong noi la khong co ket qua', asy
   await u.click(within(main).getByRole('button', { name: 'Thử lại' }));
   expect(await within(main).findByRole('link', { name: /Vòng lặp/ })).toBeInTheDocument();
 });
+
+test('desktop: thu gon duoc sidebar, va van thu gon sau khi tai lai trang', async () => {
+  const u = userEvent.setup();
+  const lan1 = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  expect(await screen.findByRole('complementary')).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: 'Thu gọn thanh bên' }));
+  expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Mở thanh bên' })).toBeInTheDocument();
+  lan1.unmount();
+
+  // Sang trang app cu roi quay lai la tai trang moi: lua chon phai con
+  veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  await u.click(await screen.findByRole('button', { name: 'Mở thanh bên' }));
+  expect(screen.getByRole('complementary')).toBeInTheDocument();
+});

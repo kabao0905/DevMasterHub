@@ -1,27 +1,46 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router';
-import { Menu } from 'lucide-react';
+import { Menu, PanelLeftOpen } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+
+/** Moi lan sang app cu roi quay lai la tai trang moi, nen lua chon thu gon phai luu tren may */
+const KHOA_THU_GON = 'devmaster_hub_sidebar_collapsed';
+function docThuGon() {
+  try { return localStorage.getItem(KHOA_THU_GON) === '1'; } catch { return false; }
+}
 
 export function AppShell() {
   const { t } = useT();
   const [moMenu, datMoMenu] = useState(false);
+  const [thuGon, datThuGon] = useState(docThuGon);
+  const doiThuGon = (v: boolean) => {
+    datThuGon(v);
+    try { localStorage.setItem(KHOA_THU_GON, v ? '1' : '0'); } catch { /* che do rieng tu */ }
+  };
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[17rem_1fr]">
-      <aside className="sticky top-0 hidden h-dvh border-r border-sidebar-border lg:block">
-        <Sidebar />
-      </aside>
+    <div className={cn('min-h-dvh', !thuGon && 'lg:grid lg:grid-cols-[17rem_1fr]')}>
+      {!thuGon && (
+        <aside className="sticky top-0 hidden h-dvh border-r border-sidebar-border lg:block">
+          <Sidebar onCollapse={() => doiThuGon(true)} />
+        </aside>
+      )}
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur lg:hidden">
+        <header className={cn('sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur', !thuGon && 'lg:hidden')}>
+          {thuGon && (
+            <Button variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={t('expandSidebar')} title={t('expandSidebar')} onClick={() => doiThuGon(false)}>
+              <PanelLeftOpen />
+            </Button>
+          )}
           <Sheet open={moMenu} onOpenChange={datMoMenu}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label={t('openMenu')}>
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label={t('openMenu')}>
                 <Menu />
               </Button>
             </SheetTrigger>

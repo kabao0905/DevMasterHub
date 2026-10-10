@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Briefcase, FolderKanban, FlaskConical, LayoutDashboard, LogOut } from 'lucide-react';
+import { Briefcase, FolderKanban, FlaskConical, LayoutDashboard, LogOut, PanelLeftClose } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { useCurriculumIndex, taiJson } from '@/lib/use-curriculum';
@@ -23,7 +23,8 @@ export const TEN_NHOM: Record<Nhom, string> = {
 
 const lopMuc = 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-sidebar-ring';
 
-export function Sidebar() {
+/** onCollapse: chi co o ban desktop (trong Sheet tren dien thoai thi khong can nut thu gon) */
+export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
   const { t, lang, setLang, languages } = useT();
   const { profile, user, logout } = useAuth();
   const { data: ds = [] } = useCurriculumIndex();
@@ -51,8 +52,13 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-      <div className="px-5 pt-5 pb-4">
+      <div className="flex items-center justify-between gap-2 pt-5 pr-3 pb-4 pl-5">
         <BrandMark />
+        {onCollapse && (
+          <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label={t('collapseSidebar')} title={t('collapseSidebar')} onClick={onCollapse}>
+            <PanelLeftClose />
+          </Button>
+        )}
       </div>
 
       <div className="mx-3 flex items-center gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent/40 p-3">
