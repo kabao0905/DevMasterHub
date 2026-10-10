@@ -25,7 +25,9 @@ export const cacRoute: RouteObject[] = [
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'roadmap', element: <Navigate to="/" replace /> },
-      { path: 'roadmap/:tech/:level?', element: <RoadmapPage /> }
+      { path: 'roadmap/:tech/:level?', element: <RoadmapPage /> },
+      // Trang bai hoc (Prism, AI...) tach thanh chunk rieng. Server chua giao /lesson/* cho React toi dot 3.
+      { path: 'lesson/:tech/:level/:lesson', lazy: async () => ({ Component: (await import('@/routes/lesson/LessonPage')).LessonPage }) }
     ]
   },
   { path: '*', element: <SangAppCu /> }

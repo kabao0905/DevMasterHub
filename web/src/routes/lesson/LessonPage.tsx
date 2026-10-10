@@ -1,0 +1,134 @@
+import { useEffect } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { BookOpen, Code2, ListChecks } from 'lucide-react';
+import { useT } from '@/lib/i18n';
+import { usePageMeta } from '@/lib/page-meta';
+import { useCurriculumIndex, useTech, taiJson } from '@/lib/use-curriculum';
+import { useProgress, useToggleComplete } from '@/lib/use-progress';
+import { useEscape } from '@/lib/use-escape';
+import { timCongNghe, viTriBai } from '@/lib/curriculum';
+import { boThe, type TabBai } from '@/lib/ai';
+import { CHU_CAP, NEN_CAP } from '@/components/LevelLadder';
+import { LoadError } from '@/components/LoadError';
+import { NotFoundPanel } from '@/components/NotFoundPanel';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { TheoryTab } from './TheoryTab';
+import { CodeTab } from './CodeTab';
+import { QuizTab } from './QuizTab';
+import { TutorChat } from './TutorChat';
+import { useQuizBai, type BaiDangMo } from './use-quiz-bai';
+
+/** Cac tab da co o React. Dot 3 them 'exercise' (Sandpack, terminal, lab). */
+export const TABS: TabBai[] = ['theory', 'code', 'quiz'];
+
+export function LessonPage() {
+  const { tech: techId = '', level: levelId = '', lesson: lessonId = '' } = useParams();
+  const { t } = useT();
+  const navigate = useNavigate();
+  const ds = useCurriculumIndex();
+  const coTech = ds.data ? timCongNghe(ds.data, techId) : undefined;
+  const tech = useTech(coTech ? techId : undefined);
+  const vt = tech.data ? viTriBai(tech.data, levelId, lessonId) : null;
+
+  useEscape(() => navigate(coTech ? `/roadmap/${coTech.id}` : '/'));
+  // Doi bai (ke ca bam bai truoc/sau) thi doc tu dau bai moi
+  useEffect(() => { window.scrollTo?.(0, 0); }, [techId, levelId, lessonId]);
+
+  const ten = vt && tech.data ? `${vt.lesson.title} — ${tech.data.name} | DevMaster Hub` : `${t('pageNotFound')} | DevMaster Hub`;
+  const lyThuyet = boThe(vt?.lesson.theory);
+  usePageMeta({
+    title: ten,
+    description: vt ? (lyThuyet ? lyThuyet.slice(0, 155).trim() + '…' : `Học bài "${vt.lesson.title}" trong lộ trình ${tech.data?.name} (${vt.level.name}) cùng ví dụ code và bài tập thực hành.`) : undefined,
+    url: vt ? `${window.location.origin}/lesson/${techId}/${levelId}/${lessonId}` : undefined
+  });
+
+  if (ds.isError) return <LoadError onRetry={() => ds.refetch()} />;
+  if (ds.isLoading) return <Skeleton className="h-96 w-full rounded-2xl" />;
+  if (!coTech) return <NotFoundPanel />;
+  if (tech.isError) return <LoadError onRetry={() => tech.refetch()} />;
+  if (!tech.data) return <Skeleton className="h-96 w-full rounded-2xl" />;
+  if (!vt) return <NotFoundPanel ve={`/roadmap/${coTech.id}`} nhanVe={coTech.name} />;
+
+  return <NoiDungBai key={`${techId}.${levelId}.${lessonId}`} bai={{ tech: tech.data, level: vt.level, lesson: vt.lesson }} truoc={vt.truoc} sau={vt.sau} />;
+}
+
+type LanCan = { level: { id: string }; lesson: { id: string; title: string } } | null;
+
+function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: LanCan }) {
+  const { t, translateTitle } = useT();
+  const { tech, level, lesson } = bai;
+  const [params, datParams] = useSearchParams();
+  const thamSoTab = params.get('tab') as TabBai | null;
+  const tab: TabBai = thamSoTab && TABS.includes(thamSoTab) ? thamSoTab : 'theory';
+  const { isDone, loading } = useProgress();
+  const { toggle } = useToggleComplete();
+  const xong = isDone(tech.id, level.id, lesson.id);
+  const quizBai = useQuizBai(bai);
+  const { data: suc } = useQuery({ queryKey: ['health'], queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'), staleTime: 5 * 60_000 });
+
+  function doiTab(v: string) {
+    // Thay URL (khong them lich su): Back van ve trang truoc, link chia se mo dung tab
+    datParams(p => {
+      if (v === 'theory') p.delete('tab'); else p.set('tab', v);
+      return p;
+    }, { replace: true });
+  }
+
+  const duongDan = (x: NonNullable<LanCan>) => `/lesson/${tech.id}/${x.level.id}/${x.lesson.id}`;
+
+  return (
+    <article className="mx-auto max-w-3xl space-y-8">
+      <nav aria-label="breadcrumb">
+        <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+          <li><Link to="/" className="hover:text-foreground">{t('dashboard')}</Link></li>
+          <li aria-hidden="true">/</li>
+          <li><Link to={`/roadmap/${tech.id}`} className="hover:text-foreground"><span aria-hidden="true">{tech.icon}</span> {tech.name}</Link></li>
+          <li aria-hidden="true">/</li>
+          <li><Link to={`/roadmap/${tech.id}/${level.id}`} className="hover:text-foreground">{level.name}</Link></li>
+        </ol>
+      </nav>
+
+      <header className="space-y-4">
+        <span className={cn('inline-block rounded-md px-2 py-0.5 text-sm font-semibold', NEN_CAP[level.id] ?? 'bg-primary/15', CHU_CAP[level.id] ?? 'text-primary')}>
+          {level.name}
+        </span>
+        <h1 className="text-3xl font-bold tracking-tight text-balance">{translateTitle(lesson.title)}</h1>
+        <Button variant={xong ? 'secondary' : 'outline'} aria-pressed={xong} disabled={loading} onClick={() => toggle(tech.id, level.id, lesson.id)}>
+          {xong ? t('completed') : t('markComplete')}
+        </Button>
+      </header>
+
+      <Tabs value={tab} onValueChange={doiTab}>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="theory"><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
+          <TabsTrigger value="code"><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
+          <TabsTrigger value="quiz"><ListChecks aria-hidden="true" /> {t('tabQuiz')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="theory" className="pt-6"><TheoryTab lesson={lesson} /></TabsContent>
+        <TabsContent value="code" className="pt-6"><CodeTab lesson={lesson} /></TabsContent>
+        <TabsContent value="quiz" className="pt-6"><QuizTab lesson={lesson} quizBai={quizBai} aiEnabled={suc?.aiEnabled} /></TabsContent>
+      </Tabs>
+
+      <TutorChat bai={bai} tab={tab} quiz={quizBai.quiz} />
+
+      <nav aria-label={`${t('prevLesson')} / ${t('nextLesson')}`} className="grid gap-3 sm:grid-cols-2">
+        {truoc ? (
+          <Link to={duongDan(truoc)} className="rounded-xl border p-4 transition-colors hover:bg-accent/40">
+            <span className="block text-xs text-muted-foreground">{t('prevLesson')}</span>
+            <span className="mt-1 block font-medium">{translateTitle(truoc.lesson.title)}</span>
+          </Link>
+        ) : <span aria-hidden="true" />}
+        {sau && (
+          <Link to={duongDan(sau)} className="rounded-xl border p-4 text-right transition-colors hover:bg-accent/40">
+            <span className="block text-xs text-muted-foreground">{t('nextLesson')}</span>
+            <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
+          </Link>
+        )}
+      </nav>
+    </article>
+  );
+}

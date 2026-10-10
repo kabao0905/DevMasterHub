@@ -58,12 +58,12 @@ export function timCongNghe<T extends { id: string }>(ds: T[], id: string): T | 
   return ds.find(x => x.id === id);
 }
 
-type ViTri<C, B> = { level: C; lesson: B };
+type ViTri<C extends { lessons: unknown[] }> = { level: C; lesson: C['lessons'][number] };
 
 /** Bai dang mo cung bai truoc/sau, noi lien qua ranh gioi cap (bai cuoi Newbie -> bai dau Junior) */
-export function viTriBai<B extends { id: string }, C extends { id: string; lessons: B[] }>(
+export function viTriBai<C extends { id: string; lessons: { id: string }[] }>(
   tech: { levels: C[] }, levelId: string, lessonId: string
-): (ViTri<C, B> & { truoc: ViTri<C, B> | null; sau: ViTri<C, B> | null }) | null {
+): (ViTri<C> & { truoc: ViTri<C> | null; sau: ViTri<C> | null }) | null {
   const phang = tech.levels.flatMap(level => level.lessons.map(lesson => ({ level, lesson })));
   const i = phang.findIndex(x => x.level.id === levelId && x.lesson.id === lessonId);
   if (i < 0) return null;

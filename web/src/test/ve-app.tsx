@@ -10,14 +10,18 @@ import { BAN_DICH_VI } from './ban-dich-vi';
 import { Toaster } from '@/components/ui/sonner';
 import type { giaSupabase } from './gia-supabase';
 
-export function veApp(duongDan: string, { gia, json = {} }: { gia: ReturnType<typeof giaSupabase>; json?: Record<string, unknown> }) {
-  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+export function veApp(duongDan: string, { gia, json = {}, lang = 'vi', fetch }: {
+  gia: ReturnType<typeof giaSupabase>; json?: Record<string, unknown>; lang?: string;
+  /** fetch gia rieng (AI, dich may...); mac dinh chi tra JSON theo `json` */
+  fetch?: (url: string, init?: RequestInit) => Promise<unknown>;
+}) {
+  vi.stubGlobal('fetch', vi.fn(fetch ?? (async (url: string) => {
     const v = json[url];
     return v === undefined
       ? { ok: false, status: 404, json: async () => null }
       : { ok: true, status: 200, json: async () => v };
-  }));
-  localStorage.setItem('devmaster_hub_lang', 'vi');
+  })));
+  localStorage.setItem('devmaster_hub_lang', lang);
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(cacRoute, { initialEntries: [duongDan] });
   const kq = render(
