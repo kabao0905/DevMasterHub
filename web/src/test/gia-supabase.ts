@@ -9,7 +9,9 @@ type TrangThai = { bang: string; op: string; payload: unknown; tuyChon?: unknown
 
 export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiGhi = {} }: {
   bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string };
-  treo?: Record<string, Promise<unknown> | undefined>; loiGhi?: Record<string, string>;
+  treo?: Record<string, Promise<unknown> | undefined>;
+  /** Chuoi: moi lan ghi deu loi; ham: quyet dinh tung lan (tra undefined la ghi duoc) */
+  loiGhi?: Record<string, string | ((payload: unknown) => string | undefined)>;
 } = {}) {
   let phat: ((e: string, s: unknown) => void) | null = null;
   const truyVan: TrangThai[] = [];
@@ -31,8 +33,20 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiG
         truyVan.push(tt);
         const v = bang[tenBang] ?? [];
         const data = tt.op === 'select' ? (tt.motDong ? (v[0] ?? null) : v) : tt.payload;
-        const error = tt.op !== 'select' && loiGhi[tenBang] ? { message: loiGhi[tenBang] } : null;
-        return Promise.resolve(treo[tenBang]).then(() => ({ data: error ? null : data, error })).then(ok, loi);
+        return Promise.resolve(treo[tenBang]).then(() => {
+          const l = tt.op === 'select' ? undefined : loiGhi[tenBang];
+          const thongBao = typeof l === 'function' ? l(tt.payload) : l;
+          if (thongBao) return { data: null, error: { message: thongBao } };
+          // upsert ghi that vao bang theo cot onConflict, nhu Postgres — lan doc sau thay ket qua
+          if (tt.op === 'upsert' && tt.payload && typeof tt.payload === 'object' && !Array.isArray(tt.payload)) {
+            const ds = (bang[tenBang] ??= []) as Record<string, unknown>[];
+            const moi = tt.payload as Record<string, unknown>;
+            const cot = ((tt.tuyChon as { onConflict?: string } | undefined)?.onConflict ?? '').split(',').filter(Boolean);
+            const i = cot.length ? ds.findIndex(r => cot.every(c => r[c] === moi[c])) : -1;
+            if (i >= 0) ds[i] = { ...ds[i], ...moi }; else ds.push({ ...moi });
+          }
+          return { data, error: null };
+        }).then(ok, loi);
       }
     };
     return b;

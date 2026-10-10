@@ -47,11 +47,12 @@ export function useProgress() {
 
   const done = useMemo(() => new Set(user ? q.data ?? [] : []), [q.data, user]);
   const isDone = useCallback((tech: string, level: string, lesson: string) => done.has(khoaBai(tech, level, lesson)), [done]);
-  // loading: chua co du lieu that tu server (dang hien tien do tam lay tu may)
-  return { done, isDone, loading: !!user && (q.isPending || q.isPlaceholderData) };
+  // loading: chua co du lieu that tu server (dang tai, dang hien ban tam tu may, hoac tai loi)
+  return { done, isDone, loading: !!user && (q.data === undefined || q.isPlaceholderData) };
 }
 
 type Bien = { uid: string; tech: string; level: string; lesson: string; xong: boolean };
+const KHOA_GHI = ['progress', 'ghi'];
 const datTrangThai = (ds: string[], khoa: string, xong: boolean) => (xong ? [...ds.filter(k => k !== khoa), khoa] : ds.filter(k => k !== khoa));
 
 /** Bat/tat "da hoan thanh" mot bai: doi ngay tren giao dien, ghi dung mot dong len Supabase */
@@ -60,6 +61,7 @@ export function useToggleComplete() {
   const { t } = useT();
   const qc = useQueryClient();
   const { mutate, isPending } = useMutation({
+    mutationKey: KHOA_GHI,
     // Cung scope: lan ghi sau doi lan truoc xong, server nhan dung thu tu nguoi dung bam
     scope: { id: 'progress' },
     mutationFn: async ({ uid, tech, level, lesson, xong }: Bien) => {
@@ -73,12 +75,12 @@ export function useToggleComplete() {
       // Supabase tra { error } chu khong nem: truoc day loi ghi bi nuot im lang
       qc.setQueryData<string[]>(['progress', uid], ds => ds && datTrangThai(ds, khoaBai(tech, level, lesson), !xong));
       toast.error(t('progressSaveFailed'));
-      void qc.invalidateQueries({ queryKey: ['progress', uid] });
     },
-    onSuccess: (_kq, { uid }) => {
-      // Da dang xuat thi truy van da bi xoa: khong ghi tien do nguoi cu vao may
-      const ds = qc.getQueryData<string[]>(['progress', uid]);
-      if (ds) ghiCache(ds);
+    onSettled: (_kq, _loi, { uid }) => {
+      // Lan ghi cuoi cung trong loat bam: lay lai su that tu server (queryFn ghi luon cache cho app cu).
+      // Doi den luc nay moi doi chieu vi giua chung giao dien da doi theo nhung lan bam sau.
+      // Da dang xuat thi truy van da bi xoa: khong co gi de tai, khong ghi tien do nguoi cu vao may.
+      if (qc.isMutating({ mutationKey: KHOA_GHI }) === 1) void qc.invalidateQueries({ queryKey: ['progress', uid] });
     }
   });
 
@@ -86,7 +88,9 @@ export function useToggleComplete() {
     if (!user) return;
     const uid = user.id;
     const khoa = khoaBai(tech, level, lesson);
-    const ds = qc.getQueryData<string[]>(['progress', uid]) ?? [];
+    const ds = qc.getQueryData<string[]>(['progress', uid]);
+    // Chua biet trang thai that (dang tai / tai loi): bam luc nay se tinh sai va ghi de cache
+    if (!ds) return;
     const xong = !ds.includes(khoa);
     // Doi ngay luc bam (khong doi den luot ghi) de lan bam sau tinh tu trang thai nguoi dung dang thay
     qc.setQueryData<string[]>(['progress', uid], datTrangThai(ds, khoa, xong));
