@@ -2,59 +2,31 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const vm = require('vm');
-const net = require('net');
-const dns = require('dns').promises;
+const { napEnv } = require('./lib/env.js');
+const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC } = require('./lib/ai-guard.js');
+const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
+const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
 
-function isBlockedAddress(ip) {
-  if (net.isIPv4(ip)) {
-    const [a, b] = ip.split('.').map(Number);
-    if (a === 0 || a === 10 || a === 127) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true;
-    if (a >= 224) return true;
-    return false;
-  }
-  const v6 = ip.toLowerCase();
-  if (v6 === '::' || v6 === '::1') return true;
-  if (v6.startsWith('fc') || v6.startsWith('fd')) return true;
-  if (v6.startsWith('fe80')) return true;
-  if (v6.startsWith('::ffff:')) return isBlockedAddress(v6.slice(7));
-  return false;
+// Nap .env truoc khi doc bat ky bien nao. Bien dat san tu moi truong (Render) thang .env.
+try {
+  napEnv(fs.readFileSync(path.join(__dirname, '.env'), 'utf8'));
+} catch (e) {
+  console.warn('ℹ️ Running without local .env file. Reading from process.env');
 }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-let GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-let DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
-let GROQ_API_KEY = process.env.GROQ_API_KEY || '';
-let OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
-let CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || '';
-let JSEARCH_API_KEY = process.env.JSEARCH_API_KEY || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || '';
 
-try {
-
-  const envContent = fs.readFileSync(path.join(__dirname, '.env'), 'utf8').replace(/^\uFEFF/, '');
-  const lines = envContent.split('\n');
-  for (const line of lines) {
-    const geminiM = line.match(/^GEMINI_API_KEY=(.+)$/);
-    if (geminiM) GEMINI_API_KEY = geminiM[1].trim();
-    const deepseekM = line.match(/^DEEPSEEK_API_KEY=(.+)$/);
-    if (deepseekM) DEEPSEEK_API_KEY = deepseekM[1].trim();
-    const groqM = line.match(/^GROQ_API_KEY=(.+)$/);
-    if (groqM) GROQ_API_KEY = groqM[1].trim();
-    const openrouterM = line.match(/^OPENROUTER_API_KEY=(.+)$/);
-    if (openrouterM) OPENROUTER_API_KEY = openrouterM[1].trim();
-    const claudeMatch = line.match(/^CLAUDE_API_KEY=(.+)$/);
-    if (claudeMatch) CLAUDE_API_KEY = claudeMatch[1].trim();
-    const jsearchMatch = line.match(/^JSEARCH_API_KEY=(.+)$/);
-    if (jsearchMatch) JSEARCH_API_KEY = jsearchMatch[1].trim();
-  }
-} catch (e) {
-  console.warn('ℹ️ Running without local .env file. Reading from process.env');
-}
+// Mot nha cung cap treo khong duoc giu ca chuoi du phong lai mai mai
+const AI_TIMEOUT_MS = 90000;
+const JOBS_TIMEOUT_MS = 8000;
+const coHan = ms => AbortSignal.timeout(ms);
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nlkljhpqwepabglrqkmz.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_0s-SglEeMENWRqgbC2QWuQ_w0pzWJMe';
@@ -155,7 +127,7 @@ async function callGemini(system, messages, temperature = 0.7, maxTokens = 4096)
     parts: [{ text: m.content }]
   }));
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   const payload = {
     system_instruction: system ? { parts: [{ text: system }] } : undefined,
     contents: formattedContents,
@@ -167,8 +139,9 @@ async function callGemini(system, messages, temperature = 0.7, maxTokens = 4096)
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+    body: JSON.stringify(payload),
+    signal: coHan(AI_TIMEOUT_MS)
   });
 
   if (!res.ok) {
@@ -199,7 +172,8 @@ async function callDeepSeek(system, messages, temperature = 0.7, maxTokens = 409
       messages: formattedMessages,
       temperature,
       max_tokens: maxTokens
-    })
+    }),
+    signal: coHan(AI_TIMEOUT_MS)
   });
 
   if (!res.ok) {
@@ -229,7 +203,8 @@ async function callGroq(system, messages, temperature = 0.7, maxTokens = 4096) {
       messages: formattedMessages,
       temperature,
       max_tokens: maxTokens
-    })
+    }),
+    signal: coHan(AI_TIMEOUT_MS)
   });
 
   if (!res.ok) {
@@ -241,23 +216,11 @@ async function callGroq(system, messages, temperature = 0.7, maxTokens = 4096) {
   return data.choices?.[0]?.message?.content || '';
 }
 
-async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4096, taskType = 'general', requestedModel = null) {
+async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4096, taskType = 'general') {
   if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY not configured');
 
-  const modelMap = {
-    tutor: 'google/gemini-3.7-flash',
-    quiz: 'google/gemini-3.7-flash',
-    exercise: 'google/gemini-3.7-flash',
-    checkCode: 'deepseek/deepseek-v4-pro-0813',
-    checkAnswer: 'deepseek/deepseek-v4-pro-0813',
-    projectIdea: 'deepseek/deepseek-v4-pro-0813',
-    projectChat: 'deepseek/deepseek-v4-pro-0813',
-    projectReview: 'deepseek/deepseek-v4-pro-0813',
-    career: 'anthropic/claude-sonnet-4.5',
-    general: 'google/gemini-3.7-flash'
-  };
-
-  const selectedModel = requestedModel || modelMap[taskType] || 'google/gemini-3.7-flash';
+  // Model luon do server chon theo taskType — client khong duoc chi dinh
+  const selectedModel = MO_HINH_THEO_VIEC[taskType] || MO_HINH_THEO_VIEC.general;
   console.log(`[OpenRouter] Routing taskType="${taskType}" -> Model="${selectedModel}"`);
 
   const formattedMessages = [];
@@ -277,7 +240,8 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
       messages: formattedMessages,
       temperature,
       max_tokens: maxTokens
-    })
+    }),
+    signal: coHan(AI_TIMEOUT_MS)
   });
 
   if (!res.ok) {
@@ -289,7 +253,10 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
   return data.choices?.[0]?.message?.content || '';
 }
 
-async function callClaude(system, messages, temperature = 0.7, maxTokens = 4096) {
+// Goi REST truc tiep thay vi SDK vi du an khong them phu thuoc npm.
+// claude-opus-5-5 tra 400 neu gui temperature, va luon bat thinking: khoi dau
+// tien cua content co the la 'thinking' nen phai gom cac khoi 'text'.
+async function callClaude(system, messages, maxTokens = 4096) {
   if (!CLAUDE_API_KEY) throw new Error('CLAUDE_API_KEY not configured');
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -297,15 +264,17 @@ async function callClaude(system, messages, temperature = 0.7, maxTokens = 4096)
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': CLAUDE_API_KEY,
-      'anthropic-version': '2023-06-01'
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'server-side-fallback-2026-07-01'
     },
     body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-opus-5-5',
       max_tokens: maxTokens,
-      temperature,
       system: system || 'You are a programming instructor. Always respond in helpful structured format.',
-      messages: messages || []
-    })
+      messages,
+      fallbacks: 'default'
+    }),
+    signal: coHan(AI_TIMEOUT_MS)
   });
 
   if (!res.ok) {
@@ -314,18 +283,22 @@ async function callClaude(system, messages, temperature = 0.7, maxTokens = 4096)
   }
 
   const data = await res.json();
-  return data.content?.[0]?.text || '';
+  if (data.stop_reason === 'refusal') throw new Error('Claude từ chối yêu cầu (refusal)');
+  return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
 }
 
 app.post('/api/ai', sameOrigin, requireUser, rateLimit({ max: 30, scope: 'ai' }), async (req, res) => {
-  const { system, messages, temperature = 0.7, max_tokens = 4096, taskType = 'general', model = null } = req.body;
+  // model va max_tokens tu client khong duoc tin: moi request tinh tien vao khoa cua server
+  const yc = chuanHoaYeuCauAi(req.body);
+  if (yc.loi) return res.status(400).json({ error: yc.loi });
+  const { system, messages, temperature, maxTokens, taskType } = yc;
 
   const providers = [
-    { name: 'OpenRouter (' + (taskType || 'default') + ')', fn: () => callOpenRouter(system, messages, temperature, max_tokens, taskType, model), enabled: !!OPENROUTER_API_KEY },
-    { name: 'Gemini (Google)', fn: () => callGemini(system, messages, temperature, max_tokens), enabled: !!GEMINI_API_KEY },
-    { name: 'DeepSeek', fn: () => callDeepSeek(system, messages, temperature, max_tokens), enabled: !!DEEPSEEK_API_KEY },
-    { name: 'Claude (Anthropic)', fn: () => callClaude(system, messages, temperature, max_tokens), enabled: !!CLAUDE_API_KEY },
-    { name: 'Groq (Llama 3.3)', fn: () => callGroq(system, messages, temperature, max_tokens), enabled: !!GROQ_API_KEY }
+    { name: 'OpenRouter (' + taskType + ')', fn: () => callOpenRouter(system, messages, temperature, maxTokens, taskType), enabled: !!OPENROUTER_API_KEY },
+    { name: 'Gemini (Google)', fn: () => callGemini(system, messages, temperature, maxTokens), enabled: !!GEMINI_API_KEY },
+    { name: 'DeepSeek', fn: () => callDeepSeek(system, messages, temperature, maxTokens), enabled: !!DEEPSEEK_API_KEY },
+    { name: 'Claude (Anthropic)', fn: () => callClaude(system, messages, maxTokens), enabled: !!CLAUDE_API_KEY },
+    { name: 'Groq (Llama 3.3)', fn: () => callGroq(system, messages, temperature, maxTokens), enabled: !!GROQ_API_KEY }
   ];
 
   const activeProviders = providers.filter(p => p.enabled);
@@ -341,6 +314,8 @@ app.post('/api/ai', sameOrigin, requireUser, rateLimit({ max: 30, scope: 'ai' })
     try {
       console.log(`[AI Router] Attempting provider: ${provider.name}...`);
       const text = await provider.fn();
+      // Tra ve rong thi client cung bao loi — thu nha cung cap ke tiep con hon
+      if (!text) throw new Error('Phản hồi rỗng');
       console.log(`[AI Router] Success with ${provider.name}!`);
 
       return res.json({
@@ -403,6 +378,178 @@ const NON_IT_BLACKLIST = [
   'lawyer', 'legal counsel', 'paralegal'
 ];
 
+// Bo HTML trong mo ta viec lam roi cat ngan
+const tomTat = (html, n) => String(html || '').replace(/<[^<>]*>/g, '').substring(0, n) + '...';
+
+async function layVietnamWorks(cleanTechQuery, coreTech, isVi) {
+  const tim = async query => {
+    const r = await fetch('https://ms.vietnamworks.com/job-search/v1.0/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+      body: JSON.stringify({ query, page: 0, size: 25 }),
+      signal: coHan(JOBS_TIMEOUT_MS)
+    });
+    return r.ok ? ((await r.json()).data || []) : [];
+  };
+
+  let vnItems = await tim(cleanTechQuery || 'developer');
+  if (vnItems.length === 0 && coreTech && coreTech !== cleanTechQuery) {
+    console.log(`[Jobs] VietnamWorks 0 results for "${cleanTechQuery}", retrying with coreTech "${coreTech}"`);
+    vnItems = await tim(coreTech);
+  }
+
+  return vnItems.map(j => {
+    const cityId = j.workingLocations?.[0]?.cityId;
+    const cityName = ((j.workingLocations?.[0]?.cityNameVI || j.workingLocations?.[0]?.cityName || '') + ' ' + (j.address || '')).toLowerCase();
+
+    const isHcm = (cityId === 29 || cityName.includes('hồ chí minh') || cityName.includes('ho chi minh') || cityName.includes('hcm') || cityName.includes('sài gòn') || cityName.includes('thủ đức'));
+    const isHn = (cityId === 24 || cityName.includes('hà nội') || cityName.includes('ha noi'));
+    const isDanang = (cityId === 17 || cityName.includes('đà nẵng') || cityName.includes('da nang'));
+    const isRemote = (cityId === 70 || cityName.includes('quốc tế') || (j.jobTitle || '').toLowerCase().includes('remote') || cityName.includes('remote'));
+
+    let displayLoc = isVi ? 'Việt Nam' : 'Vietnam';
+    if (isHcm) displayLoc = isVi ? 'TP. Hồ Chí Minh' : 'Ho Chi Minh City, VN';
+    else if (isHn) displayLoc = isVi ? 'Hà Nội' : 'Hanoi, VN';
+    else if (isDanang) displayLoc = isVi ? 'Đà Nẵng' : 'Da Nang, VN';
+    else if (isRemote) displayLoc = 'Remote Global';
+
+    let salaryStr = j.prettySalary || (j.salary ? j.salary : '');
+    if (!isVi && salaryStr) {
+      salaryStr = salaryStr
+        .replace(/Thương lượng/gi, 'Negotiable')
+        .replace(/Tới\s*/gi, 'Up to ')
+        .replace(/Lên tới\s*/gi, 'Up to ')
+        .replace(/đ\/tháng/gi, 'VND/mo')
+        .replace(/triệu/gi, 'M')
+        .replace(/tr/gi, 'M');
+    }
+
+    const tieuDe = (j.jobTitle || '').toLowerCase();
+    const isPartTime = (j.typeWorkingId === 2 || tieuDe.includes('part time') || tieuDe.includes('part-time'));
+    const isIntern = tieuDe.includes('intern') || tieuDe.includes('fresher') || tieuDe.includes('thực tập');
+
+    return {
+      title: j.jobTitle || 'Software Engineer',
+      company_name: j.companyName || (isVi ? 'Công ty Công nghệ' : 'Tech Company'),
+      company_logo: chiNhanHttp(j.companyLogo),
+      url: j.alias ? `https://www.vietnamworks.com/${encodeURIComponent(j.alias)}-${encodeURIComponent(j.jobId)}-jv` : `https://www.vietnamworks.com/${encodeURIComponent(j.jobId)}-jv`,
+      location: displayLoc,
+      isHcm,
+      isHn,
+      isDanang,
+      is_remote: isRemote,
+      employment_type: isIntern ? 'INTERN' : (isPartTime ? 'PARTTIME' : 'FULLTIME'),
+      salary: salaryStr,
+      description_snippet: tomTat(j.jobDescription || j.summary, 220),
+      posted_at: j.prettyApprovedOn || j.approvedOnText || '',
+      source: 'VietnamWorks',
+      tags: (j.skills || []).map(s => s.skillName).filter(Boolean)
+    };
+  });
+}
+
+// Moi nguon ngoai deu la du lieu ben thu ba: link khong phai http/https thi bo ca viec
+const ngoaiVN = { isHcm: false, isHn: false, isDanang: false };
+
+async function layRemoteOK(tuKhoa) {
+  const r = await fetch(`https://remoteok.com/api?tag=${encodeURIComponent(tuKhoa)}`, {
+    headers: { 'User-Agent': 'DevMasterHub/1.0' }, signal: coHan(JOBS_TIMEOUT_MS)
+  });
+  if (!r.ok) return [];
+  const data = await r.json();
+  if (!Array.isArray(data)) return [];
+  return data.filter(j => j.id).slice(0, 10).map(j => ({
+    ...ngoaiVN,
+    title: j.position || 'Software Engineer',
+    company_name: j.company || 'Tech Company',
+    company_logo: chiNhanHttp(j.company_logo),
+    url: chiNhanHttp(j.url),
+    location: j.location || 'Remote Global',
+    is_remote: true,
+    employment_type: 'FULLTIME',
+    salary: j.salary_min && j.salary_max ? `$${j.salary_min.toLocaleString()} - $${j.salary_max.toLocaleString()}` : '',
+    description_snippet: tomTat(j.description, 200),
+    posted_at: j.date || '',
+    source: 'RemoteOK',
+    tags: j.tags || []
+  }));
+}
+
+async function layArbeitnow(tuKhoa) {
+  const r = await fetch(`https://www.arbeitnow.com/api/job-board-api?search=${encodeURIComponent(tuKhoa)}`, { signal: coHan(JOBS_TIMEOUT_MS) });
+  if (!r.ok) return [];
+  return ((await r.json()).data || []).slice(0, 8).map(j => ({
+    ...ngoaiVN,
+    title: j.title || 'Developer',
+    company_name: j.company_name || 'Tech Company',
+    company_logo: null,
+    url: chiNhanHttp(j.url),
+    location: j.location || 'Remote Global',
+    is_remote: j.remote || false,
+    employment_type: 'FULLTIME',
+    salary: '',
+    description_snippet: tomTat(j.description, 200),
+    posted_at: j.created_at || '',
+    source: 'Arbeitnow',
+    tags: j.tags || []
+  }));
+}
+
+async function layRemotive(tuKhoa) {
+  const r = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(tuKhoa)}&limit=10`, { signal: coHan(JOBS_TIMEOUT_MS) });
+  if (!r.ok) return [];
+  return ((await r.json()).jobs || []).slice(0, 8).map(j => ({
+    ...ngoaiVN,
+    title: j.title || 'Developer',
+    company_name: j.company_name || 'Tech Company',
+    company_logo: chiNhanHttp(j.company_logo),
+    url: chiNhanHttp(j.url),
+    location: j.candidate_required_location || 'Remote Global',
+    is_remote: true,
+    employment_type: j.job_type || 'full_time',
+    salary: j.salary || '',
+    description_snippet: tomTat(j.description, 200),
+    posted_at: j.publication_date || '',
+    source: 'Remotive',
+    tags: [j.category, ...(j.tags || [])].filter(Boolean)
+  }));
+}
+
+async function layWeWorkRemotely() {
+  const r = await fetch('https://weworkremotely.com/categories/remote-programming-jobs.rss', {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, signal: coHan(JOBS_TIMEOUT_MS)
+  });
+  if (!r.ok) return [];
+  const xml = await r.text();
+  return xml.split('<item>').slice(1, 16).map(chunk => {
+    const titleMatch = chunk.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/i) || chunk.match(/<title>(.*?)<\/title>/i);
+    const linkMatch = chunk.match(/<link>(.*?)<\/link>/i);
+    const descMatch = chunk.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/i) || chunk.match(/<description>([\s\S]*?)<\/description>/i);
+    const regionMatch = chunk.match(/<region>(.*?)<\/region>/i);
+    if (!titleMatch || !linkMatch) return null;
+
+    const rawTitle = titleMatch[1];
+    const parts = rawTitle.split(':');
+    const company = parts.length > 1 ? parts[0].trim() : 'Tech Company';
+    const position = parts.length > 1 ? parts.slice(1).join(':').trim() : rawTitle;
+    return {
+      ...ngoaiVN,
+      title: position,
+      company_name: company,
+      company_logo: null,
+      url: chiNhanHttp(linkMatch[1]),
+      location: regionMatch ? regionMatch[1] : 'Remote Global',
+      is_remote: true,
+      employment_type: 'FULLTIME',
+      salary: '',
+      description_snippet: tomTat(descMatch ? descMatch[1] : '', 200),
+      posted_at: '',
+      source: 'WeWorkRemotely',
+      tags: [company, position]
+    };
+  }).filter(Boolean);
+}
+
 app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (req, res) => {
   try {
     const { search, location = '', limit = 15 } = req.query;
@@ -413,243 +560,23 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
     const queryLower = (search + ' ' + (location || '')).toLowerCase().trim();
     console.log(`[Jobs] Smart Search: "${search}" location: "${location}"`);
 
-    let targetCity = null;
-    if (queryLower.includes('hcm') || queryLower.includes('hồ chí minh') || queryLower.includes('ho chi minh') || queryLower.includes('tp.hcm') || queryLower.includes('tp hcm') || queryLower.includes('sài gòn') || queryLower.includes('sai gon')) {
-      targetCity = 'hcm';
-    } else if (queryLower.includes('hà nội') || queryLower.includes('ha noi') || queryLower.includes('hn')) {
-      targetCity = 'hanoi';
-    } else if (queryLower.includes('đà nẵng') || queryLower.includes('da nang')) {
-      targetCity = 'danang';
-    } else if (queryLower.includes('remote') || queryLower.includes('từ xa') || queryLower.includes('nước ngoài') || queryLower.includes('global') || queryLower.includes('quốc tế')) {
-      targetCity = 'remote';
-    }
+    const targetCity = doanThanhPho(queryLower);
+    const { cleanTechQuery, coreTech } = lamSachTuKhoa(queryLower);
 
-    const cleanTechQuery = queryLower
-      .replace(/\b(vietnam|viet nam|vn|hcm|ho chi minh|tp\.hcm|tp hcm|ha noi|hanoi|da nang|danang|remote|global|sài gòn|sai gon)\b/gi, '')
-      .replace(/\b(tui|muốn|tìm|việc|về|ở|tại|công việc|việc làm|tuyển dụng|parttime|part time|fulltime|full time)\b/gi, '')
-      .trim() || 'developer';
-
-    const coreTech = cleanTechQuery.replace(/\b(developer|engineer|programmer|intern|fresher|junior|senior|lead|chuyên viên|kỹ sư|lập trình viên)\b/gi, '').trim() || cleanTechQuery;
-
-    let rawJobs = [];
-
-    try {
-      let vnWorksRes = await fetch('https://ms.vietnamworks.com/job-search/v1.0/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-        },
-        body: JSON.stringify({
-          query: cleanTechQuery || 'developer',
-          page: 0,
-          size: 25
-        })
-      });
-      let vnData = vnWorksRes.ok ? await vnWorksRes.json() : { data: [] };
-      let vnItems = vnData.data || [];
-
-      if (vnItems.length === 0 && coreTech && coreTech !== cleanTechQuery) {
-        console.log(`[Jobs] VietnamWorks 0 results for "${cleanTechQuery}", retrying with coreTech "${coreTech}"`);
-        const fallbackRes = await fetch('https://ms.vietnamworks.com/job-search/v1.0/search', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-          },
-          body: JSON.stringify({
-            query: coreTech,
-            page: 0,
-            size: 25
-          })
-        });
-        if (fallbackRes.ok) {
-          const fallbackData = await fallbackRes.json();
-          vnItems = fallbackData.data || [];
-        }
-      }
-
-      vnItems.forEach(j => {
-        const cityId = j.workingLocations?.[0]?.cityId;
-        const cityName = ((j.workingLocations?.[0]?.cityNameVI || j.workingLocations?.[0]?.cityName || '') + ' ' + (j.address || '')).toLowerCase();
-
-        let isHcm = (cityId === 29 || cityName.includes('hồ chí minh') || cityName.includes('ho chi minh') || cityName.includes('hcm') || cityName.includes('sài gòn') || cityName.includes('thủ đức'));
-        let isHn = (cityId === 24 || cityName.includes('hà nội') || cityName.includes('ha noi'));
-        let isDanang = (cityId === 17 || cityName.includes('đà nẵng') || cityName.includes('da nang'));
-        let isRemote = (cityId === 70 || cityName.includes('quốc tế') || (j.jobTitle || '').toLowerCase().includes('remote') || cityName.includes('remote'));
-
-        let displayLoc = isVi ? 'Việt Nam' : 'Vietnam';
-        if (isHcm) displayLoc = isVi ? 'TP. Hồ Chí Minh' : 'Ho Chi Minh City, VN';
-        else if (isHn) displayLoc = isVi ? 'Hà Nội' : 'Hanoi, VN';
-        else if (isDanang) displayLoc = isVi ? 'Đà Nẵng' : 'Da Nang, VN';
-        else if (isRemote) displayLoc = 'Remote Global';
-
-        let salaryStr = j.prettySalary || (j.salary ? j.salary : '');
-        if (!isVi && salaryStr) {
-          salaryStr = salaryStr
-            .replace(/Thương lượng/gi, 'Negotiable')
-            .replace(/Tới\s*/gi, 'Up to ')
-            .replace(/Lên tới\s*/gi, 'Up to ')
-            .replace(/đ\/tháng/gi, 'VND/mo')
-            .replace(/triệu/gi, 'M')
-            .replace(/tr/gi, 'M');
-        }
-
-        const isPartTime = (j.typeWorkingId === 2 || (j.jobTitle || '').toLowerCase().includes('part time') || (j.jobTitle || '').toLowerCase().includes('part-time'));
-        const isIntern = (j.jobTitle || '').toLowerCase().includes('intern') || (j.jobTitle || '').toLowerCase().includes('fresher') || (j.jobTitle || '').toLowerCase().includes('thực tập');
-
-        rawJobs.push({
-          title: j.jobTitle || 'Software Engineer',
-          company_name: j.companyName || (isVi ? 'Công ty Công nghệ' : 'Tech Company'),
-          company_logo: j.companyLogo || null,
-          url: j.alias ? `https://www.vietnamworks.com/${j.alias}-${j.jobId}-jv` : `https://www.vietnamworks.com/${j.jobId}-jv`,
-          location: displayLoc,
-          isHcm,
-          isHn,
-          isDanang,
-          is_remote: isRemote,
-          employment_type: isIntern ? 'INTERN' : (isPartTime ? 'PARTTIME' : 'FULLTIME'),
-          salary: salaryStr,
-          description_snippet: (j.jobDescription || j.summary || '').replace(/<[^>]*>/g, '').substring(0, 220) + '...',
-          posted_at: j.prettyApprovedOn || j.approvedOnText || '',
-          source: 'VietnamWorks',
-          tags: (j.skills || []).map(s => s.skillName).filter(Boolean)
-        });
-      });
-    } catch (e) {
-      console.warn('[Jobs] VietnamWorks fetch failed:', e.message);
-    }
-
-    try {
-      const rokRes = await fetch(`https://remoteok.com/api?tag=${encodeURIComponent(coreTech || cleanTechQuery)}`, {
-        headers: { 'User-Agent': 'DevMasterHub/1.0' }
-      });
-        if (rokRes.ok) {
-          const rokData = await rokRes.json();
-          if (Array.isArray(rokData)) {
-            rokData.filter(j => j.id).slice(0, 10).forEach(j => {
-              rawJobs.push({
-                title: j.position || 'Software Engineer',
-                company_name: j.company || 'Tech Company',
-                company_logo: j.company_logo || null,
-                url: j.url || '#',
-                location: j.location || 'Remote Global',
-                isHcm: false,
-                isHn: false,
-                isDanang: false,
-                is_remote: true,
-                employment_type: 'FULLTIME',
-                salary: j.salary_min && j.salary_max ? `$${j.salary_min.toLocaleString()} - $${j.salary_max.toLocaleString()}` : '',
-                description_snippet: (j.description || '').replace(/<[^>]*>/g, '').substring(0, 200) + '...',
-                posted_at: j.date || '',
-                source: 'RemoteOK',
-                tags: j.tags || []
-              });
-            });
-          }
-        }
-      } catch (e) {
-        console.warn('[Jobs] RemoteOK fetch failed:', e.message);
-      }
-
-      try {
-        const arbRes = await fetch(`https://www.arbeitnow.com/api/job-board-api?search=${encodeURIComponent(cleanTechQuery)}`);
-        if (arbRes.ok) {
-          const arbData = await arbRes.json();
-          (arbData.data || []).slice(0, 8).forEach(j => {
-            rawJobs.push({
-              title: j.title || 'Developer',
-              company_name: j.company_name || 'Tech Company',
-              company_logo: null,
-              url: j.url || '#',
-              location: j.location || 'Remote Global',
-              isHcm: false,
-              isHn: false,
-              isDanang: false,
-              is_remote: j.remote || false,
-              employment_type: 'FULLTIME',
-              salary: '',
-              description_snippet: (j.description || '').replace(/<[^>]*>/g, '').substring(0, 200) + '...',
-              posted_at: j.created_at || '',
-              source: 'Arbeitnow',
-              tags: j.tags || []
-            });
-          });
-        }
-      } catch (e) {
-        console.warn('[Jobs] Arbeitnow fetch failed:', e.message);
-      }
-
-      try {
-        const remRes = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(cleanTechQuery)}&limit=10`);
-        if (remRes.ok) {
-          const remData = await remRes.json();
-          (remData.jobs || []).slice(0, 8).forEach(j => {
-            rawJobs.push({
-              title: j.title || 'Developer',
-              company_name: j.company_name || 'Tech Company',
-              company_logo: j.company_logo || null,
-              url: j.url || '#',
-              location: j.candidate_required_location || 'Remote Global',
-              isHcm: false,
-              isHn: false,
-              isDanang: false,
-              is_remote: true,
-              employment_type: j.job_type || 'full_time',
-              salary: j.salary || '',
-              description_snippet: (j.description || '').replace(/<[^>]*>/g, '').substring(0, 200) + '...',
-              posted_at: j.publication_date || '',
-              source: 'Remotive',
-              tags: [j.category, ...(j.tags || [])].filter(Boolean)
-            });
-          });
-        }
-      } catch (e) {
-        console.warn('[Jobs] Remotive fetch failed:', e.message);
-      }
-
-      try {
-        const wwrRes = await fetch('https://weworkremotely.com/categories/remote-programming-jobs.rss', {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-        });
-        if (wwrRes.ok) {
-          const xml = await wwrRes.text();
-          const items = xml.split('<item>').slice(1);
-          items.slice(0, 15).forEach(chunk => {
-            const titleMatch = chunk.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/i) || chunk.match(/<title>(.*?)<\/title>/i);
-            const linkMatch = chunk.match(/<link>(.*?)<\/link>/i);
-            const descMatch = chunk.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/i) || chunk.match(/<description>([\s\S]*?)<\/description>/i);
-            const regionMatch = chunk.match(/<region>(.*?)<\/region>/i);
-
-            if (titleMatch && linkMatch) {
-              const rawTitle = titleMatch[1];
-              const parts = rawTitle.split(':');
-              const company = parts.length > 1 ? parts[0].trim() : 'Tech Company';
-              const position = parts.length > 1 ? parts.slice(1).join(':').trim() : rawTitle;
-
-              rawJobs.push({
-                title: position,
-                company_name: company,
-                company_logo: null,
-                url: linkMatch[1],
-                location: regionMatch ? regionMatch[1] : 'Remote Global',
-                isHcm: false,
-                isHn: false,
-                isDanang: false,
-                is_remote: true,
-                employment_type: 'FULLTIME',
-                salary: '',
-                description_snippet: (descMatch ? descMatch[1] : '').replace(/<[^>]*>/g, '').substring(0, 200) + '...',
-                posted_at: '',
-                source: 'WeWorkRemotely',
-                tags: [company, position]
-              });
-            }
-          });
-        }
-      } catch (e) {
-        console.warn('[Jobs] WeWorkRemotely fetch failed:', e.message);
-      }
+    // Cac nguon doc lap nhau nen goi song song; nguon nao loi/treo thi bo qua nguon do
+    const tenNguon = ['VietnamWorks', 'RemoteOK', 'Arbeitnow', 'Remotive', 'WeWorkRemotely'];
+    const ketQua = await Promise.allSettled([
+      layVietnamWorks(cleanTechQuery, coreTech, isVi),
+      layRemoteOK(coreTech || cleanTechQuery),
+      layArbeitnow(cleanTechQuery),
+      layRemotive(cleanTechQuery),
+      layWeWorkRemotely()
+    ]);
+    const rawJobs = ketQua.flatMap((r, i) => {
+      if (r.status === 'fulfilled') return r.value.filter(j => j.url);
+      console.warn(`[Jobs] ${tenNguon[i]} fetch failed:`, r.reason && r.reason.message);
+      return [];
+    });
 
     let synonyms = [cleanTechQuery, queryLower];
     for (const [k, synList] of Object.entries(TECH_ROLE_SYNONYMS)) {
@@ -732,7 +659,8 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
     uniqueJobs.sort((a, b) => b.score - a.score);
 
     console.log(`[Jobs] Found ${uniqueJobs.length} strictly matched IT jobs for "${search}" (targetCity: ${targetCity || 'all'})`);
-    res.json({ jobs: uniqueJobs.slice(0, parseInt(limit)) });
+    const soLuong = Math.min(50, Math.max(1, parseInt(limit, 10) || 15));
+    res.json({ jobs: uniqueJobs.slice(0, soLuong) });
   } catch (err) {
     console.error('[Jobs] Error:', err);
     res.status(500).json({ error: err.message });
@@ -740,81 +668,47 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
 });
 
 app.post('/api/crawl', sameOrigin, requireUser, rateLimit({ max: 10, scope: 'crawl' }), async (req, res) => {
+  const { url } = req.body || {};
+  console.log(`[Crawl] Fetching live webpage: ${String(url).slice(0, 300)}`);
+
+  // taiTrang kiem dia chi ngay luc mo socket (chong DNS rebinding) va chi doc toi 2MB
+  let trang;
   try {
-    const { url } = req.body;
-
-    let target;
-    try { target = new URL(String(url)); }
-    catch { return res.status(400).json({ error: 'URL không hợp lệ' }); }
-
-    if (!['http:', 'https:'].includes(target.protocol)) {
-      return res.status(400).json({ error: 'Chỉ hỗ trợ http và https' });
-    }
-
-    let resolved;
-    try { resolved = await dns.lookup(target.hostname); }
-    catch { return res.status(400).json({ error: 'Không phân giải được tên miền' }); }
-
-    if (isBlockedAddress(resolved.address)) {
-      return res.status(403).json({ error: 'Không được phép truy cập địa chỉ nội bộ' });
-    }
-
-    console.log(`[Crawl] Fetching live webpage: ${target.href}`);
-    const crawlRes = await fetch(target.href, {
-
-      redirect: 'manual',
+    trang = await taiTrang(String(url), {
+      toiDa: 2_000_000,
+      thoiGian: 9000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
-      },
-      signal: AbortSignal.timeout(9000)
-    });
-
-    if (crawlRes.status >= 300 && crawlRes.status < 400) {
-      return res.status(400).json({ error: 'Trang này chuyển hướng, không thể đọc trực tiếp' });
-    }
-    if (!crawlRes.ok) {
-      return res.status(crawlRes.status).json({ error: `Không thể tải trang (HTTP ${crawlRes.status})` });
-    }
-
-    const ctype = crawlRes.headers.get('content-type') || '';
-    if (!/text\/html|text\/plain|application\/xhtml/i.test(ctype)) {
-      return res.status(415).json({ error: 'Chỉ đọc được trang HTML' });
-    }
-
-    const html = (await crawlRes.text()).slice(0, 2_000_000);
-
-    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-    const pageTitle = titleMatch ? titleMatch[1].replace(/\s+/g, ' ').trim() : 'Trang tuyển dụng';
-
-    let cleanText = html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-      .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
-      .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
-      .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    const textSnippet = cleanText.substring(0, 6500);
-
-    res.json({
-      success: true,
-      url,
-      pageTitle,
-      content: textSnippet
+      }
     });
   } catch (err) {
+    if (err.code === 'EBLOCKED') return res.status(403).json({ error: err.message });
+    if (err.code === 'EINVALIDURL' || err.code === 'EPROTOCOL') return res.status(400).json({ error: err.message });
+    if (err.code === 'ENOTFOUND') return res.status(400).json({ error: 'Không phân giải được tên miền' });
     console.error('[Crawl] Error:', err.message);
-    res.status(500).json({ error: 'Lỗi cào dữ liệu: ' + err.message });
+    return res.status(502).json({ error: 'Không thể tải trang: ' + err.message });
   }
+
+  if (trang.status >= 300 && trang.status < 400) {
+    return res.status(400).json({ error: 'Trang này chuyển hướng, không thể đọc trực tiếp' });
+  }
+  if (trang.status < 200 || trang.status >= 300) {
+    return res.status(502).json({ error: `Không thể tải trang (HTTP ${trang.status})` });
+  }
+
+  const ctype = String(trang.headers['content-type'] || '');
+  if (!/text\/html|text\/plain|application\/xhtml/i.test(ctype)) {
+    return res.status(415).json({ error: 'Chỉ đọc được trang HTML' });
+  }
+
+  res.json({
+    success: true,
+    url,
+    pageTitle: layTieuDe(trang.body) || 'Trang tuyển dụng',
+    content: trichVanBan(trang.body).substring(0, 6500)
+  });
 });
 
 function loadCurriculum() {
@@ -923,16 +817,19 @@ function escapeAttr(s) {
 function renderIndex(urlPath) {
   const { title, desc, url } = metaForPath(urlPath);
   const t = escapeAttr(title), d = escapeAttr(desc), u = escapeAttr(url);
+  // Gia tri chen vao di qua ham: chuoi thay the hieu $' $` $& la ky hieu dac biet,
+  // ma url lay tu duong dan nguoi dung go — "/x$'" tung lam ca trang bi nhan ban.
+  const gan = giaTri => (_, dau) => dau + giaTri;
   return INDEX_HTML
-    .replace(/<title>[\s\S]*?<\/title>/, `<title>${t}</title>`)
-    .replace(/(<link rel="canonical" href=")[^"]*/, `$1${u}`)
-    .replace(/(<meta property="og:url" content=")[^"]*/, `$1${u}`)
-    .replace(/(<meta name="twitter:url" content=")[^"]*/, `$1${u}`)
-    .replace(/(<meta property="og:title" content=")[^"]*/, `$1${t}`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*/, `$1${t}`)
-    .replace(/(<meta name="description" content=")[^"]*/, `$1${d}`)
-    .replace(/(<meta property="og:description" content=")[^"]*/, `$1${d}`)
-    .replace(/(<meta name="twitter:description" content=")[^"]*/, `$1${d}`);
+    .replace(/<title>[\s\S]*?<\/title>/, () => `<title>${t}</title>`)
+    .replace(/(<link rel="canonical" href=")[^"]*/, gan(u))
+    .replace(/(<meta property="og:url" content=")[^"]*/, gan(u))
+    .replace(/(<meta name="twitter:url" content=")[^"]*/, gan(u))
+    .replace(/(<meta property="og:title" content=")[^"]*/, gan(t))
+    .replace(/(<meta name="twitter:title" content=")[^"]*/, gan(t))
+    .replace(/(<meta name="description" content=")[^"]*/, gan(d))
+    .replace(/(<meta property="og:description" content=")[^"]*/, gan(d))
+    .replace(/(<meta name="twitter:description" content=")[^"]*/, gan(d));
 }
 
 app.get('/sitemap.xml', (req, res) => {
@@ -976,7 +873,9 @@ app.get('*', (req, res) => {
   res.type('html').set('Cache-Control', 'no-cache').send(renderIndex(req.path));
 });
 
-app.listen(PORT, () => {
+// Bo kiem require file nay de lay app ma khong mo cong
+module.exports = app;
+if (require.main === module) app.listen(PORT, () => {
   console.log('');
   console.log('  ╔══════════════════════════════════════════════════════════╗');
   console.log('  ║   🚀 DevMaster Hub — Smart AI Platform & Learning Hub   ║');
@@ -987,7 +886,7 @@ app.listen(PORT, () => {
   console.log(`  ║   🤖 Groq:       ${GROQ_API_KEY ? '✅ Enabled' : '❌ Disabled'}                              ║`);
   console.log(`  ║   🤖 OpenRouter: ${OPENROUTER_API_KEY ? '✅ Enabled' : '❌ Disabled'}                              ║`);
   console.log(`  ║   🤖 Claude:     ${CLAUDE_API_KEY ? '✅ Enabled' : '❌ Disabled'}                              ║`);
-  console.log(`  ║   💼 Jobs:       ${JSEARCH_API_KEY ? '✅ JSearch API' : '⚡ Free Fallbacks'}                       ║`);
+  console.log(`  ║   💼 Jobs:       ⚡ VietnamWorks, RemoteOK, Arbeitnow, Remotive ║`);
   console.log('  ╚══════════════════════════════════════════════════════════╝');
   console.log('');
 });

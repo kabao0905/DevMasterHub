@@ -16,7 +16,7 @@ Nền tảng học lập trình từ Newbie đến Senior — **34 lộ trình, 
 | **AI Tutor** | Gia sư kèm 1-1 trong từng bài, gợi ý hướng làm thay vì đưa đáp án |
 | **Project Lab** | Sinh ý tưởng dự án theo trình độ, nộp code và nhận review chấm theo 4 tiêu chí |
 | **Cố vấn nghề nghiệp** | Phân tích định hướng, đọc được cả link tin tuyển dụng người dùng dán vào |
-| **Tìm việc** | JSearch là nguồn chính, tự chuyển sang Remotive + Arbeitnow khi lỗi |
+| **Tìm việc** | Lấy song song từ VietnamWorks, RemoteOK, Arbeitnow, Remotive, WeWorkRemotely; nguồn nào lỗi thì bỏ qua |
 | **Studio** | Sandbox chạy code, Visual Builder, Game Tilemap, SQL Studio, API Tester, CTF Terminal |
 | **Đa ngôn ngữ** | 8 ngôn ngữ giao diện, AI trả lời theo đúng ngôn ngữ đang chọn |
 
