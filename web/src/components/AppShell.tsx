@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router';
+import { useEffect, useState } from 'react';
+import { Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { Menu, PanelLeftOpen } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { Sidebar } from '@/components/Sidebar';
@@ -17,6 +17,9 @@ function docThuGon() {
 export function AppShell() {
   const { t } = useT();
   const [moMenu, datMoMenu] = useState(false);
+  const { pathname } = useLocation();
+  // Di trang bang router khong tai lai trang: tu dong menu tren dien thoai
+  useEffect(() => { datMoMenu(false); }, [pathname]);
   const [thuGon, datThuGon] = useState(docThuGon);
   const doiThuGon = (v: boolean) => {
     datThuGon(v);
@@ -25,6 +28,8 @@ export function AppShell() {
 
   return (
     <div className={cn('min-h-dvh', !thuGon && 'lg:grid lg:grid-cols-[17rem_1fr]')}>
+      {/* Trang moi bat dau tu dau; Back/Forward tra lai vi tri cu */}
+      <ScrollRestoration />
       {!thuGon && (
         <aside className="sticky top-0 hidden h-dvh border-r border-sidebar-border lg:block">
           <Sidebar onCollapse={() => doiThuGon(true)} />

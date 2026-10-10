@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, Code2, ListChecks } from 'lucide-react';
@@ -35,8 +34,6 @@ export function LessonPage() {
   const vt = tech.data ? viTriBai(tech.data, levelId, lessonId) : null;
 
   useEscape(() => navigate(coTech ? `/roadmap/${coTech.id}` : '/'));
-  // Doi bai (ke ca bam bai truoc/sau) thi doc tu dau bai moi
-  useEffect(() => { window.scrollTo?.(0, 0); }, [techId, levelId, lessonId]);
 
   const ten = vt && tech.data ? `${vt.lesson.title} — ${tech.data.name} | DevMaster Hub` : `${t('pageNotFound')} | DevMaster Hub`;
   const lyThuyet = boThe(vt?.lesson.theory);
@@ -71,11 +68,11 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   const { data: suc } = useQuery({ queryKey: ['health'], queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'), staleTime: 5 * 60_000 });
 
   function doiTab(v: string) {
-    // Thay URL (khong them lich su): Back van ve trang truoc, link chia se mo dung tab
+    // Thay URL (khong them lich su, khong cuon len dau): Back van ve trang truoc, link chia se mo dung tab
     datParams(p => {
       if (v === 'theory') p.delete('tab'); else p.set('tab', v);
       return p;
-    }, { replace: true });
+    }, { replace: true, preventScrollReset: true });
   }
 
   const duongDan = (x: NonNullable<LanCan>) => `/lesson/${tech.id}/${x.level.id}/${x.lesson.id}`;

@@ -1,4 +1,4 @@
-import { screen, within, waitFor } from '@testing-library/react';
+import { act, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
 import { giaSupabase } from '@/test/gia-supabase';
@@ -84,5 +84,47 @@ test('Escape tren roadmap ve Dashboard (giong app cu), tru khi dang go chu', asy
   const { router } = veApp('/roadmap/python', { gia: daDangNhap(), json: JSON_GIA });
   await screen.findByRole('heading', { level: 1, name: /Python/ });
   await u.keyboard('{Escape}');
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'));
+});
+
+test('dien thoai: chon roadmap trong menu thi menu dong lai', async () => {
+  const u = userEvent.setup();
+  veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  await u.click(await screen.findByRole('button', { name: 'Mở menu' }));
+  const menu = await screen.findByRole('dialog');
+  await u.click(await within(menu).findByRole('link', { name: /An ninh mạng/ }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
+
+test('di sang trang khac bang router thi cuon len dau; doi tab bai hoc thi khong', async () => {
+  const u = userEvent.setup();
+  const cuon = vi.fn();
+  window.scrollTo = cuon as unknown as typeof window.scrollTo;
+  veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  const main = await screen.findByRole('main');
+  cuon.mockClear();
+  await u.click(await within(main).findByRole('link', { name: /Python/ }));
+  await screen.findByRole('heading', { level: 1, name: /Python/ });
+  await waitFor(() => expect(cuon).toHaveBeenCalledWith(0, 0));
+});
+
+test('chua dang nhap mo link roadmap duoc chia se: dang nhap xong quay lai dung trang do', async () => {
+  const u = userEvent.setup();
+  const gia = giaSupabase({ bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }] } });
+  const { router } = veApp('/roadmap/python/junior', { gia, json: JSON_GIA });
+  await u.type(await screen.findByLabelText('Tên đăng nhập'), 'an');
+  await u.type(screen.getByLabelText('Mật khẩu'), 'dung-mat-khau');
+  await u.click(screen.getByRole('button', { name: 'Đăng nhập' }));
+  await waitFor(() => expect(router.state.location.pathname).toBe('/roadmap/python/junior'));
+});
+
+test('dia chi quay lai la link ngoai (//evil.com) thi ve Dashboard', async () => {
+  const u = userEvent.setup();
+  const gia = giaSupabase({ bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }] } });
+  const { router } = veApp('/auth', { gia, json: JSON_GIA });
+  await act(() => router.navigate('/auth', { state: { from: '//evil.com/x' } }));
+  await u.type(await screen.findByLabelText('Tên đăng nhập'), 'an');
+  await u.type(screen.getByLabelText('Mật khẩu'), 'dung-mat-khau');
+  await u.click(screen.getByRole('button', { name: 'Đăng nhập' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/'));
 });

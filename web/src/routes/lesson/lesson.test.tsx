@@ -243,3 +243,14 @@ test('xoa hoi thoai thi ve man chao', async () => {
   expect(within(chat).getByText('Hỏi AI bất cứ điều gì về phần này!')).toBeInTheDocument();
   expect(within(chat).queryByText('Chào bạn')).not.toBeInTheDocument();
 });
+
+test('doi tab bai hoc khong cuon trang len dau', async () => {
+  const u = userEvent.setup();
+  mo('/lesson/python/newbie/a');
+  await tieuDe();
+  await waitFor(() => expect(window.scrollTo).toHaveBeenCalled());
+  vi.mocked(window.scrollTo).mockClear();
+  await u.click(screen.getByRole('tab', { name: /Code Lab/ }));
+  await screen.findByRole('button', { name: /Sao chép/ });
+  expect(window.scrollTo).not.toHaveBeenCalled();
+});

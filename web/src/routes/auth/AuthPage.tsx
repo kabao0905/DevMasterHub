@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
@@ -14,6 +14,12 @@ import { cn } from '@/lib/utils';
 
 type CheDo = 'login' | 'register';
 
+/** Chi quay lai duong dan noi bo ("/x"), khong phai "//host" hay URL ngoai */
+function noiQuayLai(state: unknown): string {
+  const tu = (state as { from?: unknown } | null)?.from;
+  return typeof tu === 'string' && /^\/(?![/\\])/.test(tu) ? tu : '/';
+}
+
 // Thang cap do tu duoi len: Newbie o day, Master o dinh
 const CAC_CAP = [
   { id: 'master', ten: 'Master', khoa: 'levelMaster' },
@@ -27,6 +33,8 @@ export function AuthPage() {
   const { t } = useT();
   const { user, loading, login, register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const quayLai = noiQuayLai(location.state);
   const [cheDo, datCheDo] = useState<CheDo>('login');
   const [ten, datTen] = useState('');
   const [matKhau, datMatKhau] = useState('');
@@ -37,7 +45,7 @@ export function AuthPage() {
   // Nguoi chua dang nhap (ca may tim kiem) mo / se thay trang nay: giu tieu de trang chu
   usePageMeta({ title: TIEU_DE_TRANG_CHU });
 
-  if (!loading && user && !dangGui) return <Navigate to="/" replace />;
+  if (!loading && user && !dangGui) return <Navigate to={quayLai} replace />;
 
   async function gui(e: FormEvent) {
     e.preventDefault();
@@ -47,7 +55,7 @@ export function AuthPage() {
     datDangGui(true);
     try {
       await (cheDo === 'login' ? login(ten, matKhau) : register(ten, matKhau));
-      navigate('/', { replace: true });
+      navigate(quayLai, { replace: true });
     } catch (err) {
       datLoi(err instanceof Error ? err.message : String(err));
       datDangGui(false);
