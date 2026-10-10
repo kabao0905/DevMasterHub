@@ -48,7 +48,12 @@ export const BAN_DICH_VI: BanDich = {
     "openLesson": "Vào bài học",
     "pickRoadmap": "Chọn một lộ trình bên dưới để bắt đầu",
     "openMenu": "Mở menu",
-    "levelProgress": "{level}: {done}/{total} bài"
+    "levelProgress": "{level}: {done}/{total} bài",
+    "pageNotFound": "Không tìm thấy trang này",
+    "loadFailed": "Không tải được dữ liệu. Kiểm tra kết nối mạng rồi thử lại.",
+    "retry": "Thử lại",
+    "collapseSidebar": "Thu gọn thanh bên",
+    "expandSidebar": "Mở thanh bên"
   },
   titles: {},
   techDesc: {},

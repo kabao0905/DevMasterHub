@@ -70,3 +70,14 @@ test('chua co ban build: / lui ve app cu va khong bao app cu chuyen huong (tranh
     assert.ok(!html.includes('__REACT_VIEWS'));
   } finally { s.dong(); }
 });
+
+test('/index.html (bookmark cu) chuyen 301 ve / — static tra ban React o day thi router React tai lai mai', async () => {
+  const s = await moServer(taoDist());
+  try {
+    for (const [vao, ra] of [['/index.html', '/'], ['/index.html?x=1', '/?x=1']]) {
+      const r = await fetch(s.goc + vao, { redirect: 'manual' });
+      assert.strictEqual(r.status, 301, vao);
+      assert.strictEqual(r.headers.get('location'), ra);
+    }
+  } finally { s.dong(); }
+});

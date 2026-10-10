@@ -1,8 +1,9 @@
-import { screen, within, waitFor } from '@testing-library/react';
+import { act, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
 import { giaSupabase } from '@/test/gia-supabase';
 import type { CongNgheTomTat, MucTimKiem } from '@/lib/curriculum';
+import { dieuHuong } from '@/lib/dieu-huong';
 
 const INDEX: CongNgheTomTat[] = [
   {
@@ -28,7 +29,7 @@ const daDangNhap = (them: Record<string, unknown[]> = {}) => giaSupabase({
   bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }], ...them }
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 test('chua dang nhap vao / thi chuyen ve trang dang nhap', async () => {
   const { router } = veApp('/', { gia: giaSupabase(), json: JSON_GIA });
@@ -118,4 +119,20 @@ test('dang xuat thi ve trang dang nhap', async () => {
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   await u.click(await screen.findByRole('button', { name: 'Đăng xuất' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/auth'));
+});
+
+test('URL la ma server da giao cho React (vd /index.html) thi bao khong tim thay, khong tai lai trang', async () => {
+  const thay = vi.spyOn(dieuHuong, 'thay').mockImplementation(() => {});
+  veApp('/index.html', { gia: daDangNhap(), json: JSON_GIA });
+  expect(await screen.findByRole('heading', { name: 'Không tìm thấy trang này' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/');
+  expect(thay).not.toHaveBeenCalled();
+});
+
+test('dang o trong app ma di toi URL cua app cu thi tai trang that de server tra app cu', async () => {
+  const thay = vi.spyOn(dieuHuong, 'thay').mockImplementation(() => {});
+  const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  await screen.findByRole('main');
+  await act(() => router.navigate('/career?x=1'));
+  await waitFor(() => expect(thay).toHaveBeenCalledWith('/career?x=1'));
 });

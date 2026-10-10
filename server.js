@@ -59,6 +59,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// /index.html cu (bookmark, crawler) ve /. De static tra ban React o day thi router React
+// coi la URL la, tai lai trang va nhan lai chinh no — vong lap vo han.
+app.get('/index.html', (req, res) => {
+  const q = req.originalUrl.indexOf('?');
+  res.redirect(301, q === -1 ? '/' : '/' + req.originalUrl.slice(q));
+});
+
 // Dev: Vite phuc vu /src, /@vite, HMR va file trong web/public (JSON giao trinh)
 app.use((req, res, next) => (vite && !req.path.startsWith('/api') ? vite.middlewares(req, res, next) : next()));
 
