@@ -58,10 +58,9 @@ test('co ban build: /, /auth, /roadmap/*, /lesson/* va /challenge do app React p
 test('co ban build: trang chua chuyen van la app cu, va app cu biet view nao da sang React', async () => {
   const s = await moServer(taoDist());
   try {
-    const html = await (await fetch(s.goc + '/career')).text();
+    const html = await (await fetch(s.goc + '/khong-co-trang-nay')).text();
     assert.ok(html.includes('id="main-content"'), 'khong phai app cu');
-    assert.match(html, /<title>Cố Vấn Nghề Nghiệp/);
-    assert.ok(html.includes('window.__REACT_VIEWS=["dashboard","auth","roadmap","lesson","challenge","project","project-level","project-topic","saved-ideas","my-projects"]'));
+    assert.ok(html.includes('window.__REACT_VIEWS=["dashboard","auth","roadmap","lesson","challenge","project","project-level","project-topic","saved-ideas","my-projects","career"]'));
   } finally { s.dong(); }
 });
 

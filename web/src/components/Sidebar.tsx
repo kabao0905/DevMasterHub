@@ -98,8 +98,9 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
           <NavLink to="/my-projects" className={({ isActive }) => cn(lopMuc, isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
             <FolderKanban className="size-4" /> {t('myProjects')}
           </NavLink>
-          {/* Con o app cu: dung the a thuong de server tra dung trang */}
-          <a href="/career" className={lopMuc}><Briefcase className="size-4" /> {t('careerAdvisor')}</a>
+          <NavLink to="/career" className={({ isActive }) => cn(lopMuc, isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
+            <Briefcase className="size-4" /> {t('careerAdvisor')}
+          </NavLink>
 
           {nhom.map(([n, techs]) => (
             <div key={n} className="mt-5">

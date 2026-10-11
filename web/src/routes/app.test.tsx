@@ -154,8 +154,8 @@ test('dang o trong app ma di toi URL cua app cu thi tai trang that de server tra
   const thay = vi.spyOn(dieuHuong, 'thay').mockImplementation(() => {});
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   await screen.findByRole('main');
-  await act(() => router.navigate('/career?x=1'));
-  await waitFor(() => expect(thay).toHaveBeenCalledWith('/career?x=1'));
+  await act(() => router.navigate('/trang-cu?x=1'));
+  await waitFor(() => expect(thay).toHaveBeenCalledWith('/trang-cu?x=1'));
 });
 
 test('chua dang nhap mo / thi giu tieu de trang chu (may tim kiem doc trang nay nhu nguoi chua dang nhap)', async () => {
