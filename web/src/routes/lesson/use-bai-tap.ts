@@ -17,6 +17,9 @@ export type KhoBaiTap = {
   hienGoiY: Record<number, boolean>;
   hienLoiGiai: Record<number, boolean>;
   files?: Record<string, string>;
+  /** AI dang tao/cham cho bai nay — luu o day (khong chi trong mutation) de mo lai bai van thay dang cho */
+  dangTao?: boolean;
+  dangCham?: boolean;
 };
 const RONG: KhoBaiTap = { aiExercises: [], activeExIdx: 0, answers: {}, feedback: {}, hienGoiY: {}, hienLoiGiai: {} };
 
@@ -27,8 +30,9 @@ export function useBaiTap(bai: BaiDangMo) {
   const uid = user?.id;
   const kb = khoaBai(bai.tech.id, bai.level.id, bai.lesson.id);
   const khoa = useMemo<QueryKey>(() => ['exercise', uid, kb], [uid, kb]);
-  // Muc trong cache: giu viec dang lam qua cac lan mo lai tab/bai, va bi xoa khi dang xuat
-  useQuery({ queryKey: khoa, queryFn: () => RONG, initialData: RONG, staleTime: Infinity, gcTime: Infinity });
+  // Muc trong cache: giu viec dang lam qua cac lan mo lai tab/bai, va bi xoa khi dang xuat.
+  // enabled: false — khong bao gio "tai lai" (tai lai la tra ve RONG, xoa sach viec dang lam).
+  const { data: trongCache } = useQuery({ queryKey: khoa, queryFn: () => RONG, initialData: RONG, enabled: false, staleTime: Infinity, gcTime: Infinity });
   // Ban sao dong bo cho giao dien: cache bao thay doi bat dong bo, ma o nhap duoc dieu khien
   // se bi React tra ve gia tri cu ngay sau moi phim go — go nhanh la mat chu.
   const [kho, datKho] = useState<KhoBaiTap>(() => qc.getQueryData<KhoBaiTap>(khoa) ?? RONG);
@@ -39,6 +43,9 @@ export function useBaiTap(bai: BaiDangMo) {
     conGanRef.current = true;
     return () => { conGanRef.current = false; };
   }, [khoa]);
+  // Ket qua AI ve khi ban hook nay chua gan (da roi bai roi quay lai) chi nam trong cache: lay ve.
+  // Moi lan ghi deu ghi ca hai noi nen khi da trung thi day la no-op.
+  useEffect(() => { if (trongCache) datKho(trongCache); }, [trongCache]);
 
   // Ghi theo khoa cua bai LUC BAM: ket qua AI ve muon khi da doi bai van vao dung bai;
   // da dang xuat (truy van bi xoa) thi bo qua.
@@ -54,13 +61,15 @@ export function useBaiTap(bai: BaiDangMo) {
 
   const tao = useMutation({
     mutationFn: ({ cu }: { k: QueryKey; cu: string }) => taoBaiTap(client, { ...bai, cu, lang }),
-    onSuccess: (bt, { k }) => dat(k, s => ({ ...s, aiExercises: [...s.aiExercises, bt], activeExIdx: s.aiExercises.length + 1 }))
+    onSuccess: (bt, { k }) => dat(k, s => ({ ...s, aiExercises: [...s.aiExercises, bt], activeExIdx: s.aiExercises.length + 1 })),
+    onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangTao: false }))
   });
 
   const cham = useMutation({
     mutationFn: ({ deBai, baiLam }: { k: QueryKey; idx: number; deBai: string; baiLam: string }) =>
       chamBai(client, { tech: bai.tech, deBai, baiLam, ngonNgu: bai.lesson.lang || '', lang }),
-    onSuccess: (nx, { k, idx }) => dat(k, s => ({ ...s, feedback: { ...s.feedback, [idx]: nx } }))
+    onSuccess: (nx, { k, idx }) => dat(k, s => ({ ...s, feedback: { ...s.feedback, [idx]: nx } })),
+    onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangCham: false }))
   });
 
   const traLoi = kho.answers[kho.activeExIdx] ?? '';
@@ -70,13 +79,18 @@ export function useBaiTap(bai: BaiDangMo) {
     deHienTai,
     traLoi,
     nhanXet: kho.feedback[kho.activeExIdx] ?? null,
-    dangTao: tao.isPending,
+    dangTao: !!kho.dangTao || tao.isPending,
     loiTao: tao.error,
-    dangCham: cham.isPending,
+    dangCham: !!kho.dangCham || cham.isPending,
     loiCham: cham.error,
-    taoMoi: () => tao.mutate({ k: khoa, cu: deBaiChu }),
+    taoMoi: () => {
+      if (kho.dangTao || tao.isPending) return;
+      dat(khoa, s => ({ ...s, dangTao: true }));
+      tao.mutate({ k: khoa, cu: deBaiChu });
+    },
     cham: () => {
-      if (!traLoi.trim() || cham.isPending) return;
+      if (!traLoi.trim() || kho.dangCham || cham.isPending) return;
+      dat(khoa, s => ({ ...s, dangCham: true }));
       cham.mutate({ k: khoa, idx: kho.activeExIdx, deBai: deBaiChu, baiLam: traLoi });
     },
     chon: (idx: number) => { cham.reset(); dat(khoa, s => ({ ...s, activeExIdx: idx })); },
