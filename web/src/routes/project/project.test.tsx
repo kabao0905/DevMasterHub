@@ -186,3 +186,95 @@ test('roi trang roi quay lai: idea, code va chat van con', async () => {
   expect(await screen.findByRole('heading', { name: 'Rắn săn mồi' })).toBeInTheDocument();
   expect(screen.getByRole('textbox', { name: 'Code của main.js' })).toHaveValue('let x = 1;');
 });
+
+// ── Idea da luu ──
+
+test('idea da luu: ngay gio, nguon, xoa co xac nhan, Bat dau lam mo dung trang voi idea', async () => {
+  const u = userEvent.setup();
+  const ideas = [
+    { id: 'a', user_id: 'u1', idea: { ...IDEA, name: 'Blog cá nhân', techStack: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] }, source: 'topic', topic: 'Blog', level: null, saved_at: '2026-10-11T08:30:00Z' },
+    { id: 'b', user_id: 'u1', idea: { ...IDEA, name: 'Máy tính' }, source: 'level', level: 'senior', topic: null, saved_at: '2026-10-10T01:00:00Z' }
+  ];
+  const { gia } = mo('/saved-ideas', { bang: { saved_ideas: ideas } });
+  const theBlog = (await screen.findByRole('heading', { name: 'Blog cá nhân' })).closest('article')!;
+  expect(within(theBlog).getByText(/📝 Blog/)).toBeInTheDocument();
+  expect(within(theBlog).getByText('+2')).toBeInTheDocument();
+  expect(theBlog.textContent).toMatch(/11\/10\/2026/);
+  const theMay = screen.getByRole('heading', { name: 'Máy tính' }).closest('article')!;
+  expect(within(theMay).getByText(/📊 senior/)).toBeInTheDocument();
+
+  const xacNhan = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  await u.click(within(theMay).getByRole('button', { name: 'Xóa idea Máy tính' }));
+  expect(screen.getByRole('heading', { name: 'Máy tính' })).toBeInTheDocument();
+  await u.click(within(theMay).getByRole('button', { name: 'Xóa idea Máy tính' }));
+  expect(screen.queryByRole('heading', { name: 'Máy tính' })).not.toBeInTheDocument();
+  expect(xacNhan).toHaveBeenCalledWith('Xóa idea này?');
+  await waitFor(() => expect(gia.truyVan.some(q => q.bang === 'saved_ideas' && q.op === 'delete')).toBe(true));
+
+  await u.click(within(theBlog).getByRole('button', { name: /Bắt đầu làm/ }));
+  expect(await screen.findByRole('heading', { level: 1, name: /Project theo Chủ Đề/ })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Blog cá nhân' })).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: /chủ đề/i })).toHaveValue('Blog');
+});
+
+test('idea da luu: rong thi moi tao theo chu de; xoa loi thi tra lai va bao', async () => {
+  const u = userEvent.setup();
+  const a = mo('/saved-ideas');
+  expect(await screen.findByText('Chưa có idea nào được lưu.')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Tạo Idea theo chủ đề/ })).toHaveAttribute('href', '/project-topic');
+  a.unmount();
+
+  const gia = giaSupabase({ nguoiDung: { id: 'u1' }, loiGhi: { saved_ideas: 'mất mạng' }, bang: { profiles: [{ id: 'u1', username: 'an' }], saved_ideas: [IDEA_DA_LUU('a', 'Snake')] } });
+  veApp('/saved-ideas', { gia, json: { '/api/health': { aiEnabled: true }, '/curriculum/index.json': [] } });
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  await u.click(await screen.findByRole('button', { name: 'Xóa idea Snake' }));
+  expect(await screen.findByText(/Không xóa được idea: mất mạng/)).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Snake' })).toBeInTheDocument();
+});
+
+// ── My Projects ──
+
+const BAI_NOP = {
+  id: 7, user_id: 'u1', project_name: '<img src=x onerror=alert(1)>Todo', project_description: 'Quản lý việc', difficulty_level: 'mid', topic: 'web',
+  files: [{ name: 'app.js', lang: 'javascript', code: 'const a = 1;' }], score_overall: 78, score_code_quality: 80, score_functionality: 75,
+  score_best_practices: 60, score_creativity: 55, ai_feedback: 'Code **gọn**', ai_strengths: ['Đặt tên rõ'], ai_improvements: ['Thêm test'],
+  languages_used: ['javascript', 'html'], submitted_at: '2026-10-11T08:00:00Z'
+};
+
+test('my projects: danh sach (HTML hien nhu chu), chi tai mot lan, mo chi tiet co diem va code', async () => {
+  const u = userEvent.setup();
+  const { gia } = mo('/my-projects', { bang: { project_submissions: [BAI_NOP] } });
+  const the = await screen.findByRole('link', { name: /Todo/ });
+  expect(the).toHaveAttribute('href', '/my-projects/7');
+  expect(the.textContent).toContain('<img src=x onerror=alert(1)>Todo');
+  expect(document.querySelector('img[src="x"]')).toBeNull();
+  expect(the.textContent).toMatch(/78/);
+  expect(the.textContent).toMatch(/javascript, html/);
+  await new Promise(r => setTimeout(r, 50));
+  expect(gia.truyVan.filter(q => q.bang === 'project_submissions')).toHaveLength(1);
+
+  await u.click(the);
+  expect(await screen.findByRole('heading', { level: 1, name: /Todo/ })).toBeInTheDocument();
+  const diem = screen.getByRole('list', { name: /điểm/i });
+  expect(within(diem).getByText('Chất lượng code').parentElement!.textContent).toMatch(/80/);
+  expect(screen.getByText('gọn', { selector: 'strong' })).toBeInTheDocument();
+  expect(screen.getByText('Đặt tên rõ')).toBeInTheDocument();
+  expect(screen.getByText('app.js')).toBeInTheDocument();
+});
+
+test('my projects: rong, loi tai co Thu lai, id la thi bao khong tim thay', async () => {
+  const a = mo('/my-projects');
+  expect(await screen.findByText(/Chưa có project nào được nộp/)).toBeInTheDocument();
+  a.unmount();
+  const b = mo('/my-projects/999', { bang: { project_submissions: [BAI_NOP] } });
+  expect(await screen.findByText('Không tìm thấy project này')).toBeInTheDocument();
+  b.unmount();
+  const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an' }] } });
+  gia.client.from = vi.fn((bang: string) => {
+    if (bang !== 'project_submissions') return giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an' }] } }).client.from(bang);
+    const loi = { select: () => loi, eq: () => loi, order: () => Promise.resolve({ data: null, error: { message: 'down' } }) };
+    return loi;
+  }) as unknown as typeof gia.client.from;
+  veApp('/my-projects', { gia, json: { '/api/health': { aiEnabled: true }, '/curriculum/index.json': [] } });
+  expect(await screen.findByRole('button', { name: 'Thử lại' })).toBeInTheDocument();
+});

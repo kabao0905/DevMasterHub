@@ -57,7 +57,9 @@ export const cacRoute: RouteObject[] = [
         // Project Lab, idea da luu, du an cua toi
         { path: 'project', lazy: async () => ({ Component: (await import('@/routes/project/ProjectHubPage')).ProjectHubPage }) },
         { path: 'project-level/:level?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectLevelPage')).ProjectLevelPage }) },
-        { path: 'project-topic/:topic?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectTopicPage')).ProjectTopicPage }) }
+        { path: 'project-topic/:topic?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectTopicPage')).ProjectTopicPage }) },
+        { path: 'saved-ideas', lazy: async () => ({ Component: (await import('@/routes/project/SavedIdeasPage')).SavedIdeasPage }) },
+        { path: 'my-projects/:id?', lazy: async () => ({ Component: (await import('@/routes/project/MyProjectsPage')).MyProjectsPage }) }
       ]
     }]
   },
