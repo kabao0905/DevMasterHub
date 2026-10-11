@@ -11,10 +11,10 @@ const VIEC = [
   { title: 'Senior Go Engineer', company_name: 'Beta', source: 'LinkedIn', location: 'Remote', url: 'javascript:alert(2)', tags: ['go'], is_remote: true }
 ];
 
-function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern]\nBạn hợp **thực tập**.'), chat = [] as unknown[], jobs = VIEC } = {}) {
+function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern]\nBạn hợp **thực tập**.'), chat = [] as unknown[], jobs = VIEC, treo = {} as Record<string, Promise<unknown>> } = {}) {
   const goiAi: ThanAi[] = [];
   const timViec: string[] = [];
-  const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: {
+  const gia = giaSupabase({ nguoiDung: { id: 'u1' }, treo, bang: {
     profiles: [{ id: 'u1', username: 'an', display_name: 'An' }],
     career_chats: chat.length ? [{ user_id: 'u1', messages: chat }] : [],
     lesson_progress: [{ tech_id: 'react', level_id: 'newbie', lesson_id: 'a', completed: true }]
@@ -117,4 +117,29 @@ test('roi trang roi quay lai: chat va cau dang go van con', async () => {
   await act(() => router.navigate('/career'));
   expect(await screen.findByText('thực tập', { selector: 'strong' })).toBeInTheDocument();
   expect(oNhap()).toHaveValue('đang gõ dở');
+});
+
+test('lich su chua tai xong thi chua gui duoc; tai xong moi gui, lich su cu duoc giu khi luu', async () => {
+  const u = userEvent.setup();
+  let tha!: () => void;
+  const { daLuu } = mo({ chat: [{ role: 'user', content: 'Cũ' }, { role: 'assistant', content: 'Đáp cũ' }], treo: { career_chats: new Promise<void>(r => { tha = r; }) } });
+  await u.type(await screen.findByRole('textbox', { name: /Nhập câu hỏi/ }), 'mới{Enter}');
+  expect(screen.getByRole('button', { name: /Gửi/ })).toBeDisabled();
+  expect(screen.queryByText('mới', { selector: 'li *' })).not.toBeInTheDocument();
+  await act(async () => { tha(); });
+  expect(await screen.findByText('Đáp cũ')).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: /Gửi/ }));
+  await screen.findByText('thực tập', { selector: 'strong' });
+  await waitFor(() => expect(daLuu().at(-1)?.slice(0, 2)).toEqual([{ role: 'user', content: 'Cũ' }, { role: 'assistant', content: 'Đáp cũ' }]));
+});
+
+test('tai lich su loi: van chat duoc nhung khong ghi de lich su tren server', async () => {
+  const u = userEvent.setup();
+  const loi = Promise.reject(new Error('mất mạng'));
+  loi.catch(() => {});
+  const { gia } = mo({ treo: { career_chats: loi } });
+  await u.type(await screen.findByRole('textbox', { name: /Nhập câu hỏi/ }), 'hỏi{Enter}');
+  expect(await screen.findByText('thực tập', { selector: 'strong' })).toBeInTheDocument();
+  await new Promise(r => setTimeout(r, 30));
+  expect(gia.truyVan.some(q => q.bang === 'career_chats' && q.op === 'upsert')).toBe(false);
 });

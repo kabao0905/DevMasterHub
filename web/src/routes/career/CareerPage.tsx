@@ -18,7 +18,11 @@ import { cn } from '@/lib/utils';
 
 type KhoCareer = {
   chat: TinNhan[]; jobs: ViecLam[]; keyword: string; moViec: boolean; nhap: string;
-  dangGui?: boolean; loi?: string; daNap?: boolean;
+  dangGui?: boolean; loi?: string;
+  /** Da tai lich su tu server (moi duoc ghi len server, tranh ghi de lich su chua tai) */
+  daNap?: boolean;
+  /** Tai lich su loi: van chat duoc trong phien nhung khong ghi len server */
+  loiNap?: boolean;
   /** Tang khi sua cau hoi / tra loi lai / xoa chat: tra loi cu ve muon thi bo */
   phien?: number;
 };
@@ -45,8 +49,9 @@ export function CareerPage() {
   useEffect(() => {
     if (!uid || doc(khoa).daNap) return;
     taiChat(client, uid)
-      .then(ds => dat(khoa, x => (x.daNap ? x : { ...x, daNap: true, chat: x.chat.length ? x.chat : ds })))
-      .catch(() => dat(khoa, x => ({ ...x, daNap: true })));
+      // Tin vua chat khi lan tai truoc bi loi chua tung duoc luu: ghep sau lich su that
+      .then(ds => dat(khoa, x => (x.daNap ? x : { ...x, daNap: true, loiNap: false, chat: [...ds, ...x.chat] })))
+      .catch(() => dat(khoa, x => ({ ...x, loiNap: true })));
   }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -54,8 +59,9 @@ export function CareerPage() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [kho.chat.length, kho.dangGui]);
 
-  const luu = (chat: TinNhan[]) => {
-    if (!uid) return;
+  const luu = (k: QueryKey, chat: TinNhan[]) => {
+    // Chua tai duoc lich su (hoac da dang xuat: kho bi xoa) thi khong ghi — ghi la xoa mat lich su that
+    if (!uid || !doc(k).daNap) return;
     luuChat(client, uid, chat).catch((e: unknown) => toast.error(t('careerChatSaveFailed', { error: loiChu(e) })));
   };
 
@@ -82,7 +88,7 @@ export function CareerPage() {
         const jobs = kq.jobs && kq.jobs.length > 0 ? kq.jobs : kq.searchKeyword && xoaViecNeuRong ? [] : x.jobs;
         return { ...x, chat, dangGui: false, jobs, keyword: kq.searchKeyword || x.keyword };
       });
-      luu(chat);
+      luu(k, chat);
     } catch (e) {
       if (doc(k).phien === phien) dat(k, x => ({ ...x, dangGui: false, loi: loiChu(e) }));
     }
@@ -91,7 +97,7 @@ export function CareerPage() {
   function gui() {
     const s = doc(khoa);
     const tin = s.nhap.trim();
-    if (!tin || s.dangGui) return;
+    if (!tin || s.dangGui || !(s.daNap || s.loiNap)) return;
     dat(khoa, x => ({ ...x, chat: [...x.chat, { role: 'user', content: tin }], nhap: '' }));
     void chay(khoa, s.chat, tin, true);
   }
@@ -113,7 +119,7 @@ export function CareerPage() {
     if (!cau) return;
     const chat = s.chat.slice(0, i);
     dat(khoa, x => ({ ...dungLai(x), chat, nhap: cau.content }));
-    luu(chat);
+    luu(khoa, chat);
     setTimeout(() => {
       const o = oNhapRef.current;
       if (o) { o.focus(); o.setSelectionRange(o.value.length, o.value.length); }
@@ -135,7 +141,7 @@ export function CareerPage() {
     if (!window.confirm(t('clearCareerChatConfirm'))) return;
     cvRef.current?.huy();
     dat(khoa, x => ({ ...dungLai(x), ...RONG, daNap: true, phien: (x.phien ?? 0) + 1 }));
-    luu([]);
+    luu(khoa, []);
   }
 
   async function timTay(e: FormEvent) {
@@ -204,7 +210,7 @@ export function CareerPage() {
             placeholder={t('searchJobsPlaceholder')}
             className="max-h-40 min-h-12 flex-1 resize-y rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <Button type="submit" disabled={!!kho.dangGui || !kho.nhap.trim()}><Send aria-hidden="true" /> {t('sendMsg')}</Button>
+          <Button type="submit" disabled={!!kho.dangGui || !kho.nhap.trim() || !(kho.daNap || kho.loiNap)}><Send aria-hidden="true" /> {t('sendMsg')}</Button>
         </form>
       </section>
 
