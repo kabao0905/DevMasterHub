@@ -591,7 +591,9 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
       return [];
     });
 
-    let synonyms = [cleanTechQuery, queryLower];
+    // coreTech cung la tu khop: "intern developer" bo cap bac con "developer", neu khong
+    // thi chi viec co dung nguyen cum "intern developer" moi qua loc -> nguoi moi luon 0 viec
+    let synonyms = [...new Set([cleanTechQuery, queryLower, coreTech].filter(Boolean))];
     for (const [k, synList] of Object.entries(TECH_ROLE_SYNONYMS)) {
       if (cleanTechQuery.includes(k) || synList.some(s => cleanTechQuery.includes(s))) {
         synonyms = [...new Set([...synonyms, ...synList])];

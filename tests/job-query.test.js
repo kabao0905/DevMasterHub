@@ -25,6 +25,14 @@ test('coreTech bo cap bac, ke ca chu co dau o cuoi nhu "kỹ sư"', () => {
   assert.strictEqual(lamSachTuKhoa('senior golang developer').coreTech, 'golang');
 });
 
+test('chi co cap bac + vai tro chung (nguoi moi chua hoc gi: "Intern Developer") van tim theo vai tro, khong ra 0 viec', () => {
+  // Truoc day bo het tu cap bac thi coreTech quay ve ca cum "intern developer" — gan nhu khong tieu de nao chua
+  assert.strictEqual(lamSachTuKhoa('intern developer').coreTech, 'developer');
+  assert.strictEqual(lamSachTuKhoa('Fresher Engineer').coreTech, 'engineer');
+  assert.strictEqual(lamSachTuKhoa('thực tập lập trình viên').coreTech, 'developer');
+  assert.strictEqual(lamSachTuKhoa('intern').coreTech, 'developer');
+});
+
 test('chi con dia diem thi tu khoa mac dinh la developer', () => {
   assert.strictEqual(lamSachTuKhoa('hcm').cleanTechQuery, 'developer');
 });

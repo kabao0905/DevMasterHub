@@ -129,6 +129,20 @@ test('/api/jobs: tu khoa "technical lead" khong bi loc nham theo Ha Noi', async 
   } finally { s.dong(); }
 });
 
+test('/api/jobs: nguoi moi chua hoc bai nao (AI goi y "Intern Developer") van ra viec', async () => {
+  // Truoc day phai hoc it nhat 1 bai (vd C++) thi tu khoa moi co cong nghe cu the va moi ra viec
+  const s = await moServer({
+    traLoi: vnWorks([{
+      jobId: 2, alias: 'fresher-java', jobTitle: 'Fresher Java Developer', companyName: 'ACME',
+      workingLocations: [{ cityId: 29, cityNameVI: 'Hồ Chí Minh' }], skills: [{ skillName: 'Java' }]
+    }])
+  });
+  try {
+    const data = await (await fetch(s.goc + '/api/jobs?search=' + encodeURIComponent('Intern Developer'))).json();
+    assert.ok(data.jobs.some(j => j.title === 'Fresher Java Developer'), JSON.stringify(data.jobs.map(j => j.title)));
+  } finally { s.dong(); }
+});
+
 test('/api/jobs: link va logo tu nguon ngoai chi giu http/https', async () => {
   const s = await moServer({ traLoi: vnWorks([]) });
   try {
