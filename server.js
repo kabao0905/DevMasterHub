@@ -5,7 +5,7 @@ const fs = require('fs');
 const { napEnv } = require('./lib/env.js');
 const { napGiaoTrinh } = require('./lib/curriculum.js');
 const { laUrlReact } = require('./lib/route-owner.js');
-const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC } = require('./lib/ai-guard.js');
+const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, laGemini3 } = require('./lib/ai-guard.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
 
@@ -132,7 +132,7 @@ async function requireUser(req, res, next) {
   }
 }
 
-async function callGemini(system, messages, temperature = 0.7, maxTokens = 4096) {
+async function callGemini(system, messages, maxTokens = 4096) {
   if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not configured');
 
   const formattedContents = messages.map(m => ({
@@ -140,13 +140,15 @@ async function callGemini(system, messages, temperature = 0.7, maxTokens = 4096)
     parts: [{ text: m.content }]
   }));
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
+  // Gemini 3: Google khuyen de temperature mac dinh (ha xuong de bi lap). Token suy nghi tinh chung
+  // vao maxOutputTokens nen cong them phan rieng cho muc suy nghi high.
   const payload = {
     system_instruction: system ? { parts: [{ text: system }] } : undefined,
     contents: formattedContents,
     generationConfig: {
-      temperature,
-      maxOutputTokens: maxTokens
+      maxOutputTokens: maxTokens + SUY_NGHI_GEMINI.themToken,
+      thinkingConfig: { thinkingLevel: SUY_NGHI_GEMINI.muc }
     }
   };
 
@@ -163,8 +165,9 @@ async function callGemini(system, messages, temperature = 0.7, maxTokens = 4096)
   }
 
   const data = await res.json();
-  const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return replyText;
+  // Bo phan suy nghi (neu co) va noi cac phan chu: cau tra loi co the bi chia nhieu phan
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  return parts.filter(p => !p.thought && typeof p.text === 'string').map(p => p.text).join('');
 }
 
 async function callDeepSeek(system, messages, temperature = 0.7, maxTokens = 4096) {
@@ -248,12 +251,10 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
       'HTTP-Referer': 'https://devmaster-hub.onrender.com',
       'X-Title': 'DevMaster Hub'
     },
-    body: JSON.stringify({
-      model: selectedModel,
-      messages: formattedMessages,
-      temperature,
-      max_tokens: maxTokens
-    }),
+    body: JSON.stringify(laGemini3(selectedModel)
+      // Gemini 3: OpenRouter doi reasoning.effort sang thinkingLevel; de temperature mac dinh, cong token cho suy nghi
+      ? { model: selectedModel, messages: formattedMessages, max_tokens: maxTokens + SUY_NGHI_GEMINI.themToken, reasoning: { effort: SUY_NGHI_GEMINI.muc } }
+      : { model: selectedModel, messages: formattedMessages, temperature, max_tokens: maxTokens }),
     signal: coHan(AI_TIMEOUT_MS)
   });
 
@@ -308,7 +309,7 @@ app.post('/api/ai', sameOrigin, requireUser, rateLimit({ max: 30, scope: 'ai' })
 
   const providers = [
     { name: 'OpenRouter (' + taskType + ')', fn: () => callOpenRouter(system, messages, temperature, maxTokens, taskType), enabled: !!OPENROUTER_API_KEY },
-    { name: 'Gemini (Google)', fn: () => callGemini(system, messages, temperature, maxTokens), enabled: !!GEMINI_API_KEY },
+    { name: 'Gemini (Google)', fn: () => callGemini(system, messages, maxTokens), enabled: !!GEMINI_API_KEY },
     { name: 'DeepSeek', fn: () => callDeepSeek(system, messages, temperature, maxTokens), enabled: !!DEEPSEEK_API_KEY },
     { name: 'Claude (Anthropic)', fn: () => callClaude(system, messages, maxTokens), enabled: !!CLAUDE_API_KEY },
     { name: 'Groq (Llama 3.3)', fn: () => callGroq(system, messages, temperature, maxTokens), enabled: !!GROQ_API_KEY }

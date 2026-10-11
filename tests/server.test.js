@@ -53,9 +53,44 @@ test('/api/ai bo qua model va max_tokens tuy y cua client', async () => {
     });
     assert.strictEqual(res.status, 200);
     const or = s.daGoi.find(g => g.url.includes('openrouter.ai'));
-    assert.strictEqual(or.body.model, 'google/gemini-3.7-flash');
-    assert.strictEqual(or.body.max_tokens, 8192);
+    assert.strictEqual(or.body.model, 'google/gemini-3.8-flash');
+    // Gemini 3.8 Flash suy nghi muc high; token suy nghi tinh chung gioi han dau ra nen cong them phan rieng
+    assert.deepStrictEqual(or.body.reasoning, { effort: 'high' });
+    assert.strictEqual(or.body.max_tokens, 8192 + 16384);
+    assert.strictEqual('temperature' in or.body, false, 'Gemini 3 nen de temperature mac dinh');
     assert.ok(or.opts.signal, 'goi nha cung cap AI phai co timeout');
+  } finally { s.dong(); }
+});
+
+test('/api/ai: viec Career dung Claude Sonnet 5.5 qua OpenRouter, khong bat suy nghi Gemini', async () => {
+  const s = await moServer({
+    khoa: { OPENROUTER_API_KEY: 'or' },
+    traLoi: u => u.includes('openrouter.ai') && json({ choices: [{ message: { content: 'ok' } }] })
+  });
+  try {
+    await goiAi(s.goc, { messages: [{ role: 'user', content: 'hi' }], taskType: 'career', temperature: 0.5 });
+    const or = s.daGoi.find(g => g.url.includes('openrouter.ai'));
+    assert.strictEqual(or.body.model, 'anthropic/claude-sonnet-5.5');
+    assert.strictEqual('reasoning' in or.body, false);
+    assert.strictEqual(or.body.temperature, 0.5);
+  } finally { s.dong(); }
+});
+
+test('Gemini goi truc tiep: 3.8 Flash, thinkingLevel high, bo phan suy nghi khi doc cau tra loi', async () => {
+  const s = await moServer({
+    khoa: { GEMINI_API_KEY: 'gk' },
+    traLoi: u => u.includes('generativelanguage.googleapis.com') && json({
+      candidates: [{ content: { parts: [{ text: 'dang nghi...', thought: true }, { text: 'Xin ' }, { text: 'chào' }] } }]
+    })
+  });
+  try {
+    const data = await (await goiAi(s.goc, { messages: [{ role: 'user', content: 'hi' }], max_tokens: 1000 })).json();
+    assert.strictEqual(data.content[0].text, 'Xin chào');
+    const gm = s.daGoi.find(g => g.url.includes('generativelanguage.googleapis.com'));
+    assert.ok(gm.url.includes('/models/gemini-3.8-flash:generateContent'), gm.url);
+    assert.deepStrictEqual(gm.body.generationConfig.thinkingConfig, { thinkingLevel: 'high' });
+    assert.strictEqual(gm.body.generationConfig.maxOutputTokens, 1000 + 16384);
+    assert.strictEqual('temperature' in gm.body.generationConfig, false);
   } finally { s.dong(); }
 });
 
