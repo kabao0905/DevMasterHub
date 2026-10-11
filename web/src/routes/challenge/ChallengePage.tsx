@@ -59,7 +59,7 @@ export function ChallengePage() {
         )}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+      <div className="space-y-6">
         <Terminal kenh={kenh} />
         <CtfPanel kenh={kenh} />
       </div>

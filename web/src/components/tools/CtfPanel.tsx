@@ -38,7 +38,7 @@ export function CtfPanel({ kenh }: { kenh: KenhTerminal }) {
           <Button type="submit">Nộp cờ</Button>
         </form>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {may.CHALLENGES.map(c => {
           const xong = daGiai.has(c.id);
           return (

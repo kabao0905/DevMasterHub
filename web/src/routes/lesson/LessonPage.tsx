@@ -84,7 +84,8 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   const duongDan = (x: NonNullable<LanCan>) => `/lesson/${tech.id}/${x.level.id}/${x.lesson.id}`;
 
   return (
-    <article className="mx-auto max-w-3xl space-y-8">
+    // Tab Bai tap (IDE chia doi, terminal) can rong hon khung doc ly thuyet
+    <article className={cn('mx-auto space-y-8', tab === 'exercise' ? 'max-w-6xl' : 'max-w-3xl')}>
       <nav aria-label="breadcrumb">
         <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
           <li><Link to="/" className="hover:text-foreground">{t('dashboard')}</Link></li>
