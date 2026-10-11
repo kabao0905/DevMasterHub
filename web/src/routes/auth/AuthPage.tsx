@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { TIEU_DE_TRANG_CHU, usePageMeta } from '@/lib/page-meta';
@@ -11,8 +11,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { doManhMatKhau, type DoManh } from '@/lib/mat-khau';
 
 type CheDo = 'login' | 'register';
+
+/** bac: so vach sang (0..2) tren thanh do manh */
+const MUC_MANH: Record<DoManh, { bac: number; nen: string; chu: string; khoa: string }> = {
+  yeu: { bac: 0, nen: 'bg-destructive', chu: 'text-destructive', khoa: 'pwWeak' },
+  trungBinh: { bac: 1, nen: 'bg-amber-400', chu: 'text-amber-400', khoa: 'pwMedium' },
+  manh: { bac: 2, nen: 'bg-level-newbie', chu: 'text-level-newbie', khoa: 'pwStrong' }
+};
 
 /** Chi quay lai duong dan noi bo ("/x"), khong phai "//host" hay URL ngoai */
 function noiQuayLai(state: unknown): string {
@@ -41,6 +49,9 @@ export function AuthPage() {
   const [nhapLai, datNhapLai] = useState('');
   const [loi, datLoi] = useState('');
   const [dangGui, datDangGui] = useState(false);
+  const [hienMk, datHienMk] = useState(false);
+  // Chi cham khi dang ky: luc dang nhap mat khau da dat tu truoc, cham khong giup gi
+  const doManh = cheDo === 'register' ? doManhMatKhau(matKhau) : null;
 
   // Nguoi chua dang nhap (ca may tim kiem) mo / se thay trang nay: giu tieu de trang chu
   usePageMeta({ title: TIEU_DE_TRANG_CHU });
@@ -107,13 +118,34 @@ export function AuthPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="mat-khau">{t('authPassword')}</Label>
-              <Input id="mat-khau" type="password" autoComplete={cheDo === 'login' ? 'current-password' : 'new-password'}
-                placeholder={t('authPasswordPlaceholder')} value={matKhau} onChange={e => datMatKhau(e.target.value)} required />
+              <div className="relative">
+                <Input id="mat-khau" type={hienMk ? 'text' : 'password'} autoComplete={cheDo === 'login' ? 'current-password' : 'new-password'}
+                  placeholder={t('authPasswordPlaceholder')} value={matKhau} onChange={e => datMatKhau(e.target.value)} required
+                  className="pr-10" aria-describedby={doManh ? 'do-manh-mk' : undefined} />
+                <Button type="button" variant="ghost" size="icon-sm" onClick={() => datHienMk(v => !v)}
+                  aria-label={t(hienMk ? 'hidePassword' : 'showPassword')} title={t(hienMk ? 'hidePassword' : 'showPassword')}
+                  className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground">
+                  {hienMk ? <EyeOff /> : <Eye />}
+                </Button>
+              </div>
+              {doManh && (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex gap-1" aria-hidden="true">
+                    {[0, 1, 2].map(i => (
+                      <span key={i} className={cn('h-1 flex-1 rounded-full transition-colors', i <= MUC_MANH[doManh].bac ? MUC_MANH[doManh].nen : 'bg-muted')} />
+                    ))}
+                  </div>
+                  <p id="do-manh-mk" aria-live="polite" className={cn('text-xs font-medium', MUC_MANH[doManh].chu)}>
+                    {t('pwStrength', { level: t(MUC_MANH[doManh].khoa) })}
+                  </p>
+                  {doManh !== 'manh' && <p className="text-xs text-muted-foreground">{t('pwTip')}</p>}
+                </div>
+              )}
             </div>
             {cheDo === 'register' && (
               <div className="space-y-2">
                 <Label htmlFor="nhap-lai">{t('authConfirmPassword')}</Label>
-                <Input id="nhap-lai" type="password" autoComplete="new-password" placeholder={t('authConfirmPasswordPlaceholder')}
+                <Input id="nhap-lai" type={hienMk ? 'text' : 'password'} autoComplete="new-password" placeholder={t('authConfirmPasswordPlaceholder')}
                   value={nhapLai} onChange={e => datNhapLai(e.target.value)} required />
               </div>
             )}

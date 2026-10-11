@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
+import { baoDaHoiAi } from '@/lib/ngay-hoc';
 import { useKho } from '@/lib/use-kho';
 import { useCurriculumIndex } from '@/lib/use-curriculum';
 import type { TinNhan } from '@/lib/ai';
@@ -80,6 +81,7 @@ export function CareerPage() {
   /** Hoi AI voi lich su `truoc` + cau `tin` (tin nguoi hoc da nam cuoi chat) */
   async function chay(k: QueryKey, truoc: TinNhan[], tin: string, xoaViecNeuRong: boolean) {
     dat(k, x => ({ ...x, dangGui: true, loi: undefined }));
+    baoDaHoiAi();
     const phien = doc(k).phien;
     try {
       const kq = await (await coVanMoi()).gui(truoc, tin);

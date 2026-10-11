@@ -21,6 +21,7 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiG
     const b = {
       select: () => b,
       eq: (k: string, v: unknown) => { tt.dieuKien.push([k, v]); return b; },
+      gte: (k: string, v: unknown) => { tt.dieuKien.push([k + '>=', v]); return b; },
       order: () => b,
       limit: () => b,
       single: () => { tt.motDong = true; return b; },

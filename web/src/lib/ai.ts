@@ -1,6 +1,7 @@
 // Goi AI qua /api/ai cua server (server giu khoa API, kiem dang nhap va gioi han luot).
 import type { SupabaseLike } from './auth';
 import type { BaiDayDu } from './curriculum';
+import { baoDaHoiAi } from './ngay-hoc';
 import {
   BAI_TAP_SYSTEM, CHAM_BAI_SYSTEM, chiThiNgonNgu, promptBaiTap, promptChamBai, promptGiaSu, promptQuiz, promptThietKe,
   promptThuThach, QUIZ_SYSTEM, type TabBai
@@ -41,6 +42,7 @@ function loiDeHieu(e: unknown, signalNguoiDung?: AbortSignal): unknown {
 
 export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string> {
   const cho = p.cho ?? choThat;
+  baoDaHoiAi();
   const { data } = await client.auth.getSession();
   const token = data.session?.access_token;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

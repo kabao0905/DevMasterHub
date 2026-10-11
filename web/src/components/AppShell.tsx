@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, ScrollRestoration, useLocation, type Location } from 'react-router';
 import { Menu, PanelLeftOpen } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { useTichKhiHoiAi } from '@/lib/ngay-hoc';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export function AppShell() {
   // Di trang bang router khong tai lai trang: tu dong menu tren dien thoai
   useEffect(() => { datMoMenu(false); }, [pathname]);
   const [thuGon, datThuGon] = useState(docThuGon);
+  useTichKhiHoiAi();
   const doiThuGon = (v: boolean) => {
     datThuGon(v);
     try { localStorage.setItem(KHOA_THU_GON, v ? '1' : '0'); } catch { /* che do rieng tu */ }

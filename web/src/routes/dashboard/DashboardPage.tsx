@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadError } from '@/components/LoadError';
 import { SearchResults } from './SearchResults';
+import { LichHoc } from './LichHoc';
 import { cn } from '@/lib/utils';
 
 function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> }) {
@@ -87,19 +88,23 @@ export function DashboardPage() {
 
       {isLoading ? <Skeleton className="h-44 w-full rounded-2xl" /> : <HocTiep viTri={keTiep} done={done} />}
 
-      <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:flex sm:flex-wrap">
-        {[
-          [t('statTech'), ds.length],
-          [t('statLessons'), tong.tong],
-          [t('statCompleted'), tong.xong],
-          [t('statProgress'), `${tong.phanTram}%`]
-        ].map(([nhan, so]) => (
-          <div key={String(nhan)}>
-            <dt className="text-xs text-muted-foreground">{nhan}</dt>
-            <dd className="text-xl font-semibold tabular-nums">{so}</dd>
-          </div>
-        ))}
-      </dl>
+      {/* Thong ke ben trai, lich hoc ben phai (o trong canh hang thong ke); dien thoai thi xep doc */}
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:flex sm:flex-wrap">
+          {[
+            [t('statTech'), ds.length],
+            [t('statLessons'), tong.tong],
+            [t('statCompleted'), tong.xong],
+            [t('statProgress'), `${tong.phanTram}%`]
+          ].map(([nhan, so]) => (
+            <div key={String(nhan)}>
+              <dt className="text-xs text-muted-foreground">{nhan}</dt>
+              <dd className="text-xl font-semibold tabular-nums">{so}</dd>
+            </div>
+          ))}
+        </dl>
+        <LichHoc />
+      </div>
 
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />

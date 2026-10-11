@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Check, ChevronRight, CircleCheck, Circle, Flag } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
+import { useTichKhiMo } from '@/lib/ngay-hoc';
 import { useCurriculumIndex } from '@/lib/use-curriculum';
 import { useProgress } from '@/lib/use-progress';
 import { useEscape } from '@/lib/use-escape';
@@ -32,6 +33,8 @@ export function RoadmapPage() {
       }
     : { title: `${t('pageNotFound')} | DevMaster Hub` });
   useEscape(() => navigate('/'));
+  // Mo mot mon hoc la tinh hom nay da hoc (lich streak tren Dashboard)
+  useTichKhiMo(tech?.id ?? '', 'roadmap');
 
   // /roadmap/python/junior: dua cap do vao tam nhin
   useEffect(() => {

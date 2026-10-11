@@ -208,3 +208,59 @@ test('desktop: thu gon duoc sidebar, va van thu gon sau khi tai lai trang', asyn
   await u.click(await screen.findByRole('button', { name: 'Mở thanh bên' }));
   expect(screen.getByRole('complementary')).toBeInTheDocument();
 });
+
+const ghiNgayHoc = (gia: ReturnType<typeof giaSupabase>) => gia.truyVan.filter(q => q.bang === 'learning_sessions' && q.op === 'insert');
+
+test('dashboard: lich hoc tich cac ngay da hoc va dem chuoi ngay lien tiep', async () => {
+  const homQua = new Date(Date.now() - 86_400_000).toISOString();
+  veApp('/', { gia: daDangNhap({ learning_sessions: [{ started_at: new Date().toISOString() }, { started_at: homQua }] }), json: JSON_GIA });
+  const lich = await screen.findByRole('region', { name: 'Lịch học' });
+  expect(await within(lich).findByText('2 ngày liên tiếp')).toBeInTheDocument();
+  expect(within(lich).getByText('Dài nhất: 2 ngày')).toBeInTheDocument();
+  // Ngay 1 dau thang thi hom qua thuoc thang truoc, khong nam tren lich thang nay
+  const trongThang = new Date().getDate() > 1 ? 2 : 1;
+  expect(within(lich).getAllByRole('img', { name: /đã học/ })).toHaveLength(trongThang);
+});
+
+test('mo mot mon hoc thi tich ngay hom nay, mo tiep mon khac cung ngay khong ghi lai', async () => {
+  const gia = daDangNhap();
+  const { router } = veApp('/roadmap/python', { gia, json: JSON_GIA });
+  await waitFor(() => expect(ghiNgayHoc(gia)).toHaveLength(1));
+  expect(ghiNgayHoc(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'python' });
+  await act(() => router.navigate('/roadmap/react'));
+  await screen.findByRole('heading', { name: /React/ });
+  expect(ghiNgayHoc(gia)).toHaveLength(1);
+});
+
+test('hoi AI cung tich ngay hoc hom nay', async () => {
+  const gia = daDangNhap();
+  veApp('/', { gia, json: JSON_GIA });
+  const lich = await screen.findByRole('region', { name: 'Lịch học' });
+  act(() => { window.dispatchEvent(new Event('dmh:hoi-ai')); });
+  await waitFor(() => expect(ghiNgayHoc(gia)).toHaveLength(1));
+  expect(ghiNgayHoc(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'ai' });
+  expect(await within(lich).findByText('1 ngày liên tiếp')).toBeInTheDocument();
+});
+
+test('o mat khau: nut hien/an doi qua lai kieu nhap', async () => {
+  const u = userEvent.setup();
+  veApp('/auth', { gia: giaSupabase(), json: JSON_GIA });
+  const o = await screen.findByLabelText('Mật khẩu');
+  expect(o).toHaveAttribute('type', 'password');
+  await u.click(screen.getByRole('button', { name: 'Hiện mật khẩu' }));
+  expect(o).toHaveAttribute('type', 'text');
+  await u.click(screen.getByRole('button', { name: 'Ẩn mật khẩu' }));
+  expect(o).toHaveAttribute('type', 'password');
+});
+
+test('dang ky: hien do manh mat khau khi go', async () => {
+  const u = userEvent.setup();
+  veApp('/auth', { gia: giaSupabase(), json: JSON_GIA });
+  await u.click(await screen.findByRole('tab', { name: 'Đăng ký' }));
+  const o = screen.getByLabelText('Mật khẩu');
+  await u.type(o, '123456');
+  expect(screen.getByText('Độ mạnh: Yếu')).toBeInTheDocument();
+  await u.clear(o);
+  await u.type(o, 'MatKhau@2026!');
+  expect(screen.getByText('Độ mạnh: Mạnh')).toBeInTheDocument();
+});
