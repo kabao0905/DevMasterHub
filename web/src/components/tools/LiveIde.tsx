@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useXacNhan } from '@/components/XacNhan';
+import { useT } from '@/lib/i18n';
 import { Monitor, Paintbrush, Play, RotateCcw, Smartphone, Tablet } from 'lucide-react';
 import { buildDocument, laConsole, presetFor, PRESETS, type TaiLieu } from '@/lib/sandpack-doc';
 import { injectScript } from '@/lib/design-inject';
@@ -25,6 +27,8 @@ type Kho = keyof typeof KHO;
  * (khong allow-same-origin: code hoc vien khong doc duoc token dang nhap cua trang).
  */
 export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props) {
+  const [hoi, hopXacNhan] = useXacNhan();
+  const { t } = useT();
   const presetId = presetFor(techId);
   const consoleMode = laConsole(presetId);
   const tenTep = Object.keys(files);
@@ -136,7 +140,7 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
                 </button>
               ))}
             </div>
-            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { if (window.confirm('Đặt lại toàn bộ code về ban đầu? Phần bạn đã sửa sẽ mất.')) onFilesChange(macDinh); }}>
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { void hoi(t('resetCodeConfirm')).then(ok => { if (ok) onFilesChange(macDinh); }); }}>
               <RotateCcw aria-hidden="true" /> Đặt lại
             </Button>
           </div>
@@ -224,6 +228,7 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
       </div>
 
       {thietKe && !consoleMode && <DesignPanel chon={chon} files={files} onFilesChange={onFilesChange} />}
+      {hopXacNhan}
     </div>
   );
 }

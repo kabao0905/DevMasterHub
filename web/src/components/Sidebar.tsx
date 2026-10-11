@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useXacNhan } from '@/components/XacNhan';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Briefcase, FolderKanban, FlaskConical, LayoutDashboard, LogOut, PanelLeftClose } from 'lucide-react';
@@ -30,6 +31,7 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
   const { data: ds = [] } = useCurriculumIndex();
   const { done } = useProgress();
   const navigate = useNavigate();
+  const [hoi, hopXacNhan] = useXacNhan();
   const { pathname } = useLocation();
   const laTrangDuAn = /^\/(project|project-level|project-topic|saved-ideas)(\/|$)/.test(pathname);
   const { data: suc } = useQuery({
@@ -47,7 +49,7 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
   const ten = profile?.display_name || profile?.username || user?.email?.split('@')[0] || '';
 
   async function dangXuat() {
-    if (!window.confirm(t('logoutConfirm'))) return;
+    if (!(await hoi(t('logoutConfirm'), t('logout')))) return;
     await logout();
     navigate('/auth', { replace: true });
   }
@@ -83,6 +85,7 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
         <Button variant="ghost" size="icon-sm" aria-label={t('logout')} title={t('logout')} onClick={dangXuat}>
           <LogOut />
         </Button>
+        {hopXacNhan}
       </div>
 
       <ScrollArea className="mt-4 min-h-0 flex-1">

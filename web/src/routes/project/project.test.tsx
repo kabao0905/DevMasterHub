@@ -112,6 +112,23 @@ test('chat mentor gui kem code dang soan; tra loi hien markdown', async () => {
   expect(hoi.messages[0].content).toBe('Vẽ rắn sao?');
 });
 
+test('xoa tat ca file hoi bang hop trong app; Huy thi giu nguyen', async () => {
+  const u = userEvent.setup();
+  vi.stubGlobal('confirm', () => false);
+  mo('/project-level');
+  await u.click(await screen.findByRole('button', { name: /Mid/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await screen.findByRole('heading', { name: 'Rắn săn mồi' });
+  await u.click(screen.getByRole('textbox', { name: 'Code của main.js' }));
+  await u.paste('let x = 1;');
+  await u.click(screen.getByRole('button', { name: /Xóa tất cả/ }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Hủy' }));
+  expect(screen.getByRole('textbox', { name: 'Code của main.js' })).toHaveValue('let x = 1;');
+  await u.click(screen.getByRole('button', { name: /Xóa tất cả/ }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Đồng ý' }));
+  expect(screen.getByRole('textbox', { name: 'Code của main.js' })).toHaveValue('');
+});
+
 test('soan nhieu file: them, doi ten theo duoi doi ngon ngu, xoa', async () => {
   const u = userEvent.setup();
   mo('/project-level');
@@ -203,12 +220,13 @@ test('idea da luu: ngay gio, nguon, xoa co xac nhan, Bat dau lam mo dung trang v
   const theMay = screen.getByRole('heading', { name: 'Máy tính' }).closest('article')!;
   expect(within(theMay).getByText(/📊 senior/)).toBeInTheDocument();
 
-  const xacNhan = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  vi.stubGlobal('confirm', () => false);
   await u.click(within(theMay).getByRole('button', { name: 'Xóa idea Máy tính' }));
+  await u.click(within(await screen.findByRole('dialog', { name: 'Xóa idea này?' })).getByRole('button', { name: 'Hủy' }));
   expect(screen.getByRole('heading', { name: 'Máy tính' })).toBeInTheDocument();
   await u.click(within(theMay).getByRole('button', { name: 'Xóa idea Máy tính' }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Đồng ý' }));
   expect(screen.queryByRole('heading', { name: 'Máy tính' })).not.toBeInTheDocument();
-  expect(xacNhan).toHaveBeenCalledWith('Xóa idea này?');
   await waitFor(() => expect(gia.truyVan.some(q => q.bang === 'saved_ideas' && q.op === 'delete')).toBe(true));
 
   await u.click(within(theBlog).getByRole('button', { name: /Bắt đầu làm/ }));
@@ -226,8 +244,8 @@ test('idea da luu: rong thi moi tao theo chu de; xoa loi thi tra lai va bao', as
 
   const gia = giaSupabase({ nguoiDung: { id: 'u1' }, loiGhi: { saved_ideas: 'mất mạng' }, bang: { profiles: [{ id: 'u1', username: 'an' }], saved_ideas: [IDEA_DA_LUU('a', 'Snake')] } });
   veApp('/saved-ideas', { gia, json: { '/api/health': { aiEnabled: true }, '/curriculum/index.json': [] } });
-  vi.spyOn(window, 'confirm').mockReturnValue(true);
   await u.click(await screen.findByRole('button', { name: 'Xóa idea Snake' }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Đồng ý' }));
   expect(await screen.findByText(/Không xóa được idea: mất mạng/)).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Snake' })).toBeInTheDocument();
 });

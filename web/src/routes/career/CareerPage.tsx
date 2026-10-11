@@ -1,4 +1,5 @@
 // AI Career Advisor: chat tu van nghe nghiep theo ho so hoc that, tu tim viec va danh gia do phu hop.
+import { useXacNhan } from '@/components/XacNhan';
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { ChevronDown, Pencil, RefreshCw, Search, Send, Trash2 } from 'lucide-react';
@@ -39,6 +40,7 @@ export function CareerPage() {
   const { data: congNghe = [] } = useCurriculumIndex();
   const tenCongNghe = useMemo(() => Object.fromEntries(congNghe.map(c => [c.id, c.name])), [congNghe]);
   const cvRef = useRef<CoVan | null>(null);
+  const [hoi, hopXacNhan] = useXacNhan();
   const oNhapRef = useRef<HTMLTextAreaElement>(null);
   const dsRef = useRef<HTMLOListElement>(null);
   const [moTim, datMoTim] = useState(false);
@@ -137,8 +139,8 @@ export function CareerPage() {
     void chay(khoa, chat.slice(0, -1), chat[j].content, false);
   }
 
-  function xoaChat() {
-    if (!window.confirm(t('clearCareerChatConfirm'))) return;
+  async function xoaChat() {
+    if (!(await hoi(t('clearCareerChatConfirm'), t('clearChat')))) return;
     cvRef.current?.huy();
     dat(khoa, x => ({ ...dungLai(x), ...RONG, daNap: true, phien: (x.phien ?? 0) + 1 }));
     luu(khoa, []);
@@ -173,7 +175,7 @@ export function CareerPage() {
         <p className="text-muted-foreground">{t('careerSubtitle')}</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => datMoTim(true)}><Search aria-hidden="true" /> {t('careerSearchJobsBtn')}</Button>
-          <Button variant="ghost" className="text-muted-foreground" onClick={xoaChat}><Trash2 aria-hidden="true" /> {t('clearChat')}</Button>
+          <Button variant="ghost" className="text-muted-foreground" onClick={() => { void xoaChat(); }}><Trash2 aria-hidden="true" /> {t('clearChat')}</Button>
         </div>
       </header>
 
@@ -216,6 +218,7 @@ export function CareerPage() {
 
       <ViecLamGoiY kho={kho} doiMo={() => dat(khoa, x => ({ ...x, moViec: !x.moViec }))} />
 
+      {hopXacNhan}
       <Dialog open={moTim} onOpenChange={datMoTim}>
         <DialogContent>
           <DialogHeader><DialogTitle>{t('careerSearchJobsBtn')}</DialogTitle></DialogHeader>

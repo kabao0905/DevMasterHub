@@ -19,13 +19,8 @@ import { cn } from '@/lib/utils';
 
 function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> }) {
   const { t, translateTitle } = useT();
-  if (!viTri) {
-    return (
-      <section className="rounded-2xl border border-dashed p-6 text-muted-foreground">
-        {t('pickRoadmap')}
-      </section>
-    );
-  }
+  // Chua hoc bai nao: luoi lo trinh ngay ben duoi da la loi moi, khong can o nhac them
+  if (!viTri) return null;
   const { tech, level, lesson } = viTri;
   const td = tienDoCongNghe(tech, done);
   return (

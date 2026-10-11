@@ -1,4 +1,5 @@
 // Soan code nhieu file cho project va nop cho AI cham (renderSubmitPanel cua app cu).
+import { useXacNhan } from '@/components/XacNhan';
 import { useEffect, useState } from 'react';
 import { Bot, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useT } from '@/lib/i18n';
@@ -31,6 +32,7 @@ function chuTienDo(t: ReturnType<typeof useT>['t'], b: TienDoCham | null | undef
 export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
   const { t } = useT();
   const { kho, tepMo } = duAn;
+  const [hoi, hopXacNhan] = useXacNhan();
   const i = Math.min(kho.tepDangMo, kho.files.length - 1);
   // Ten file soan tam: ghi khi roi o hoac Enter (onchange cua app cu), khong doi ten giua chung
   const [tenTam, datTenTam] = useState(tepMo.name);
@@ -97,7 +99,7 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
             </Button>
           )}
           <Button variant="ghost" className="text-muted-foreground" disabled={!!kho.dangCham}
-            onClick={() => { if (window.confirm(t('projectClearConfirm'))) duAn.xoaHet(); }}>
+            onClick={() => { void hoi(t('projectClearConfirm')).then(ok => { if (ok) duAn.xoaHet(); }); }}>
             <Trash2 aria-hidden="true" /> {t('projectClearAll')}
           </Button>
         </div>
@@ -107,6 +109,7 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
         )}
       </section>
 
+      {hopXacNhan}
       {kho.ketQua && <KetQuaChamView kq={kho.ketQua} />}
     </div>
   );

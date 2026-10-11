@@ -115,9 +115,12 @@ test('sidebar: link toi Project Lab, Du an cua toi, Career va roadmap; doi ngon 
 
 test('dang xuat thi ve trang dang nhap', async () => {
   const u = userEvent.setup();
-  vi.stubGlobal('confirm', () => true);
+  // Trinh duyet nhung (vd. trong app) chan window.confirm: khong duoc dua vao no
+  vi.stubGlobal('confirm', () => false);
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   await u.click(await screen.findByRole('button', { name: 'Đăng xuất' }));
+  const hop = await screen.findByRole('dialog', { name: 'Bạn muốn đăng xuất?' });
+  await u.click(within(hop).getByRole('button', { name: 'Đăng xuất' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/auth'));
 });
 

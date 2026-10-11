@@ -92,10 +92,12 @@ test('xoa chat co xac nhan; tim viec thu cong', async () => {
   const u = userEvent.setup();
   const { timViec, daLuu } = mo({ chat: [{ role: 'user', content: 'Chào' }, { role: 'assistant', content: 'Chào bạn' }] });
   await screen.findByText('Chào bạn');
-  vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  vi.stubGlobal('confirm', () => false);
   await u.click(screen.getByRole('button', { name: /Xóa chat/ }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Hủy' }));
   expect(screen.getByText('Chào bạn')).toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: /Xóa chat/ }));
+  await u.click(within(await screen.findByRole('dialog', { name: /Xóa toàn bộ lịch sử/ })).getByRole('button', { name: /Xóa chat/ }));
   expect(screen.queryByText('Chào bạn')).not.toBeInTheDocument();
   expect(screen.getByText(/Mình là AI Career Advisor/)).toBeInTheDocument();
   await waitFor(() => expect(daLuu().at(-1)).toEqual([]));

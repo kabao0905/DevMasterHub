@@ -113,7 +113,7 @@ export function AuthPage() {
             {cheDo === 'register' && (
               <div className="space-y-2">
                 <Label htmlFor="nhap-lai">{t('authConfirmPassword')}</Label>
-                <Input id="nhap-lai" type="password" autoComplete="new-password"
+                <Input id="nhap-lai" type="password" autoComplete="new-password" placeholder={t('authConfirmPasswordPlaceholder')}
                   value={nhapLai} onChange={e => datNhapLai(e.target.value)} required />
               </div>
             )}

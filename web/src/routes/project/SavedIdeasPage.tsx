@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router';
+import { useXacNhan } from '@/components/XacNhan';
 import { useQueryClient } from '@tanstack/react-query';
 import { Clock, Play, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
@@ -20,6 +21,7 @@ export function SavedIdeasPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const yTuong = useYTuong();
+  const [hoi, hopXacNhan] = useXacNhan();
   usePageMeta({ title: `${t('savedIdeasTitle')} | DevMaster Hub`, description: t('savedIdeasDesc') });
 
   function batDau(s: YTuongDaLuu) {
@@ -78,7 +80,7 @@ export function SavedIdeasPage() {
                         <Play aria-hidden="true" /> {t('startWorking')}
                       </Button>
                       <Button size="sm" variant="ghost" aria-label={t('deleteIdeaNamed', { name: s.idea.name })} title={t('deleteIdeaNamed', { name: s.idea.name })}
-                        onClick={() => { if (window.confirm(t('deleteIdeaConfirm'))) yTuong.xoa(s.id); }}>
+                        onClick={() => { void hoi(t('deleteIdeaConfirm')).then(ok => { if (ok) yTuong.xoa(s.id); }); }}>
                         <Trash2 aria-hidden="true" />
                       </Button>
                     </div>
@@ -87,6 +89,7 @@ export function SavedIdeasPage() {
               ))}
             </div>
           )}
+      {hopXacNhan}
     </div>
   );
 }
