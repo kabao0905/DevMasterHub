@@ -11,12 +11,51 @@ function bam(s: string): string {
   return (h >>> 0).toString(36) + s.length.toString(36);
 }
 
-async function dichMay(html: string, lang: string, signal: AbortSignal): Promise<string> {
-  const khoa = `devmaster_hub_dich_${lang}_${bam(html)}`;
+// Cache ban dich tren may co gioi han: localStorage day thi Supabase khong luu duoc phien dang nhap
+const TOI_DA = 60;
+const khoaDs = (lang: string) => `devmaster_hub_dich_${lang}__ds`;
+const khoaMuc = (lang: string, ma: string) => `devmaster_hub_dich_${lang}_${ma}`;
+
+function docDs(lang: string): string[] {
   try {
-    const daLuu = localStorage.getItem(khoa);
-    if (daLuu) return daLuu;
-  } catch { /* che do rieng tu */ }
+    const x: unknown = JSON.parse(localStorage.getItem(khoaDs(lang)) || '[]');
+    return Array.isArray(x) ? x.filter((s): s is string => typeof s === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function ghiDs(lang: string, ds: string[]) {
+  try { localStorage.setItem(khoaDs(lang), JSON.stringify(ds)); } catch { /* het cho luu */ }
+}
+
+/** Doc ban dich da luu; doc xong thi muc do thanh moi nhat (bo muc lau khong dung truoc) */
+export function docCacheDich(lang: string, ma: string): string | null {
+  try {
+    const v = localStorage.getItem(khoaMuc(lang, ma));
+    if (v == null) return null;
+    ghiDs(lang, [...docDs(lang).filter(x => x !== ma), ma]);
+    return v;
+  } catch {
+    return null;
+  }
+}
+
+/** Luu ban dich, giu toi da TOI_DA muc moi ngon ngu */
+export function ghiCacheDich(lang: string, ma: string, text: string): void {
+  const ds = [...docDs(lang).filter(x => x !== ma), ma];
+  while (ds.length > TOI_DA) {
+    const cu = ds.shift()!;
+    try { localStorage.removeItem(khoaMuc(lang, cu)); } catch { /* bo qua */ }
+  }
+  try { localStorage.setItem(khoaMuc(lang, ma), text); } catch { /* het cho luu */ }
+  ghiDs(lang, ds);
+}
+
+async function dichMay(html: string, lang: string, signal: AbortSignal): Promise<string> {
+  const ma = bam(html);
+  const daLuu = docCacheDich(lang, ma);
+  if (daLuu) return daLuu;
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(html)}`;
   const r = await fetch(url, { signal });
   if (!r.ok) throw new Error(`Dịch máy lỗi (HTTP ${r.status})`);
@@ -24,7 +63,7 @@ async function dichMay(html: string, lang: string, signal: AbortSignal): Promise
   const doan = Array.isArray(data) && Array.isArray(data[0]) ? (data[0] as unknown[]) : [];
   const ra = doan.map(x => (Array.isArray(x) && typeof x[0] === 'string' ? x[0] : '')).join('');
   if (!ra) throw new Error('Bản dịch rỗng');
-  try { localStorage.setItem(khoa, ra); } catch { /* het cho luu */ }
+  ghiCacheDich(lang, ma, ra);
   return ra;
 }
 

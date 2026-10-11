@@ -1,4 +1,5 @@
 import { useDeferredValue, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { Search } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
@@ -41,7 +42,7 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
           <p className="mt-1.5 text-2xl font-semibold tracking-tight text-balance">{translateTitle(lesson.title)}</p>
         </div>
         <Button asChild size="lg" className="h-10 shrink-0 bg-brand px-5 text-white hover:opacity-90">
-          <a href={`/lesson/${tech.id}/${level.id}/${lesson.id}`}>{t('openLesson')}</a>
+          <Link to={`/lesson/${tech.id}/${level.id}/${lesson.id}`}>{t('openLesson')}</Link>
         </Button>
       </div>
       <div className="mt-6 max-w-md">

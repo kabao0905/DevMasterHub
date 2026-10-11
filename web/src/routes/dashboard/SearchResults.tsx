@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router';
 import { useT } from '@/lib/i18n';
 import { useSearchIndex } from '@/lib/use-curriculum';
 import { timBaiHoc, type CongNgheTomTat } from '@/lib/curriculum';
@@ -30,14 +31,14 @@ export function SearchResults({ q, ds }: { q: string; ds: CongNgheTomTat[] }) {
           const cap = tech?.levels.find(l => l.id === m.l);
           return (
             <li key={`${m.t}.${m.l}.${m.s}`}>
-              <a href={`/lesson/${m.t}/${m.l}/${m.s}`} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:outline-ring">
+              <Link to={`/lesson/${m.t}/${m.l}/${m.s}`} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:outline-ring">
                 <span className="text-xl" aria-hidden="true">{tech?.icon}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{translateTitle(m.title)}</span>
                   <span className="block truncate text-xs text-muted-foreground">{tech?.name}</span>
                 </span>
                 <span className={cn('text-xs font-medium', CHU_CAP[m.l] ?? 'text-primary')}>{cap?.name ?? m.l}</span>
-              </a>
+              </Link>
             </li>
           );
         })}

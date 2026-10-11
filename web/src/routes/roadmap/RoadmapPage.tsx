@@ -73,14 +73,14 @@ export function RoadmapPage() {
       </header>
 
       {tech.id === 'cybersecurity' && (
-        <a href="/challenge" className="flex items-center gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 transition-colors hover:bg-primary/15">
+        <Link to="/challenge" className="flex items-center gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 transition-colors hover:bg-primary/15">
           <Flag className="size-6 shrink-0 text-primary" aria-hidden="true" />
           <span className="min-w-0 flex-1">
             <span className="block font-semibold">{t('challengeNav')}</span>
             <span className="block text-sm text-muted-foreground">{t('challengeEntryHint')}</span>
           </span>
           <ChevronRight className="size-5 text-muted-foreground" aria-hidden="true" />
-        </a>
+        </Link>
       )}
 
       <ol className="relative">
@@ -125,8 +125,7 @@ export function RoadmapPage() {
                     const xong = done.has(khoaBai(tech.id, cap.id, bai.id));
                     return (
                       <li key={bai.id}>
-                        {/* Trang bai hoc van la app cu cho toi dot 3: tai trang that */}
-                        <a href={`/lesson/${tech.id}/${cap.id}/${bai.id}`}
+                        <Link to={`/lesson/${tech.id}/${cap.id}/${bai.id}`}
                           className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
                           {xong
                             ? <CircleCheck className={cn('size-5 shrink-0', CHU_CAP[cap.id] ?? 'text-primary')} aria-hidden="true" />
@@ -136,7 +135,7 @@ export function RoadmapPage() {
                             {xong && <span className="sr-only"> {t('statCompleted')}</span>}
                           </span>
                           <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                        </a>
+                        </Link>
                       </li>
                     );
                   })}

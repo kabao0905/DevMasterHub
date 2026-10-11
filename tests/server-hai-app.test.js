@@ -29,12 +29,17 @@ async function moServer(distDir) {
   return { goc: `http://127.0.0.1:${sv.address().port}`, dong: () => sv.close() };
 }
 
-test('co ban build: /, /auth va /roadmap/* do app React phuc vu, co meta SEO', async () => {
+test('co ban build: /, /auth, /roadmap/*, /lesson/* va /challenge do app React phuc vu, co meta SEO', async () => {
   const s = await moServer(taoDist());
   try {
     const roadmap = await (await fetch(s.goc + '/roadmap/python')).text();
     assert.ok(roadmap.includes('data-app="react"'), '/roadmap/python khong phai app React');
     assert.match(roadmap, /<title>Học Python/);
+    const bai = await (await fetch(s.goc + '/lesson/python/newbie/intro')).text();
+    assert.ok(bai.includes('data-app="react"'), '/lesson/... khong phai app React');
+    assert.match(bai, /<title>Hello World/);
+    const thuThach = await (await fetch(s.goc + '/challenge')).text();
+    assert.ok(thuThach.includes('data-app="react"'), '/challenge khong phai app React');
     for (const p of ['/', '/auth']) {
       const html = await (await fetch(s.goc + p)).text();
       assert.ok(html.includes('data-app="react"'), p + ' khong phai app React');
@@ -47,9 +52,10 @@ test('co ban build: /, /auth va /roadmap/* do app React phuc vu, co meta SEO', a
 test('co ban build: trang chua chuyen van la app cu, va app cu biet view nao da sang React', async () => {
   const s = await moServer(taoDist());
   try {
-    const html = await (await fetch(s.goc + '/lesson/python/newbie/l1')).text();
+    const html = await (await fetch(s.goc + '/career')).text();
     assert.ok(html.includes('id="main-content"'), 'khong phai app cu');
-    assert.ok(html.includes('window.__REACT_VIEWS=["dashboard","auth","roadmap"]'));
+    assert.match(html, /<title>Cố Vấn Nghề Nghiệp/);
+    assert.ok(html.includes('window.__REACT_VIEWS=["dashboard","auth","roadmap","lesson","challenge"]'));
   } finally { s.dong(); }
 });
 
