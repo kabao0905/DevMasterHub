@@ -1,0 +1,207 @@
+{
+  "id": "docker",
+  "name": "Docker & Git",
+  "icon": "🐳",
+  "color": "#2496ED",
+  "gradient": "linear-gradient(135deg,#2496ED,#F05032)",
+  "category": "devops",
+  "description": "Containerization, version control, CI/CD, deployment",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Git & Docker cơ bản",
+      "lessons": [
+        {
+          "id": "git-basics",
+          "title": "Git Fundamentals",
+          "theory": "<p><strong>Git</strong> quản lý version control. <code>commit</code> lưu snapshot. <code>branch</code> tạo nhánh phát triển song song. <code>merge</code> hợp nhất branches.</p>",
+          "code": "# Init & Config\ngit init\ngit config --global user.name \"DevMaster\"\ngit config --global user.email \"dev@master.com\"\n\n# Basic workflow\ngit add .                    # Stage all changes\ngit commit -m \"feat: add login page\"\ngit status                   # Check status\ngit log --oneline -5         # View history\n\n# Branching\ngit branch feature/auth      # Create branch\ngit checkout feature/auth    # Switch branch\n# Or: git checkout -b feature/auth (create + switch)\n\ngit add .\ngit commit -m \"feat: add JWT auth\"\n\ngit checkout main\ngit merge feature/auth       # Merge to main\ngit branch -d feature/auth   # Delete merged branch\n\n# Remote\ngit remote add origin https://github.com/user/repo.git\ngit push -u origin main\ngit pull origin main",
+          "lang": "bash",
+          "keyPoints": [
+            "git add → git commit → git push workflow",
+            "Branching: tạo branch cho mỗi feature, merge khi xong",
+            "Commit messages: type(scope): description (conventional)"
+          ],
+          "exercise": "Tạo repo, commit 3 lần, tạo branch, merge, push lên GitHub."
+        },
+        {
+          "id": "docker-basics",
+          "title": "Docker Basics",
+          "theory": "<p><strong>Docker</strong> đóng gói app + dependencies vào <strong>container</strong>. <code>Dockerfile</code> định nghĩa cách build image. Containers chạy isolated, consistent mọi nơi.</p>",
+          "code": "# Dockerfile\nFROM node:20-alpine\n\nWORKDIR /app\n\n# Copy deps first (caching)\nCOPY package*.json ./\nRUN npm ci --only=production\n\n# Copy source\nCOPY . .\n\nEXPOSE 3000\n\nCMD [\"node\", \"server.js\"]\n\n# .dockerignore\n# node_modules\n# .git\n# .env\n\n# Build & Run\n# docker build -t myapp .\n# docker run -d -p 3000:3000 --name myapp myapp\n\n# Useful commands\n# docker ps              # running containers\n# docker logs myapp      # view logs\n# docker exec -it myapp sh  # shell into container\n# docker stop myapp      # stop\n# docker rm myapp        # remove",
+          "lang": "dockerfile",
+          "keyPoints": [
+            "FROM base image, WORKDIR set directory, COPY transfer files",
+            "Layer caching: COPY package.json trước, npm install, sau COPY source",
+            "docker build -t name . tạo image, docker run chạy container"
+          ],
+          "exercise": "Dockerize một Node.js Express app."
+        },
+        {
+          "id": "gitignore",
+          "title": ".gitignore & Docker Ignore",
+          "theory": "<p><code>.gitignore</code> loại bỏ files không track: node_modules, .env, build outputs. <code>.dockerignore</code> giảm build context size. Proper ignore patterns quan trọng cho security.</p>",
+          "code": "# .gitignore\nnode_modules/\ndist/\nbuild/\n.env\n.env.local\n*.log\n.DS_Store\ncoverage/\n.cache/\n\n# IDE\n.vscode/\n.idea/\n*.swp\n\n# OS\nThumbs.db\n\n# .dockerignore\nnode_modules\nnpm-debug.log\n.git\n.gitignore\n.env*\nREADME.md\n.dockerignore\nDockerfile\ndocker-compose*.yml\ntests/\ncoverage/\n.vscode/",
+          "lang": "bash",
+          "keyPoints": [
+            ".gitignore: NEVER commit node_modules, .env, secrets",
+            "Pattern: * (any), ** (recursive), ! (negate/include)",
+            "Commit .gitignore sớm, trước khi add sensitive files"
+          ],
+          "exercise": "Tạo .gitignore và .dockerignore phù hợp cho full-stack project."
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "Branching, Compose & Workflows",
+      "lessons": [
+        {
+          "id": "branching",
+          "title": "Git Branching Strategies",
+          "theory": "<p><strong>Git Flow</strong>: main, develop, feature/*, release/*, hotfix/*. <strong>GitHub Flow</strong>: main + feature branches + PR. Rebase vs Merge. Conventional commits.</p>",
+          "code": "# GitHub Flow (simple, recommended)\ngit checkout -b feature/user-auth\n\n# Work...\ngit add .\ngit commit -m \"feat(auth): add JWT login endpoint\"\ngit commit -m \"test(auth): add login unit tests\"\ngit commit -m \"docs(auth): update API documentation\"\n\n# Push and create PR\ngit push -u origin feature/user-auth\n# Create Pull Request on GitHub\n\n# Rebase before merge (clean history)\ngit checkout feature/user-auth\ngit rebase main\n# Resolve conflicts if any\ngit push --force-with-lease\n\n# After PR approved & merged\ngit checkout main\ngit pull origin main\ngit branch -d feature/user-auth\n\n# Interactive rebase (clean up commits)\ngit rebase -i HEAD~3\n# pick, squash, reword, drop\n\n# Stash (save work temporarily)\ngit stash\ngit checkout other-branch\n# do stuff...\ngit checkout feature-branch\ngit stash pop",
+          "lang": "bash",
+          "keyPoints": [
+            "GitHub Flow: main → feature branch → PR → merge → delete",
+            "Conventional commits: feat:, fix:, docs:, test:, chore:",
+            "Rebase cho clean history, merge cho team collaboration"
+          ],
+          "exercise": "Practice Git Flow: tạo feature, hotfix, release branches."
+        },
+        {
+          "id": "compose",
+          "title": "Docker Compose & Multi-container",
+          "theory": "<p><code>Docker Compose</code> orchestrate nhiều containers cùng lúc. Một file <code>docker-compose.yml</code> định nghĩa tất cả services, networks, volumes.</p>",
+          "code": "# docker-compose.yml\nversion: \"3.8\"\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - NODE_ENV=production\n      - DATABASE_URL=postgres://user:pass@db:5432/myapp\n      - REDIS_URL=redis://cache:6379\n    depends_on:\n      db:\n        condition: service_healthy\n      cache:\n        condition: service_started\n    volumes:\n      - ./src:/app/src  # dev: hot reload\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_USER: user\n      POSTGRES_PASSWORD: pass\n      POSTGRES_DB: myapp\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U user\"]\n      interval: 5s\n      timeout: 5s\n      retries: 5\n\n  cache:\n    image: redis:7-alpine\n    ports:\n      - \"6379:6379\"\n\nvolumes:\n  postgres_data:\n\n# Commands:\n# docker compose up -d      # start all\n# docker compose logs -f    # follow logs\n# docker compose down -v    # stop & remove volumes",
+          "lang": "yaml",
+          "keyPoints": [
+            "services: định nghĩa mỗi container (app, db, cache)",
+            "depends_on + healthcheck đảm bảo startup order",
+            "volumes: persist data khi container restart"
+          ],
+          "exercise": "Compose full-stack app: Node.js + PostgreSQL + Redis."
+        },
+        {
+          "id": "merge-conflicts",
+          "title": "Merge Conflicts & Recovery",
+          "theory": "<p>Conflicts xảy ra khi 2 branches sửa cùng file. Resolve bằng cách chọn code đúng. <code>git reflog</code> recovery tool. <code>git bisect</code> tìm commit gây bug.</p>",
+          "code": "# When conflict occurs:\ngit merge feature/auth\n# CONFLICT (content): Merge conflict in src/app.js\n\n# The file will contain:\n<<<<<<< HEAD\n  const port = 3000;\n=======\n  const port = process.env.PORT || 8080;\n>>>>>>> feature/auth\n\n# Fix: choose correct code, remove markers\n  const port = process.env.PORT || 3000;\n\ngit add src/app.js\ngit commit -m \"fix: resolve merge conflict in app.js\"\n\n# Recovery tools\ngit reflog              # view ALL history (even deleted)\ngit reset --hard HEAD~1 # undo last commit (DANGEROUS)\ngit revert HEAD         # create new commit that undoes\n\n# Find bug-introducing commit\ngit bisect start\ngit bisect bad          # current commit has bug\ngit bisect good v1.0    # this version was fine\n# Git will checkout middle commits\n# Test each: git bisect good/bad\n# Eventually finds the exact commit!\ngit bisect reset",
+          "lang": "bash",
+          "keyPoints": [
+            "<<<< HEAD / ==== / >>>> branch markers cho conflict",
+            "git reflog: recovery cho mọi thao tác đã mất",
+            "git bisect: binary search tìm commit gây bug"
+          ],
+          "exercise": "Tạo conflict cố tình giữa 2 branches và resolve chúng."
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "CI/CD, Advanced Docker & Git",
+      "lessons": [
+        {
+          "id": "ci-cd",
+          "title": "CI/CD Pipelines",
+          "theory": "<p><strong>CI</strong> (Continuous Integration): auto-test mỗi push. <strong>CD</strong> (Continuous Deployment): auto-deploy khi tests pass. GitHub Actions, GitLab CI, Jenkins.</p>",
+          "code": "# .github/workflows/deploy.yml\nname: CI/CD Pipeline\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with: { node-version: 20 }\n      - run: npm ci\n      - run: npm run lint\n      - run: npm test -- --coverage\n\n  build:\n    needs: test\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Build Docker Image\n        run: docker build -t myapp:${{ github.sha }} .\n      - name: Push to Registry\n        run: |\n          docker tag myapp:${{ github.sha }} registry.example.com/myapp:latest\n          docker push registry.example.com/myapp:latest\n\n  deploy:\n    needs: build\n    if: github.ref == 'refs/heads/main'\n    runs-on: ubuntu-latest\n    steps:\n      - name: Deploy\n        run: |\n          ssh deploy@server \"docker pull registry.example.com/myapp:latest && docker compose up -d\"",
+          "lang": "yaml",
+          "keyPoints": [
+            "CI: test → lint → build on every push/PR",
+            "CD: auto-deploy to production after tests pass",
+            "needs: job1 cho dependency order giữa jobs"
+          ],
+          "exercise": "Setup GitHub Actions CI/CD cho project: test → build → deploy."
+        },
+        {
+          "id": "docker-advanced",
+          "title": "Docker Production Patterns",
+          "theory": "<p>Multi-stage builds giảm image size. Health checks. Security: non-root user, minimal base image. Docker layer optimization. Environment variables.</p>",
+          "code": "# Multi-stage build\nFROM node:20-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\n# Production image (smaller)\nFROM node:20-alpine AS production\nWORKDIR /app\n\n# Security: non-root user\nRUN addgroup -g 1001 appgroup && \\\n    adduser -u 1001 -G appgroup -s /bin/sh -D appuser\n\nCOPY --from=builder /app/dist ./dist\nCOPY --from=builder /app/node_modules ./node_modules\nCOPY --from=builder /app/package.json ./\n\n# Health check\nHEALTHCHECK --interval=30s --timeout=3s --retries=3 \\\n  CMD wget -qO- http://localhost:3000/health || exit 1\n\nUSER appuser\nEXPOSE 3000\nCMD [\"node\", \"dist/server.js\"]",
+          "lang": "dockerfile",
+          "keyPoints": [
+            "Multi-stage: builder stage compiles, production stage chỉ chứa output",
+            "Non-root USER cho security (không chạy container as root)",
+            "HEALTHCHECK cho container orchestration biết service healthy"
+          ],
+          "exercise": "Optimize Docker image từ 1GB xuống <200MB dùng multi-stage."
+        },
+        {
+          "id": "git-advanced",
+          "title": "Advanced Git Techniques",
+          "theory": "<p>Git hooks (pre-commit, pre-push). Git submodules. Cherry-pick specific commits. Worktrees cho parallel development. Signed commits.</p>",
+          "code": "# Pre-commit hook (.husky/pre-commit)\nnpx lint-staged\n\n# lint-staged config (package.json)\n# \"lint-staged\": {\n#   \"*.{js,ts}\": [\"eslint --fix\", \"prettier --write\"],\n#   \"*.css\": [\"prettier --write\"]\n# }\n\n# Cherry-pick: apply specific commit from another branch\ngit cherry-pick abc1234\n\n# Worktrees: multiple working directories\ngit worktree add ../hotfix hotfix/critical\n# Work in ../hotfix without switching branches\n# Clean up: git worktree remove ../hotfix\n\n# Interactive rebase: rewrite history\ngit rebase -i HEAD~5\n# Commands:\n# pick   = keep commit\n# squash = combine with previous\n# reword = change commit message\n# drop   = remove commit\n# edit   = stop to amend\n\n# Signed commits (verify authorship)\ngit config --global commit.gpgsign true\ngit commit -S -m \"feat: verified commit\"\n\n# Git blame with ignoring whitespace changes\ngit blame -w --ignore-revs-file .git-blame-ignore-revs src/app.js",
+          "lang": "bash",
+          "keyPoints": [
+            "Pre-commit hooks: lint + format trước khi commit",
+            "Cherry-pick: lấy 1 commit cụ thể từ branch khác",
+            "Worktrees: work trên nhiều branches cùng lúc"
+          ],
+          "exercise": "Setup husky + lint-staged cho pre-commit linting."
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Docker Security & Orchestration",
+      "lessons": [
+        {
+          "id": "security",
+          "title": "Container Security & Best Practices",
+          "theory": "<p>Container security: minimal images, vulnerability scanning, secrets management, network policies. Trivy/Snyk scan. Docker secrets. Read-only filesystems.</p>",
+          "code": "# Security scanning\n# docker scout cves myapp:latest\n# trivy image myapp:latest\n\n# Secure Dockerfile\nFROM node:20-alpine AS base\n\n# Don't run as root\nRUN addgroup -S app && adduser -S -G app appuser\n\n# Read-only filesystem\n# docker run --read-only --tmpfs /tmp myapp\n\n# Docker secrets (Compose)\n# docker-compose.yml\n# services:\n#   app:\n#     secrets:\n#       - db_password\n# secrets:\n#   db_password:\n#     file: ./secrets/db_password.txt\n\n# Security hardening\n# docker run \\\n#   --read-only \\\n#   --no-new-privileges \\\n#   --security-opt=no-new-privileges:true \\\n#   --cap-drop=ALL \\\n#   --cap-add=NET_BIND_SERVICE \\\n#   myapp\n\n# .trivyignore - ignore known acceptable CVEs\n# CVE-2023-12345\n\n# Scan in CI\n# - name: Scan image\n#   run: trivy image --exit-code 1 --severity HIGH,CRITICAL myapp:latest",
+          "lang": "dockerfile",
+          "keyPoints": [
+            "Trivy/Snyk scan containers cho vulnerabilities",
+            "--cap-drop=ALL + add only needed capabilities",
+            "Docker secrets thay environment variables cho sensitive data"
+          ],
+          "exercise": "Audit và harden Docker setup: scan, non-root, secrets."
+        },
+        {
+          "id": "kubernetes-intro",
+          "title": "Kubernetes & Container Orchestration",
+          "theory": "<p><strong>Kubernetes (K8s)</strong> orchestrate containers at scale. Pods, Services, Deployments, Ingress. Auto-scaling, rolling updates, self-healing.</p>",
+          "code": "# deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: myapp\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: myapp\n  template:\n    metadata:\n      labels:\n        app: myapp\n    spec:\n      containers:\n        - name: myapp\n          image: myapp:latest\n          ports:\n            - containerPort: 3000\n          resources:\n            requests:\n              memory: \"128Mi\"\n              cpu: \"250m\"\n            limits:\n              memory: \"256Mi\"\n              cpu: \"500m\"\n          livenessProbe:\n            httpGet:\n              path: /health\n              port: 3000\n            periodSeconds: 10\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: myapp-service\nspec:\n  selector:\n    app: myapp\n  ports:\n    - port: 80\n      targetPort: 3000\n  type: LoadBalancer",
+          "lang": "yaml",
+          "keyPoints": [
+            "Deployment: manage replicas, rolling updates, rollbacks",
+            "Service: load balance traffic to pods",
+            "Resource limits: memory/cpu requests + limits cho stability"
+          ],
+          "exercise": "Deploy app lên Kubernetes cluster với 3 replicas, auto-scaling."
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "GitOps & Infrastructure as Code",
+      "lessons": [
+        {
+          "id": "gitops",
+          "title": "GitOps & Infrastructure as Code",
+          "theory": "<p><strong>GitOps</strong>: Git là single source of truth cho infrastructure. ArgoCD, Flux sync cluster state với Git. Terraform/Pulumi cho cloud infrastructure. Immutable deployments.</p>",
+          "code": "# Terraform example (infrastructure as code)\nresource \"aws_ecs_service\" \"app\" {\n  name            = \"myapp\"\n  cluster         = aws_ecs_cluster.main.id\n  task_definition = aws_ecs_task_definition.app.arn\n  desired_count   = 3\n\n  load_balancer {\n    target_group_arn = aws_lb_target_group.app.arn\n    container_name   = \"myapp\"\n    container_port   = 3000\n  }\n}\n\n# ArgoCD Application (GitOps)\napiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: myapp\nspec:\n  project: default\n  source:\n    repoURL: https://github.com/org/k8s-manifests\n    targetRevision: main\n    path: apps/myapp\n  destination:\n    server: https://kubernetes.default.svc\n    namespace: production\n  syncPolicy:\n    automated:\n      prune: true\n      selfHeal: true\n\n# Flow:\n# 1. Developer pushes code → GitHub\n# 2. CI builds + tests → pushes Docker image\n# 3. CI updates k8s manifests in GitOps repo\n# 4. ArgoCD detects change → deploys automatically\n# 5. Rollback = git revert on GitOps repo",
+          "lang": "yaml",
+          "keyPoints": [
+            "GitOps: Git repo = desired infrastructure state",
+            "ArgoCD/Flux: auto-sync cluster state với Git repo",
+            "Terraform: infrastructure as code, plan → apply → destroy"
+          ],
+          "exercise": "Set up GitOps pipeline: code repo → CI → GitOps repo → ArgoCD → K8s."
+        }
+      ]
+    }
+  ]
+}

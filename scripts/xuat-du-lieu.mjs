@@ -1,9 +1,8 @@
-// Xuat giao trinh (data*.js) va ban dich (i18n.js) ra JSON tach nho cho app React.
-// data*.js va i18n.js van la noi sua noi dung; file JSON la ban sinh ra, khong commit.
+// Xuat giao trinh (data/curriculum/*.json) va ban dich (data/i18n.json) ra JSON tach nho cho app React.
+// Thu muc data/ la noi sua noi dung; file trong web/public la ban sinh ra, khong commit.
 //   node scripts/xuat-du-lieu.mjs            -> ghi vao web/public/
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import curriculum from '../lib/curriculum.js';
 
@@ -17,17 +16,9 @@ function ghiJson(thuMuc, ten, duLieu) {
   fs.writeFileSync(path.join(thuMuc, ten), JSON.stringify(duLieu));
 }
 
-/** i18n.js la IIFE gan window.I18n; doc phan du lieu tho no mo ra o I18n._duLieu */
-function napBanDich(thuMucPublic) {
-  const sb = {
-    console: { log() {}, warn() {}, error() {} },
-    navigator: { language: 'vi' },
-    localStorage: { getItem: () => null, setItem() {} }
-  };
-  sb.window = sb;
-  vm.createContext(sb);
-  vm.runInContext(fs.readFileSync(path.join(thuMucPublic, 'i18n.js'), 'utf8'), sb, { filename: 'i18n.js' });
-  return sb.I18n._duLieu;
+/** data/i18n.json: { LANGUAGES, translations, canonicalTitles, techDescriptions } */
+function napBanDich(thuMucDuLieu) {
+  return JSON.parse(fs.readFileSync(path.join(thuMucDuLieu, 'i18n.json'), 'utf8'));
 }
 
 // Bo gia tri rong de thu tu gop "ngon ngu > en > vi" giong ham t() cua app cu
@@ -53,8 +44,8 @@ function banDichCho(lang, { translations, canonicalTitles, techDescriptions, LAN
   };
 }
 
-export function xuatDuLieu({ thuMucPublic = path.join(GOC, 'public'), thuMucRa = path.join(GOC, 'web', 'public') } = {}) {
-  const giaoTrinh = napGiaoTrinh(thuMucPublic);
+export function xuatDuLieu({ thuMucDuLieu = path.join(GOC, 'data'), thuMucRa = path.join(GOC, 'web', 'public') } = {}) {
+  const giaoTrinh = napGiaoTrinh(path.join(thuMucDuLieu, 'curriculum'));
   const congNghe = Object.values(giaoTrinh).filter(t => t && t.id);
   const thuMucGT = path.join(thuMucRa, 'curriculum');
 
@@ -78,7 +69,7 @@ export function xuatDuLieu({ thuMucPublic = path.join(GOC, 'public'), thuMucRa =
   }
   ghiJson(thuMucGT, 'search.json', timKiem);
 
-  const banDich = napBanDich(thuMucPublic);
+  const banDich = napBanDich(thuMucDuLieu);
   const ngonNgu = Object.keys(banDich.LANGUAGES);
   for (const lang of ngonNgu) ghiJson(path.join(thuMucRa, 'i18n'), `${lang}.json`, banDichCho(lang, banDich));
 

@@ -1,0 +1,149 @@
+{
+  "id": "nginx",
+  "name": "Nginx & Linux",
+  "icon": "🐧",
+  "color": "#009639",
+  "gradient": "linear-gradient(135deg,#009639,#4A90D9)",
+  "category": "tool",
+  "description": "Web server, reverse proxy, load balancing — Linux server admin",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Cơ bản về Nginx Web Server & Cấu hình Reverse Proxy",
+      "lessons": [
+        {
+          "id": "intro",
+          "title": "Nginx Overview & Installation",
+          "theory": "<p><b>Nginx</b> = high-performance web server, reverse proxy, load balancer. Sử dụng rộng rãi nhất cho production web apps.</p>",
+          "code": "# Install Nginx\n# Ubuntu: sudo apt install nginx\n# CentOS: sudo yum install nginx\n\n# Basic config /etc/nginx/sites-available/default\nserver {\n    listen 80;\n    server_name example.com www.example.com;\n\n    # Serve static files\n    root /var/www/html;\n    index index.html;\n\n    location / {\n        try_files $uri $uri/ =404;\n    }\n\n    # Logs\n    access_log /var/log/nginx/access.log;\n    error_log /var/log/nginx/error.log;\n}\n\n# Commands\n# sudo nginx -t          # Test config\n# sudo systemctl reload nginx\n# sudo systemctl status nginx",
+          "lang": "nginx",
+          "keyPoints": [
+            "server block = virtual host",
+            "listen port",
+            "root = document root",
+            "try_files for SPA"
+          ],
+          "exercise": "Setup Nginx serve static website"
+        },
+        {
+          "id": "reverse-proxy",
+          "title": "Reverse Proxy & Node.js",
+          "theory": "<p>Reverse proxy: Nginx nhận request → forward đến backend (Node.js, Python, etc.).</p>",
+          "code": "# Reverse proxy to Node.js\nserver {\n    listen 80;\n    server_name api.example.com;\n\n    location / {\n        proxy_pass http://localhost:3000;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n\n        # WebSocket support\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n    }\n\n    # API routes\n    location /api/ {\n        proxy_pass http://localhost:3000/api/;\n        proxy_read_timeout 60s;\n    }\n\n    # Static files (cached)\n    location /static/ {\n        root /var/www;\n        expires 30d;\n        add_header Cache-Control \"public, immutable\";\n    }\n}",
+          "lang": "nginx",
+          "keyPoints": [
+            "proxy_pass to backend",
+            "WebSocket upgrade",
+            "Cache static files",
+            "Request headers forwarding"
+          ],
+          "exercise": "Setup reverse proxy cho Node.js app"
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "SSL & Load Balancing",
+      "lessons": [
+        {
+          "id": "ssl",
+          "title": "SSL/TLS & HTTPS",
+          "theory": "<p>HTTPS = encrypted connection. Let's Encrypt = free SSL certificates.</p>",
+          "code": "# SSL with Let's Encrypt\n# sudo certbot --nginx -d example.com -d www.example.com\n\nserver {\n    listen 443 ssl http2;\n    server_name example.com;\n\n    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;\n\n    # Security headers\n    ssl_protocols TLSv1.2 TLSv1.3;\n    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;\n    ssl_prefer_server_ciphers off;\n\n    add_header Strict-Transport-Security \"max-age=63072000\" always;\n    add_header X-Content-Type-Options nosniff;\n    add_header X-Frame-Options DENY;\n\n    location / {\n        proxy_pass http://localhost:3000;\n    }\n}\n\n# HTTP → HTTPS redirect\nserver {\n    listen 80;\n    server_name example.com;\n    return 301 https://$server_name$request_uri;\n}",
+          "lang": "nginx",
+          "keyPoints": [
+            "SSL certificate setup",
+            "HTTP/2 support",
+            "Security headers",
+            "HTTP → HTTPS redirect"
+          ],
+          "exercise": "Setup HTTPS với Let's Encrypt"
+        },
+        {
+          "id": "loadbalance",
+          "title": "Load Balancing",
+          "theory": "<p>Load balancing: distribute traffic across multiple backend servers.</p>",
+          "code": "# Upstream — multiple backends\nupstream backend {\n    # Round-robin (default)\n    server 127.0.0.1:3001;\n    server 127.0.0.1:3002;\n    server 127.0.0.1:3003;\n\n    # Weighted\n    # server 127.0.0.1:3001 weight=3;\n    # server 127.0.0.1:3002 weight=1;\n\n    # Least connections\n    # least_conn;\n\n    # IP hash (sticky sessions)\n    # ip_hash;\n\n    # Health check\n    server 127.0.0.1:3004 backup;\n}\n\nserver {\n    listen 80;\n    location / {\n        proxy_pass http://backend;\n        proxy_next_upstream error timeout;\n        proxy_connect_timeout 5s;\n    }\n}",
+          "lang": "nginx",
+          "keyPoints": [
+            "upstream block",
+            "Round-robin / weighted",
+            "Sticky sessions (ip_hash)",
+            "Backup servers"
+          ],
+          "exercise": "Setup load balancer cho 3 Node.js instances"
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "Tối ưu hiệu năng máy chủ Nginx, Caching & Nén Gzip",
+      "lessons": [
+        {
+          "id": "perf",
+          "title": "Tối ưu hiệu năng, Bộ nhớ đệm Caching & Tác vụ Celery",
+          "theory": "<p>Nginx performance: gzip compression, browser caching, rate limiting, micro-caching.</p>",
+          "code": "# Performance optimization\nhttp {\n    # Gzip compression\n    gzip on;\n    gzip_vary on;\n    gzip_min_length 1024;\n    gzip_types text/plain text/css application/json\n               application/javascript text/xml;\n\n    # Browser caching\n    location ~* \\.(jpg|jpeg|png|gif|ico|css|js|woff2)$ {\n        expires 1y;\n        add_header Cache-Control \"public, immutable\";\n    }\n\n    # Rate limiting\n    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;\n    location /api/ {\n        limit_req zone=api burst=20 nodelay;\n        proxy_pass http://backend;\n    }\n\n    # Connection limits\n    limit_conn_zone $binary_remote_addr zone=addr:10m;\n    limit_conn addr 100;\n\n    # Timeouts\n    client_body_timeout 12;\n    client_header_timeout 12;\n    keepalive_timeout 15;\n    send_timeout 10;\n}",
+          "lang": "nginx",
+          "keyPoints": [
+            "Gzip compression",
+            "Browser cache headers",
+            "Rate limiting",
+            "Connection limits"
+          ],
+          "exercise": "Optimize Nginx cho high-traffic site"
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Linux server admin",
+      "lessons": [
+        {
+          "id": "linux",
+          "title": "Linux Server Administration",
+          "theory": "<p>Linux admin: process management, systemd, firewall, monitoring.</p>",
+          "code": "# System monitoring\ntop -c                    # Process viewer\nhtop                      # Interactive process viewer\ndf -h                     # Disk usage\nfree -m                   # Memory usage\nnetstat -tlnp             # Open ports\nss -tlnp                  # Modern netstat\n\n# Systemd service management\nsudo systemctl status nginx\nsudo systemctl restart nginx\nsudo systemctl enable nginx  # Start on boot\n\n# Custom service\n# /etc/systemd/system/myapp.service\n[Unit]\nDescription=My Node.js App\nAfter=network.target\n\n[Service]\nUser=www-data\nWorkingDirectory=/var/www/myapp\nExecStart=/usr/bin/node server.js\nRestart=on-failure\nRestartSec=5\nEnvironment=NODE_ENV=production PORT=3000\n\n[Install]\nWantedBy=multi-user.target\n\n# Firewall (UFW)\nsudo ufw allow 22/tcp   # SSH\nsudo ufw allow 80/tcp   # HTTP\nsudo ufw allow 443/tcp  # HTTPS\nsudo ufw enable",
+          "lang": "bash",
+          "keyPoints": [
+            "Process monitoring",
+            "systemd services",
+            "UFW firewall",
+            "Log management"
+          ],
+          "exercise": "Setup systemd service cho Node.js app"
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "Kiến trúc máy chủ Production, Cân bằng tải Load Balancing & SSL/TLS",
+      "lessons": [
+        {
+          "id": "architecture",
+          "title": "Production Infrastructure",
+          "theory": "<p>Complete production setup: CDN, monitoring, backup, disaster recovery.</p>",
+          "code": "# Production Nginx architecture\n# CDN (Cloudflare) → Nginx LB → App Servers\n\n# Main Nginx config for production\nworker_processes auto;\nworker_rlimit_nofile 65535;\n\nevents {\n    worker_connections 65535;\n    multi_accept on;\n    use epoll;\n}\n\nhttp {\n    # Security\n    server_tokens off;\n    more_clear_headers Server;\n\n    # DDoS protection\n    limit_req_zone $binary_remote_addr zone=general:10m rate=50r/s;\n    limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;\n\n    # Monitoring with Prometheus\n    server {\n        listen 9113;\n        location /metrics {\n            stub_status;\n        }\n    }\n\n    # Backup cron\n    # 0 2 * * * /usr/local/bin/backup.sh\n    # Monitoring: Prometheus + Grafana + AlertManager\n    # Logging: rsyslog → Elasticsearch → Kibana\n}",
+          "lang": "nginx",
+          "keyPoints": [
+            "Worker tuning",
+            "DDoS protection",
+            "Monitoring integration",
+            "Backup strategy"
+          ],
+          "exercise": "Design production infrastructure diagram"
+        }
+      ]
+    }
+  ]
+}

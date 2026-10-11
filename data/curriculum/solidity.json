@@ -1,0 +1,157 @@
+{
+  "id": "solidity",
+  "name": "Solidity",
+  "icon": "🔗",
+  "color": "#363636",
+  "gradient": "linear-gradient(135deg,#363636,#1a1a2e)",
+  "category": "language",
+  "description": "Hợp đồng thông minh — Ethereum, Web3, DeFi & Blockchain",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Blockchain & Smart Contracts cơ bản",
+      "lessons": [
+        {
+          "id": "intro",
+          "title": "Blockchain & Hợp đồng thông minh cơ bản",
+          "theory": "<p><b>Solidity</b> là ngôn ngữ lập trình hướng đối tượng, chuyên dụng để viết <strong>Hợp đồng thông minh (Smart Contracts)</strong> trên nền tảng Ethereum và các mạng máy ảo EVM. Một khi đã triển khai lên blockchain, mã nguồn hợp đồng là <em>bất biến (Immutable)</em> không thể chỉnh sửa trái phép.</p><p>Mỗi giao dịch thực thi trên mạng lưới đều tiêu tốn một lượng phí xử lý gọi là <strong>Gas Fee</strong>.</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\n// Hop dong thong minh dau tien\ncontract HelloWorld {\n    // Bien trang thai luu tru tren Blockchain\n    string public greeting = \"Xin chao Web3!\";\n    \n    // Ham cap nhat loi chao (ghi vao blockchain - ton gas)\n    function setGreeting(string memory _greeting) public {\n        greeting = _greeting;\n    }\n    \n    // Ham doc du lieu (view function - khong ton gas)\n    function getGreeting() public view returns (string memory) {\n        return greeting;\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "EVM = Máy ảo Ethereum (Ethereum Virtual Machine)",
+            "Smart contracts = Mã thực thi bất biến trên blockchain",
+            "Gas fee = Phí tính toán cho mỗi giao dịch mạng lưới",
+            "Solidity = Ngôn ngữ kiểu tĩnh, bản địa cho Ethereum"
+          ],
+          "exercise": "Triển khai hợp đồng HelloWorld lên môi trường thử nghiệm Remix IDE."
+        },
+        {
+          "id": "types",
+          "title": "Kiểu dữ liệu, Biến & Hàm trong Solidity",
+          "theory": "<p>Solidity có các kiểu dữ liệu cốt lõi: <code>uint256</code> (số nguyên không dấu 256-bit), <code>address</code> (địa chỉ ví/hợp đồng), <code>bool</code>, <code>string</code> và <code>mapping</code> (bảng băm tra cứu khóa-giá trị).</p><p>Vị trí lưu trữ dữ liệu được chia làm: <strong>Storage</strong> (lưu vĩnh viễn trên blockchain), <strong>Memory</strong> (tạm thời trong hàm) và <strong>Calldata</strong> (dữ liệu đầu vào chỉ đọc).</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract BankAccount {\n    address public owner;\n    mapping(address => uint256) public balances;\n\n    constructor() {\n        owner = msg.sender; // Nguoi tao hop dong la chu so huu\n    }\n\n    // Modifier kiem tra quyen truy cap\n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Chi chu hop dong moi co quyen!\");\n        _;\n    }\n\n    function deposit() public payable {\n        balances[msg.sender] += msg.value;\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "uint256 = Số nguyên không dấu chuẩn cho tiền mã hóa",
+            "address = Địa chỉ ví người dùng hoặc hợp đồng",
+            "mapping = Bảng tra cứu số dư cực nhanh O(1)",
+            "Modifiers = Cơ chế phân quyền và kiểm tra điều kiện an toàn"
+          ],
+          "exercise": "Tạo hợp đồng Counter với các hàm tăng, giảm và hàm reset chỉ cho phép Owner thực hiện."
+        },
+        {
+          "id": "events",
+          "title": "Sự kiện & Ghi nhật ký (Events & Logs)",
+          "theory": "<p><strong>Events</strong> cho phép hợp đồng thông minh ghi lại các nhật ký (Logs) trên Blockchain. Ứng dụng phía Frontend (React, Vue) có thể lắng nghe các sự kiện này qua thư viện <code>ethers.js</code> hoặc <code>viem</code> để cập nhật giao diện người dùng theo thời gian thực với chi phí gas cực kỳ tiết kiệm.</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract TransferLogger {\n    // Dinh nghia Event voi tu khoa indexed de de dang tim kiem\n    event Transfer(address indexed from, address indexed to, uint256 amount);\n    event LogMessage(string message);\n\n    function sendToken(address _to, uint256 _amount) public {\n        // Phat ra su kien de Frontend lang nghe\n        emit Transfer(msg.sender, _to, _amount);\n        emit LogMessage(\"Chuyen tien thanh cong!\");\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Events ghi log trực tiếp lên Blockchain với chi phí gas rẻ",
+            "Từ khóa indexed giúp ứng dụng frontend lọc và tìm kiếm giao dịch",
+            "Frontend lắng nghe sự kiện thời gian thực qua ethers.js"
+          ],
+          "exercise": "Tạo hợp đồng phát ra sự kiện MemberJoined mỗi khi có người đăng ký mới."
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "Tiêu chuẩn ERC-20 & Bảo mật hợp đồng",
+      "lessons": [
+        {
+          "id": "erc20",
+          "title": "Xây dựng Token chuẩn ERC-20",
+          "theory": "<p><strong>ERC-20</strong> là tiêu chuẩn kỹ thuật số 1 cho các đồng tiền mã hóa (Fungible Tokens) trên Ethereum. Nó định nghĩa các hàm bắt buộc như <code>totalSupply()</code>, <code>balanceOf()</code>, <code>transfer()</code>, <code>approve()</code> và <code>transferFrom()</code>.</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract MyToken is ERC20 {\n    // Khoi tao token voi ten goi va ky hieu\n    constructor(uint256 initialSupply) ERC20(\"DevMaster Token\", \"DMT\") {\n        // Mint token ban dau cho nguoi tao hop dong\n        _mint(msg.sender, initialSupply * 10 ** decimals());\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "ERC-20 là tiêu chuẩn token phổ biến nhất trên Ethereum",
+            "Thư viện OpenZeppelin cung cấp code chuẩn bảo mật cao",
+            "Hàm _mint() dùng để phát hành token ban đầu"
+          ],
+          "exercise": "Tạo token ERC-20 của riêng bạn và thử chuyển token giữa hai ví thử nghiệm."
+        },
+        {
+          "id": "security",
+          "title": "Bảo mật & Các lỗ hổng phổ biến (Reentrancy)",
+          "theory": "<p>Bảo mật hợp đồng thông minh là yếu tố sống còn vì mọi lỗi code đều có thể dẫn đến mất mát tài sản không thể đảo ngược. Lỗ hổng nguy hiểm nhất là <strong>Reentrancy Attack</strong> (tấn công tái nhập), cần phòng tránh bằng quy tắc <strong>Checks-Effects-Interactions (CEI)</strong> và <code>ReentrancyGuard</code>.</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract SecureVault {\n    mapping(address => uint256) public balances;\n    bool private locked;\n\n    // Khoa chong tan cong tai nhap (Reentrancy Guard)\n    modifier noReentrant() {\n        require(!locked, \"Khong cho phep goi lai!\");\n        locked = true;\n        _;\n        locked = false;\n    }\n\n    function withdraw() public noReentrant {\n        uint256 amount = balances[msg.sender];\n        require(amount > 0, \"So du khong du\");\n\n        // Quy tac CEI: Cap nhat so du TRUOC khi gui tien\n        balances[msg.sender] = 0;\n\n        (bool success, ) = msg.sender.call{value: amount}(\"\");\n        require(success, \"Giao dich chuyen tien that bai\");\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Quy tắc CEI (Checks-Effects-Interactions) ngăn chặn Reentrancy",
+            "Không dùng tx.origin để phân quyền bảo mật",
+            "Sử dụng OpenZeppelin ReentrancyGuard"
+          ],
+          "exercise": "Viết lại hàm rút tiền bảo mật tuân thủ hoàn toàn quy tắc CEI."
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "Giao thức Tài chính Phi tập trung (DeFi)",
+      "lessons": [
+        {
+          "id": "defi",
+          "title": "Giao thức DeFi, Staking & Liquidity Pool",
+          "theory": "<p><strong>DeFi (Decentralized Finance)</strong> loại bỏ bên trung gian tài chính bằng các hợp đồng tự động: AMM (Sàn giao dịch phi tập trung như Uniswap), Staking (khóa token nhận thưởng) và Lending (cho vay ký quỹ).</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\n\ncontract SimpleStaking {\n    IERC20 public stakingToken;\n    mapping(address => uint256) public stakedAmount;\n\n    constructor(address _tokenAddress) {\n        stakingToken = IERC20(_tokenAddress);\n    }\n\n    function stake(uint256 amount) external {\n        require(amount > 0, \"So luong phai lon hon 0\");\n        stakingToken.transferFrom(msg.sender, address(this), amount);\n        stakedAmount[msg.sender] += amount;\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Mô hình Staking và phân phối phần thưởng",
+            "Khái niệm sàn AMM và Liquidity Pool",
+            "Tích hợp chuẩn IERC20 trong DeFi"
+          ],
+          "exercise": "Tạo hợp đồng Staking có tính năng tính toán phần thưởng sau mỗi khối (block)."
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Mẫu thiết kế Proxy & Nâng cấp hợp đồng",
+      "lessons": [
+        {
+          "id": "advanced",
+          "title": "Proxy Patterns & Khả năng nâng cấp hợp đồng",
+          "theory": "<p>Vì hợp đồng trên Ethereum là bất biến, các dự án lớn sử dụng mô hình <strong>Proxy Pattern (UUPS / Transparent Proxy)</strong>: Người dùng tương tác với Proxy Contract (lưu trạng thái), Proxy sẽ ủy quyền thực thi (<code>delegatecall</code>) sang Implementation Contract (chứa logic), cho phép nâng cấp logic mà không mất dữ liệu người dùng.</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport \"@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol\";\nimport \"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\";\n\ncontract MyVaultV1 is UUPSUpgradeable, OwnableUpgradeable {\n    uint256 public totalVaultValue;\n\n    function initialize(address initialOwner) public initializer {\n        __Ownable_init(initialOwner);\n        __UUPSUpgradeable_init();\n    }\n\n    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Proxy Pattern cho phép nâng cấp logic hợp đồng an toàn",
+            "Cơ chế delegatecall ủy quyền tính toán giữ nguyên storage",
+            "Mô hình UUPS tiết kiệm gas hơn Transparent Proxy"
+          ],
+          "exercise": "Triển khai hợp đồng nâng cấp được dùng chuẩn UUPS của OpenZeppelin."
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "Kiến trúc Protocol & Quản trị DAO",
+      "lessons": [
+        {
+          "id": "protocol",
+          "title": "Kiến trúc DAO, Tokenomics & Quản trị phi tập trung",
+          "theory": "<p>Thiết kế hệ thống quản trị phi tập trung (DAO): Tạo đề xuất (Proposals), biểu quyết bằng token (Voting), cơ chế khóa thời gian (Timelock) và bảo vệ giao dịch chống lại Bot MEV (Maximal Extractable Value).</p>",
+          "code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\ncontract DaoGovernance {\n    struct Proposal {\n        uint256 id;\n        string description;\n        uint256 votesFor;\n        uint256 votesAgainst;\n        uint256 deadline;\n        bool executed;\n    }\n\n    mapping(uint256 => Proposal) public proposals;\n    uint256 public nextProposalId;\n\n    function createProposal(string calldata desc) external returns (uint256) {\n        uint256 id = nextProposalId++;\n        proposals[id] = Proposal(id, desc, 0, 0, block.timestamp + 3 days, false);\n        return id;\n    }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Hệ thống biểu quyết phi tập trung DAO",
+            "Cơ chế Timelock kiểm soát an toàn trước khi thực thi",
+            "Thiết kế Tokenomics bền vững và phòng chống MEV"
+          ],
+          "exercise": "Thiết kế quy trình bỏ phiếu biểu quyết On-chain cho cộng đồng DAO."
+        }
+      ]
+    }
+  ]
+}

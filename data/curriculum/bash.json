@@ -1,0 +1,168 @@
+{
+  "id": "bash",
+  "name": "Bash/Shell",
+  "icon": "💻",
+  "color": "#4EAA25",
+  "gradient": "linear-gradient(135deg,#4EAA25,#2E7D32)",
+  "category": "tool",
+  "description": "Linux terminal, scripting, automation, DevOps essentials",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Terminal cơ bản",
+      "lessons": [
+        {
+          "id": "intro",
+          "title": "Terminal Commands & Navigation",
+          "theory": "<p><strong>Bash</strong> shell cho Linux/macOS. Terminal commands quản lý files, processes, networking. Cần thiết cho mọi developer. WSL cho Windows.</p>",
+          "code": "# Navigation\npwd                          # print working directory\nls -la                       # list all files (detailed)\ncd ~/projects                # change directory\nmkdir -p src/components      # create nested dirs\n\n# File operations\ntouch index.js               # create file\ncp file.txt backup.txt       # copy\nmv old.js new.js             # rename/move\nrm -rf node_modules          # remove recursively\n\n# File content\ncat README.md                # print file\nhead -20 log.txt             # first 20 lines\ntail -f server.log           # follow live log\nless large-file.txt          # paginated viewer\n\n# Search\ngrep -rn \"TODO\" src/         # search text in files\nfind . -name \"*.js\" -type f  # find files by name\nwhich node                   # find command location\n\n# Pipes & Redirect\nls -la | grep \".js\"          # pipe output\necho \"hello\" > file.txt      # write (overwrite)\necho \"world\" >> file.txt     # append\ncat file.txt | wc -l         # count lines\n\n# Process\nps aux | grep node           # find processes\nkill -9 <PID>                # force kill\ntop                          # system monitor\ndf -h                        # disk usage\nfree -h                      # memory usage",
+          "lang": "bash",
+          "keyPoints": [
+            "| pipe: output cmd1 → input cmd2",
+            "> overwrite, >> append, 2> stderr redirect",
+            "grep -rn: recursive search with line numbers"
+          ],
+          "exercise": "Navigate filesystem: create project structure, find/search files."
+        },
+        {
+          "id": "scripting",
+          "title": "Cơ bản về lập trình kịch bản Bash Shell",
+          "theory": "<p>Bash scripts automate tasks. Variables, conditionals, loops, functions. Exit codes. Command substitution <code>$(cmd)</code>. String operations.</p>",
+          "code": "#!/bin/bash\nset -euo pipefail  # strict mode: exit on error\n\n# Variables\nNAME=\"DevMaster\"\nCOUNT=$(ls -1 | wc -l)\nDATE=$(date +%Y-%m-%d)\necho \"Hello $NAME, $COUNT files today ($DATE)\"\n\n# Conditionals\nif [ -f \"package.json\" ]; then\n    echo \"Node.js project detected\"\n    npm install\nelif [ -f \"requirements.txt\" ]; then\n    echo \"Python project\"\n    pip install -r requirements.txt\nelse\n    echo \"Unknown project type\"\nfi\n\n# String comparison\nENV=\"${1:-development}\"  # default value\nif [[ \"$ENV\" == \"production\" ]]; then\n    echo \"⚠️  Production deployment!\"\nfi\n\n# Loops\nfor file in *.js; do\n    echo \"Processing: $file\"\n    # do something with $file\ndone\n\nfor i in {1..5}; do\n    echo \"Iteration $i\"\ndone\n\n# Functions\nlog() {\n    local level=\"${1:-INFO}\"\n    local msg=\"$2\"\n    echo \"[$(date +%H:%M:%S)] [$level] $msg\"\n}\n\nlog \"INFO\" \"Script started\"\nlog \"WARN\" \"Check your config\"\n\n# Exit codes\nif command -v docker &>/dev/null; then\n    log \"INFO\" \"Docker available\"\nelse\n    log \"ERROR\" \"Docker not found\"\n    exit 1\nfi",
+          "lang": "bash",
+          "keyPoints": [
+            "set -euo pipefail: strict mode, fail on any error",
+            "${1:-default}: parameter with default value",
+            "$(): command substitution, capture output"
+          ],
+          "exercise": "Viết script setup project: detect type, install deps, configure."
+        },
+        {
+          "id": "text-processing",
+          "title": "Text Processing: awk, sed, xargs",
+          "theory": "<p>Unix text processing power: <code>awk</code> (column extraction), <code>sed</code> (stream editor), <code>xargs</code> (build commands from input). Combine cho powerful data pipelines.</p>",
+          "code": "#!/bin/bash\n\n# awk - column extraction & processing\nps aux | awk '{print $1, $11}'        # user + command\ndf -h | awk 'NR>1 {print $5, $6}'     # usage + mount\ncat data.csv | awk -F\",\" '{sum+=$3} END {print \"Total:\", sum}'\n\n# sed - stream editor (find/replace)\nsed -i 's/http:/https:/g' urls.txt           # replace in file\nsed -n '10,20p' log.txt                      # print lines 10-20\ncat config.yml | sed 's/debug: true/debug: false/'\n\n# xargs - pass input as arguments\nfind . -name \"*.tmp\" | xargs rm               # delete all .tmp\ncat urls.txt | xargs -P 4 -I {} curl -s {}    # parallel curl\ngit diff --name-only | xargs wc -l            # line count changed files\n\n# Combined pipeline\n# Find top 10 largest files\nfind . -type f -exec du -h {} + | sort -rh | head -10\n\n# Count TODO/FIXME per file\ngrep -rn \"TODO\\|FIXME\" src/ | \\\n  awk -F: '{print $1}' | \\\n  sort | uniq -c | sort -rn\n\n# Log analysis: top IPs\ncat access.log | \\\n  awk '{print $1}' | \\\n  sort | uniq -c | sort -rn | head -20\n\n# JSON processing with jq\ncurl -s https://api.github.com/users/octocat | \\\n  jq '{name: .name, repos: .public_repos, followers: .followers}'",
+          "lang": "bash",
+          "keyPoints": [
+            "awk: column extraction -F\",\" cho CSV, {print $1}",
+            "sed: s/old/new/g replace, -i cho in-place edit",
+            "xargs -P N: parallel execution, powerful with find/grep"
+          ],
+          "exercise": "Analyze log file: top errors, traffic by hour, slow requests."
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "Tự động hóa tác vụ hệ thống & DevOps",
+      "lessons": [
+        {
+          "id": "automation",
+          "title": "Viết kịch bản tự động hóa & Lập lịch với Cron Job",
+          "theory": "<p>Automate deployments, backups, monitoring. Cron jobs schedule. SSH remote commands. Environment management.</p>",
+          "code": "#!/bin/bash\nset -euo pipefail\n\n# Deploy script\ndeploy() {\n    local ENV=\"${1:-staging}\"\n    local BRANCH=\"${2:-main}\"\n    local TIMESTAMP=$(date +%Y%m%d_%H%M%S)\n    local DEPLOY_DIR=\"/var/www/app\"\n    local BACKUP_DIR=\"/var/backups/app\"\n\n    echo \"🚀 Deploying $BRANCH to $ENV...\"\n\n    # Backup current\n    if [ -d \"$DEPLOY_DIR\" ]; then\n        tar -czf \"$BACKUP_DIR/backup_$TIMESTAMP.tar.gz\" \"$DEPLOY_DIR\"\n        echo \"✅ Backup created\"\n    fi\n\n    # Pull & build\n    cd \"$DEPLOY_DIR\"\n    git fetch origin\n    git checkout \"$BRANCH\"\n    git pull origin \"$BRANCH\"\n\n    # Install & build\n    npm ci --production\n    npm run build\n\n    # Restart\n    pm2 restart app --update-env\n    echo \"✅ Deployed $BRANCH to $ENV\"\n\n    # Health check\n    sleep 5\n    if curl -sf http://localhost:3000/health > /dev/null; then\n        echo \"✅ Health check passed\"\n    else\n        echo \"❌ Health check failed! Rolling back...\"\n        rollback \"$TIMESTAMP\"\n        exit 1\n    fi\n}\n\nrollback() {\n    local TIMESTAMP=\"$1\"\n    tar -xzf \"/var/backups/app/backup_$TIMESTAMP.tar.gz\" -C /\n    pm2 restart app\n    echo \"🔄 Rolled back to $TIMESTAMP\"\n}\n\n# Cron examples (crontab -e)\n# 0 2 * * * /scripts/backup.sh        # daily 2 AM\n# */5 * * * * /scripts/health-check.sh # every 5 min\n# 0 0 * * 0 /scripts/cleanup.sh        # weekly Sunday\n\ndeploy \"$@\"",
+          "lang": "bash",
+          "keyPoints": [
+            "Deploy scripts: pull → build → restart → health check → rollback",
+            "Cron: minute hour day month weekday command",
+            "trap cho cleanup: trap \"rm -f $TMPFILE\" EXIT"
+          ],
+          "exercise": "Viết deploy script với rollback, health check, notifications."
+        },
+        {
+          "id": "docker-compose",
+          "title": "Docker & Docker Compose Scripting",
+          "theory": "<p>Docker CLI automation. Docker Compose cho multi-container apps. Build scripts, CI/CD pipelines. Container management.</p>",
+          "code": "#!/bin/bash\nset -euo pipefail\n\n# Docker build & push\nAPP_NAME=\"myapp\"\nVERSION=$(git describe --tags --always)\nREGISTRY=\"ghcr.io/user\"\n\nbuild() {\n    echo \"🐳 Building $APP_NAME:$VERSION\"\n    docker build \\\n        --build-arg VERSION=\"$VERSION\" \\\n        --build-arg BUILD_DATE=\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \\\n        -t \"$REGISTRY/$APP_NAME:$VERSION\" \\\n        -t \"$REGISTRY/$APP_NAME:latest\" \\\n        .\n}\n\npush() {\n    docker push \"$REGISTRY/$APP_NAME:$VERSION\"\n    docker push \"$REGISTRY/$APP_NAME:latest\"\n    echo \"✅ Pushed $APP_NAME:$VERSION\"\n}\n\n# Docker Compose management\ndev() {\n    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d\n    echo \"🚀 Dev environment running\"\n    docker compose logs -f app\n}\n\nprod() {\n    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d\n    echo \"🚀 Production running\"\n}\n\ncleanup() {\n    docker system prune -af --volumes\n    echo \"🧹 Cleaned up unused resources\"\n}\n\n# CI/CD helper\nci_test() {\n    docker compose -f docker-compose.test.yml run --rm test\n    local EXIT_CODE=$?\n    docker compose -f docker-compose.test.yml down -v\n    exit $EXIT_CODE\n}\n\n# Route command\ncase \"${1:-help}\" in\n    build) build ;;\n    push)  build && push ;;\n    dev)   dev ;;\n    prod)  prod ;;\n    test)  ci_test ;;\n    clean) cleanup ;;\n    *) echo \"Usage: $0 {build|push|dev|prod|test|clean}\" ;;\nesac",
+          "lang": "bash",
+          "keyPoints": [
+            "case statement: clean command routing cho scripts",
+            "docker build --build-arg: inject build-time variables",
+            "docker compose -f: override files cho different environments"
+          ],
+          "exercise": "Viết complete CI/CD script: build, test, push, deploy."
+        },
+        {
+          "id": "monitoring",
+          "title": "Giám sát hệ thống Linux & Khắc phục sự cố",
+          "theory": "<p>Server monitoring: CPU, memory, disk, network. Log analysis. Performance troubleshooting. Health check scripts.</p>",
+          "code": "#!/bin/bash\n\n# System status dashboard\nstatus() {\n    echo \"=== System Status ===$(date) ===\"\n    echo \"\"\n    echo \"📊 CPU: $(top -bn1 | grep \"Cpu(s)\" | awk '{print $2}'% used)\"\n    echo \"💾 Memory: $(free -h | awk '/Mem:/ {print $3 \"/\" $2}')\" \n    echo \"💿 Disk: $(df -h / | awk 'NR==2 {print $3 \"/\" $2 \" (\" $5 \" used)\"}')\" \n    echo \"🌐 Network: $(ss -tuln | grep -c LISTEN) listening ports\"\n    echo \"📦 Containers: $(docker ps -q 2>/dev/null | wc -l) running\"\n    echo \"\"\n\n    # Process check\n    for service in nginx node postgres redis; do\n        if pgrep -x \"$service\" > /dev/null; then\n            echo \"✅ $service running\"\n        else\n            echo \"❌ $service NOT running\"\n        fi\n    done\n}\n\n# Alert if thresholds exceeded\ncheck_alerts() {\n    local CPU=$(top -bn1 | grep \"Cpu(s)\" | awk '{print int($2)}')\n    local MEM=$(free | awk '/Mem:/ {print int($3/$2 * 100)}')\n    local DISK=$(df / | awk 'NR==2 {print int($5)}')\n\n    [ \"$CPU\" -gt 90 ] && alert \"CPU usage: ${CPU}%\"\n    [ \"$MEM\" -gt 85 ] && alert \"Memory usage: ${MEM}%\"\n    [ \"$DISK\" -gt 90 ] && alert \"Disk usage: ${DISK}%\"\n}\n\nalert() {\n    local MSG=\"$1\"\n    echo \"⚠️  ALERT: $MSG\"\n    # curl -X POST \"$SLACK_WEBHOOK\" -d \"{\\\"text\\\": \\\"$MSG\\\"}\"\n}\n\n# Log analysis\nanalyze_logs() {\n    local LOG=\"${1:-/var/log/app/access.log}\"\n    echo \"=== Log Analysis ===\"\n    echo \"Total requests: $(wc -l < \"$LOG\")\"\n    echo \"Errors (5xx): $(grep -c ' 5[0-9][0-9] ' \"$LOG\")\"\n    echo \"Top endpoints:\"\n    awk '{print $7}' \"$LOG\" | sort | uniq -c | sort -rn | head -5\n}\n\nstatus",
+          "lang": "bash",
+          "keyPoints": [
+            "pgrep: check if process running by name",
+            "free -h / df -h: human-readable memory/disk info",
+            "Combined awk + sort + uniq -c: frequency analysis"
+          ],
+          "exercise": "Xây monitoring dashboard: status checks, alerts, log analysis."
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "Lập trình Bash Script nâng cao",
+      "lessons": [
+        {
+          "id": "advanced",
+          "title": "Bash nâng cao: Mảng, Bắt tín hiệu Traps & Mạng",
+          "theory": "<p>Bash arrays, associative arrays. Signal traps cho cleanup. SSH automation. Here documents. Process substitution.</p>",
+          "code": "#!/bin/bash\nset -euo pipefail\n\n# Arrays\nSERVERS=(\"web1\" \"web2\" \"web3\" \"db1\")\nfor server in \"${SERVERS[@]}\"; do\n    echo \"Checking $server...\"\n    ssh \"$server\" \"uptime\" 2>/dev/null || echo \"  ❌ $server unreachable\"\ndone\necho \"Total servers: ${#SERVERS[@]}\"\n\n# Associative array (map)\ndeclare -A CONFIG\nCONFIG[host]=\"localhost\"\nCONFIG[port]=\"5432\"\nCONFIG[db]=\"myapp\"\nfor key in \"${!CONFIG[@]}\"; do\n    echo \"$key = ${CONFIG[$key]}\"\ndone\n\n# Trap (cleanup on exit)\nTMPDIR=$(mktemp -d)\ntrap \"rm -rf $TMPDIR; echo Cleaned up\" EXIT INT TERM\n\n# Here document\ncat > \"$TMPDIR/config.yml\" <<EOF\napp:\n  name: myapp\n  port: 3000\n  env: ${ENV:-development}\nEOF\n\n# Process substitution\ndiff <(ssh web1 \"cat /etc/config\") <(ssh web2 \"cat /etc/config\")\n\n# Parallel execution\nmax_parallel=4\nrunning=0\nfor server in \"${SERVERS[@]}\"; do\n    deploy_to \"$server\" &\n    ((running++))\n    if [ \"$running\" -ge \"$max_parallel\" ]; then\n        wait -n  # wait for any one to finish\n        ((running--))\n    fi\ndone\nwait  # wait for remaining",
+          "lang": "bash",
+          "keyPoints": [
+            "${ARRAY[@]}: all elements, ${#ARRAY[@]}: length",
+            "trap \"cleanup\" EXIT: guaranteed cleanup on exit",
+            "<<EOF heredoc: multi-line strings with variable substitution"
+          ],
+          "exercise": "Viết parallel deployment script cho multiple servers."
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Production Scripting",
+      "lessons": [
+        {
+          "id": "production",
+          "title": "Production Shell Scripting",
+          "theory": "<p>Production-grade scripts: argument parsing, logging framework, config management, error recovery. Shellcheck cho linting.</p>",
+          "code": "#!/bin/bash\n# Production-grade script template\nset -euo pipefail\nIFS=$\"\\n\\t\"\n\n# Constants\nreadonly SCRIPT_DIR=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"\nreadonly LOG_FILE=\"/var/log/myapp/script.log\"\n\n# Argument parsing\nVERBOSE=false\nDRY_RUN=false\nENV=\"staging\"\n\nusage() {\n    cat <<EOF\nUsage: $(basename \"$0\") [OPTIONS] COMMAND\n\nOptions:\n  -e, --env ENV      Environment (staging|production)\n  -v, --verbose      Verbose output\n  -n, --dry-run      Show what would be done\n  -h, --help         Show this help\n\nCommands:\n  deploy    Deploy application\n  rollback  Rollback to previous version\n  status    Show current status\nEOF\n}\n\nwhile [[ $# -gt 0 ]]; do\n    case \"$1\" in\n        -e|--env)     ENV=\"$2\"; shift 2 ;;\n        -v|--verbose) VERBOSE=true; shift ;;\n        -n|--dry-run) DRY_RUN=true; shift ;;\n        -h|--help)    usage; exit 0 ;;\n        -*)           echo \"Unknown: $1\"; usage; exit 1 ;;\n        *)            COMMAND=\"$1\"; shift ;;\n    esac\ndone\n\n# Logging\nlog() {\n    local level=\"$1\"; shift\n    local msg=\"$*\"\n    local ts=$(date \"+%Y-%m-%d %H:%M:%S\")\n    echo \"[$ts] [$level] $msg\" | tee -a \"$LOG_FILE\"\n}\ninfo()  { log \"INFO\" \"$@\"; }\nwarn()  { log \"WARN\" \"$@\"; }\nerror() { log \"ERROR\" \"$@\"; }\n\n# Main\nmain() {\n    info \"Starting ${COMMAND:-unknown} on $ENV\"\n    case \"${COMMAND:-}\" in\n        deploy)   do_deploy ;;\n        rollback) do_rollback ;;\n        status)   do_status ;;\n        *)        usage; exit 1 ;;\n    esac\n    info \"Completed successfully\"\n}\n\nmain \"$@\"",
+          "lang": "bash",
+          "keyPoints": [
+            "set -euo pipefail: strict mode essential for production",
+            "getopts/while case: proper argument parsing",
+            "tee -a: log to file AND stdout simultaneously"
+          ],
+          "exercise": "Viết production CLI tool: arg parsing, logging, config, error handling."
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "Shell Mastery",
+      "lessons": [
+        {
+          "id": "mastery",
+          "title": "Bảo mật Shell Script & Tối ưu hiệu năng thực thi",
+          "theory": "<p>High-performance scripting, security best practices, portable scripts. Race condition handling, atomic operations, secure temp files.</p>",
+          "code": "#!/bin/bash\nset -euo pipefail\n\n# Security: never use eval with user input\n# ❌ eval \"$USER_INPUT\"\n# ✅ Use case/if for controlled execution\n\n# Secure temp files\nTMPFILE=$(mktemp /tmp/myapp.XXXXXX)\ntrap \"shred -u $TMPFILE 2>/dev/null\" EXIT\n\n# Atomic file write (prevent partial writes)\natomic_write() {\n    local target=\"$1\"\n    local tmpfile=\"${target}.tmp.$$\"\n    cat > \"$tmpfile\"\n    mv -f \"$tmpfile\" \"$target\"  # atomic on same filesystem\n}\necho \"new config content\" | atomic_write /etc/myapp/config\n\n# Lock file (prevent concurrent execution)\nLOCKFILE=\"/var/lock/myapp.lock\"\nexec 200>\"$LOCKFILE\"\nif ! flock -n 200; then\n    echo \"Another instance running. Exiting.\"\n    exit 1\nfi\n\n# Performance: avoid subshells\n# ❌ Slow: VAR=$(echo \"$string\" | grep -c \"pattern\")\n# ✅ Fast: [[ \"$string\" == *pattern* ]] && ((count++))\n\n# ❌ Slow: for file in $(find . -name \"*.js\"); do\n# ✅ Fast: find . -name \"*.js\" -print0 | while IFS= read -r -d \"\" file; do\n\nfind . -name \"*.log\" -print0 | while IFS= read -r -d \"\" file; do\n    echo \"Processing: $file\"\ndone\n\n# Portable: check OS\ncase \"$(uname -s)\" in\n    Linux*)  OS=\"linux\" ;;\n    Darwin*) OS=\"macos\" ;;\n    MINGW*|MSYS*) OS=\"windows\" ;;\n    *) OS=\"unknown\" ;;\nesac\necho \"Running on: $OS\"",
+          "lang": "bash",
+          "keyPoints": [
+            "flock: prevent concurrent script execution",
+            "Atomic writes: write to tmp then mv (prevents corruption)",
+            "find -print0 + read -d \"\": handle filenames with spaces"
+          ],
+          "exercise": "Viết secure deployment script: lockfile, atomic ops, audit logging."
+        }
+      ]
+    }
+  ]
+}

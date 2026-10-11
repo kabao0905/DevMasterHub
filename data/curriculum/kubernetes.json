@@ -1,0 +1,145 @@
+{
+  "id": "kubernetes",
+  "name": "Kubernetes",
+  "icon": "☸️",
+  "color": "#326CE5",
+  "gradient": "linear-gradient(135deg,#326CE5,#1D4ED8)",
+  "category": "tool",
+  "description": "Container orchestration — deploy, scale, manage containerized apps",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Nền tảng Kubernetes & Kiến trúc Pods",
+      "lessons": [
+        {
+          "id": "intro",
+          "title": "Kubernetes Overview & Architecture",
+          "theory": "<p><strong>Kubernetes (thường gọi tắt là K8s)</strong> là nền tảng mã nguồn mở hàng đầu thế giới dùng để điều phối, tự động hóa việc triển khai, mở rộng quy mô và quản lý các ứng dụng đóng gói trong Container (Docker).</p><p>Hệ thống K8s bao gồm 2 thành phần chính: <strong>Control Plane (Máy chủ điều khiển)</strong> chịu trách nhiệm quản lý toàn bộ trạng thái cụm (API Server, etcd, Scheduler, Controller Manager) và <strong>Worker Nodes (Máy chủ chạy ứng dụng)</strong> trực tiếp thực thi các Pods thông qua tiến trình kubelet và mạng kube-proxy.</p>",
+          "code": "# Pod — smallest deployable unit\napiVersion: v1\nkind: Pod\nmetadata:\n  name: my-app\n  labels:\n    app: web\nspec:\n  containers:\n  - name: web\n    image: nginx:alpine\n    ports:\n    - containerPort: 80\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n\n# kubectl commands\n# kubectl apply -f pod.yaml\n# kubectl get pods\n# kubectl describe pod my-app\n# kubectl logs my-app\n# kubectl exec -it my-app -- /bin/sh",
+          "lang": "yaml",
+          "keyPoints": [
+            "Pod là đơn vị thực thi nhỏ nhất trong K8s, có thể chứa một hoặc nhiều Container",
+            "Control Plane đóng vai trò bộ não điều phối, trong khi Worker Nodes là nơi trực tiếp chạy ứng dụng",
+            "Luôn khai báo rõ ràng Resource Requests (tối thiểu) và Limits (tối đa) để tránh chiếm dụng tài nguyên",
+            "Công cụ dòng lệnh kubectl là phương thức chính để tương tác và quản trị toàn bộ cụm K8s"
+          ],
+          "exercise": "Deploy nginx pod và explore kubectl commands"
+        },
+        {
+          "id": "deployments",
+          "title": "Deployments & Services",
+          "theory": "<p>Deployment quản lý ReplicaSets. Service expose pods ra network.</p>",
+          "code": "# Deployment — manages replicas\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web-app\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: web\n    spec:\n      containers:\n      - name: web\n        image: myapp:v1.0\n        ports:\n        - containerPort: 3000\n        env:\n        - name: NODE_ENV\n          value: \"production\"\n        - name: DB_URL\n          valueFrom:\n            secretKeyRef:\n              name: db-secret\n              key: url\n---\n# Service — network access\napiVersion: v1\nkind: Service\nmetadata:\n  name: web-service\nspec:\n  type: LoadBalancer\n  selector:\n    app: web\n  ports:\n  - port: 80\n    targetPort: 3000",
+          "lang": "yaml",
+          "keyPoints": [
+            "Deployment duy trì trạng thái mong muốn (Desired State) và tự động thay thế Pod bị chết",
+            "Labels và Selectors là cơ chế liên kết mềm linh hoạt giữa Service và nhóm Pods tương ứng",
+            "ClusterIP dùng cho giao tiếp nội bộ giữa các microservice, LoadBalancer dùng để tiếp nhận lưu lượng từ Internet"
+          ],
+          "exercise": "Deploy 3-replica web app với Service"
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "ConfigMaps, Secrets, Volumes",
+      "lessons": [
+        {
+          "id": "config",
+          "title": "ConfigMaps & Secrets",
+          "theory": "<p>ConfigMap = external config. Secret = sensitive data (encoded). Tách config khỏi image.</p>",
+          "code": "# ConfigMap\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  APP_ENV: \"production\"\n  LOG_LEVEL: \"info\"\n  config.json: |\n    {\n      \"features\": { \"darkMode\": true },\n      \"cache\": { \"ttl\": 3600 }\n    }\n---\n# Secret\napiVersion: v1\nkind: Secret\nmetadata:\n  name: db-secret\ntype: Opaque\nstringData:\n  DB_PASSWORD: \"my-secret-password\"\n  API_KEY: \"sk-1234567890\"\n---\n# Using in Pod\nspec:\n  containers:\n  - name: app\n    envFrom:\n    - configMapRef:\n        name: app-config\n    - secretRef:\n        name: db-secret\n    volumeMounts:\n    - name: config-vol\n      mountPath: /etc/config\n  volumes:\n  - name: config-vol\n    configMap:\n      name: app-config",
+          "lang": "yaml",
+          "keyPoints": [
+            "ConfigMap lưu cấu hình công khai, Secret bảo vệ dữ liệu nhạy cảm có mã hóa Base64",
+            "envFrom cho phép nạp toàn bộ cặp key-value từ ConfigMap/Secret vào biến môi trường Pod",
+            "Có thể gắn ConfigMap/Secret thành các file tĩnh trên ổ đĩa thông qua cơ chế Volume Mounts"
+          ],
+          "exercise": "Externalize app config với ConfigMap + Secret"
+        },
+        {
+          "id": "scaling",
+          "title": "Auto-Scaling & Rolling Updates",
+          "theory": "<p>HPA scales pods theo metrics. Rolling update = zero-downtime deploys.</p>",
+          "code": "# Horizontal Pod Autoscaler\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: web-hpa\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: web-app\n  minReplicas: 2\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: Utilization\n        averageUtilization: 80\n\n# Rolling update strategy\nspec:\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxSurge: 1        # max extra pods\n      maxUnavailable: 0  # zero downtime!\n\n# kubectl commands\n# kubectl rollout status deployment/web-app\n# kubectl rollout history deployment/web-app\n# kubectl rollout undo deployment/web-app",
+          "lang": "yaml",
+          "keyPoints": [
+            "HPA tự động điều chỉnh số lượng bản sao Pod theo tải tài nguyên thực tế thời gian thực",
+            "Rolling Update với maxUnavailable: 0 đảm bảo ứng dụng luôn có sẵn phục vụ 100% thời gian",
+            "Lệnh kubectl rollout undo cho phép quay ngược phiên bản (Rollback) ngay lập tức nếu phiên bản mới bị lỗi"
+          ],
+          "exercise": "Setup HPA cho web app deployment"
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "Mạng nội bộ Kubernetes, Dịch vụ Services & Ingress",
+      "lessons": [
+        {
+          "id": "ingress",
+          "title": "Ingress & Networking",
+          "theory": "<p>Ingress = HTTP/HTTPS routing vào cluster. Network Policies cho security.</p>",
+          "code": "# Ingress — HTTP routing\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: app-ingress\n  annotations:\n    nginx.ingress.kubernetes.io/ssl-redirect: \"true\"\n    cert-manager.io/cluster-issuer: \"letsencrypt\"\nspec:\n  tls:\n  - hosts:\n    - myapp.com\n    secretName: tls-secret\n  rules:\n  - host: myapp.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: frontend\n            port: { number: 80 }\n      - path: /api\n        pathType: Prefix\n        backend:\n          service:\n            name: backend\n            port: { number: 3000 }\n\n---\n# Network Policy — restrict traffic\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: api-policy\nspec:\n  podSelector:\n    matchLabels: { app: api }\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels: { app: frontend }",
+          "lang": "yaml",
+          "keyPoints": [
+            "Ingress quản lý định tuyến HTTP/HTTPS từ bên ngoài vào cụm theo tên miền và đường dẫn",
+            "Hỗ trợ tự động gắn chứng chỉ bảo mật TLS/SSL với Cert-Manager",
+            "NetworkPolicy giúp cô lập và bảo vệ cơ sở dữ liệu chỉ cho phép Backend được kết nối trực tiếp"
+          ],
+          "exercise": "Setup Ingress cho multi-service app"
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Helm & Operators",
+      "lessons": [
+        {
+          "id": "helm",
+          "title": "Helm Charts & Templating",
+          "theory": "<p>Helm = package manager cho K8s. Charts = reusable templates.</p>",
+          "code": "# Chart structure\n# mychart/\n#   Chart.yaml\n#   values.yaml\n#   templates/\n#     deployment.yaml\n#     service.yaml\n\n# values.yaml\nreplicaCount: 3\nimage:\n  repository: myapp\n  tag: \"v1.0\"\nservice:\n  type: LoadBalancer\n  port: 80\nresources:\n  limits:\n    cpu: 500m\n    memory: 128Mi\n\n# templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ .Release.Name }}-app\nspec:\n  replicas: {{ .Values.replicaCount }}\n  template:\n    spec:\n      containers:\n      - name: {{ .Chart.Name }}\n        image: \"{{ .Values.image.repository }}:{{ .Values.image.tag }}\"\n        resources:\n          {{- toYaml .Values.resources | nindent 10 }}\n\n# Install\n# helm install my-release ./mychart --values prod-values.yaml\n# helm upgrade my-release ./mychart\n# helm rollback my-release 1",
+          "lang": "yaml",
+          "keyPoints": [
+            "Values = configuration",
+            "Templates = Go templating",
+            "helm install/upgrade/rollback",
+            "Chart versioning"
+          ],
+          "exercise": "Tạo Helm chart cho full-stack app"
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "Production Best Practices",
+      "lessons": [
+        {
+          "id": "production",
+          "title": "Production K8s Architecture",
+          "theory": "<p>Production: monitoring (Prometheus/Grafana), logging (ELK), GitOps (ArgoCD).</p>",
+          "code": "# Prometheus ServiceMonitor\napiVersion: monitoring.coreos.com/v1\nkind: ServiceMonitor\nmetadata:\n  name: app-monitor\nspec:\n  selector:\n    matchLabels: { app: web }\n  endpoints:\n  - port: metrics\n    interval: 30s\n\n# ArgoCD Application (GitOps)\napiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: my-app\n  namespace: argocd\nspec:\n  project: default\n  source:\n    repoURL: https://github.com/org/k8s-manifests\n    targetRevision: main\n    path: apps/production\n  destination:\n    server: https://kubernetes.default.svc\n    namespace: production\n  syncPolicy:\n    automated:\n      prune: true\n      selfHeal: true",
+          "lang": "yaml",
+          "keyPoints": [
+            "Prometheus + Grafana monitoring",
+            "GitOps with ArgoCD",
+            "Resource quotas",
+            "Pod Disruption Budgets"
+          ],
+          "exercise": "Setup monitoring + GitOps pipeline"
+        }
+      ]
+    }
+  ]
+}

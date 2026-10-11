@@ -1,0 +1,116 @@
+{
+  "id": "typescript",
+  "name": "TypeScript",
+  "icon": "💎",
+  "color": "#3178C6",
+  "gradient": "linear-gradient(135deg,#3178C6,#235A97)",
+  "category": "language",
+  "description": "JavaScript với type safety — Standard cho production apps",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Types cơ bản & Interfaces",
+      "lessons": [
+        {
+          "id": "basics",
+          "title": "TypeScript Fundamentals",
+          "theory": "<p>TypeScript = JavaScript + types. Phát hiện lỗi <strong>tại compile-time</strong> thay vì runtime. Type annotations, interfaces, type aliases là nền tảng.</p>",
+          "code": "// Basic types\nlet name: string = \"TypeScript\";\nlet version: number = 5.4;\nlet isAwesome: boolean = true;\nlet skills: string[] = [\"React\", \"Node\"];\n\n// Interface: define object shape\ninterface User {\n  id: number;\n  name: string;\n  email: string;\n  age?: number;           // optional\n  readonly createdAt: Date; // immutable\n}\n\n// Type alias\ntype Status = \"active\" | \"inactive\" | \"banned\"; // union\ntype Point = { x: number; y: number };\n\n// Function with types\nfunction greet(user: User): string {\n  return `Hello ${user.name}!`;\n}\n\n// Array methods are type-safe\nconst activeUsers = users.filter(\n  (u): u is User => u.status === \"active\" // type guard\n);",
+          "lang": "typescript",
+          "keyPoints": [
+            "Type annotation: variable: Type",
+            "Interface cho object shapes, type cho unions/aliases",
+            "? = optional property, readonly = immutable"
+          ],
+          "exercise": "Define interfaces cho e-commerce: Product, Cart, Order."
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "Generics & Utility Types",
+      "lessons": [
+        {
+          "id": "generics",
+          "title": "Generics & Utility Types",
+          "theory": "<p>Generics (<code>&lt;T&gt;</code>) cho reusable typed code. Utility types: <code>Partial, Required, Pick, Omit, Record</code> transform types. Discriminated unions cho type-safe state.</p>",
+          "code": "// Generic function\nfunction first<T>(arr: T[]): T | undefined {\n  return arr[0];\n}\nconst num = first([1, 2, 3]);      // number | undefined\nconst str = first([\"a\", \"b\"]);     // string | undefined\n\n// Generic interface\ninterface ApiResponse<T> {\n  data: T;\n  status: number;\n  message: string;\n}\n\nasync function fetchUsers(): Promise<ApiResponse<User[]>> {\n  const res = await fetch(\"/api/users\");\n  return res.json();\n}\n\n// Utility types\ntype CreateUser = Omit<User, \"id\" | \"createdAt\">;\ntype UpdateUser = Partial<CreateUser>;\ntype UserPreview = Pick<User, \"id\" | \"name\">;\n\n// Discriminated union (type-safe state)\ntype RequestState<T> =\n  | { status: \"idle\" }\n  | { status: \"loading\" }\n  | { status: \"success\"; data: T }\n  | { status: \"error\"; error: string };\n\nfunction renderState(state: RequestState<User[]>) {\n  switch (state.status) {\n    case \"loading\": return \"Loading...\";\n    case \"success\": return state.data.map(u => u.name); // TS knows data exists!\n    case \"error\": return state.error; // TS knows error exists!\n  }\n}",
+          "lang": "typescript",
+          "keyPoints": [
+            "Generic <T> cho reusable type-safe code",
+            "Utility types: Partial, Pick, Omit transform existing types",
+            "Discriminated unions cho type-safe state management"
+          ],
+          "exercise": "Tạo generic useForm<T> hook với typed fields và validation."
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "Advanced types & Type Guards",
+      "lessons": [
+        {
+          "id": "advanced",
+          "title": "Advanced Type Patterns",
+          "theory": "<p>Conditional types, mapped types, template literals cho meta-programming. <code>infer</code> extract types. Branded types cho domain safety. <code>satisfies</code> operator (TS 5+).</p>",
+          "code": "// Mapped types: transform object types\ntype Readonly<T> = { readonly [K in keyof T]: T[K] };\ntype Nullable<T> = { [K in keyof T]: T[K] | null };\n\n// Conditional types\ntype IsString<T> = T extends string ? true : false;\ntype A = IsString<\"hello\">; // true\ntype B = IsString<42>;      // false\n\n// Template literal types\ntype HttpMethod = \"GET\" | \"POST\" | \"PUT\" | \"DELETE\";\ntype ApiEndpoint = `/api/${string}`;\ntype Route = `${HttpMethod} ${ApiEndpoint}`;\n// Route = \"GET /api/...\" | \"POST /api/...\" | ...\n\n// Branded types for domain safety\ntype USD = number & { __brand: \"USD\" };\ntype EUR = number & { __brand: \"EUR\" };\n\nfunction usd(amount: number): USD { return amount as USD; }\nfunction eur(amount: number): EUR { return amount as EUR; }\n\nfunction addUSD(a: USD, b: USD): USD { return (a + b) as USD; }\n// addUSD(usd(10), eur(20)); // ERROR! Can't mix USD and EUR\n\n// satisfies operator (TS 5+)\nconst config = {\n  port: 3000,\n  host: \"localhost\",\n  debug: true\n} satisfies Record<string, string | number | boolean>;\n// config.port is still `number` (not string | number | boolean)",
+          "lang": "typescript",
+          "keyPoints": [
+            "keyof T: union of all keys, T[K]: value type of key K",
+            "Branded types prevent accidental mixing of similar types",
+            "satisfies validates AND preserves narrower types"
+          ],
+          "exercise": "Viết type-safe event emitter với typed event names và payloads."
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Declaration files, Type-Level Programming",
+      "lessons": [
+        {
+          "id": "type-level",
+          "title": "Type-Level Programming",
+          "theory": "<p>TypeScript type system là Turing-complete. Recursive types, variadic tuples, const assertions. Type-level computation cho validation, routing, ORM query builders.</p>",
+          "code": "// Type-safe builder pattern\ntype Builder<T extends Record<string, any>> = {\n  set<K extends string, V>(key: K, value: V): Builder<T & Record<K, V>>;\n  build(): T;\n};\n\nfunction createBuilder(): Builder<{}> {\n  const obj: any = {};\n  return {\n    set(key, value) {\n      obj[key] = value;\n      return this as any;\n    },\n    build() { return obj; }\n  };\n}\n\nconst result = createBuilder()\n  .set(\"name\", \"TypeScript\")\n  .set(\"version\", 5.4)\n  .set(\"released\", true)\n  .build();\n// result type: { name: string; version: number; released: boolean }\n\n// Recursive type: deep partial\ntype DeepPartial<T> = T extends object\n  ? { [K in keyof T]?: DeepPartial<T[K]> }\n  : T;\n\n// Extract route params from string\ntype ExtractParams<T extends string> =\n  T extends `${string}:${infer Param}/${infer Rest}`\n    ? Param | ExtractParams<Rest>\n    : T extends `${string}:${infer Param}`\n      ? Param\n      : never;\n\ntype Params = ExtractParams<\"/users/:id/posts/:postId\">;\n// Params = \"id\" | \"postId\"",
+          "lang": "typescript",
+          "keyPoints": [
+            "infer keyword extract types trong conditional types",
+            "Recursive types cho deeply nested transformations",
+            "Template literal + infer = compile-time string parsing"
+          ],
+          "exercise": "Viết type-safe SQL query builder infer return type từ SELECT."
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "Compiler API & Custom Transformers",
+      "lessons": [
+        {
+          "id": "compiler",
+          "title": "TS Compiler Internals",
+          "theory": "<p>TypeScript Compiler API cho code generation, custom linters, codemods. AST manipulation, type checker API. Performance: project references, incremental builds. Declaration merging cho library augmentation.</p>",
+          "code": "// Custom type transformer using ts-morph\nimport { Project, SyntaxKind } from \"ts-morph\";\n\nconst project = new Project();\nconst sourceFile = project.addSourceFileAtPath(\"./src/types.ts\");\n\n// Find all interfaces\nconst interfaces = sourceFile.getInterfaces();\n\nfor (const iface of interfaces) {\n  console.log(`Interface: ${iface.getName()}`);\n  \n  // Generate runtime validator from type\n  const properties = iface.getProperties();\n  const validators = properties.map(prop => {\n    const name = prop.getName();\n    const type = prop.getType().getText();\n    const optional = prop.hasQuestionToken();\n    return { name, type, optional };\n  });\n  \n  console.log(\"Validators:\", validators);\n}\n\n// Declaration merging\ndeclare module \"express\" {\n  interface Request {\n    user?: { id: string; role: string };\n    requestId: string;\n  }\n}\n\n// Module augmentation\ndeclare global {\n  interface Array<T> {\n    groupBy(fn: (item: T) => string): Record<string, T[]>;\n  }\n}",
+          "lang": "typescript",
+          "keyPoints": [
+            "ts-morph: high-level API cho TypeScript AST manipulation",
+            "Declaration merging: extend third-party types",
+            "Project references: scale TS to monorepos with incremental builds"
+          ],
+          "exercise": "Viết custom lint rule kiểm tra naming conventions dùng TSC API."
+        }
+      ]
+    }
+  ]
+}

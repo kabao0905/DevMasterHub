@@ -745,7 +745,7 @@ app.post('/api/crawl', sameOrigin, requireUser, rateLimit({ max: 10, scope: 'cra
 
 function loadCurriculum() {
   try {
-    return napGiaoTrinh(PUBLIC_DIR);
+    return napGiaoTrinh();
   } catch (err) {
     console.warn('[SEO] Không nạp được CURRICULUM:', err.message);
     return {};

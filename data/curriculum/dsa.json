@@ -1,0 +1,181 @@
+{
+  "id": "dsa",
+  "name": "DSA & Algorithms",
+  "icon": "🧮",
+  "color": "#FF6B35",
+  "gradient": "linear-gradient(135deg,#FF6B35,#E84D1A)",
+  "category": "tool",
+  "description": "Cấu trúc dữ liệu & Giải thuật, Big O, kỹ thuật giải bài phỏng vấn",
+  "levels": [
+    {
+      "id": "newbie",
+      "name": "Newbie",
+      "badge": "newbie",
+      "desc": "Cấu trúc dữ liệu cơ bản",
+      "lessons": [
+        {
+          "id": "complexity",
+          "title": "Big O & Phân Tích Độ Phức Tạp Thuật Toán",
+          "theory": "<p><strong>Độ phức tạp thuật toán (Big O Notation)</strong> là công cụ toán học dùng để đánh giá và so sánh <em>thời gian thực thi (Time Complexity)</em> và <em>dung lượng bộ nhớ (Space Complexity)</em> của một thuật toán khi kích thước dữ liệu đầu vào (n) tăng lên.</p><p>Các mức độ phổ biến từ nhanh đến chậm nhất: <code>O(1)</code> (Hằng số) &lt; <code>O(log n)</code> (Logarit, ví dụ Binary Search) &lt; <code>O(n)</code> (Tuyến tính, duyệt mảng 1 vòng) &lt; <code>O(n log n)</code> (Sắp xếp nâng cao như Merge Sort/Quick Sort) &lt; <code>O(n²)</code> (Vòng lặp lồng nhau 2 cấp) &lt; <code>O(2ⁿ)</code> (Đệ quy nhánh, bài toán tổ hợp).</p>",
+          "code": "// Các ví dụ minh họa về Big O\n\n// O(1) - Thời gian hằng số (không phụ thuộc kích thước mảng)\nfunction getFirst(arr) {\n  return arr[0];\n}\n\n// O(log n) - Logarit: Tìm kiếm nhị phân (chia đôi tập tìm kiếm mỗi bước)\nfunction binarySearch(arr, target) {\n  let left = 0, right = arr.length - 1;\n  while (left <= right) {\n    const mid = Math.floor((left + right) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1;\n}\n\n// O(n) - Tuyến tính: Duyệt qua mảng 1 lần\nfunction findMax(arr) {\n  let max = arr[0];\n  for (const num of arr) {\n    if (num > max) max = num;\n  }\n  return max;\n}\n\n// O(n log n) - Tuyến tính x Logarit: Merge Sort\nfunction mergeSort(arr) {\n  if (arr.length <= 1) return arr;\n  const mid = Math.floor(arr.length / 2);\n  const left = mergeSort(arr.slice(0, mid));\n  const right = mergeSort(arr.slice(mid));\n  return merge(left, right);\n}\n\n// O(n²) - Bậc hai: 2 vòng lặp lồng nhau (Bubble Sort)\nfunction bubbleSort(arr) {\n  for (let i = 0; i < arr.length; i++)\n    for (let j = 0; j < arr.length - i - 1; j++)\n      if (arr[j] > arr[j+1]) [arr[j], arr[j+1]] = [arr[j+1], arr[j]];\n  return arr;\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ) — Tốc độ xử lý giảm dần theo quy mô dữ liệu",
+            "Đánh đổi Thời gian & Bộ nhớ (Time vs Space Tradeoff): Sử dụng Hash Map giúp tra cứu tức thì O(1) nhưng tốn thêm O(n) bộ nhớ",
+            "Amortized Complexity: Chi phí trung bình tính trên chuỗi nhiều thao tác liên tiếp (ví dụ mảng động mở rộng kích thước)"
+          ],
+          "exercise": "Phân tích độ phức tạp: Cho 5 hàm xử lý dữ liệu khác nhau, hãy xác định Big O về Thời gian và Bộ nhớ của từng hàm."
+        },
+        {
+          "id": "arrays",
+          "title": "Kỹ Thuật Xử Lý Mảng & Chuỗi (Arrays & Strings)",
+          "theory": "<p>Kỹ thuật xử lý <strong>Mảng & Chuỗi (Arrays & Strings)</strong> là nền tảng cốt lõi trong mọi bài phỏng vấn. Ba kỹ thuật kinh điển nhất gồm có: <strong>Two Pointers (Hai con trỏ)</strong> để thu hẹp phạm vi tìm kiếm, <strong>Sliding Window (Cửa sổ trượt)</strong> để tìm chuỗi con/mảng con tối ưu, và <strong>Prefix Sum (Mảng cộng dồn)</strong> để tính tổng các đoạn con liên tiếp với tốc độ O(1).</p>",
+          "code": "// 1. Two Pointers - Tìm cặp phần tử có tổng bằng target trên mảng đã sắp xếp\nfunction twoSum(sorted, target) {\n  let left = 0, right = sorted.length - 1;\n  while (left < right) {\n    const sum = sorted[left] + sorted[right];\n    if (sum === target) return [left, right];\n    if (sum < target) left++;\n    else right--;\n  }\n  return [-1, -1];\n}\n\n// 2. Sliding Window - Tìm tổng mảng con lớn nhất có độ dài k\nfunction maxSubarraySum(arr, k) {\n  let windowSum = 0;\n  for (let i = 0; i < k; i++) windowSum += arr[i];\n  let maxSum = windowSum;\n  for (let i = k; i < arr.length; i++) {\n    windowSum += arr[i] - arr[i - k]; // Trượt cửa sổ sang phải\n    maxSum = Math.max(maxSum, windowSum);\n  }\n  return maxSum;\n}\n\n// 3. Frequency Map - Đếm tần suất xuất hiện của ký tự\nfunction mostFrequent(arr) {\n  const freq = {};\n  let maxCount = 0, result = null;\n  for (const item of arr) {\n    freq[item] = (freq[item] || 0) + 1;\n    if (freq[item] > maxCount) {\n      maxCount = freq[item];\n      result = item;\n    }\n  }\n  return result;\n}\n\n// 4. Prefix Sum - Mảng cộng dồn giúp truy vấn tổng đoạn [i..j] trong O(1)\nfunction prefixSum(arr) {\n  const prefix = [0];\n  for (const num of arr) prefix.push(prefix.at(-1) + num);\n  return (i, j) => prefix[j + 1] - prefix[i];\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Two Pointers: Áp dụng trên mảng đã sắp xếp giúp giảm độ phức tạp từ O(n²) xuống O(n)",
+            "Sliding Window: Duy trì một khung cửa sổ trượt qua mảng để giải quyết các bài toán mảng con liên tiếp",
+            "Prefix Sum: Tính toán trước mảng cộng dồn để truy vấn tổng bất kỳ trong thời gian O(1)"
+          ],
+          "exercise": "Giải bài toán: Tìm chuỗi con dài nhất không chứa ký tự lặp lại và tính lợi nhuận mua bán cổ phiếu tối đa."
+        },
+        {
+          "id": "linked-list",
+          "title": "Danh Sách Liên Kết, Ngăn Xếp & Hàng Đợi (Linked List, Stack, Queue)",
+          "theory": "<p><strong>Danh sách liên kết (Linked List)</strong> lưu trữ các phần tử (Node) liên kết với nhau qua con trỏ, cho phép chèn/xóa phần tử cực nhanh ở đầu/cuối với <code>O(1)</code>. <strong>Ngăn xếp (Stack)</strong> hoạt động theo nguyên lý LIFO (Vào sau - Ra trước, dùng cho nút Quay lại/Undo). <strong>Hàng đợi (Queue)</strong> hoạt động theo nguyên lý FIFO (Vào trước - Ra trước, dùng cho hàng đợi xử lý tác vụ/BFS).</p>",
+          "code": "// Khởi tạo Node trong Linked List\nclass ListNode {\n  constructor(val, next = null) {\n    this.val = val;\n    this.next = next;\n  }\n}\n\n// Đảo ngược danh sách liên kết\nfunction reverseList(head) {\n  let prev = null, curr = head;\n  while (curr) {\n    const next = curr.next;\n    curr.next = prev;\n    prev = curr;\n    curr = next;\n  }\n  return prev;\n}\n\n// Phát hiện chu trình (Floyd's Cycle Finding Algorithm)\nfunction hasCycle(head) {\n  let slow = head, fast = head;\n  while (fast && fast.next) {\n    slow = slow.next;\n    fast = fast.next.next;\n    if (slow === fast) return true;\n  }\n  return false;\n}\n\n// Stack - Kiểm tra dấu đóng mở ngoặc hợp lệ\nfunction isValid(s) {\n  const stack = [];\n  const map = { \")\": \"(\", \"]\": \"[\", \"}\": \"{\" };\n  for (const char of s) {\n    if (\"({[\".includes(char)) stack.push(char);\n    else if (stack.pop() !== map[char]) return false;\n  }\n  return stack.length === 0;\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Linked List: Chèn/Xóa tức thì O(1) khi đã có con trỏ, nhưng tìm kiếm tuần tự tốn O(n)",
+            "Stack: Thao tác push/pop đạt O(1), ứng dụng trong kiểm tra ngoặc hợp lệ, đệ quy và DFS",
+            "Queue: Thao tác enqueue/dequeue đạt O(1), ứng dụng trong duyệt đồ thị theo chiều rộng (BFS)"
+          ],
+          "exercise": "Cài đặt thuật toán hợp nhất hai danh sách liên kết đã sắp xếp và kiểm tra chuỗi ngoặc hợp lệ."
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "badge": "junior",
+      "desc": "Cây nhị phân & Bảng băm",
+      "lessons": [
+        {
+          "id": "hash",
+          "title": "Bảng Băm & Tập Hợp (Hash Maps & Hash Sets)",
+          "theory": "<p><strong>Bảng băm (Hash Map & Hash Set)</strong> là cấu trúc dữ liệu quan trọng bậc nhất giúp tra cứu, thêm mới và xóa phần tử với tốc độ tức thời <code>O(1)</code> nhờ hàm băm (Hash Function). Được sử dụng để đếm tần suất xuất hiện, lọc các giá trị trùng lặp và làm bộ nhớ đệm (Cache).</p>",
+          "code": "// Hash Map: Bài toán Two Sum kinh điển\nfunction twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) return [map.get(complement), i];\n    map.set(nums[i], i);\n  }\n  return [-1, -1];\n}\n\n// Nhóm các từ đảo chữ (Group Anagrams)\nfunction groupAnagrams(strs) {\n  const map = new Map();\n  for (const s of strs) {\n    const key = [...s].sort().join(\"\");\n    if (!map.has(key)) map.set(key, []);\n    map.get(key).push(s);\n  }\n  return [...map.values()];\n}\n\n// Bộ nhớ đệm LRU Cache\nclass LRUCache {\n  constructor(capacity) {\n    this.capacity = capacity;\n    this.cache = new Map();\n  }\n  get(key) {\n    if (!this.cache.has(key)) return -1;\n    const val = this.cache.get(key);\n    this.cache.delete(key);\n    this.cache.set(key, val);\n    return val;\n  }\n  put(key, value) {\n    this.cache.delete(key);\n    this.cache.set(key, value);\n    if (this.cache.size > this.capacity) {\n      const firstKey = this.cache.keys().next().value;\n      this.cache.delete(firstKey);\n    }\n  }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Hash Map: Tốc độ tra cứu get/set đạt O(1), là lựa chọn số 1 cho các bài toán tối ưu thời gian",
+            "JavaScript Map lưu thứ tự chèn, kết hợp hoàn hảo để xây dựng LRU Cache",
+            "Nhóm từ đảo chữ: Sắp xếp các ký tự trong chuỗi rồi dùng làm khóa (Hash Key)"
+          ],
+          "exercise": "Tự thiết kế và cài đặt cấu trúc LRU Cache hoàn chỉnh với phương thức get(key) và put(key, value)."
+        },
+        {
+          "id": "trees",
+          "title": "Cây Nhị Phân & Cây Tìm Kiếm Nhị Phân (Binary Tree & BST)",
+          "theory": "<p><strong>Cây nhị phân (Binary Tree)</strong> là cấu trúc dạng phân cấp trong đó mỗi nút có tối đa 2 nút con (trái và phải). <strong>Cây tìm kiếm nhị phân (BST)</strong> có tính chất đặc biệt: mọi nút con bên trái luôn nhỏ hơn nút cha, và mọi nút con bên phải luôn lớn hơn nút cha. Các phương pháp duyệt cây chính: DFS (Inorder, Preorder, Postorder) và BFS (Level-order).</p>",
+          "code": "class TreeNode {\n  constructor(val, left = null, right = null) {\n    this.val = val;\n    this.left = left;\n    this.right = right;\n  }\n}\n\n// Duyệt cây DFS Inorder (Trái -> Gốc -> Phải: cho thứ tự tăng dần trên BST)\nfunction inorder(root, result = []) {\n  if (!root) return result;\n  inorder(root.left, result);\n  result.push(root.val);\n  inorder(root.right, result);\n  return result;\n}\n\n// Duyệt cây BFS theo từng tầng (Level Order Traversal)\nfunction levelOrder(root) {\n  if (!root) return [];\n  const result = [], queue = [root];\n  while (queue.length) {\n    const level = [];\n    const size = queue.length;\n    for (let i = 0; i < size; i++) {\n      const node = queue.shift();\n      level.push(node.val);\n      if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);\n    }\n    result.push(level);\n  }\n  return result;\n}\n\n// Tính độ sâu tối đa của cây (Max Depth)\nfunction maxDepth(root) {\n  if (!root) return 0;\n  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "DFS: Sử dụng ngăn xếp/đệ quy, phù hợp xử lý đường đi từ gốc đến lá",
+            "BFS: Sử dụng hàng đợi, duyệt theo từng tầng, dùng tìm đường đi ngắn nhất",
+            "Tính chất BST: Duyệt Inorder trên BST luôn trả về danh sách phần tử đã sắp xếp tăng dần"
+          ],
+          "exercise": "Giải bài toán: Tính chiều cao cây nhị phân, kiểm tra cây đối xứng và xác thực tính hợp lệ của cây BST."
+        },
+        {
+          "id": "recursion",
+          "title": "Đệ Quy & Thuật Toán Quay Lui (Recursion & Backtracking)",
+          "theory": "<p><strong>Đệ quy (Recursion)</strong> là kỹ thuật hàm tự gọi lại chính nó để giải bài toán nhỏ hơn (bắt buộc phải có điểm dừng Base Case). <strong>Quay lui (Backtracking)</strong> là phương pháp thử tất cả các trường hợp có thể: chọn một nước đi, đi tiếp thử nghiệm, nếu đi vào ngõ cụt thì lùi lại bước trước để thử hướng khác (ví dụ: giải cờ vua, Sudoku, sinh hoán vị).</p>",
+          "code": "// Đệ quy có nhớ: Tính dãy Fibonacci (O(n) thay vì O(2ⁿ))\nfunction fib(n, memo = {}) {\n  if (n <= 1) return n;\n  if (memo[n]) return memo[n];\n  memo[n] = fib(n - 1, memo) + fib(n - 2, memo);\n  return memo[n];\n}\n\n// Quay lui: Sinh tất cả các tập con (Subsets)\nfunction subsets(nums) {\n  const result = [];\n  function backtrack(start, current) {\n    result.push([...current]);\n    for (let i = start; i < nums.length; i++) {\n      current.push(nums[i]);      // Chọn (Choose)\n      backtrack(i + 1, current);  // Thử nghiệm (Explore)\n      current.pop();              // Hủy chọn (Backtrack)\n    }\n  }\n  backtrack(0, []);\n  return result;\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Điểm dừng (Base Case) là bắt buộc trong mọi hàm đệ quy để tránh tràn bộ nhớ Stack Overflow",
+            "Memoization: Lưu lại kết quả các bước tính trước đó để giảm thời gian từ lũy thừa O(2ⁿ) xuống tuyến tính O(n)",
+            "Mô hình Quay lui chuẩn: Chọn giá trị (Choose) → Đi tiếp (Explore) → Thu hồi lựa chọn (Unchoose)"
+          ],
+          "exercise": "Giải bài toán sinh tất cả các hoán vị của một tập hợp và bài toán xếp 8 quân hậu (N-Queens)."
+        }
+      ]
+    },
+    {
+      "id": "mid",
+      "name": "Mid-Level",
+      "badge": "mid",
+      "desc": "Đồ thị & Quy hoạch động",
+      "lessons": [
+        {
+          "id": "graphs",
+          "title": "Thuật Toán Đồ Thị (Graph Algorithms: BFS, DFS, Topo Sort)",
+          "theory": "<p><strong>Đồ thị (Graph)</strong> gồm tập hợp các đỉnh (Vertices) nối với nhau bằng các cạnh (Edges). Biểu diễn bằng danh sách kề (Adjacency List). Thuật toán <strong>BFS</strong> (tìm đường đi ngắn nhất không trọng số) và <strong>DFS</strong> (tìm đường, kiểm tra tính liên thông, chu trình). <strong>Topological Sort</strong> dùng để sắp xếp thứ tự các tác vụ phụ thuộc lẫn nhau.</p>",
+          "code": "// Biểu diễn đồ thị bằng Danh sách kề (Adjacency List)\nfunction buildGraph(edges) {\n  const graph = {};\n  for (const [u, v] of edges) {\n    if (!graph[u]) graph[u] = [];\n    if (!graph[v]) graph[v] = [];\n    graph[u].push(v);\n    graph[v].push(u);\n  }\n  return graph;\n}\n\n// BFS: Tìm đường đi ngắn nhất giữa hai đỉnh\nfunction shortestPath(graph, start, end) {\n  const queue = [[start, [start]]];\n  const visited = new Set([start]);\n  while (queue.length) {\n    const [node, path] = queue.shift();\n    if (node === end) return path;\n    for (const neighbor of (graph[node] || [])) {\n      if (!visited.has(neighbor)) {\n        visited.add(neighbor);\n        queue.push([neighbor, [...path, neighbor]]);\n      }\n    }\n  }\n  return null;\n}\n\n// DFS: Đếm số vùng liên thông (Connected Components)\nfunction countComponents(n, edges) {\n  const graph = buildGraph(edges);\n  const visited = new Set();\n  let count = 0;\n  for (let i = 0; i < n; i++) {\n    if (!visited.has(i)) {\n      dfs(graph, i, visited);\n      count++;\n    }\n  }\n  return count;\n}\nfunction dfs(graph, node, visited) {\n  visited.add(node);\n  for (const neighbor of (graph[node] || [])) {\n    if (!visited.has(neighbor)) dfs(graph, neighbor, visited);\n  }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "BFS: Tìm đường đi ngắn nhất trên đồ thị không trọng số theo từng bước lan tỏa",
+            "DFS: Khám phá sâu từng nhánh, dùng để tìm chu trình hoặc đếm số thành phần liên thông",
+            "Topological Sort: Sắp xếp thứ tự hoàn thành các môn học hoặc tác vụ theo điều kiện tiên quyết"
+          ],
+          "exercise": "Giải bài toán: Đếm số hòn đảo (Number of Islands) và kiểm tra lịch đăng ký môn học (Course Schedule)."
+        },
+        {
+          "id": "dp",
+          "title": "Quy Hoạch Động (Dynamic Programming: 1D & 2D DP)",
+          "theory": "<p><strong>Quy hoạch động (DP)</strong> là phương pháp tối ưu hóa chia bài toán lớn thành các bài toán con trùng lặp (Overlapping Subproblems) và lưu lại kết quả đã tính để không phải tính lại. Hai cách tiếp cận: <em>Top-down (Đệ quy có nhớ - Memoization)</em> và <em>Bottom-up (Lập bảng từ dưới lên - Tabulation)</em>.</p>",
+          "code": "// 1D DP: Bài toán leo cầu thang (Climbing Stairs)\nfunction climbStairs(n) {\n  if (n <= 2) return n;\n  let prev2 = 1, prev1 = 2;\n  for (let i = 3; i <= n; i++) {\n    const curr = prev1 + prev2;\n    prev2 = prev1;\n    prev1 = curr;\n  }\n  return prev1;\n}\n\n// 1D DP: Đổi tiền với số đồng xu ít nhất (Coin Change)\nfunction coinChange(coins, amount) {\n  const dp = Array(amount + 1).fill(Infinity);\n  dp[0] = 0;\n  for (let i = 1; i <= amount; i++) {\n    for (const coin of coins) {\n      if (coin <= i) dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n    }\n  }\n  return dp[amount] === Infinity ? -1 : dp[amount];\n}\n\n// 2D DP: Chuỗi con chung dài nhất (Longest Common Subsequence)\nfunction longestCommonSubsequence(text1, text2) {\n  const m = text1.length, n = text2.length;\n  const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));\n  for (let i = 1; i <= m; i++) {\n    for (let j = 1; j <= n; j++) {\n      if (text1[i-1] === text2[j-1]) {\n        dp[i][j] = dp[i-1][j-1] + 1;\n      } else {\n        dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);\n      }\n    }\n  }\n  return dp[m][n];\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "DP = Đệ quy + Bộ nhớ đệm | Lặp bảng Tabulation từ bài toán nhỏ đến lớn",
+            "1D DP: Thường áp dụng cho dãy số, bài toán đổi tiền xu, trộm nhà (House Robber)",
+            "2D DP: Áp dụng cho so sánh chuỗi, bài toán cái túi (Knapsack), khoảng cách biến đổi từ"
+          ],
+          "exercise": "Giải bài toán: Bài toán đổi tiền xu (Coin Change) và bài toán cái túi (0/1 Knapsack Problem)."
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "badge": "senior",
+      "desc": "Thuật toán & Cấu trúc nâng cao",
+      "lessons": [
+        {
+          "id": "advanced",
+          "title": "Cấu Trúc Dữ Liệu Nâng Cao: Heap, Trie & Segment Tree",
+          "theory": "<p><strong>Heap (Priority Queue)</strong> giúp lấy phần tử lớn nhất/nhỏ nhất với <code>O(1)</code> và thêm/xóa với <code>O(log n)</code>. <strong>Trie (Cây tiền tố)</strong> tối ưu cho việc tìm kiếm từ khóa và tự động gợi ý (Autocomplete). <strong>Segment Tree</strong> chuyên xử lý truy vấn và cập nhật khoảng trên mảng với <code>O(log n)</code>.</p>",
+          "code": "// Min Heap: Hàng đợi ưu tiên phần tử nhỏ nhất\nclass MinHeap {\n  #data = [];\n  get size() { return this.#data.length; }\n  peek() { return this.#data[0]; }\n  \n  push(val) {\n    this.#data.push(val);\n    this.#bubbleUp(this.#data.length - 1);\n  }\n  \n  pop() {\n    const min = this.#data[0];\n    const last = this.#data.pop();\n    if (this.#data.length) {\n      this.#data[0] = last;\n      this.#bubbleDown(0);\n    }\n    return min;\n  }\n  \n  #bubbleUp(i) {\n    while (i > 0) {\n      const parent = Math.floor((i - 1) / 2);\n      if (this.#data[parent] <= this.#data[i]) break;\n      [this.#data[parent], this.#data[i]] = [this.#data[i], this.#data[parent]];\n      i = parent;\n    }\n  }\n  \n  #bubbleDown(i) {\n    while (2 * i + 1 < this.#data.length) {\n      let smallest = 2 * i + 1;\n      if (smallest + 1 < this.#data.length && this.#data[smallest+1] < this.#data[smallest])\n        smallest++;\n      if (this.#data[i] <= this.#data[smallest]) break;\n      [this.#data[i], this.#data[smallest]] = [this.#data[smallest], this.#data[i]];\n      i = smallest;\n    }\n  }\n}\n\n// Trie: Cây tiền tố phục vụ Autocomplete\nclass Trie {\n  constructor() { this.root = {}; }\n  insert(word) {\n    let node = this.root;\n    for (const ch of word) {\n      if (!node[ch]) node[ch] = {};\n      node = node[ch];\n    }\n    node.isEnd = true;\n  }\n  search(word) {\n    let node = this.root;\n    for (const ch of word) {\n      if (!node[ch]) return false;\n      node = node[ch];\n    }\n    return !!node.isEnd;\n  }\n  startsWith(prefix) {\n    let node = this.root;\n    for (const ch of prefix) {\n      if (!node[ch]) return false;\n      node = node[ch];\n    }\n    return true;\n  }\n}",
+          "lang": "javascript",
+          "keyPoints": [
+            "Heap: Thêm/xóa O(log n), đỉnh heap O(1), giải bài toán tìm K phần tử lớn nhất/nhỏ nhất",
+            "Trie: Tìm kiếm tiền tố với độ dài m tốn O(m), ứng dụng trong kiểm tra chính tả và gợi ý tìm kiếm",
+            "Segment Tree: Truy vấn tổng/min/max trong đoạn [L, R] và cập nhật giá trị chỉ tốn O(log n)"
+          ],
+          "exercise": "Giải bài toán tìm K phần tử xuất hiện nhiều nhất (Top K Frequent Elements) và xây dựng hệ thống gợi ý từ khóa."
+        }
+      ]
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "badge": "master",
+      "desc": "Chiến thuật phỏng vấn Big Tech",
+      "lessons": [
+        {
+          "id": "patterns",
+          "title": "14 Mẫu Tư Duy Giải Thuật Phỏng Vấn (Coding Interview Patterns)",
+          "theory": "<p>Tổng hợp 14 mẫu tư duy giải thuật phổ biến nhất trong các buổi phỏng vấn kỹ thuật (Google, Meta, Amazon): <em>Sliding Window, Two Pointers, Fast & Slow Pointers, Merge Intervals, Cyclic Sort, Top K Elements, Modified Binary Search</em>. Quy trình giải bài chuẩn: Hiểu rõ đề bài → Tự giải ví dụ bằng tay → Đề xuất ý tưởng → Viết code sạch → Kiểm tra các trường hợp đặc biệt (Edge Cases).</p>",
+          "code": "// Mẫu: Hợp nhất các khoảng thời gian bị chồng chéo (Merge Intervals)\nfunction merge(intervals) {\n  intervals.sort((a, b) => a[0] - b[0]);\n  const merged = [intervals[0]];\n  for (let i = 1; i < intervals.length; i++) {\n    const last = merged.at(-1);\n    if (intervals[i][0] <= last[1]) {\n      last[1] = Math.max(last[1], intervals[i][1]);\n    } else {\n      merged.push(intervals[i]);\n    }\n  }\n  return merged;\n}\n\n// Mẫu: Con trỏ Nhanh & Chậm (Tìm trung điểm Linked List)\nfunction findMiddle(head) {\n  let slow = head, fast = head;\n  while (fast && fast.next) {\n    slow = slow.next;\n    fast = fast.next.next;\n  }\n  return slow;\n}\n\n// Quy trình giải bài phỏng vấn 6 bước:\n// 1. HIỂU ĐỀ: Xác nhận kiểu dữ liệu đầu vào, đầu ra và các ràng buộc biên\n// 2. VÍ DỤ TAY: Tự nhẩm 2-3 ví dụ điển hình và ví dụ ngoại lệ\n// 3. HƯỚNG ĐI: Trình bày thuật toán trước khi viết code\n// 4. VIẾT CODE: Code sạch sẽ, đặt tên biến có ý nghĩa\n// 5. TEST: Tự trace lại từng dòng code với ví dụ\n// 6. TỐI ƯU: Đánh giá Time & Space Complexity",
+          "lang": "javascript",
+          "keyPoints": [
+            "Nắm vững 14 mẫu tư duy giúp giải quyết hơn 90% bài toán LeetCode Medium/Hard",
+            "Luôn tuân thủ quy trình 6 bước trong phỏng vấn kỹ thuật",
+            "Luôn kiểm tra các Edge Cases: Mảng rỗng, mảng 1 phần tử, giá trị âm, số trùng lặp"
+          ],
+          "exercise": "Thi thử phỏng vấn Mock Interview: Giải quyết 3 bài toán LeetCode Medium trong vòng 45 phút."
+        }
+      ]
+    }
+  ]
+}
