@@ -287,3 +287,52 @@ test('thanh ben: Project Lab va Du an cua toi la link trong app, danh dau trang 
   // Link chia se /project-level/<cap> chon san cap do
   expect(await screen.findByRole('button', { name: /Senior/, pressed: true })).toBeInTheDocument();
 });
+
+// ── Sua sau review ──
+
+test('doi cap khi AI dang tao idea: idea cua cap cu khong roi vao cap moi', async () => {
+  const u = userEvent.setup();
+  let tha!: () => void;
+  mo('/project-level', { ai: b => (b.taskType === 'projectIdea' ? new Promise(r => { tha = () => r(traText(JSON.stringify(IDEA))); }) : aiMacDinh(b)) });
+  await u.click(await screen.findByRole('button', { name: /Mid/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await u.click(screen.getByRole('button', { name: /Senior/ }));
+  await act(async () => { tha(); });
+  await new Promise(r => setTimeout(r, 30));
+  expect(screen.queryByRole('heading', { name: 'Rắn săn mồi' })).not.toBeInTheDocument();
+  expect(screen.getByText('Sẵn sàng!')).toBeInTheDocument();
+});
+
+test('dang cham thi bam Idea moi: diem cua project cu khong hien duoi idea moi', async () => {
+  const u = userEvent.setup();
+  let tha!: () => void;
+  let soIdea = 0;
+  mo('/project-level', {
+    ai: b => (b.taskType === 'projectIdea' ? traText(JSON.stringify({ ...IDEA, name: soIdea++ === 0 ? 'Rắn săn mồi' : 'Cờ vua' }))
+      : /Tổng hợp/.test(b.system) ? new Promise(r => { tha = () => r(aiMacDinh(b) as Response); }) : aiMacDinh(b))
+  });
+  await u.click(await screen.findByRole('button', { name: /Mid/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await screen.findByRole('heading', { name: 'Rắn săn mồi' });
+  await u.click(screen.getByRole('textbox', { name: 'Code của main.js' }));
+  await u.paste('let x = 1;');
+  await u.click(screen.getByRole('button', { name: /AI chấm toàn diện/ }));
+  await screen.findByText(/Tổng hợp đánh giá cuối cùng/);
+  await u.click(screen.getByRole('button', { name: /Idea mới/ }));
+  expect(await screen.findByRole('heading', { name: 'Cờ vua' })).toBeInTheDocument();
+  await act(async () => { tha(); });
+  await new Promise(r => setTimeout(r, 30));
+  expect(screen.queryByRole('heading', { name: /78\/100/ })).not.toBeInTheDocument();
+});
+
+test('link /project-level/<cap khac> (Back/Forward) khong xoa project dang lam', async () => {
+  const u = userEvent.setup();
+  const { router } = mo('/project-level/mid');
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await screen.findByRole('heading', { name: 'Rắn săn mồi' });
+  await act(() => router.navigate('/project-level/senior'));
+  await new Promise(r => setTimeout(r, 30));
+  expect(screen.getByRole('heading', { name: 'Rắn săn mồi' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Mid/ })).toHaveAttribute('aria-pressed', 'true');
+  expect(router.state.location.pathname).toBe('/project-level/mid');
+});

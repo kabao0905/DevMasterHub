@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
-import { chupViecDangLam, napViecDangLam, KHOA_VIEC_REACT } from './viec-dang-lam';
+import { chupViecDangLam, datMacDinhViecDangLam, napViecDangLam, KHOA_VIEC_REACT } from './viec-dang-lam';
 
 export type SupabaseLike = Pick<SupabaseClient, 'auth' | 'from'>;
 export type HoSo = { id: string; username: string; display_name: string | null };
@@ -31,6 +31,8 @@ const AuthContext = createContext<GiaTri | null>(null);
 
 export function AuthProvider({ children, client = supabase }: { children: ReactNode; client?: SupabaseLike }) {
   const qc = useQueryClient();
+  // Truoc khi nap lai viec dang lam: muc nap lai khong bi don sau 5 phut
+  useState(() => datMacDinhViecDangLam(qc));
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const daCoSuKien = useRef(false);

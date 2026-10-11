@@ -10,13 +10,13 @@ const NHAN_TRANG_THAI: Record<TrangThaiCham, string> = {
 const BIEU_TUONG: Record<TrangThaiCham, string> = { excellent: '🎉', good: '👍', partial: '💪', needs_work: '📝' };
 
 /** Mau theo diem /100 (cung nguong voi app cu) */
-const mauDiem = (d: number) => (d >= 80 ? 'text-emerald-400' : d >= 60 ? 'text-amber-300' : d >= 40 ? 'text-orange-400' : 'text-red-400');
+const mauDiem = (d: number | null) => d == null ? 'text-muted-foreground' : (d >= 80 ? 'text-emerald-400' : d >= 60 ? 'text-amber-300' : d >= 40 ? 'text-orange-400' : 'text-red-400');
 const nenDiem = (d: number) => (d >= 80 ? 'bg-emerald-400' : d >= 60 ? 'bg-amber-300' : d >= 40 ? 'bg-orange-400' : 'bg-red-400');
 
-function Thanh({ diem, cao = 'h-2' }: { diem: number; cao?: string }) {
+function Thanh({ diem, cao = 'h-2' }: { diem: number | null; cao?: string }) {
   return (
     <div className={cn('w-full overflow-hidden rounded-full bg-muted', cao)} aria-hidden="true">
-      <div className={cn('h-full rounded-full', nenDiem(diem))} style={{ width: `${diem}%` }} />
+      <div className={cn('h-full rounded-full', nenDiem(diem ?? 0))} style={{ width: `${diem ?? 0}%` }} />
     </div>
   );
 }
@@ -40,7 +40,7 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
     <article aria-labelledby="ket-qua-cham" className="space-y-5 rounded-2xl border bg-card p-6">
       <header className="space-y-3">
         <h2 id="ket-qua-cham" className="text-2xl font-semibold tracking-tight">
-          <span aria-hidden="true">{BIEU_TUONG[kq.status]} </span>{t(NHAN_TRANG_THAI[kq.status])} — <span className={mauDiem(kq.score)}>{kq.score}/100</span>
+          <span aria-hidden="true">{BIEU_TUONG[kq.status]} </span>{t(NHAN_TRANG_THAI[kq.status])} — <span className={mauDiem(kq.score)}>{kq.score ?? '?'}/100</span>
         </h2>
         <Thanh diem={kq.score} />
         {kq.summary && <p className="leading-relaxed">{kq.summary}</p>}

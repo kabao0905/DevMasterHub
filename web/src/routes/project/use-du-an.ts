@@ -28,13 +28,18 @@ export type KhoDuAn = {
   dangTao?: boolean; loiTao?: string;
   dangGui?: boolean; loiChat?: string;
   dangCham?: boolean; tienDo?: TienDoCham | null; loiCham?: string;
+  /**
+   * Tang moi khi bat dau lai tu idea (doi cap, Idea moi, mo idea da luu): ket qua AI cua phien cu ve muon
+   * thi bo, khong roi vao project moi. phienCham tang them khi Xoa tat ca (diem cua code da xoa).
+   */
+  phien?: number; phienCham?: number;
 };
 
 export const TEP_MAC_DINH: TepDuAn = { name: 'main.js', lang: 'javascript', code: '' };
 export const KHO_RONG: KhoDuAn = { level: null, topic: '', idea: null, chat: [], files: [TEP_MAC_DINH], tepDangMo: 0, ketQua: null };
 
 /** Bat dau lai tu idea (resetProjectState cua app cu), giu cap/chu de da chon */
-const lamMoi = (s: KhoDuAn): KhoDuAn => ({ ...KHO_RONG, level: s.level, topic: s.topic });
+const lamMoi = (s: KhoDuAn, level = s.level): KhoDuAn => ({ ...KHO_RONG, level, topic: s.topic, phien: (s.phien ?? 0) + 1, phienCham: s.phienCham });
 
 export const DUOI_THEO_NGON_NGU: Record<string, string> = {
   javascript: 'js', python: 'py', java: 'java', cpp: 'cpp', csharp: 'cs', go: 'go', rust: 'rs', php: 'php', html: 'html', css: 'css', typescript: 'ts', json: 'json'
@@ -49,7 +54,8 @@ export const khoaDuAn = (uid: string | undefined, cheDo: CheDo): QueryKey => ['p
 export function moYTuongDaLuu(qc: QueryClient, uid: string | undefined, yt: YTuongDaLuu): CheDo {
   const cheDo: CheDo = yt.source === 'topic' ? 'topic' : 'level';
   const level = cheDo === 'level' ? (yt.level ?? yt.idea.difficulty ?? 'mid') : yt.level;
-  qc.setQueryData<KhoDuAn>(khoaDuAn(uid, cheDo), { ...KHO_RONG, level, topic: yt.topic ?? '', idea: { ...yt.idea } });
+  const cu = qc.getQueryData<KhoDuAn>(khoaDuAn(uid, cheDo)) ?? KHO_RONG;
+  qc.setQueryData<KhoDuAn>(khoaDuAn(uid, cheDo), { ...lamMoi(cu, level), topic: yt.topic ?? '', idea: { ...yt.idea } });
   return cheDo;
 }
 
@@ -88,21 +94,23 @@ export function useDuAn(cheDo: CheDo) {
     if (cheDo === 'level' ? !level : !topic) return;
     const k = khoa;
     dat(k, x => ({ ...lamMoi(x), dangTao: true }));
+    const phien = doc(k).phien;
     try {
       const idea = await taoYTuong(client, { level, topic, lang });
-      dat(k, x => ({ ...x, idea, dangTao: false }));
+      dat(k, x => (x.phien !== phien ? x : { ...x, idea, dangTao: false }));
     } catch (e) {
-      dat(k, x => ({ ...x, dangTao: false, loiTao: loiChu(e) }));
+      dat(k, x => (x.phien !== phien ? x : { ...x, dangTao: false, loiTao: loiChu(e) }));
     }
   }
 
   async function guiMentor(k: QueryKey, cauHoi: string, lichSu: TinNhan[], idea: YTuong, files: TepDuAn[]) {
     dat(k, x => ({ ...x, dangGui: true, loiChat: undefined }));
+    const phien = doc(k).phien;
     try {
       const traLoi = await hoiMentor(client, { nguCanh: nguCanhDuAn(idea, files), lichSu, cauHoi, lang });
-      dat(k, x => ({ ...x, chat: [...x.chat, { role: 'assistant', content: traLoi }], dangGui: false }));
+      dat(k, x => (x.phien !== phien ? x : { ...x, chat: [...x.chat, { role: 'assistant', content: traLoi }], dangGui: false }));
     } catch (e) {
-      dat(k, x => ({ ...x, dangGui: false, loiChat: loiChu(e) }));
+      dat(k, x => (x.phien !== phien ? x : { ...x, dangGui: false, loiChat: loiChu(e) }));
     }
   }
 
@@ -112,14 +120,17 @@ export function useDuAn(cheDo: CheDo) {
     const k = khoa;
     const { idea, files } = s;
     dat(k, x => ({ ...x, dangCham: true, loiCham: undefined, tienDo: null }));
+    const { phien, phienCham } = doc(k);
+    const cung = (x: KhoDuAn) => x.phien === phien && x.phienCham === phienCham;
     let ketQua: KetQuaCham;
     try {
-      ketQua = await chamDuAn(client, { idea, files, lang, khiTienDo: b => dat(k, x => ({ ...x, tienDo: b })) });
+      ketQua = await chamDuAn(client, { idea, files, lang, khiTienDo: b => dat(k, x => (cung(x) ? { ...x, tienDo: b } : x)) });
     } catch (e) {
-      dat(k, x => ({ ...x, dangCham: false, tienDo: null, loiCham: loiChu(e) }));
+      dat(k, x => (cung(x) ? { ...x, dangCham: false, tienDo: null, loiCham: loiChu(e) } : x));
       return;
     }
-    dat(k, x => ({ ...x, ketQua, dangCham: false, tienDo: null }));
+    // Project da doi thi khong hien diem o day; ban nop van luu (diem that cua code da nop)
+    dat(k, x => (cung(x) ? { ...x, ketQua, dangCham: false, tienDo: null } : x));
     if (!uid) return;
     try {
       // Ban cu: `projectSelectedLevel || projectTopicLevel || 'mid'` va chu de (rong o trang cap do)
@@ -138,7 +149,7 @@ export function useDuAn(cheDo: CheDo) {
     kho,
     tepMo,
     /** Theo cap do: doi cap thi bat dau lai (selectProjectLevel cua app cu) */
-    chonCap: (level: CapDo | null) => dat(khoa, x => (cheDo === 'level' ? (x.level === level ? x : { ...KHO_RONG, level }) : { ...x, level })),
+    chonCap: (level: CapDo | null) => dat(khoa, x => (cheDo === 'level' ? (x.level === level ? x : lamMoi(x, level)) : { ...x, level })),
     datChuDe: (topic: string) => dat(khoa, x => ({ ...x, topic })),
     taoIdea: () => { void taoIdea(); },
     hoi: (cauHoi: string) => {
@@ -174,7 +185,7 @@ export function useDuAn(cheDo: CheDo) {
     },
     doiNgonNgu: (lang: string) => datTep((files, i) => files.map((f, j) => (j === i ? { ...f, lang } : f))),
     datCode: (code: string) => datTep((files, i) => files.map((f, j) => (j === i ? { ...f, code } : f))),
-    xoaHet: () => dat(khoa, x => ({ ...x, files: [TEP_MAC_DINH], tepDangMo: 0, ketQua: null })),
+    xoaHet: () => dat(khoa, x => ({ ...x, files: [TEP_MAC_DINH], tepDangMo: 0, ketQua: null, dangCham: false, tienDo: null, phienCham: (x.phienCham ?? 0) + 1 })),
     cham: () => { void cham(); }
   };
 }

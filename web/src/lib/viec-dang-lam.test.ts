@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { chupViecDangLam, napViecDangLam, KHOA_VIEC_REACT } from './viec-dang-lam';
+import { chupViecDangLam, datMacDinhViecDangLam, napViecDangLam, KHOA_VIEC_REACT } from './viec-dang-lam';
 
 const moi = () => new QueryClient();
 
@@ -75,4 +75,18 @@ test('cat ca khong gian Project Lab (idea, file, chat); bo co dang tao/gui/cham'
   const moiQc = moi();
   napViecDangLam(moiQc, 'u1');
   expect(moiQc.getQueryData(['project', 'u1', 'level'])).toMatchObject({ idea: { name: 'X' }, files: [{ code: 'x' }], dangTao: false, dangGui: false, dangCham: false, tienDo: null });
+});
+
+test('viec dang lam nap lai (chua co trang nao dang mo) khong bi don sau 5 phut', () => {
+  vi.useFakeTimers();
+  try {
+    const cu = moi();
+    cu.setQueryData(['project', 'u1', 'level'], { idea: { name: 'X' }, files: [] });
+    chupViecDangLam(cu, 'u1');
+    const moiQc = moi();
+    datMacDinhViecDangLam(moiQc);
+    napViecDangLam(moiQc, 'u1');
+    vi.advanceTimersByTime(30 * 60_000);
+    expect(moiQc.getQueryData(['project', 'u1', 'level'])).toMatchObject({ idea: { name: 'X' } });
+  } finally { vi.useRealTimers(); }
 });

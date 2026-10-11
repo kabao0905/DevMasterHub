@@ -234,3 +234,11 @@ test('prompt chat mentor va ca chuoi cham project trung ban cu', async () => {
   await chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', cho: khongCho });
   expect(moi).toEqual(cu);
 });
+
+test('tong hop thieu diem tong: tinh tu 5 tieu chi; khong co gi thi de trong (khong luu 0)', () => {
+  const k = chuanHoaKetQua({ overall: 78, criteria: [{ name: 'A', score: 16 }, { name: 'B', score: 14 }] });
+  expect(k.score).toBe(30);
+  const rong = chuanHoaKetQua({ summary: 'x' });
+  expect(rong.score).toBeNull();
+  expect(taoBanNop({ review: rong, idea: IDEA, files: [] }).scoreOverall).toBeNull();
+});

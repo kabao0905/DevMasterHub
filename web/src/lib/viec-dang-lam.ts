@@ -24,6 +24,14 @@ function boCoDangCho(k: QueryKey, du: unknown): unknown {
   return du;
 }
 
+/**
+ * Viec dang lam chi nam trong cache: khi chua co trang nao dang dung (vua nap lai sau khi sang app cu,
+ * vua mo idea da luu) thi gcTime mac dinh 5 phut se don mat. Goi mot lan khi tao app.
+ */
+export function datMacDinhViecDangLam(qc: QueryClient): void {
+  for (const p of ['exercise', 'quiz', 'tutor', 'project', 'challenge']) qc.setQueryDefaults([p], { gcTime: Infinity });
+}
+
 function xoa() {
   try { sessionStorage.removeItem(KHOA_VIEC_REACT); } catch { /* che do rieng tu */ }
 }

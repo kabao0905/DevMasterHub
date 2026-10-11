@@ -29,7 +29,8 @@ export type DanhGiaModule = {
 export type TieuChi = { name: string; score: number; comment: string };
 export type TrangThaiCham = 'excellent' | 'good' | 'partial' | 'needs_work';
 export type KetQuaCham = {
-  score: number; status: TrangThaiCham; summary: string; criteria: TieuChi[];
+  /** null: AI khong cho diem tong va khong co tieu chi de tinh (ban cu luu null, hien '?') */
+  score: number | null; status: TrangThaiCham; summary: string; criteria: TieuChi[];
   strengths: string[]; improvements: string[]; tips: string[];
   perFileReviews: { fileName: string; score: number; summary: string }[];
   moduleReviews: DanhGiaModule[]; structureReview: DanhGiaCauTruc | null; localAnalysis: PhanTichTinh | null;
@@ -87,7 +88,7 @@ export function chuanHoaYTuong(x: unknown, capMacDinh: CapDo | null): YTuong {
 }
 
 const TRANG_THAI: TrangThaiCham[] = ['excellent', 'good', 'partial', 'needs_work'];
-const trangThaiTheoDiem = (d: number): TrangThaiCham => (d >= 85 ? 'excellent' : d >= 70 ? 'good' : d >= 50 ? 'partial' : 'needs_work');
+const trangThaiTheoDiem = (d: number | null): TrangThaiCham => d == null ? 'partial' : (d >= 85 ? 'excellent' : d >= 70 ? 'good' : d >= 50 ? 'partial' : 'needs_work');
 
 function chuanHoaCauTruc(x: unknown): DanhGiaCauTruc {
   const o = laDoiTuong(x) ? x : {};
@@ -110,12 +111,15 @@ function chuanHoaModule(x: unknown): DanhGiaModule {
 
 export function chuanHoaKetQua(x: unknown): KetQuaCham {
   const o = laDoiTuong(x) ? x : {};
-  const score = so(o.score, 0, 100);
+  const criteria = (Array.isArray(o.criteria) ? o.criteria : []).filter(laDoiTuong).map(c => ({ name: chu(c.name), score: so(c.score, 0, 20), comment: chu(c.comment) }));
+  const coDiem = typeof o.score === 'number' || (typeof o.score === 'string' && o.score.trim() !== '' && Number.isFinite(Number(o.score)));
+  // Thieu diem tong: 5 tieu chi /20 cong lai la /100; khong co gi thi de trong, khong bia ra 0
+  const score = coDiem ? so(o.score, 0, 100) : criteria.length ? Math.min(100, criteria.reduce((s, c) => s + c.score, 0)) : null;
   return {
     score,
     status: TRANG_THAI.includes(o.status as TrangThaiCham) ? (o.status as TrangThaiCham) : trangThaiTheoDiem(score),
     summary: chu(o.summary),
-    criteria: (Array.isArray(o.criteria) ? o.criteria : []).filter(laDoiTuong).map(c => ({ name: chu(c.name), score: so(c.score, 0, 20), comment: chu(c.comment) })),
+    criteria,
     strengths: dsChu(o.strengths), improvements: dsChu(o.improvements), tips: dsChu(o.tips),
     perFileReviews: (Array.isArray(o.perFileReviews) ? o.perFileReviews : []).filter(laDoiTuong)
       .map(p => ({ fileName: chu(p.fileName), score: so(p.score, 0, 100), summary: chu(p.summary) })),
@@ -137,7 +141,8 @@ export const nhomModule = (files: TepDuAn[]): ModuleDuAn[] => thuan.groupFilesIn
 export const catGonCode = (code: string, soDong = 300): string => thuan.smartTruncateCode(code, soDong);
 
 export function taoBanNop(p: { review: KetQuaCham; idea: YTuong; files: TepDuAn[]; difficulty?: string | null; topic?: string | null }): BanNop {
-  return thuan.buildSubmission(p);
+  // buildSubmission cu doc Number(score): null thanh 0 — bo han de no luu null
+  return thuan.buildSubmission(p.review.score == null ? { ...p, review: { ...p.review, score: undefined as unknown as number } } : p);
 }
 
 /** Ngu canh gui mentor (sendProjectChat cua app cu): idea + code hien tai, file dai cat giua */

@@ -20,9 +20,14 @@ export function ProjectLevelPage() {
   const aiBat = useAiBat();
   usePageMeta({ title: `${t('byLevelHeader').replace(/^\S+\s/u, '')} | DevMaster Hub`, description: t('byLevelHeaderDesc') });
 
-  // Link chia se /project-level/<cap>: chon san cap do do
+  // Link chia se /project-level/<cap>: chon san cap do do — nhung dang lam project thi khong xoa no
+  // (Back/Forward toi mot muc lich su cu): dua URL ve cap dang lam
   const { chonCap } = duAn;
-  useEffect(() => { if (laCapDo(capUrl)) chonCap(capUrl); }, [capUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!laCapDo(capUrl) || capUrl === kho.level) return;
+    if (kho.idea && kho.level) navigate(`/project-level/${kho.level}`, { replace: true, preventScrollReset: true });
+    else chonCap(capUrl);
+  }, [capUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function chon(cap: CapDo) {
     duAn.chonCap(cap);
