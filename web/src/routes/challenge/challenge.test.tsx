@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
 import { giaSupabase } from '@/test/gia-supabase';
@@ -66,4 +66,20 @@ test('di tu roadmap vao bai hoc bang router (khong tai lai trang)', async () => 
 test('/lesson/<tech>/<cap> thieu bai thi ve roadmap cap do; /lesson tran ve Dashboard', async () => {
   const { router } = veApp('/lesson/python/junior', { gia: giaSupabase({ nguoiDung: { id: 'u1' } }), json: { '/curriculum/index.json': [] } });
   await waitFor(() => expect(router.state.location.pathname).toBe('/roadmap/python/junior'));
+});
+
+test('roi trang Thu thach roi quay lai: diem, co da giai va de AI van con', async () => {
+  const u = userEvent.setup();
+  const { router } = mo(() => traText('{"title":"De giu lai","level":"Dễ","scenario":"x","steps":[],"hint":""}'));
+  const lenh = await screen.findByRole('textbox', { name: 'Lệnh terminal' });
+  await u.click(lenh);
+  await u.paste(`submit ${CHALLENGES[0].flag}`);
+  await u.keyboard('{Enter}');
+  expect(await screen.findByText(`${CHALLENGES[0].points} XP`)).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: 'Ra đề mới' }));
+  expect(await screen.findByRole('heading', { name: 'De giu lai' })).toBeInTheDocument();
+  await act(() => router.navigate('/'));
+  await act(() => router.navigate('/challenge'));
+  expect(await screen.findByText(`${CHALLENGES[0].points} XP`)).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'De giu lai' })).toBeInTheDocument();
 });
