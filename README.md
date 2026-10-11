@@ -4,7 +4,7 @@ Nền tảng học lập trình từ Newbie đến Senior — **34 lộ trình, 
 
 **Demo:** https://devmaster-hub.onrender.com
 
-![DevMaster Hub](public/assets/og-image.png)
+![DevMaster Hub](web/public/assets/og-image.png)
 
 ---
 
@@ -17,13 +17,13 @@ Nền tảng học lập trình từ Newbie đến Senior — **34 lộ trình, 
 | **Project Lab** | Sinh ý tưởng dự án theo trình độ, nộp code và nhận review chấm theo 4 tiêu chí |
 | **Cố vấn nghề nghiệp** | Phân tích định hướng, đọc được cả link tin tuyển dụng người dùng dán vào |
 | **Tìm việc** | Lấy song song từ VietnamWorks, RemoteOK, Arbeitnow, Remotive, WeWorkRemotely; nguồn nào lỗi thì bỏ qua |
-| **Studio** | Sandbox chạy code, Visual Builder, Game Tilemap, SQL Studio, API Tester, CTF Terminal |
+| **Thực hành** | IDE chạy code ngay trong trang (xem trước trực tiếp, chế độ Thiết kế sửa giao diện bằng AI), terminal Linux mô phỏng, phòng lab Nginx, thử thách CTF |
 | **Đa ngôn ngữ** | 8 ngôn ngữ giao diện, AI trả lời theo đúng ngôn ngữ đang chọn |
 
 ## Công nghệ sử dụng
 
-**Frontend** — JavaScript thuần, không framework, không build step. Định tuyến bằng History API.
-**Backend** — Node.js + Express, một file `server.js` đóng vai trò proxy AI và lớp bảo vệ.
+**Frontend** — React 19 + TypeScript + Vite, Tailwind CSS v4 + shadcn/ui, react-router, TanStack Query. Thư mục `web/`.
+**Backend** — Node.js + Express, một file `server.js` đóng vai trò proxy AI, lớp bảo vệ và phục vụ bản build React.
 **Dữ liệu** — Supabase (Postgres + Auth), bảo mật bằng Row Level Security.
 **AI** — Bộ định tuyến đa nhà cung cấp: OpenRouter, Gemini, DeepSeek, Groq, Claude, tự chuyển khi một bên lỗi.
 
@@ -31,7 +31,7 @@ Nền tảng học lập trình từ Newbie đến Senior — **34 lộ trình, 
 
 ## Chạy trên máy
 
-Yêu cầu **Node.js 18 trở lên** (code dùng `fetch` toàn cục).
+Yêu cầu **Node.js 22.22 trở lên** (xem `engines` trong `package.json`).
 
 ```bash
 git clone https://github.com/kabao0905/DevMasterHub.git
@@ -47,11 +47,33 @@ cp .env.example .env
 
 Mở `.env` và điền ít nhất một khóa AI — `OPENROUTER_API_KEY` là tiện nhất vì một khóa dùng được nhiều mô hình.
 
+Khi phát triển (Vite chạy bên trong Express, một tiến trình, một cổng, sửa code là trang tự cập nhật):
+
+```bash
+npm run dev
+```
+
+Mở http://localhost:3000
+
+Chạy như production: build giao diện vào `dist/` rồi mới start (chưa build thì mọi trang trả 503 kèm hướng dẫn):
+
+```bash
+npm run build
+```
+
 ```bash
 npm start
 ```
 
-Mở http://localhost:3000
+Chạy toàn bộ bài kiểm (server bằng `node --test`, giao diện bằng Vitest):
+
+```bash
+npm test
+```
+
+### Deploy trên Render
+
+Build Command phải cài cả gói dev (Vite, TypeScript) rồi build: `npm install --include=dev && npm run build`. Start Command giữ `npm start`.
 
 ### Thiết lập Supabase
 
@@ -62,22 +84,31 @@ Chạy toàn bộ `supabase-schema.sql` trong SQL Editor của Supabase, sau đ�
 ## Cấu trúc thư mục
 
 ```
-public/            ← toàn bộ file được phục vụ ra Internet
-  index.html
-  app.js           giao diện và định tuyến
-  i18n.js          từ điển 8 ngôn ngữ
-  data*.js         dữ liệu 34 lộ trình học
-  auth-service.js  đăng nhập và đồng bộ tiến độ qua Supabase
-  ai-service.js    gọi AI cho bài học, quiz, bài tập
-  career-advisor.js
-  assets/
-
-server.js          proxy AI, lớp bảo vệ, chèn meta SEO, sinh sitemap
+web/                     giao diện React (gốc Vite)
+  index.html             giữ sẵn <title>/<meta> để server thay theo URL
+  src/routes/<màn-hình>/ mỗi màn hình một thư mục (lesson, project, career…)
+  src/components/        Sidebar, CodeBlock, ChatMarkdown, công cụ IDE/terminal…
+  src/lib/               Supabase, AI, i18n, giáo trình, logic thuần (có bài kiểm)
+  public/                robots.txt, llms*.txt, assets/ — được chép vào dist/ khi build
+data/                    ← nơi sửa nội dung
+  curriculum/<id>.json   34 lộ trình học (thu-tu.json giữ thứ tự hiển thị)
+  i18n.json              từ điển 8 ngôn ngữ
+scripts/xuat-du-lieu.mjs tách data/ thành JSON nhỏ cho giao diện tải theo nhu cầu
+lib/                     phần dùng chung của server (nạp giáo trình, chặn SSRF, kiểm body AI…)
+server.js                proxy AI, lớp bảo vệ, chèn meta SEO, sinh sitemap
+tests/                   bài kiểm server (node --test); bài kiểm giao diện nằm cạnh code trong web/src
 supabase-schema.sql
-.env               ← KHÔNG bao giờ commit
+.env                     ← KHÔNG bao giờ commit
+dist/                    bản build (không commit)
 ```
 
-Mọi thứ nằm **ngoài** `public/` đều không thể truy cập từ Internet. Đây là điểm quan trọng: `server.js`, `.env` và `package.json` được bảo vệ bằng cấu trúc thư mục, không phải bằng danh sách chặn — danh sách chặn luôn có nguy cơ sót.
+Server chỉ phục vụ file tĩnh từ `dist/`, nên mọi thứ khác (`server.js`, `.env`, `package.json`, `data/`) không thể truy cập từ Internet. Đây là điểm quan trọng: chúng được bảo vệ bằng cấu trúc thư mục, không phải bằng danh sách chặn — danh sách chặn luôn có nguy cơ sót.
+
+### Sửa nội dung và bản dịch
+
+- **Bài học:** sửa `data/curriculum/<id>.json`. Thêm công nghệ mới: tạo file mới và thêm id vào `thu-tu.json`.
+- **Chuỗi giao diện:** thêm khóa vào `data/i18n.json` (mục `translations`, đủ 8 ngôn ngữ). Bài kiểm giao diện đọc bản tiếng Việt từ `web/src/test/ban-dich-vi.ts`, nên thêm khóa đó vào cả file này.
+- `npm run dev` và `npm run build` tự xuất lại JSON cho giao diện.
 
 ---
 
@@ -102,6 +133,8 @@ Endpoint này tải trang web do người dùng đưa vào, nên phải:
 Trình thu thập của Facebook, Zalo, X và LinkedIn **không chạy JavaScript**, còn Google đọc HTML thô ở lượt đầu. Vì vậy `server.js` thay `<title>`, `canonical` và các thẻ `og:*` ngay trong HTML trước khi trả về, dựa trên đường dẫn được yêu cầu.
 
 `sitemap.xml` được sinh động từ chính dữ liệu bài học, nên thêm bài mới là sitemap tự cập nhật — hiện có 385 URL.
+
+Danh sách đường dẫn có trang nằm ở `lib/route-owner.js`. Đường dẫn lạ vẫn nhận trang React (hiện "Không tìm thấy") nhưng với mã 404, để máy tìm kiếm không lập chỉ mục trang rác. Thêm trang mới vào `web/src/router.tsx` thì thêm mẫu đường dẫn vào đó.
 
 ---
 
