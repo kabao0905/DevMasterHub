@@ -1,4 +1,4 @@
-import { docJson, goiAi, hoiGiaSu, nguCanhBai, taoQuiz } from './ai';
+import { apDungThietKe, chamBai, docJson, goiAi, hoiGiaSu, nguCanhBai, suaThietKe, taoBaiTap, taoQuiz, taoThuThach } from './ai';
 import type { SupabaseLike } from './auth';
 
 const client = { auth: { getSession: async () => ({ data: { session: { access_token: 'tk' } } }) } } as unknown as SupabaseLike;
@@ -124,4 +124,76 @@ test('loi mang/het gio hien bang loi de hieu, khong phai "Failed to fetch" hay "
   giaFetch(new DOMException('signal timed out', 'TimeoutError'));
   await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', cho: khongCho }))
     .rejects.toThrow('AI phản hồi quá lâu. Thử lại sau ít phút.');
+});
+
+describe('bai tap AI', () => {
+  test('tao bai tap: gui taskType exercise, ly thuyet da bo the, bai cu de tranh trung; chuan hoa ket qua', async () => {
+    const goi = giaFetch(traText('Day: {"title":"Tong hai so","content":"Viet ham tong(a,b)","hints":["dung +",3,""],"solution":"def tong(a,b): return a+b","solutionLang":"python\\" onclick=x"}'));
+    const bt = await taoBaiTap(client, { ...BAI, cu: 'Bai goc: in ra man hinh', lang: 'vi' });
+    expect(bt).toMatchObject({ title: 'Tong hai so', description: 'Viet ham tong(a,b)', hints: ['dung +'], solution: 'def tong(a,b): return a+b' });
+    expect(bt.solutionLang).toBeUndefined();
+    const b = body(goi[0]);
+    expect(b.taskType).toBe('exercise');
+    expect(b.messages[0].content).toContain('Biến lưu giá trị');
+    expect(b.messages[0].content).toContain('Bai goc: in ra man hinh');
+  });
+
+  test('tao bai tap: khong co mo ta hoac khong phai JSON thi bao loi', async () => {
+    giaFetch(traText('{"title":"X"}'));
+    await expect(taoBaiTap(client, { ...BAI, lang: 'vi' })).rejects.toThrow('AI trả về bài tập không hợp lệ');
+    giaFetch(traText('xin loi'));
+    await expect(taoBaiTap(client, { ...BAI, lang: 'vi' })).rejects.toThrow('AI trả về bài tập không hợp lệ');
+  });
+
+  test('cham bai: diem kep 0..100, status la thi suy theo diem, mang chi giu chuoi', async () => {
+    const goi = giaFetch(traText('{"score":"150","status":"tuyet","feedback":"Tot","errors":["thieu return",{}],"suggestions":"khong phai mang"}'));
+    const nx = await chamBai(client, { tech: { name: 'Python' }, deBai: 'Viet ham tong', baiLam: 'def tong(a,b): a+b', ngonNgu: 'python', lang: 'vi' });
+    expect(nx).toEqual({ score: 100, status: 'correct', feedback: 'Tot', errors: ['thieu return'], suggestions: [], correctedCode: undefined });
+    const b = body(goi[0]);
+    expect(b).toMatchObject({ taskType: 'checkAnswer', temperature: 0.3 });
+    expect(b.messages[0].content).toContain('```python\ndef tong(a,b): a+b\n```');
+    giaFetch(traText('{"score":30,"status":"partial"}'));
+    expect((await chamBai(client, { tech: { name: 'Python' }, deBai: 'x', baiLam: 'y', ngonNgu: 'python', lang: 'vi' })).status).toBe('partial');
+    giaFetch(traText('{"feedback":"khong co diem"}'));
+    await expect(chamBai(client, { tech: { name: 'Python' }, deBai: 'x', baiLam: 'y', ngonNgu: 'python', lang: 'vi' })).rejects.toThrow('AI chấm bài không hợp lệ');
+  });
+
+  test('sua thiet ke: chi giu chinh sua hop le, tep phai dang co; ap dung vao style.css va tep', async () => {
+    const files = { 'index.html': '<div class="card">x</div>', 'style.css': '.card { color: red; }' };
+    giaFetch(traText(JSON.stringify({ edits: [
+      { type: 'css', selector: '.card', props: { color: 'blue', padding: 12 } },
+      { type: 'file', file: 'hack.js', content: 'x' },
+      { type: 'css', selector: '.a' },
+      { type: 'file', file: 'index.html', content: '<main class="card">y</main>' }
+    ], explain: 'Đổi màu chữ' })));
+    const kq = await suaThietKe(client, { yeuCau: 'đổi màu chữ', chon: { tag: 'div', selector: '.card' }, files, lang: 'vi' });
+    expect(kq.edits).toHaveLength(2);
+    expect(kq.explain).toBe('Đổi màu chữ');
+    const ap = apDungThietKe(files, kq.edits);
+    expect(ap.soThayDoi).toBe(2);
+    expect(ap.files['style.css']).toContain('color: blue');
+    expect(ap.files['index.html']).toBe('<main class="card">y</main>');
+    expect(files['style.css']).toBe('.card { color: red; }');
+    giaFetch(traText('{"edits":[{"type":"file","file":"khac.js","content":"x"}]}'));
+    await expect(suaThietKe(client, { yeuCau: 'x', chon: null, files, lang: 'vi' })).rejects.toThrow('AI không đề xuất thay đổi nào.');
+  });
+
+  test('ra de thu thach: system chi lenh/tep co that; JSON bi cat van doc duoc; thieu tieu de thi bao loi', async () => {
+    const goi = giaFetch(traText('{"title":"Tim co an","level":"De","scenario":"Ke tan cong","steps":["ls -la","cat'));
+    const tt = await taoThuThach(client, { lenh: ['ls', 'cat'], tep: ['/home/hacker/a.txt'], lang: 'vi' });
+    expect(tt).toMatchObject({ title: 'Tim co an', level: 'De', scenario: 'Ke tan cong', steps: ['ls -la', 'cat'] });
+    const b = body(goi[0]);
+    expect(b.system).toContain('ls, cat.');
+    expect(b.system).toContain('/home/hacker/a.txt.');
+    giaFetch(traText('{"scenario":"x"}'));
+    await expect(taoThuThach(client, { lenh: ['ls'], tep: [], lang: 'vi' })).rejects.toThrow('AI ra đề không hợp lệ');
+  });
+
+  test('ngu canh tab Bai tap: bai AI dang lam, code hoc vien, ly thuyet phu', () => {
+    const nc = nguCanhBai({ ...BAI, tab: 'exercise', baiTap: { hienTai: { title: 'Tong', description: 'Viet ham tong', hints: ['dung +'] }, code: 'def tong(): pass' } });
+    expect(nc).toContain('Tiêu đề: Tong');
+    expect(nc).toContain('Gợi ý: dung +');
+    expect(nc).toContain('=== CODE HỌC VIÊN ĐÃ VIẾT ===\ndef tong(): pass');
+    expect(nc).toContain('Lý thuyết tham khảo (phụ)');
+  });
 });

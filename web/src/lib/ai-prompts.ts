@@ -101,3 +101,80 @@ Học viên đang xem tab: ${NHAN_TAB[tab] ?? 'bài học'}
 === BÀI HỌC HIỆN TẠI ===
 ${nguCanh}`;
 }
+
+// ── Bai tap (chep tu ai-service.js generateExercise / checkAnswer) ──
+
+export const BAI_TAP_SYSTEM = 'Bạn là giảng viên lập trình. Luôn trả lời bằng JSON hợp lệ.';
+
+export function promptBaiTap({ congNghe, capDo, baiHoc, lyThuyet, cu }: { congNghe: string; capDo: string; baiHoc: string; lyThuyet: string; cu: string }) {
+  return `Tạo 1 bài tập thực hành MỚI:
+
+CÔNG NGHỆ: ${congNghe}
+CẤP ĐỘ: ${capDo}
+BÀI HỌC: ${baiHoc}
+NỘI DUNG: ${lyThuyet.substring(0, 800)}
+BÀI TẬP CŨ (tránh trùng): ${cu || 'Không có'}
+
+Trả về JSON:
+{"title":"...","description":"Mô tả chi tiết","hints":["gợi ý 1","gợi ý 2"],"sampleInput":"...","expectedOutput":"...","solution":"code solution","solutionLang":"python/cpp/java/etc"}`;
+}
+
+export const CHAM_BAI_SYSTEM = 'Bạn là giảng viên lập trình. Đánh giá bài làm chính xác. Trả lời bằng JSON.';
+
+export function promptChamBai({ congNghe, deBai, baiLam, ngonNgu }: { congNghe: string; deBai: string; baiLam: string; ngonNgu: string }) {
+  return `Đánh giá bài làm của học viên:
+
+CÔNG NGHỆ: ${congNghe}
+BÀI TẬP: ${deBai}
+
+BÀI LÀM:
+\`\`\`${ngonNgu}
+${baiLam}
+\`\`\`
+
+Trả về JSON:
+{"score":0-100,"status":"correct|partial|incorrect","feedback":"nhận xét tổng thể","errors":["lỗi nếu có"],"suggestions":["gợi ý cải thiện"],"correctedCode":"code sửa nếu cần"}`;
+}
+
+// ── Che do Thiet ke (chep tu design-mode.js askAi) ──
+
+export function promptThietKe(tenFile: string[]) {
+  return [
+    'Bạn là trợ lý sửa giao diện web cho một nền tảng dạy lập trình.',
+    `Người học có ${tenFile.length} file: ${tenFile.join(', ')}.`,
+    'Hãy TỰ QUYẾT ĐỊNH phạm vi sửa dựa trên yêu cầu: nếu họ nói về một phần tử cụ thể',
+    'thì chỉ sửa CSS của phần tử đó; nếu họ yêu cầu đổi cả giao diện thì được phép',
+    'viết lại cả file.',
+    '',
+    'CHỈ trả về JSON thuần, không kèm giải thích ngoài JSON, không bọc trong markdown:',
+    '{"edits":[...],"explain":"một câu ngắn"}',
+    '',
+    'Mỗi phần tử trong "edits" là MỘT trong hai dạng:',
+    '  {"type":"css","selector":".card","props":{"background":"#fff","color":"red"}}',
+    '  {"type":"file","file":"index.html","content":"<toàn bộ nội dung file mới>"}',
+    '',
+    'Ưu tiên dạng "css" vì nó giữ nguyên code người học tự viết.',
+    'Chỉ dùng dạng "file" khi thật sự phải đổi cấu trúc HTML hoặc logic JS.'
+  ].join('\n');
+}
+
+// ── Thu thach CTF do AI ra (chep tu app.js generateChallenge) ──
+
+export function promptThuThach(lenh: string[], tep: string[]) {
+  const dsLenh = lenh.join(', ');
+  const dsTep = tep.join(', ');
+  return [
+    'Ban ra de thu thach Linux va an ninh mang cho hoc vien Viet Nam.',
+    dsLenh ? 'Terminal gia lap CHI co dung nhung lenh sau, khong co lenh nao khac:' : '',
+    dsLenh ? dsLenh + '.' : '',
+    dsLenh ? 'De bai can toi bat ky lenh nao ngoai danh sach tren la de KHONG giai duoc,' : '',
+    dsLenh ? 'nen tuyet doi khong ra de nhu vay (khong dung chmod, chown, sudo, ss, lsof, top, awk).' : '',
+    dsTep ? 'He thong tep chi co dung nhung tep sau:' : '',
+    dsTep ? dsTep + '.' : '',
+    dsTep ? 'Chi duoc nhac toi tep co trong danh sach, khong duoc bia duong dan moi.' : '',
+    'CHI tra ve JSON thuan, khong bao markdown:',
+    '{"title":"...","level":"De|Trung binh|Kho","scenario":"boi canh 2-3 cau",',
+    '"steps":["buoc 1","buoc 2"],"hint":"goi y mot lenh cu the"}',
+    'Viet ngan gon: title duoi 60 ky tu, scenario duoi 300 ky tu, toi da 4 buoc.'
+  ].filter(Boolean).join('\n');
+}
