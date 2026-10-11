@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { BookOpen, Code2, Dumbbell, ListChecks } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
-import { useTichKhiMo } from '@/lib/ngay-hoc';
+import { useBatDauHoc } from '@/lib/use-thoi-gian-hoc';
 import { useCurriculumIndex, useTech, taiJson } from '@/lib/use-curriculum';
 import { useProgress, useToggleComplete } from '@/lib/use-progress';
 import { useEscape } from '@/lib/use-escape';
@@ -37,7 +37,7 @@ export function LessonPage() {
   const vt = tech.data ? viTriBai(tech.data, levelId, lessonId) : null;
 
   useEscape(() => navigate(coTech ? `/roadmap/${coTech.id}` : '/'));
-  useTichKhiMo(coTech?.id ?? '', lessonId);
+  useBatDauHoc(coTech?.id ?? '', lessonId);
 
   const ten = vt && tech.data ? `${vt.lesson.title} — ${tech.data.name} | DevMaster Hub` : `${t('pageNotFound')} | DevMaster Hub`;
   const lyThuyet = boThe(vt?.lesson.theory);

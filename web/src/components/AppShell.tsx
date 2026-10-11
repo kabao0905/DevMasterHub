@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Outlet, ScrollRestoration, useLocation, type Location } from 'react-router';
 import { Menu, PanelLeftOpen } from 'lucide-react';
 import { useT } from '@/lib/i18n';
-import { useTichKhiHoiAi } from '@/lib/ngay-hoc';
+import { useDongHoHoc } from '@/lib/use-thoi-gian-hoc';
+import { ChaoMung } from '@/components/ChaoMung';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,8 @@ export function AppShell() {
   // Di trang bang router khong tai lai trang: tu dong menu tren dien thoai
   useEffect(() => { datMoMenu(false); }, [pathname]);
   const [thuGon, datThuGon] = useState(docThuGon);
-  useTichKhiHoiAi();
+  // Dem thoi gian hoc (mo mon hoc / hoi AI) cho lich tren Dashboard
+  useDongHoHoc();
   const doiThuGon = (v: boolean) => {
     datThuGon(v);
     try { localStorage.setItem(KHOA_THU_GON, v ? '1' : '0'); } catch { /* che do rieng tu */ }
@@ -39,6 +41,7 @@ export function AppShell() {
     <div className={cn('min-h-dvh', !thuGon && 'lg:grid lg:grid-cols-[17rem_1fr]')}>
       {/* Trang moi bat dau tu dau; Back/Forward tra lai vi tri cu */}
       <ScrollRestoration getKey={khoaCuon} />
+      <ChaoMung />
       {!thuGon && (
         <aside className="sticky top-0 hidden h-dvh border-r border-sidebar-border lg:block">
           <Sidebar onCollapse={() => doiThuGon(true)} />

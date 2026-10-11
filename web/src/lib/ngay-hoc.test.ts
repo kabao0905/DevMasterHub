@@ -1,4 +1,4 @@
-import { ngayDiaPhuong, tinhStreak } from './ngay-hoc';
+import { ngayDatMucTieu, ngayDiaPhuong, tinhStreak, tongTheoNgay } from './ngay-hoc';
 
 const ngay = (...ds: string[]) => new Set(ds);
 const HOM_NAY = new Date(2026, 9, 11, 9, 0); // 11/10/2026, gio may
@@ -32,4 +32,20 @@ test('chuoi qua dau thang va dau nam van lien', () => {
 test('daiNhat la chuoi dai nhat tung co, ke ca khi da dut', () => {
   const ds = ngay('2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04', '2026-10-10', '2026-10-11');
   expect(tinhStreak(ds, HOM_NAY)).toEqual({ hienTai: 2, daiNhat: 4 });
+});
+
+test('tongTheoNgay cong so giay theo ngay gio may, bo qua dong chua co thoi luong', () => {
+  const sang = new Date(2026, 9, 11, 8, 0).toISOString();
+  const toi = new Date(2026, 9, 11, 21, 0).toISOString();
+  const homQua = new Date(2026, 9, 10, 23, 30).toISOString();
+  expect(tongTheoNgay([
+    { started_at: sang, duration_seconds: 600 },
+    { started_at: toi, duration_seconds: 300 },
+    { started_at: homQua, duration_seconds: 120 },
+    { started_at: toi, duration_seconds: null }
+  ])).toEqual({ '2026-10-11': 900, '2026-10-10': 120 });
+});
+
+test('ngayDatMucTieu chi lay ngay hoc du so phut muc tieu', () => {
+  expect([...ngayDatMucTieu({ '2026-10-11': 900, '2026-10-10': 899 }, 15)]).toEqual(['2026-10-11']);
 });

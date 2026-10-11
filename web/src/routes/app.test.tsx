@@ -209,37 +209,74 @@ test('desktop: thu gon duoc sidebar, va van thu gon sau khi tai lai trang', asyn
   expect(screen.getByRole('complementary')).toBeInTheDocument();
 });
 
-const ghiNgayHoc = (gia: ReturnType<typeof giaSupabase>) => gia.truyVan.filter(q => q.bang === 'learning_sessions' && q.op === 'insert');
+const ghiThoiGian = (gia: ReturnType<typeof giaSupabase>) => gia.truyVan.filter(q => q.bang === 'learning_sessions' && (q.op === 'insert' || q.op === 'update'));
+const truocNgay = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
-test('dashboard: lich hoc tich cac ngay da hoc va dem chuoi ngay lien tiep', async () => {
-  const homQua = new Date(Date.now() - 86_400_000).toISOString();
-  veApp('/', { gia: daDangNhap({ learning_sessions: [{ started_at: new Date().toISOString() }, { started_at: homQua }] }), json: JSON_GIA });
+test('dashboard: lich chi tich ngay hoc du muc tieu, ngay hoc chua du to nhat, dem chuoi', async () => {
+  veApp('/', { gia: daDangNhap({ learning_sessions: [
+    { started_at: truocNgay(0), duration_seconds: 600 },
+    { started_at: truocNgay(0), duration_seconds: 300 },
+    { started_at: truocNgay(1), duration_seconds: 1200 },
+    { started_at: truocNgay(2), duration_seconds: 300 }
+  ] }), json: JSON_GIA });
   const lich = await screen.findByRole('region', { name: 'Lịch học' });
   expect(await within(lich).findByText('2 ngày liên tiếp')).toBeInTheDocument();
-  expect(within(lich).getByText('Dài nhất: 2 ngày')).toBeInTheDocument();
-  // Ngay 1 dau thang thi hom qua thuoc thang truoc, khong nam tren lich thang nay
-  const trongThang = new Date().getDate() > 1 ? 2 : 1;
-  expect(within(lich).getAllByRole('img', { name: /đã học/ })).toHaveLength(trongThang);
+  expect(within(lich).getByText('Hôm nay: 15/15 phút')).toBeInTheDocument();
+  expect(within(lich).getByRole('button', { name: /Mục tiêu: 15 phút\/ngày/ })).toBeInTheDocument();
+  // Dau thang thi hom qua / hom kia thuoc thang truoc, khong nam tren lich thang nay
+  const ngayThang = new Date().getDate();
+  expect(within(lich).getAllByRole('img', { name: /đã học/ })).toHaveLength(ngayThang > 1 ? 2 : 1);
+  if (ngayThang > 2) expect(within(lich).getByRole('img', { name: /học 5 phút/ })).toBeInTheDocument();
 });
 
-test('mo mot mon hoc thi tich ngay hom nay, mo tiep mon khac cung ngay khong ghi lai', async () => {
-  const gia = daDangNhap();
-  const { router } = veApp('/roadmap/python', { gia, json: JSON_GIA });
-  await waitFor(() => expect(ghiNgayHoc(gia)).toHaveLength(1));
-  expect(ghiNgayHoc(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'python' });
-  await act(() => router.navigate('/roadmap/react'));
-  await screen.findByRole('heading', { name: /React/ });
-  expect(ghiNgayHoc(gia)).toHaveLength(1);
+test('tao tai khoan xong: hien bang chao mung, chon so phut moi ngay roi vao hoc', async () => {
+  const u = userEvent.setup();
+  const gia = giaSupabase();
+  veApp('/auth', { gia, json: JSON_GIA });
+  await u.click(await screen.findByRole('tab', { name: 'Đăng ký' }));
+  await u.type(screen.getByLabelText('Tên đăng nhập'), 'binh');
+  await u.type(screen.getByLabelText('Mật khẩu'), 'MatKhau@2026');
+  await u.type(screen.getByLabelText('Nhập lại mật khẩu'), 'MatKhau@2026');
+  await u.click(screen.getByRole('button', { name: 'Đăng ký' }));
+  const hop = await screen.findByRole('dialog', { name: /Chào mừng/ });
+  await u.click(within(hop).getByRole('radio', { name: '30 phút' }));
+  await u.click(within(hop).getByRole('button', { name: 'Bắt đầu học' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(gia.client.auth.updateUser).toHaveBeenCalledWith({ data: { daily_goal_minutes: 30 } });
+  expect(await screen.findByRole('button', { name: /Mục tiêu: 30 phút\/ngày/ })).toBeInTheDocument();
 });
 
-test('hoi AI cung tich ngay hoc hom nay', async () => {
+test('da chon muc tieu thi khong hien lai bang chao mung; bam muc tieu tren lich de doi', async () => {
+  const u = userEvent.setup();
   const gia = daDangNhap();
   veApp('/', { gia, json: JSON_GIA });
-  const lich = await screen.findByRole('region', { name: 'Lịch học' });
-  act(() => { window.dispatchEvent(new Event('dmh:hoi-ai')); });
-  await waitFor(() => expect(ghiNgayHoc(gia)).toHaveLength(1));
-  expect(ghiNgayHoc(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'ai' });
-  expect(await within(lich).findByText('1 ngày liên tiếp')).toBeInTheDocument();
+  const nut = await screen.findByRole('button', { name: /Mục tiêu: 15 phút\/ngày/ });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await u.click(nut);
+  const hop = await screen.findByRole('dialog', { name: 'Đổi mục tiêu học mỗi ngày' });
+  await u.click(within(hop).getByRole('radio', { name: '45 phút' }));
+  await u.click(within(hop).getByRole('button', { name: 'Lưu mục tiêu' }));
+  expect(gia.client.auth.updateUser).toHaveBeenCalledWith({ data: { daily_goal_minutes: 45 } });
+  expect(await screen.findByRole('button', { name: /Mục tiêu: 45 phút\/ngày/ })).toBeInTheDocument();
+});
+
+test('mo mot mon hoc thi dong ho chay va ghi thoi gian hoc cho mon do', async () => {
+  // jsdom mac dinh coi trang la dang an (khong ve): gia lap tab dang hien de dong ho chay
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+  try {
+    const gia = daDangNhap();
+    veApp('/roadmap/python', { gia, json: JSON_GIA });
+    await screen.findByRole('heading', { name: /Python/ });
+    act(() => { vi.advanceTimersByTime(45_000); });
+    // waitFor tu kiem lai bang setInterval (dang bi gia lap): tra timer that truoc khi cho
+    vi.useRealTimers();
+    await waitFor(() => expect(ghiThoiGian(gia)).toHaveLength(1));
+    expect(ghiThoiGian(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'python', duration_seconds: 30 });
+  } finally {
+    vi.useRealTimers();
+    delete (document as { visibilityState?: unknown }).visibilityState;
+  }
 });
 
 test('o mat khau: nut hien/an doi qua lai kieu nhap', async () => {

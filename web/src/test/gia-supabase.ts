@@ -2,19 +2,24 @@
 // Lenh doc tra du lieu tu `bang[tenBang]`; moi truy van da chay ghi vao `truyVan`.
 // `treo[tenBang]`: Promise phai xong truoc khi truy van bang do tra ket qua (mo phong mang cham).
 // `loiGhi[tenBang]`: lenh ghi (insert/upsert/update/delete) vao bang do tra { error } nhu Supabase that.
+// Nguoi dung mac dinh da chon muc tieu hoc moi ngay (khong hien bang chao mung); muon thay bang chao mung
+// thi truyen user_metadata rieng, hoac dang ky (nguoi moi chua co muc tieu).
 import { vi } from 'vitest';
 import type { SupabaseLike } from '@/lib/auth';
 
 type TrangThai = { bang: string; op: string; payload: unknown; tuyChon?: unknown; dieuKien: [string, unknown][]; motDong: boolean };
 
 export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiGhi = {} }: {
-  bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string };
+  bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string; user_metadata?: Record<string, unknown> };
   treo?: Record<string, Promise<unknown> | undefined>;
   /** Chuoi: moi lan ghi deu loi; ham: quyet dinh tung lan (tra undefined la ghi duoc) */
   loiGhi?: Record<string, string | ((payload: unknown) => string | undefined)>;
 } = {}) {
   let phat: ((e: string, s: unknown) => void) | null = null;
   const truyVan: TrangThai[] = [];
+  const MUC_TIEU_MAC_DINH = { daily_goal_minutes: 15 };
+  let hienTai: { id: string; user_metadata: Record<string, unknown> } | null =
+    nguoiDung ? { ...nguoiDung, user_metadata: nguoiDung.user_metadata ?? MUC_TIEU_MAC_DINH } : null;
 
   const tao = (tenBang: string) => {
     const tt: TrangThai = { bang: tenBang, op: 'select', payload: null, dieuKien: [], motDong: false };
@@ -33,11 +38,18 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiG
       then: (ok: (v: unknown) => unknown, loi?: (e: unknown) => unknown) => {
         truyVan.push(tt);
         const v = bang[tenBang] ?? [];
-        const data = tt.op === 'select' ? (tt.motDong ? (v[0] ?? null) : v) : tt.payload;
+        let data = tt.op === 'select' ? (tt.motDong ? (v[0] ?? null) : v) : tt.payload;
         return Promise.resolve(treo[tenBang]).then(() => {
           const l = tt.op === 'select' ? undefined : loiGhi[tenBang];
           const thongBao = typeof l === 'function' ? l(tt.payload) : l;
           if (thongBao) return { data: null, error: { message: thongBao } };
+          // insert mot dong: ghi vao bang kem id tu tang nhu Postgres; .select().single() doc lai duoc id
+          if (tt.op === 'insert' && tt.payload && typeof tt.payload === 'object' && !Array.isArray(tt.payload)) {
+            const ds = (bang[tenBang] ??= []) as Record<string, unknown>[];
+            const dong = { id: ds.length + 1, ...(tt.payload as Record<string, unknown>) };
+            ds.push(dong);
+            if (tt.motDong) data = dong;
+          }
           // upsert ghi that vao bang theo cot onConflict, nhu Postgres — lan doc sau thay ket qua
           if (tt.op === 'upsert' && tt.payload && typeof tt.payload === 'object' && !Array.isArray(tt.payload)) {
             const ds = (bang[tenBang] ??= []) as Record<string, unknown>[];
@@ -55,7 +67,7 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiG
 
   const client = {
     auth: {
-      getSession: vi.fn(async () => ({ data: { session: nguoiDung ? { user: nguoiDung } : null } })),
+      getSession: vi.fn(async () => ({ data: { session: hienTai ? { user: hienTai } : null } })),
       onAuthStateChange: vi.fn((f: (e: string, s: unknown) => void) => {
         phat = f;
         return { data: { subscription: { unsubscribe() {} } } };
@@ -63,16 +75,25 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiG
       // Nhu Supabase that: dang nhap/dang ky thanh cong thi phat su kien SIGNED_IN
       signInWithPassword: vi.fn(async () => {
         if (loiDangNhap) return { data: { user: null }, error: { message: loiDangNhap } };
-        const user = { id: 'u1' };
+        const user = { id: 'u1', user_metadata: MUC_TIEU_MAC_DINH };
+        hienTai = user;
         phat?.('SIGNED_IN', { user });
         return { data: { user }, error: null };
       }),
       signUp: vi.fn(async () => {
-        const user = { id: 'u2' };
+        const user = { id: 'u2', user_metadata: {} };
+        hienTai = user;
         phat?.('SIGNED_IN', { user });
         return { data: { user }, error: null };
       }),
-      signOut: vi.fn(async () => { phat?.('SIGNED_OUT', null); return { error: null }; })
+      signOut: vi.fn(async () => { hienTai = null; phat?.('SIGNED_OUT', null); return { error: null }; }),
+      // Nhu Supabase that: gop vao user_metadata roi phat USER_UPDATED
+      updateUser: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        if (!hienTai) return { data: { user: null }, error: { message: 'Auth session missing!' } };
+        hienTai = { ...hienTai, user_metadata: { ...hienTai.user_metadata, ...data } };
+        phat?.('USER_UPDATED', { user: hienTai });
+        return { data: { user: hienTai }, error: null };
+      })
     },
     from: vi.fn(tao)
   };

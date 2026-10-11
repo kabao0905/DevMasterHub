@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
-import { baoDaHoiAi } from '@/lib/ngay-hoc';
+import { baoDaHoiAi } from '@/lib/dong-ho-hoc';
 import { useKho } from '@/lib/use-kho';
 import { useCurriculumIndex } from '@/lib/use-curriculum';
 import type { TinNhan } from '@/lib/ai';

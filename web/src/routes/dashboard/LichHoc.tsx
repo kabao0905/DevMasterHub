@@ -1,21 +1,26 @@
-// Lich hoc tren Dashboard: dai ngang cac ngay trong thang, tich ngay da hoc (mo mon hoc / hoi AI)
-// va dem chuoi ngay lien tiep. Cao vua bang khoi tieu de + thong ke ben trai.
+// Lich hoc tren Dashboard: dai ngang cac ngay trong thang. Ngay hoc du so phut muc tieu thi duoc tich,
+// hoc chua du thi to nhat; dem chuoi ngay dat muc tieu lien tiep. Cao vua bang khoi tieu de + thong ke.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame, Target } from 'lucide-react';
 import { useT } from '@/lib/i18n';
-import { ngayDiaPhuong, tinhStreak, useNgayHoc } from '@/lib/ngay-hoc';
+import { ngayDiaPhuong, tinhStreak } from '@/lib/ngay-hoc';
+import { useThoiGianHoc } from '@/lib/use-thoi-gian-hoc';
+import { HopMucTieu } from '@/components/ChaoMung';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const dauThang = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
+const phutTu = (giay: number) => Math.floor(giay / 60);
 
 export function LichHoc({ className }: { className?: string }) {
   const { t, lang } = useT();
-  const { ngay } = useNgayHoc();
+  const { giayTheoNgay, ngayDat, mucTieuPhut } = useThoiGianHoc();
   const homNay = new Date();
   const khoaHomNay = ngayDiaPhuong(homNay);
   const [thang, datThang] = useState(() => dauThang(homNay));
-  const { hienTai, daiNhat } = useMemo(() => tinhStreak(ngay, new Date()), [ngay]);
+  const [moMucTieu, datMoMucTieu] = useState(false);
+  const { hienTai, daiNhat } = useMemo(() => tinhStreak(ngayDat, new Date()), [ngayDat]);
+  const phutHomNay = phutTu(giayTheoNgay[khoaHomNay] ?? 0);
 
   const laThangNay = thang.getTime() === dauThang(homNay).getTime();
   const soNgay = new Date(thang.getFullYear(), thang.getMonth() + 1, 0).getDate();
@@ -68,18 +73,23 @@ export function LichHoc({ className }: { className?: string }) {
           {Array.from({ length: soNgay }, (_, i) => {
             const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
             const khoa = ngayDiaPhuong(d);
-            const daHoc = ngay.has(khoa);
-            const nhan = ngayDayDu.format(d);
+            const dat = ngayDat.has(khoa);
+            const phut = phutTu(giayTheoNgay[khoa] ?? 0);
+            const nhan = dat
+              ? t('studiedDay', { date: ngayDayDu.format(d) })
+              : phut > 0 ? t('studiedMinutes', { date: ngayDayDu.format(d), n: phut }) : ngayDayDu.format(d);
             return (
               <span
                 key={khoa}
                 role="img"
-                aria-label={daHoc ? t('studiedDay', { date: nhan }) : nhan}
-                title={daHoc ? t('studiedDay', { date: nhan }) : nhan}
+                aria-label={nhan}
+                title={nhan}
                 aria-current={khoa === khoaHomNay ? 'date' : undefined}
                 className={cn(
                   'grid aspect-square place-items-center rounded-md text-[11px] tabular-nums',
-                  daHoc ? 'bg-brand font-semibold text-white' : khoa > khoaHomNay ? 'bg-muted/30 text-muted-foreground/40' : 'bg-muted/60 text-muted-foreground',
+                  dat ? 'bg-brand font-semibold text-white'
+                    : phut > 0 ? 'bg-brand/25 text-foreground'
+                      : khoa > khoaHomNay ? 'bg-muted/30 text-muted-foreground/40' : 'bg-muted/60 text-muted-foreground',
                   khoa === khoaHomNay && 'ring-2 ring-primary'
                 )}
               >
@@ -90,7 +100,17 @@ export function LichHoc({ className }: { className?: string }) {
         </div>
       </div>
 
-      {!ngay.has(khoaHomNay) && <p className="text-xs text-muted-foreground">{t('streakHint')}</p>}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs">
+        <p className="text-muted-foreground tabular-nums" title={t('streakHint')}>
+          {t('todayMinutes', { m: Math.min(phutHomNay, 9999), n: mucTieuPhut })}
+        </p>
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-muted-foreground" onClick={() => datMoMucTieu(true)}>
+          <Target className="size-3.5" aria-hidden="true" /> {t('goalPerDay', { n: mucTieuPhut })}
+        </Button>
+      </div>
+
+      {/* Chi gan khi mo: moi lan mo lay lai muc tieu hien tai lam lua chon ban dau */}
+      {moMucTieu && <HopMucTieu mo onDong={() => datMoMucTieu(false)} />}
     </section>
   );
 }
