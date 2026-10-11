@@ -278,3 +278,12 @@ test('my projects: rong, loi tai co Thu lai, id la thi bao khong tim thay', asyn
   veApp('/my-projects', { gia, json: { '/api/health': { aiEnabled: true }, '/curriculum/index.json': [] } });
   expect(await screen.findByRole('button', { name: 'Thử lại' })).toBeInTheDocument();
 });
+
+test('thanh ben: Project Lab va Du an cua toi la link trong app, danh dau trang dang mo', async () => {
+  mo('/project-level/senior');
+  const nav = (await screen.findAllByRole('navigation', { name: 'DevMaster Hub' }))[0];
+  expect(within(nav).getByRole('link', { name: /Project Lab/ })).toHaveAttribute('aria-current', 'page');
+  expect(within(nav).getByRole('link', { name: /Dự án của tôi/ })).not.toHaveAttribute('aria-current');
+  // Link chia se /project-level/<cap> chon san cap do
+  expect(await screen.findByRole('button', { name: /Senior/, pressed: true })).toBeInTheDocument();
+});

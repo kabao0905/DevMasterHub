@@ -67,3 +67,12 @@ test('bo nho phien day (quota) thi bo qua, khong nem loi', () => {
   expect(() => chupViecDangLam(cu, 'u1')).not.toThrow();
   ghi.mockRestore();
 });
+
+test('cat ca khong gian Project Lab (idea, file, chat); bo co dang tao/gui/cham', () => {
+  const cu = moi();
+  cu.setQueryData(['project', 'u1', 'level'], { level: 'mid', topic: '', idea: { name: 'X' }, chat: [], files: [{ name: 'a.js', lang: 'javascript', code: 'x' }], tepDangMo: 0, ketQua: null, dangTao: true, dangGui: true, dangCham: true, tienDo: { buoc: 'module' } });
+  chupViecDangLam(cu, 'u1');
+  const moiQc = moi();
+  napViecDangLam(moiQc, 'u1');
+  expect(moiQc.getQueryData(['project', 'u1', 'level'])).toMatchObject({ idea: { name: 'X' }, files: [{ code: 'x' }], dangTao: false, dangGui: false, dangCham: false, tienDo: null });
+});

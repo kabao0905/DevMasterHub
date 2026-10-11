@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { NavLink, useNavigate } from 'react-router';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Briefcase, FolderKanban, FlaskConical, LayoutDashboard, LogOut, PanelLeftClose } from 'lucide-react';
 import { useT } from '@/lib/i18n';
@@ -30,6 +30,8 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
   const { data: ds = [] } = useCurriculumIndex();
   const { done } = useProgress();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const laTrangDuAn = /^\/(project|project-level|project-topic|saved-ideas)(\/|$)/.test(pathname);
   const { data: suc } = useQuery({
     queryKey: ['health'],
     queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'),
@@ -88,9 +90,15 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
           <NavLink to="/" end className={({ isActive }) => cn(lopMuc, isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
             <LayoutDashboard className="size-4" /> {t('dashboard')}
           </NavLink>
-          {/* Cac muc duoi day con o app cu: dung the a thuong de server tra dung trang */}
-          <a href="/project" className={lopMuc}><FlaskConical className="size-4" /> {t('projectLab')}</a>
-          <a href="/my-projects" className={lopMuc}><FolderKanban className="size-4" /> {t('myProjects')}</a>
+          {/* Project Lab gom ca trang theo cap do / chu de / idea da luu */}
+          <Link to="/project" aria-current={laTrangDuAn ? 'page' : undefined}
+            className={cn(lopMuc, laTrangDuAn && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
+            <FlaskConical className="size-4" /> {t('projectLab')}
+          </Link>
+          <NavLink to="/my-projects" className={({ isActive }) => cn(lopMuc, isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
+            <FolderKanban className="size-4" /> {t('myProjects')}
+          </NavLink>
+          {/* Con o app cu: dung the a thuong de server tra dung trang */}
           <a href="/career" className={lopMuc}><Briefcase className="size-4" /> {t('careerAdvisor')}</a>
 
           {nhom.map(([n, techs]) => (

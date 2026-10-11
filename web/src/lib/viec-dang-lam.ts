@@ -11,7 +11,7 @@ type BanChup = { uid: string; ds: [QueryKey, unknown][] };
 /** Chi du lieu thuan (JSON duoc); may terminal ['challenge', uid, 'may'] co ham nen khong cat */
 function cotCat(k: QueryKey, uid: string): boolean {
   if (k[1] !== uid) return false;
-  if (k[0] === 'exercise' || k[0] === 'quiz' || k[0] === 'tutor') return true;
+  if (k[0] === 'exercise' || k[0] === 'quiz' || k[0] === 'tutor' || k[0] === 'project') return true;
   return k[0] === 'challenge' && k[2] === 'de';
 }
 
@@ -20,6 +20,7 @@ function boCoDangCho(k: QueryKey, du: unknown): unknown {
   if (!du || typeof du !== 'object') return du;
   if (k[0] === 'exercise') return { ...du, dangTao: false, dangCham: false };
   if (k[0] === 'tutor') return { ...du, dangGui: false };
+  if (k[0] === 'project') return { ...du, dangTao: false, dangGui: false, dangCham: false, tienDo: null };
   return du;
 }
 
