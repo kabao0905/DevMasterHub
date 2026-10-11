@@ -53,7 +53,11 @@ export const cacRoute: RouteObject[] = [
         { path: 'lesson/:tech/:level?', element: <VeRoadmap /> },
         // Trang bai hoc va Thu thach (Prism, AI, terminal, IDE) tach chunk rieng
         { path: 'lesson/:tech/:level/:lesson', lazy: async () => ({ Component: (await import('@/routes/lesson/LessonPage')).LessonPage }) },
-        { path: 'challenge', lazy: async () => ({ Component: (await import('@/routes/challenge/ChallengePage')).ChallengePage }) }
+        { path: 'challenge', lazy: async () => ({ Component: (await import('@/routes/challenge/ChallengePage')).ChallengePage }) },
+        // Project Lab, idea da luu, du an cua toi
+        { path: 'project', lazy: async () => ({ Component: (await import('@/routes/project/ProjectHubPage')).ProjectHubPage }) },
+        { path: 'project-level/:level?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectLevelPage')).ProjectLevelPage }) },
+        { path: 'project-topic/:topic?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectTopicPage')).ProjectTopicPage }) }
       ]
     }]
   },
