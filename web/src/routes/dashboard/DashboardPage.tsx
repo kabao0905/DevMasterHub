@@ -84,27 +84,28 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-10">
-      {tieuDe}
+      {/* Tieu de + thong ke ben trai, lich hoc nam ngang ben phai cao bang ca khoi do; man hep thi xep doc */}
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch">
+        <div className="flex shrink-0 flex-col justify-between gap-8">
+          {tieuDe}
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:flex sm:flex-wrap">
+            {[
+              [t('statTech'), ds.length],
+              [t('statLessons'), tong.tong],
+              [t('statCompleted'), tong.xong],
+              [t('statProgress'), `${tong.phanTram}%`]
+            ].map(([nhan, so]) => (
+              <div key={String(nhan)}>
+                <dt className="text-xs text-muted-foreground">{nhan}</dt>
+                <dd className="text-xl font-semibold tabular-nums">{so}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <LichHoc className="xl:flex-1" />
+      </div>
 
       {isLoading ? <Skeleton className="h-44 w-full rounded-2xl" /> : <HocTiep viTri={keTiep} done={done} />}
-
-      {/* Thong ke ben trai, lich hoc ben phai (o trong canh hang thong ke); dien thoai thi xep doc */}
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:flex sm:flex-wrap">
-          {[
-            [t('statTech'), ds.length],
-            [t('statLessons'), tong.tong],
-            [t('statCompleted'), tong.xong],
-            [t('statProgress'), `${tong.phanTram}%`]
-          ].map(([nhan, so]) => (
-            <div key={String(nhan)}>
-              <dt className="text-xs text-muted-foreground">{nhan}</dt>
-              <dd className="text-xl font-semibold tabular-nums">{so}</dd>
-            </div>
-          ))}
-        </dl>
-        <LichHoc />
-      </div>
 
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
