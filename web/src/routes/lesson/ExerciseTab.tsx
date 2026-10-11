@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { khoaBai } from '@/lib/progress';
+import { useDanhDauXong } from '@/lib/use-progress';
+import type { NhanXet } from '@/lib/ai';
 import { timLab } from '@/lib/lab';
 import { escapeHtml } from '@/lib/highlight';
 import { presetFor, PRESETS } from '@/lib/sandpack-doc';
 import { seedFilesFromLesson, TECH_FRONTEND } from '@/lib/exercise-seed';
-import type { BaiDayDu } from '@/lib/curriculum';
 import { ChatMarkdown } from '@/components/ChatMarkdown';
 import { CodeBlock } from '@/components/CodeBlock';
 import { Button } from '@/components/ui/button';
@@ -28,10 +29,11 @@ type Props = { bai: BaiDangMo; baiTap: BaiTapBai; aiEnabled: boolean | undefined
  * IDE truc tiep (cong nghe frontend) -> o soan + bai tap AI + AI cham.
  */
 export function ExerciseTab({ bai, baiTap, aiEnabled }: Props) {
+  const danhDauXong = useDanhDauXong();
   const lab = timLab(khoaBai(bai.tech.id, bai.level.id, bai.lesson.id));
-  if (lab) return <LabPanel lab={lab} />;
-  if (bai.tech.id === 'cybersecurity') return <TerminalBaiHoc lesson={bai.lesson} />;
-  if (TECH_FRONTEND.includes(bai.tech.id)) return <IdeBaiHoc bai={bai} baiTap={baiTap} />;
+  if (lab) return <LabPanel lab={lab} onHoanThanh={() => danhDauXong(bai.tech.id, bai.level.id, bai.lesson.id)} />;
+  if (bai.tech.id === 'cybersecurity') return <TerminalBaiHoc bai={bai} baiTap={baiTap} aiEnabled={aiEnabled} />;
+  if (TECH_FRONTEND.includes(bai.tech.id)) return <IdeBaiHoc bai={bai} baiTap={baiTap} aiEnabled={aiEnabled} />;
   return <BaiTapSoan bai={bai} baiTap={baiTap} aiEnabled={aiEnabled} />;
 }
 
@@ -45,21 +47,24 @@ function DeBaiGoc({ text }: { text?: string }) {
   return <div className="noi-dung-bai whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: dich.html }} />;
 }
 
-function TerminalBaiHoc({ lesson }: { lesson: BaiDayDu }) {
+/** Terminal mo phong khong tu cham duoc: hoc vien dan lenh da chay + ket qua de AI cham */
+function TerminalBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
   const kenh = useTerminal();
   return (
     <div className="space-y-4">
       <div className="rounded-xl border bg-card p-5">
         <h2 className="mb-2 font-semibold">{t('practiceTerminal')}</h2>
-        <DeBaiGoc text={lesson.exercise} />
+        <DeBaiGoc text={bai.lesson.exercise} />
       </div>
       <Terminal kenh={kenh} />
+      <CodeArea value={baiTap.traLoi} onChange={baiTap.datTraLoi} label={t('terminalAnswerLabel')} />
+      <NopChamAi baiTap={baiTap} aiEnabled={aiEnabled} baiLam={baiTap.traLoi} lang={bai.lesson.lang} />
     </div>
   );
 }
 
-function IdeBaiHoc({ bai, baiTap }: { bai: BaiDangMo; baiTap: BaiTapBai }) {
+function IdeBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
   const { tech, lesson } = bai;
   const seed = useMemo(() => seedFilesFromLesson(lesson, tech.id), [lesson, tech.id]);
@@ -75,6 +80,25 @@ function IdeBaiHoc({ bai, baiTap }: { bai: BaiDangMo; baiTap: BaiTapBai }) {
         <DeBaiGoc text={lesson.exercise} />
       </div>
       <LiveIde techId={tech.id} files={baiTap.kho.files ?? macDinh} macDinh={macDinh} onFilesChange={baiTap.datFiles} tepDau={seed?.[0]?.name} />
+      <NopChamAi baiTap={baiTap} aiEnabled={aiEnabled} baiLam={gopTep(baiTap.kho.files ?? macDinh)} lang={lesson.lang} />
+    </div>
+  );
+}
+
+/** Bo tep IDE thanh mot bai lam de AI cham (giong codeDangLam gui gia su) */
+const gopTep = (files: Record<string, string>) => Object.entries(files).map(([ten, code]) => `--- ${ten} ---\n${code}`).join('\n');
+
+/** Nut AI cham + loi + ket qua, cho bai tap khong co o soan rieng (IDE, terminal) */
+function NopChamAi({ baiTap, aiEnabled, baiLam, lang }: { baiTap: BaiTapBai; aiEnabled: boolean | undefined; baiLam: string; lang?: string }) {
+  const { t } = useT();
+  if (aiEnabled === false) return null;
+  return (
+    <div className="space-y-4">
+      <Button className="bg-brand text-white hover:opacity-90" onClick={() => baiTap.cham(baiLam)} disabled={!baiLam.trim() || baiTap.dangCham}>
+        {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
+      </Button>
+      {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}
+      {baiTap.nhanXet && <KetQuaCham nhanXet={baiTap.nhanXet} lang={lang} />}
     </div>
   );
 }
@@ -142,7 +166,7 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
 
       <div className="flex flex-wrap items-center gap-2">
         {aiEnabled !== false && (
-          <Button className="bg-brand text-white hover:opacity-90" onClick={baiTap.cham} disabled={!traLoi.trim() || baiTap.dangCham}>
+          <Button className="bg-brand text-white hover:opacity-90" onClick={() => baiTap.cham()} disabled={!traLoi.trim() || baiTap.dangCham}>
             {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
           </Button>
         )}
@@ -158,25 +182,30 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
       {baiTap.loiTao && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('exerciseFailed', { error: baiTap.loiTao.message })}</p>}
       {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}
 
-      {nhanXet && (
-        <section aria-label={t('scoreOutOf', { score: nhanXet.score })} className={cn('space-y-3 rounded-xl border p-5',
-          nhanXet.status === 'correct' ? 'border-level-newbie/50 bg-level-newbie/5' : nhanXet.status === 'partial' ? 'border-[#d29922]/50' : 'border-destructive/50')}>
-          <div className="flex flex-wrap items-baseline gap-3">
-            <p className="text-2xl font-semibold tabular-nums">{t('scoreOutOf', { score: nhanXet.score })}</p>
-            <p>{t(nhanXet.status === 'correct' ? 'answerCorrect' : nhanXet.status === 'partial' ? 'answerPartial' : 'answerWrong')}</p>
-          </div>
-          {nhanXet.feedback && <div className="leading-relaxed"><ChatMarkdown text={nhanXet.feedback} /></div>}
-          {nhanXet.errors.length > 0 && (
-            <div><p className="text-sm font-medium">{t('errorsLabel')}</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{nhanXet.errors.map(x => <li key={x}><ChatMarkdown text={x} /></li>)}</ul></div>
-          )}
-          {nhanXet.suggestions.length > 0 && (
-            <div><p className="text-sm font-medium">{t('suggestionsLabel')}</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{nhanXet.suggestions.map(x => <li key={x}><ChatMarkdown text={x} /></li>)}</ul></div>
-          )}
-          {nhanXet.correctedCode && (
-            <div className="space-y-1"><p className="text-sm font-medium">{t('correctedCodeLabel')}</p><CodeBlock code={nhanXet.correctedCode} lang={bai.lesson.lang} /></div>
-          )}
-        </section>
-      )}
+      {nhanXet && <KetQuaCham nhanXet={nhanXet} lang={bai.lesson.lang} />}
     </div>
+  );
+}
+
+function KetQuaCham({ nhanXet, lang }: { nhanXet: NhanXet; lang?: string }) {
+  const { t } = useT();
+  return (
+    <section aria-label={t('scoreOutOf', { score: nhanXet.score })} className={cn('space-y-3 rounded-xl border p-5',
+      nhanXet.status === 'correct' ? 'border-level-newbie/50 bg-level-newbie/5' : nhanXet.status === 'partial' ? 'border-[#d29922]/50' : 'border-destructive/50')}>
+      <div className="flex flex-wrap items-baseline gap-3">
+        <p className="text-2xl font-semibold tabular-nums">{t('scoreOutOf', { score: nhanXet.score })}</p>
+        <p>{t(nhanXet.status === 'correct' ? 'answerCorrect' : nhanXet.status === 'partial' ? 'answerPartial' : 'answerWrong')}</p>
+      </div>
+      {nhanXet.feedback && <div className="leading-relaxed"><ChatMarkdown text={nhanXet.feedback} /></div>}
+      {nhanXet.errors.length > 0 && (
+        <div><p className="text-sm font-medium">{t('errorsLabel')}</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{nhanXet.errors.map(x => <li key={x}><ChatMarkdown text={x} /></li>)}</ul></div>
+      )}
+      {nhanXet.suggestions.length > 0 && (
+        <div><p className="text-sm font-medium">{t('suggestionsLabel')}</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{nhanXet.suggestions.map(x => <li key={x}><ChatMarkdown text={x} /></li>)}</ul></div>
+      )}
+      {nhanXet.correctedCode && (
+        <div className="space-y-1"><p className="text-sm font-medium">{t('correctedCodeLabel')}</p><CodeBlock code={nhanXet.correctedCode} lang={lang} /></div>
+      )}
+    </section>
   );
 }

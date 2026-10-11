@@ -6,7 +6,7 @@ import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useBatDauHoc } from '@/lib/use-thoi-gian-hoc';
 import { useCurriculumIndex, useTech, taiJson } from '@/lib/use-curriculum';
-import { useProgress, useToggleComplete } from '@/lib/use-progress';
+import { useProgress } from '@/lib/use-progress';
 import { useEscape } from '@/lib/use-escape';
 import { timCongNghe, viTriBai } from '@/lib/curriculum';
 import { boThe, type TabBai } from '@/lib/ai';
@@ -66,7 +66,6 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   const thamSoTab = params.get('tab') as TabBai | null;
   const tab: TabBai = thamSoTab && TABS.includes(thamSoTab) ? thamSoTab : 'theory';
   const { isDone, loading } = useProgress();
-  const { toggle } = useToggleComplete();
   const xong = isDone(tech.id, level.id, lesson.id);
   const quizBai = useQuizBai(bai);
   const baiTap = useBaiTap(bai);
@@ -103,9 +102,14 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
           {level.name}
         </span>
         <h1 className="text-3xl font-bold tracking-tight text-balance">{translateTitle(lesson.title)}</h1>
-        <Button variant={xong ? 'secondary' : 'outline'} aria-pressed={xong} disabled={loading} onClick={() => toggle(tech.id, level.id, lesson.id)}>
-          {xong ? t('completed') : t('markComplete')}
-        </Button>
+        {/* Khong co nut tu tich: bai chi duoc tich khi lam DAT bai tap (AI cham Dung / xong lab) */}
+        {xong ? (
+          <p className="inline-flex rounded-lg border border-level-newbie/40 bg-level-newbie/10 px-3 py-1.5 text-sm font-medium text-level-newbie">{t('completed')}</p>
+        ) : (
+          <Button variant="outline" disabled={loading} onClick={() => doiTab('exercise')}>
+            <Dumbbell aria-hidden="true" /> {t('completeByExercise')}
+          </Button>
+        )}
       </header>
 
       <Tabs value={tab} onValueChange={doiTab}>

@@ -51,51 +51,50 @@ export function useProgress() {
   return { done, isDone, loading: !!user && (q.data === undefined || q.isPlaceholderData) };
 }
 
-type Bien = { uid: string; tech: string; level: string; lesson: string; xong: boolean };
+type Bien = { uid: string; tech: string; level: string; lesson: string };
 const KHOA_GHI = ['progress', 'ghi'];
-const datTrangThai = (ds: string[], khoa: string, xong: boolean) => (xong ? [...ds.filter(k => k !== khoa), khoa] : ds.filter(k => k !== khoa));
 
-/** Bat/tat "da hoan thanh" mot bai: doi ngay tren giao dien, ghi dung mot dong len Supabase */
-export function useToggleComplete() {
+/**
+ * Tich "da hoan thanh" mot bai. Chi goi khi hoc vien lam DAT bai tap/thu thach (AI cham Dung, xong lab):
+ * nguoi dung khong tu tich hay bo tich. Doi ngay tren giao dien, ghi dung mot dong len Supabase.
+ */
+export function useDanhDauXong() {
   const { client, user } = useAuth();
   const { t } = useT();
   const qc = useQueryClient();
-  const { mutate, isPending } = useMutation({
+  const { mutate } = useMutation({
     mutationKey: KHOA_GHI,
-    // Cung scope: lan ghi sau doi lan truoc xong, server nhan dung thu tu nguoi dung bam
+    // Cung scope: cac lan ghi tien do noi duoi nhau, server nhan dung thu tu
     scope: { id: 'progress' },
-    mutationFn: async ({ uid, tech, level, lesson, xong }: Bien) => {
+    mutationFn: async ({ uid, tech, level, lesson }: Bien) => {
       const { error } = await client.from('lesson_progress').upsert(
-        { user_id: uid, tech_id: tech, level_id: level, lesson_id: lesson, completed: xong, completed_at: xong ? new Date().toISOString() : null },
+        { user_id: uid, tech_id: tech, level_id: level, lesson_id: lesson, completed: true, completed_at: new Date().toISOString() },
         { onConflict: 'user_id,tech_id,level_id,lesson_id' }
       );
       if (error) throw error;
     },
-    onError: (_loi, { uid, tech, level, lesson, xong }) => {
-      // Supabase tra { error } chu khong nem: truoc day loi ghi bi nuot im lang
-      qc.setQueryData<string[]>(['progress', uid], ds => ds && datTrangThai(ds, khoaBai(tech, level, lesson), !xong));
+    onSuccess: () => { toast.success(t('lessonCompletedToast')); },
+    onError: (_loi, { uid, tech, level, lesson }) => {
+      // Supabase tra { error } chu khong nem: bo dau tich da hien truoc va bao loi
+      const khoa = khoaBai(tech, level, lesson);
+      qc.setQueryData<string[]>(['progress', uid], ds => ds && ds.filter(k => k !== khoa));
       toast.error(t('progressSaveFailed'));
     },
     onSettled: (_kq, _loi, { uid }) => {
-      // Lan ghi cuoi cung trong loat bam: lay lai su that tu server (queryFn ghi luon cache cho app cu).
-      // Doi den luc nay moi doi chieu vi giua chung giao dien da doi theo nhung lan bam sau.
+      // Lan ghi cuoi cung trong loat: lay lai su that tu server (queryFn ghi luon cache cho app cu).
       // Da dang xuat thi truy van da bi xoa: khong co gi de tai, khong ghi tien do nguoi cu vao may.
       if (qc.isMutating({ mutationKey: KHOA_GHI }) === 1) void qc.invalidateQueries({ queryKey: ['progress', uid] });
     }
   });
 
-  const toggle = useCallback((tech: string, level: string, lesson: string) => {
+  return useCallback((tech: string, level: string, lesson: string) => {
     if (!user) return;
     const uid = user.id;
     const khoa = khoaBai(tech, level, lesson);
     const ds = qc.getQueryData<string[]>(['progress', uid]);
-    // Chua biet trang thai that (dang tai / tai loi): bam luc nay se tinh sai va ghi de cache
-    if (!ds) return;
-    const xong = !ds.includes(khoa);
-    // Doi ngay luc bam (khong doi den luot ghi) de lan bam sau tinh tu trang thai nguoi dung dang thay
-    qc.setQueryData<string[]>(['progress', uid], datTrangThai(ds, khoa, xong));
-    mutate({ uid, tech, level, lesson, xong });
+    // Da xong tu truoc: khong ghi lai, khong chuc mung lan nua. Chua tai xong tien do thi van ghi (ghi "xong" khong hai gi)
+    if (ds?.includes(khoa)) return;
+    if (ds) qc.setQueryData<string[]>(['progress', uid], [...ds, khoa]);
+    mutate({ uid, tech, level, lesson });
   }, [user, qc, mutate]);
-
-  return { toggle, pending: isPending };
 }

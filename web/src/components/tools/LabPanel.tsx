@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { Terminal } from './Terminal';
 import { useTerminal } from './use-terminal';
 
-/** Phong lab: danh sach nhiem vu o tren, terminal rieng (nap bo tep cua lab) o duoi */
-export function LabPanel({ lab }: { lab: Lab }) {
+/** Phong lab: danh sach nhiem vu o tren, terminal rieng (nap bo tep cua lab) o duoi. onHoanThanh: vua xong het nhiem vu */
+export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => void }) {
   const kenh = useTerminal(lab.fs);
   const [daXong, datDaXong] = useState(() => docTienDo(lab.lessonKey));
   // O nhap cua tung nhiem vu giu rieng — ban cu ve lai ca danh sach, xoa chu dang go o nhiem vu khac
@@ -27,6 +27,8 @@ export function LabPanel({ lab }: { lab: Lab }) {
     const moi = [...daXong, nv.id];
     datDaXong(moi);
     luuTienDo(lab.lessonKey, moi);
+    const sau = tinhDiem(lab, moi);
+    if (sau.tong > 0 && sau.xong === sau.tong) onHoanThanh?.();
     datNhan(n => ({ ...n, [nv.id]: '' }));
   }
 

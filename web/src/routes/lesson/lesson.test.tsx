@@ -88,14 +88,53 @@ test('breadcrumb, bai truoc/sau qua ranh gioi cap, doi bai thi cuon len dau', as
   expect(screen.queryByRole('link', { name: /Bài tiếp theo/ })).not.toBeInTheDocument();
 });
 
-test('danh dau hoan thanh tu trang bai', async () => {
+const daGhiXong = (gia: ReturnType<typeof mo>['gia']) =>
+  gia.truyVan.some(q => q.bang === 'lesson_progress' && q.op === 'upsert' && (q.payload as { completed?: boolean }).completed === true);
+const traCham = (score: number) => traText(JSON.stringify({ score, status: score >= 80 ? 'correct' : 'partial', feedback: 'Nhận xét', errors: [], suggestions: [] }));
+
+test('khong tu tich hoan thanh duoc: chi co nut dua sang tab Bai tap', async () => {
   const u = userEvent.setup();
-  const { gia } = mo('/lesson/python/newbie/a', { bang: { lesson_progress: [] } });
-  const nut = await screen.findByRole('button', { name: /Đánh dấu hoàn thành/ });
-  await waitFor(() => expect(nut).toBeEnabled());
-  await u.click(nut);
-  expect(await screen.findByRole('button', { name: /Đã hoàn thành/ })).toHaveAttribute('aria-pressed', 'true');
-  await waitFor(() => expect(gia.truyVan.some(q => q.bang === 'lesson_progress' && q.op === 'upsert')).toBe(true));
+  const { gia, router } = mo('/lesson/python/newbie/a', { bang: { lesson_progress: [] } });
+  await tieuDe();
+  expect(screen.queryByRole('button', { name: /Đánh dấu hoàn thành/ })).not.toBeInTheDocument();
+  await u.click(await screen.findByRole('button', { name: /Làm bài tập để hoàn thành/ }));
+  expect(router.state.location.search).toBe('?tab=exercise');
+  expect(daGhiXong(gia)).toBe(false);
+});
+
+test('AI cham Gan dung thi chua tich; cham Dung thi bai tu duoc tich hoan thanh', async () => {
+  const u = userEvent.setup();
+  let diem = 70;
+  const { gia } = mo('/lesson/python/newbie/a?tab=exercise', { bang: { lesson_progress: [] }, ai: () => traCham(diem) });
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'class Stack: push pop');
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText('70/100 điểm')).toBeInTheDocument();
+  expect(daGhiXong(gia)).toBe(false);
+  diem = 90;
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText('90/100 điểm')).toBeInTheDocument();
+  expect(await screen.findByText('✅ Đã hoàn thành')).toBeInTheDocument();
+  await waitFor(() => expect(daGhiXong(gia)).toBe(true));
+});
+
+test('IDE React: nop ca bo tep dang soan cho AI cham; dat thi bai duoc tich', async () => {
+  const u = userEvent.setup();
+  const { gia, goiAi } = mo('/lesson/react/newbie/jsx?tab=exercise', { bang: { lesson_progress: [] }, ai: () => traCham(85) });
+  await screen.findByRole('textbox', { name: 'Soạn App.jsx' });
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText('85/100 điểm')).toBeInTheDocument();
+  expect(goiAi[0].messages[0].content).toContain('Xin chao JSX');
+  await waitFor(() => expect(daGhiXong(gia)).toBe(true));
+});
+
+test('an ninh mang: dan lenh da chay va ket qua de AI cham; dat thi bai duoc tich', async () => {
+  const u = userEvent.setup();
+  const { gia, goiAi } = mo('/lesson/cybersecurity/newbie/linux?tab=exercise', { bang: { lesson_progress: [] }, ai: () => traCham(95) });
+  await u.type(await screen.findByRole('textbox', { name: 'Dán các lệnh bạn đã chạy và kết quả' }), 'ls -la{enter}flag.txt');
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText('95/100 điểm')).toBeInTheDocument();
+  expect(goiAi[0].messages[0].content).toContain('flag.txt');
+  await waitFor(() => expect(daGhiXong(gia)).toBe(true));
 });
 
 test('ly thuyet da lam sach; diem chinh hien nguyen van, ke ca #include <iostream>', async () => {

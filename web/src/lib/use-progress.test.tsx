@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { screen } from '@testing-library/react';
 import { AuthProvider, useAuth } from './auth';
 import { I18nProvider } from './i18n';
-import { useProgress, useToggleComplete } from './use-progress';
+import { useDanhDauXong, useProgress } from './use-progress';
 import { giaSupabase } from '@/test/gia-supabase';
 import { BAN_DICH_VI } from '@/test/ban-dich-vi';
 import { Toaster } from '@/components/ui/sonner';
@@ -80,19 +80,19 @@ const XONG_A = { user_id: 'u1', tech_id: 'python', level_id: 'newbie', lesson_id
 const ghiTienDo = (gia: ReturnType<typeof giaSupabase>) => gia.truyVan.filter(q => q.bang === 'lesson_progress' && q.op === 'upsert');
 
 async function moDanhDau(gia: ReturnType<typeof giaSupabase>) {
-  const kq = renderHook(() => ({ p: useProgress(), d: useToggleComplete() }), { wrapper: bocDayDu(gia) });
+  const kq = renderHook(() => ({ p: useProgress(), d: useDanhDauXong() }), { wrapper: bocDayDu(gia) });
   await waitFor(() => expect(kq.result.current).not.toBeNull());
   act(() => gia.phat('SIGNED_IN', { user: { id: 'u1' } }));
   await waitFor(() => expect(kq.result.current.p.loading).toBe(false));
   return kq;
 }
 
-test('danh dau hoan thanh: ghi dung mot dong, co completed_at, va cache cho app cu', async () => {
+test('tich hoan thanh: ghi dung mot dong, co completed_at, va cache cho app cu', async () => {
   const gia = giaSupabase({ bang: { lesson_progress: [] } });
   const { result } = await moDanhDau(gia);
   let tha!: () => void;
   gia.treo.lesson_progress = new Promise<void>(r => { tha = r; });
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
+  act(() => result.current.d('python', 'newbie', 'b'));
   // Doi tren giao dien ngay, chua can server tra loi
   await waitFor(() => expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(true));
   tha();
@@ -104,82 +104,67 @@ test('danh dau hoan thanh: ghi dung mot dong, co completed_at, va cache cho app 
   await waitFor(() => expect(JSON.parse(localStorage.getItem('devmaster_hub_progress_cache')!)).toEqual({ 'python.newbie.b': true }));
 });
 
-test('bo danh dau: completed false, completed_at null, cache khong con bai do', async () => {
+test('bai da xong tu truoc: khong ghi lai, khong bao gio bo tich', async () => {
   const gia = giaSupabase({ bang: { lesson_progress: [XONG_A] } });
   const { result } = await moDanhDau(gia);
   await waitFor(() => expect(result.current.p.isDone('python', 'newbie', 'a')).toBe(true));
-  act(() => result.current.d.toggle('python', 'newbie', 'a'));
-  await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(1));
-  expect(ghiTienDo(gia)[0].payload).toMatchObject({ lesson_id: 'a', completed: false, completed_at: null });
-  await waitFor(() => expect(JSON.parse(localStorage.getItem('devmaster_hub_progress_cache')!)).toEqual({}));
+  act(() => result.current.d('python', 'newbie', 'a'));
+  await new Promise(r => setTimeout(r, 30));
+  expect(ghiTienDo(gia)).toHaveLength(0);
+  expect(result.current.p.isDone('python', 'newbie', 'a')).toBe(true);
 });
 
-test('Supabase tu choi ghi: hoan tac va bao loi', async () => {
-  const gia = giaSupabase({ bang: { lesson_progress: [] }, loiGhi: { lesson_progress: 'permission denied' } });
-  const { result } = await moDanhDau(gia);
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
-  expect(await screen.findByText('Không lưu được tiến độ. Thử lại sau.')).toBeInTheDocument();
-  expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(false);
-});
-
-test('bam hai lan lien tiep: hai lan ghi chay tuan tu, ket qua cuoi la chua xong', async () => {
+test('lam dat hai lan lien tiep (vd bai goc roi bai AI): chi ghi mot lan', async () => {
   const gia = giaSupabase({ bang: { lesson_progress: [] } });
   const { result } = await moDanhDau(gia);
-  let tha!: () => void;
-  gia.treo.lesson_progress = new Promise<void>(r => { tha = r; });
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
+  act(() => result.current.d('python', 'newbie', 'b'));
+  act(() => result.current.d('python', 'newbie', 'b'));
   await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(1));
-  expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(false);
-  await act(async () => { tha(); await new Promise(r => setTimeout(r, 20)); });
-  await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(2));
-  expect(ghiTienDo(gia).map(q => (q.payload as { completed: boolean }).completed)).toEqual([true, false]);
-  expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(false);
+  await new Promise(r => setTimeout(r, 30));
+  expect(ghiTienDo(gia)).toHaveLength(1);
 });
 
-test('bam lien tiep (bat, tat, bat) ma lan ghi dau loi: cuoi cung giao dien va cache khop server', async () => {
+test('Supabase tu choi ghi: hoan tac va bao loi; lan dat sau ghi lai duoc', async () => {
   let lan = 0;
-  const gia = giaSupabase({ bang: { lesson_progress: [] }, loiGhi: { lesson_progress: () => (lan++ === 0 ? 'mang chap chon' : undefined) } });
+  const gia = giaSupabase({ bang: { lesson_progress: [] }, loiGhi: { lesson_progress: () => (lan++ === 0 ? 'permission denied' : undefined) } });
   const { result } = await moDanhDau(gia);
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
-  await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(3));
-  // Server: lan 1 loi, lan 2 ghi false, lan 3 ghi true
+  act(() => result.current.d('python', 'newbie', 'b'));
+  expect(await screen.findByText('Không lưu được tiến độ. Thử lại sau.')).toBeInTheDocument();
+  await waitFor(() => expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(false));
+  act(() => result.current.d('python', 'newbie', 'b'));
+  await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(2));
   await waitFor(() => expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(true));
-  await waitFor(() => expect(JSON.parse(localStorage.getItem('devmaster_hub_progress_cache')!)).toEqual({ 'python.newbie.b': true }));
 });
 
-test('chua tai duoc tien do tu server (loi) thi khong cho bam, khong ghi de cache cua may', async () => {
+test('chua tai duoc tien do tu server (loi): van ghi "xong" len server, khong dung den cache cua may', async () => {
   const gia = giaSupabase({ bang: { lesson_progress: [] } });
+  const daGhi: unknown[] = [];
   // Doc tien do loi (mat mang luc tai), ghi van duoc
   gia.client.from.mockImplementation(() => ({
     select: () => ({ eq: () => Promise.resolve({ data: null, error: { message: 'mat mang' } }) }),
-    upsert: () => Promise.resolve({ data: null, error: null })
+    upsert: (p: unknown) => { daGhi.push(p); return Promise.resolve({ data: null, error: null }); }
   }) as never);
-  const kq = renderHook(() => ({ p: useProgress(), d: useToggleComplete() }), { wrapper: bocDayDu(gia) });
+  const kq = renderHook(() => ({ p: useProgress(), d: useDanhDauXong() }), { wrapper: bocDayDu(gia) });
   await waitFor(() => expect(kq.result.current).not.toBeNull());
   act(() => gia.phat('SIGNED_IN', { user: { id: 'u1' } }));
   // Cache tren may (vd app cu vua ghi) co nhieu bai hon nhung gi giao dien dang thay
   localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true,"python.newbie.c":true}');
   await new Promise(r => setTimeout(r, 50));
   expect(kq.result.current.p.loading).toBe(true);
-  act(() => kq.result.current.d.toggle('python', 'newbie', 'b'));
-  await new Promise(r => setTimeout(r, 50));
-  // Khong doi gi tren giao dien (khong biet trang thai that), khong dung den cache tren may
-  expect(kq.result.current.p.isDone('python', 'newbie', 'b')).toBe(false);
+  act(() => kq.result.current.d('python', 'newbie', 'b'));
+  await waitFor(() => expect(daGhi).toEqual([expect.objectContaining({ lesson_id: 'b', completed: true })]));
   expect(JSON.parse(localStorage.getItem('devmaster_hub_progress_cache')!)).toEqual({ 'python.newbie.a': true, 'python.newbie.c': true });
 });
 
 test('dang xuat khi lan ghi chua xong: khong ghi tien do nguoi cu vao cache cua may', async () => {
   const gia = giaSupabase({ bang: { lesson_progress: [] } });
-  const { result } = renderHook(() => ({ p: useProgress(), d: useToggleComplete(), a: useAuth() }), { wrapper: bocDayDu(gia) });
+  const { result } = renderHook(() => ({ p: useProgress(), d: useDanhDauXong(), a: useAuth() }), { wrapper: bocDayDu(gia) });
   await waitFor(() => expect(result.current).not.toBeNull());
   act(() => gia.phat('SIGNED_IN', { user: { id: 'u1' } }));
   await waitFor(() => expect(result.current.p.loading).toBe(false));
   let tha!: () => void;
   gia.treo.lesson_progress = new Promise<void>(r => { tha = r; });
-  act(() => result.current.d.toggle('python', 'newbie', 'b'));
+  act(() => result.current.d('python', 'newbie', 'b'));
   await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(1));
   await act(() => result.current.a.logout());
   await act(async () => { tha(); await new Promise(r => setTimeout(r, 30)); });

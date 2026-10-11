@@ -5,6 +5,7 @@ import { hashKey, useMutation, useQuery, useQueryClient, type QueryKey } from '@
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { khoaBai } from '@/lib/progress';
+import { useDanhDauXong } from '@/lib/use-progress';
 import { chamBai, taoBaiTap, type BaiTapAi, type NhanXet } from '@/lib/ai';
 import type { BaiDangMo } from './use-quiz-bai';
 
@@ -27,6 +28,7 @@ export function useBaiTap(bai: BaiDangMo) {
   const { client, user } = useAuth();
   const { lang } = useT();
   const qc = useQueryClient();
+  const danhDauXong = useDanhDauXong();
   const uid = user?.id;
   const kb = khoaBai(bai.tech.id, bai.level.id, bai.lesson.id);
   const khoa = useMemo<QueryKey>(() => ['exercise', uid, kb], [uid, kb]);
@@ -66,9 +68,13 @@ export function useBaiTap(bai: BaiDangMo) {
   });
 
   const cham = useMutation({
-    mutationFn: ({ deBai, baiLam }: { k: QueryKey; idx: number; deBai: string; baiLam: string }) =>
+    mutationFn: ({ deBai, baiLam }: { k: QueryKey; idx: number; deBai: string; baiLam: string; bai: [string, string, string] }) =>
       chamBai(client, { tech: bai.tech, deBai, baiLam, ngonNgu: bai.lesson.lang || '', lang }),
-    onSuccess: (nx, { k, idx }) => dat(k, s => ({ ...s, feedback: { ...s.feedback, [idx]: nx } })),
+    onSuccess: (nx, { k, idx, bai: [tech, level, lesson] }) => {
+      dat(k, s => ({ ...s, feedback: { ...s.feedback, [idx]: nx } }));
+      // Lam DAT bai tap (goc hay AI tao) la cach duy nhat de bai duoc tich hoan thanh
+      if (nx.status === 'correct') danhDauXong(tech, level, lesson);
+    },
     onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangCham: false }))
   });
 
@@ -88,10 +94,11 @@ export function useBaiTap(bai: BaiDangMo) {
       dat(khoa, s => ({ ...s, dangTao: true }));
       tao.mutate({ k: khoa, cu: deBaiChu });
     },
-    cham: () => {
-      if (!traLoi.trim() || kho.dangCham || cham.isPending) return;
+    /** Cham o soan (mac dinh) hoac bai lam truyen vao: bo tep IDE, lenh terminal da dan */
+    cham: (baiLam: string = traLoi) => {
+      if (!baiLam.trim() || kho.dangCham || cham.isPending) return;
       dat(khoa, s => ({ ...s, dangCham: true }));
-      cham.mutate({ k: khoa, idx: kho.activeExIdx, deBai: deBaiChu, baiLam: traLoi });
+      cham.mutate({ k: khoa, idx: kho.activeExIdx, deBai: deBaiChu, baiLam, bai: [bai.tech.id, bai.level.id, bai.lesson.id] });
     },
     chon: (idx: number) => { cham.reset(); dat(khoa, s => ({ ...s, activeExIdx: idx })); },
     datTraLoi: (text: string) => dat(khoa, s => ({ ...s, answers: { ...s.answers, [s.activeExIdx]: text } })),
