@@ -380,6 +380,35 @@ test('IDE React: sua code, doi sang Ly thuyet roi quay lai van con', async () =>
   expect(screen.getByRole('textbox', { name: 'Soạn App.jsx' })).toHaveValue(cu + ' // da sua');
 });
 
+test('sang trang app cu (tai trang moi) roi quay lai: cau tra loi, hoi thoai gia su, quiz da chon van con; khong treo "dang soan"', async () => {
+  const u = userEvent.setup();
+  const a = mo('/lesson/python/newbie/a?tab=exercise', {
+    ai: b => (b.taskType === 'quiz' ? traText(JSON.stringify(QUIZ))
+      : b.taskType === 'exercise' ? new Promise<Response>(() => {}) // AI chua soan xong luc roi trang
+        : traText('Biến là **hộp** chứa giá trị'))
+  });
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'class Stack');
+  await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
+  const chat = screen.getByRole('region', { name: /Hỏi Gia sư AI/ });
+  await u.click(within(chat).getByRole('button', { name: 'Giải thích đơn giản' }));
+  expect(await within(chat).findByText('hộp', { selector: 'strong' })).toBeInTheDocument();
+  await u.click(screen.getByRole('tab', { name: /Trắc nghiệm Quiz/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Quiz với AI/ }));
+  await u.click(within(await screen.findByRole('group', { name: /Câu 1/ })).getByRole('radio', { name: /==/ }));
+
+  // Link sang app cu tai trang that: trinh duyet phat pagehide roi bo tai lieu React
+  act(() => { window.dispatchEvent(new PageTransitionEvent('pagehide')); });
+  a.unmount();
+
+  // App cu dua ve bai (location.assign): tai lieu React moi, cache moi, cung nguoi dang nhap
+  mo('/lesson/python/newbie/a?tab=exercise');
+  expect(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('class Stack');
+  expect(screen.getByRole('button', { name: /AI tạo bài tập mới/ })).toBeEnabled();
+  expect(within(screen.getByRole('region', { name: /Hỏi Gia sư AI/ })).getByText('hộp', { selector: 'strong' })).toBeInTheDocument();
+  await u.click(screen.getByRole('tab', { name: /Trắc nghiệm Quiz/ }));
+  expect(within(await screen.findByRole('group', { name: /Câu 1/ })).getByRole('radio', { name: /==/ })).toBeChecked();
+});
+
 test('AI dang tao bai tap thi doi sang bai khac roi quay lai: van thay dang tao, xong thi hien AI #1, go tiep khong nhay bai', async () => {
   const u = userEvent.setup();
   let tha!: () => void;

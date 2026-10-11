@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
+import { chupViecDangLam, napViecDangLam, KHOA_VIEC_REACT } from './viec-dang-lam';
 
 export type SupabaseLike = Pick<SupabaseClient, 'auth' | 'from'>;
 export type HoSo = { id: string; username: string; display_name: string | null };
@@ -40,7 +41,7 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
     for (const k of KHOA_CACHE) {
       try { localStorage.removeItem(k); } catch { /* bo qua */ }
     }
-    try { sessionStorage.removeItem(KHOA_VIEC_DANG_LAM); } catch { /* bo qua */ }
+    try { sessionStorage.removeItem(KHOA_VIEC_DANG_LAM); sessionStorage.removeItem(KHOA_VIEC_REACT); } catch { /* bo qua */ }
   }, [qc]);
 
   useEffect(() => {
@@ -48,6 +49,8 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
     client.auth.getSession().then(({ data }) => {
       // Su kien dang nhap co the den truoc; khi do ket qua getSession ban dau da cu
       if (!song || daCoSuKien.current) return;
+      // Nap viec dang lam truoc khi cac trang con ve (chung chi ve khi het loading)
+      if (data.session) napViecDangLam(qc, data.session.user.id);
       setUser(data.session?.user ?? null);
       setLoading(false);
       if (!data.session) xoaDuLieuNguoiDung();
@@ -55,6 +58,7 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
     // Khong goi ham Supabase khac trong callback nay (co the khoa lan nhau) — chi doi state
     const { data } = client.auth.onAuthStateChange((_event, session) => {
       daCoSuKien.current = true;
+      if (session) napViecDangLam(qc, session.user.id);
       setUser(session?.user ?? null);
       setLoading(false);
       // Moi lan khong co phien (ke ca phien cu het han luc mo trang, khong co SIGNED_OUT) — giong app cu
@@ -64,13 +68,24 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
       song = false;
       data.subscription.unsubscribe();
     };
-  }, [client, xoaDuLieuNguoiDung]);
+  }, [client, qc, xoaDuLieuNguoiDung]);
+
+  // Sang trang app cu (hay tai lai) la bo tai lieu nay: cat viec dang lam de trang React ke tiep nap lai
+  const uidRef = useRef<string | undefined>(undefined);
+  useEffect(() => { uidRef.current = user?.id; }, [user]);
+  useEffect(() => {
+    const khiRoi = () => chupViecDangLam(qc, uidRef.current);
+    window.addEventListener('pagehide', khiRoi);
+    return () => window.removeEventListener('pagehide', khiRoi);
+  }, [qc]);
 
   // Back tu trang app cu: trinh duyet co the tra lai trang React tu bfcache (khong chay lai gi),
   // trong khi app cu vua ghi tien do/ho so — tai lai du lieu nguoi dung
   useEffect(() => {
     function khiHienLai(e: PageTransitionEvent) {
       if (!e.persisted) return;
+      // Mot trang React mo sau (nap tu ban chup cua trang nay roi lam tiep) co the da ghi ban chup moi hon
+      if (uidRef.current) napViecDangLam(qc, uidRef.current);
       void qc.invalidateQueries({ queryKey: ['progress'] });
       void qc.invalidateQueries({ queryKey: ['profile'] });
     }

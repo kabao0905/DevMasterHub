@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { AuthProvider, useAuth, type SupabaseLike } from './auth';
 import { giaSupabase } from '@/test/gia-supabase';
+import { chupViecDangLam, KHOA_VIEC_REACT } from './viec-dang-lam';
 
 function moAuth(client: SupabaseLike) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -37,6 +38,7 @@ test('dang xuat xoa cache truy van, cache localStorage va viec dang lam do app c
   localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true}');
   localStorage.setItem('devmaster_hub_profile_cache', '{}');
   sessionStorage.setItem('devmaster_hub_legacy_session', '{"uid":"u1","viec":{}}');
+  sessionStorage.setItem(KHOA_VIEC_REACT, '{"uid":"u1","ds":[]}');
 
   await act(() => result.current.logout());
 
@@ -45,6 +47,38 @@ test('dang xuat xoa cache truy van, cache localStorage va viec dang lam do app c
   expect(localStorage.getItem('devmaster_hub_progress_cache')).toBeNull();
   expect(localStorage.getItem('devmaster_hub_profile_cache')).toBeNull();
   expect(sessionStorage.getItem('devmaster_hub_legacy_session')).toBeNull();
+  expect(sessionStorage.getItem(KHOA_VIEC_REACT)).toBeNull();
+});
+
+test('roi trang (pagehide) thi cat viec dang lam; dang nhap lai cung nguoi o trang moi thi nap lai', async () => {
+  const { client, phat } = giaSupabase();
+  const a = moAuth(client);
+  act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
+  await waitFor(() => expect(a.result.current.user?.id).toBe('u1'));
+  a.qc.setQueryData(['exercise', 'u1', 'python.newbie.a'], { answers: { 0: 'class Stack' } });
+  act(() => { window.dispatchEvent(new PageTransitionEvent('pagehide')); });
+  a.unmount();
+
+  const b = giaSupabase();
+  const moiTrang = moAuth(b.client);
+  act(() => b.phat('SIGNED_IN', { user: { id: 'u1' } }));
+  await waitFor(() => expect(moiTrang.result.current.user?.id).toBe('u1'));
+  expect(moiTrang.qc.getQueryData(['exercise', 'u1', 'python.newbie.a'])).toMatchObject({ answers: { 0: 'class Stack' } });
+});
+
+test('Back tra lai trang React tu bfcache: nap ban chup moi hon do trang React sau ghi', async () => {
+  const { client, phat } = giaSupabase();
+  const { result, qc } = moAuth(client);
+  act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
+  await waitFor(() => expect(result.current.user?.id).toBe('u1'));
+  qc.setQueryData(['exercise', 'u1', 'k'], { answers: { 0: 'cu' } });
+  // Mot trang React khac (mo sau, nap tu ban chup cua trang nay roi go tiep) da roi di va ghi ban chup moi
+  const trangSau = new QueryClient();
+  trangSau.setQueryData(['exercise', 'u1', 'k'], { answers: { 0: 'cu + moi' } });
+  chupViecDangLam(trangSau, 'u1');
+
+  act(() => { window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })); });
+  expect(qc.getQueryData(['exercise', 'u1', 'k'])).toMatchObject({ answers: { 0: 'cu + moi' } });
 });
 
 test('dang xuat tu tab khac (su kien SIGNED_OUT) cung xoa cache', async () => {
