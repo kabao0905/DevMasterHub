@@ -4,7 +4,7 @@ import { Bot, Send } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { khoaBai } from '@/lib/progress';
-import { hoiGiaSu, nguCanhBai, type TabBai, type TinNhan, type TrangThaiQuiz } from '@/lib/ai';
+import { hoiGiaSu, nguCanhBai, type BaiTapAi, type TabBai, type TinNhan, type TrangThaiQuiz } from '@/lib/ai';
 import { ChatMarkdown } from '@/components/ChatMarkdown';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -21,7 +21,9 @@ const GOI_Y = [
 ];
 
 /** Gia su AI cua bai dang mo. Ngu canh gui di theo tab DANG mo (quiz: co cau hoi, chua lo dap an) */
-export function TutorChat({ bai, tab, quiz }: { bai: BaiDangMo; tab: TabBai; quiz?: TrangThaiQuiz }) {
+type Props = { bai: BaiDangMo; tab: TabBai; quiz?: TrangThaiQuiz; baiTap?: { hienTai?: BaiTapAi | null; code?: string } };
+
+export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
   const { t, lang } = useT();
   const { client, user } = useAuth();
   const qc = useQueryClient();
@@ -48,7 +50,7 @@ export function TutorChat({ bai, tab, quiz }: { bai: BaiDangMo; tab: TabBai; qui
     capNhat(k, s => ({ ...s, dangGui: true, loi: undefined }));
     try {
       const traLoi = await hoiGiaSu(client, {
-        nguCanh: nguCanhBai({ ...bai, tab, quiz }), lichSu, cauHoi, tab,
+        nguCanh: nguCanhBai({ ...bai, tab, quiz, baiTap }), lichSu, cauHoi, tab,
         daNopQuiz: tab === 'quiz' && !!quiz?.submitted, lang
       });
       capNhat(k, s => ({ tinNhan: [...s.tinNhan, { role: 'assistant', content: traLoi }], dangGui: false }));

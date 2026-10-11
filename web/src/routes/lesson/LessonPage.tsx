@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, Code2, ListChecks } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BookOpen, Code2, Dumbbell, ListChecks } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useCurriculumIndex, useTech, taiJson } from '@/lib/use-curriculum';
@@ -20,9 +21,10 @@ import { CodeTab } from './CodeTab';
 import { QuizTab } from './QuizTab';
 import { TutorChat } from './TutorChat';
 import { useQuizBai, type BaiDangMo } from './use-quiz-bai';
+import { ExerciseTab } from './ExerciseTab';
+import { codeDangLam, useBaiTap } from './use-bai-tap';
 
-/** Cac tab da co o React. Dot 3 them 'exercise' (Sandpack, terminal, lab). */
-export const TABS: TabBai[] = ['theory', 'code', 'quiz'];
+export const TABS: TabBai[] = ['theory', 'code', 'quiz', 'exercise'];
 
 export function LessonPage() {
   const { tech: techId = '', level: levelId = '', lesson: lessonId = '' } = useParams();
@@ -65,6 +67,10 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   const { toggle } = useToggleComplete();
   const xong = isDone(tech.id, level.id, lesson.id);
   const quizBai = useQuizBai(bai);
+  const baiTap = useBaiTap(bai);
+  // Tab Bai tap (IDE, terminal) chi dung khi mo lan dau, roi giu nguyen khi doi tab: khong mat code dang go
+  const [daMoBaiTap, datDaMoBaiTap] = useState(tab === 'exercise');
+  useEffect(() => { if (tab === 'exercise') datDaMoBaiTap(true); }, [tab]);
   const { data: suc } = useQuery({ queryKey: ['health'], queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'), staleTime: 5 * 60_000 });
 
   function doiTab(v: string) {
@@ -104,13 +110,19 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
           <TabsTrigger value="theory"><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
           <TabsTrigger value="code"><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
           <TabsTrigger value="quiz"><ListChecks aria-hidden="true" /> {t('tabQuiz')}</TabsTrigger>
+          <TabsTrigger value="exercise"><Dumbbell aria-hidden="true" /> {t('tabExercise')}</TabsTrigger>
         </TabsList>
         <TabsContent value="theory" className="pt-6"><TheoryTab lesson={lesson} /></TabsContent>
         <TabsContent value="code" className="pt-6"><CodeTab lesson={lesson} /></TabsContent>
         <TabsContent value="quiz" className="pt-6"><QuizTab lesson={lesson} quizBai={quizBai} aiEnabled={suc?.aiEnabled} /></TabsContent>
+        {daMoBaiTap && (
+          <TabsContent value="exercise" forceMount hidden={tab !== 'exercise'} className="pt-6">
+            <ExerciseTab bai={bai} baiTap={baiTap} aiEnabled={suc?.aiEnabled} />
+          </TabsContent>
+        )}
       </Tabs>
 
-      <TutorChat bai={bai} tab={tab} quiz={quizBai.quiz} />
+      <TutorChat bai={bai} tab={tab} quiz={quizBai.quiz} baiTap={{ hienTai: baiTap.deHienTai, code: codeDangLam(baiTap.kho) }} />
 
       <nav aria-label={`${t('prevLesson')} / ${t('nextLesson')}`} className="grid gap-3 sm:grid-cols-2">
         {truoc ? (

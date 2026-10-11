@@ -9,14 +9,27 @@ const PY: CongNgheDayDu = {
   levels: [
     {
       id: 'newbie', name: 'Newbie', lessons: [
-        { id: 'a', title: 'Biến', theory: '<p>Biến <strong>lưu</strong> giá trị<img src=x onerror="alert(1)"></p>', keyPoints: ['#include <iostream> để dùng cout'], code: 'x = 1\nprint(x)', lang: 'python' },
+        { id: 'a', title: 'Biến', theory: '<p>Biến <strong>lưu</strong> giá trị<img src=x onerror="alert(1)"></p>', keyPoints: ['#include <iostream> để dùng cout'], code: 'x = 1\nprint(x)', lang: 'python', exercise: 'Viết lớp Stack<T> có push và pop' },
         { id: 'b', title: 'Vòng lặp', theory: '<p>for và while</p>' }
       ]
     },
     { id: 'junior', name: 'Junior', lessons: [{ id: 'c', title: 'Hàm', theory: '<p>def</p>' }] }
   ]
 };
-const INDEX: CongNgheTomTat[] = [{ ...PY, levels: PY.levels.map(l => ({ ...l, lessons: l.lessons.map(b => ({ id: b.id, title: b.title })) })) }];
+const REACT_T: CongNgheDayDu = {
+  id: 'react', name: 'React', icon: '⚛️', color: '#61dafb', gradient: '', category: 'framework', description: 'Thư viện UI',
+  levels: [{ id: 'newbie', name: 'Newbie', lessons: [{ id: 'jsx', title: 'JSX', theory: '<p>JSX</p>', code: 'function App() { return <h1>Xin chao JSX</h1>; }', lang: 'jsx', exercise: 'Đổi lời chào' }] }]
+};
+const CYB: CongNgheDayDu = {
+  id: 'cybersecurity', name: 'An ninh mạng', icon: '🛡️', color: '#f00', gradient: '', category: 'concept', description: 'Bảo mật',
+  levels: [{ id: 'newbie', name: 'Newbie', lessons: [{ id: 'linux', title: 'Linux', theory: '<p>ls</p>', exercise: 'Tìm tệp cờ trong thư mục nhà' }] }]
+};
+const NGX: CongNgheDayDu = {
+  id: 'nginx', name: 'Nginx', icon: '🟩', color: '#090', gradient: '', category: 'devops', description: 'Web server',
+  levels: [{ id: 'newbie', name: 'Newbie', lessons: [{ id: 'intro', title: 'Giới thiệu', theory: '<p>nginx</p>' }] }]
+};
+const TECHS = [PY, REACT_T, CYB, NGX];
+const INDEX: CongNgheTomTat[] = TECHS.map(t => ({ ...t, levels: t.levels.map(l => ({ ...l, lessons: l.lessons.map(b => ({ id: b.id, title: b.title })) })) }));
 
 type ThanAi = { system: string; messages: { content: string }[]; taskType: string };
 type TuyChon = { ai?: (b: ThanAi) => Response | Promise<Response>; dich?: (url: string) => Response; aiEnabled?: boolean };
@@ -24,7 +37,8 @@ const traText = (text: string) => new Response(JSON.stringify({ content: [{ type
 
 /** Mang gia: JSON giao trinh, /api/ai va may dich; tra ve danh sach than cac lan goi AI */
 function mo(duongDan: string, { ai, dich, aiEnabled = true, lang = 'vi', bang = {} }: TuyChon & { lang?: string; bang?: Record<string, unknown[]> } = {}) {
-  const json: Record<string, unknown> = { '/curriculum/index.json': INDEX, '/curriculum/python.json': PY, '/api/health': { aiEnabled } };
+  const json: Record<string, unknown> = { '/curriculum/index.json': INDEX, '/api/health': { aiEnabled } };
+  for (const t of TECHS) json[`/curriculum/${t.id}.json`] = t;
   const goiAi: ThanAi[] = [];
   const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }], ...bang } });
   const kq = veApp(duongDan, {
@@ -269,4 +283,97 @@ test('gia su: Enter luc dang go chu co dau tren Safari (keyCode 229) khong gui',
   await new Promise(r => setTimeout(r, 30));
   expect(goiAi).toHaveLength(0);
   expect(o).toHaveValue('Vòng lặ');
+});
+
+// ── Tab Bai tap ──
+
+const moTabBaiTap = async (u: ReturnType<typeof userEvent.setup>) => u.click(await screen.findByRole('tab', { name: /Bài tập/ }));
+
+test('bai tap: React hien IDE truc tiep seed tu code bai hoc; an ninh mang hien terminal (khong CTF); nginx intro hien lab', async () => {
+  const u = userEvent.setup();
+  const a = mo('/lesson/react/newbie/jsx');
+  await moTabBaiTap(u);
+  expect((await screen.findByRole('textbox', { name: 'Soạn App.jsx' }) as HTMLTextAreaElement).value).toContain('Xin chao JSX');
+  expect(screen.getByText('Đổi lời chào')).toBeInTheDocument();
+  a.unmount();
+
+  const b = mo('/lesson/cybersecurity/newbie/linux?tab=exercise');
+  expect(await screen.findByRole('textbox', { name: 'Lệnh terminal' })).toBeInTheDocument();
+  expect(screen.getByText('Tìm tệp cờ trong thư mục nhà')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Nộp cờ' })).not.toBeInTheDocument();
+  b.unmount();
+
+  mo('/lesson/nginx/newbie/intro?tab=exercise');
+  expect(await screen.findByText(/Làm quen máy chủ Nginx/)).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Lệnh terminal' })).toBeInTheDocument();
+});
+
+test('bai tap Python: de goc hien nguyen van (Stack<T>); AI tao bai moi thanh tab AI #1; cau tra loi giu rieng tung bai', async () => {
+  const u = userEvent.setup();
+  const { goiAi } = mo('/lesson/python/newbie/a?tab=exercise', {
+    ai: () => traText(JSON.stringify({ title: 'Tong hai so', description: 'Viết hàm **tong**', hints: ['Dùng +'], solution: 'def tong(a, b):\n    return a + b', solutionLang: 'python' }))
+  });
+  expect(await screen.findByText('Viết lớp Stack<T> có push và pop')).toBeInTheDocument();
+  const soan = screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' });
+  await u.type(soan, 'class Stack');
+  expect(screen.queryByRole('button', { name: /Xem gợi ý/ })).not.toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
+  expect(await screen.findByRole('button', { name: 'AI #1', pressed: true })).toBeInTheDocument();
+  expect(goiAi[0].taskType).toBe('exercise');
+  expect(goiAi[0].messages[0].content).toContain('Viết lớp Stack<T>');
+  expect(screen.getByText('tong', { selector: 'strong' })).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('');
+  await u.click(screen.getByRole('button', { name: /Xem gợi ý/ }));
+  expect(screen.getByText('Dùng +')).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: /Xem solution mẫu/ }));
+  expect(screen.getByRole('tabpanel').textContent).toMatch(/return a \+ b/);
+  await u.click(screen.getByRole('button', { name: /Bài tập gốc/ }));
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('class Stack');
+});
+
+test('cham bai: hien diem va nhan xet; HTML trong nhan xet hien nhu chu; loi AI co the cham lai', async () => {
+  const u = userEvent.setup();
+  let lan = 0;
+  mo('/lesson/python/newbie/a?tab=exercise', {
+    ai: () => (lan++ === 0 ? new Response('{"error":"AI bận"}', { status: 500 })
+      : traText(JSON.stringify({ score: 70, status: 'partial', feedback: 'Thiếu pop <img src=x onerror=alert(1)>', errors: ['Chưa có pop'], suggestions: ['Thêm pop'], correctedCode: 'class Stack: pass' })))
+  });
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'class Stack: push');
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText(/Không chấm được bài: AI bận/)).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText('70/100 điểm')).toBeInTheDocument();
+  expect(screen.getByText('🟡 Gần đúng')).toBeInTheDocument();
+  expect(screen.getByText(/Thiếu pop <img src=x onerror=alert\(1\)>/)).toBeInTheDocument();
+  expect(document.querySelector('[role=tabpanel] img')).toBeNull();
+  expect(screen.getByText('Chưa có pop')).toBeInTheDocument();
+});
+
+test('o soan giu cau tra loi khi doi tab roi quay lai; gia su o tab Bai tap thay code hoc vien', async () => {
+  const u = userEvent.setup();
+  const { goiAi } = mo('/lesson/python/newbie/a?tab=exercise', { ai: () => traText('ok') });
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'print(42)');
+  await u.click(screen.getByRole('tab', { name: /Lý thuyết/ }));
+  await moTabBaiTap(u);
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('print(42)');
+  const chat = screen.getByRole('region', { name: /Hỏi Gia sư AI/ });
+  expect(chat).toHaveTextContent('Bài tập thực hành');
+  await u.type(within(chat).getByRole('textbox'), 'Sai o dau?{Enter}');
+  await waitFor(() => expect(goiAi).toHaveLength(1));
+  expect(goiAi[0].system).toContain('=== CODE HỌC VIÊN ĐÃ VIẾT ===\nprint(42)');
+  expect(goiAi[0].system).toContain('NGHIÊM CẤM đưa code đáp án');
+});
+
+test('IDE React: sua code, doi sang Ly thuyet roi quay lai van con', async () => {
+  const u = userEvent.setup();
+  mo('/lesson/react/newbie/jsx');
+  await moTabBaiTap(u);
+  const soan = await screen.findByRole('textbox', { name: 'Soạn App.jsx' }) as HTMLTextAreaElement;
+  const cu = soan.value;
+  // Go that tung phim (truoc day o nhap dieu khien bang cache bat dong bo lam mat chu khi go)
+  await u.type(soan, ' // da sua', { initialSelectionStart: cu.length, initialSelectionEnd: cu.length });
+  expect(soan.value).toBe(cu + ' // da sua');
+  await u.click(screen.getByRole('tab', { name: /Lý thuyết/ }));
+  await moTabBaiTap(u);
+  expect(screen.getByRole('textbox', { name: 'Soạn App.jsx' })).toHaveValue(cu + ' // da sua');
 });

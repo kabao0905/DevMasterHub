@@ -12,6 +12,8 @@ type Props = {
   /** Bo tep de "Dat lai" ve */
   macDinh: Record<string, string>;
   onFilesChange: (files: Record<string, string>) => void;
+  /** Tep mo san luc dau (vd App.jsx chua code mau cua bai) */
+  tepDau?: string;
 };
 type Log = { id: number; level: string; text: string };
 
@@ -22,12 +24,13 @@ type Kho = keyof typeof KHO;
  * IDE truc tiep: tab tep, cot so dong, vach chia keo duoc, khung xem truoc sandbox
  * (khong allow-same-origin: code hoc vien khong doc duoc token dang nhap cua trang).
  */
-export function LiveIde({ techId, files, macDinh, onFilesChange }: Props) {
+export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props) {
   const presetId = presetFor(techId);
   const consoleMode = laConsole(presetId);
   const tenTep = Object.keys(files);
   const entry = PRESETS[presetId]?.entry;
-  const [active, datActive] = useState(() => (tenTep.includes('index.html') && !consoleMode ? 'index.html' : entry && tenTep.includes(entry) ? entry : tenTep[0]));
+  const [active, datActive] = useState(() => (tepDau && tenTep.includes(tepDau) ? tepDau
+    : tenTep.includes('index.html') && !consoleMode ? 'index.html' : entry && tenTep.includes(entry) ? entry : tenTep[0]));
   const [chia, datChia] = useState(50);
   const [kho, datKho] = useState<Kho>('desktop');
   const [thietKe, datThietKe] = useState(false);
