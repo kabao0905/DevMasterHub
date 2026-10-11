@@ -42,12 +42,13 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
 
   return (
     <Dialog open={mo} onOpenChange={m => { if (!m && !chaoMung) onDong(); }}>
-      <DialogContent className="sm:max-w-md" showCloseButton={!chaoMung}
+      {/* Bang doi muc tieu khong co dong mo ta: aria-describedby={undefined} bao Radix khoi canh bao thieu Description */}
+      <DialogContent className="sm:max-w-md" showCloseButton={!chaoMung} {...(chaoMung ? {} : { 'aria-describedby': undefined })}
         onEscapeKeyDown={e => { if (chaoMung) e.preventDefault(); }}
         onPointerDownOutside={e => { if (chaoMung) e.preventDefault(); }}>
         <DialogHeader>
           <DialogTitle className="text-xl">{chaoMung ? t('welcomeTitle', { name: ten }) : t('changeGoalTitle')}</DialogTitle>
-          <DialogDescription>{chaoMung ? t('welcomeIntro') : t('dailyGoalHint')}</DialogDescription>
+          {chaoMung && <DialogDescription>{t('welcomeIntro')}</DialogDescription>}
         </DialogHeader>
 
         {chaoMung && (
@@ -74,7 +75,6 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
               </button>
             ))}
           </div>
-          {chaoMung && <p className="text-xs text-muted-foreground">{t('dailyGoalHint')}</p>}
         </fieldset>
 
         <DialogFooter>

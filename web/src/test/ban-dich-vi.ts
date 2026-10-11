@@ -55,7 +55,6 @@ export const BAN_DICH_VI: BanDich = {
     "welcomePoint2": "Gia sư AI giải đáp, ra bài tập và chấm bài cho bạn",
     "welcomePoint3": "Project Lab và Career Advisor giúp bạn làm dự án và tìm việc",
     "dailyGoalQuestion": "Mỗi ngày bạn muốn học bao nhiêu phút?",
-    "dailyGoalHint": "Ngày nào học đủ số phút sẽ được tích trên lịch học. Đồng hồ chạy khi bạn mở một môn học hoặc hỏi AI, và dừng khi bạn rời máy.",
     "minutesN": "{n} phút",
     "startLearningBtn": "Bắt đầu học",
     "saveGoalBtn": "Lưu mục tiêu",
