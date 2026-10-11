@@ -158,6 +158,16 @@ describe('bai tap AI', () => {
     await expect(chamBai(client, { tech: { name: 'Python' }, deBai: 'x', baiLam: 'y', ngonNgu: 'python', lang: 'vi' })).rejects.toThrow('AI chấm bài không hợp lệ');
   });
 
+  test('sua thiet ke: JSON hong (xuong dong tho trong chuoi) hay bi cat ngang thi bao loi, KHONG sua tep nao', async () => {
+    const files = { 'index.html': '<div class="card">x</div>' };
+    giaFetch(traText('{"edits":[{"type":"file","file":"index.html","content":"<main>\ndong 2</main>"}],"explain":"x"}'.replace('\\n', '\n')));
+    await expect(suaThietKe(client, { yeuCau: 'x', chon: null, files, lang: 'vi' })).rejects.toThrow('AI trả về không đúng định dạng');
+    giaFetch(traText('{"edits":[{"type":"file","file":"index.html","content":"<main class=\\"card\\">bi cat'));
+    await expect(suaThietKe(client, { yeuCau: 'x', chon: null, files, lang: 'vi' })).rejects.toThrow('AI trả về không đúng định dạng');
+    giaFetch(traText('{"edits":[{"type":"file","file":"index.html","content":""}],"explain":"xoa"}'));
+    await expect(suaThietKe(client, { yeuCau: 'x', chon: null, files, lang: 'vi' })).rejects.toThrow('AI không đề xuất thay đổi nào.');
+  });
+
   test('sua thiet ke: chi giu chinh sua hop le, tep phai dang co; ap dung vao style.css va tep', async () => {
     const files = { 'index.html': '<div class="card">x</div>', 'style.css': '.card { color: red; }' };
     giaFetch(traText(JSON.stringify({ edits: [

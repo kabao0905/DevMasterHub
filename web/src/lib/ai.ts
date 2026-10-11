@@ -265,6 +265,18 @@ export async function chamBai(client: SupabaseLike, { tech, deBai, baiLam, ngonN
   };
 }
 
+/** JSON doi tuong doc chat: bo ``` boc ngoai, thu ca chuoi roi doan {...} ngoai cung; hong thi null */
+function docJsonChat(text: string): Record<string, unknown> | null {
+  const s = text.trim().replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+  for (const ung of [s, s.slice(s.indexOf('{'), s.lastIndexOf('}') + 1)]) {
+    try {
+      const o: unknown = JSON.parse(ung);
+      if (o && typeof o === 'object' && !Array.isArray(o)) return o as Record<string, unknown>;
+    } catch { /* thu cach sau */ }
+  }
+  return null;
+}
+
 export type SuaThietKe =
   | { type: 'css'; selector: string; props: Record<string, string> }
   | { type: 'file'; file: string; content: string };
@@ -280,7 +292,9 @@ export async function suaThietKe(client: SupabaseLike, { yeuCau, chon, files, la
   // Gui DUNG bo file dang mo: bai React co App.jsx, bai Vue co App.js
   const user = [nguCanh, '', 'YÊU CẦU CỦA NGƯỜI DÙNG: ' + yeuCau, '', ...tenFile.flatMap(ten => [`--- ${ten} ---`, files[ten] || ''])].join('\n');
   const text = await goiAi(client, { system: promptThietKe(tenFile), user, temperature: 0.3, maxTokens: 2000, taskType: 'general', lang, signal, cho });
-  const o = parseJsonLoose(text);
+  // Doc CHAT, khong va JSON hong: ban va lui diem cat se lay mot phan noi dung tep (bi cat, hoac rong)
+  // roi ghi de tep cua hoc vien — o soan duoc dieu khien nen Ctrl+Z khong cuu duoc.
+  const o = docJsonChat(text);
   if (!o) throw new Error('AI trả về không đúng định dạng, hãy diễn đạt lại yêu cầu.');
   const edits: SuaThietKe[] = [];
   for (const e of Array.isArray(o.edits) ? o.edits : []) {
@@ -291,8 +305,8 @@ export async function suaThietKe(client: SupabaseLike, { yeuCau, chon, files, la
         .filter(([, v]) => typeof v === 'string' || typeof v === 'number')
         .map(([k, v]) => [k, String(v)]));
       if (Object.keys(props).length) edits.push({ type: 'css', selector: chuoi(x.selector), props });
-    } else if (x.type === 'file' && typeof x.file === 'string' && tenFile.includes(x.file) && typeof x.content === 'string') {
-      // Chi sua tep dang co — khong de AI tao tep la
+    } else if (x.type === 'file' && typeof x.file === 'string' && tenFile.includes(x.file) && typeof x.content === 'string' && x.content.trim()) {
+      // Chi sua tep dang co, va khong bao gio xoa trang tep — khong de AI tao tep la
       edits.push({ type: 'file', file: x.file, content: x.content });
     }
   }

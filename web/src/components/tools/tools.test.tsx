@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veVoiNen } from '@/test/ve-voi-nen';
+import { giaSupabase } from '@/test/gia-supabase';
 import { CHALLENGES } from '@/lib/terminal';
 import { LABS_NGINX } from '@/lib/labs-nginx';
 import { PRESETS } from '@/lib/sandpack-doc';
@@ -172,7 +173,38 @@ describe('LiveIde', () => {
     });
     const mauChu = await screen.findByRole('textbox', { name: 'Màu chữ' });
     expect(mauChu).toHaveValue('#e2e8f0');
+    // Dang go do dang ("re") khong ghi; go xong (roi o / Enter) moi ghi
+    onDoi.mockClear();
+    fireEvent.change(mauChu, { target: { value: 're' } });
+    expect(mauChu).toHaveValue('re');
+    expect(onDoi).not.toHaveBeenCalled();
     fireEvent.change(mauChu, { target: { value: '#ff0000' } });
+    fireEvent.blur(mauChu);
     expect(onDoi).toHaveBeenLastCalledWith(expect.objectContaining({ 'style.css': expect.stringMatching(/\.card\s*\{[^}]*color:\s*#ff0000/) }));
+  });
+
+  test('che do Thiet ke: go code trong luc AI dang sua van giu; Hoan tac tra lai tep truoc khi AI sua', async () => {
+    const u = userEvent.setup();
+    let tha!: () => void;
+    const gia = giaSupabase({ nguoiDung: { id: 'u1' } });
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url !== '/api/ai') return new Response('null', { status: 404 });
+      await new Promise<void>(r => { tha = r; });
+      return new Response(JSON.stringify({ content: [{ type: 'text', text: '{"edits":[{"type":"css","selector":".card","props":{"color":"#123456"}}],"explain":"Doi mau"}' }] }), { status: 200 });
+    }));
+    const onDoi = vi.fn();
+    veVoiNen(<IdeCoTrangThai onDoi={onDoi} />, { gia });
+    await u.click(await screen.findByRole('button', { name: /Thiết kế/ }));
+    await u.type(screen.getByRole('textbox', { name: 'Nhờ AI sửa giao diện' }), 'doi mau chu');
+    await u.click(screen.getByRole('button', { name: /Sửa/ }));
+    const soan = screen.getByRole('textbox', { name: /Soạn index\.html/ });
+    fireEvent.change(soan, { target: { value: '<p>dang go</p>' } });
+    await act(async () => { tha(); });
+    expect(await screen.findByText(/Doi mau \(1 thay đổi\)/)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /Soạn index\.html/ })).toHaveValue('<p>dang go</p>');
+    expect(onDoi).toHaveBeenLastCalledWith(expect.objectContaining({ 'index.html': '<p>dang go</p>', 'style.css': expect.stringContaining('#123456') }));
+    await u.click(screen.getByRole('button', { name: /Hoàn tác/ }));
+    expect(onDoi).toHaveBeenLastCalledWith(expect.objectContaining({ 'style.css': expect.not.stringContaining('#123456') }));
+    vi.unstubAllGlobals();
   });
 });

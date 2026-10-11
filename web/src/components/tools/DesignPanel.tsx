@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, Sparkles, Undo2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { apDungThietKe, suaThietKe } from '@/lib/ai';
@@ -22,6 +22,11 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
   const { lang } = useT();
   const [yeuCau, datYeuCau] = useState('');
   const [trangThai, datTrangThai] = useState<{ loai: 'dang' | 'xong' | 'loi'; text: string } | null>(null);
+  // Bo tep truoc lan AI sua gan nhat, de Hoan tac (o soan duoc dieu khien nen Ctrl+Z khong lui duoc)
+  const [truocAi, datTruocAi] = useState<Record<string, string> | null>(null);
+  // Tep moi nhat: AI tra loi sau vai giay, hoc vien co the da go them trong luc cho
+  const filesRef = useRef(files);
+  useEffect(() => { filesRef.current = files; }, [files]);
   const css = files['style.css'] || '';
 
   function ghi(f: TruongThietKe, giaTri: string) {
@@ -40,8 +45,10 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
     if (!yeuCau.trim() || trangThai?.loai === 'dang') return;
     datTrangThai({ loai: 'dang', text: 'AI đang đọc code của bạn…' });
     try {
-      const kq = await suaThietKe(client, { yeuCau: yeuCau.trim(), chon, files, lang });
-      const ap = apDungThietKe(files, kq.edits);
+      const kq = await suaThietKe(client, { yeuCau: yeuCau.trim(), chon, files: filesRef.current, lang });
+      const hienTai = filesRef.current;
+      const ap = apDungThietKe(hienTai, kq.edits);
+      datTruocAi(hienTai);
       onFilesChange(ap.files);
       datTrangThai({ loai: 'xong', text: `${kq.explain || 'Đã áp dụng'} (${ap.soThayDoi} thay đổi)` });
       datYeuCau('');
@@ -85,22 +92,52 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
           </Button>
         </div>
         {trangThai && (
-          <p role="status" className={trangThai.loai === 'loi' ? 'text-sm text-destructive' : 'text-sm text-muted-foreground'}>{trangThai.text}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p role="status" className={trangThai.loai === 'loi' ? 'text-sm text-destructive' : 'text-sm text-muted-foreground'}>{trangThai.text}</p>
+            {truocAi && trangThai.loai === 'xong' && (
+              <Button variant="ghost" size="sm" onClick={() => { onFilesChange(truocAi); datTruocAi(null); datTrangThai(null); }}>
+                <Undo2 aria-hidden="true" /> Hoàn tác
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </section>
   );
 }
 
+/**
+ * Nhap tam cho o chu: dang go do dang ("re" truoc khi thanh "red") khong ghi vao CSS — truoc day moi phim
+ * deu ghi, gia tri tinh toan nhay lai ngay khi xoa o. Gia tri ngoai doi (chon phan tu khac) thi lam moi.
+ */
+function useNhapTam(giaTri: string) {
+  const [nhap, datNhap] = useState(giaTri);
+  const [goc, datGoc] = useState(giaTri);
+  if (giaTri !== goc) {
+    datGoc(giaTri);
+    datNhap(giaTri);
+  }
+  return [nhap, datNhap] as const;
+}
+
+function OChu({ giaTri, onDoi, ...con }: { giaTri: string; onDoi: (v: string) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>) {
+  const [nhap, datNhap] = useNhapTam(giaTri);
+  const chot = () => { if (nhap !== giaTri) onDoi(nhap.trim()); };
+  return (
+    <input type="text" {...con} value={nhap} onChange={e => datNhap(e.target.value)} onBlur={chot}
+      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); chot(); } }} spellCheck={false} />
+  );
+}
+
 function TruongNhap({ f, giaTri, onDoi }: { f: TruongThietKe; giaTri: string; onDoi: (v: string) => void }) {
   if (f.type === 'color') {
-    const hex = rgbToHex(giaTri);
+    const hex = rgbToHex(giaTri) || giaTri;
     return (
       <div className="space-y-1">
         <span className="text-xs">{f.label}</span>
         <div className="flex items-center gap-2">
           <input type="color" value={/^#[0-9a-f]{6}$/i.test(hex) ? hex : '#000000'} onChange={e => onDoi(e.target.value)} aria-label={`${f.label} (bảng màu)`} className="h-8 w-10 shrink-0 cursor-pointer rounded border bg-transparent" />
-          <input type="text" value={hex} onChange={e => onDoi(e.target.value)} aria-label={f.label} className={lopO + ' font-mono'} spellCheck={false} />
+          <OChu giaTri={hex} onDoi={onDoi} aria-label={f.label} className={lopO + ' font-mono'} />
         </div>
       </div>
     );
@@ -134,7 +171,7 @@ function TruongNhap({ f, giaTri, onDoi }: { f: TruongThietKe; giaTri: string; on
   return (
     <label className="block space-y-1 text-xs">
       <span>{f.label}</span>
-      <input type="text" value={giaTri} onChange={e => onDoi(e.target.value)} placeholder={f.placeholder} className={lopO} spellCheck={false} />
+      <OChu giaTri={giaTri} onDoi={onDoi} placeholder={f.placeholder} className={lopO} />
     </label>
   );
 }
