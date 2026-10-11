@@ -97,3 +97,13 @@ test('dang xuat chi xoa du lieu cua nguoi dung, giu ban dich va giao trinh (khon
   expect(qc.getQueryData(['i18n', 'vi'])).toBeDefined();
   expect(qc.getQueryData(['curriculum', 'index'])).toBeDefined();
 });
+
+test('dang xuat xoa tien do phong lab tren may (truoc day dung chung moi tai khoan tren trinh duyet)', async () => {
+  const { client, phat } = giaSupabase();
+  const { result } = moAuth(client);
+  act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
+  await waitFor(() => expect(result.current.user?.id).toBe('u1'));
+  localStorage.setItem('dmh_lab_progress', '{"nginx.newbie.intro":["nginx-intro-1"]}');
+  await act(() => result.current.logout());
+  expect(localStorage.getItem('dmh_lab_progress')).toBeNull();
+});

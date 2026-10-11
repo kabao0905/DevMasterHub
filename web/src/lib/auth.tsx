@@ -9,7 +9,7 @@ export type SupabaseLike = Pick<SupabaseClient, 'auth' | 'from'>;
 export type HoSo = { id: string; username: string; display_name: string | null };
 
 /** Cache cua app cu tren may; phai xoa khi dang xuat de nguoi sau khong thay */
-const KHOA_CACHE = ['devmaster_hub_profile_cache', 'devmaster_hub_progress_cache', 'devmaster_hub_ideas_cache'];
+const KHOA_CACHE = ['devmaster_hub_profile_cache', 'devmaster_hub_progress_cache', 'devmaster_hub_ideas_cache', 'dmh_lab_progress'];
 /** Viec dang lam do app cu cat tam khi sang app React (xem catViecDangLam trong public/app.js) */
 const KHOA_VIEC_DANG_LAM = 'devmaster_hub_legacy_session';
 /** Truy van dung chung cho moi nguoi: doi nguoi dung khong can xoa, khoi tai lai */
