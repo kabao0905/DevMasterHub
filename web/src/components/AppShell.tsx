@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, ScrollRestoration, useLocation } from 'react-router';
+import { Outlet, ScrollRestoration, useLocation, type Location } from 'react-router';
 import { Menu, PanelLeftOpen } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { Sidebar } from '@/components/Sidebar';
@@ -13,6 +13,13 @@ const KHOA_THU_GON = 'devmaster_hub_sidebar_collapsed';
 function docThuGon() {
   try { return localStorage.getItem(KHOA_THU_GON) === '1'; } catch { return false; }
 }
+
+/**
+ * Khoa luu vi tri cuon. Muc lich su dau cua moi lan tai trang (vao tu app cu, go URL) luon co khoa "default":
+ * neu giu khoa do, trang moi se nhan vi tri cuon cua mot trang "default" khac da roi di. Luu theo URL thi
+ * tai lai dung trang van tra lai cho cu, con trang khac bat dau tu dau.
+ */
+const khoaCuon = (loc: Location) => (loc.key === 'default' ? loc.pathname + loc.search : loc.key);
 
 export function AppShell() {
   const { t } = useT();
@@ -29,7 +36,7 @@ export function AppShell() {
   return (
     <div className={cn('min-h-dvh', !thuGon && 'lg:grid lg:grid-cols-[17rem_1fr]')}>
       {/* Trang moi bat dau tu dau; Back/Forward tra lai vi tri cu */}
-      <ScrollRestoration />
+      <ScrollRestoration getKey={khoaCuon} />
       {!thuGon && (
         <aside className="sticky top-0 hidden h-dvh border-r border-sidebar-border lg:block">
           <Sidebar onCollapse={() => doiThuGon(true)} />

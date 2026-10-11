@@ -22,6 +22,9 @@ export function veApp(duongDan: string, { gia, json = {}, lang = 'vi', fetch }: 
       : { ok: true, status: 200, json: async () => v };
   })));
   localStorage.setItem('devmaster_hub_lang', lang);
+  // react-router giu vi tri cuon da luu trong bien cap module (song qua cac test cung file); bang rong trong
+  // sessionStorage lam no nap lai tu dau. Test nao tu dat san (gia lap lan tai truoc) thi giu nguyen.
+  if (!sessionStorage.getItem('react-router-scroll-positions')) sessionStorage.setItem('react-router-scroll-positions', '{}');
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(cacRoute, { initialEntries: [duongDan] });
   const kq = render(

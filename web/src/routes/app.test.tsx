@@ -121,6 +121,27 @@ test('dang xuat thi ve trang dang nhap', async () => {
   await waitFor(() => expect(router.state.location.pathname).toBe('/auth'));
 });
 
+// Moi lan vao thang mot trang React (tu app cu qua location.assign, go URL) muc lich su dau deu co khoa "default"
+const KHOA_CUON = 'react-router-scroll-positions';
+
+test('vao thang trang React khong nhan vi tri cuon da luu cua mot trang khac', async () => {
+  window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+  // Lan truoc: dang o trang dau (khoa "default") cuon xuong 1234 roi di tiep, sang app cu
+  sessionStorage.setItem(KHOA_CUON, JSON.stringify({ default: 1234 }));
+  veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  await screen.findByRole('main');
+  await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 0));
+  await new Promise(r => setTimeout(r, 50));
+  expect(window.scrollTo).not.toHaveBeenCalledWith(0, 1234);
+});
+
+test('tai lai dung trang do thi tra lai vi tri cuon cu', async () => {
+  window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+  sessionStorage.setItem(KHOA_CUON, JSON.stringify({ '/': 300 }));
+  veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 300));
+});
+
 test('URL la ma server da giao cho React (vd /index.html) thi bao khong tim thay, khong tai lai trang', async () => {
   const thay = vi.spyOn(dieuHuong, 'thay').mockImplementation(() => {});
   veApp('/index.html', { gia: daDangNhap(), json: JSON_GIA });

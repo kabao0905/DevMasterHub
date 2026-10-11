@@ -25,6 +25,8 @@ function mo(ai: (b: ThanAi) => Response) {
   return { ...kq, goiAi };
 }
 
+// Nap san chunk cua route luoi (terminal, AI) truoc khi do thoi gian
+beforeAll(async () => { await import('./ChallengePage'); await import('@/routes/lesson/LessonPage'); }, 30000);
 afterEach(() => vi.unstubAllGlobals());
 
 test('trang Thu thach: terminal, du the CTF, link quay ve roadmap An ninh mang', async () => {

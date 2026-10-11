@@ -56,6 +56,8 @@ function mo(duongDan: string, { ai, dich, aiEnabled = true, lang = 'vi', bang = 
   return { ...kq, gia, goiAi };
 }
 
+// Nap san chunk trang bai hoc (route luoi, keo theo Prism): lan import dau rat cham khi may dang ban
+beforeAll(async () => { await import('./LessonPage'); }, 30000);
 beforeEach(() => { window.scrollTo = vi.fn() as unknown as typeof window.scrollTo; });
 afterEach(() => vi.unstubAllGlobals());
 
