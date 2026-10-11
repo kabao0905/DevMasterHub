@@ -1,0 +1,711 @@
+// @ts-nocheck — engine chep nguyen tu public/cyber-terminal.js (da co bai kiem); kieu nam o API ben duoi.
+// Khac ban cu: moi lan goi createTerminal() la mot may rieng (he thong tep, thu muc, lich su, co CTF),
+// nen terminal bai hoc, lab va Thu thach khong ghi de nhau. Cho cham DOM (clear, nano, diem) thanh callback.
+
+export type NutTep = { type: 'dir'; children: string[] } | { type: 'file'; content: string };
+export type HeThongTep = Record<string, NutTep>;
+export type ThuThach = { id: string; title: string; desc: string; hint: string; flag: string; points: number };
+export type LenhTerminal = { name: string; usage: string; desc: string };
+export type SuKienTerminal = {
+  xoaManHinh?: () => void;
+  moSoanThao?: (duong: string, noiDung: string) => void;
+  doiDiem?: () => void;
+};
+export type MayTerminal = {
+  executeCommand(lenh: string): string;
+  checkFlag(co: string): string;
+  luuTuSoanThao(duong: string, noiDung: string): string | null;
+  loadFs(duLieu?: HeThongTep | null): HeThongTep;
+  getFs(): HeThongTep;
+  resetFs(): HeThongTep;
+  commandNames(): string[];
+  filePaths(): string[];
+  cwd(): string;
+  lichSu(): string[];
+  diem(): number;
+  coDaGiai(): Set<string>;
+  COMMANDS: LenhTerminal[];
+  CHALLENGES: ThuThach[];
+};
+
+export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
+  let currentDir = '/home/hacker';
+  let history = [];
+  let historyIdx = -1;
+  let capturedFlags = new Set();
+  let userScore = 0;
+
+  const VFS_MACDINH = {
+    '/': { type: 'dir', children: ['home', 'etc', 'var', 'bin', 'usr', 'flag'] },
+    '/home': { type: 'dir', children: ['hacker'] },
+    '/home/hacker': {
+      type: 'dir',
+      children: ['readme.txt', 'network_scan.sh', 'notes.md', 'secret_b64.txt', 'flag1.txt']
+    },
+    '/home/hacker/readme.txt': {
+      type: 'file',
+      content: 'Chào mừng chiến binh An ninh mạng! Hãy dùng các lệnh Linux (ls, cat, grep, nmap, base64) để tìm cờ ẩn trong hệ thống.'
+    },
+    '/home/hacker/notes.md': {
+      type: 'file',
+      content: '# Ghi chú của Admin:\n- Mật khẩu server test: admin123\n- Web server đang chạy ở cổng 8080\n- Đã sao lưu hash trong /etc/shadow'
+    },
+    '/home/hacker/secret_b64.txt': {
+      type: 'file',
+      content: 'RkxBR3tkZXZtYXN0ZXJfYmFzZTY0X2RlY29kZWRfc3VjY2Vzc30='
+    },
+    '/home/hacker/flag1.txt': {
+      type: 'file',
+      content: 'FLAG{devmaster_linux_explorer_novice}'
+    },
+    '/home/hacker/network_scan.sh': {
+      type: 'file',
+      content: '#!/bin/bash\necho "Scanning local subnet..."\nnmap 192.168.1.100\n'
+    },
+    '/etc': { type: 'dir', children: ['passwd', 'shadow', 'hosts', '.hidden'] },
+    '/etc/.hidden': { type: 'dir', children: ['backdoor.conf'] },
+    '/etc/.hidden/backdoor.conf': {
+      type: 'file',
+      content: '# cai dat cua tien trinh .sysupdate\nlisten_port=4444\nexfil_host=10.0.0.66\nauth_key=FLAG{devmaster_backdoor_port_4444_found}'
+    },
+    '/etc/passwd': {
+      type: 'file',
+      content: 'root:x:0:0:root:/root:/bin/bash\nhacker:x:1000:1000:Hacker:/home/hacker:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin'
+    },
+    '/etc/shadow': {
+      type: 'file',
+      content: 'root:$6$salt$Z107XmUFLAG{devmaster_root_hash_unlocked}:19000:0:99999:7:::'
+    },
+    '/etc/hosts': {
+      type: 'file',
+      content: '127.0.0.1 localhost\n192.168.1.100 target-bank-api.local'
+    },
+    '/bin': { type: 'dir', children: ['bash', 'nc'] },
+    '/bin/bash': {
+      type: 'file',
+      content: '(tệp nhị phân ELF 64-bit — không đọc được bằng cat)'
+    },
+    '/bin/nc': {
+      type: 'file',
+      content: '(tệp nhị phân ELF 64-bit — netcat, công cụ kẻ tấn công hay dùng để mở backdoor)'
+    },
+    '/flag': { type: 'dir', children: ['README.txt'] },
+    '/flag/README.txt': {
+      type: 'file',
+      content: 'Cờ không để sẵn ở đây đâu.\nHãy tự truy tìm trong hệ thống bằng: ls -la, cat, grep, find, ps, netstat, nmap, curl.'
+    },
+    '/usr': { type: 'dir', children: ['local'] },
+    '/usr/local': { type: 'dir', children: ['bin'] },
+    '/usr/local/bin': { type: 'dir', children: ['.sysupdate'] },
+    '/usr/local/bin/.sysupdate': {
+      type: 'file',
+      content: '#!/bin/sh\n# tien trinh la: mo cong 4444 cho ke tan cong ket noi vao\nnc -lvnp 4444 -e /bin/bash'
+    },
+    '/var': { type: 'dir', children: ['log', 'www'] },
+    '/var/log': { type: 'dir', children: ['auth.log', 'nginx.log'] },
+    '/var/log/nginx.log': {
+      type: 'file',
+      content: '10.0.0.5 - - [20/Feb/2026:14:05:22] "GET /admin.php?debug=1 HTTP/1.1" 200 512\n10.0.0.66 - - [20/Feb/2026:14:06:03] "POST /upload.php HTTP/1.1" 200 88\n10.0.0.66 - - [20/Feb/2026:14:06:40] "GET /shell.php?cmd=whoami HTTP/1.1" 200 12'
+    },
+    '/var/log/auth.log': {
+      type: 'file',
+      content: 'Feb 20 14:02:11 dev-srv sshd[124]: Failed password for invalid user admin from 10.0.0.5\nFeb 20 14:03:00 dev-srv sshd[125]: Accepted password for root with token FLAG{devmaster_log_analyst_pro}'
+    },
+    '/var/www': { type: 'dir', children: ['html'] },
+    '/var/www/html': {
+      type: 'dir',
+      children: ['index.php', 'config.php']
+    },
+    '/var/www/html/index.php': {
+      type: 'file',
+      content: '<?php\n  include "config.php";\n  echo "<h1>DevMaster Target Portal</h1>";\n?>'
+    },
+    '/var/www/html/config.php': {
+      type: 'file',
+      content: '<?php\n$db_host = "localhost";\n$db_user = "root";\n$db_pass = "SQLi_FLAG{devmaster_sql_injection_master}";\n?>'
+    }
+  };
+
+  // He thong tep la du lieu nap duoc, khong con la hang so dung chung.
+  // Moi phong lab nap bo tep rieng; bo San co la mac dinh.
+  let VFS = saoChepSau(VFS_MACDINH);
+  // VFS la bien dung chung cho moi terminal tren trang. Phai nho dang nap bo cua lab
+  // de terminal CTF ve sau biet ma tra lai bo San co (truoc day CTF chay tren bo
+  // Nginx, khong con tep co nao cho toi khi tai lai trang).
+  let dangDungBoLab = false;
+
+  /** Sao chep sau de lab khong lam ban du lieu goc */
+  function saoChepSau(o) {
+    return JSON.parse(JSON.stringify(o));
+  }
+
+  /** Thay toan bo he thong tep bang bo moi */
+  function loadFs(duLieu) {
+    VFS = saoChepSau(duLieu || VFS_MACDINH);
+    dangDungBoLab = !!duLieu && duLieu !== VFS_MACDINH;
+    currentDir = VFS['/home/hacker'] ? '/home/hacker' : '/';
+    return VFS;
+  }
+
+  /** Tra ve he thong tep dang dung — ham kiem cua phong lab doc truc tiep tu day */
+  function getFs() {
+    return VFS;
+  }
+
+  /** Nap lai bo tep San co */
+  function resetFs() {
+    return loadFs(VFS_MACDINH);
+  }
+
+  const CHALLENGES = [
+    {
+      id: 'ctf-1',
+      title: '🚩 Challenge 1: Thám Tử Linux',
+      desc: 'Tìm kiếm tệp cờ ẩn đầu tiên trong thư mục cá nhân.',
+      hint: 'Dùng lệnh "ls -la" và "cat flag1.txt"',
+      flag: 'FLAG{devmaster_linux_explorer_novice}',
+      points: 50
+    },
+    {
+      id: 'ctf-2',
+      title: '🔐 Challenge 2: Giải Mã Base64',
+      desc: 'Admin đã lưu một đoạn chuỗi mã hóa trong "secret_b64.txt". Hãy giải mã nó.',
+      hint: 'Dùng lệnh: cat secret_b64.txt | base64 -d hoặc base64 -d secret_b64.txt',
+      flag: 'FLAG{devmaster_base64_decoded_success}',
+      points: 100
+    },
+    {
+      id: 'ctf-3',
+      title: '🕵️ Challenge 3: Điều Tra Nhật Ký (Log Forensics)',
+      desc: 'Có dấu vết đăng nhập trái phép trong nhật ký xác thực "/var/log/auth.log".',
+      hint: 'Dùng lệnh "cat /var/log/auth.log" hoặc "grep FLAG /var/log/auth.log"',
+      flag: 'FLAG{devmaster_log_analyst_pro}',
+      points: 150
+    },
+    {
+      id: 'ctf-4',
+      title: '🌐 Challenge 4: Quét Cổng Mạng (Port Scanning)',
+      desc: 'Quét máy chủ mục tiêu "192.168.1.100" để tìm các dịch vụ đang mở.',
+      hint: 'Dùng lệnh: nmap 192.168.1.100',
+      flag: 'FLAG{devmaster_nmap_port_8080_opened}',
+      points: 150
+    },
+    {
+      id: 'ctf-5',
+      title: '💉 Challenge 5: Rò Rỉ Cấu Hình Web Server',
+      desc: 'Kiểm tra mã nguồn web server trong "/var/www/html/config.php" để lấy mật khẩu bí mật.',
+      hint: 'Dùng lệnh: cat /var/www/html/config.php',
+      flag: 'FLAG{devmaster_sql_injection_master}',
+      points: 200
+    },
+    {
+      id: 'ctf-6',
+      title: '🐚 Challenge 6: Truy Tìm Backdoor Ẩn',
+      desc: 'Máy chủ mở một cổng lạ và có tiến trình chạy ngầm. Lần theo cổng đó để tìm tệp cấu hình của kẻ tấn công.',
+      hint: 'Dùng: netstat -tuln → ps aux → cat tệp cấu hình mà tiến trình lạ đang dùng',
+      flag: 'FLAG{devmaster_backdoor_port_4444_found}',
+      points: 250
+    }
+  ];
+
+  /**
+   * Danh sach lenh CO THAT cua terminal gia lap. Day la nguon duy nhat:
+   * lenh "help" in ra tu day, va cau lenh mo ta gui cho AI cung lay tu day.
+   * Truoc kia hai cho ghi tay rieng nen lech nhau — AI ra de bang netstat/ps
+   * trong khi terminal chua cai, hoc vien go vao thi "command not found".
+   */
+  const COMMANDS = [
+    { name: 'ls',      usage: 'ls [-la] [path]',        desc: 'Liệt kê danh sách thư mục / tệp tin' },
+    { name: 'cd',      usage: 'cd <path>',              desc: 'Chuyển đổi thư mục làm việc' },
+    { name: 'pwd',     usage: 'pwd',                    desc: 'Hiển thị đường dẫn thư mục hiện tại' },
+    { name: 'cat',     usage: 'cat <file>',             desc: 'Đọc nội dung tệp tin' },
+    { name: 'grep',    usage: 'grep <pattern> <file>',  desc: 'Tìm kiếm chuỗi trong tệp tin' },
+    { name: 'find',    usage: 'find <path> -name <ten>', desc: 'Tìm tệp theo tên trong cả cây thư mục' },
+    { name: 'echo',    usage: 'echo "..." > <file>',    desc: 'Ghi văn bản vào tệp (>> để nối thêm)' },
+    { name: 'nano',    usage: 'nano <file>',            desc: 'Mở ô soạn thảo để sửa tệp nhiều dòng' },
+    { name: 'mkdir',   usage: 'mkdir -p <path>',        desc: 'Tạo thư mục, tự tạo cả thư mục cha' },
+    { name: 'rm',      usage: 'rm [-r] <path>',         desc: 'Xóa tệp hoặc thư mục' },
+    { name: 'cp',      usage: 'cp <nguồn> <đích>',      desc: 'Sao chép tệp' },
+    { name: 'mv',      usage: 'mv <nguồn> <đích>',      desc: 'Di chuyển hoặc đổi tên tệp' },
+    { name: 'ps',      usage: 'ps [aux]',               desc: 'Liệt kê các tiến trình đang chạy' },
+    { name: 'netstat', usage: 'netstat [-tuln]',        desc: 'Xem các cổng mạng đang mở' },
+    { name: 'base64',  usage: 'base64 -d <file|str>',   desc: 'Giải mã chuỗi Base64' },
+    { name: 'nmap',    usage: 'nmap <target>',          desc: 'Quét cổng dịch vụ mạng' },
+    { name: 'curl',    usage: 'curl <url>',             desc: 'Gửi request HTTP tới web server' },
+    { name: 'nginx',     usage: 'nginx -t',                 desc: 'Kiểm tra cú pháp tệp cấu hình Nginx' },
+    { name: 'systemctl', usage: 'systemctl <lệnh> nginx',   desc: 'Xem trạng thái / nạp lại dịch vụ Nginx' },
+    { name: 'whoami',  usage: 'whoami',                 desc: 'Hiển thị người dùng hiện tại' },
+    { name: 'id',      usage: 'id',                     desc: 'Xem uid / gid / nhóm của người dùng' },
+    { name: 'uname',   usage: 'uname -a',               desc: 'Xem thông tin kernel Linux ảo' },
+    { name: 'clear',   usage: 'clear',                  desc: 'Xóa màn hình terminal' },
+    { name: 'help',    usage: 'help',                   desc: 'Xem danh sách lệnh này' },
+    { name: 'submit',  usage: 'submit <flag>',          desc: 'Nộp cờ CTF để nhận điểm XP' }
+  ];
+
+  function executeCommand(input) {
+    const raw = input.trim();
+    if (!raw) return '';
+    history.push(raw);
+    historyIdx = history.length;
+
+    // Chuyen huong ket qua ra tep: <lenh> > tep  hoac  <lenh> >> tep.
+    // Lam o day de moi lenh deu chuyen huong duoc, khong rieng echo.
+    const ch = raw.match(/^(.*?)\s*(>>?)\s*(\S+)\s*$/);
+    if (ch && ch[1].trim()) {
+      const ketQua = String(chayLenh(ch[1].trim()) || '').replace(/^\n+|\n+$/g, '');
+      return ghiTep(resolvePath(ch[3]), ketQua + '\n', ch[2] === '>>') || '';
+    }
+    return chayLenh(raw);
+  }
+
+  function chayLenh(raw) {
+    const parts = raw.split(' ').filter(Boolean);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1);
+
+    switch (cmd) {
+      case 'help': {
+        const rong = Math.max(...COMMANDS.map(c => c.usage.length));
+        return '\n📋 CÁC LỆNH HỆ THỐNG ĐƯỢC HỖ TRỢ:\n'
+          + COMMANDS.map(c => '  • ' + c.usage.padEnd(rong + 2) + ': ' + c.desc).join('\n')
+          + '\n';
+      }
+
+      case 'pwd':
+        return currentDir;
+
+      case 'whoami':
+        return 'hacker (uid=1000 gid=1000 groups=hacker,sudo)';
+
+      case 'id':
+        return 'uid=1000(hacker) gid=1000(hacker) groups=1000(hacker),27(sudo)';
+
+      case 'uname':
+        return 'Linux devmaster-cyber-box 6.8.0-devmaster-x86_64 #1 SMP GNU/Linux';
+
+      case 'clear':
+        nghe.xoaManHinh?.();
+        return '';
+
+      case 'ls': {
+        // Duong dan la doi so dau tien KHONG phai co, nen 'ls -la /etc' doc dung /etc
+        const duongDan = args.find(a => !a.startsWith('-'));
+        const targetPath = duongDan ? resolvePath(duongDan) : currentDir;
+        const entry = VFS[targetPath];
+        if (!entry) return `ls: cannot access '${duongDan || targetPath}': No such file or directory`;
+        if (entry.type === 'file') return duongDan || targetPath;
+        // Tep bat dau bang dau cham la tep an: chi hien khi co -a (nhu Linux that)
+        const hienAn = args.some(a => a.startsWith('-') && a.includes('a'));
+        const list = (entry.children || []).filter(x => hienAn || !x.startsWith('.'));
+        return list.map(item => {
+          const itemPath = targetPath === '/' ? '/' + item : targetPath + '/' + item;
+          const isDir = VFS[itemPath]?.type === 'dir';
+          return isDir ? `📁 [1;34m${item}/[0m` : `📄 ${item}`;
+        }).join('   ');
+      }
+
+      case 'cd': {
+        const target = args[0] || '/home/hacker';
+        const newPath = resolvePath(target);
+        if (VFS[newPath] && VFS[newPath].type === 'dir') {
+          currentDir = newPath;
+          return '';
+        }
+        return `bash: cd: ${target}: No such file or directory`;
+      }
+
+      case 'cat': {
+        if (!args[0]) return 'cat: missing operand';
+        const filePath = resolvePath(args[0]);
+        const file = VFS[filePath];
+        if (!file) return `cat: ${args[0]}: No such file or directory`;
+        if (file.type === 'dir') return `cat: ${args[0]}: Is a directory`;
+        return file.content || '';
+      }
+
+      case 'grep': {
+        if (args.length < 2) return 'grep: usage: grep <pattern> <file>';
+        const pattern = args[0];
+        const filePath = resolvePath(args[1]);
+        const file = VFS[filePath];
+        if (!file || file.type === 'dir') return `grep: ${args[1]}: No such file`;
+        const lines = (file.content || '').split('\n');
+        const matched = lines.filter(l => l.includes(pattern));
+        return matched.join('\n') || `No matches found for "${pattern}"`;
+      }
+
+      case 'base64': {
+        if (args[0] === '-d' || args[0] === '--decode') {
+          const target = args[1];
+          if (!target) return 'base64: missing operand';
+          let strToDecode = target;
+          const filePath = resolvePath(target);
+          if (VFS[filePath] && VFS[filePath].content) {
+            strToDecode = VFS[filePath].content.trim();
+          }
+          try {
+            return atob(strToDecode);
+          } catch(e) {
+            return 'base64: invalid input string';
+          }
+        }
+        return 'base64: usage: base64 -d <string|file>';
+      }
+
+      case 'nmap': {
+        const target = args[0] || '127.0.0.1';
+        return `
+Starting Nmap 7.94 ( https://nmap.org ) at 2026-08-20 20:00 ICT
+Nmap scan report for ${target}
+Host is up (0.00042s latency).
+Not shown: 996 closed tcp ports (reset)
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 9.2p1
+80/tcp   open  http    Apache httpd 2.4.58
+8080/tcp open  http    DevMaster-API-Gateway (FLAG{devmaster_nmap_port_8080_opened})
+3306/tcp open  mysql   MySQL 8.0.36
+
+Nmap done: 1 IP address (1 host up) scanned in 1.48 seconds
+`;
+      }
+
+      case 'curl': {
+        // Truoc day tra ve doan HTML viet cung. Gio doc root trong cau hinh
+        // hien tai roi mo tep tuong ung — sua cau hinh la ket qua doi theo.
+        const url = args.find(a => !a.startsWith('-')) || 'http://localhost';
+        // Bo scheme roi lay phan tu dau gach cheo dau tien tro di.
+        // Neu khong co gach cheo nao ("localhost", "localhost:80") thi la trang goc.
+        const khongScheme = url.replace(/^[a-z]+:\/\//i, '');
+        const viTri = khongScheme.indexOf('/');
+        const duongDanUrl = viTri === -1 ? '/' : (khongScheme.slice(viTri) || '/');
+
+        const cuPhap = kiemCuPhapNginx();
+        if (!cuPhap.dat) {
+          return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
+               + `(cấu hình Nginx đang lỗi — chạy "nginx -t" để xem chi tiết)`;
+        }
+
+        const root = docRootNginx();
+        if (!root) {
+          return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
+               + `(không tìm thấy chỉ thị root trong ${NGINX_CONF})`;
+        }
+
+        const duongTep = duongDanUrl === '/' ? root + '/index.html' : root + duongDanUrl;
+        const tep = VFS[normalize(duongTep)];
+        if (!tep || tep.type !== 'file') {
+          return `HTTP/1.1 404 Not Found\n\n<h1>404 Not Found</h1>\n`
+               + `(không có ${duongTep})`;
+        }
+
+        return `HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\n\n${tep.content}`;
+      }
+
+      case 'ps': {
+        return `
+  PID TTY          TIME CMD
+    1 ?        00:00:03 /sbin/init
+  301 ?        00:00:00 dhclient
+  412 ?        00:00:00 sshd: /usr/sbin/sshd -D
+  878 ?        00:00:01 apache2 -k start
+ 1102 ?        00:00:02 mysqld --datadir=/var/lib/mysql
+ 1337 ?        00:04:52 /usr/local/bin/.sysupdate --port 4444 --conf /etc/.hidden/backdoor.conf
+ 2051 pts/0    00:00:00 bash
+ 2088 pts/0    00:00:00 ps
+`;
+      }
+
+      case 'netstat': {
+        return `
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address        Foreign Address   State    PID/Program name
+tcp        0      0 0.0.0.0:22           0.0.0.0:*         LISTEN   412/sshd
+tcp        0      0 0.0.0.0:80           0.0.0.0:*         LISTEN   878/apache2
+tcp        0      0 0.0.0.0:8080         0.0.0.0:*         LISTEN   878/apache2
+tcp        0      0 127.0.0.1:3306       0.0.0.0:*         LISTEN   1102/mysqld
+tcp        0      0 0.0.0.0:4444         0.0.0.0:*         LISTEN   1337/.sysupdate
+udp        0      0 0.0.0.0:68           0.0.0.0:*                  301/dhclient
+`;
+      }
+
+      case 'find': {
+        const goc = args[0] && !args[0].startsWith('-') ? resolvePath(args[0]) : currentDir;
+        if (!VFS[goc]) return `find: '${args[0] || goc}': No such file or directory`;
+        const viTri = args.indexOf('-name');
+        const mau = viTri !== -1 ? (args[viTri + 1] || '').replace(/['"]/g, '') : null;
+        const duong = [];
+        thuThapDuongDan(goc, duong);
+        const ket = mau ? duong.filter(d => khopTenTep(d.split('/').pop(), mau)) : duong;
+        return ket.join('\n') || `find: không có tệp nào khớp "${mau}"`;
+      }
+
+      case 'echo': {
+        // Bo cap dau nhay bao quanh neu co
+        return args.join(' ').replace(/^["']/, '').replace(/["']$/, '');
+      }
+
+      case 'mkdir': {
+        const p = args.find(a => !a.startsWith('-'));
+        if (!p) return 'mkdir: missing operand';
+        const duong = resolvePath(p);
+        if (VFS[duong]) return `mkdir: cannot create directory '${p}': File exists`;
+        taoThuMuc(duong);
+        return '';
+      }
+
+      case 'nano': {
+        const p = args.find(a => !a.startsWith('-'));
+        if (!p) return 'nano: missing filename';
+        const duong = resolvePath(p);
+        const cu = (VFS[duong] && VFS[duong].content) || '';
+        moOSoanThao(duong, cu);
+        return '';
+      }
+
+      case 'rm': {
+        const p = args.find(a => !a.startsWith('-'));
+        if (!p) return 'rm: missing operand';
+        const duong = resolvePath(p);
+        if (!VFS[duong]) return `rm: cannot remove '${p}': No such file or directory`;
+        const deQuy = args.some(a => a.startsWith('-') && (a.includes('r') || a.includes('R')));
+        if (VFS[duong].type === 'dir' && !deQuy) return `rm: cannot remove '${p}': Is a directory`;
+        for (const k of Object.keys(VFS)) {
+          if (k === duong || k.startsWith(duong + '/')) delete VFS[k];
+        }
+        const [cha, ten] = tachDuong(duong);
+        goKhoiCha(cha, ten);
+        return '';
+      }
+
+      case 'cp':
+      case 'mv': {
+        if (args.length < 2) return `${cmd}: usage: ${cmd} <nguon> <dich>`;
+        const nguon = resolvePath(args[0]);
+        const dich = resolvePath(args[1]);
+        if (!VFS[nguon]) return `${cmd}: cannot stat '${args[0]}': No such file or directory`;
+        if (VFS[nguon].type === 'dir') return `${cmd}: '${args[0]}': la thu muc, chua ho tro`;
+        const loi = ghiTep(dich, VFS[nguon].content || '', false);
+        if (loi) return `${cmd}: ${loi}`;
+        if (cmd === 'mv') {
+          delete VFS[nguon];
+          const [cha, ten] = tachDuong(nguon);
+          goKhoiCha(cha, ten);
+        }
+        return '';
+      }
+
+      case 'nginx': {
+        if (!args.includes('-t')) return 'nginx: usage: nginx -t';
+        const kq = kiemCuPhapNginx();
+        if (kq.dat) {
+          return `nginx: the configuration file ${NGINX_CONF} syntax is ok\n`
+               + `nginx: configuration file ${NGINX_CONF} test is successful`;
+        }
+        return `nginx: [emerg] ${kq.nhan}${kq.dong ? ' (dòng ' + kq.dong + ')' : ''} trong ${NGINX_CONF}\n`
+             + `nginx: configuration file ${NGINX_CONF} test failed`;
+      }
+
+      case 'systemctl': {
+        const hanhDong = args[0];
+        const dichVu = (args[1] || '').replace(/\.service$/, '');
+        if (dichVu !== 'nginx') return `Unit ${args[1] || '(trống)'} could not be found.`;
+        if (hanhDong === 'status') {
+          return `● nginx.service - A high performance web server\n`
+               + `     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n`
+               + `     Active: active (running)\n`
+               + `   Main PID: 878 (nginx)`;
+        }
+        if (hanhDong === 'reload' || hanhDong === 'restart') {
+          const kq = kiemCuPhapNginx();
+          if (!kq.dat) {
+            return `Job for nginx.service failed.\n`
+                 + `Xem chi tiết bằng: nginx -t`;
+          }
+          return '';
+        }
+        return `systemctl: hành động "${hanhDong}" chưa được hỗ trợ (dùng status, reload, restart)`;
+      }
+
+      case 'submit': {
+        const submittedFlag = args[0];
+        if (!submittedFlag) return 'submit: usage: submit FLAG{...}';
+        return checkFlag(submittedFlag);
+      }
+
+      default:
+        return `bash: ${cmd}: command not found. Gõ "help" để xem danh sách lệnh.`;
+    }
+  }
+
+  /** Duyet ca cay thu muc, gom moi duong dan lai */
+  function thuThapDuongDan(goc, ra) {
+    ra.push(goc);
+    const e = VFS[goc];
+    if (!e || e.type !== 'dir') return;
+    for (const con of e.children || []) {
+      thuThapDuongDan(goc === '/' ? '/' + con : goc + '/' + con, ra);
+    }
+  }
+
+  /** So khop ten tep voi mau co dau *, vi du "*.conf" hay ".sys*" */
+  function khopTenTep(ten, mau) {
+    const re = new RegExp('^' + mau.split('*')
+      .map(x => x.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+      .join('.*') + '$');
+    return re.test(ten);
+  }
+
+  const NGINX_CONF = '/etc/nginx/nginx.conf';
+
+  /**
+   * Kiem cu phap nginx.conf o muc rut gon: can bang dau ngoac va dau cham phay.
+   * Khong hieu het cu phap that cua Nginx — du de hoc vien nhan ra loi thuong gap.
+   */
+  function kiemCuPhapNginx() {
+    const tep = VFS[NGINX_CONF];
+    if (!tep || tep.type !== 'file') {
+      return { dat: false, nhan: `không mở được ${NGINX_CONF}` };
+    }
+    const dong = String(tep.content || '').split('\n');
+    let mo = 0;
+    for (let i = 0; i < dong.length; i++) {
+      const d = dong[i].replace(/#.*$/, '').trim();
+      if (!d) continue;
+      for (const c of d) {
+        if (c === '{') mo++;
+        else if (c === '}') mo--;
+        if (mo < 0) return { dat: false, dong: i + 1, nhan: 'thừa dấu ngoặc đóng' };
+      }
+      // Dong khai bao chi thi (khong mo/dong khoi) phai ket thuc bang dau cham phay
+      if (!/[{}]$/.test(d) && !d.endsWith(';')) {
+        return { dat: false, dong: i + 1, nhan: 'thiếu dấu chấm phẩy ở cuối dòng' };
+      }
+    }
+    if (mo > 0) return { dat: false, nhan: `thiếu ${mo} dấu ngoặc đóng` };
+    return { dat: true };
+  }
+
+  /** Doc chi thi root trong nginx.conf; khong co thi tra ve null */
+  function docRootNginx() {
+    const tep = VFS[NGINX_CONF];
+    if (!tep) return null;
+    const m = String(tep.content || '').match(/^\s*root\s+([^\s;]+)\s*;/m);
+    return m ? m[1] : null;
+  }
+
+  /** Noi mot ten con vao danh sach children cua thu muc cha */
+  function themVaoCha(cha, ten) {
+    if (!VFS[cha]) VFS[cha] = { type: 'dir', children: [] };
+    if (!VFS[cha].children) VFS[cha].children = [];
+    if (!VFS[cha].children.includes(ten)) VFS[cha].children.push(ten);
+  }
+
+  /** Go mot ten con khoi danh sach children cua thu muc cha */
+  function goKhoiCha(cha, ten) {
+    if (VFS[cha] && VFS[cha].children) {
+      VFS[cha].children = VFS[cha].children.filter(x => x !== ten);
+    }
+  }
+
+  /** Tach duong dan thanh [thu muc cha, ten] */
+  function tachDuong(duong) {
+    const i = duong.lastIndexOf('/');
+    return [duong.slice(0, i) || '/', duong.slice(i + 1)];
+  }
+
+  /** Tao thu muc va moi thu muc cha con thieu */
+  function taoThuMuc(duong) {
+    const phan = duong.split('/').filter(Boolean);
+    let hienTai = '';
+    for (const ten of phan) {
+      const cha = hienTai || '/';
+      hienTai = hienTai + '/' + ten;
+      if (!VFS[hienTai]) VFS[hienTai] = { type: 'dir', children: [] };
+      themVaoCha(cha, ten);
+    }
+  }
+
+  /** Ghi noi dung vao tep. Tra ve null neu xong, hoac chuoi loi. */
+  function ghiTep(duong, noiDung, noiThem) {
+    const [cha, ten] = tachDuong(duong);
+    if (!ten) return 'khong ghi duoc vao thu muc goc';
+    if (!VFS[cha]) taoThuMuc(cha);
+    if (VFS[cha].type !== 'dir') return `khong ghi duoc: ${cha} khong phai thu muc`;
+    if (VFS[duong] && VFS[duong].type === 'dir') return `khong ghi duoc: ${duong} la thu muc`;
+    const cu = (noiThem && VFS[duong] && VFS[duong].content) || '';
+    VFS[duong] = { type: 'file', content: cu + noiDung };
+    themVaoCha(cha, ten);
+    return null;
+  }
+
+  /** Ghi noi dung tu o soan thao nano. Mo ra ngoai de bo kiem goi truc tiep. */
+  function luuTuSoanThao(duong, noiDung) {
+    return ghiTep(duong, String(noiDung), false);
+  }
+
+  /**
+   * nano mo mot cua so noi de len terminal, co nut Luu / Huy.
+   * Khong mo phong giao dien nano that voi Ctrl+O / Ctrl+X — nguoi moi
+   * se mac ket o cho thoat ra.
+   */
+  function moOSoanThao(duong, noiDungCu) {
+    // Giao dien soan thao do React ve (Dialog); luu qua luuTuSoanThao
+    nghe.moSoanThao?.(duong, noiDungCu);
+  }
+
+  function resolvePath(p) {
+    if (p.startsWith('/')) return normalize(p);
+    if (p === '~') return '/home/hacker';
+    if (p.startsWith('~/')) return normalize('/home/hacker/' + p.substring(2));
+    const full = currentDir === '/' ? '/' + p : currentDir + '/' + p;
+    return normalize(full);
+  }
+
+  function normalize(pathStr) {
+    const parts = pathStr.split('/').filter(Boolean);
+    const stack = [];
+    for (const seg of parts) {
+      if (seg === '.') continue;
+      if (seg === '..') { if (stack.length) stack.pop(); }
+      else stack.push(seg);
+    }
+    return '/' + stack.join('/');
+  }
+
+  function checkFlag(flag) {
+    const match = CHALLENGES.find(c => c.flag.trim() === flag.trim());
+    if (match) {
+      if (capturedFlags.has(match.id)) {
+        return `⚠️ Cờ "${flag}" đã được nộp trước đó!`;
+      }
+      capturedFlags.add(match.id);
+      userScore += match.points;
+      nghe.doiDiem?.();
+      return `🎉 CHÍNH XÁC! Bạn đã mở khóa: ${match.title} (+ ${match.points} XP)!`;
+    }
+    return `❌ Cờ không hợp lệ: "${flag}". Hãy kiểm tra lại định dạng!`;
+  }
+
+
+  return {
+    executeCommand: lenh => String(executeCommand(lenh) ?? ''),
+    checkFlag,
+    luuTuSoanThao,
+    loadFs,
+    getFs,
+    resetFs,
+    commandNames: () => COMMANDS.map(c => c.name),
+    filePaths: () => Object.keys(VFS).filter(k => VFS[k].type === 'file'),
+    cwd: () => currentDir,
+    lichSu: () => history.slice(),
+    diem: () => userScore,
+    coDaGiai: () => new Set(capturedFlags),
+    COMMANDS,
+    CHALLENGES
+  };
+}
+
+const mau = createTerminal();
+/** Bang lenh co that — nguon duy nhat cho "help" va cho de AI ra */
+export const COMMANDS: LenhTerminal[] = mau.COMMANDS;
+export const CHALLENGES: ThuThach[] = mau.CHALLENGES;
