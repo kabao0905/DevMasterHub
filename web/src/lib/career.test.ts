@@ -1,5 +1,4 @@
-// Career Advisor: bat y dinh tim viec, cham do phu hop viec lam, prompt trung ban cu, Supabase.
-import NGUON_CU from '../../../public/career-advisor.js?raw';
+// Career Advisor: bat y dinh tim viec, cham do phu hop viec lam, Supabase.
 import { giaSupabase } from '@/test/gia-supabase';
 import { taoCoVan, type ThongKe } from './career';
 import { luuChat, taiChat, taiThongKe } from './career-db';
@@ -87,26 +86,6 @@ test('huy giua chung (sua cau hoi, xoa chat): tra null, khong tim viec', async (
   cv.huy();
   tha?.();
   expect(await p).toBeNull();
-});
-
-// ── Prompt trung ban cu ──
-
-test('body gui /api/ai trung nguyen van ban cu (system co ho so hoc vien, du an)', async () => {
-  const tk: ThongKe = { ...thongKe(20, ['python']), totalTimeHours: 3.5, projects: [{ project_name: 'Todo', topic: 'web', languages_used: [], score_overall: 80 }], averageProjectScore: 80 };
-  const goiCu: Goi[] = [];
-  const fetchCu = async (url: string, init?: RequestInit) => {
-    goiCu.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-    return new Response(JSON.stringify(url === '/api/ai' ? { content: [{ text: 'Ổn.' }] } : { jobs: [] }), { status: 200 });
-  };
-  const CU = new Function('AuthService', 'I18n', 'CURRICULUM', 'fetch', NGUON_CU + '\nreturn CareerAdvisor;')(
-    { getUserStats: async () => tk, isConfigured: () => false }, { t, getLang: () => 'vi' }, { python: { name: 'Python' } }, fetchCu
-  ) as { sendMessage: (m: string) => Promise<unknown> };
-  await CU.sendMessage('mình đang ở đâu?');
-  const moi = giaFetch('Ổn.');
-  await taoCoVan(client, { t, lang: 'vi', thongKe: tk, tenCongNghe: { python: 'Python' } }).gui([], 'mình đang ở đâu?');
-  const aiCu = goiCu.find(g => g.url === '/api/ai')!.body;
-  const aiMoi = moi.find(g => g.url === '/api/ai')!.body;
-  expect(aiMoi).toEqual(aiCu);
 });
 
 // ── Supabase ──

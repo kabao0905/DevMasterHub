@@ -29,7 +29,8 @@ async function moServer({ khoa = {}, traLoi }) {
   return {
     daGoi,
     goc,
-    dong: () => { sv.close(); globalThis.fetch = fetchThat; }
+    // Dong ca ket noi keep-alive: cong duoc cap lai cho server sau thi fetch khong dung lai socket cu
+    dong: () => { sv.closeAllConnections(); sv.close(); globalThis.fetch = fetchThat; }
   };
 }
 

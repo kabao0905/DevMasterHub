@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { napEnv } = require('./lib/env.js');
 const { napGiaoTrinh } = require('./lib/curriculum.js');
-const { laUrlReact, VIEW_REACT } = require('./lib/route-owner.js');
+const { laUrlReact } = require('./lib/route-owner.js');
 const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC } = require('./lib/ai-guard.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
@@ -33,9 +33,8 @@ const coHan = ms => AbortSignal.timeout(ms);
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nlkljhpqwepabglrqkmz.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_0s-SglEeMENWRqgbC2QWuQ_w0pzWJMe';
 
-const PUBLIC_DIR = path.join(__dirname, 'public');
 // App React: dev = Vite nhung trong Express (`node server.js --dev`), prod = ban build trong dist/.
-// Chua build (vd. Render chua doi Build Command) thi moi URL lui ve app cu.
+// Chua build (vd. Render chua doi Build Command) thi tra 503 kem huong dan.
 const DIST_DIR = process.env.DIST_DIR || path.join(__dirname, 'dist');
 const CHE_DO_DEV = process.argv.includes('--dev');
 const REACT_HTML = CHE_DO_DEV ? null : (() => {
@@ -80,24 +79,6 @@ if (!CHE_DO_DEV) {
   }));
 }
 
-app.use(express.static(PUBLIC_DIR, {
-  index: false,
-  dotfiles: 'ignore',
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.txt')) res.type('text/plain; charset=utf-8');
-
-    // File .js/.css/anh duoc gan ?v=<mtime> trong index.html nen cache dai han an toan.
-    // Rieng .html KHONG the phá cache bang query (nguoi dung go thang URL),
-    // nen phai revalidate moi lan — neu khong, sua trang la nguoi dung ket ban cu.
-    if (/[.](html?)$/i.test(filePath)) {
-      res.setHeader('Cache-Control', 'no-cache');
-    } else {
-      res.setHeader('Cache-Control', 'public, max-age=31536000');
-    }
-  }
-}));
 
 const rateLimitMap = new Map();
 
@@ -807,31 +788,11 @@ function metaForPath(urlPath) {
   return { title: DEFAULT_TITLE, desc: DEFAULT_DESC, url: BASE_URL + (clean === '/' ? '/' : clean) };
 }
 
-// Du an khong co buoc build nen ten file khong kem hash. Khong co cach nao
-// phan biet ban cu voi ban moi -> trinh duyet se giu code cu rat lau.
-// Giai phap: gan ?v=<thoi diem sua file> vao URL. Sua file la URL doi, cache tu het hieu luc.
-function assetVersion(relPath) {
-  try {
-    return fs.statSync(path.join(PUBLIC_DIR, relPath)).mtimeMs.toString(36);
-  } catch {
-    return null;
-  }
-}
-
-function addAssetVersions(html) {
-  return html.replace(/(src|href)="\/([A-Za-z0-9._/-]+\.(?:js|css))"/g, (m, attr, rel) => {
-    const v = assetVersion(rel);
-    return v ? `${attr}="/${rel}?v=${v}"` : m;
-  });
-}
-
-const INDEX_HTML = addAssetVersions(fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf8'));
-
 function escapeAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/** Chen title/description/canonical/og/twitter theo URL vao mot template HTML (app cu hoac React) */
+/** Chen title/description/canonical/og/twitter theo URL vao template HTML cua app React */
 function chenMeta(template, urlPath) {
   const { title, desc, url } = metaForPath(urlPath);
   const t = escapeAttr(title), d = escapeAttr(desc), u = escapeAttr(url);
@@ -848,13 +809,6 @@ function chenMeta(template, urlPath) {
     .replace(/(<meta name="description" content=")[^"]*/, gan(d))
     .replace(/(<meta property="og:description" content=")[^"]*/, gan(d))
     .replace(/(<meta name="twitter:description" content=")[^"]*/, gan(d));
-}
-
-/** Trang app cu. Khi co app React, bao cho app cu biet view nao phai tai trang moi de sang React */
-function renderIndex(urlPath) {
-  const html = chenMeta(INDEX_HTML, urlPath);
-  if (!coAppReact()) return html;
-  return html.replace('</head>', () => `<script>window.__REACT_VIEWS=${JSON.stringify(VIEW_REACT)}</script></head>`);
 }
 
 async function renderReact(req) {
@@ -902,9 +856,13 @@ app.get('*', async (req, res, next) => {
   if (looksLikeFile || hasDotSegment) {
     return res.status(404).type('text/plain; charset=utf-8').send('404 Not Found');
   }
+  if (!coAppReact()) {
+    return res.status(503).type('text/plain; charset=utf-8').send('Chưa có bản build giao diện. Chạy: npm run build');
+  }
   try {
-    const html = laUrlReact(req.path) && coAppReact() ? await renderReact(req) : renderIndex(req.path);
-    res.type('html').set('Cache-Control', 'no-cache').send(html);
+    // URL la van tra trang React (router hien "Không tìm thấy") nhung voi ma 404 cho may tim kiem
+    const html = await renderReact(req);
+    res.status(laUrlReact(req.path) ? 200 : 404).type('html').set('Cache-Control', 'no-cache').send(html);
   } catch (err) {
     next(err);
   }
@@ -920,7 +878,7 @@ async function khoiDong() {
       appType: 'custom'
     });
   } else if (!REACT_HTML) {
-    console.warn(`ℹ️ Chưa có bản build React (${path.join(DIST_DIR, 'index.html')}) — mọi trang dùng app cũ. Chạy: npm run build`);
+    console.warn(`ℹ️ Chưa có bản build React (${path.join(DIST_DIR, 'index.html')}) — mọi trang trả 503. Chạy: npm run build`);
   }
   server.listen(PORT, inBangKhoiDong);
 }

@@ -11,7 +11,7 @@ export type HoSo = { id: string; username: string; display_name: string | null }
 
 /** Cache cua app cu tren may; phai xoa khi dang xuat de nguoi sau khong thay */
 const KHOA_CACHE = ['devmaster_hub_profile_cache', 'devmaster_hub_progress_cache', 'devmaster_hub_ideas_cache', 'dmh_lab_progress'];
-/** Viec dang lam do app cu cat tam khi sang app React (xem catViecDangLam trong public/app.js) */
+/** Ban chup viec dang lam cua app cu (da xoa): chi con de don khi dang xuat */
 const KHOA_VIEC_DANG_LAM = 'devmaster_hub_legacy_session';
 /** Truy van dung chung cho moi nguoi: doi nguoi dung khong can xoa, khoi tai lai */
 const TRUY_VAN_CONG_KHAI = new Set(['i18n', 'curriculum']);

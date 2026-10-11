@@ -101,7 +101,7 @@ test('tim kiem: go khong dau ra bai co dau; khong co ket qua thi noi ro tu khoa'
   expect(await screen.findByText('Không tìm thấy kết quả phù hợp cho "xyz"')).toBeInTheDocument();
 });
 
-test('sidebar: muc chua chuyen la link thuong sang app cu; doi ngon ngu ghi khoa dung chung', async () => {
+test('sidebar: link toi Project Lab, Du an cua toi, Career va roadmap; doi ngon ngu ghi khoa dung chung', async () => {
   const u = userEvent.setup();
   veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   const nav = await screen.findByRole('navigation');
@@ -142,20 +142,21 @@ test('tai lai dung trang do thi tra lai vi tri cuon cu', async () => {
   await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 300));
 });
 
-test('URL la ma server da giao cho React (vd /index.html) thi bao khong tim thay, khong tai lai trang', async () => {
-  const thay = vi.spyOn(dieuHuong, 'thay').mockImplementation(() => {});
+test('mo thang URL la (vd /index.html) thi bao khong tim thay, khong tai lai trang', async () => {
+  const taiLai = vi.spyOn(dieuHuong, 'taiLai').mockImplementation(() => {});
   veApp('/index.html', { gia: daDangNhap(), json: JSON_GIA });
   expect(await screen.findByRole('heading', { name: 'Không tìm thấy trang này' })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/');
-  expect(thay).not.toHaveBeenCalled();
+  expect(taiLai).not.toHaveBeenCalled();
 });
 
-test('dang o trong app ma di toi URL cua app cu thi tai trang that de server tra app cu', async () => {
-  const thay = vi.spyOn(dieuHuong, 'thay').mockImplementation(() => {});
+test('dang o trong app ma di toi URL la thi bao khong tim thay ngay trong app, khong tai lai trang', async () => {
+  const taiLai = vi.spyOn(dieuHuong, 'taiLai').mockImplementation(() => {});
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   await screen.findByRole('main');
-  await act(() => router.navigate('/trang-cu?x=1'));
-  await waitFor(() => expect(thay).toHaveBeenCalledWith('/trang-cu?x=1'));
+  await act(() => router.navigate('/trang-la?x=1'));
+  expect(await screen.findByRole('heading', { name: 'Không tìm thấy trang này' })).toBeInTheDocument();
+  expect(taiLai).not.toHaveBeenCalled();
 });
 
 test('chua dang nhap mo / thi giu tieu de trang chu (may tim kiem doc trang nay nhu nguoi chua dang nhap)', async () => {

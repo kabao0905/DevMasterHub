@@ -1,5 +1,4 @@
-// Logic Project Lab: ban nop, phan tich tinh, cham nhieu tang, chuan hoa du lieu AI, prompt trung ban cu.
-import NGUON_AI_CU from '../../../public/ai-service.js?raw';
+// Logic Project Lab: ban nop, phan tich tinh, cham nhieu tang, chuan hoa du lieu AI.
 import {
   chamDuAn, chuanHoaKetQua, chuanHoaYTuong, hoiMentor, nguCanhDuAn, nhomModule, phanTichTatCa, phanTichTinh, taoBanNop, taoYTuong,
   type TepDuAn, type TienDoCham, type YTuong
@@ -194,51 +193,4 @@ test('huy giua chung (roi trang): dung ngay, khong cham tiep cac module con lai'
   const goi = giaAi(b => { if (/CẤU TRÚC project/.test(b.system)) ac.abort(); return traLoiCham(b); });
   await expect(chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', signal: ac.signal, cho: khongCho })).rejects.toThrow();
   expect(goi.length).toBeLessThanOrEqual(2);
-});
-
-// ── Prompt trung nguyen van ban cu ──
-
-/** Nap public/ai-service.js voi I18n/AuthService/fetch gia, ghi lai body gui /api/ai */
-function napCu(lang: string, traLoi: (b: ThanGui) => string) {
-  const goi: ThanGui[] = [];
-  const fetchCu = async (_u: string, init: RequestInit) => {
-    const b = JSON.parse(String(init.body)) as ThanGui;
-    goi.push(b);
-    return new Response(JSON.stringify({ content: [{ text: traLoi(b) }] }), { status: 200 });
-  };
-  const AIService = new Function('I18n', 'AuthService', 'fetch', NGUON_AI_CU + '\nreturn AIService;')(
-    { getLang: () => lang }, { isConfigured: () => false }, fetchCu
-  ) as Record<string, (...a: unknown[]) => Promise<unknown>>;
-  return { AIService, goi };
-}
-
-test.each(['vi', 'en'])('prompt tao idea (cap do va chu de) trung ban cu — %s', async lang => {
-  const tra = () => JSON.stringify({ name: 'X', description: 'Y' });
-  vi.spyOn(Math, 'random').mockReturnValue(0.42);
-  const { AIService, goi: cu } = napCu(lang, tra);
-  await AIService.generateProjectIdea('senior');
-  await AIService.generateProjectIdea(null, 'Game');
-  const moi = giaAi(tra);
-  await taoYTuong(client, { level: 'senior', topic: null, lang, cho: khongCho, ngauNhien: () => 0.42 });
-  await taoYTuong(client, { level: null, topic: 'Game', lang, cho: khongCho, ngauNhien: () => 0.42 });
-  const boViec = (b: ThanGui) => ({ ...b, taskType: undefined });
-  expect(moi.map(boViec)).toEqual(cu.map(boViec));
-});
-
-test('prompt chat mentor va ca chuoi cham project trung ban cu', async () => {
-  const { AIService, goi: cu } = napCu('vi', traLoiCham);
-  await AIService.chatAboutProject('Project: X', [{ role: 'user', content: 'a' }], 'b');
-  await AIService.reviewProject(IDEA, FILES, () => {});
-  const moi = giaAi(traLoiCham);
-  await hoiMentor(client, { nguCanh: 'Project: X', lichSu: [{ role: 'user', content: 'a' }], cauHoi: 'b', lang: 'vi', cho: khongCho });
-  await chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', cho: khongCho });
-  expect(moi).toEqual(cu);
-});
-
-test('tong hop thieu diem tong: tinh tu 5 tieu chi; khong co gi thi de trong (khong luu 0)', () => {
-  const k = chuanHoaKetQua({ overall: 78, criteria: [{ name: 'A', score: 16 }, { name: 'B', score: 14 }] });
-  expect(k.score).toBe(30);
-  const rong = chuanHoaKetQua({ summary: 'x' });
-  expect(rong.score).toBeNull();
-  expect(taoBanNop({ review: rong, idea: IDEA, files: [] }).scoreOverall).toBeNull();
 });

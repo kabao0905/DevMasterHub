@@ -1,4 +1,4 @@
-// Ban dich cho app React. Du lieu xuat tu public/i18n.js (scripts/xuat-du-lieu.mjs),
+// Ban dich cho app React. Nguon: data/i18n.json (scripts/xuat-du-lieu.mjs xuat ra web/public/i18n/<lang>.json),
 // moi ngon ngu mot file /i18n/<lang>.json da gop san du phong "ngon ngu > en > vi".
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';

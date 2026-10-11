@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { createBrowserRouter, Navigate, useLocation, useParams, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate, useParams, type RouteObject } from 'react-router';
 import { AppShell } from '@/components/AppShell';
 import { RequireAuth } from '@/components/RequireAuth';
 import { AuthPage } from '@/routes/auth/AuthPage';
@@ -7,18 +6,7 @@ import { DashboardPage } from '@/routes/dashboard/DashboardPage';
 import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
 import { RoadmapPage } from '@/routes/roadmap/RoadmapPage';
 import { LoiTrang } from '@/routes/loi/LoiTrang';
-import { dieuHuong } from '@/lib/dieu-huong';
 import { Skeleton } from '@/components/ui/skeleton';
-
-/** URL khong thuoc app React: tai trang that de server tra app cu (xem lib/route-owner.js) */
-function SangAppCu() {
-  const { pathname, search, key } = useLocation();
-  // key "default" = lan tai trang dau: server da chon React cho URL nay, tai lai se nhan lai
-  // chinh trang nay mai mai. Chi tai trang that khi di toi day tu ben trong app.
-  const moThang = key === 'default';
-  useEffect(() => { if (!moThang) dieuHuong.thay(pathname + search); }, [moThang, pathname, search]);
-  return moThang ? <NotFoundPage /> : null;
-}
 
 /** Trong luc tai chunk cua route luoi o lan mo trang dau: khong de trang trang */
 function TaiTrang() {
@@ -64,7 +52,8 @@ export const cacRoute: RouteObject[] = [
       ]
     }]
   },
-  { path: '*', element: <SangAppCu /> }
+  // URL la (server tra 404 kem trang nay)
+  { path: '*', element: <NotFoundPage /> }
 ];
 
 export const taoRouter = () => createBrowserRouter(cacRoute);
