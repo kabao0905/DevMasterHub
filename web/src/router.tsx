@@ -6,6 +6,7 @@ import { AuthPage } from '@/routes/auth/AuthPage';
 import { DashboardPage } from '@/routes/dashboard/DashboardPage';
 import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
 import { RoadmapPage } from '@/routes/roadmap/RoadmapPage';
+import { LoiTrang } from '@/routes/loi/LoiTrang';
 import { dieuHuong } from '@/lib/dieu-huong';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -35,20 +36,26 @@ function VeRoadmap() {
 }
 
 export const cacRoute: RouteObject[] = [
-  { path: '/auth', element: <AuthPage /> },
+  { path: '/auth', element: <AuthPage />, errorElement: <LoiTrang /> },
   {
     element: <RequireAuth><AppShell /></RequireAuth>,
     HydrateFallback: TaiTrang,
-    children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'roadmap', element: <Navigate to="/" replace /> },
-      { path: 'roadmap/:tech/:level?', element: <RoadmapPage /> },
-      { path: 'lesson', element: <Navigate to="/" replace /> },
-      { path: 'lesson/:tech/:level?', element: <VeRoadmap /> },
-      // Trang bai hoc va Thu thach (Prism, AI, terminal, IDE) tach chunk rieng
-      { path: 'lesson/:tech/:level/:lesson', lazy: async () => ({ Component: (await import('@/routes/lesson/LessonPage')).LessonPage }) },
-      { path: 'challenge', lazy: async () => ({ Component: (await import('@/routes/challenge/ChallengePage')).ChallengePage }) }
-    ]
+    // Loi o chinh khung app (thanh ben...)
+    errorElement: <LoiTrang />,
+    children: [{
+      // Loi o mot trang (chunk lazy hong sau deploy, loi khi ve): hien trong khung, thanh ben van dung duoc
+      errorElement: <LoiTrang />,
+      children: [
+        { index: true, element: <DashboardPage /> },
+        { path: 'roadmap', element: <Navigate to="/" replace /> },
+        { path: 'roadmap/:tech/:level?', element: <RoadmapPage /> },
+        { path: 'lesson', element: <Navigate to="/" replace /> },
+        { path: 'lesson/:tech/:level?', element: <VeRoadmap /> },
+        // Trang bai hoc va Thu thach (Prism, AI, terminal, IDE) tach chunk rieng
+        { path: 'lesson/:tech/:level/:lesson', lazy: async () => ({ Component: (await import('@/routes/lesson/LessonPage')).LessonPage }) },
+        { path: 'challenge', lazy: async () => ({ Component: (await import('@/routes/challenge/ChallengePage')).ChallengePage }) }
+      ]
+    }]
   },
   { path: '*', element: <SangAppCu /> }
 ];
