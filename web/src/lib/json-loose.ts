@@ -43,7 +43,7 @@ export function parseJsonLoose(raw: unknown): Record<string, unknown> | null {
   let s = String(raw || '')
     .replace(/^\uFEFF/, '')
     .replace(/^```(?:json)?\s*/i, '')
-    .replace(/```\s*$/, '')
+      .replace(/```\s*$/, '')
     .trim();
 
   const dau = s.indexOf('{');
