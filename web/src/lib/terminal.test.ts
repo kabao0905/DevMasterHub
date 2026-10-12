@@ -1,6 +1,9 @@
 // Chuyen tu tests/terminal-fs, terminal-lenh, terminal-nginx, ctf-khong-hoi-quy (app cu).
 import { createTerminal, CHALLENGES, type HeThongTep } from './terminal';
 import NGUON from './terminal.ts?raw';
+import { LENH_VAN_BAN } from './terminal-van-ban';
+import { LENH_MA_HOA } from './terminal-ma-hoa';
+import { LENH_HE_THONG } from './terminal-he-thong';
 
 const FS_THU: HeThongTep = {
   '/': { type: 'dir', children: ['home', 'etc'] },
@@ -94,7 +97,11 @@ describe('he thong tep', () => {
 });
 
 describe('bang lenh la nguon duy nhat', () => {
-  const nhanCase = () => [...NGUON.matchAll(/^\s*case '([a-z0-9_]+)':/gm)].map(m => m[1]);
+  // Lenh can he thong tep la case trong terminal.ts; lenh thuan nam trong cac module terminal-*.ts
+  const nhanCase = () => [
+    ...[...NGUON.matchAll(/^\s*case '([a-z0-9_]+)':/gm)].map(m => m[1]),
+    ...Object.keys({ ...LENH_VAN_BAN, ...LENH_MA_HOA, ...LENH_HE_THONG })
+  ];
 
   test('moi lenh quang cao deu co ban cai, moi ban cai deu duoc khai bao', () => {
     const T = createTerminal();

@@ -183,7 +183,8 @@ export function promptThuThach(lenh: string[], tep: Record<string, string>, dauR
   const khoiLenh = Object.entries(dauRa).map(([l, ra]) => `$ ${l}\n${ra}`).join('\n');
   return [
     'Bạn ra đề thử thách Linux & an ninh mạng cho học viên Việt Nam, chơi trên một terminal GIẢ LẬP.',
-    `Terminal CHỈ có các lệnh: ${lenh.join(', ')}. Không có lệnh nào khác (không chmod, chown, sudo, ss, lsof, top, awk).`,
+    `Terminal có các lệnh: ${lenh.join(', ')}. Hỗ trợ pipe |, chuyển hướng > >> <, nối lệnh ; &&, ký tự đại diện *. Không có lệnh nào ngoài danh sách này.`,
+    'Có thể ra đề cần kết hợp lệnh như người điều tra thật (vd: grep "Failed" auth.log | awk \'{print $11}\' | sort | uniq -c | sort -rn).',
     'Hệ thống tệp ĐANG CÓ trên máy (đường dẫn và nội dung):',
     khoiTep,
     'Kết quả của một số lệnh trên máy này:',

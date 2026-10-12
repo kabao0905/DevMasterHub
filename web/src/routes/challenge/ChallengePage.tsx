@@ -15,7 +15,7 @@ import { CtfPanel } from '@/components/tools/CtfPanel';
 import { useTerminalBenVung } from '@/components/tools/use-terminal';
 
 // Lenh co ket qua dang de ra de: tien trinh, cong dang mo, quet mang, nguoi dung
-const LENH_CHUP = ['ps aux', 'netstat -tulpn', 'nmap 192.168.1.100', 'whoami', 'id'];
+const LENH_CHUP = ['ps aux', 'netstat -tulpn', 'nmap 192.168.1.100', 'whoami', 'id', 'last'];
 const boMaMau = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
 
 /** Du lieu that cua may dang choi (tep hien tai + ket qua lenh) de AI ra de giai duoc */
