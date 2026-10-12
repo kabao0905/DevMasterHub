@@ -106,12 +106,19 @@ ${nguCanh}`;
 
 export const BAI_TAP_SYSTEM = 'Bạn là giảng viên lập trình. Luôn trả lời bằng JSON hợp lệ.';
 
-export function promptBaiTap({ congNghe, capDo, baiHoc, lyThuyet, cu }: { congNghe: string; capDo: string; baiHoc: string; lyThuyet: string; cu: string }) {
+export function promptBaiTap({ congNghe, capDo, baiHoc, lyThuyet, cu, chuDe, ngonNgu }: {
+  congNghe: string; capDo: string; baiHoc: string; lyThuyet: string; cu: string;
+  /** Bai hoc co nhieu bai tap (vd moi thuat toan sap xep mot bai): bai moi phai cung loai voi bai dang mo */
+  chuDe?: string;
+  ngonNgu?: string;
+}) {
+  const dongChuDe = chuDe ? `\nCHỦ ĐỀ BẮT BUỘC: ${chuDe} (bài tập mới phải luyện đúng thuật toán / kỹ thuật này; chỉ đổi đề bài, dữ liệu hoặc yêu cầu phụ)` : '';
+  const dongNgonNgu = ngonNgu ? `\nNGÔN NGỮ: ${ngonNgu} (solution viết bằng ngôn ngữ này)` : '';
   return `Tạo 1 bài tập thực hành MỚI:
 
 CÔNG NGHỆ: ${congNghe}
 CẤP ĐỘ: ${capDo}
-BÀI HỌC: ${baiHoc}
+BÀI HỌC: ${baiHoc}${dongChuDe}${dongNgonNgu}
 NỘI DUNG: ${lyThuyet.substring(0, 800)}
 BÀI TẬP CŨ (tránh trùng): ${cu || 'Không có'}
 

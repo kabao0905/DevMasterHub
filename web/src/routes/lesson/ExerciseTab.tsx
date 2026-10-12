@@ -15,6 +15,8 @@ import { LabPanel } from '@/components/tools/LabPanel';
 import { LiveIde } from '@/components/tools/LiveIde';
 import { Terminal } from '@/components/tools/Terminal';
 import { ChayThuJs } from '@/components/tools/ChayThuJs';
+import { ChayCpp } from '@/components/tools/ChayCpp';
+import { laCpp } from '@/lib/chay-cpp';
 import { useTerminal } from '@/components/tools/use-terminal';
 import { cn } from '@/lib/utils';
 import { CodeArea } from './CodeArea';
@@ -108,26 +110,36 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
   const { kho, deHienTai, traLoi, nhanXet, coSan, soCoSan, deCoSan } = baiTap;
   const idx = kho.activeExIdx;
   const laJs = /^(javascript|js)$/i.test(bai.lesson.lang || '');
+  const nhieuCoSan = coSan.length > 1;
+
+  const nut = (j: number, nhan: string) => (
+    <Button key={j} size="sm" variant={idx === j ? 'secondary' : 'outline'} aria-pressed={idx === j} onClick={() => baiTap.chon(j)}>{nhan}</Button>
+  );
+  // Bai AI: "Linear Search · AI #2" khi thuoc mot loai (dem rieng trong loai do), khong thi "AI #n"
+  const nutAi = (i: number) => {
+    const loai = kho.aiExercises[i].loai;
+    const thuTu = kho.aiExercises.slice(0, i + 1).filter(x => x.loai === loai).length;
+    return nut(soCoSan + i, loai ? `${loai} · ${t('aiExerciseTab', { n: thuTu })}` : t('aiExerciseTab', { n: thuTu }));
+  };
+  const chiSoAi = kho.aiExercises.map((_, i) => i);
+  const loaiCoSan = new Set(coSan.map(bt => bt.title));
 
   return (
     <div className="space-y-5">
-      {/* Bai co nhieu bai tap soan san (vd moi thuat toan mot bai): moi bai mot nut, roi den cac bai AI tao them */}
-      {(coSan.length > 1 || kho.aiExercises.length > 0) && (
+      {/* Bai co nhieu bai tap soan san (vd moi thuat toan mot bai): moi bai mot nut, bai AI tao them dung ngay sau bai cung loai */}
+      {(nhieuCoSan || kho.aiExercises.length > 0) && (
         <div className="flex flex-wrap gap-2" aria-label={t('tabLabelExercise')}>
-          {coSan.length > 1 ? coSan.map((bt, j) => (
-            <Button key={`co-san-${j}`} size="sm" variant={idx === j ? 'secondary' : 'outline'} aria-pressed={idx === j} onClick={() => baiTap.chon(j)}>
-              📝 {bt.title}
-            </Button>
-          )) : (
-            <Button size="sm" variant={idx === 0 ? 'secondary' : 'outline'} aria-pressed={idx === 0} onClick={() => baiTap.chon(0)}>
-              📝 {t('originalExercise')}
-            </Button>
+          {nhieuCoSan ? (
+            <>
+              {coSan.flatMap((bt, j) => [nut(j, `📝 ${bt.title}`), ...chiSoAi.filter(i => kho.aiExercises[i].loai === bt.title).map(nutAi)])}
+              {chiSoAi.filter(i => !loaiCoSan.has(kho.aiExercises[i].loai ?? '')).map(nutAi)}
+            </>
+          ) : (
+            <>
+              {nut(0, `📝 ${t('originalExercise')}`)}
+              {chiSoAi.map(nutAi)}
+            </>
           )}
-          {kho.aiExercises.map((_, i) => (
-            <Button key={i} size="sm" variant={idx === soCoSan + i ? 'secondary' : 'outline'} aria-pressed={idx === soCoSan + i} onClick={() => baiTap.chon(soCoSan + i)}>
-              {t('aiExerciseTab', { n: i + 1 })}
-            </Button>
-          ))}
         </div>
       )}
 
@@ -174,6 +186,10 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         </div>
       )}
 
+      {/* Khong tu dien code: hoc vien tu bam neu muon dung code khung (co san phan tu kiem tra) */}
+      {deCoSan?.starter && !deHienTai && !traLoi.trim() && (
+        <Button variant="outline" size="sm" onClick={() => baiTap.datTraLoi(deCoSan.starter!)}>{t('useStarterCode')}</Button>
+      )}
       <CodeArea value={traLoi} onChange={baiTap.datTraLoi} label={t('answerPlaceholder')} />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -190,6 +206,8 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         )}
       </div>
       {laJs && <ChayThuJs code={traLoi} nhan={t('runCode')} />}
+      {/* key: doi bai thi xoa ket qua chay cua bai truoc; bai AI co du lieu mau thi dien san vao stdin */}
+      {laCpp(bai.lesson.lang) && <ChayCpp key={idx} code={traLoi} stdinMacDinh={deHienTai?.sampleInput} />}
 
       {baiTap.loiTao && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('exerciseFailed', { error: baiTap.loiTao.message })}</p>}
       {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}

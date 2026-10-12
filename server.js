@@ -7,6 +7,7 @@ const { napGiaoTrinh } = require('./lib/curriculum.js');
 const { laUrlReact } = require('./lib/route-owner.js');
 const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, laGemini3 } = require('./lib/ai-guard.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
+const { chuanHoaYeuCauChay, chayCpp } = require('./lib/chay-cpp.js');
 const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
 
 // Nap .env truoc khi doc bat ky bien nao. Bien dat san tu moi truong (Render) thang .env.
@@ -347,6 +348,18 @@ app.post('/api/ai', sameOrigin, requireUser, rateLimit({ max: 30, scope: 'ai' })
     error: 'Tất cả các nhà cung cấp AI đều đang bận hoặc lỗi. Vui lòng thử lại sau.',
     details: lastError ? lastError.message : 'Unknown error'
   });
+});
+
+// Chay code C++ cua bai hoc (DSA, C++): qua dich vu bien dich ben ngoai, xem lib/chay-cpp.js
+app.post('/api/run-cpp', sameOrigin, requireUser, rateLimit({ max: 20, scope: 'run-cpp' }), async (req, res) => {
+  const yc = chuanHoaYeuCauChay(req.body);
+  if (yc.loi) return res.status(400).json({ error: yc.loi });
+  try {
+    res.json(await chayCpp(yc));
+  } catch (err) {
+    console.error('[run-cpp] Error:', err && err.message);
+    res.status(502).json({ error: 'Không chạy được code lúc này (dịch vụ biên dịch bận). Thử lại sau ít phút.' });
+  }
 });
 
 app.get('/api/health', (req, res) => {

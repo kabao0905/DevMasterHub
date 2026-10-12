@@ -94,6 +94,59 @@ test('Gemini goi truc tiep: 3.8 Flash, thinkingLevel high, bo phan suy nghi khi 
   } finally { s.dong(); }
 });
 
+const goiChay = (goc, body, dangNhap = true) => fetch(goc + '/api/run-cpp', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', ...(dangNhap ? { authorization: 'Bearer tok' } : {}) },
+  body: JSON.stringify(body)
+});
+
+test('/api/run-cpp: chay C++ qua Compiler Explorer, tra ve stdout va ma thoat', async () => {
+  const s = await moServer({
+    traLoi: u => u.includes('godbolt.org') && json({ didExecute: true, code: 0, stdout: [{ text: 'Xin chào' }, { text: '42' }], stderr: [], buildResult: { code: 0 } })
+  });
+  try {
+    const res = await goiChay(s.goc, { code: 'int main() {}', stdin: '21' });
+    assert.strictEqual(res.status, 200);
+    assert.deepStrictEqual(await res.json(), { stdout: 'Xin chào\n42', stderr: '', maThoat: 0, dichVu: 'godbolt' });
+    const gb = s.daGoi.find(g => g.url.includes('godbolt.org'));
+    assert.strictEqual(gb.body.source, 'int main() {}');
+    assert.strictEqual(gb.body.options.executeParameters.stdin, '21');
+    assert.ok(gb.opts.signal, 'goi dich vu bien dich phai co timeout');
+  } finally { s.dong(); }
+});
+
+test('/api/run-cpp: loi bien dich tra ve chu de doc (bo ma mau ANSI), khong chay chuong trinh', async () => {
+  const s = await moServer({
+    traLoi: u => u.includes('godbolt.org') && json({ didExecute: false, code: -1, stdout: [], stderr: [{ text: 'Build failed' }],
+      buildResult: { code: 1, stderr: [{ text: '\u001b[01m<source>:3:5:\u001b[m error: expected ;' }] } })
+  });
+  try {
+    const data = await (await goiChay(s.goc, { code: 'int main() { int x }' })).json();
+    assert.deepStrictEqual(data, { bienDichLoi: '<source>:3:5: error: expected ;', dichVu: 'godbolt' });
+  } finally { s.dong(); }
+});
+
+test('/api/run-cpp: Compiler Explorer hong thi chuyen sang Wandbox', async () => {
+  const s = await moServer({
+    traLoi: u => (u.includes('godbolt.org') ? new Response('loi', { status: 503 })
+      : u.includes('wandbox.org') && json({ status: '0', program_output: 'ok\n', program_error: '' }))
+  });
+  try {
+    const data = await (await goiChay(s.goc, { code: 'int main() {}' })).json();
+    assert.deepStrictEqual(data, { stdout: 'ok\n', stderr: '', maThoat: 0, dichVu: 'wandbox' });
+  } finally { s.dong(); }
+});
+
+test('/api/run-cpp: chua dang nhap thi 401; code rong hoac qua dai thi 400, khong goi dich vu ngoai', async () => {
+  const s = await moServer({ traLoi: () => null });
+  try {
+    assert.strictEqual((await goiChay(s.goc, { code: 'int main() {}' }, false)).status, 401);
+    assert.strictEqual((await goiChay(s.goc, { code: '   ' })).status, 400);
+    assert.strictEqual((await goiChay(s.goc, { code: 'x'.repeat(60000) })).status, 400);
+    assert.ok(!s.daGoi.some(g => /godbolt|wandbox/.test(g.url)));
+  } finally { s.dong(); }
+});
+
 test('/api/ai tra 400 khi messages sai dang thay vi day xuong nha cung cap', async () => {
   const s = await moServer({ khoa: { OPENROUTER_API_KEY: 'or' }, traLoi: () => null });
   try {

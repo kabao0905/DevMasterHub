@@ -67,8 +67,9 @@ export function useBaiTap(bai: BaiDangMo) {
   const deBaiChu = deHienTai?.description ?? deCoSan?.description ?? bai.lesson.exercise ?? '';
 
   const tao = useMutation({
-    mutationFn: ({ cu }: { k: QueryKey; cu: string; soCoSan: number }) => taoBaiTap(client, { ...bai, cu, lang }),
-    onSuccess: (bt, { k, soCoSan: n }) => dat(k, s => ({ ...s, aiExercises: [...s.aiExercises, bt], activeExIdx: n + s.aiExercises.length })),
+    mutationFn: ({ cu, chuDe }: { k: QueryKey; cu: string; soCoSan: number; chuDe?: string }) => taoBaiTap(client, { ...bai, cu, chuDe, lang }),
+    // Bai moi mang "loai" cua bai dang mo luc bam (vd Linear Search): nut hien canh bai do, tao tiep van cung loai
+    onSuccess: (bt, { k, soCoSan: n, chuDe }) => dat(k, s => ({ ...s, aiExercises: [...s.aiExercises, { ...bt, loai: chuDe }], activeExIdx: n + s.aiExercises.length })),
     onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangTao: false }))
   });
 
@@ -83,8 +84,8 @@ export function useBaiTap(bai: BaiDangMo) {
     onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangCham: false }))
   });
 
-  // Chua go gi thi o soan hien code khung cua bai soan san (go roi thi giu dung chu da go, ke ca xoa trang)
-  const traLoi = kho.answers[kho.activeExIdx] ?? deCoSan?.starter ?? '';
+  // O soan de trong: code khung chi chen khi hoc vien bam "Dung code khung" (khong tu dien san)
+  const traLoi = kho.answers[kho.activeExIdx] ?? '';
 
   return {
     kho,
@@ -103,7 +104,9 @@ export function useBaiTap(bai: BaiDangMo) {
     taoMoi: () => {
       if (kho.dangTao || tao.isPending) return;
       dat(khoa, s => ({ ...s, dangTao: true }));
-      tao.mutate({ k: khoa, cu: deBaiChu, soCoSan });
+      // Loai cua bai dang mo: bai soan san (khi bai hoc co nhieu bai) hoac bai AI da thuoc mot loai
+      const chuDe = (coSan.length > 1 ? deCoSan?.title : undefined) ?? deHienTai?.loai;
+      tao.mutate({ k: khoa, cu: deBaiChu, soCoSan, chuDe });
     },
     /** Cham o soan (mac dinh) hoac bai lam truyen vao: bo tep IDE, lenh terminal da dan */
     cham: (baiLam: string = traLoi) => {

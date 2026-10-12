@@ -200,6 +200,8 @@ const tuyChonChuoi = (x: unknown): string | undefined => chuoi(x) || undefined;
 export type BaiTapAi = {
   title: string;
   description: string;
+  /** Bai AI tao them cho loai nao (tieu de bai tap soan san, vd "Linear Search"); khong co = bai chung cua bai hoc */
+  loai?: string;
   hints: string[];
   sampleInput?: string;
   expectedOutput?: string;
@@ -208,11 +210,13 @@ export type BaiTapAi = {
   solutionLang?: string;
 };
 
-export async function taoBaiTap(client: SupabaseLike, { tech, level, lesson, cu, lang, signal, cho }:
-  BaiChoAi & { cu?: string; lang: string; signal?: AbortSignal; cho?: ThamSoGoi['cho'] }): Promise<BaiTapAi> {
+export async function taoBaiTap(client: SupabaseLike, { tech, level, lesson, cu, chuDe, lang, signal, cho }:
+  BaiChoAi & { cu?: string; chuDe?: string; lang: string; signal?: AbortSignal; cho?: ThamSoGoi['cho'] }): Promise<BaiTapAi> {
   const text = await goiAi(client, {
     system: BAI_TAP_SYSTEM,
-    user: promptBaiTap({ congNghe: tech.name, capDo: level.name, baiHoc: lesson.title, lyThuyet: boThe(lesson.theory), cu: cu || '' }),
+    user: promptBaiTap({
+      congNghe: tech.name, capDo: level.name, baiHoc: lesson.title, lyThuyet: boThe(lesson.theory), cu: cu || '', chuDe, ngonNgu: lesson.lang
+    }),
     temperature: 0.85, maxTokens: 4096, taskType: 'exercise', lang, signal, cho
   });
   const o = parseJsonLoose(text);
