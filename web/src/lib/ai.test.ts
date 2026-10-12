@@ -1,4 +1,4 @@
-import { apDungThietKe, chamBai, docJson, goiAi, hoiGiaSu, nguCanhBai, suaThietKe, taoBaiTap, taoQuiz, taoThuThach } from './ai';
+import { apDungThietKe, chamBai, docJson, goiAi, hoiGiaSu, khopDapAn, nguCanhBai, suaThietKe, taoBaiTap, taoQuiz, taoThuThach } from './ai';
 import type { SupabaseLike } from './auth';
 
 const client = { auth: { getSession: async () => ({ data: { session: { access_token: 'tk' } } }) } } as unknown as SupabaseLike;
@@ -188,15 +188,40 @@ describe('bai tap AI', () => {
     await expect(suaThietKe(client, { yeuCau: 'x', chon: null, files, lang: 'vi' })).rejects.toThrow('AI không đề xuất thay đổi nào.');
   });
 
-  test('ra de thu thach: system chi lenh/tep co that; JSON bi cat van doc duoc; thieu tieu de thi bao loi', async () => {
-    const goi = giaFetch(traText('{"title":"Tim co an","level":"De","scenario":"Ke tan cong","steps":["ls -la","cat'));
-    const tt = await taoThuThach(client, { lenh: ['ls', 'cat'], tep: ['/home/hacker/a.txt'], lang: 'vi' });
-    expect(tt).toMatchObject({ title: 'Tim co an', level: 'De', scenario: 'Ke tan cong', steps: ['ls -la', 'cat'] });
+  const MAY = {
+    lenh: ['ls', 'cat', 'grep'],
+    tep: { '/var/log/auth.log': 'Failed password for root from 10.0.0.66 port 22' },
+    dauRa: { 'ps aux': 'root 1 init' }
+  };
+  const deThuThach = (o: object) => traText(JSON.stringify({
+    title: 'Tim IP do mat khau', level: 'Dễ', scenario: 'Có kẻ dò mật khẩu SSH', steps: ['Đọc log đăng nhập'],
+    hint: 'dùng grep Failed', question: 'IP nào đang dò mật khẩu?', ...o
+  }));
+
+  test('ra de thu thach: gui noi dung tep va ket qua lenh that; dap an co that trong du lieu thi nhan', async () => {
+    const goi = giaFetch(deThuThach({ answer: '10.0.0.66' }));
+    const tt = await taoThuThach(client, { ...MAY, lang: 'vi', cho: khongCho });
+    expect(tt).toMatchObject({ title: 'Tim IP do mat khau', question: 'IP nào đang dò mật khẩu?', answer: '10.0.0.66', steps: ['Đọc log đăng nhập'] });
     const b = body(goi[0]);
-    expect(b.system).toContain('ls, cat.');
-    expect(b.system).toContain('/home/hacker/a.txt.');
-    giaFetch(traText('{"scenario":"x"}'));
-    await expect(taoThuThach(client, { lenh: ['ls'], tep: [], lang: 'vi' })).rejects.toThrow('AI ra đề không hợp lệ');
+    expect(b.system).toContain('ls, cat, grep');
+    expect(b.system).toContain('Failed password for root from 10.0.0.66 port 22');
+    expect(b.system).toContain('root 1 init');
+  });
+
+  test('ra de thu thach: dap an bia (khong co trong du lieu) hoac lo ngay trong de thi tu ra lai; hai lan deu hong thi bao loi', async () => {
+    let goi = giaFetch(deThuThach({ answer: '1.2.3.4' }), deThuThach({ answer: '10.0.0.66' }));
+    expect((await taoThuThach(client, { ...MAY, lang: 'vi', cho: khongCho })).answer).toBe('10.0.0.66');
+    expect(goi).toHaveLength(2);
+    goi = giaFetch(deThuThach({ answer: '10.0.0.66', hint: 'IP là 10.0.0.66' }), traText('khong phai json'));
+    await expect(taoThuThach(client, { ...MAY, lang: 'vi', cho: khongCho })).rejects.toThrow('AI ra đề không hợp lệ');
+    expect(goi).toHaveLength(2);
+  });
+
+  test('so dap an: khong phan biet hoa thuong, bo khoang trang va dau nhay bao ngoai', () => {
+    expect(khopDapAn('10.0.0.66', ' 10.0.0.66 ')).toBe(true);
+    expect(khopDapAn('FLAG{abc}', '"flag{ABC}"')).toBe(true);
+    expect(khopDapAn('4444', '444')).toBe(false);
+    expect(khopDapAn('4444', '')).toBe(false);
   });
 
   test('ngu canh tab Bai tap: bai AI dang lam, code hoc vien, ly thuyet phu', () => {

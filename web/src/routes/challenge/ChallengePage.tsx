@@ -1,14 +1,72 @@
+import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
-import { taoThuThach } from '@/lib/ai';
+import { khopDapAn, taoThuThach, type ThuThachAi } from '@/lib/ai';
+import { createTerminal, type MayTerminal } from '@/lib/terminal';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Terminal } from '@/components/tools/Terminal';
 import { CtfPanel } from '@/components/tools/CtfPanel';
 import { useTerminalBenVung } from '@/components/tools/use-terminal';
+
+// Lenh co ket qua dang de ra de: tien trinh, cong dang mo, quet mang, nguoi dung
+const LENH_CHUP = ['ps aux', 'netstat -tulpn', 'nmap 192.168.1.100', 'whoami', 'id'];
+const boMaMau = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
+
+/** Du lieu that cua may dang choi (tep hien tai + ket qua lenh) de AI ra de giai duoc */
+function chupMay(may: MayTerminal) {
+  const fs = may.getFs();
+  const tep = Object.fromEntries(Object.entries(fs).flatMap(([duong, nut]) => (nut.type === 'file' ? [[duong, nut.content]] : [])));
+  // Chay lenh tren ban sao: khong chen dong nao vao man hinh / lich su lenh cua hoc vien
+  const tam = createTerminal();
+  tam.loadFs(fs);
+  const dauRa = Object.fromEntries(LENH_CHUP.map(l => [l, boMaMau(tam.executeCommand(l)).trim()]));
+  return { lenh: may.commandNames(), tep, dauRa };
+}
+
+/** Cau hoi cua de AI + o nop dap an; bi thi xem dap an */
+function KhungDapAn({ de }: { de: ThuThachAi }) {
+  const { t } = useT();
+  const [nhap, datNhap] = useState('');
+  const [daGiai, datDaGiai] = useState(false);
+
+  function nop(e: FormEvent) {
+    e.preventDefault();
+    if (!nhap.trim()) return;
+    if (khopDapAn(de.answer, nhap)) {
+      datDaGiai(true);
+      toast.success(t('aiChallengeCorrect'));
+    } else {
+      toast.error(t('aiChallengeWrong'));
+    }
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border bg-background/50 p-4">
+      <p className="font-medium">❓ {de.question}</p>
+      {daGiai ? (
+        <p role="status" className="font-medium text-level-newbie">{t('aiChallengeCorrect')}</p>
+      ) : (
+        <>
+          <form onSubmit={nop} className="flex flex-col gap-2 sm:flex-row">
+            <Input value={nhap} onChange={e => datNhap(e.target.value)} aria-label={t('aiChallengeAnswerLabel')} placeholder={t('aiChallengeAnswerLabel')}
+              autoCapitalize="off" autoCorrect="off" spellCheck={false} className="font-mono" />
+            <Button type="submit" className="shrink-0">{t('submitAnswerBtn')}</Button>
+          </form>
+          <details className="text-sm">
+            <summary className="cursor-pointer text-muted-foreground">{t('showAnswerBtn')}</summary>
+            <code className="mt-1 inline-block rounded bg-muted px-1.5 py-0.5 font-mono">{de.answer}</code>
+          </details>
+        </>
+      )}
+    </div>
+  );
+}
 
 /** Thu thach Linux & An ninh mang: terminal gia lap, bang co CTF va de do AI ra */
 export function ChallengePage() {
@@ -18,10 +76,10 @@ export function ChallengePage() {
   const kenh = useTerminalBenVung(['challenge', user?.id, 'may']);
   usePageMeta({ title: `${t('challengeTitle').replace(/^\S+\s/u, '')} | DevMaster Hub`, description: t('challengeSubtitle') });
 
-  // De chi duoc dung lenh va tep co that trong terminal nay (truoc kia AI ra de can chmod, ss...)
+  // De dua tren lenh, noi dung tep va ket qua lenh co that trong terminal nay (truoc kia AI bia du lieu -> khong giai duoc)
   const de = useQuery({
     queryKey: ['challenge', user?.id, 'de'],
-    queryFn: ({ signal }) => taoThuThach(client, { lenh: kenh.may.commandNames(), tep: kenh.may.filePaths(), lang, signal }),
+    queryFn: ({ signal }) => taoThuThach(client, { ...chupMay(kenh.may), lang, signal }),
     enabled: false,
     staleTime: Infinity,
     gcTime: Infinity,
@@ -64,6 +122,8 @@ export function ChallengePage() {
               <ol className="list-decimal space-y-1 pl-5 text-sm">{de.data.steps.map(s => <li key={s}>{s}</li>)}</ol>
             )}
             {de.data.hint && <p className="text-sm text-muted-foreground">💡 {de.data.hint}</p>}
+            {/* key: de moi thi o nop dap an trong lai */}
+            {de.data.question && de.data.answer && <KhungDapAn key={de.dataUpdatedAt} de={de.data} />}
           </article>
         )}
       </section>

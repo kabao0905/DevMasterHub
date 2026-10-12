@@ -37,18 +37,34 @@ test('trang Thu thach: terminal, du the CTF, link quay ve roadmap An ninh mang',
   expect(within(screen.getByRole('main')).getByRole('link', { name: /Quay lại/ })).toHaveAttribute('href', '/roadmap/cybersecurity');
 });
 
-test('AI ra de: chi dung lenh co that; de bi cat van hien; tra loi hong thi bao loi', async () => {
+// De hop le: dap an "4444" co that trong /etc/.hidden/backdoor.conf, khong lo trong de
+const DE_HOP_LE = JSON.stringify({
+  title: 'Tim cong cua cua hau', level: 'Trung bình', scenario: 'Máy chủ có tiến trình lạ', steps: ['Tìm tệp cấu hình ẩn trong /etc', 'Đọc cấu hình'],
+  hint: 'dùng ls -la /etc', question: 'Cửa hậu đang mở cổng nào?', answer: '4444'
+});
+
+test('AI ra de dua tren du lieu that cua terminal; nop dap an sai thi bao chua dung, dung thi bao chinh xac', async () => {
   const u = userEvent.setup();
-  let lan = 0;
-  const { goiAi } = mo(() => (lan++ === 0
-    ? traText('{"title":"Tim co trong log","level":"Dễ","scenario":"Có kẻ lạ","steps":["grep FLAG /var/log/auth.log"],"hint":"dùng grep"}')
-    : traText('khong phai json')));
+  const { goiAi } = mo(() => traText(DE_HOP_LE));
   await u.click(await screen.findByRole('button', { name: 'Ra đề mới' }));
-  expect(await screen.findByRole('heading', { name: 'Tim co trong log' })).toBeInTheDocument();
-  expect(screen.getByText('grep FLAG /var/log/auth.log')).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: 'Tim cong cua cua hau' })).toBeInTheDocument();
+  expect(screen.getByText(/Cửa hậu đang mở cổng nào\?/)).toBeInTheDocument();
   expect(goiAi[0].system).toContain('nmap');
-  expect(goiAi[0].system).toContain('/home/hacker/flag1.txt');
-  await u.click(screen.getByRole('button', { name: 'Ra đề mới' }));
+  expect(goiAi[0].system).toContain('listen_port=4444');
+  const o = screen.getByRole('textbox', { name: 'Đáp án của bạn' });
+  await u.type(o, '8080');
+  await u.click(screen.getByRole('button', { name: 'Nộp đáp án' }));
+  expect(await screen.findByText(/Chưa đúng/)).toBeInTheDocument();
+  await u.clear(o);
+  await u.type(o, '4444');
+  await u.click(screen.getByRole('button', { name: 'Nộp đáp án' }));
+  expect((await screen.findAllByText(/Chính xác/)).length).toBeGreaterThan(0);
+});
+
+test('AI ra de hong (khong phai JSON) thi bao loi kem goi y bam lai', async () => {
+  const u = userEvent.setup();
+  mo(() => traText('khong phai json'));
+  await u.click(await screen.findByRole('button', { name: 'Ra đề mới' }));
   expect(await screen.findByText(/AI trả lời không đúng định dạng/)).toBeInTheDocument();
 });
 
@@ -72,7 +88,7 @@ test('/lesson/<tech>/<cap> thieu bai thi ve roadmap cap do; /lesson tran ve Dash
 
 test('roi trang Thu thach roi quay lai: diem, co da giai va de AI van con', async () => {
   const u = userEvent.setup();
-  const { router } = mo(() => traText('{"title":"De giu lai","level":"Dễ","scenario":"x","steps":[],"hint":""}'));
+  const { router } = mo(() => traText(DE_HOP_LE.replace('Tim cong cua cua hau', 'De giu lai')));
   const lenh = await screen.findByRole('textbox', { name: 'Lệnh terminal' });
   await u.click(lenh);
   await u.paste(`submit ${CHALLENGES[0].flag}`);

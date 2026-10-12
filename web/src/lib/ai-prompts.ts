@@ -167,21 +167,28 @@ export function promptThietKe(tenFile: string[]) {
 
 // ── Thu thach CTF do AI ra (chep tu app.js generateChallenge) ──
 
-export function promptThuThach(lenh: string[], tep: string[]) {
-  const dsLenh = lenh.join(', ');
-  const dsTep = tep.join(', ');
+/**
+ * De thu thach phai GIAI DUOC tren terminal gia lap: AI nhan danh sach lenh, NOI DUNG THAT cua moi tep va ket qua
+ * that cua vai lenh (truoc day chi co ten tep nen AI bia du lieu khong ton tai -> de khong lam duoc).
+ * De phai kem cau hoi + dap an co nguyen van trong du lieu de app cham duoc.
+ */
+export function promptThuThach(lenh: string[], tep: Record<string, string>, dauRa: Record<string, string>) {
+  const khoiTep = Object.entries(tep).map(([duong, noiDung]) => `=== ${duong} ===\n${noiDung}`).join('\n');
+  const khoiLenh = Object.entries(dauRa).map(([l, ra]) => `$ ${l}\n${ra}`).join('\n');
   return [
-    'Ban ra de thu thach Linux va an ninh mang cho hoc vien Viet Nam.',
-    dsLenh ? 'Terminal gia lap CHI co dung nhung lenh sau, khong co lenh nao khac:' : '',
-    dsLenh ? dsLenh + '.' : '',
-    dsLenh ? 'De bai can toi bat ky lenh nao ngoai danh sach tren la de KHONG giai duoc,' : '',
-    dsLenh ? 'nen tuyet doi khong ra de nhu vay (khong dung chmod, chown, sudo, ss, lsof, top, awk).' : '',
-    dsTep ? 'He thong tep chi co dung nhung tep sau:' : '',
-    dsTep ? dsTep + '.' : '',
-    dsTep ? 'Chi duoc nhac toi tep co trong danh sach, khong duoc bia duong dan moi.' : '',
-    'CHI tra ve JSON thuan, khong bao markdown:',
-    '{"title":"...","level":"De|Trung binh|Kho","scenario":"boi canh 2-3 cau",',
-    '"steps":["buoc 1","buoc 2"],"hint":"goi y mot lenh cu the"}',
-    'Viet ngan gon: title duoi 60 ky tu, scenario duoi 300 ky tu, toi da 4 buoc.'
-  ].filter(Boolean).join('\n');
+    'Bạn ra đề thử thách Linux & an ninh mạng cho học viên Việt Nam, chơi trên một terminal GIẢ LẬP.',
+    `Terminal CHỈ có các lệnh: ${lenh.join(', ')}. Không có lệnh nào khác (không chmod, chown, sudo, ss, lsof, top, awk).`,
+    'TOÀN BỘ hệ thống tệp (đường dẫn và NỘI DUNG THẬT):',
+    khoiTep,
+    'Kết quả THẬT của một số lệnh trên máy này:',
+    khoiLenh,
+    'QUY TẮC BẮT BUỘC:',
+    '1. Đề phải giải được CHỈ bằng các lệnh trên và dữ liệu trên. Không bịa tệp, tiến trình, cổng, IP, người dùng hay nội dung không có ở trên.',
+    '2. "answer" là một chuỗi NGẮN có thật, xuất hiện NGUYÊN VĂN trong dữ liệu trên (ví dụ một IP, cổng, tên người dùng, mật khẩu, FLAG{...}). Học viên phải tự tìm ra chuỗi này rồi nộp.',
+    '3. Không được để lộ answer trong title, scenario, steps, hint hay question.',
+    '4. Mỗi bước là một việc cụ thể làm được bằng lệnh có sẵn; hint gợi ý một lệnh cụ thể.',
+    'CHỈ trả về JSON thuần, không bọc markdown:',
+    '{"title":"...","level":"Dễ|Trung bình|Khó","scenario":"bối cảnh 2-3 câu","steps":["bước 1","bước 2"],"hint":"...","question":"câu hỏi mà answer trả lời","answer":"..."}',
+    'Viết ngắn gọn: title dưới 60 ký tự, scenario dưới 300 ký tự, tối đa 4 bước.'
+  ].join('\n');
 }

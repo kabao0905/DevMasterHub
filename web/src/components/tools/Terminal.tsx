@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { CornerDownLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -43,14 +44,19 @@ export function Terminal({ kenh, className }: Props) {
     if (ra) them({ loai: 'ra', text: ra });
   }
 
+  // Enter (ca phim "Di"/"Gui" cua ban phim ao tren dien thoai) gui form -> chay lenh.
+  // Truoc day bat Enter trong onKeyDown: nhieu ban phim Android khong phat keydown Enter dung chuan nen khong chay duoc.
+  function guiLenh(e: FormEvent) {
+    e.preventDefault();
+    if (nhap.trim()) chay(nhap);
+    datNhap('');
+    datViTri(null);
+    oRef.current?.focus();
+  }
+
   function khiGo(e: KeyboardEvent<HTMLInputElement>) {
     const lichSu = may.lichSu();
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (nhap.trim()) chay(nhap);
-      datNhap('');
-      datViTri(null);
-    } else if (e.key === 'ArrowUp') {
+    if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (!lichSu.length) return;
       const i = viTri === null ? lichSu.length - 1 : Math.max(0, viTri - 1);
@@ -88,8 +94,9 @@ export function Terminal({ kenh, className }: Props) {
             : <pre key={d.id} className={cn('whitespace-pre-wrap break-words', d.loai === 'he' && 'text-[#8b949e]')}>{d.text}</pre>
         ))}
       </div>
-      <div className="flex items-center gap-2 border-t border-white/10 px-4 py-2">
-        <span className="text-[#7ee787]" aria-hidden="true">{rutGon(may.cwd())}$</span>
+      <form onSubmit={guiLenh} className="flex items-center gap-2 border-t border-white/10 py-1.5 pr-1.5 pl-4">
+        <span className="shrink-0 text-[#7ee787]" aria-hidden="true">{rutGon(may.cwd())}$</span>
+        {/* Dien thoai: tat tu sua/viet hoa (iOS doi "ls" thanh "Is"), chu 16px de iOS khong tu phong to khi cham */}
         <input
           ref={oRef}
           value={nhap}
@@ -98,10 +105,16 @@ export function Terminal({ kenh, className }: Props) {
           aria-label="Lệnh terminal"
           autoComplete="off"
           autoCapitalize="off"
+          autoCorrect="off"
           spellCheck={false}
-          className="min-w-0 flex-1 bg-transparent text-[#e6edf3] caret-[#7ee787] outline-none"
+          enterKeyHint="go"
+          className="min-w-0 flex-1 bg-transparent text-base text-[#e6edf3] caret-[#7ee787] outline-none sm:text-[13px]"
         />
-      </div>
+        <button type="submit" aria-label="Chạy lệnh" title="Chạy lệnh (Enter)"
+          className="grid size-9 shrink-0 place-items-center rounded-md text-[#8b949e] hover:bg-white/10 hover:text-[#e6edf3] focus-visible:outline-2 focus-visible:outline-[#7ee787]">
+          <CornerDownLeft className="size-4" aria-hidden="true" />
+        </button>
+      </form>
 
       <Dialog open={!!soan} onOpenChange={mo => { if (!mo) datSoan(null); }}>
         <DialogContent className="sm:max-w-2xl">

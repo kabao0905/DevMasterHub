@@ -45,6 +45,21 @@ describe('Terminal', () => {
     expect(within(khung).queryByText(/flag1\.txt/)).not.toBeInTheDocument();
   });
 
+  test('dien thoai: o lenh nam trong form (phim Enter/Di cua ban phim ao gui duoc), co nut Chay lenh, tat tu sua chinh ta', async () => {
+    const u = userEvent.setup();
+    veVoiNen(<MotTerminal />);
+    const khung = await screen.findByRole('region', { name: 'Terminal' });
+    const o = within(khung).getByRole('textbox', { name: 'Lệnh terminal' });
+    expect(o).toHaveAttribute('autocorrect', 'off');
+    expect(o).toHaveAttribute('autocapitalize', 'off');
+    expect(o).toHaveAttribute('enterkeyhint', 'go');
+    expect(o.closest('form')).not.toBeNull();
+    await u.type(o, 'whoami');
+    await u.click(within(khung).getByRole('button', { name: 'Chạy lệnh' }));
+    expect(within(khung).getByText(/uid=1000 gid=1000/)).toBeInTheDocument();
+    expect(o).toHaveValue('');
+  });
+
   test('hai terminal tren mot trang doc lap', async () => {
     const u = userEvent.setup();
     veVoiNen(<><MotTerminal ten="A" /><MotTerminal ten="B" /></>);
