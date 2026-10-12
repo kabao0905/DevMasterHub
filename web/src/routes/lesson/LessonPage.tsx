@@ -113,11 +113,12 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
       </header>
 
       <Tabs value={tab} onValueChange={doiTab}>
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="theory"><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
-          <TabsTrigger value="code"><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
-          <TabsTrigger value="quiz"><ListChecks aria-hidden="true" /> {t('tabQuiz')}</TabsTrigger>
-          <TabsTrigger value="exercise"><Dumbbell aria-hidden="true" /> {t('tabExercise')}</TabsTrigger>
+        {/* Dien thoai: 4 tab tren mot hang rong ~530px, tran man 375px va cat mat tab dau/cuoi -> luoi 2x2 */}
+        <TabsList className="grid w-full grid-cols-2 gap-1 group-data-horizontal/tabs:h-auto sm:inline-flex sm:w-auto sm:gap-0 sm:group-data-horizontal/tabs:h-8">
+          <TabsTrigger value="theory" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
+          <TabsTrigger value="code" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
+          <TabsTrigger value="quiz" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><ListChecks aria-hidden="true" /> {t('tabQuiz')}</TabsTrigger>
+          <TabsTrigger value="exercise" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><Dumbbell aria-hidden="true" /> {t('tabExercise')}</TabsTrigger>
         </TabsList>
         <TabsContent value="theory" className="pt-6"><TheoryTab lesson={lesson} /></TabsContent>
         <TabsContent value="code" className="pt-6"><CodeTab lesson={lesson} /></TabsContent>

@@ -1,6 +1,6 @@
 // Lich hoc tren Dashboard: dai ngang cac ngay trong thang. Ngay hoc du so phut muc tieu thi duoc tich,
 // hoc chua du thi to nhat; dem chuoi ngay dat muc tieu lien tiep. Cao vua bang khoi tieu de + thong ke.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { ChevronLeft, ChevronRight, Flame, Target } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { ngayDiaPhuong, tinhStreak } from '@/lib/ngay-hoc';
@@ -11,6 +11,20 @@ import { cn } from '@/lib/utils';
 
 const dauThang = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
 const phutTu = (giay: number) => Math.floor(giay / 60);
+
+/** Man hep hon breakpoint sm (640px) cua Tailwind; may khong co matchMedia (jsdom) coi la man rong */
+const MAN_HEP = '(max-width: 639px)';
+function useManHep(): boolean {
+  return useSyncExternalStore(
+    bao => {
+      const mq = window.matchMedia?.(MAN_HEP);
+      mq?.addEventListener('change', bao);
+      return () => mq?.removeEventListener('change', bao);
+    },
+    () => window.matchMedia?.(MAN_HEP).matches ?? false,
+    () => false
+  );
+}
 
 export function LichHoc({ className }: { className?: string }) {
   const { t, lang } = useT();
@@ -35,6 +49,36 @@ export function LichHoc({ className }: { className?: string }) {
     if (el && o && el.scrollWidth > el.clientWidth) el.scrollLeft = o.offsetLeft - el.clientWidth / 2;
   }, [thang]);
   const doiThang = (buoc: number) => datThang(new Date(thang.getFullYear(), thang.getMonth() + buoc, 1));
+  const manHep = useManHep();
+
+  /** Mot o ngay (ngay thu i+1 cua thang dang xem): dat muc tieu to dam, hoc chua du to nhat */
+  function oNgay(i: number, coChu: string) {
+    const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
+    const khoa = ngayDiaPhuong(d);
+    const dat = ngayDat.has(khoa);
+    const phut = phutTu(giayTheoNgay[khoa] ?? 0);
+    const nhan = dat
+      ? t('studiedDay', { date: ngayDayDu.format(d) })
+      : phut > 0 ? t('studiedMinutes', { date: ngayDayDu.format(d), n: phut }) : ngayDayDu.format(d);
+    return (
+      <span
+        key={khoa}
+        role="img"
+        aria-label={nhan}
+        title={nhan}
+        aria-current={khoa === khoaHomNay ? 'date' : undefined}
+        className={cn(
+          'grid aspect-square place-items-center rounded-md tabular-nums', coChu,
+          dat ? 'bg-brand font-semibold text-white'
+            : phut > 0 ? 'bg-brand/25 text-foreground'
+              : khoa > khoaHomNay ? 'bg-muted/30 text-muted-foreground/40' : 'bg-muted/60 text-muted-foreground',
+          khoa === khoaHomNay && 'ring-2 ring-primary'
+        )}
+      >
+        {i + 1}
+      </span>
+    );
+  }
 
   return (
     <section aria-labelledby="lich-hoc" className={cn('flex min-w-0 flex-col justify-between gap-3 rounded-2xl border bg-card p-4', className)}>
@@ -58,47 +102,34 @@ export function LichHoc({ className }: { className?: string }) {
         </div>
       </div>
 
-      {/* Ca thang tren mot hang: thu o tren, ngay o duoi. Hep qua (dien thoai) thi cuon ngang */}
-      <div ref={dai} className="-mx-1 overflow-x-auto px-1 py-0.5">
-        <div className="grid gap-x-0.5 gap-y-1 text-center" style={{ gridTemplateColumns: `repeat(${soNgay}, minmax(1rem, 1fr))` }}>
-          {Array.from({ length: soNgay }, (_, i) => {
-            const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
-            const cuoiTuan = d.getDay() === 0 || d.getDay() === 6;
-            return (
-              <span key={`thu-${i}`} aria-hidden="true" className={cn('text-[10px] leading-4', cuoiTuan ? 'text-muted-foreground/60' : 'text-muted-foreground')}>
-                {thuNgan.format(d)}
-              </span>
-            );
-          })}
-          {Array.from({ length: soNgay }, (_, i) => {
-            const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
-            const khoa = ngayDiaPhuong(d);
-            const dat = ngayDat.has(khoa);
-            const phut = phutTu(giayTheoNgay[khoa] ?? 0);
-            const nhan = dat
-              ? t('studiedDay', { date: ngayDayDu.format(d) })
-              : phut > 0 ? t('studiedMinutes', { date: ngayDayDu.format(d), n: phut }) : ngayDayDu.format(d);
-            return (
-              <span
-                key={khoa}
-                role="img"
-                aria-label={nhan}
-                title={nhan}
-                aria-current={khoa === khoaHomNay ? 'date' : undefined}
-                className={cn(
-                  'grid aspect-square place-items-center rounded-md text-[11px] tabular-nums',
-                  dat ? 'bg-brand font-semibold text-white'
-                    : phut > 0 ? 'bg-brand/25 text-foreground'
-                      : khoa > khoaHomNay ? 'bg-muted/30 text-muted-foreground/40' : 'bg-muted/60 text-muted-foreground',
-                  khoa === khoaHomNay && 'ring-2 ring-primary'
-                )}
-              >
-                {i + 1}
-              </span>
-            );
-          })}
+      {manHep ? (
+        // Dien thoai: dai 31 ngay chi thay nua thang, o qua nho -> luoi thang 7 cot, tuan bat dau thu Hai
+        <div className="grid grid-cols-7 gap-1 text-center">
+          {Array.from({ length: 7 }, (_, i) => (
+            <span key={`thu-${i}`} aria-hidden="true" className="text-xs leading-5 text-muted-foreground">
+              {thuNgan.format(new Date(2024, 0, 1 + i))}
+            </span>
+          ))}
+          {Array.from({ length: (thang.getDay() + 6) % 7 }, (_, i) => <span key={`trong-${i}`} aria-hidden="true" />)}
+          {Array.from({ length: soNgay }, (_, i) => oNgay(i, 'text-sm'))}
         </div>
-      </div>
+      ) : (
+        // Ca thang tren mot hang: thu o tren, ngay o duoi. Hep qua thi cuon ngang
+        <div ref={dai} className="-mx-1 overflow-x-auto px-1 py-0.5">
+          <div className="grid gap-x-0.5 gap-y-1 text-center" style={{ gridTemplateColumns: `repeat(${soNgay}, minmax(1rem, 1fr))` }}>
+            {Array.from({ length: soNgay }, (_, i) => {
+              const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
+              const cuoiTuan = d.getDay() === 0 || d.getDay() === 6;
+              return (
+                <span key={`thu-${i}`} aria-hidden="true" className={cn('text-[10px] leading-4', cuoiTuan ? 'text-muted-foreground/60' : 'text-muted-foreground')}>
+                  {thuNgan.format(d)}
+                </span>
+              );
+            })}
+            {Array.from({ length: soNgay }, (_, i) => oNgay(i, 'text-[11px]'))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs">
         <p className="text-muted-foreground tabular-nums" title={t('streakHint')}>

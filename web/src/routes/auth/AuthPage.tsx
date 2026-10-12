@@ -104,7 +104,8 @@ export function AuthPage() {
           </div>
 
           <Tabs value={cheDo} onValueChange={v => { datCheDo(v as CheDo); datLoi(''); }}>
-            <TabsList className="w-full">
+            {/* Cao 40px: tab mac dinh chi 25px, kho bam tren dien thoai */}
+            <TabsList className="w-full group-data-horizontal/tabs:h-10">
               <TabsTrigger value="login" className="flex-1">{t('authLogin')}</TabsTrigger>
               <TabsTrigger value="register" className="flex-1">{t('authRegister')}</TabsTrigger>
             </TabsList>
