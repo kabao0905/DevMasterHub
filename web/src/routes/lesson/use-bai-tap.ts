@@ -31,6 +31,10 @@ export function useBaiTap(bai: BaiDangMo) {
   const danhDauXong = useDanhDauXong();
   const uid = user?.id;
   const kb = khoaBai(bai.tech.id, bai.level.id, bai.lesson.id);
+  // Bai tap soan san (vd moi thuat toan sap xep mot bai); khong co thi bai tap goc la bai duy nhat.
+  // Chi so: 0..soCoSan-1 la bai soan san, tu soCoSan tro di la bai AI tao them (bai chi co bai goc: soCoSan = 1, nhu cu)
+  const coSan = useMemo(() => bai.lesson.exercises ?? [], [bai.lesson.exercises]);
+  const soCoSan = Math.max(1, coSan.length);
   const khoa = useMemo<QueryKey>(() => ['exercise', uid, kb], [uid, kb]);
   // Muc trong cache: giu viec dang lam qua cac lan mo lai tab/bai, va bi xoa khi dang xuat.
   // enabled: false — khong bao gio "tai lai" (tai lai la tra ve RONG, xoa sach viec dang lam).
@@ -58,12 +62,13 @@ export function useBaiTap(bai: BaiDangMo) {
     if (conGanRef.current && hashKey(k) === hashKey(khoaRef.current)) datKho(moi);
   }, [qc]);
 
-  const deHienTai = kho.activeExIdx > 0 ? kho.aiExercises[kho.activeExIdx - 1] ?? null : null;
-  const deBaiChu = deHienTai?.description ?? bai.lesson.exercise ?? '';
+  const deHienTai = kho.activeExIdx >= soCoSan ? kho.aiExercises[kho.activeExIdx - soCoSan] ?? null : null;
+  const deCoSan = kho.activeExIdx < soCoSan ? coSan[kho.activeExIdx] ?? null : null;
+  const deBaiChu = deHienTai?.description ?? deCoSan?.description ?? bai.lesson.exercise ?? '';
 
   const tao = useMutation({
-    mutationFn: ({ cu }: { k: QueryKey; cu: string }) => taoBaiTap(client, { ...bai, cu, lang }),
-    onSuccess: (bt, { k }) => dat(k, s => ({ ...s, aiExercises: [...s.aiExercises, bt], activeExIdx: s.aiExercises.length + 1 })),
+    mutationFn: ({ cu }: { k: QueryKey; cu: string; soCoSan: number }) => taoBaiTap(client, { ...bai, cu, lang }),
+    onSuccess: (bt, { k, soCoSan: n }) => dat(k, s => ({ ...s, aiExercises: [...s.aiExercises, bt], activeExIdx: n + s.aiExercises.length })),
     onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangTao: false }))
   });
 
@@ -78,11 +83,17 @@ export function useBaiTap(bai: BaiDangMo) {
     onSettled: (_kq, _loi, { k }) => dat(k, s => ({ ...s, dangCham: false }))
   });
 
-  const traLoi = kho.answers[kho.activeExIdx] ?? '';
+  // Chua go gi thi o soan hien code khung cua bai soan san (go roi thi giu dung chu da go, ke ca xoa trang)
+  const traLoi = kho.answers[kho.activeExIdx] ?? deCoSan?.starter ?? '';
 
   return {
     kho,
     deHienTai,
+    coSan,
+    soCoSan,
+    deCoSan,
+    /** Bai dang lam de gui gia su AI: bai AI tao, hoac bai soan san khi bai hoc co nhieu bai */
+    deChoGiaSu: deHienTai ?? (coSan.length > 1 && deCoSan ? { title: deCoSan.title, description: deCoSan.description, hints: [] } : null),
     traLoi,
     nhanXet: kho.feedback[kho.activeExIdx] ?? null,
     dangTao: !!kho.dangTao || tao.isPending,
@@ -92,7 +103,7 @@ export function useBaiTap(bai: BaiDangMo) {
     taoMoi: () => {
       if (kho.dangTao || tao.isPending) return;
       dat(khoa, s => ({ ...s, dangTao: true }));
-      tao.mutate({ k: khoa, cu: deBaiChu });
+      tao.mutate({ k: khoa, cu: deBaiChu, soCoSan });
     },
     /** Cham o soan (mac dinh) hoac bai lam truyen vao: bo tep IDE, lenh terminal da dan */
     cham: (baiLam: string = traLoi) => {

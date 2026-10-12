@@ -18,12 +18,11 @@ test('React: bo import/export, tu gan component vao trang, them useState tu Reac
   expect(r[0].code.startsWith('const { useState')).toBe(true);
 });
 
-test('Vue them const {createApp...} = Vue; TS vao main.ts; dsa vao main.js', () => {
+test('Vue them const {createApp...} = Vue; TS vao main.ts; DSA (C++) khong dung IDE trinh duyet', () => {
   expect(adaptLessonCode('const app = 1;', 'vue').startsWith('const { createApp')).toBe(true);
   expect(adaptLessonCode('createApp({}).mount("#app")', 'vue').startsWith('const {')).toBe(false);
   expect(seedFilesFromLesson({ code: 'let x: number = 1;' }, 'typescript')![0].name).toBe('main.ts');
-  expect(seedFilesFromLesson({ code: 'console.log(1)' }, 'dsa')![0].name).toBe('main.js');
-  expect(TECH_FRONTEND).toEqual(['htmlcss', 'react', 'vue', 'tailwind', 'typescript', 'dsa']);
+  expect(TECH_FRONTEND).toEqual(['htmlcss', 'react', 'vue', 'tailwind', 'typescript']);
 });
 
 describe('parseJsonLoose', () => {

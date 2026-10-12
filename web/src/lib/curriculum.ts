@@ -48,8 +48,15 @@ export function timBaiHoc(ds: MucTimKiem[], q: string, gioiHan = 50): MucTimKiem
   return ra;
 }
 
+/** Bai tap soan san cua mot bai (vd moi thuat toan sap xep mot bai); starter: code khung dien san vao o soan */
+export type BaiTapCoSan = { title: string; description: string; starter?: string };
+
 /** Noi dung day du cua mot bai (curriculum/<tech>.json) */
-export type BaiDayDu = BaiTomTat & { theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string };
+export type BaiDayDu = BaiTomTat & {
+  theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string;
+  /** Co thi tab Bai tap hien moi bai mot nut (thay cho mot "Bai tap goc") */
+  exercises?: BaiTapCoSan[];
+};
 export type CapDayDu = Omit<CapTomTat, 'lessons'> & { lessons: BaiDayDu[] };
 export type CongNgheDayDu = Omit<CongNgheTomTat, 'levels'> & { levels: CapDayDu[] };
 

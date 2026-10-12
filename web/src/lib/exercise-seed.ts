@@ -3,7 +3,8 @@
 export type TepIde = { name: string; code: string };
 
 /** Cong nghe co trang xem truoc chay ngay trong trinh duyet (Angular can buoc build nen khong co) */
-export const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind', 'typescript', 'dsa'];
+// DSA khong con o day: bai DSA viet bang C++ (khong chay duoc trong trinh duyet) -> o soan + AI cham
+export const TECH_FRONTEND = ['htmlcss', 'react', 'vue', 'tailwind', 'typescript'];
 
 /**
  * Chuyen code mau cua bai hoc thanh code chay duoc trong sandbox.
@@ -78,7 +79,6 @@ export function seedFilesFromLesson(lesson: { code?: string } | null | undefined
   const entry = techId === 'react' ? 'App.jsx'
               : techId === 'vue' ? 'App.js'
               : techId === 'typescript' ? 'main.ts'
-              : techId === 'dsa' ? 'main.js'
               : 'script.js';
   return [{ name: entry, code: adaptLessonCode(raw, techId) }];
 }

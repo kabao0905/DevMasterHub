@@ -28,7 +28,18 @@ const NGX: CongNgheDayDu = {
   id: 'nginx', name: 'Nginx', icon: '🟩', color: '#090', gradient: '', category: 'devops', description: 'Web server',
   levels: [{ id: 'newbie', name: 'Newbie', lessons: [{ id: 'intro', title: 'Giới thiệu', theory: '<p>nginx</p>' }] }]
 };
-const TECHS = [PY, REACT_T, CYB, NGX];
+// DSA: bai co nhieu bai tap soan san (moi thuat toan mot bai), code khung C++
+const DSA_T: CongNgheDayDu = {
+  id: 'dsa', name: 'DSA', icon: '🧮', color: '#888', gradient: '', category: 'tool', description: 'Giải thuật',
+  levels: [{ id: 'newbie', name: 'Newbie', lessons: [{
+    id: 'sorting', title: 'Sắp xếp', theory: '<p>sort</p>', code: 'int main() {}', lang: 'cpp', exercise: 'Luyện các thuật toán sắp xếp',
+    exercises: [
+      { title: 'Bubble Sort', description: 'Cài đặt bubbleSort tăng dần', starter: 'void bubbleSort(vector<int>& a) {}' },
+      { title: 'Selection Sort', description: 'Cài đặt selectionSort tăng dần', starter: 'void selectionSort(vector<int>& a) {}' }
+    ]
+  }] }]
+};
+const TECHS = [PY, REACT_T, CYB, NGX, DSA_T];
 const INDEX: CongNgheTomTat[] = TECHS.map(t => ({ ...t, levels: t.levels.map(l => ({ ...l, lessons: l.lessons.map(b => ({ id: b.id, title: b.title })) })) }));
 
 type ThanAi = { system: string; messages: { content: string }[]; taskType: string };
@@ -134,6 +145,38 @@ test('an ninh mang: dan lenh da chay va ket qua de AI cham; dat thi bai duoc tic
   await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
   expect(await screen.findByText('95/100 điểm')).toBeInTheDocument();
   expect(goiAi[0].messages[0].content).toContain('flag.txt');
+  await waitFor(() => expect(daGhiXong(gia)).toBe(true));
+});
+
+test('DSA: moi thuat toan mot bai tap rieng, code khung C++ soan san, cau tra loi giu rieng tung bai', async () => {
+  const u = userEvent.setup();
+  mo('/lesson/dsa/newbie/sorting?tab=exercise', {
+    ai: () => traText(JSON.stringify({ title: 'Đếm đổi chỗ', description: 'Đếm số lần đổi chỗ', hints: [], solution: '', solutionLang: 'cpp' }))
+  });
+  const soan = () => screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' });
+  expect(await screen.findByRole('button', { name: /Bubble Sort/, pressed: true })).toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: /Soạn main/ })).not.toBeInTheDocument();
+  expect(screen.getByText('Cài đặt bubbleSort tăng dần')).toBeInTheDocument();
+  expect(soan()).toHaveValue('void bubbleSort(vector<int>& a) {}');
+  await u.type(soan(), ' // xong');
+  await u.click(screen.getByRole('button', { name: /Selection Sort/ }));
+  expect(screen.getByText('Cài đặt selectionSort tăng dần')).toBeInTheDocument();
+  expect(soan()).toHaveValue('void selectionSort(vector<int>& a) {}');
+  await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
+  expect(await screen.findByRole('button', { name: 'AI #1', pressed: true })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Bubble Sort/ })).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: /Bubble Sort/ }));
+  expect(soan()).toHaveValue('void bubbleSort(vector<int>& a) {} // xong');
+});
+
+test('DSA: AI cham dung bai tap soan san dang mo (de + code C++), dat thi bai duoc tich', async () => {
+  const u = userEvent.setup();
+  const { gia, goiAi } = mo('/lesson/dsa/newbie/sorting?tab=exercise', { bang: { lesson_progress: [] }, ai: () => traCham(90) });
+  await u.click(await screen.findByRole('button', { name: /Selection Sort/ }));
+  await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
+  expect(await screen.findByText('90/100 điểm')).toBeInTheDocument();
+  expect(goiAi[0].messages[0].content).toContain('Cài đặt selectionSort tăng dần');
+  expect(goiAi[0].messages[0].content).toContain('void selectionSort');
   await waitFor(() => expect(daGhiXong(gia)).toBe(true));
 });
 

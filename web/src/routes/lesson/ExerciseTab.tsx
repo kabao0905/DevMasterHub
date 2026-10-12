@@ -105,19 +105,26 @@ function NopChamAi({ baiTap, aiEnabled, baiLam, lang }: { baiTap: BaiTapBai; aiE
 
 function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
-  const { kho, deHienTai, traLoi, nhanXet } = baiTap;
+  const { kho, deHienTai, traLoi, nhanXet, coSan, soCoSan, deCoSan } = baiTap;
   const idx = kho.activeExIdx;
   const laJs = /^(javascript|js)$/i.test(bai.lesson.lang || '');
 
   return (
     <div className="space-y-5">
-      {kho.aiExercises.length > 0 && (
+      {/* Bai co nhieu bai tap soan san (vd moi thuat toan mot bai): moi bai mot nut, roi den cac bai AI tao them */}
+      {(coSan.length > 1 || kho.aiExercises.length > 0) && (
         <div className="flex flex-wrap gap-2" aria-label={t('tabLabelExercise')}>
-          <Button size="sm" variant={idx === 0 ? 'secondary' : 'outline'} aria-pressed={idx === 0} onClick={() => baiTap.chon(0)}>
-            📝 {t('originalExercise')}
-          </Button>
+          {coSan.length > 1 ? coSan.map((bt, j) => (
+            <Button key={`co-san-${j}`} size="sm" variant={idx === j ? 'secondary' : 'outline'} aria-pressed={idx === j} onClick={() => baiTap.chon(j)}>
+              📝 {bt.title}
+            </Button>
+          )) : (
+            <Button size="sm" variant={idx === 0 ? 'secondary' : 'outline'} aria-pressed={idx === 0} onClick={() => baiTap.chon(0)}>
+              📝 {t('originalExercise')}
+            </Button>
+          )}
           {kho.aiExercises.map((_, i) => (
-            <Button key={i} size="sm" variant={idx === i + 1 ? 'secondary' : 'outline'} aria-pressed={idx === i + 1} onClick={() => baiTap.chon(i + 1)}>
+            <Button key={i} size="sm" variant={idx === soCoSan + i ? 'secondary' : 'outline'} aria-pressed={idx === soCoSan + i} onClick={() => baiTap.chon(soCoSan + i)}>
               {t('aiExerciseTab', { n: i + 1 })}
             </Button>
           ))}
@@ -136,8 +143,13 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
               <div><p className="text-xs text-muted-foreground">{t('expectedOutputLabel')}</p><pre className="mt-1 whitespace-pre-wrap rounded-lg bg-code p-3 font-mono text-xs">{deHienTai.expectedOutput}</pre></div>
             )}
           </div>
+        ) : deCoSan && coSan.length > 1 ? (
+          <div className="space-y-3">
+            <h2 className="font-semibold">{deCoSan.title}</h2>
+            <DeBaiGoc text={deCoSan.description} />
+          </div>
         ) : (
-          <DeBaiGoc text={bai.lesson.exercise} />
+          <DeBaiGoc text={deCoSan?.description ?? bai.lesson.exercise} />
         )}
       </div>
 

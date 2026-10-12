@@ -302,7 +302,6 @@ export function presetFor(techId?: string): string {
   if (techId === 'vue') return 'vue';
   if (techId === 'tailwind') return 'tailwind';
   if (techId === 'typescript') return 'typescript';
-  if (techId === 'dsa') return 'js';
   return 'html';
 }
 

@@ -130,7 +130,7 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
         )}
       </Tabs>
 
-      <TutorChat bai={bai} tab={tab} quiz={quizBai.quiz} baiTap={{ hienTai: baiTap.deHienTai, code: codeDangLam(baiTap.kho) }} />
+      <TutorChat bai={bai} tab={tab} quiz={quizBai.quiz} baiTap={{ hienTai: baiTap.deChoGiaSu, code: codeDangLam(baiTap.kho) }} />
 
       <nav aria-label={`${t('prevLesson')} / ${t('nextLesson')}`} className="grid gap-3 sm:grid-cols-2">
         {truoc ? (

@@ -41,10 +41,9 @@ test('che do thiet ke chi chen script chon phan tu khi duoc truyen vao', () => {
   expect(coThietKe).toContain('t1');
 });
 
-test('preset theo cong nghe: htmlcss la html, dsa chay console JS, la thi html', () => {
+test('preset theo cong nghe: htmlcss la html, la thi html', () => {
   expect(presetFor('react')).toBe('react');
   expect(presetFor('typescript')).toBe('typescript');
-  expect(presetFor('dsa')).toBe('js');
   expect(presetFor('htmlcss')).toBe('html');
   expect(presetFor('constructor')).toBe('html');
   expect(PRESETS.js.mode).toBe('console');
