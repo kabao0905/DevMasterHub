@@ -79,7 +79,12 @@ export function ChallengePage() {
   // De dua tren lenh, noi dung tep va ket qua lenh co that trong terminal nay (truoc kia AI bia du lieu -> khong giai duoc)
   const de = useQuery({
     queryKey: ['challenge', user?.id, 'de'],
-    queryFn: ({ signal }) => taoThuThach(client, { ...chupMay(kenh.may), lang, signal }),
+    queryFn: async ({ signal }) => {
+      const deMoi = await taoThuThach(client, { ...chupMay(kenh.may), lang, signal });
+      // Dung hien truong: ghi tep AI tao vao chinh may hoc vien dang go (tu tao thu muc cha)
+      for (const f of deMoi.files) kenh.may.luuTuSoanThao(f.path, f.content);
+      return deMoi;
+    },
     enabled: false,
     staleTime: Infinity,
     gcTime: Infinity,
@@ -122,6 +127,9 @@ export function ChallengePage() {
               <ol className="list-decimal space-y-1 pl-5 text-sm">{de.data.steps.map(s => <li key={s}>{s}</li>)}</ol>
             )}
             {de.data.hint && <p className="text-sm text-muted-foreground">💡 {de.data.hint}</p>}
+            {de.data.files.length > 0 && (
+              <p className="text-sm text-muted-foreground">{t('aiChallengeFilesAdded', { n: de.data.files.length })}</p>
+            )}
             {/* key: de moi thi o nop dap an trong lai */}
             {de.data.question && de.data.answer && <KhungDapAn key={de.dataUpdatedAt} de={de.data} />}
           </article>
@@ -129,7 +137,7 @@ export function ChallengePage() {
       </section>
 
       <div className="space-y-6">
-        <Terminal kenh={kenh} />
+        <section aria-label="Terminal"><Terminal kenh={kenh} /></section>
         <CtfPanel kenh={kenh} />
       </div>
     </div>

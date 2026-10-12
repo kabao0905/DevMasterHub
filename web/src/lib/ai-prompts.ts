@@ -172,23 +172,31 @@ export function promptThietKe(tenFile: string[]) {
  * that cua vai lenh (truoc day chi co ten tep nen AI bia du lieu khong ton tai -> de khong lam duoc).
  * De phai kem cau hoi + dap an co nguyen van trong du lieu de app cham duoc.
  */
+// Gioi han tep AI duoc them vao terminal khi ra de (prompt va bo loc o ai.ts dung chung)
+export const THU_MUC_DE = ['/home/hacker', '/var', '/etc', '/tmp', '/opt', '/srv'];
+export const SO_TEP_DE_TOI_THIEU = 1;
+export const SO_TEP_DE_TOI_DA = 5;
+export const TEP_DE_TOI_DA = 3000;
+
 export function promptThuThach(lenh: string[], tep: Record<string, string>, dauRa: Record<string, string>) {
   const khoiTep = Object.entries(tep).map(([duong, noiDung]) => `=== ${duong} ===\n${noiDung}`).join('\n');
   const khoiLenh = Object.entries(dauRa).map(([l, ra]) => `$ ${l}\n${ra}`).join('\n');
   return [
     'Bạn ra đề thử thách Linux & an ninh mạng cho học viên Việt Nam, chơi trên một terminal GIẢ LẬP.',
     `Terminal CHỈ có các lệnh: ${lenh.join(', ')}. Không có lệnh nào khác (không chmod, chown, sudo, ss, lsof, top, awk).`,
-    'TOÀN BỘ hệ thống tệp (đường dẫn và NỘI DUNG THẬT):',
+    'Hệ thống tệp ĐANG CÓ trên máy (đường dẫn và nội dung):',
     khoiTep,
-    'Kết quả THẬT của một số lệnh trên máy này:',
+    'Kết quả của một số lệnh trên máy này:',
     khoiLenh,
+    'CÁCH RA ĐỀ: bạn tự DỰNG hiện trường bằng cách THÊM tệp mới vào máy (trường "files"). Hệ thống sẽ ghi các tệp này vào terminal trước khi học viên bắt đầu.',
     'QUY TẮC BẮT BUỘC:',
-    '1. Đề phải giải được CHỈ bằng các lệnh trên và dữ liệu trên. Không bịa tệp, tiến trình, cổng, IP, người dùng hay nội dung không có ở trên.',
-    '2. "answer" là một chuỗi NGẮN có thật, xuất hiện NGUYÊN VĂN trong dữ liệu trên (ví dụ một IP, cổng, tên người dùng, mật khẩu, FLAG{...}). Học viên phải tự tìm ra chuỗi này rồi nộp.',
-    '3. Không được để lộ answer trong title, scenario, steps, hint hay question.',
-    '4. Mỗi bước là một việc cụ thể làm được bằng lệnh có sẵn; hint gợi ý một lệnh cụ thể.',
+    `1. Thêm ${SO_TEP_DE_TOI_THIEU}-${SO_TEP_DE_TOI_DA} tệp: log, cấu hình, ghi chú, script, tệp ẩn (tên bắt đầu bằng dấu chấm)... Nội dung giống thật, có thêm dòng nhiễu để học viên phải lọc bằng grep / đọc kỹ.`,
+    `2. "path" là đường dẫn tuyệt đối, chỉ nằm trong ${THU_MUC_DE.join(', ')}; chỉ dùng chữ, số, dấu chấm, gạch ngang, gạch dưới; KHÔNG trùng tệp đang có; mỗi tệp dưới ${TEP_DE_TOI_DA} ký tự. Thư mục cha chưa có sẽ được tạo tự động.`,
+    '3. "answer" là một chuỗi NGẮN (IP, cổng, tên người dùng, mật khẩu, FLAG{...}...) xuất hiện NGUYÊN VĂN trong nội dung tệp bạn thêm. Học viên phải tự tìm ra rồi nộp.',
+    '4. Đề phải giải được CHỈ bằng các lệnh có sẵn ở trên. Không được để lộ answer trong title, scenario, steps, hint hay question.',
+    '5. Mỗi bước là một việc cụ thể làm được bằng lệnh có sẵn (có thể nói thư mục cần xem); hint gợi ý một lệnh cụ thể.',
     'CHỈ trả về JSON thuần, không bọc markdown:',
-    '{"title":"...","level":"Dễ|Trung bình|Khó","scenario":"bối cảnh 2-3 câu","steps":["bước 1","bước 2"],"hint":"...","question":"câu hỏi mà answer trả lời","answer":"..."}',
+    '{"title":"...","level":"Dễ|Trung bình|Khó","scenario":"bối cảnh 2-3 câu","steps":["bước 1","bước 2"],"hint":"...","question":"câu hỏi mà answer trả lời","answer":"...","files":[{"path":"/var/log/...","content":"..."}]}',
     'Viết ngắn gọn: title dưới 60 ký tự, scenario dưới 300 ký tự, tối đa 4 bước.'
   ].join('\n');
 }

@@ -4,7 +4,7 @@ import type { BaiDayDu } from './curriculum';
 import { baoDaHoiAi } from './dong-ho-hoc';
 import {
   BAI_TAP_SYSTEM, CHAM_BAI_SYSTEM, chiThiNgonNgu, promptBaiTap, promptChamBai, promptGiaSu, promptQuiz, promptThietKe,
-  promptThuThach, QUIZ_SYSTEM, type TabBai
+  promptThuThach, QUIZ_SYSTEM, SO_TEP_DE_TOI_DA, TEP_DE_TOI_DA, THU_MUC_DE, type TabBai
 } from './ai-prompts';
 import { parseJsonLoose } from './json-loose';
 import { setProperties } from './css-patch';
@@ -340,11 +340,34 @@ export function apDungThietKe(files: Record<string, string>, edits: SuaThietKe[]
   return { files: moi, soThayDoi };
 }
 
+export type TepDe = { path: string; content: string };
 export type ThuThachAi = {
   title: string; level: string; scenario: string; steps: string[]; hint: string;
   /** Cau hoi hoc vien tra loi bang cach tim tren terminal; answer co nguyen van trong du lieu cua may */
   question: string; answer: string;
+  /** Tep AI dung hien truong, trang Thu thach ghi vao terminal truoc khi hoc vien lam */
+  files: TepDe[];
 };
+
+// Duong dan tuyet doi, moi doan chi chu/so/._- (tep an ".env" duoc; ".." bi loai rieng ben duoi)
+const DUONG_TEP_DE = /^(\/[\w.-]+)+$/;
+
+/** Giu tep AI them co duong dan an toan, nam trong thu muc cho phep va khong ghi de tep dang co */
+function locTepDe(tho: unknown, tepCo: Record<string, string>): TepDe[] {
+  if (!Array.isArray(tho)) return [];
+  const kq: TepDe[] = [];
+  for (const t of tho as Array<Record<string, unknown> | null>) {
+    if (kq.length >= SO_TEP_DE_TOI_DA) break;
+    const path = typeof t?.path === 'string' ? t.path.trim() : '';
+    const content = t?.content;
+    if (typeof content !== 'string' || content.length > TEP_DE_TOI_DA) continue;
+    if (!DUONG_TEP_DE.test(path) || path.split('/').some(d => d === '.' || d === '..')) continue;
+    if (!THU_MUC_DE.some(g => path.startsWith(g + '/'))) continue;
+    if (Object.hasOwn(tepCo, path) || kq.some(k => k.path === path)) continue;
+    kq.push({ path, content });
+  }
+  return kq;
+}
 
 /** So dap an: khong phan biet hoa thuong, bo khoang trang va dau nhay bao ngoai */
 const chuanDapAn = (s: string) => s.trim().replace(/^["'`]+|["'`]+$/g, '').trim().replace(/\s+/g, ' ').toLowerCase();
@@ -354,28 +377,30 @@ const SO_LAN_RA_DE = 2;
 const DAP_AN_TOI_DA = 120;
 
 /**
- * Ra de tren DU LIEU THAT cua terminal (noi dung tep + ket qua lenh). AI bia du lieu thi de khong lam duoc,
- * nen chi nhan de co dap an xuat hien nguyen van trong du lieu va khong lo san trong de; khong dat thi ra lai.
+ * AI dung hien truong bang cach THEM tep vao terminal (log, cau hinh, tep an...), roi hoi mot dap an nam trong do.
+ * Chi nhan de co dap an nguyen van trong du lieu se co tren may (tep dang co + tep hop le AI them + ket qua lenh)
+ * va khong lo san trong de; khong dat thi ra lai.
  */
 export async function taoThuThach(client: SupabaseLike, { lenh, tep, dauRa, lang, signal, cho }: {
   lenh: string[]; tep: Record<string, string>; dauRa: Record<string, string>; lang: string; signal?: AbortSignal; cho?: ThamSoGoi['cho'];
 }): Promise<ThuThachAi> {
-  const khoDuLieu = [...Object.values(tep), ...Object.values(dauRa)].join('\n').toLowerCase();
+  const duLieuCo = [...Object.values(tep), ...Object.values(dauRa)];
   for (let lan = 0; lan < SO_LAN_RA_DE; lan++) {
     const text = await goiAi(client, {
       system: promptThuThach(lenh, tep, dauRa),
       user: lan === 0
         ? 'Ra một thử thách mới, khác các đề trước đó.'
-        : 'Đề trước không hợp lệ: answer phải có NGUYÊN VĂN trong dữ liệu và không được lộ trong đề. Ra một đề khác, đúng quy tắc.',
-      temperature: 1.0, maxTokens: 1100, taskType: 'general', lang, signal, cho
+        : 'Đề trước không hợp lệ: answer phải nằm NGUYÊN VĂN trong nội dung tệp bạn thêm (đường dẫn hợp lệ, không trùng tệp đang có) và không được lộ trong đề. Ra một đề khác, đúng quy tắc.',
+      temperature: 1.0, maxTokens: 3000, taskType: 'general', lang, signal, cho
     });
     // AI hay cham tran token o giua de: van giu phan da kip sinh ra
     const o = parseJsonLoose(text);
     if (!o || !chuoi(o.title)) continue;
     const de: ThuThachAi = {
       title: chuoi(o.title), level: chuoi(o.level), scenario: chuoi(o.scenario), steps: dsChuoi(o.steps, 6), hint: chuoi(o.hint),
-      question: chuoi(o.question), answer: chuoi(o.answer).trim()
+      question: chuoi(o.question), answer: chuoi(o.answer).trim(), files: locTepDe(o.files, tep)
     };
+    const khoDuLieu = [...duLieuCo, ...de.files.flatMap(f => [f.path, f.content])].join('\n').toLowerCase();
     const dapAn = de.answer.toLowerCase();
     const hienThi = [de.title, de.scenario, ...de.steps, de.hint, de.question].join('\n').toLowerCase();
     const coThat = !!dapAn && dapAn.length <= DAP_AN_TOI_DA && khoDuLieu.includes(dapAn);

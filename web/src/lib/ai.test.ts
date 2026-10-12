@@ -217,6 +217,37 @@ describe('bai tap AI', () => {
     expect(goi).toHaveLength(2);
   });
 
+  test('ra de thu thach: AI tu them tep vao terminal; tep hop le duoc giu, duong dan xau / ghi de tep co san bi bo', async () => {
+    giaFetch(deThuThach({
+      question: 'Mật khẩu bị lộ là gì?', answer: 'S3cr3t!99',
+      files: [
+        { path: '/home/hacker/backup/.env', content: 'DB_USER=admin\nDB_PASS=S3cr3t!99\n' },
+        { path: '/var/log/app/error.log', content: 'ERROR ket noi DB that bai' },
+        { path: '../../thoat.txt', content: 'x' },
+        { path: '/bin/ls', content: 'x' },
+        { path: '/var/log/auth.log', content: 'ghi de log cu' },
+        { path: '/home/hacker/rong.txt', content: 42 }
+      ]
+    }));
+    const tt = await taoThuThach(client, { ...MAY, lang: 'vi', cho: khongCho });
+    expect(tt.answer).toBe('S3cr3t!99');
+    expect(tt.files).toEqual([
+      { path: '/home/hacker/backup/.env', content: 'DB_USER=admin\nDB_PASS=S3cr3t!99\n' },
+      { path: '/var/log/app/error.log', content: 'ERROR ket noi DB that bai' }
+    ]);
+  });
+
+  test('ra de thu thach: dap an chi nam trong tep bi bo (ghi de tep co san) thi ra lai', async () => {
+    const goi = giaFetch(
+      deThuThach({ answer: 'khoa-bi-mat', files: [{ path: '/var/log/auth.log', content: 'khoa-bi-mat' }] }),
+      deThuThach({ answer: 'khoa-bi-mat', files: [{ path: '/tmp/ghichu.txt', content: 'khoa-bi-mat' }] })
+    );
+    const tt = await taoThuThach(client, { ...MAY, lang: 'vi', cho: khongCho });
+    expect(goi).toHaveLength(2);
+    expect(tt.files).toEqual([{ path: '/tmp/ghichu.txt', content: 'khoa-bi-mat' }]);
+    expect(body(goi[0]).system).toContain('"files"');
+  });
+
   test('so dap an: khong phan biet hoa thuong, bo khoang trang va dau nhay bao ngoai', () => {
     expect(khopDapAn('10.0.0.66', ' 10.0.0.66 ')).toBe(true);
     expect(khopDapAn('FLAG{abc}', '"flag{ABC}"')).toBe(true);

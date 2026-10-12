@@ -61,6 +61,24 @@ test('AI ra de dua tren du lieu that cua terminal; nop dap an sai thi bao chua d
   expect((await screen.findAllByText(/Chính xác/)).length).toBeGreaterThan(0);
 });
 
+test('AI tu them tep vao terminal: hoc vien cat duoc tep moi, tim ra dap an va nop dung', async () => {
+  const u = userEvent.setup();
+  mo(() => traText(JSON.stringify({
+    title: 'Ro ri mat khau', level: 'Dễ', scenario: 'Nhân viên để quên tệp sao lưu', steps: ['Tìm tệp sao lưu trong thư mục nhà'],
+    hint: 'dùng ls -la', question: 'Mật khẩu DB là gì?', answer: 'S3cr3t!99',
+    files: [{ path: '/home/hacker/backup/.env', content: 'DB_USER=admin\nDB_PASS=S3cr3t!99' }]
+  })));
+  await u.click(await screen.findByRole('button', { name: 'Ra đề mới' }));
+  expect(await screen.findByRole('heading', { name: 'Ro ri mat khau' })).toBeInTheDocument();
+  expect(screen.getByText(/AI đã thêm 1 tệp vào terminal/)).toBeInTheDocument();
+  const khung = screen.getByRole('region', { name: 'Terminal' });
+  await u.type(within(khung).getByRole('textbox', { name: 'Lệnh terminal' }), 'cat /home/hacker/backup/.env{Enter}');
+  expect(within(khung).getByText(/DB_PASS=S3cr3t!99/)).toBeInTheDocument();
+  await u.type(screen.getByRole('textbox', { name: 'Đáp án của bạn' }), 'S3cr3t!99');
+  await u.click(screen.getByRole('button', { name: 'Nộp đáp án' }));
+  expect((await screen.findAllByText(/Chính xác/)).length).toBeGreaterThan(0);
+});
+
 test('AI ra de hong (khong phai JSON) thi bao loi kem goi y bam lai', async () => {
   const u = userEvent.setup();
   mo(() => traText('khong phai json'));

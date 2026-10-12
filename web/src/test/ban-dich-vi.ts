@@ -49,6 +49,7 @@ export const BAN_DICH_VI: BanDich = {
     "pickRoadmap": "Chọn một lộ trình bên dưới để bắt đầu",
     "openMenu": "Mở menu",
     "levelProgress": "{level}: {done}/{total} bài",
+    "aiChallengeFilesAdded": "📁 AI đã thêm {n} tệp vào terminal bên dưới. Dùng ls -la, cat, grep để điều tra.",
     "aiChallengeAnswerLabel": "Đáp án của bạn",
     "submitAnswerBtn": "Nộp đáp án",
     "aiChallengeCorrect": "🎉 Chính xác! Bạn đã giải xong thử thách.",
