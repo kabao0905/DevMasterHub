@@ -8,6 +8,7 @@ import { LENH_MA_HOA } from './terminal-ma-hoa';
 import { LENH_HE_THONG } from './terminal-he-thong';
 import { DS_THU_THACH, VFS_MAC_DINH } from './terminal-du-lieu';
 import { MO_TA_LENH } from './terminal-mo-ta-lenh';
+import { chayCurl } from './terminal-curl';
 import { TEP_MAC_DINH, chonBan, dichThuThach, taoHamDich } from './terminal-ban-dich';
 
 // mode: quyen kieu 0o755 khi da chmod; khong co thi lay mac dinh (thu muc/bin 755, tep 644)
@@ -177,7 +178,7 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
    * && / || dua vao day de biet lenh truoc hong — terminal gia lap khong co ma thoat that.
    */
   function laLoi(ra) {
-    return /^[\w.\/-]+: .*(No such file|not found|cannot|Permission denied|Is a directory|invalid|missing|usage|test failed)/im.test(ra);
+    return /^[\w.\/-]+: .*(No such file|not found|cannot|Permission denied|Is a directory|invalid|missing|usage|test failed|Could not resolve|Failed to connect|no URL specified)/im.test(ra);
   }
 
   /** Chay mot dong lenh: nhieu cau noi bang ; && ||, moi cau la mot pipeline */
@@ -568,37 +569,13 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
         return t && t.type === 'file' ? t.content || '' : 'no crontab for hacker';
       }
 
-      case 'curl': {
-        // Truoc day tra ve doan HTML viet cung. Gio doc root trong cau hinh
-        // hien tai roi mo tep tuong ung — sua cau hinh la ket qua doi theo.
-        const url = args.find(a => !a.startsWith('-')) || 'http://localhost';
-        // Bo scheme roi lay phan tu dau gach cheo dau tien tro di.
-        // Neu khong co gach cheo nao ("localhost", "localhost:80") thi la trang goc.
-        const khongScheme = url.replace(/^[a-z]+:\/\//i, '');
-        const viTri = khongScheme.indexOf('/');
-        const duongDanUrl = viTri === -1 ? '/' : (khongScheme.slice(viTri) || '/');
-
-        const cuPhap = kiemCuPhapNginx();
-        if (!cuPhap.dat) {
-          return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
-               + tb('nginx.loi');
-        }
-
-        const root = docRootNginx();
-        if (!root) {
-          return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
-               + tb('nginx.khongRoot', { tep: NGINX_CONF });
-        }
-
-        const duongTep = duongDanUrl === '/' ? root + '/index.html' : root + duongDanUrl;
-        const tep = VFS[normalize(duongTep)];
-        if (!tep || tep.type !== 'file') {
-          return `HTTP/1.1 404 Not Found\n\n<h1>404 Not Found</h1>\n`
-               + tb('nginx.khongCo', { tep: duongTep });
-        }
-
-        return `HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\n\n${tep.content}`;
-      }
+      case 'curl':
+        // Web server tren may ao nam o terminal-curl.ts: Nginx khi co cau hinh (lab Nginx), khong thi Apache + PHP
+        return chayCurl(args, {
+          docTep: p => (VFS[p] && VFS[p].type === 'file' ? VFS[p].content || '' : null),
+          nginx: () => ({ coCauHinh: VFS[NGINX_CONF]?.type === 'file', dat: kiemCuPhapNginx().dat, root: docRootNginx() }),
+          t: tb
+        });
 
       case 'nginx': {
         if (!args.includes('-t')) return 'nginx: usage: nginx -t';

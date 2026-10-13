@@ -187,13 +187,50 @@ describe('nginx', () => {
   });
 });
 
+// Bai "Phan tich HTTP voi cURL": may mac dinh khong co Nginx — Apache (dung nhu ps/netstat) phuc vu /var/www/html.
+// Truoc day curl chi biet Nginx nen bai nay luc nao cung 502 Bad Gateway.
+describe('curl tren may mac dinh (Apache) giong curl that', () => {
+  test('mac dinh chi in than trang; -I chi in header; -i ca hai; header lo co bi mat', () => {
+    const T = createTerminal();
+    const than = T.executeCommand('curl http://localhost');
+    expect(than).toMatch(/DevMaster Target Portal/);
+    expect(than).not.toMatch(/Bad Gateway|HTTP\/1\.1/);
+    const dau = T.executeCommand('curl -I http://localhost');
+    expect(dau).toMatch(/^HTTP\/1\.1 200 OK/);
+    expect(dau).toMatch(/Server: Apache\/2\.4\.58/);
+    expect(dau).toMatch(/X-Powered-By: PHP/);
+    expect(dau).toMatch(/FLAG\{[^}]+\}/);
+    expect(dau).not.toMatch(/<h1>/);
+    const caHai = T.executeCommand('curl -i localhost');
+    expect(caHai).toMatch(/HTTP\/1\.1 200 OK[\s\S]*\n\n[\s\S]*DevMaster Target Portal/);
+    expect(T.executeCommand('curl -s -I localhost | grep -i powered')).toBe('X-Powered-By: PHP/8.1.2');
+  });
+
+  test('-v hien request va response; trang khong co la 404; PHP chay tren server nen khong lo ma nguon', () => {
+    const T = createTerminal();
+    expect(T.executeCommand('curl -v http://localhost/')).toMatch(/> GET \/ HTTP\/1\.1[\s\S]*< HTTP\/1\.1 200 OK/);
+    expect(T.executeCommand('curl -I localhost/khong-co.html')).toMatch(/^HTTP\/1\.1 404 Not Found/);
+    expect(T.executeCommand('curl localhost/khong-co.html')).toMatch(/404/);
+    expect(T.executeCommand('curl localhost/config.php')).not.toMatch(/db_pass|<\?php/);
+  });
+
+  test('may la / cong dong / thieu URL bao loi nhu curl that', () => {
+    const T = createTerminal();
+    expect(T.executeCommand('curl http://khong-ton-tai.example')).toMatch(/curl: \(6\) Could not resolve host: khong-ton-tai\.example/);
+    expect(T.executeCommand('curl localhost:9999')).toMatch(/curl: \(7\) Failed to connect to localhost port 9999/);
+    expect(T.executeCommand('curl')).toMatch(/curl: no URL specified/);
+    expect(T.executeCommand('curl localhost:9999 && echo SAU')).not.toContain('SAU');
+  });
+});
+
 const LOI_GIAI_CTF: [string, string[]][] = [
   ['ctf-1', ['cat /home/hacker/flag1.txt']],
   ['ctf-2', ['base64 -d /home/hacker/secret_b64.txt']],
   ['ctf-3', ['grep FLAG /var/log/auth.log']],
   ['ctf-4', ['nmap 192.168.1.100']],
   ['ctf-5', ['cat /var/www/html/config.php']],
-  ['ctf-6', ['netstat -tuln', 'ps aux', 'cat /etc/.hidden/backdoor.conf']]
+  ['ctf-6', ['netstat -tuln', 'ps aux', 'cat /etc/.hidden/backdoor.conf']],
+  ['ctf-7', ['curl -I http://localhost']]
 ];
 
 describe('CTF', () => {

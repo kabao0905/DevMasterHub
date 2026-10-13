@@ -85,7 +85,7 @@ export const VFS_MAC_DINH: HeThongTep = {
   },
   '/var/www/html/index.php': {
     type: 'file',
-    content: '<?php\n  include "config.php";\n  echo "<h1>DevMaster Target Portal</h1>";\n?>'
+    content: '<?php\n  include "config.php";\n  echo "<h1>DevMaster Target Portal</h1>";\n?>\n<!-- TODO(dev): tat X-Debug-Token trong HTTP header truoc khi len production -->'
   },
   '/var/www/html/config.php': {
     type: 'file',
@@ -141,5 +141,13 @@ export const DS_THU_THACH: ThuThach[] = [
     hint: 'Dùng: netstat -tuln → ps aux → cat tệp cấu hình mà tiến trình lạ đang dùng',
     flag: 'FLAG{devmaster_backdoor_port_4444_found}',
     points: 250
+  },
+  {
+    id: 'ctf-7',
+    title: '📡 Challenge 7: Rò Rỉ Qua HTTP Header',
+    desc: 'Web server trên máy này để lộ thông tin qua header phản hồi. Tìm token debug bị quên tắt.',
+    hint: 'Dùng: curl -I http://localhost (chỉ xem header) hoặc curl -i http://localhost',
+    flag: 'FLAG{devmaster_http_header_leak}',
+    points: 100
   }
 ];
