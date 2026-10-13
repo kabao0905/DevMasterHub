@@ -1,5 +1,8 @@
 // Phan tich mot dong lenh shell cho terminal gia lap: dau nhay, \ , pipe |, ; && ||, chuyen huong < > >> 2>.
-// Khong chay gi o day — chi tach thanh cau truc de terminal.ts chay.
+// Khong chay gi o day — chi tach thanh cau truc de terminal.ts chay. Loi tra ve khoa dich, terminal.ts dich theo ngon ngu.
+
+/** Loi cu phap: khoa trong THONG_BAO cua terminal-ban-dich.ts + gia tri chen vao */
+export type LoiCuPhap = { loi: { khoa: 'loi.thieuNhay' | 'loi.cuPhap'; bien: Record<string, string> } };
 
 /** Mot tu cua lenh. coNhay: co phan nam trong dau nhay -> khong bung glob (giong bash) */
 export type Tu = { v: string; coNhay: boolean };
@@ -20,7 +23,7 @@ const LA_KHOANG_TRANG = /\s/;
 // Trong dau nhay kep, \ chi thoat cac ky tu nay (nhu bash); con lai giu nguyen \ (vd regex "\.")
 const THOAT_TRONG_NHAY_KEP = new Set(['"', '\\', '$', '`']);
 
-function tachToken(dong: string): Token[] | { loi: string } {
+function tachToken(dong: string): Token[] | LoiCuPhap {
   const ra: Token[] = [];
   let v = '';
   let coTu = false;
@@ -34,7 +37,7 @@ function tachToken(dong: string): Token[] | { loi: string } {
     const c = dong[i];
     if (c === "'") {
       const ket = dong.indexOf("'", i + 1);
-      if (ket < 0) return { loi: "thiếu dấu nháy đóng '" };
+      if (ket < 0) return { loi: { khoa: 'loi.thieuNhay', bien: { kt: "'" } } };
       v += dong.slice(i + 1, ket);
       i = ket;
       coTu = true; coNhay = true;
@@ -46,7 +49,7 @@ function tachToken(dong: string): Token[] | { loi: string } {
         if (dong[j] === '\\' && THOAT_TRONG_NHAY_KEP.has(dong[j + 1])) j++;
         v += dong[j];
       }
-      if (j >= dong.length) return { loi: 'thiếu dấu nháy đóng "' };
+      if (j >= dong.length) return { loi: { khoa: 'loi.thieuNhay', bien: { kt: '"' } } };
       i = j;
       coTu = true; coNhay = true;
       continue;
@@ -71,14 +74,14 @@ function tachToken(dong: string): Token[] | { loi: string } {
 }
 
 /** Tach dong lenh thanh cac cau lenh; tra ve { loi } khi sai cu phap */
-export function phanTichDong(dong: string): CauLenh[] | { loi: string } {
+export function phanTichDong(dong: string): CauLenh[] | LoiCuPhap {
   const token = tachToken(dong);
   if (!Array.isArray(token)) return token;
 
   const cau: CauLenh[] = [];
   let ong: DoanLenh[] = [];
   let doan: DoanLenh = { tu: [] };
-  const loiGan = (t: string) => ({ loi: `lỗi cú pháp gần "${t}"` });
+  const loiGan = (t: string): LoiCuPhap => ({ loi: { khoa: 'loi.cuPhap', bien: { t } } });
 
   for (let i = 0; i < token.length; i++) {
     const t = token[i];

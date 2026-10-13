@@ -7,6 +7,8 @@ import { LENH_VAN_BAN, tachCo } from './terminal-van-ban';
 import { LENH_MA_HOA } from './terminal-ma-hoa';
 import { LENH_HE_THONG } from './terminal-he-thong';
 import { DS_THU_THACH, VFS_MAC_DINH } from './terminal-du-lieu';
+import { MO_TA_LENH } from './terminal-mo-ta-lenh';
+import { TEP_MAC_DINH, chonBan, dichThuThach, taoHamDich } from './terminal-ban-dich';
 
 // mode: quyen kieu 0o755 khi da chmod; khong co thi lay mac dinh (thu muc/bin 755, tep 644)
 export type NutTep = { type: 'dir'; children: string[]; mode?: number } | { type: 'file'; content: string; mode?: number };
@@ -20,6 +22,9 @@ export type SuKienTerminal = {
 };
 export type MayTerminal = {
   executeCommand(lenh: string): string;
+  /** Doi ngon ngu cua help / goi y / CTF (vi, en, ja, ko, zh, fr, de, es) */
+  datNgonNgu(ma: string): void;
+  ngonNgu(): string;
   checkFlag(co: string): string;
   luuTuSoanThao(duong: string, noiDung: string): string | null;
   loadFs(duLieu?: HeThongTep | null): HeThongTep;
@@ -35,15 +40,19 @@ export type MayTerminal = {
   CHALLENGES: ThuThach[];
 };
 
-export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
+export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'): MayTerminal {
   let currentDir = '/home/hacker';
   let history = [];
   let historyIdx = -1;
   let capturedFlags = new Set();
   let userScore = 0;
+  let ngonNgu = ngonNguBanDau;
+  // Lenh vua chay co bao loi qua cau 'loi.*' khong — && / || dua vao day vi terminal gia lap khong co ma thoat that
+  let coLoi = false;
+  const tb = taoHamDich(() => ngonNgu, () => { coLoi = true; });
 
 
-  const VFS_MACDINH = VFS_MAC_DINH;
+  let VFS_MACDINH = boMacDinh(ngonNgu);
   const CHALLENGES = DS_THU_THACH;
 
   // He thong tep la du lieu nap duoc, khong con la hang so dung chung.
@@ -77,6 +86,24 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
     return loadFs(VFS_MACDINH);
   }
 
+  /** Bo tep San co voi cac tep van ban (readme, ghi chu...) viet theo ngon ngu */
+  function boMacDinh(lang) {
+    const bo = saoChepSau(VFS_MAC_DINH);
+    for (const [p, ds] of Object.entries(TEP_MAC_DINH)) if (bo[p]) bo[p].content = chonBan(ds, lang);
+    return bo;
+  }
+
+  /** Doi ngon ngu: tep van ban mac dinh chua bi sua doi theo; tep hoc vien da sua giu nguyen */
+  function datNgonNgu(moi) {
+    if (!moi || moi === ngonNgu) return;
+    for (const [p, ds] of Object.entries(TEP_MAC_DINH)) {
+      const n = VFS[p];
+      if (n && n.type === 'file' && n.content === chonBan(ds, ngonNgu)) n.content = chonBan(ds, moi);
+    }
+    ngonNgu = moi;
+    VFS_MACDINH = boMacDinh(moi);
+  }
+
 
   /**
    * Danh sach lenh CO THAT cua terminal gia lap. Day la nguon duy nhat:
@@ -87,47 +114,50 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
    * lenh thuan (van ban, ma hoa, he thong co dinh) nam o cac module terminal-*.ts.
    */
   const LENH_MAY = [
-    { name: 'ls',      usage: 'ls [-la] [path]',        desc: 'Liệt kê thư mục (-l: quyền, kích thước; -a: cả tệp ẩn)' },
-    { name: 'cd',      usage: 'cd <path>',              desc: 'Chuyển đổi thư mục làm việc' },
-    { name: 'pwd',     usage: 'pwd',                    desc: 'Hiển thị đường dẫn thư mục hiện tại' },
-    { name: 'find',    usage: 'find <path> [-type f|d] [-name "*.log"]', desc: 'Tìm tệp trong cả cây thư mục' },
-    { name: 'tree',    usage: 'tree [-a] [path]',       desc: 'Vẽ cây thư mục' },
-    { name: 'file',    usage: 'file <file>',            desc: 'Đoán loại tệp (script, văn bản, nhị phân...)' },
-    { name: 'stat',    usage: 'stat <file>',            desc: 'Xem kích thước, quyền của tệp' },
-    { name: 'du',      usage: 'du -sh [path]',          desc: 'Dung lượng thư mục / tệp' },
-    { name: 'echo',    usage: 'echo "..." > <file>',    desc: 'In / ghi văn bản vào tệp (>> để nối thêm)' },
-    { name: 'touch',   usage: 'touch <file>',           desc: 'Tạo tệp rỗng' },
-    { name: 'nano',    usage: 'nano <file>',            desc: 'Mở ô soạn thảo để sửa tệp nhiều dòng' },
-    { name: 'mkdir',   usage: 'mkdir -p <path>',        desc: 'Tạo thư mục, tự tạo cả thư mục cha' },
-    { name: 'rm',      usage: 'rm [-r] <path>',         desc: 'Xóa tệp hoặc thư mục' },
-    { name: 'cp',      usage: 'cp <nguồn> <đích>',      desc: 'Sao chép tệp' },
-    { name: 'mv',      usage: 'mv <nguồn> <đích>',      desc: 'Di chuyển hoặc đổi tên tệp' },
-    { name: 'chmod',   usage: 'chmod 755|+x <file>',    desc: 'Đổi quyền tệp' },
-    { name: 'bash',    usage: 'bash <script.sh>',       desc: 'Chạy script (hoặc ./script.sh sau khi chmod +x)' },
-    { name: 'sh',      usage: 'sh <script.sh>',         desc: 'Chạy script bằng sh' },
-    { name: 'history', usage: 'history',                desc: 'Xem các lệnh đã gõ' },
-    { name: 'which',   usage: 'which <lệnh>',           desc: 'Lệnh nằm ở đâu' },
-    { name: 'crontab', usage: 'crontab -l',             desc: 'Xem tác vụ chạy định kỳ của bạn' },
-    { name: 'curl',    usage: 'curl <url>',             desc: 'Gửi request HTTP tới web server' },
-    { name: 'nginx',     usage: 'nginx -t',                 desc: 'Kiểm tra cú pháp tệp cấu hình Nginx' },
-    { name: 'systemctl', usage: 'systemctl <lệnh> nginx',   desc: 'Xem trạng thái / nạp lại dịch vụ Nginx' },
-    { name: 'clear',   usage: 'clear',                  desc: 'Xóa màn hình terminal' },
-    { name: 'help',    usage: 'help',                   desc: 'Xem danh sách lệnh này' },
-    { name: 'submit',  usage: 'submit <flag>',          desc: 'Nộp cờ CTF để nhận điểm XP' }
+    { name: 'ls',      usage: 'ls [-la] [path]' },
+    { name: 'cd',      usage: 'cd <path>' },
+    { name: 'pwd',     usage: 'pwd' },
+    { name: 'find',    usage: 'find <path> [-type f|d] [-name "*.log"]' },
+    { name: 'tree',    usage: 'tree [-a] [path]' },
+    { name: 'file',    usage: 'file <file>' },
+    { name: 'stat',    usage: 'stat <file>' },
+    { name: 'du',      usage: 'du -sh [path]' },
+    { name: 'echo',    usage: 'echo "..." > <file>' },
+    { name: 'touch',   usage: 'touch <file>' },
+    { name: 'nano',    usage: 'nano <file>' },
+    { name: 'mkdir',   usage: 'mkdir -p <path>' },
+    { name: 'rm',      usage: 'rm [-r] <path>' },
+    { name: 'cp',      usage: 'cp <src> <dest>' },
+    { name: 'mv',      usage: 'mv <src> <dest>' },
+    { name: 'chmod',   usage: 'chmod 755|+x <file>' },
+    { name: 'bash',    usage: 'bash <script.sh>' },
+    { name: 'sh',      usage: 'sh <script.sh>' },
+    { name: 'history', usage: 'history' },
+    { name: 'which',   usage: 'which <cmd>' },
+    { name: 'crontab', usage: 'crontab -l' },
+    { name: 'curl',    usage: 'curl <url>' },
+    { name: 'nginx',     usage: 'nginx -t' },
+    { name: 'systemctl', usage: 'systemctl <action> nginx' },
+    { name: 'clear',   usage: 'clear' },
+    { name: 'help',    usage: 'help' },
+    { name: 'submit',  usage: 'submit <flag>' }
   ];
   const LENH_THUAN = { ...LENH_VAN_BAN, ...LENH_MA_HOA, ...LENH_HE_THONG };
-  const moTa = bang => Object.entries(bang).map(([name, l]) => ({ name, usage: l.usage, desc: l.desc }));
+  const moTa = bang => Object.entries(bang).map(([name, l]) => ({ name, usage: l.usage }));
   const NHOM_TRO_GIUP = [
-    ['📂 TỆP, THƯ MỤC & SHELL', LENH_MAY],
-    ['🔎 XỬ LÝ VĂN BẢN', moTa(LENH_VAN_BAN)],
-    ['🔐 MÃ HÓA', moTa(LENH_MA_HOA)],
-    ['🌐 HỆ THỐNG & MẠNG', moTa(LENH_HE_THONG)]
+    ['help.tep', LENH_MAY],
+    ['help.vanBan', moTa(LENH_VAN_BAN)],
+    ['help.maHoa', moTa(LENH_MA_HOA)],
+    ['help.heThong', moTa(LENH_HE_THONG)]
   ];
-  const COMMANDS = NHOM_TRO_GIUP.flatMap(([, ds]) => ds);
+  // desc tieng Viet di vao cau lenh cho AI ra de (prompt viet tieng Viet); help in theo ngon ngu dang chon
+  const COMMANDS = NHOM_TRO_GIUP.flatMap(([, ds]) => ds).map(c => ({ ...c, desc: MO_TA_LENH[c.name]?.[0] ?? '' }));
 
   // Script goi script (hoac bash -c) long nhau toi da chung nay tang — chan vong lap vo han
   const SAU_TOI_DA = 5;
   const BYTE = new TextEncoder();
+  // Tep nhi phan bat dau bang so ma ELF nhu tep that (file / bash nhan ra theo day, khong theo chu)
+  const ELF = '\u007fELF';
 
   function executeCommand(input) {
     const raw = input.trim();
@@ -138,22 +168,22 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
     try {
       return chayDong(raw, 0);
     } catch (e) {
-      return `bash: lỗi khi chạy lệnh (${e instanceof Error ? e.message : String(e)})`;
+      return `bash: ${tb('loi.noiBo', { loi: e instanceof Error ? e.message : String(e) })}`;
     }
   }
 
   /**
-   * Loi thuong bat dau bang "<lenh>: ..." kem cac cum nay. Terminal gia lap khong co ma thoat
-   * that, nen && / || dua vao day de biet lenh truoc hong hay khong.
+   * Loi chuan Linux (tieng Anh o moi ngon ngu) cua lenh vua chay. Cung voi co coLoi (cau goi y 'loi.*'),
+   * && / || dua vao day de biet lenh truoc hong — terminal gia lap khong co ma thoat that.
    */
   function laLoi(ra) {
-    return /^[\w.\/-]+: .*(No such file|not found|cannot|Permission denied|Is a directory|invalid|missing|thiếu|không hợp lệ|cách dùng|usage|test failed)/im.test(ra);
+    return /^[\w.\/-]+: .*(No such file|not found|cannot|Permission denied|Is a directory|invalid|missing|usage|test failed)/im.test(ra);
   }
 
   /** Chay mot dong lenh: nhieu cau noi bang ; && ||, moi cau la mot pipeline */
   function chayDong(raw, doSau) {
     const cau = phanTichDong(raw);
-    if (!Array.isArray(cau)) return `bash: ${cau.loi}`;
+    if (!Array.isArray(cau)) return `bash: ${tb(cau.loi.khoa, cau.loi.bien)}`;
     const ra = [];
     let thanhCong = true;
     for (let i = 0; i < cau.length; i++) {
@@ -180,6 +210,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
         stdin = t.content || '';
       }
       const biChuyen = i < ong.length - 1 || !!doan.ra;
+      coLoi = false;
       ra = String(chayLenh(tu[0], tu.slice(1), stdin, biChuyen, doSau) ?? '').replace(/\n+$/, '');
       if (doan.ra) {
         const loi = ghiTep(resolvePath(doan.ra.tep), ra ? ra + '\n' : '', doan.ra.noiThem);
@@ -188,7 +219,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       // Lenh that luon in xuong dong cuoi: giu dung de wc -c, sha256sum, base64 cho ket qua nhu Linux
       stdin = ra ? ra + '\n' : '';
     }
-    return { ra, ok: !laLoi(ra) };
+    return { ra, ok: !coLoi && !laLoi(ra) };
   }
 
   /** Bung * va ? (khong nam trong dau nhay) o doan cuoi cua duong dan; khong khop thi giu nguyen nhu bash */
@@ -213,6 +244,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
   function nguCanh(stdin) {
     return {
       stdin,
+      t: tb,
       docTep: p => {
         const n = VFS[resolvePath(p)];
         if (!n) return { loi: 'No such file or directory' };
@@ -268,14 +300,14 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
 
   /** Chay tep script tung dong (bo dong trong va chu thich) */
   function chayScript(duong, canQuyenX, doSau) {
-    if (doSau >= SAU_TOI_DA) return 'bash: quá nhiều tầng script lồng nhau';
+    if (doSau >= SAU_TOI_DA) return `bash: ${tb('loi.longNhau')}`;
     const p = resolvePath(duong);
     const n = VFS[p];
     if (!n) return `bash: ${duong}: No such file or directory`;
     if (n.type === 'dir') return `bash: ${duong}: Is a directory`;
-    if (canQuyenX && !(quyenCua(p, n) & 0o100)) return `bash: ${duong}: Permission denied (chạy "chmod +x ${duong}" trước)`;
+    if (canQuyenX && !(quyenCua(p, n) & 0o100)) return `bash: ${duong}: Permission denied ${tb('loi.chmodX', { tep: duong })}`;
     const noiDung = String(n.content || '');
-    if (noiDung.startsWith('(tệp nhị phân')) return `bash: ${duong}: tệp nhị phân không chạy được trong terminal giả lập`;
+    if (noiDung.startsWith(ELF)) return `bash: ${duong}: ${tb('loi.nhiPhan')}`;
     return noiDung.split('\n').map(d => d.trim()).filter(d => d && !d.startsWith('#'))
       .map(d => chayDong(d, doSau + 1)).filter(Boolean).join('\n');
   }
@@ -297,8 +329,8 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
     switch (cmd) {
       case 'help': {
         const rong = Math.max(...COMMANDS.map(c => c.usage.length));
-        return '\n📋 CÁC LỆNH ĐƯỢC HỖ TRỢ — nối lệnh bằng | ; &&, ghi tệp bằng > >>, đọc tệp bằng <, ký tự đại diện *\n'
-          + NHOM_TRO_GIUP.map(([ten, ds]) => `\n${ten}\n` + ds.map(c => '  • ' + c.usage.padEnd(rong + 2) + ': ' + c.desc).join('\n')).join('\n')
+        return '\n' + tb('help.tieuDe') + '\n'
+          + NHOM_TRO_GIUP.map(([khoa, ds]) => `\n${tb(khoa)}\n` + ds.map(c => '  • ' + c.usage.padEnd(rong + 2) + ': ' + chonBan(MO_TA_LENH[c.name], ngonNgu)).join('\n')).join('\n')
           + '\n';
       }
 
@@ -383,14 +415,14 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       }
 
       case 'file': {
-        if (!args.length) return 'file: thiếu tên tệp (vd: file script.sh)';
+        if (!args.length) return `file: ${tb('loi.thieuTepVd', { vd: 'file script.sh' })}`;
         return args.map(t => {
           const n = VFS[resolvePath(t)];
           if (!n) return `${t}: cannot open (No such file or directory)`;
           if (n.type === 'dir') return `${t}: directory`;
           const c = String(n.content || '');
           if (!c) return `${t}: empty`;
-          if (c.startsWith('(tệp nhị phân')) return `${t}: ELF 64-bit LSB executable, x86-64, dynamically linked`;
+          if (c.startsWith(ELF)) return `${t}: ELF 64-bit LSB executable, x86-64, dynamically linked`;
           if (/^#!.*\bbash\b/.test(c)) return `${t}: Bourne-Again shell script, ASCII text executable`;
           if (c.startsWith('#!')) return `${t}: POSIX shell script, ASCII text executable`;
           if (c.startsWith('<?php')) return `${t}: PHP script, ASCII text`;
@@ -399,7 +431,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       }
 
       case 'stat': {
-        if (!args[0]) return 'stat: thiếu tên tệp';
+        if (!args[0]) return `stat: ${tb('loi.thieuTepVd', { vd: 'stat notes.md' })}`;
         const p = resolvePath(args[0]);
         const n = VFS[p];
         if (!n) return `stat: cannot statx '${args[0]}': No such file or directory`;
@@ -496,7 +528,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
 
       case 'chmod': {
         const [che, ...tep] = args.filter(a => a !== '-R');
-        if (!che || !tep.length) return 'chmod: cách dùng: chmod 755 <tệp>  hoặc  chmod +x <tệp>';
+        if (!che || !tep.length) return `chmod: ${tb('loi.cachDung', { cu: 'chmod 755 <file>  |  chmod +x <file>' })}`;
         for (const t of tep) {
           const p = resolvePath(t);
           const n = VFS[p];
@@ -511,10 +543,10 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       case 'bash':
       case 'sh': {
         if (args[0] === '-c') {
-          if (!args[1]) return `${cmd}: -c: cần một chuỗi lệnh`;
-          return doSau >= SAU_TOI_DA ? `${cmd}: quá nhiều tầng lồng nhau` : chayDong(args[1], doSau + 1);
+          if (!args[1]) return `${cmd}: -c: ${tb('loi.canChuoi')}`;
+          return doSau >= SAU_TOI_DA ? `${cmd}: ${tb('loi.longNhau')}` : chayDong(args[1], doSau + 1);
         }
-        if (!args[0]) return `${cmd}: terminal giả lập chỉ chạy tệp script: ${cmd} <tệp.sh>`;
+        if (!args[0]) return `${cmd}: ${tb('loi.chiChayScript', { cu: `${cmd} <file.sh>` })}`;
         return chayScript(args[0], false, doSau);
       }
 
@@ -524,14 +556,14 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       }
 
       case 'which': {
-        if (!args.length) return 'which: thiếu tên lệnh (vd: which grep)';
+        if (!args.length) return `which: ${tb('loi.thieuLenh', { vd: 'which grep' })}`;
         const noiBo = ['cd', 'history', 'help', 'clear'];
         return args.map(a => (COMMANDS.some(c => c.name === a) && !noiBo.includes(a)
           ? `/usr/bin/${a}` : `which: no ${a} in (/usr/local/bin:/usr/bin:/bin)`)).join('\n');
       }
 
       case 'crontab': {
-        if (args[0] !== '-l') return 'crontab: terminal giả lập chỉ hỗ trợ crontab -l (xem tác vụ định kỳ)';
+        if (args[0] !== '-l') return `crontab: ${tb('loi.chiHoTro', { ds: 'crontab -l' })}`;
         const t = VFS['/var/spool/cron/crontabs/hacker'];
         return t && t.type === 'file' ? t.content || '' : 'no crontab for hacker';
       }
@@ -549,20 +581,20 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
         const cuPhap = kiemCuPhapNginx();
         if (!cuPhap.dat) {
           return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
-               + `(cấu hình Nginx đang lỗi — chạy "nginx -t" để xem chi tiết)`;
+               + tb('nginx.loi');
         }
 
         const root = docRootNginx();
         if (!root) {
           return `HTTP/1.1 502 Bad Gateway\n\n<h1>502 Bad Gateway</h1>\n`
-               + `(không tìm thấy chỉ thị root trong ${NGINX_CONF})`;
+               + tb('nginx.khongRoot', { tep: NGINX_CONF });
         }
 
         const duongTep = duongDanUrl === '/' ? root + '/index.html' : root + duongDanUrl;
         const tep = VFS[normalize(duongTep)];
         if (!tep || tep.type !== 'file') {
           return `HTTP/1.1 404 Not Found\n\n<h1>404 Not Found</h1>\n`
-               + `(không có ${duongTep})`;
+               + tb('nginx.khongCo', { tep: duongTep });
         }
 
         return `HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\n\n${tep.content}`;
@@ -575,14 +607,14 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
           return `nginx: the configuration file ${NGINX_CONF} syntax is ok\n`
                + `nginx: configuration file ${NGINX_CONF} test is successful`;
         }
-        return `nginx: [emerg] ${kq.nhan}${kq.dong ? ' (dòng ' + kq.dong + ')' : ''} trong ${NGINX_CONF}\n`
+        return `nginx: [emerg] ${tb(kq.khoa, kq.bien)}${kq.dong ? tb('nginx.dong', { n: kq.dong }) : ''} ${tb('nginx.trong', { tep: NGINX_CONF })}\n`
              + `nginx: configuration file ${NGINX_CONF} test failed`;
       }
 
       case 'systemctl': {
         const hanhDong = args[0];
         const dichVu = (args[1] || '').replace(/\.service$/, '');
-        if (dichVu !== 'nginx') return `Unit ${args[1] || '(trống)'} could not be found.`;
+        if (dichVu !== 'nginx') return `Unit ${args[1] || tb('loi.trong')} could not be found.`;
         if (hanhDong === 'status') {
           return `● nginx.service - A high performance web server\n`
                + `     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n`
@@ -593,11 +625,11 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
           const kq = kiemCuPhapNginx();
           if (!kq.dat) {
             return `Job for nginx.service failed.\n`
-                 + `Xem chi tiết bằng: nginx -t`;
+                 + tb('nginx.xemChiTiet');
           }
           return '';
         }
-        return `systemctl: hành động "${hanhDong}" chưa được hỗ trợ (dùng status, reload, restart)`;
+        return `systemctl: ${tb('loi.hanhDong', { hd: hanhDong })}`;
       }
 
       case 'submit': {
@@ -607,7 +639,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       }
 
       default:
-        return `bash: ${lenhGo}: command not found. Gõ "help" để xem danh sách lệnh.`;
+        return `bash: ${lenhGo}: command not found. ${tb('goiY.help')}`;
     }
   }
 
@@ -638,7 +670,7 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
   function kiemCuPhapNginx() {
     const tep = VFS[NGINX_CONF];
     if (!tep || tep.type !== 'file') {
-      return { dat: false, nhan: `không mở được ${NGINX_CONF}` };
+      return { dat: false, khoa: 'nginx.khongMo', bien: { tep: NGINX_CONF } };
     }
     const dong = String(tep.content || '').split('\n');
     let mo = 0;
@@ -648,14 +680,14 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
       for (const c of d) {
         if (c === '{') mo++;
         else if (c === '}') mo--;
-        if (mo < 0) return { dat: false, dong: i + 1, nhan: 'thừa dấu ngoặc đóng' };
+        if (mo < 0) return { dat: false, dong: i + 1, khoa: 'nginx.thuaNgoac' };
       }
       // Dong khai bao chi thi (khong mo/dong khoi) phai ket thuc bang dau cham phay
       if (!/[{}]$/.test(d) && !d.endsWith(';')) {
-        return { dat: false, dong: i + 1, nhan: 'thiếu dấu chấm phẩy ở cuối dòng' };
+        return { dat: false, dong: i + 1, khoa: 'nginx.thieuChamPhay' };
       }
     }
-    if (mo > 0) return { dat: false, nhan: `thiếu ${mo} dấu ngoặc đóng` };
+    if (mo > 0) return { dat: false, khoa: 'nginx.thieuNgoac', bien: { n: mo } };
     return { dat: true };
   }
 
@@ -750,19 +782,21 @@ export function createTerminal(nghe: SuKienTerminal = {}): MayTerminal {
     const match = CHALLENGES.find(c => c.flag.trim() === flag.trim());
     if (match) {
       if (capturedFlags.has(match.id)) {
-        return `⚠️ Cờ "${flag}" đã được nộp trước đó!`;
+        return tb('co.daNop', { co: flag });
       }
       capturedFlags.add(match.id);
       userScore += match.points;
       nghe.doiDiem?.();
-      return `🎉 CHÍNH XÁC! Bạn đã mở khóa: ${match.title} (+ ${match.points} XP)!`;
+      return tb('co.dung', { ten: dichThuThach(match, ngonNgu).title, diem: match.points });
     }
-    return `❌ Cờ không hợp lệ: "${flag}". Hãy kiểm tra lại định dạng!`;
+    return tb('co.sai', { co: flag });
   }
 
 
   return {
     executeCommand: lenh => String(executeCommand(lenh) ?? ''),
+    datNgonNgu,
+    ngonNgu: () => ngonNgu,
     checkFlag,
     luuTuSoanThao,
     loadFs,

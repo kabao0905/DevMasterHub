@@ -50,11 +50,11 @@ export const VFS_MAC_DINH: HeThongTep = {
   '/bin': { type: 'dir', children: ['bash', 'nc'] },
   '/bin/bash': {
     type: 'file',
-    content: '(tệp nhị phân ELF 64-bit — không đọc được bằng cat)'
+    content: '\u007fELF\u0002\u0001\u0001 GNU/Linux x86-64 — /bin/bash (binary)'
   },
   '/bin/nc': {
     type: 'file',
-    content: '(tệp nhị phân ELF 64-bit — netcat, công cụ kẻ tấn công hay dùng để mở backdoor)'
+    content: '\u007fELF\u0002\u0001\u0001 GNU/Linux x86-64 — netcat (nc): -l listen, -e exec (binary)'
   },
   '/flag': { type: 'dir', children: ['README.txt'] },
   '/flag/README.txt': {

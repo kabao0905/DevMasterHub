@@ -1,6 +1,7 @@
 // Lenh he thong / mang cua terminal gia lap: ket qua co dinh nhung KHOP nhau (cung may devmaster-cyber-box,
 // cung tien trinh .sysupdate mo cong 4444 va noi ra 10.0.0.66) de hoc vien doi chieu duoc giua cac lenh.
 import { tachCo, type LenhThuan } from './terminal-van-ban';
+import type { HamDich } from './terminal-ban-dich';
 
 const MAY = 'devmaster-cyber-box';
 const IP_MAY = '192.168.1.50';
@@ -103,10 +104,10 @@ function ngayGio(): string {
   return `${THU[d.getDay()]} ${THANG[d.getMonth()]} ${hai(d.getDate())} ${hai(d.getHours())}:${hai(d.getMinutes())}:${hai(d.getSeconds())} +07 ${d.getFullYear()}`;
 }
 
-const ping: LenhThuan['chay'] = args => {
+const ping: LenhThuan['chay'] = (args, nc) => {
   const { co, conLai } = tachCo(args, 'c');
   const dich = conLai[0];
-  if (!dich) return 'ping: cách dùng: ping [-c số_lần] <máy>';
+  if (!dich) return `ping: ${nc.t('loi.cachDung', { cu: 'ping [-c count] <host>' })}`;
   const ip = laIp(dich) ? dich : PHAN_GIAI[dich];
   if (!ip) return `ping: ${dich}: Name or service not known`;
   const n = Math.min(Math.max(parseInt(String(co.c ?? '4'), 10) || 4, 1), 10);
@@ -115,9 +116,9 @@ const ping: LenhThuan['chay'] = args => {
     `${n} packets transmitted, ${n} received, 0% packet loss`].join('\n');
 };
 
-function traTenMien(ten: 'dig' | 'nslookup' | 'host', args: string[]): string {
+function traTenMien(ten: 'dig' | 'nslookup' | 'host', args: string[], t: HamDich): string {
   const may = args.find(a => !a.startsWith('-') && !a.startsWith('@'));
-  if (!may) return `${ten}: cách dùng: ${ten} <tên miền>`;
+  if (!may) return `${ten}: ${t('loi.cachDung', { cu: `${ten} <domain>` })}`;
   const ip = PHAN_GIAI[may];
   if (ten === 'host') return ip ? `${may} has address ${ip}` : `Host ${may} not found: 3(NXDOMAIN)`;
   if (ten === 'nslookup') {
@@ -127,52 +128,52 @@ function traTenMien(ten: 'dig' | 'nslookup' | 'host', args: string[]): string {
     ip ? `;; ANSWER SECTION:\n${may}.\t\t300\tIN\tA\t${ip}` : ';; status: NXDOMAIN', '', ';; SERVER: 192.168.1.1#53(192.168.1.1)'].join('\n');
 }
 
-const lsof: LenhThuan['chay'] = args => {
+const lsof: LenhThuan['chay'] = (args, nc) => {
   const cong = args.find(a => a.startsWith(':') || a.startsWith('-i:'))?.replace(/^-i/, '');
-  if (!args.includes('-i') && !cong) return 'lsof: terminal giả lập chỉ hỗ trợ lsof -i [:cổng] (xem tiến trình đang dùng mạng)';
+  if (!args.includes('-i') && !cong) return `lsof: ${nc.t('loi.chiHoTro', { ds: 'lsof -i [:port]' })}`;
   const dong = cong ? LSOF.slice(1).filter(l => l.includes(cong + ' ') || l.includes(cong + '->')) : LSOF.slice(1);
   return dong.length ? [LSOF[0], ...dong].join('\n') : '';
 };
 
-const ip: LenhThuan['chay'] = args => {
+const ip: LenhThuan['chay'] = (args, nc) => {
   if (!args[0] || /^a/.test(args[0])) return IP_ADDR;
   if (/^r/.test(args[0])) return IP_ROUTE;
-  return 'ip: terminal giả lập hỗ trợ: ip a, ip route';
+  return `ip: ${nc.t('loi.chiHoTro', { ds: 'ip a, ip route' })}`;
 };
 
-const sudo: LenhThuan['chay'] = args => {
+const sudo: LenhThuan['chay'] = (args, nc) => {
   if (args[0] === '-l') {
     return `Matching Defaults entries for hacker on ${MAY}:\n    env_reset, secure_path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\n`
       + `User hacker may run the following commands on ${MAY}:\n    (ALL : ALL) ALL`;
   }
-  return 'sudo: terminal giả lập không chạy lệnh bằng quyền root (dùng "sudo -l" để xem quyền của bạn)';
+  return `sudo: ${nc.t('loi.khongRoot')}`;
 };
 
 const tinh = (ra: string): LenhThuan['chay'] => () => ra;
 
 export const LENH_HE_THONG: Record<string, LenhThuan> = {
-  whoami: { usage: 'whoami', desc: 'Hiển thị người dùng hiện tại', chay: tinh('hacker (uid=1000 gid=1000 groups=hacker,sudo)') },
-  id: { usage: 'id', desc: 'Xem uid / gid / nhóm của người dùng', chay: tinh('uid=1000(hacker) gid=1000(hacker) groups=1000(hacker),27(sudo)') },
-  uname: { usage: 'uname -a', desc: 'Xem thông tin kernel Linux ảo', chay: tinh(`Linux ${MAY} 6.8.0-devmaster-x86_64 #1 SMP GNU/Linux`) },
-  hostname: { usage: 'hostname', desc: 'Tên máy', chay: tinh(MAY) },
-  date: { usage: 'date', desc: 'Ngày giờ hiện tại', chay: () => ngayGio() },
-  uptime: { usage: 'uptime', desc: 'Máy đã chạy bao lâu', chay: tinh(' 21:00:00 up 2 days, 11:50,  1 user,  load average: 0.42, 0.37, 0.31') },
-  ps: { usage: 'ps [aux]', desc: 'Liệt kê các tiến trình đang chạy', chay: tinh(PS) },
-  netstat: { usage: 'netstat [-tuln]', desc: 'Xem các cổng mạng đang mở', chay: tinh(NETSTAT) },
-  ss: { usage: 'ss -tulpn', desc: 'Xem cổng / kết nối mạng (bản mới của netstat)', chay: tinh(SS) },
-  lsof: { usage: 'lsof -i [:cổng]', desc: 'Tiến trình nào đang dùng cổng mạng', chay: lsof },
-  nmap: { usage: 'nmap <target>', desc: 'Quét cổng dịch vụ mạng', chay: args => NMAP(args.find(a => !a.startsWith('-')) || '127.0.0.1') },
-  ifconfig: { usage: 'ifconfig', desc: 'Xem địa chỉ IP các card mạng', chay: tinh(IFCONFIG) },
-  ip: { usage: 'ip a | ip route', desc: 'Xem địa chỉ IP / bảng định tuyến', chay: ip },
-  ping: { usage: 'ping [-c N] <máy>', desc: 'Kiểm tra máy khác có phản hồi không', chay: ping },
-  dig: { usage: 'dig <tên miền>', desc: 'Tra DNS', chay: args => traTenMien('dig', args) },
-  nslookup: { usage: 'nslookup <tên miền>', desc: 'Tra DNS', chay: args => traTenMien('nslookup', args) },
-  host: { usage: 'host <tên miền>', desc: 'Tra DNS gọn', chay: args => traTenMien('host', args) },
-  w: { usage: 'w', desc: 'Ai đang đăng nhập, đang làm gì', chay: tinh(' 21:00:00 up 2 days, 11:50,  1 user\nUSER     TTY      FROM             LOGIN@   IDLE   WHAT\nhacker   pts/0    192.168.1.5      20:41    0.00s  bash') },
-  who: { usage: 'who', desc: 'Ai đang đăng nhập', chay: tinh('hacker   pts/0        2026-10-12 20:41 (192.168.1.5)') },
-  last: { usage: 'last', desc: 'Lịch sử đăng nhập', chay: tinh(LAST) },
-  sudo: { usage: 'sudo -l', desc: 'Xem quyền sudo của bạn', chay: sudo },
-  env: { usage: 'env', desc: 'Biến môi trường', chay: tinh('USER=hacker\nHOME=/home/hacker\nSHELL=/bin/bash\nLANG=C.UTF-8\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin') },
-  df: { usage: 'df -h', desc: 'Dung lượng ổ đĩa', chay: tinh('Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        40G   12G   26G  32% /\ntmpfs           2.0G     0  2.0G   0% /dev/shm') },
-  free: { usage: 'free -h', desc: 'Bộ nhớ RAM', chay: tinh('               total        used        free      shared  buff/cache   available\nMem:           3.8Gi       1.1Gi       1.9Gi        12Mi       0.8Gi       2.5Gi\nSwap:          1.0Gi          0B       1.0Gi') }
+  whoami: { usage: 'whoami', chay: tinh('hacker (uid=1000 gid=1000 groups=hacker,sudo)') },
+  id: { usage: 'id', chay: tinh('uid=1000(hacker) gid=1000(hacker) groups=1000(hacker),27(sudo)') },
+  uname: { usage: 'uname -a', chay: tinh(`Linux ${MAY} 6.8.0-devmaster-x86_64 #1 SMP GNU/Linux`) },
+  hostname: { usage: 'hostname', chay: tinh(MAY) },
+  date: { usage: 'date', chay: () => ngayGio() },
+  uptime: { usage: 'uptime', chay: tinh(' 21:00:00 up 2 days, 11:50,  1 user,  load average: 0.42, 0.37, 0.31') },
+  ps: { usage: 'ps [aux]', chay: tinh(PS) },
+  netstat: { usage: 'netstat [-tuln]', chay: tinh(NETSTAT) },
+  ss: { usage: 'ss -tulpn', chay: tinh(SS) },
+  lsof: { usage: 'lsof -i [:port]', chay: lsof },
+  nmap: { usage: 'nmap <target>', chay: args => NMAP(args.find(a => !a.startsWith('-')) || '127.0.0.1') },
+  ifconfig: { usage: 'ifconfig', chay: tinh(IFCONFIG) },
+  ip: { usage: 'ip a | ip route', chay: ip },
+  ping: { usage: 'ping [-c N] <host>', chay: ping },
+  dig: { usage: 'dig <domain>', chay: (args, nc) => traTenMien('dig', args, nc.t) },
+  nslookup: { usage: 'nslookup <domain>', chay: (args, nc) => traTenMien('nslookup', args, nc.t) },
+  host: { usage: 'host <domain>', chay: (args, nc) => traTenMien('host', args, nc.t) },
+  w: { usage: 'w', chay: tinh(' 21:00:00 up 2 days, 11:50,  1 user\nUSER     TTY      FROM             LOGIN@   IDLE   WHAT\nhacker   pts/0    192.168.1.5      20:41    0.00s  bash') },
+  who: { usage: 'who', chay: tinh('hacker   pts/0        2026-10-12 20:41 (192.168.1.5)') },
+  last: { usage: 'last', chay: tinh(LAST) },
+  sudo: { usage: 'sudo -l', chay: sudo },
+  env: { usage: 'env', chay: tinh('USER=hacker\nHOME=/home/hacker\nSHELL=/bin/bash\nLANG=C.UTF-8\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin') },
+  df: { usage: 'df -h', chay: tinh('Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        40G   12G   26G  32% /\ntmpfs           2.0G     0  2.0G   0% /dev/shm') },
+  free: { usage: 'free -h', chay: tinh('               total        used        free      shared  buff/cache   available\nMem:           3.8Gi       1.1Gi       1.9Gi        12Mi       0.8Gi       2.5Gi\nSwap:          1.0Gi          0B       1.0Gi') }
 };

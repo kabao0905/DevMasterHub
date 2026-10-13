@@ -22,7 +22,7 @@ const base64: LenhThuan['chay'] = (args, nc) => {
       vao = conLai[0];
     } else vao = r.noiDung;
   } else if (nc.stdin !== null) vao = nc.stdin;
-  else return 'base64: cách dùng: base64 [-d] <tệp>  hoặc  echo chuỗi | base64 [-d]';
+  else return `base64: ${nc.t('loi.cachDung', { cu: 'base64 [-d] <file>  |  echo text | base64 [-d]' })}`;
   if (!giai) return base64Ma(maHoa.encode(vao));
   try {
     const nhiPhan = atob(vao.replace(/\s+/g, ''));
@@ -76,7 +76,7 @@ export function sha256Hex(du: Uint8Array): string {
 const sha256sum: LenhThuan['chay'] = (args, nc) => {
   const { conLai } = tachCo(args);
   if (!conLai.length) {
-    if (nc.stdin === null) return 'sha256sum: thiếu tên tệp (hoặc dùng qua pipe: echo abc | sha256sum)';
+    if (nc.stdin === null) return `sha256sum: ${nc.t('loi.thieuTepPipe', { vd: 'echo abc | sha256sum' })}`;
     return `${sha256Hex(maHoa.encode(nc.stdin))}  -`;
   }
   return conLai.map(t => {
@@ -101,7 +101,7 @@ const xxd: LenhThuan['chay'] = (args, nc) => {
 };
 
 export const LENH_MA_HOA: Record<string, LenhThuan> = {
-  base64: { usage: 'base64 [-d] [file]', desc: 'Mã hóa / giải mã Base64 (đọc được từ pipe)', chay: base64 },
-  sha256sum: { usage: 'sha256sum [file]', desc: 'Tính mã băm SHA-256', chay: sha256sum },
-  xxd: { usage: 'xxd [file]', desc: 'Xem nội dung dạng hex', chay: xxd }
+  base64: { usage: 'base64 [-d] [file]', chay: base64 },
+  sha256sum: { usage: 'sha256sum [file]', chay: sha256sum },
+  xxd: { usage: 'xxd [file]', chay: xxd }
 };

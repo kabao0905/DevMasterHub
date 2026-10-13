@@ -1,5 +1,6 @@
 // Lenh xu ly van ban cua terminal gia lap (cat, head, grep, awk, sed...). Thuan: khong cham he thong tep,
-// doc tep qua docTep do terminal.ts truyen vao; dau vao tu pipe nam o stdin.
+// doc tep qua docTep do terminal.ts truyen vao; dau vao tu pipe nam o stdin; cau goi y dich qua t.
+import type { HamDich } from './terminal-ban-dich';
 
 export type DocTep = { noiDung: string } | { loi: string };
 export type NguCanhLenh = {
@@ -8,8 +9,11 @@ export type NguCanhLenh = {
   docTep: (duong: string) => DocTep;
   /** Moi tep (de quy) trong thu muc, ten hien thi bat dau bang duong da go; null neu khong phai thu muc */
   tepDeQuy: (duong: string) => string[] | null;
+  /** Dich cau goi y theo ngon ngu dang chon (loi chuan Linux giu tieng Anh) */
+  t: HamDich;
 };
-export type LenhThuan = { usage: string; desc: string; chay: (args: string[], nc: NguCanhLenh) => string };
+// Mo ta lenh cho "help" nam o terminal-mo-ta-lenh.ts (du 8 ngon ngu)
+export type LenhThuan = { usage: string; chay: (args: string[], nc: NguCanhLenh) => string };
 
 /** Tach dong; bo dong rong cuoi do ky tu xuong dong ket thuc */
 export function tachDong(s: string): string[] {
@@ -22,7 +26,7 @@ export function tachDong(s: string): string[] {
 export function docNguon(ten: string, tep: string[], nc: NguCanhLenh): { text: string } | { loi: string } {
   if (!tep.length) {
     if (nc.stdin !== null) return { text: nc.stdin };
-    return { loi: `${ten}: thiếu tên tệp (hoặc dùng qua pipe, vd: cat tep | ${ten})` };
+    return { loi: `${ten}: ${nc.t('loi.thieuTepPipe', { vd: `cat file | ${ten}` })}` };
   }
   const phan: string[] = [];
   for (const t of tep) {
@@ -79,7 +83,7 @@ function lenhDauCuoi(ten: 'head' | 'tail'): LenhThuan['chay'] {
       else if (a.startsWith('-n')) so = a.slice(2);
       else tep.push(a);
     }
-    if (!/^\+?\d+$/.test(so)) return `${ten}: số dòng không hợp lệ: '${so}'`;
+    if (!/^\+?\d+$/.test(so)) return `${ten}: ${nc.t('loi.soDong', { gt: so })}`;
     const r = docNguon(ten, tep, nc);
     if ('loi' in r) return r.loi;
     const dong = tachDong(r.text);
@@ -154,9 +158,9 @@ function danhSachViTri(ds: string): ((i: number) => boolean) | null {
 const cut: LenhThuan['chay'] = (args, nc) => {
   const { co, conLai } = tachCo(args, 'dfc');
   const ds = typeof co.f === 'string' ? co.f : typeof co.c === 'string' ? co.c : null;
-  if (!ds) return 'cut: cần -f <cột> (kèm -d <dấu tách>) hoặc -c <vị trí ký tự>';
+  if (!ds) return `cut: ${nc.t('loi.cutCan')}`;
   const chon = danhSachViTri(ds);
-  if (!chon) return `cut: danh sách không hợp lệ: '${ds}'`;
+  if (!chon) return `cut: ${nc.t('loi.danhSach', { gt: ds })}`;
   const r = docNguon('cut', conLai, nc);
   if ('loi' in r) return r.loi;
   const sep = typeof co.d === 'string' ? co.d.replace('\\t', '\t') || '\t' : '\t';
@@ -189,8 +193,8 @@ function bungTap(s: string): string[] {
 
 const tr: LenhThuan['chay'] = (args, nc) => {
   const { co, conLai } = tachCo(args);
-  if (!conLai[0]) return 'tr: thiếu tập ký tự (vd: tr a-z A-Z, tr -d 0-9)';
-  if (nc.stdin === null) return 'tr: chỉ đọc từ pipe (vd: cat tep | tr a-z A-Z)';
+  if (!conLai[0]) return `tr: ${nc.t('loi.thieuTap', { vd: 'tr a-z A-Z, tr -d 0-9' })}`;
+  if (nc.stdin === null) return `tr: ${nc.t('loi.chiPipe', { vd: 'cat file | tr a-z A-Z' })}`;
   const t1 = bungTap(conLai[0]);
   const t2 = conLai[1] ? bungTap(conLai[1]) : [];
   let ra = Array.from(nc.stdin).flatMap(c => {
@@ -238,7 +242,7 @@ function taoRegex(mau: string, { ere = false, coDinh = false, khongHoaThuong = f
 const grep: LenhThuan['chay'] = (args, nc) => {
   const { co, conLai } = tachCo(args, 'e');
   const mau = typeof co.e === 'string' ? co.e : conLai.shift();
-  if (mau === undefined) return 'grep: cách dùng: grep [-i -v -n -c -o -E -r -l] <mẫu> [tệp...]';
+  if (mau === undefined) return `grep: ${nc.t('loi.cachDung', { cu: 'grep [-i -v -n -c -o -E -r -l] <pattern> [file...]' })}`;
   const tuyChon = { ere: !!co.E, coDinh: !!co.F, khongHoaThuong: !!co.i, tron: !!co.w };
   const re = taoRegex(mau, tuyChon);
   const deQuy = co.r || co.R;
@@ -254,7 +258,7 @@ const grep: LenhThuan['chay'] = (args, nc) => {
     }
   }
   if (!dsDuong.length) {
-    if (nc.stdin === null) return 'grep: thiếu tên tệp (hoặc dùng qua pipe, vd: cat tep | grep mẫu)';
+    if (nc.stdin === null) return `grep: ${nc.t('loi.thieuTepPipe', { vd: 'cat file | grep pattern' })}`;
     nguon.push({ ten: '(standard input)', text: nc.stdin });
   }
   const ghiTen = (deQuy || nguon.length > 1) && !co.h;
@@ -381,9 +385,9 @@ function phanTichAwk(ct: string): { begin: GiaTriAwk[]; luat: LuatAwk[]; end: Gi
 const awk: LenhThuan['chay'] = (args, nc) => {
   const { co, conLai } = tachCo(args, 'Fv');
   const ct = conLai.shift();
-  if (!ct) return "awk: cách dùng: awk [-F dấu_tách] '/mẫu/ {print $1, $3}' [tệp]";
+  if (!ct) return `awk: ${nc.t('loi.cachDung', { cu: "awk [-F sep] '/pattern/ {print $1, $3}' [file]" })}`;
   const p = phanTichAwk(ct);
-  if (!p) return "awk: terminal giả lập hỗ trợ: '{print $1, $NF}', '/mẫu/ {print}', '$3 > 100 {print $1}', 'END {print NR}', -F";
+  if (!p) return `awk: ${nc.t('loi.chiHoTro', { ds: "'{print $1, $NF}', '/pattern/ {print}', '$3 > 100 {print $1}', 'END {print NR}', -F" })}`;
   const r = docNguon('awk', conLai, nc);
   if ('loi' in r) return r.loi;
   const sepGoc = typeof co.F === 'string' ? co.F.replace('\\t', '\t') : ' ';
@@ -458,9 +462,9 @@ function phanTichSed(script: string, ere: boolean): LenhSed[] | null {
 const sed: LenhThuan['chay'] = (args, nc) => {
   const { co, conLai } = tachCo(args, 'e');
   const script = typeof co.e === 'string' ? co.e : conLai.shift();
-  if (!script) return "sed: cách dùng: sed 's/cũ/mới/g' [tệp]  |  sed -n '2p'  |  sed '/mẫu/d'";
+  if (!script) return `sed: ${nc.t('loi.cachDung', { cu: "sed 's/old/new/g' [file]  |  sed -n '2p'  |  sed '/pattern/d'" })}`;
   const ds = phanTichSed(script, !!(co.E || co.r));
-  if (!ds) return 'sed: terminal giả lập hỗ trợ: s/cũ/mới/[g], [địa chỉ]d, [địa chỉ]p (địa chỉ: N, N,M, /mẫu/, $)';
+  if (!ds) return `sed: ${nc.t('loi.chiHoTro', { ds: 's/old/new/[g], [addr]d, [addr]p (addr: N, N,M, /pattern/, $)' })}`;
   const r = docNguon('sed', conLai, nc);
   if ('loi' in r) return r.loi;
   const dong = tachDong(r.text);
@@ -497,7 +501,7 @@ const sed: LenhThuan['chay'] = (args, nc) => {
 /** diff dang thuong (2c2 / < cu / --- / > moi) dua tren day con chung dai nhat */
 const diff: LenhThuan['chay'] = (args, nc) => {
   const { conLai } = tachCo(args);
-  if (conLai.length < 2) return 'diff: cách dùng: diff <tệp1> <tệp2>';
+  if (conLai.length < 2) return `diff: ${nc.t('loi.cachDung', { cu: 'diff <file1> <file2>' })}`;
   const doc = (t: string) => { const r = nc.docTep(t); return 'loi' in r ? r : { dong: tachDong(r.noiDung) }; };
   const a = doc(conLai[0]), b = doc(conLai[1]);
   if ('loi' in a) return `diff: ${conLai[0]}: ${a.loi}`;
@@ -526,22 +530,22 @@ const diff: LenhThuan['chay'] = (args, nc) => {
 };
 
 export const LENH_VAN_BAN: Record<string, LenhThuan> = {
-  cat: { usage: 'cat [-n] <file...>', desc: 'Đọc nội dung tệp (-n: đánh số dòng)', chay: lenhCat('cat') },
-  less: { usage: 'less <file>', desc: 'Xem tệp dài (ở đây in ra như cat)', chay: lenhCat('less') },
-  more: { usage: 'more <file>', desc: 'Xem tệp dài (ở đây in ra như cat)', chay: lenhCat('more') },
-  strings: { usage: 'strings <file>', desc: 'In các chuỗi đọc được trong tệp', chay: lenhCat('strings') },
-  head: { usage: 'head [-n N] <file>', desc: 'In N dòng đầu (mặc định 10)', chay: lenhDauCuoi('head') },
-  tail: { usage: 'tail [-n N|+N] <file>', desc: 'In N dòng cuối, hoặc từ dòng N trở đi', chay: lenhDauCuoi('tail') },
-  grep: { usage: 'grep [-ivncoErl] <mẫu> [file]', desc: 'Lọc dòng khớp mẫu (regex); -r tìm cả thư mục', chay: grep },
-  wc: { usage: 'wc [-l -w -c] [file]', desc: 'Đếm dòng / từ / byte', chay: wc },
-  sort: { usage: 'sort [-r -n -u -k N -t X]', desc: 'Sắp xếp dòng', chay: sortLenh },
-  uniq: { usage: 'uniq [-c -d -u]', desc: 'Gộp dòng trùng liền nhau (-c: đếm)', chay: uniq },
-  cut: { usage: 'cut -d X -f N[,M]', desc: 'Cắt lấy cột theo dấu tách', chay: cut },
-  tr: { usage: 'tr [-d -s] <tập1> [tập2]', desc: 'Đổi / xóa ký tự (vd: tr a-z A-Z)', chay: tr },
-  awk: { usage: "awk [-F X] '/mẫu/ {print $1}'", desc: 'Lọc dòng và in cột', chay: awk },
-  sed: { usage: "sed 's/cũ/mới/g' | sed -n '2p'", desc: 'Thay thế / lọc dòng', chay: sed },
-  rev: { usage: 'rev [file]', desc: 'Đảo ngược ký tự từng dòng', chay: theoDong('rev', d => d.map(l => Array.from(l).reverse().join(''))) },
-  tac: { usage: 'tac [file]', desc: 'In các dòng theo thứ tự ngược', chay: theoDong('tac', d => [...d].reverse()) },
-  nl: { usage: 'nl [file]', desc: 'Đánh số các dòng không trống', chay: theoDong('nl', d => { let n = 0; return d.map(l => (l ? `${String(++n).padStart(6)}\t${l}` : l)); }) },
-  diff: { usage: 'diff <file1> <file2>', desc: 'So sánh hai tệp theo dòng', chay: diff }
+  cat: { usage: 'cat [-n] <file...>', chay: lenhCat('cat') },
+  less: { usage: 'less <file>', chay: lenhCat('less') },
+  more: { usage: 'more <file>', chay: lenhCat('more') },
+  strings: { usage: 'strings <file>', chay: lenhCat('strings') },
+  head: { usage: 'head [-n N] <file>', chay: lenhDauCuoi('head') },
+  tail: { usage: 'tail [-n N|+N] <file>', chay: lenhDauCuoi('tail') },
+  grep: { usage: 'grep [-ivncoErl] <pattern> [file]', chay: grep },
+  wc: { usage: 'wc [-l -w -c] [file]', chay: wc },
+  sort: { usage: 'sort [-r -n -u -k N -t X]', chay: sortLenh },
+  uniq: { usage: 'uniq [-c -d -u]', chay: uniq },
+  cut: { usage: 'cut -d X -f N[,M]', chay: cut },
+  tr: { usage: 'tr [-d -s] <set1> [set2]', chay: tr },
+  awk: { usage: "awk [-F X] '/pattern/ {print $1}'", chay: awk },
+  sed: { usage: "sed 's/old/new/g' | sed -n '2p'", chay: sed },
+  rev: { usage: 'rev [file]', chay: theoDong('rev', d => d.map(l => Array.from(l).reverse().join(''))) },
+  tac: { usage: 'tac [file]', chay: theoDong('tac', d => [...d].reverse()) },
+  nl: { usage: 'nl [file]', chay: theoDong('nl', d => { let n = 0; return d.map(l => (l ? `${String(++n).padStart(6)}\t${l}` : l)); }) },
+  diff: { usage: 'diff <file1> <file2>', chay: diff }
 };

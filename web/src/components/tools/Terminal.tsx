@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { CornerDownLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { KenhTerminal } from './use-terminal';
 
-type Dong = { id: number; loai: 'lenh' | 'ra' | 'he'; cwd?: string; text: string };
+// chao: dong chao dau tien, dich lai moi lan ve (doi ngon ngu / ban dich tai xong thi doi theo)
+type Dong = { id: number; loai: 'lenh' | 'ra' | 'he' | 'chao'; cwd?: string; text: string };
 
 // Engine in ma mau ANSI (ls to xanh thu muc) — man hinh nay ve chu thuong
 const boMaMau = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
@@ -16,7 +18,8 @@ type Props = { kenh: KenhTerminal; className?: string };
 /** Man hinh terminal gia lap: nhap lenh, ↑/↓ xem lai lenh cu, nano mo hop soan thao */
 export function Terminal({ kenh, className }: Props) {
   const { may, nghe } = kenh;
-  const [dong, datDong] = useState<Dong[]>([{ id: 0, loai: 'he', text: 'Terminal giả lập DevMaster — gõ "help" để xem các lệnh có sẵn.' }]);
+  const { t } = useT();
+  const [dong, datDong] = useState<Dong[]>([{ id: 0, loai: 'chao', text: '' }]);
   const [nhap, datNhap] = useState('');
   const [viTri, datViTri] = useState<number | null>(null);
   const [soan, datSoan] = useState<{ duong: string; noiDung: string } | null>(null);
@@ -73,7 +76,7 @@ export function Terminal({ kenh, className }: Props) {
   function luu() {
     if (!soan) return;
     const loi = may.luuTuSoanThao(soan.duong, soan.noiDung);
-    them({ loai: 'he', text: loi ? `nano: ${loi}` : `Đã lưu ${soan.duong}` });
+    them({ loai: 'he', text: loi ? `nano: ${loi}` : t('termSaved', { path: soan.duong }) });
     datSoan(null);
     oRef.current?.focus();
   }
@@ -91,7 +94,7 @@ export function Terminal({ kenh, className }: Props) {
         {dong.map(d => (
           d.loai === 'lenh'
             ? <div key={d.id}><span className="text-[#7ee787]">hacker@devmaster:{rutGon(d.cwd || '/')}$</span> {d.text}</div>
-            : <pre key={d.id} className={cn('whitespace-pre-wrap break-words', d.loai === 'he' && 'text-[#8b949e]')}>{d.text}</pre>
+            : <pre key={d.id} className={cn('whitespace-pre-wrap break-words', d.loai !== 'ra' && 'text-[#8b949e]')}>{d.loai === 'chao' ? t('termWelcome') : d.text}</pre>
         ))}
       </div>
       <form onSubmit={guiLenh} className="flex items-center gap-2 border-t border-white/10 py-1.5 pr-1.5 pl-4">
@@ -102,7 +105,7 @@ export function Terminal({ kenh, className }: Props) {
           value={nhap}
           onChange={e => datNhap(e.target.value)}
           onKeyDown={khiGo}
-          aria-label="Lệnh terminal"
+          aria-label={t('termInputLabel')}
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"
@@ -110,7 +113,7 @@ export function Terminal({ kenh, className }: Props) {
           enterKeyHint="go"
           className="min-w-0 flex-1 bg-transparent text-base text-[#e6edf3] caret-[#7ee787] outline-none sm:text-[13px]"
         />
-        <button type="submit" aria-label="Chạy lệnh" title="Chạy lệnh (Enter)"
+        <button type="submit" aria-label={t('termRunBtn')} title={`${t('termRunBtn')} (Enter)`}
           className="grid size-9 shrink-0 place-items-center rounded-md text-[#8b949e] hover:bg-white/10 hover:text-[#e6edf3] focus-visible:outline-2 focus-visible:outline-[#7ee787]">
           <CornerDownLeft className="size-4" aria-hidden="true" />
         </button>
@@ -119,18 +122,18 @@ export function Terminal({ kenh, className }: Props) {
       <Dialog open={!!soan} onOpenChange={mo => { if (!mo) datSoan(null); }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-mono text-sm">📝 Đang sửa: {soan?.duong}</DialogTitle>
+            <DialogTitle className="font-mono text-sm">📝 {t('termEditing', { path: soan?.duong ?? '' })}</DialogTitle>
           </DialogHeader>
           <textarea
             value={soan?.noiDung ?? ''}
             onChange={e => datSoan(s => (s ? { ...s, noiDung: e.target.value } : s))}
-            aria-label="Nội dung tệp"
+            aria-label={t('termFileContent')}
             spellCheck={false}
             className="h-72 w-full resize-y rounded-lg border bg-code p-3 font-mono text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => datSoan(null)}>Hủy</Button>
-            <Button onClick={luu}>💾 Lưu</Button>
+            <Button variant="outline" onClick={() => datSoan(null)}>{t('cancelBtn')}</Button>
+            <Button onClick={luu}>💾 {t('termSaveBtn')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
