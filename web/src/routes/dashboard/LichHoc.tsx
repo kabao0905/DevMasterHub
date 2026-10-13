@@ -1,7 +1,7 @@
 // Lich hoc tren Dashboard: dai ngang cac ngay trong thang. Ngay hoc du so phut muc tieu thi duoc tich,
 // hoc chua du thi to nhat; dem chuoi ngay dat muc tieu lien tiep. Cao vua bang khoi tieu de + thong ke.
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { ChevronLeft, ChevronRight, Flame, Target } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CircleCheck, Clock, Flame, Target } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { ngayDiaPhuong, tinhStreak } from '@/lib/ngay-hoc';
 import { useThoiGianHoc } from '@/lib/use-thoi-gian-hoc';
@@ -35,6 +35,8 @@ export function LichHoc({ className }: { className?: string }) {
   const [moMucTieu, datMoMucTieu] = useState(false);
   const { hienTai, daiNhat } = useMemo(() => tinhStreak(ngayDat, new Date()), [ngayDat]);
   const phutHomNay = phutTu(giayTheoNgay[khoaHomNay] ?? 0);
+  const datHomNay = phutHomNay >= mucTieuPhut;
+  const phanTramHomNay = Math.min(100, Math.round((phutHomNay / Math.max(1, mucTieuPhut)) * 100));
 
   const laThangNay = thang.getTime() === dauThang(homNay).getTime();
   const soNgay = new Date(thang.getFullYear(), thang.getMonth() + 1, 0).getDate();
@@ -131,10 +133,33 @@ export function LichHoc({ className }: { className?: string }) {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs">
-        <p className="text-muted-foreground tabular-nums" title={t('streakHint')}>
-          {t('todayMinutes', { m: Math.min(phutHomNay, 9999), n: mucTieuPhut })}
-        </p>
+      {/* Thoi gian hoc hom nay: so to + thanh tien do de nguoi hoc thay ngay minh da hoc bao lau */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-primary/25 bg-primary/5 px-3 py-2">
+        <span className={cn('grid size-9 shrink-0 place-items-center rounded-full text-white', datHomNay ? 'bg-level-newbie' : 'bg-brand')} aria-hidden="true">
+          {datHomNay ? <CircleCheck className="size-5" /> : <Clock className="size-5" />}
+        </span>
+        <div className="min-w-40 flex-1" title={t('streakHint')}>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="flex items-baseline gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">{t('todayShort')}</span>
+              <span className="text-2xl font-bold leading-none tabular-nums">{Math.min(phutHomNay, 9999)}</span>
+              <span className="text-sm text-muted-foreground tabular-nums">{t('ofGoalMinutes', { n: mucTieuPhut })}</span>
+            </p>
+            <span className={cn('text-xs font-medium tabular-nums', datHomNay ? 'text-level-newbie' : 'text-muted-foreground')}>
+              {datHomNay ? t('goalReached') : t('minutesLeft', { n: mucTieuPhut - phutHomNay })}
+            </span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label={t('todayMinutes', { m: Math.min(phutHomNay, 9999), n: mucTieuPhut })}
+            aria-valuemin={0}
+            aria-valuemax={mucTieuPhut}
+            aria-valuenow={Math.min(phutHomNay, mucTieuPhut)}
+            className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted"
+          >
+            <div className={cn('h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none', datHomNay ? 'bg-level-newbie' : 'bg-brand')} style={{ width: `${phanTramHomNay}%` }} />
+          </div>
+        </div>
         <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-muted-foreground" onClick={() => datMoMucTieu(true)}>
           <Target className="size-3.5" aria-hidden="true" /> {t('goalPerDay', { n: mucTieuPhut })}
         </Button>

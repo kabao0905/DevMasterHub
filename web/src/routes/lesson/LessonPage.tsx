@@ -1,14 +1,15 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { BookOpen, Code2, Dumbbell, ListChecks } from 'lucide-react';
+import { BookOpen, Code2, Dumbbell, ListChecks, Lock } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useBatDauHoc } from '@/lib/use-thoi-gian-hoc';
 import { useCurriculumIndex, useTech, taiJson } from '@/lib/use-curriculum';
 import { useProgress } from '@/lib/use-progress';
 import { useEscape } from '@/lib/use-escape';
-import { timCongNghe, viTriBai } from '@/lib/curriculum';
+import { timCongNghe, viTriBai, type CongNgheTomTat } from '@/lib/curriculum';
+import { baiCanHocTruoc, baiDaMo, type ViTriBai } from '@/lib/progress';
 import { boThe, type TabBai } from '@/lib/ai';
 import { CHU_CAP, NEN_CAP } from '@/components/LevelLadder';
 import { LoadError } from '@/components/LoadError';
@@ -35,6 +36,7 @@ export function LessonPage() {
   const coTech = ds.data ? timCongNghe(ds.data, techId) : undefined;
   const tech = useTech(coTech ? techId : undefined);
   const vt = tech.data ? viTriBai(tech.data, levelId, lessonId) : null;
+  const { done, loading: dangTaiTienDo } = useProgress();
 
   useEscape(() => navigate(coTech ? `/roadmap/${coTech.id}` : '/'));
   useBatDauHoc(coTech?.id ?? '', lessonId);
@@ -53,6 +55,12 @@ export function LessonPage() {
   if (tech.isError) return <LoadError onRetry={() => tech.refetch()} />;
   if (!tech.data) return <Skeleton className="h-96 w-full rounded-2xl" />;
   if (!vt) return <NotFoundPanel ve={`/roadmap/${coTech.id}`} nhanVe={coTech.name} />;
+  // Hoc theo thu tu: chua xong bai truoc thi chi hien bang khoa (dang tai tien do that thi cho, khong chop noi dung)
+  if (!baiDaMo(tech.data, levelId, lessonId, done)) {
+    const truoc = baiCanHocTruoc(tech.data, levelId, lessonId);
+    if (dangTaiTienDo || !truoc) return <Skeleton className="h-96 w-full rounded-2xl" />;
+    return <BaiBiKhoa tech={tech.data} truoc={truoc} />;
+  }
 
   return <NoiDungBai key={`${techId}.${levelId}.${lessonId}`} bai={{ tech: tech.data, level: vt.level, lesson: vt.lesson }} truoc={vt.truoc} sau={vt.sau} />;
 }
@@ -139,13 +147,42 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
             <span className="mt-1 block font-medium">{translateTitle(truoc.lesson.title)}</span>
           </Link>
         ) : <span aria-hidden="true" />}
-        {sau && (
+        {sau && (xong ? (
           <Link to={duongDan(sau)} className="rounded-xl border p-4 text-right transition-colors hover:bg-accent/40">
             <span className="block text-xs text-muted-foreground">{t('nextLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
           </Link>
-        )}
+        ) : (
+          // Hoc theo thu tu: bai tiep theo chi mo khi lam dat bai tap cua bai nay
+          <div aria-disabled="true" className="rounded-xl border border-dashed p-4 text-right text-muted-foreground">
+            <span className="flex items-center justify-end gap-1.5 text-xs"><Lock className="size-3.5" aria-hidden="true" /> {t('nextLesson')}</span>
+            <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
+            <span className="mt-1 block text-xs">{t('nextLessonLockedHint')}</span>
+          </div>
+        ))}
       </nav>
     </article>
+  );
+}
+
+/** Bai chua toi luot: chi duong ve bai can hoc truoc */
+function BaiBiKhoa({ tech, truoc }: { tech: CongNgheTomTat; truoc: ViTriBai }) {
+  const { t, translateTitle } = useT();
+  return (
+    <section className="mx-auto max-w-xl rounded-2xl border bg-card p-8 text-center">
+      <span className="mx-auto grid size-14 place-items-center rounded-full bg-muted" aria-hidden="true">
+        <Lock className="size-7 text-muted-foreground" />
+      </span>
+      <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('lessonLockedTitle')}</h1>
+      <p className="mt-2 text-muted-foreground">{t('lessonLockedHint')}</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Button asChild>
+          <Link to={`/lesson/${tech.id}/${truoc.level.id}/${truoc.lesson.id}`}>{t('lessonLockedGoTo', { title: translateTitle(truoc.lesson.title) })}</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to={`/roadmap/${tech.id}`}>{tech.name}</Link>
+        </Button>
+      </div>
+    </section>
   );
 }

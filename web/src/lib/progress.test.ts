@@ -1,4 +1,4 @@
-import { baiKeTiep, khoaBai, tienDoCongNghe, tienDoTong } from './progress';
+import { baiCanHocTruoc, baiDaMo, baiKeTiep, khoaBai, tienDoCongNghe, tienDoTong } from './progress';
 import type { CongNgheTomTat } from './curriculum';
 
 const cn = (id: string, cap: Record<string, string[]>): CongNgheTomTat => ({
@@ -39,4 +39,26 @@ test('bai ke tiep: chua hoc gi hoac da xong het thi null', () => {
   expect(baiKeTiep([PY, JS], new Set())).toBeNull();
   const xongHet = new Set(['x', 'y'].map(b => khoaBai('js', 'newbie', b)));
   expect(baiKeTiep([JS], xongHet)).toBeNull();
+});
+
+// Hoc theo thu tu: xong bai truoc moi mo bai sau, noi lien qua cac cap (xong bai cuoi Newbie thi mo bai dau Junior)
+test('khoa bai: chi bai dau mo; xong bai nao thi mo bai ngay sau, ke ca sang cap moi', () => {
+  const chuaHoc = new Set<string>();
+  expect(baiDaMo(PY, 'newbie', 'a', chuaHoc)).toBe(true);
+  expect(baiDaMo(PY, 'newbie', 'b', chuaHoc)).toBe(false);
+  expect(baiDaMo(PY, 'junior', 'c', chuaHoc)).toBe(false);
+  const xongA = new Set([khoaBai('python', 'newbie', 'a')]);
+  expect(baiDaMo(PY, 'newbie', 'b', xongA)).toBe(true);
+  expect(baiDaMo(PY, 'junior', 'c', xongA)).toBe(false);
+  const xongAB = new Set([...xongA, khoaBai('python', 'newbie', 'b')]);
+  expect(baiDaMo(PY, 'junior', 'c', xongAB)).toBe(true);
+  expect(baiDaMo(PY, 'junior', 'd', xongAB)).toBe(false);
+});
+
+test('khoa bai: bai da xong tu truoc luon mo; bai la khong khoa; bai can hoc truoc la bai ngay truoc', () => {
+  const xongD = new Set([khoaBai('python', 'junior', 'd')]);
+  expect(baiDaMo(PY, 'junior', 'd', xongD)).toBe(true);
+  expect(baiDaMo(PY, 'newbie', 'khong-co', xongD)).toBe(true);
+  expect(baiCanHocTruoc(PY, 'junior', 'c')).toMatchObject({ level: { id: 'newbie' }, lesson: { id: 'b' } });
+  expect(baiCanHocTruoc(PY, 'newbie', 'a')).toBeNull();
 });

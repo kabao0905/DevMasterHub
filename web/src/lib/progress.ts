@@ -29,6 +29,28 @@ export function tienDoTong(ds: CongNgheTomTat[], done: Set<string>) {
 
 export type ViTriBai = { tech: CongNgheTomTat; level: CapTomTat; lesson: BaiTomTat };
 
+/** Moi bai cua mot cong nghe theo thu tu hoc: het cap nay sang cap sau */
+function baiTheoThuTu(tech: CongNgheTomTat): ViTriBai[] {
+  return tech.levels.flatMap(level => level.lessons.map(lesson => ({ tech, level, lesson })));
+}
+
+/** Bai ngay truoc bai nay theo thu tu hoc (qua ranh gioi cap); bai dau tien hoac bai la thi null */
+export function baiCanHocTruoc(tech: CongNgheTomTat, levelId: string, lessonId: string): ViTriBai | null {
+  const ds = baiTheoThuTu(tech);
+  const i = ds.findIndex(b => b.level.id === levelId && b.lesson.id === lessonId);
+  return i > 0 ? ds[i - 1] : null;
+}
+
+/**
+ * Hoc theo thu tu: bai duoc mo khi la bai dau tien, da xong roi, hoac bai ngay truoc da xong.
+ * Bai da xong tu truoc luon mo (khong khoa lai tien do cu cua hoc vien).
+ */
+export function baiDaMo(tech: CongNgheTomTat, levelId: string, lessonId: string, done: Set<string>): boolean {
+  if (done.has(khoaBai(tech.id, levelId, lessonId))) return true;
+  const truoc = baiCanHocTruoc(tech, levelId, lessonId);
+  return !truoc || done.has(khoaBai(tech.id, truoc.level.id, truoc.lesson.id));
+}
+
 /**
  * Bai nen hoc tiep: trong cac cong nghe da bat dau nhung chua xong, chon cai co
  * nhieu bai xong nhat, roi lay bai dau tien chua xong theo thu tu giao trinh.

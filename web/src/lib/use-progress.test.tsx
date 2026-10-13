@@ -150,7 +150,8 @@ test('chua tai duoc tien do tu server (loi): van ghi "xong" len server, khong du
   // Cache tren may (vd app cu vua ghi) co nhieu bai hon nhung gi giao dien dang thay
   localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true,"python.newbie.c":true}');
   await new Promise(r => setTimeout(r, 50));
-  expect(kq.result.current.p.loading).toBe(true);
+  // Tai loi thi thoi "dang tai" (truoc day giu true mai -> trang bai bi khoa xoay skeleton khong dung)
+  expect(kq.result.current.p.loading).toBe(false);
   act(() => kq.result.current.d('python', 'newbie', 'b'));
   await waitFor(() => expect(daGhi).toEqual([expect.objectContaining({ lesson_id: 'b', completed: true })]));
   expect(JSON.parse(localStorage.getItem('devmaster_hub_progress_cache')!)).toEqual({ 'python.newbie.a': true, 'python.newbie.c': true });

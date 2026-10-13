@@ -221,7 +221,11 @@ test('dashboard: lich chi tich ngay hoc du muc tieu, ngay hoc chua du to nhat, d
   ] }), json: JSON_GIA });
   const lich = await screen.findByRole('region', { name: 'Lịch học' });
   expect(await within(lich).findByText('2 ngày liên tiếp')).toBeInTheDocument();
-  expect(within(lich).getByText('Hôm nay: 15/15 phút')).toBeInTheDocument();
+  // Thoi gian hoc hom nay hien noi bat: thanh tien do co nhan doc duoc, dat muc tieu thi bao ro
+  const tienDo = within(lich).getByRole('progressbar', { name: 'Hôm nay: 15/15 phút' });
+  expect(tienDo).toHaveAttribute('aria-valuenow', '15');
+  expect(tienDo).toHaveAttribute('aria-valuemax', '15');
+  expect(within(lich).getByText(/Đạt mục tiêu/)).toBeInTheDocument();
   expect(within(lich).getByRole('button', { name: /Mục tiêu: 15 phút\/ngày/ })).toBeInTheDocument();
   // Dau thang thi hom qua / hom kia thuoc thang truoc, khong nam tren lich thang nay
   const ngayThang = new Date().getDate();

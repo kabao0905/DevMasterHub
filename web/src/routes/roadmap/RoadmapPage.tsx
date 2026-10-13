@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Check, ChevronRight, CircleCheck, Circle, Flag } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, CircleCheck, Circle, Flag, Lock } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useBatDauHoc } from '@/lib/use-thoi-gian-hoc';
@@ -8,7 +8,7 @@ import { useCurriculumIndex } from '@/lib/use-curriculum';
 import { useProgress } from '@/lib/use-progress';
 import { useEscape } from '@/lib/use-escape';
 import { timCongNghe } from '@/lib/curriculum';
-import { khoaBai, tienDoCongNghe } from '@/lib/progress';
+import { baiDaMo, khoaBai, tienDoCongNghe } from '@/lib/progress';
 import { LevelLadder, CHU_CAP, MAU_CAP, NEN_CAP } from '@/components/LevelLadder';
 import { LoadError } from '@/components/LoadError';
 import { NotFoundPanel } from '@/components/NotFoundPanel';
@@ -126,6 +126,20 @@ export function RoadmapPage() {
                 <ul className="mt-3 divide-y overflow-hidden rounded-xl border bg-card">
                   {cap.lessons.map(bai => {
                     const xong = done.has(khoaBai(tech.id, cap.id, bai.id));
+                    // Hoc theo thu tu: bai chua toi luot hien khoa, khong vao duoc
+                    if (!baiDaMo(tech, cap.id, bai.id, done)) {
+                      return (
+                        <li key={bai.id}>
+                          <div aria-disabled="true" title={t('lessonLockedHint')} className="flex cursor-not-allowed items-center gap-3 px-4 py-3 text-muted-foreground/70">
+                            <Lock className="size-5 shrink-0" aria-hidden="true" />
+                            <span className="min-w-0 flex-1">
+                              <span>{translateTitle(bai.title)}</span>
+                              <span className="sr-only"> {t('lessonLocked')}</span>
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    }
                     return (
                       <li key={bai.id}>
                         <Link to={`/lesson/${tech.id}/${cap.id}/${bai.id}`}

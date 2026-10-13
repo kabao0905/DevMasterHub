@@ -54,6 +54,8 @@ export type BaiTapCoSan = { title: string; description: string; starter?: string
 /** Noi dung day du cua mot bai (curriculum/<tech>.json) */
 export type BaiDayDu = BaiTomTat & {
   theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string;
+  /** Ket qua that khi chay code mau (scripts/tao-ket-qua-code.mjs); khong co = chua chay duoc / khong on dinh */
+  output?: string;
   /** Co thi tab Bai tap hien moi bai mot nut (thay cho mot "Bai tap goc") */
   exercises?: BaiTapCoSan[];
 };

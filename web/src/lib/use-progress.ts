@@ -45,10 +45,12 @@ export function useProgress() {
     }
   });
 
-  const done = useMemo(() => new Set(user ? q.data ?? [] : []), [q.data, user]);
+  // Tai loi (mat mang, Supabase loi): dung tien do da luu tren may thay vi coi nhu chua hoc gi
+  const done = useMemo(() => new Set(user ? q.data ?? (q.isError ? docCache() : []) : []), [q.data, q.isError, user]);
   const isDone = useCallback((tech: string, level: string, lesson: string) => done.has(khoaBai(tech, level, lesson)), [done]);
-  // loading: chua co du lieu that tu server (dang tai, dang hien ban tam tu may, hoac tai loi)
-  return { done, isDone, loading: !!user && (q.data === undefined || q.isPlaceholderData) };
+  // loading: dang cho du lieu that tu server (dang tai / dang hien ban tam tu may). Tai loi thi thoi cho —
+  // neu khong, trang bai bi khoa (cho tien do that truoc khi quyet dinh) se xoay skeleton mai mai
+  return { done, isDone, loading: !!user && !q.isError && (q.data === undefined || q.isPlaceholderData) };
 }
 
 type Bien = { uid: string; tech: string; level: string; lesson: string };

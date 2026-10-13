@@ -9,7 +9,7 @@ const PY: CongNgheDayDu = {
   levels: [
     {
       id: 'newbie', name: 'Newbie', lessons: [
-        { id: 'a', title: 'Biến', theory: '<p>Biến <strong>lưu</strong> giá trị<img src=x onerror="alert(1)"></p>', keyPoints: ['#include <iostream> để dùng cout'], code: 'x = 1\nprint(x)', lang: 'python', exercise: 'Viết lớp Stack<T> có push và pop' },
+        { id: 'a', title: 'Biến', theory: '<p>Biến <strong>lưu</strong> giá trị<img src=x onerror="alert(1)"></p>', keyPoints: ['#include <iostream> để dùng cout'], code: 'x = 1\nprint(x)', output: '1', lang: 'python', exercise: 'Viết lớp Stack<T> có push và pop' },
         { id: 'b', title: 'Vòng lặp', theory: '<p>for và while</p>' }
       ]
     },
@@ -51,12 +51,12 @@ type TuyChon = {
 const traText = (text: string) => new Response(JSON.stringify({ content: [{ type: 'text', text }] }), { status: 200 });
 
 /** Mang gia: JSON giao trinh, /api/ai va may dich; tra ve danh sach than cac lan goi AI */
-function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', bang = {} }: TuyChon & { lang?: string; bang?: Record<string, unknown[]> } = {}) {
+function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', bang = {}, loiDoc }: TuyChon & { lang?: string; bang?: Record<string, unknown[]>; loiDoc?: Record<string, string> } = {}) {
   const json: Record<string, unknown> = { '/curriculum/index.json': INDEX, '/api/health': { aiEnabled } };
   for (const t of TECHS) json[`/curriculum/${t.id}.json`] = t;
   const goiAi: ThanAi[] = [];
   const thanChay: { code: string; stdin: string }[] = [];
-  const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }], ...bang } });
+  const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }], ...bang }, loiDoc });
   const kq = veApp(duongDan, {
     gia, json, lang,
     fetch: async (url: string, init?: RequestInit) => {
@@ -83,6 +83,8 @@ beforeEach(() => { window.scrollTo = vi.fn() as unknown as typeof window.scrollT
 afterEach(() => vi.unstubAllGlobals());
 
 const tieuDe = () => screen.findByRole('heading', { level: 1 });
+// Hoc theo thu tu: mo bai b / bai c can da xong cac bai truoc
+const XONG_PY = (...bai: string[]) => ({ lesson_progress: bai.map(id => ({ tech_id: 'python', level_id: id === 'c' ? 'junior' : 'newbie', lesson_id: id, completed: true })) });
 
 test('bai hoac cong nghe la: bao khong tim thay kem duong quay ve', async () => {
   const { unmount } = mo('/lesson/python/newbie/zzz');
@@ -95,7 +97,7 @@ test('bai hoac cong nghe la: bao khong tim thay kem duong quay ve', async () => 
 
 test('breadcrumb, bai truoc/sau qua ranh gioi cap, doi bai thi cuon len dau', async () => {
   const u = userEvent.setup();
-  const { router } = mo('/lesson/python/newbie/b');
+  const { router } = mo('/lesson/python/newbie/b', { bang: XONG_PY('a', 'b') });
   expect(await tieuDe()).toHaveTextContent('Vòng lặp');
   const vet = screen.getByRole('navigation', { name: 'breadcrumb' });
   expect(within(vet).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/');
@@ -277,14 +279,18 @@ test('may dich loi thi giu ban goc', async () => {
 
 test('tab Code: to mau, co nut chep, tab nam tren URL; bai khong co code thi noi ro', async () => {
   const u = userEvent.setup();
-  const { router } = mo('/lesson/python/newbie/a');
+  const { router } = mo('/lesson/python/newbie/a', { bang: XONG_PY('a') });
   await u.click(await screen.findByRole('tab', { name: /Code Lab/ }));
   await waitFor(() => expect(router.state.location.search).toBe('?tab=code'));
   const panel = screen.getByRole('tabpanel');
   expect(panel.querySelector('pre code .token')).not.toBeNull();
   expect(within(panel).getByRole('button', { name: /Sao chép/ })).toBeInTheDocument();
+  // Ket qua chay that cua code mau (sinh boi scripts/tao-ket-qua-code.mjs) hien ngay duoi code
+  const ketQua = within(panel).getByRole('region', { name: 'Kết quả khi chạy' });
+  expect(ketQua).toHaveTextContent(/^Kết quả khi chạy\s*1$/);
   await act(() => router.navigate('/lesson/python/newbie/b?tab=code'));
   expect(await screen.findByText('Chưa có mã ví dụ cho bài học này.')).toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Kết quả khi chạy' })).not.toBeInTheDocument();
 });
 
 const QUIZ = [
@@ -384,7 +390,7 @@ test('gia su o tab Quiz: ngu canh co cau hoi quiz nhung chua lo dap an khi chua 
 test('doi sang bai khac khi AI chua tra loi: cau tra loi nam o bai da hoi', async () => {
   const u = userEvent.setup();
   let tha!: () => void;
-  const { router } = mo('/lesson/python/newbie/a', { ai: () => new Promise(r => { tha = () => r(traText('Trả lời cho bài Biến')); }) });
+  const { router } = mo('/lesson/python/newbie/a', { bang: XONG_PY('a'), ai: () => new Promise(r => { tha = () => r(traText('Trả lời cho bài Biến')); }) });
   const chat = await screen.findByRole('region', { name: /Hỏi Gia sư AI/ });
   await u.type(within(chat).getByRole('textbox'), 'Hỏi bài A{Enter}');
   await act(() => router.navigate('/lesson/python/newbie/b'));
@@ -568,4 +574,27 @@ test('AI dang tao bai tap thi doi sang bai khac roi quay lai: van thay dang tao,
   await u.click(screen.getByRole('button', { name: /Bài tập gốc/ }));
   expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('');
   expect(goiAi).toHaveLength(1);
+});
+
+test('hoc theo thu tu: chua xong bai truoc thi bai nay bi khoa, chi duong ve bai can hoc', async () => {
+  mo('/lesson/python/junior/c', { bang: XONG_PY('a') });
+  expect(await screen.findByRole('heading', { level: 1, name: 'Bài này đang khoá' })).toBeInTheDocument();
+  expect(screen.getByText(/Hoàn thành bài trước để mở khoá/)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Vòng lặp/ })).toHaveAttribute('href', '/lesson/python/newbie/b');
+  expect(screen.queryByRole('tab', { name: /Lý thuyết/ })).not.toBeInTheDocument();
+});
+
+test('hoc theo thu tu: tai tien do loi (mat mang) thi van hien bang khoa, khong xoay skeleton mai', async () => {
+  mo('/lesson/python/junior/c', { loiDoc: { lesson_progress: 'Failed to fetch' } });
+  expect(await screen.findByRole('heading', { level: 1, name: 'Bài này đang khoá' }, { timeout: 4000 })).toBeInTheDocument();
+});
+
+test('hoc theo thu tu: bai chua xong thi nut Bai tiep theo bi khoa, xong roi moi bam duoc', async () => {
+  const { unmount } = mo('/lesson/python/newbie/a', { bang: { lesson_progress: [] } });
+  expect(await tieuDe()).toHaveTextContent('Biến');
+  expect(await screen.findByText(/Làm đạt bài tập để mở bài tiếp theo/)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /Bài tiếp theo/ })).not.toBeInTheDocument();
+  unmount();
+  mo('/lesson/python/newbie/a', { bang: XONG_PY('a') });
+  expect(await screen.findByRole('link', { name: /Bài tiếp theo.*Vòng lặp/ })).toHaveAttribute('href', '/lesson/python/newbie/b');
 });

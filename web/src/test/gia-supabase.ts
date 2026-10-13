@@ -9,11 +9,13 @@ import type { SupabaseLike } from '@/lib/auth';
 
 type TrangThai = { bang: string; op: string; payload: unknown; tuyChon?: unknown; dieuKien: [string, unknown][]; motDong: boolean };
 
-export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiGhi = {} }: {
+export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiGhi = {}, loiDoc = {} }: {
   bang?: Record<string, unknown[]>; loiDangNhap?: string; nguoiDung?: { id: string; user_metadata?: Record<string, unknown> };
   treo?: Record<string, Promise<unknown> | undefined>;
   /** Chuoi: moi lan ghi deu loi; ham: quyet dinh tung lan (tra undefined la ghi duoc) */
   loiGhi?: Record<string, string | ((payload: unknown) => string | undefined)>;
+  /** Lenh doc (select) bang do tra { error } — mo phong mat mang / Supabase loi */
+  loiDoc?: Record<string, string>;
 } = {}) {
   let phat: ((e: string, s: unknown) => void) | null = null;
   const truyVan: TrangThai[] = [];
@@ -40,7 +42,7 @@ export function giaSupabase({ bang = {}, loiDangNhap, nguoiDung, treo = {}, loiG
         const v = bang[tenBang] ?? [];
         let data = tt.op === 'select' ? (tt.motDong ? (v[0] ?? null) : v) : tt.payload;
         return Promise.resolve(treo[tenBang]).then(() => {
-          const l = tt.op === 'select' ? undefined : loiGhi[tenBang];
+          const l = tt.op === 'select' ? loiDoc[tenBang] : loiGhi[tenBang];
           const thongBao = typeof l === 'function' ? l(tt.payload) : l;
           if (thongBao) return { data: null, error: { message: thongBao } };
           // insert mot dong: ghi vao bang kem id tu tang nhu Postgres; .select().single() doc lai duoc id

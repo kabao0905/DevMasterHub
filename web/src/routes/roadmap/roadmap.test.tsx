@@ -128,3 +128,12 @@ test('dia chi quay lai la link ngoai (//evil.com) thi ve Dashboard', async () =>
   await u.click(screen.getByRole('button', { name: 'Đăng nhập' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/'));
 });
+
+test('roadmap hoc theo thu tu: bai chua toi luot hien khoa, khong bam duoc', async () => {
+  veApp('/roadmap/python', { gia: daDangNhap({ lesson_progress: [XONG('a')] }), json: JSON_GIA });
+  const main = await screen.findByRole('main');
+  const junior = await within(main).findByRole('region', { name: /Junior/ });
+  await waitFor(() => expect(within(junior).getByText('Hàm').closest('li')).toHaveTextContent(/Đã khoá/));
+  expect(within(junior).queryByRole('link')).not.toBeInTheDocument();
+  expect(within(main).getByRole('link', { name: 'Vòng lặp' })).toHaveAttribute('href', '/lesson/python/newbie/b');
+});
