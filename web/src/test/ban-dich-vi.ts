@@ -52,7 +52,7 @@ export const BAN_DICH_VI: BanDich = {
     "codeOutputTitle": "Kết quả khi chạy",
     "todayShort": "Hôm nay",
     "ofGoalMinutes": "/ {n} phút",
-    "minutesLeft": "Còn {n} phút",
+    "goalShort": "Mục tiêu",
     "goalReached": "Đạt mục tiêu 🎉",
     "lessonLocked": "Đã khoá",
     "lessonLockedTitle": "Bài này đang khoá",

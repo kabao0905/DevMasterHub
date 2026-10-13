@@ -140,14 +140,13 @@ export function LichHoc({ className }: { className?: string }) {
         </span>
         <div className="min-w-40 flex-1" title={t('streakHint')}>
           <div className="flex items-baseline justify-between gap-2">
-            <p className="flex items-baseline gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground">{t('todayShort')}</span>
-              <span className="text-2xl font-bold leading-none tabular-nums">{Math.min(phutHomNay, 9999)}</span>
-              <span className="text-sm text-muted-foreground tabular-nums">{t('ofGoalMinutes', { n: mucTieuPhut })}</span>
+            {/* So phut cung co chu, chi khac mau trang dam: noi ma khong lan at; muc tieu chi ghi mot lan o day */}
+            <p className="flex items-baseline gap-1.5 text-sm tabular-nums">
+              <span className="text-muted-foreground">{t('todayShort')}</span>
+              <span className="font-semibold text-foreground">{Math.min(phutHomNay, 9999)}</span>
+              <span className="text-muted-foreground">{t('ofGoalMinutes', { n: mucTieuPhut })}</span>
             </p>
-            <span className={cn('text-xs font-medium tabular-nums', datHomNay ? 'text-level-newbie' : 'text-muted-foreground')}>
-              {datHomNay ? t('goalReached') : t('minutesLeft', { n: mucTieuPhut - phutHomNay })}
-            </span>
+            {datHomNay && <span className="text-xs font-medium text-level-newbie">{t('goalReached')}</span>}
           </div>
           <div
             role="progressbar"
@@ -160,8 +159,9 @@ export function LichHoc({ className }: { className?: string }) {
             <div className={cn('h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none', datHomNay ? 'bg-level-newbie' : 'bg-brand')} style={{ width: `${phanTramHomNay}%` }} />
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-muted-foreground" onClick={() => datMoMucTieu(true)}>
-          <Target className="size-3.5" aria-hidden="true" /> {t('goalPerDay', { n: mucTieuPhut })}
+        {/* So phut da hien ben canh: nut chi ghi "Muc tieu"; trinh doc man hinh van nghe du "Muc tieu: N phut/ngay" */}
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-muted-foreground" aria-label={t('goalPerDay', { n: mucTieuPhut })} onClick={() => datMoMucTieu(true)}>
+          <Target className="size-3.5" aria-hidden="true" /> {t('goalShort')}
         </Button>
       </div>
 
