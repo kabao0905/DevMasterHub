@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 // Logic Project Lab: ban nop, phan tich tinh, cham nhieu tang, chuan hoa du lieu AI.
 import {
   chamDuAn, chuanHoaKetQua, chuanHoaYTuong, hoiMentor, nguCanhDuAn, nhomModule, phanTichTatCa, phanTichTinh, taoBanNop, taoYTuong,
@@ -14,7 +15,7 @@ type ThanGui = { system: string; messages: { role: string; content: string }[]; 
 function giaAi(traLoi: (b: ThanGui) => string | Error) {
   const goi: ThanGui[] = [];
   vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
-    const b = JSON.parse(String(init?.body)) as ThanGui;
+    const b = docThan(init?.body) as ThanGui;
     goi.push(b);
     const r = traLoi(b);
     if (r instanceof Error) return new Response(JSON.stringify({ error: r.message }), { status: 500 });

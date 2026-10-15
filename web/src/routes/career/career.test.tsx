@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 // Career Advisor: chat, viec lam tu goi y, sua cau hoi, tra loi lai, xoa chat, tim viec, loi AI.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -23,7 +24,7 @@ function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern
   const kq = veApp('/career', {
     gia, json,
     fetch: async (url: string, init?: RequestInit) => {
-      if (url === '/api/ai') { const b = JSON.parse(String(init?.body)) as ThanAi; goiAi.push(b); return ai(b); }
+      if (url === '/api/ai') { const b = docThan(init?.body) as ThanAi; goiAi.push(b); return ai(b); }
       if (url.startsWith('/api/jobs')) { timViec.push(new URL(url, 'http://x').searchParams.get('search') ?? ''); return new Response(JSON.stringify({ jobs }), { status: 200 }); }
       return Object.hasOwn(json, url) ? new Response(JSON.stringify(json[url]), { status: 200 }) : new Response('null', { status: 404 });
     }

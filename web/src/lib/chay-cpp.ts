@@ -1,5 +1,6 @@
 // Chay code C++ qua /api/run-cpp cua server (server goi Compiler Explorer, du phong Wandbox; can dang nhap).
 import type { SupabaseLike } from './auth';
+import { dongPhongBi } from './phong-bi';
 
 export type KetQuaChay =
   | { stdout: string; stderr: string; maThoat: number; dichVu: string }
@@ -15,7 +16,7 @@ export async function chayCpp(client: SupabaseLike, code: string, stdin = '', si
   if (token) headers.Authorization = `Bearer ${token}`;
   let r: Response;
   try {
-    r = await fetch('/api/run-cpp', { method: 'POST', headers, body: JSON.stringify({ code, stdin }), signal });
+    r = await fetch('/api/run-cpp', { method: 'POST', headers, body: dongPhongBi({ code, stdin }), signal });
   } catch (e) {
     if (signal?.aborted) throw e;
     throw new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.');

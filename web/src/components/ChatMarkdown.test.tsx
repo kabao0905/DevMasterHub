@@ -38,3 +38,24 @@ test('khoi code chua dong giu nguyen chu; bo ky tu NUL', async () => {
   expect(el.querySelector('pre')).toBeNull();
   expect(el.textContent).toBe('```jsx = 1');
 });
+
+test('dam boc ca code dong (AI hay viet **Hàm `print()` ...**) khong con lo dau **', async () => {
+  const { el } = await ve('1. **Hàm `print()` nhận biểu thức:** Python tính trước\nKết quả là **`True`**, còn đây ** `False` **.');
+  const dam = [...el.querySelectorAll('strong')];
+  expect(dam.map(d => d.textContent)).toEqual(['Hàm print() nhận biểu thức:', 'True', 'False']);
+  expect(dam[0].querySelector('code')?.textContent).toBe('print()');
+  expect(el.textContent).not.toContain('**');
+});
+
+test('LaTeX cua AI thanh ky tu doc duoc; trong code thi giu nguyen', async () => {
+  const { el } = await ve('ky_tu là "u" $\\rightarrow$ **True**, độ phức tạp $O(n^2)$; code `x = "$\\rightarrow$"`');
+  expect(el.textContent).toContain('ky_tu là "u" → True');
+  expect(el.textContent).toContain('O(n²)');
+  expect(el.querySelector('code')?.textContent).toBe('x = "$\\rightarrow$"');
+});
+
+test('`x**2 + y**2` trong code dong khong bi bien thanh chu dam', async () => {
+  const { el } = await ve('Tính `x**2 + y**2` nhé');
+  expect(el.querySelector('strong')).toBeNull();
+  expect(el.querySelector('code')?.textContent).toBe('x**2 + y**2');
+});

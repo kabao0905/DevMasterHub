@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 // Career Advisor: bat y dinh tim viec, cham do phu hop viec lam, Supabase.
 import { giaSupabase } from '@/test/gia-supabase';
 import { taoCoVan, type ThongKe } from './career';
@@ -15,7 +16,7 @@ type Goi = { url: string; body?: Record<string, unknown>; headers?: Record<strin
 function giaFetch(traAi: string, jobs: unknown[] = []) {
   const goi: Goi[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    goi.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined, headers: init?.headers as Record<string, string> });
+    goi.push({ url, body: init?.body ? docThan(init.body) : undefined, headers: init?.headers as Record<string, string> });
     if (url === '/api/ai') return new Response(JSON.stringify({ content: [{ text: traAi }] }), { status: 200 });
     if (url === '/api/crawl') return new Response(JSON.stringify({ url: 'https://x.vn/job', pageTitle: 'Tuyển React', content: 'Mô tả' }), { status: 200 });
     return new Response(JSON.stringify({ jobs }), { status: 200 });

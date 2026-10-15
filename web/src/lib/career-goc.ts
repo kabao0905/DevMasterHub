@@ -1,6 +1,7 @@
 // @ts-nocheck
 // SINH TU public/career-advisor.js bang chuyen-t5.cjs (scratchpad) — chep NGUYEN VAN, dung sua tay.
 // Ban co kieu nam o career.ts. AuthService/I18n/CURRICULUM la ban gia do career.ts truyen vao.
+import { dongPhongBi } from './phong-bi';
 
 export function taoCoVanGoc({ AuthService, I18n, CURRICULUM }) {
   let chatHistory = [];
@@ -190,7 +191,7 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
       const response = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...aiAuth },
-        body: JSON.stringify({
+        body: dongPhongBi({
           system: systemPrompt,
           messages: apiMessages,
           temperature: 0.5,

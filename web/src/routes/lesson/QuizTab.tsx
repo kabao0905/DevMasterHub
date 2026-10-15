@@ -60,7 +60,8 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
         const daChon = quiz.answers[i];
         const dung = daChon === q.correct;
         return (
-          <fieldset key={i} className={cn('rounded-xl border bg-card p-5', quiz.submitted && (dung ? 'border-level-newbie/50' : 'border-destructive/50'))}>
+          // min-w-0: <fieldset> mac dinh min-width: min-content — dong code dai se day rong ca trang tren dien thoai
+          <fieldset key={i} className={cn('min-w-0 rounded-xl border bg-card p-5', quiz.submitted && (dung ? 'border-level-newbie/50' : 'border-destructive/50'))}>
             <legend className="px-1 text-sm font-medium text-muted-foreground">{t('quizQuestion', { n: i + 1 })}</legend>
             <div className="font-medium leading-relaxed"><ChatMarkdown text={q.question} /></div>
             {q.code && <CodeBlock code={q.code} lang={lesson.lang} className="mt-3" />}
@@ -87,7 +88,7 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
             {quiz.submitted && (
               <div className="mt-4 space-y-2 text-sm">
                 <p className="font-medium">{t(dung ? 'answerCorrect' : 'answerWrong')}</p>
-                <p className="text-muted-foreground"><span className="font-medium text-foreground">{t('explanation')}:</span> <span>{q.explanation}</span></p>
+                <div className="text-muted-foreground"><span className="font-medium text-foreground">{t('explanation')}:</span> <ChatMarkdown text={q.explanation} /></div>
               </div>
             )}
           </fieldset>

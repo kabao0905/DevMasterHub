@@ -9,6 +9,7 @@ const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, laGemini3 } = requ
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { chuanHoaYeuCauChay, chayCpp } = require('./lib/chay-cpp.js');
 const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
+const { moPhongBi } = require('./lib/phong-bi.js');
 
 // Nap .env truoc khi doc bat ky bien nao. Bien dat san tu moi truong (Render) thang .env.
 try {
@@ -302,7 +303,7 @@ async function callClaude(system, messages, maxTokens = 4096) {
   return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
 }
 
-app.post('/api/ai', sameOrigin, requireUser, rateLimit({ max: 30, scope: 'ai' }), async (req, res) => {
+app.post('/api/ai', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 30, scope: 'ai' }), async (req, res) => {
   // model va max_tokens tu client khong duoc tin: moi request tinh tien vao khoa cua server
   const yc = chuanHoaYeuCauAi(req.body);
   if (yc.loi) return res.status(400).json({ error: yc.loi });
@@ -351,7 +352,7 @@ app.post('/api/ai', sameOrigin, requireUser, rateLimit({ max: 30, scope: 'ai' })
 });
 
 // Chay code C++ cua bai hoc (DSA, C++): qua dich vu bien dich ben ngoai, xem lib/chay-cpp.js
-app.post('/api/run-cpp', sameOrigin, requireUser, rateLimit({ max: 20, scope: 'run-cpp' }), async (req, res) => {
+app.post('/api/run-cpp', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 20, scope: 'run-cpp' }), async (req, res) => {
   const yc = chuanHoaYeuCauChay(req.body);
   if (yc.loi) return res.status(400).json({ error: yc.loi });
   try {

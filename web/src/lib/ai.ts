@@ -2,6 +2,7 @@
 import type { SupabaseLike } from './auth';
 import type { BaiDayDu } from './curriculum';
 import { baoDaHoiAi } from './dong-ho-hoc';
+import { dongPhongBi } from './phong-bi';
 import {
   BAI_TAP_SYSTEM, CHAM_BAI_SYSTEM, chiThiNgonNgu, promptBaiTap, promptChamBai, promptGiaSu, promptQuiz, promptThietKe,
   promptThuThach, QUIZ_SYSTEM, SO_TEP_DE_TOI_DA, TEP_DE_TOI_DA, THU_MUC_DE, type TabBai
@@ -48,7 +49,8 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
   const token = data.session?.access_token;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const body = JSON.stringify({
+  // Boc base64: lich su chat co "../../", "${...}" thi tuong lua Cloudflare truoc Render chan 403
+  const body = dongPhongBi({
     system: p.system + chiThiNgonNgu(p.lang),
     messages: [{ role: 'user', content: p.user }],
     temperature: p.temperature ?? 0.7,
@@ -76,6 +78,8 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
     }
     const json = (await r.json().catch(() => null)) as { error?: string; content?: { text?: string }[] } | null;
     if (r.status === 401) throw new Error(json?.error || 'Bạn cần đăng nhập để dùng tính năng AI.');
+    // 403 khong kem JSON: khong phai server cua minh tu choi ma tuong lua phia truoc chan
+    if (r.status === 403 && !json) throw new Error('Yêu cầu bị chặn bởi tường lửa. Xoá hội thoại rồi hỏi lại nhé.');
     if (!r.ok) throw new Error(json?.error || `AI API Error: ${r.status}`);
     const text = json?.content?.[0]?.text;
     if (!text) throw new Error('AI không trả lời. Thử lại nhé.');

@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 import { act, fireEvent, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
@@ -61,12 +62,12 @@ function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', b
     gia, json, lang,
     fetch: async (url: string, init?: RequestInit) => {
       if (url === '/api/ai') {
-        const b = JSON.parse(String(init?.body)) as ThanAi;
+        const b = docThan(init?.body) as ThanAi;
         goiAi.push(b);
         return ai ? ai(b) : new Response('{"error":"AI tắt"}', { status: 500 });
       }
       if (url === '/api/run-cpp') {
-        const b = JSON.parse(String(init?.body)) as { code: string; stdin: string };
+        const b = docThan(init?.body) as { code: string; stdin: string };
         thanChay.push(b);
         return chay ? new Response(JSON.stringify(chay(b)), { status: 200 }) : new Response('{"error":"Không chạy được"}', { status: 502 });
       }
@@ -295,8 +296,26 @@ test('tab Code: to mau, co nut chep, tab nam tren URL; bai khong co code thi noi
 
 const QUIZ = [
   { question: 'Gán biến dùng dấu gì?', options: ['=', '==', ':='], correct: 0, explanation: 'Dấu = để gán' },
-  { question: 'In ra màn hình?', code: 'print(1)', options: ['echo', 'print', 'say'], correct: 1, explanation: 'Dùng print' }
+  { question: 'In ra màn hình?', code: 'print(1)', options: ['echo', 'print', 'say'], correct: 1, explanation: 'Gọi `print(1)` $\\rightarrow$ in **1**' }
 ];
+
+test('quiz tren dien thoai: cau hoi khong bi code dai day rong trang; giai thich hien code/LaTeX dung', async () => {
+  const u = userEvent.setup();
+  mo('/lesson/python/newbie/a?tab=quiz', { ai: () => traText(JSON.stringify(QUIZ)) });
+  await u.click(await screen.findByRole('button', { name: /Tạo Quiz với AI/ }));
+  const cau2 = await screen.findByRole('group', { name: /Câu 2/ });
+  // <fieldset> mac dinh min-width: min-content — dong code dai lam ca trang rong hon man hinh,
+  // dien thoai thu nho trang lai (chu nho, vo khung). min-w-0 cho no co lai theo man hinh.
+  expect(cau2).toHaveClass('min-w-0');
+  await u.click(within(screen.getByRole('group', { name: /Câu 1/ })).getByRole('radio', { name: /^A/ }));
+  await u.click(within(cau2).getByRole('radio', { name: /print/ }));
+  await u.click(screen.getByRole('button', { name: 'Nộp bài (2/2)' }));
+  await screen.findByText('Đúng 2/2 câu (100%)');
+  expect(within(cau2).getByText('print(1)', { selector: 'code' })).toBeInTheDocument();
+  expect(within(cau2).getByText('1', { selector: 'strong' })).toBeInTheDocument();
+  expect(cau2.textContent).toContain('→ in');
+  expect(cau2.textContent).not.toMatch(/`|\\rightarrow|\*\*/);
+});
 
 test('quiz di du vong: tao, chon, nop khi tra loi du, cham diem, giai thich, quiz moi', async () => {
   const u = userEvent.setup();

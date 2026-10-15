@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 import { apDungThietKe, chamBai, docJson, goiAi, hoiGiaSu, khopDapAn, nguCanhBai, suaThietKe, taoBaiTap, taoQuiz, taoThuThach } from './ai';
 import type { SupabaseLike } from './auth';
 
@@ -17,7 +18,7 @@ function giaFetch(...traLoi: (Response | Error | DOMException)[]) {
   return goi;
 }
 const traText = (text: string) => new Response(JSON.stringify({ content: [{ type: 'text', text }] }), { status: 200 });
-const body = (g: GoiFetch) => JSON.parse(String(g.init.body));
+const body = (g: GoiFetch) => docThan(g.init.body);
 
 afterEach(() => { vi.unstubAllGlobals(); khongCho.mockClear(); });
 
@@ -30,6 +31,20 @@ test('goi /api/ai kem token, taskType va chi thi ngon ngu cua nguoi hoc', async 
   expect(b).toMatchObject({ messages: [{ role: 'user', content: 'Hoi' }], taskType: 'tutor', temperature: 0.7, max_tokens: 1000 });
   expect(b.system).toMatch(/^He thong/);
   expect(b.system).toContain('respond 100% completely and naturally in English');
+});
+
+test('body gui AI duoc boc base64: tuong lua Cloudflare khong chan vi lich su chat co "../../" hay "${..."', async () => {
+  const goi = giaFetch(traText('ok'));
+  await goiAi(client, { system: 's', user: 'mở ../../data rồi in `${ten}`', taskType: 'tutor', lang: 'vi' });
+  const tho = String(goi[0].init.body);
+  expect(Object.keys(JSON.parse(tho))).toEqual(['b64']);
+  expect(tho).not.toContain('../');
+  expect(body(goi[0]).messages[0].content).toBe('mở ../../data rồi in `${ten}`');
+});
+
+test('tuong lua chan (403 trang HTML, khong phai JSON cua server) thi bao cau de hieu, khong chi "403"', async () => {
+  giaFetch(new Response('<html>Forbidden</html>', { status: 403, headers: { 'Content-Type': 'text/html' } }));
+  await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi' })).rejects.toThrow(/bị chặn/);
 });
 
 test('may chu qua tai (429) thi cho theo Retry-After roi thu lai', async () => {

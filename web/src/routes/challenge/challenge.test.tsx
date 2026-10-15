@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
@@ -15,7 +16,7 @@ function mo(ai: (b: ThanAi) => Response) {
     json,
     fetch: async (url: string, init?: RequestInit) => {
       if (url === '/api/ai') {
-        const b = JSON.parse(String(init?.body)) as ThanAi;
+        const b = docThan(init?.body) as ThanAi;
         goiAi.push(b);
         return ai(b);
       }

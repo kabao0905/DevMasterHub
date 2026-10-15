@@ -1,3 +1,4 @@
+import { docThan } from '@/test/doc-than';
 // Project Lab: hub, theo cap do, theo chu de — tao idea, luu idea, chat mentor, soan file, cham project.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -32,7 +33,7 @@ function mo(duongDan: string, { ai = aiMacDinh, aiEnabled = true, bang = {} }: {
     gia, json,
     fetch: async (url: string, init?: RequestInit) => {
       if (url === '/api/ai') {
-        const b = JSON.parse(String(init?.body)) as ThanAi;
+        const b = docThan(init?.body) as ThanAi;
         goiAi.push(b);
         return ai(b);
       }

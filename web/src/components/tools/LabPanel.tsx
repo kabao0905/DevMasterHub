@@ -48,7 +48,7 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
           const xong = daXong.includes(nv.id);
           const soGoiY = goiY[nv.id] ?? 0;
           return (
-            <fieldset key={nv.id} className={cn('rounded-xl border bg-card p-4', xong && 'border-level-newbie/50')}>
+            <fieldset key={nv.id} className={cn('min-w-0 rounded-xl border bg-card p-4', xong && 'border-level-newbie/50')}>
               <legend className="sr-only">{nv.cau}</legend>
               <div className="flex items-start gap-3">
                 <span aria-hidden="true">{xong ? '✅' : '▸'}</span>
