@@ -3,15 +3,15 @@
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from "lucide-react"
-import { useGiaoDien } from "@/lib/giao-dien"
+import { useCheDo } from "@/lib/che-do"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // Thong bao theo kieu giao dien: co dien toi, pastel sang
-  const [giaoDien] = useGiaoDien()
+  // Thong bao theo che do sang / toi
+  const [cheDo] = useCheDo()
 
   return (
     <Sonner
-      theme={giaoDien === "pastel" ? "light" : "dark"}
+      theme={cheDo === "toi" ? "dark" : "light"}
       className="toaster group"
       icons={{
         success: (

@@ -68,7 +68,7 @@ export function DashboardPage() {
 
   const tieuDe = (
     <header className="space-y-1">
-      <h1 className="text-3xl font-bold tracking-tight pastel:text-4xl pastel:font-semibold">{t('dashboardTitle')}</h1>
+      <h1 className="text-4xl font-semibold tracking-tight">{t('dashboardTitle')}</h1>
       <p className="text-muted-foreground">{t('dashboardSubtitle')}</p>
     </header>
   );
@@ -88,17 +88,17 @@ export function DashboardPage() {
       <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch">
         <div className="flex shrink-0 flex-col justify-between gap-8">
           {tieuDe}
-          {/* Kieu Pastel: moi so lieu la mot o mau nhat bo tron, so to o tren, nhan nho o duoi */}
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-4 sm:flex sm:flex-wrap pastel:gap-3">
+          {/* Moi so lieu la mot o mau nhat bo tron, so to o tren, nhan nho o duoi */}
+          <dl className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
             {([
-              [t('statTech'), ds.length, 'pastel:bg-pastel-sky'],
-              [t('statLessons'), tong.tong, 'pastel:bg-pastel-lavender'],
-              [t('statCompleted'), tong.xong, 'pastel:bg-pastel-mint'],
-              [t('statProgress'), `${tong.phanTram}%`, 'pastel:border-2 pastel:border-dashed pastel:border-border']
+              [t('statTech'), ds.length, 'bg-pastel-sky'],
+              [t('statLessons'), tong.tong, 'bg-pastel-lavender'],
+              [t('statCompleted'), tong.xong, 'bg-pastel-mint'],
+              [t('statProgress'), `${tong.phanTram}%`, 'border-2 border-dashed border-border']
             ] as const).map(([nhan, so, mau]) => (
-              <div key={String(nhan)} className={cn('pastel:flex pastel:min-w-28 pastel:flex-col-reverse pastel:items-center pastel:rounded-3xl pastel:px-5 pastel:py-4', mau)}>
-                <dt className="text-xs text-muted-foreground pastel:mt-0.5 pastel:text-foreground/70">{nhan}</dt>
-                <dd className="text-xl font-semibold tabular-nums pastel:text-3xl pastel:font-bold">{so}</dd>
+              <div key={String(nhan)} className={cn('flex min-w-28 flex-col-reverse items-center rounded-3xl px-5 py-4', mau)}>
+                <dt className="mt-0.5 text-xs text-foreground/70">{nhan}</dt>
+                <dd className="text-3xl font-bold tabular-nums">{so}</dd>
               </div>
             ))}
           </dl>

@@ -4,6 +4,7 @@ import { veApp } from '@/test/ve-app';
 import { giaSupabase } from '@/test/gia-supabase';
 import type { CongNgheTomTat, MucTimKiem } from '@/lib/curriculum';
 import { dieuHuong } from '@/lib/dieu-huong';
+import { apCheDo, KHOA_CHE_DO } from '@/lib/che-do';
 
 const INDEX: CongNgheTomTat[] = [
   {
@@ -101,15 +102,18 @@ test('tim kiem: go khong dau ra bai co dau; khong co ket qua thi noi ro tu khoa'
   expect(await screen.findByText('Không tìm thấy kết quả phù hợp cho "xyz"')).toBeInTheDocument();
 });
 
-test('sidebar: link toi Project Lab, Du an cua toi, Career va roadmap; doi ngon ngu ghi khoa dung chung', async () => {
+test('thanh tren: link toi Project Lab, Du an cua toi, Career; menu Lo trinh co roadmap; doi ngon ngu trong menu Tai khoan', async () => {
   const u = userEvent.setup();
   veApp('/', { gia: daDangNhap(), json: JSON_GIA });
-  const nav = await screen.findByRole('navigation');
+  const nav = await screen.findByRole('navigation', { name: 'DevMaster Hub' });
   expect(within(nav).getByRole('link', { name: /Project Lab/ })).toHaveAttribute('href', '/project');
   expect(within(nav).getByRole('link', { name: /Dự án của tôi/ })).toHaveAttribute('href', '/my-projects');
   expect(within(nav).getByRole('link', { name: /Tư vấn Việc làm/ })).toHaveAttribute('href', '/career');
-  expect(await within(nav).findByRole('link', { name: /React/ })).toHaveAttribute('href', '/roadmap/react');
-  await u.selectOptions(screen.getByRole('combobox', { name: 'Ngôn ngữ' }), 'en');
+  await u.click(within(nav).getByRole('button', { name: /Lộ trình/ }));
+  expect(await screen.findByRole('menuitem', { name: /React/ })).toHaveAttribute('href', '/roadmap/react');
+  await u.keyboard('{Escape}');
+  await u.click(screen.getByRole('button', { name: 'Tài khoản' }));
+  await u.click(await screen.findByRole('menuitemradio', { name: /English/ }));
   expect(localStorage.getItem('devmaster_hub_lang')).toBe('en');
 });
 
@@ -118,7 +122,8 @@ test('dang xuat thi ve trang dang nhap', async () => {
   // Trinh duyet nhung (vd. trong app) chan window.confirm: khong duoc dua vao no
   vi.stubGlobal('confirm', () => false);
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
-  await u.click(await screen.findByRole('button', { name: 'Đăng xuất' }));
+  await u.click(await screen.findByRole('button', { name: 'Tài khoản' }));
+  await u.click(await screen.findByRole('menuitem', { name: 'Đăng xuất' }));
   const hop = await screen.findByRole('dialog', { name: 'Bạn muốn đăng xuất?' });
   await u.click(within(hop).getByRole('button', { name: 'Đăng xuất' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/auth'));
@@ -194,19 +199,30 @@ test('tim kiem: tai chi muc loi thi bao loi, khong noi la khong co ket qua', asy
   expect(await within(main).findByRole('link', { name: /Vòng lặp/ })).toBeInTheDocument();
 });
 
-test('desktop: thu gon duoc sidebar, va van thu gon sau khi tai lai trang', async () => {
+test('cong tac sang / toi tren thanh tren: gat thi ca trang doi mau va nho lua chon khi tai lai; khong con sidebar co dien', async () => {
   const u = userEvent.setup();
-  const lan1 = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
-  expect(await screen.findByRole('complementary')).toBeInTheDocument();
-  await u.click(screen.getByRole('button', { name: 'Thu gọn thanh bên' }));
-  expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Mở thanh bên' })).toBeInTheDocument();
-  lan1.unmount();
+  localStorage.setItem(KHOA_CHE_DO, 'sang');
+  try {
+    const lan1 = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+    const congTac = await screen.findByRole('switch', { name: 'Chế độ tối' });
+    expect(congTac).toHaveAttribute('aria-checked', 'false');
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    await u.click(congTac);
+    expect(congTac).toHaveAttribute('aria-checked', 'true');
+    expect(document.documentElement).toHaveClass('dark');
+    expect(localStorage.getItem(KHOA_CHE_DO)).toBe('toi');
+    lan1.unmount();
 
-  // Sang trang app cu roi quay lai la tai trang moi: lua chon phai con
-  veApp('/', { gia: daDangNhap(), json: JSON_GIA });
-  await u.click(await screen.findByRole('button', { name: 'Mở thanh bên' }));
-  expect(screen.getByRole('complementary')).toBeInTheDocument();
+    // Tai lai trang: van o che do toi, gat lai thi ve sang
+    veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+    const lai = await screen.findByRole('switch', { name: 'Chế độ tối' });
+    expect(lai).toHaveAttribute('aria-checked', 'true');
+    await u.click(lai);
+    expect(document.documentElement).not.toHaveClass('dark');
+    expect(localStorage.getItem(KHOA_CHE_DO)).toBe('sang');
+  } finally {
+    apCheDo('sang');
+  }
 });
 
 const ghiThoiGian = (gia: ReturnType<typeof giaSupabase>) => gia.truyVan.filter(q => q.bang === 'learning_sessions' && (q.op === 'insert' || q.op === 'update'));

@@ -69,13 +69,14 @@ test('/roadmap tran thi ve Dashboard', async () => {
   await waitFor(() => expect(router.state.location.pathname).toBe('/'));
 });
 
-test('the cong nghe o Dashboard va link sidebar di bang router, khong tai lai trang', async () => {
+test('the cong nghe o Dashboard va menu Lo trinh tren thanh tren di bang router, khong tai lai trang', async () => {
   const u = userEvent.setup();
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   const main = await screen.findByRole('main');
   await u.click(await within(main).findByRole('link', { name: /Python/ }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/roadmap/python'));
-  await u.click(within(await screen.findByRole('navigation')).getByRole('link', { name: /An ninh mạng/ }));
+  await u.click(within(await screen.findByRole('navigation', { name: 'DevMaster Hub' })).getByRole('button', { name: /Lộ trình/ }));
+  await u.click(await screen.findByRole('menuitem', { name: /An ninh mạng/ }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/roadmap/cybersecurity'));
 });
 

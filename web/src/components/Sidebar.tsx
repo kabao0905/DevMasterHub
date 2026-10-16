@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useXacNhan } from '@/components/XacNhan';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Briefcase, FolderKanban, FlaskConical, LayoutDashboard, LogOut, PanelLeftClose } from 'lucide-react';
+import { Briefcase, FolderKanban, FlaskConical, LayoutDashboard, LogOut } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { useCurriculumIndex, taiJson } from '@/lib/use-curriculum';
@@ -10,7 +10,6 @@ import { useProgress } from '@/lib/use-progress';
 import { nhomCongNghe, THU_TU_NHOM, type CongNgheTomTat, type Nhom } from '@/lib/curriculum';
 import { tienDoCongNghe } from '@/lib/progress';
 import { BrandMark } from '@/components/BrandMark';
-import { ChonGiaoDien } from '@/components/ChonGiaoDien';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -25,8 +24,8 @@ export const TEN_NHOM: Record<Nhom, string> = {
 
 const lopMuc = 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-sidebar-ring';
 
-/** onCollapse: chi co o ban desktop (trong Sheet tren dien thoai thi khong can nut thu gon) */
-export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
+/** Menu day du (cong nghe theo nhom, tai khoan, ngon ngu): mo tu nut menu cua thanh tren cung tren dien thoai */
+export function Sidebar() {
   const { t, lang, setLang, languages } = useT();
   const { profile, user, logout } = useAuth();
   const { data: ds = [] } = useCurriculumIndex();
@@ -59,11 +58,6 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center justify-between gap-2 pt-5 pr-3 pb-4 pl-5">
         <BrandMark />
-        {onCollapse && (
-          <Button variant="ghost" size="icon" className="text-muted-foreground" aria-label={t('collapseSidebar')} title={t('collapseSidebar')} onClick={onCollapse}>
-            <PanelLeftClose />
-          </Button>
-        )}
       </div>
 
       <div className="mx-3 flex items-center gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent/40 p-3">
@@ -88,7 +82,6 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
         </Button>
         {hopXacNhan}
       </div>
-      <ChonGiaoDien className="mx-3 mt-2" />
 
       <ScrollArea className="mt-4 min-h-0 flex-1">
         <nav aria-label="DevMaster Hub" className="px-3 pb-4">
