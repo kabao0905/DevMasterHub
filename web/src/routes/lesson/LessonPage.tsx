@@ -142,13 +142,13 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
 
       <nav aria-label={`${t('prevLesson')} / ${t('nextLesson')}`} className="grid gap-3 sm:grid-cols-2">
         {truoc ? (
-          <Link to={duongDan(truoc)} className="rounded-xl border p-4 transition-colors hover:bg-accent/40">
+          <Link to={duongDan(truoc)} className="the-noi rounded-2xl border bg-card p-4">
             <span className="block text-xs text-muted-foreground">{t('prevLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(truoc.lesson.title)}</span>
           </Link>
         ) : <span aria-hidden="true" />}
         {sau && (xong ? (
-          <Link to={duongDan(sau)} className="rounded-xl border p-4 text-right transition-colors hover:bg-accent/40">
+          <Link to={duongDan(sau)} className="the-noi rounded-2xl border bg-card p-4 text-right">
             <span className="block text-xs text-muted-foreground">{t('nextLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
           </Link>

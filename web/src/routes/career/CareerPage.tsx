@@ -272,7 +272,7 @@ function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
           {kho.jobs.map((j, i) => (
             <li key={i}>
               <a href={j.url} target="_blank" rel="noopener noreferrer"
-                className={cn('flex h-full flex-col gap-2 rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40', MAU_TRANG_THAI[j.status].split(' ')[0])}>
+                className={cn('the-noi flex h-full flex-col gap-2 rounded-2xl border bg-card p-4', MAU_TRANG_THAI[j.status].split(' ')[0])}>
                 {j.badgeText && <span className={cn('self-start rounded-full border px-2.5 py-0.5 text-xs font-semibold', MAU_TRANG_THAI[j.status])}>{j.badgeText}</span>}
                 <span className="flex items-center gap-3">
                   {j.company_logo ? <img src={j.company_logo} alt="" className="size-9 rounded-md bg-white object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} /> : <span aria-hidden="true" className="grid size-9 place-items-center rounded-md bg-muted">🏢</span>}

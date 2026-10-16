@@ -10,7 +10,7 @@ export function TechCard({ tech, done }: { tech: CongNgheTomTat; done: Set<strin
   return (
     <Link
       to={`/roadmap/${tech.id}`}
-      className="group kich-dong flex flex-col gap-4 rounded-3xl border border-transparent bg-card p-5 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.18)] dark:border-border dark:shadow-none transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-14px_rgba(0,0,0,0.22)] dark:hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:hover:translate-y-0"
+      className="group kich-dong flex flex-col gap-4 rounded-3xl border border-transparent bg-card p-5 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.18)] dark:border-border dark:shadow-none the-noi focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <div className="flex items-start gap-3">
         <span

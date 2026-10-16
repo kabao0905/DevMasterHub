@@ -76,7 +76,7 @@ export function RoadmapPage() {
       </header>
 
       {tech.id === 'cybersecurity' && (
-        <Link to="/challenge" className="flex items-center gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 transition-colors hover:bg-primary/15">
+        <Link to="/challenge" className="the-noi flex items-center gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 hover:bg-primary/15">
           <Flag className="size-6 shrink-0 text-primary" aria-hidden="true" />
           <span className="min-w-0 flex-1">
             <span className="block font-semibold">{t('challengeNav')}</span>
@@ -145,7 +145,7 @@ export function RoadmapPage() {
                       <li key={bai.id} className="relative">
                         <Link to={`/lesson/${tech.id}/${cap.id}/${bai.id}`}
                           className={cn('flex items-center gap-3 rounded-2xl border border-transparent bg-card px-5 py-4 shadow-[0_8px_24px_-14px_rgba(0,0,0,0.2)] dark:border-border dark:shadow-none',
-                            'transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 dark:hover:border-primary/40 motion-reduce:hover:translate-y-0',
+                            'the-noi',
                             'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
                             xong && 'bg-pastel-mint/45 hover:bg-pastel-mint/60')}>
                           {xong
