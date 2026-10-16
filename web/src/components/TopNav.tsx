@@ -2,7 +2,7 @@
 // cong tac sang / toi va menu "Tai khoan" (ngon ngu, dang xuat). Dien thoai: nut mo menu ben.
 import { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
-import { Briefcase, ChevronDown, FlaskConical, FolderKanban, LayoutDashboard, LogOut, Map as MapIcon, Menu } from 'lucide-react';
+import { Briefcase, ChevronDown, FlaskConical, FolderKanban, LogOut, Map as MapIcon, Menu } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth';
 import { useCurriculumIndex } from '@/lib/use-curriculum';
@@ -21,9 +21,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-/** Nhan muc: muc dang mo hien chu, muc khac chi icon (van co ten cho trinh doc man hinh) — nhu mau thiet ke */
+/** Nhan muc: man rong hien chu moi muc; man vua chi muc dang mo hien chu, muc khac chi icon (van co ten cho trinh doc man hinh) */
 const Nhan = ({ mo, children }: { mo: boolean; children: React.ReactNode }) => (
-  <span className={mo ? 'whitespace-nowrap' : 'sr-only 2xl:not-sr-only 2xl:whitespace-nowrap'}>{children}</span>
+  <span className={mo ? 'whitespace-nowrap' : 'sr-only xl:not-sr-only xl:whitespace-nowrap'}>{children}</span>
 );
 
 const vien = (dangMo: boolean) => cn(
@@ -71,12 +71,17 @@ export function TopNav() {
           <Sidebar />
         </SheetContent>
       </Sheet>
-      <Link to="/" className="kich-dong rounded-full focus-visible:outline-2 focus-visible:outline-white"><BrandMark nho className="whitespace-nowrap" /></Link>
+      {/* Logo kiem luon loi vao Dashboard (khong con muc Dashboard rieng tren thanh): dang o Dashboard thi sang nhe */}
+      <NavLink to="/" end title={t('dashboard')}
+        className={({ isActive }) => cn(
+          'kich-dong rounded-full py-1 pr-3 pl-1 transition-colors focus-visible:outline-2 focus-visible:outline-white',
+          isActive ? 'bg-white/12 ring-1 ring-white/15' : 'hover:bg-white/10'
+        )}>
+        <BrandMark nho className="whitespace-nowrap" />
+        <span className="sr-only"> – {t('dashboard')}</span>
+      </NavLink>
 
       <nav aria-label="DevMaster Hub" className="mx-auto hidden items-center gap-1 lg:flex">
-        <NavLink to="/" end className={({ isActive }) => vien(isActive)}>
-          {({ isActive }) => <><LayoutDashboard data-dong="luoi" className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('dashboard')}</Nhan></>}
-        </NavLink>
         <DropdownMenu>
           <DropdownMenuTrigger className={vien(laLoTrinh)}>
             <MapIcon data-dong="ban-do" className="size-4" aria-hidden="true" /> <Nhan mo={laLoTrinh}>{t('roadmapsMenu')}</Nhan> <ChevronDown data-dong="mo" className="size-3.5 opacity-70" aria-hidden="true" />

@@ -117,6 +117,18 @@ test('thanh tren: link toi Project Lab, Du an cua toi, Career; menu Lo trinh co 
   expect(localStorage.getItem('devmaster_hub_lang')).toBe('en');
 });
 
+test('logo DevMaster Hub la loi vao Dashboard: thanh tren khong con muc Dashboard rieng; o Dashboard thi logo la trang hien tai', async () => {
+  const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
+  const nav = await screen.findByRole('navigation', { name: 'DevMaster Hub' });
+  expect(within(nav).queryByRole('link', { name: /Dashboard/ })).not.toBeInTheDocument();
+  const logo = screen.getByRole('link', { name: /DevMaster Hub/ });
+  expect(logo).toHaveAttribute('href', '/');
+  expect(logo).toHaveAccessibleName(/Dashboard/);
+  expect(logo).toHaveAttribute('aria-current', 'page');
+  await act(() => router.navigate('/career'));
+  await waitFor(() => expect(screen.getByRole('link', { name: /DevMaster Hub/ })).not.toHaveAttribute('aria-current'));
+});
+
 test('dang xuat thi ve trang dang nhap', async () => {
   const u = userEvent.setup();
   // Trinh duyet nhung (vd. trong app) chan window.confirm: khong duoc dua vao no
