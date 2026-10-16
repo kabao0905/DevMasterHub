@@ -171,7 +171,8 @@ test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien t
   mo({
     ai: () => traText('Nên ứng tuyển React Developer.'),
     crawl: () => new Response(JSON.stringify({ cheDo: 'danh_sach', yDinh: 'ca_web', batDau: 'https://careerviet.vn/viec-lam/it-c1-vi.html', soTrang: 5, tongViec: 250, dungVi: 'gioi_han_trang', nguonDiem: 'jev',
-      viec: [{ url: 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu', diem: 0.9 }] }), { status: 200 })
+      viec: [{ url: 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu', diem: 0.9, diaDiem: 'Hồ Chí Minh', luong: '20-30 triệu' },
+        { url: 'https://careerviet.vn/vi/tim-viec-lam/java.A2.html', title: 'Java Backend', snippet: 'Cty B', diem: 0.5, diaDiem: '', luong: '' }] }), { status: 200 })
   });
   await waitFor(() => expect(oNhap()).toBeEnabled());
   await u.type(oNhap(), 'xem toàn bộ việc IT ở https://careerviet.vn/viec-lam/it-c1-vi.html{Enter}');
@@ -182,4 +183,8 @@ test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien t
   const the = screen.getByRole('link', { name: /React Developer/ });
   expect(the).toHaveAttribute('href', 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html');
   expect(the.textContent).toContain('Phù hợp ~90%');
+  expect(the.textContent).toContain('Hồ Chí Minh');
+  expect(the.textContent).toContain('20-30 triệu');
+  // Tin khong ghi noi lam viec: khong tu dien "Remote"
+  expect(screen.getByRole('link', { name: /Java Backend/ }).textContent).not.toMatch(/Remote/);
 });

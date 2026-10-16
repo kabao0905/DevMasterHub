@@ -126,3 +126,11 @@ test('khong co link danh sach IT (menu dung bang JS) thi vao danh sach viec chun
   assert.strictEqual(kq.tongViec, 6);
   assert.ok(kq.viec.every(v => !/ke-toan/.test(v.url)));
 });
+
+test('trang 2 co menu ky nang cung khuon voi tin (ITviec): khong lan vao danh sach viec', async () => {
+  const menu = '<a href="/vi/tim-viec-lam/python.html?click_source=Navigation+menu">Python</a><a href="/vi/tim-viec-lam/lap-trinh-vien-cpp.html?click_source=menu">Lập trình viên C++</a>';
+  const { tai } = giaTai({ [BASE]: danhSach(1, 6), [mau(2)]: danhSach(7, 9).replace('<body>', '<body>' + menu) });
+  const kq = await nhenViec({ url: BASE, hoSo: HOSO, tai, jev: giaJev(), cho: async () => {} });
+  assert.strictEqual(kq.tongViec, 9);
+  assert.ok(kq.viec.every(v => !/click_source|Python$|C\+\+/.test(v.url + v.title)));
+});

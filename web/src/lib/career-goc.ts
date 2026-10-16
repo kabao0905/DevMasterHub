@@ -190,9 +190,11 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     const pct = Math.round((v.diem || 0) * 100);
     let host = '';
     try { host = new URL(v.url).hostname.replace(/^www\./, ''); } catch { /* url hong: de trong */ }
+    // Dia diem / luong nhen doc tu the tin; tin khong ghi thi de trong (khong tu cho la Remote)
+    const diaDiem = v.diaDiem || '';
     return {
-      title: v.title, company_name: '', company_logo: '', source: host, location: '', is_remote: false,
-      employment_type: '', salary: '', tags: [], url: v.url, description_snippet: v.snippet,
+      title: v.title, company_name: '', company_logo: '', source: host, location: diaDiem, is_remote: diaDiem === 'Remote',
+      employment_type: '', salary: v.luong || '', tags: [], url: v.url, description_snippet: v.snippet,
       matchRate: pct, status: pct >= 67 ? 'ready' : pct >= 34 ? 'gap' : 'target',
       badgeText: I18n.t('careerJevMatch', { n: pct }), fitRecommendation: v.snippet || ''
     };

@@ -286,7 +286,8 @@ function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
                   <span className="rounded-md bg-muted/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground">💡 <strong>{t('careerSkillAssessment')}</strong> {j.fitRecommendation}</span>
                 )}
                 <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  <span>{VN.test(j.location) ? '🇻🇳' : j.is_remote ? '🌍' : '📍'} {j.location || 'Remote'}</span>
+                  {/* Chi hien noi lam viec khi tin co ghi; khong biet thi bo trong, khong tu dien "Remote" */}
+                  {(j.location || j.is_remote) && <span>{VN.test(j.location) ? '🇻🇳' : j.is_remote ? '🌍' : '📍'} {j.location || 'Remote'}</span>}
                   {(LOAI_VIEC[j.employment_type] ?? j.employment_type) && <span>⏰ {LOAI_VIEC[j.employment_type] ?? j.employment_type}</span>}
                   {j.salary && <span>💰 {j.salary}</span>}
                 </span>

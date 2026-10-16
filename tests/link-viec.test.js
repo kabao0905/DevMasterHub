@@ -85,3 +85,38 @@ test('the tin khong co chu tren link (chi co anh) thi lay ten tu duong dan', () 
   const the = require('../lib/link-viec.js').trichTheViec(html, nhomTinViec(layLink(html, GOC), GOC));
   assert.strictEqual(the[0].title, 'senior react developer');
 });
+
+test('nam (2025...) khong phai ma tin: link "Best IT Companies 2025" khong thanh nhom tin viec', () => {
+  const html = [2021, 2022, 2023, 2024, 2025].map(y => `<a href="/vietnam-best-it-companies-${y}">Best IT Companies ${y}</a>`).join('');
+  assert.deepStrictEqual(nhomTinViec(layLink(html, 'https://itviec.com/'), 'https://itviec.com/'), []);
+});
+
+test('tinTheoKhuon (trang 2+): chi link cung khuon CO ma tin, bo menu ky nang ?click_source, gop link trung', () => {
+  const { tinTheoKhuon } = require('../lib/link-viec.js');
+  const html = '<a href="/viec-lam-it/python?click_source=Navigation+menu">Python</a><a href="/viec-lam-it/lap-trinh-vien-c++?click_source=Navigation+menu">Lập trình viên C++</a>'
+    + '<a href="/viec-lam-it/senior-python-dev-abc-4716?lab_feature=x">Senior Python Dev</a><a href="/viec-lam-it/senior-python-dev-abc-4716">lặp</a>';
+  const ds = tinTheoKhuon(layLink(html, 'https://itviec.com/viec-lam-it?page=2'), '/viec-lam-it/*');
+  assert.deepStrictEqual(ds.map(l => l.text), ['Senior Python Dev']);
+});
+
+test('trichTheViec: dia diem va luong trong the tin (ITviec, CareerViet); khong co thi de trong, khong doan Remote', () => {
+  const { trichTheViec } = require('../lib/link-viec.js');
+  const goc = 'https://itviec.com/viec-lam-it';
+  const the = (n, giua) => `<div><a href="/viec-lam-it/viec-${n}-${1000 + n}">Viec ${n}</a>${giua}</div>`;
+  const icon = `<svg>${'<path d="M1 1"/>'.repeat(300)}</svg>`;
+  const html = the(1, `Hella Vietnam ${icon} Đăng nhập để xem mức lương Kỹ sư Embedded Tại văn phòng TP Hồ Chí Minh SUPER HOT`)
+    + the(2, 'Cty B Làm từ xa 1500 - 2500 USD')
+    + the(3, 'Cty C Linh hoạt Hà Nội')
+    + the(4, 'CÔNG TY D Cạnh tranh Hồ Chí Minh Hạn nộp : 16-11-2026')
+    + the(5, 'Cty E 20-30 triệu Đà Nẵng, Hà Nội')
+    + the(6, 'Cty F chỉ có tên');
+  const ds = trichTheViec(html, nhomTinViec(layLink(html, goc), goc));
+  assert.deepStrictEqual(ds.map(v => [v.diaDiem, v.luong]), [
+    ['Hồ Chí Minh', ''],
+    ['Remote', '1500 - 2500 USD'],
+    ['Hà Nội · Hybrid', ''],
+    ['Hồ Chí Minh', 'Cạnh tranh'],
+    ['Đà Nẵng, Hà Nội', '20-30 triệu'],
+    ['', '']
+  ]);
+});

@@ -147,7 +147,7 @@ test('doc link: gui cau hoi va ho so hoc (cap do, ky nang da hoc, so bai) de ser
 test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim viec lan nua); bao so trang, so viec', async () => {
   const goi: { url: string; body?: Record<string, unknown> }[] = [];
   const viec = [
-    { url: 'https://cv.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu · HCM', diem: 0.9 },
+    { url: 'https://cv.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu · HCM', diem: 0.9, diaDiem: 'Hồ Chí Minh · Hybrid', luong: '20-30 triệu' },
     { url: 'https://cv.vn/vi/tim-viec-lam/java.A2.html', title: 'Java Backend', snippet: 'Cty B · Thương lượng', diem: 0.4 }
   ];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
@@ -167,6 +167,8 @@ test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim 
   ]);
   expect(kq?.text).not.toContain('SEARCH_JOBS');
   expect(kq?.link).toMatchObject({ ok: true, soTrang: 3, tongViec: 140 });
+  // Dia diem / luong lay tu the tin; khong ghi thi de trong, khong tu cho la Remote
+  expect(kq?.jobs?.map(j => [j.location, j.salary, j.is_remote])).toEqual([['Hồ Chí Minh · Hybrid', '20-30 triệu', false], ['', '', false]]);
 });
 
 test('chat tu van gui taskType career (server chon dung model tu van nghe nghiep)', async () => {
