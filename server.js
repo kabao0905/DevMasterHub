@@ -5,7 +5,9 @@ const fs = require('fs');
 const { napEnv } = require('./lib/env.js');
 const { napGiaoTrinh } = require('./lib/curriculum.js');
 const { laUrlReact } = require('./lib/route-owner.js');
-const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, laGemini3 } = require('./lib/ai-guard.js');
+const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, suyNghiCho, laGemini3 } = require('./lib/ai-guard.js');
+const { taoJev } = require('./lib/jev.js');
+const { chuanHoaYeuCauDocViec, docViecTuLink } = require('./lib/doc-viec-link.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { chuanHoaYeuCauChay, chayCpp } = require('./lib/chay-cpp.js');
 const { taiTheoChuyenHuong, layTieuDe } = require('./lib/net-guard.js');
@@ -256,7 +258,7 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
     },
     body: JSON.stringify(laGemini3(selectedModel)
       // Gemini 3: OpenRouter doi reasoning.effort sang thinkingLevel; de temperature mac dinh, cong token cho suy nghi
-      ? { model: selectedModel, messages: formattedMessages, max_tokens: maxTokens + SUY_NGHI_GEMINI.themToken, reasoning: { effort: SUY_NGHI_GEMINI.muc } }
+      ? { model: selectedModel, messages: formattedMessages, max_tokens: maxTokens + suyNghiCho(taskType).themToken, reasoning: { effort: suyNghiCho(taskType).muc } }
       : { model: selectedModel, messages: formattedMessages, temperature, max_tokens: maxTokens }),
     signal: coHan(AI_TIMEOUT_MS)
   });
@@ -695,6 +697,37 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
   } catch (err) {
     console.error('[Jobs] Error:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+const DAU_TRINH_DUYET = Object.freeze({
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
+});
+
+// Doc link viec lam theo y dinh cau hoi: mot tin, ca danh sach tren trang, hay ca website.
+// Gemini doan y dinh, code + Jev (System One) lat trang va cham viec — xem lib/doc-viec-link.js.
+app.post('/api/doc-viec-link', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 6, scope: 'doc-viec' }), async (req, res) => {
+  const yc = chuanHoaYeuCauDocViec(req.body);
+  if (yc.loi) return res.status(400).json({ error: yc.loi });
+  console.log(`[DocViec] ${yc.url.slice(0, 300)}`);
+  try {
+    const kq = await docViecTuLink(yc, {
+      tai: u => taiTheoChuyenHuong(u, { toiDa: 3_000_000, thoiGian: 12000, headers: DAU_TRINH_DUYET }),
+      hoiAi: (system, user) => callOpenRouter(system, [{ role: 'user', content: user }], 0, 200, 'crawlIntent'),
+      jev: taoJev({ khoa: OPENROUTER_API_KEY })
+    });
+    console.log(`[DocViec] ${kq.cheDo}/${kq.yDinh}${kq.cheDo === 'danh_sach' ? ` ${kq.soTrang} trang, ${kq.tongViec} viec, diem: ${kq.nguonDiem}` : ''}`);
+    res.json(kq);
+  } catch (err) {
+    if (err.code === 'EBLOCKED') return res.status(403).json({ error: err.message });
+    if (['EINVALIDURL', 'EPROTOCOL', 'EREDIRECT'].includes(err.code)) return res.status(400).json({ error: err.message });
+    if (err.code === 'ENOTFOUND') return res.status(400).json({ error: 'Không phân giải được tên miền' });
+    if (err.code === 'ELOAI') return res.status(415).json({ error: err.message });
+    if (['ECHAN', 'EHTTP', 'EKHONGTAI'].includes(err.code)) return res.status(502).json({ error: err.message });
+    console.error('[DocViec] Error:', err.message);
+    res.status(502).json({ error: 'Không thể đọc trang: ' + err.message });
   }
 });
 

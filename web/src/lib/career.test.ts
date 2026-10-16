@@ -18,7 +18,7 @@ function giaFetch(traAi: string, jobs: unknown[] = []) {
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     goi.push({ url, body: init?.body ? docThan(init.body) : undefined, headers: init?.headers as Record<string, string> });
     if (url === '/api/ai') return new Response(JSON.stringify({ content: [{ text: traAi }] }), { status: 200 });
-    if (url === '/api/crawl') return new Response(JSON.stringify({ url: 'https://x.vn/job', pageTitle: 'Tuyển React', content: 'Mô tả' }), { status: 200 });
+    if (url === '/api/doc-viec-link') return new Response(JSON.stringify({ cheDo: 'mot_tin', yDinh: 'mot_tin', url: 'https://x.vn/job', pageTitle: 'Tuyển React', content: 'Mô tả' }), { status: 200 });
     return new Response(JSON.stringify({ jobs }), { status: 200 });
   }));
   return goi;
@@ -59,12 +59,12 @@ test('AI bao [SEARCH_JOBS: ...]: bo the khoi cau tra loi, tim theo tu khoa, bo d
   expect(kq?.jobs?.[0].company_logo).toBe('https://cdn.x/logo.png');
 });
 
-test('tin nhan co link: cao link qua /api/crawl kem token, noi dung vao prompt; lich su gui toi da 8 tin, tin AI dai bi cat', async () => {
+test('tin nhan co link: doc link qua /api/doc-viec-link kem token, noi dung vao prompt; lich su gui toi da 8 tin, tin AI dai bi cat', async () => {
   const goi = giaFetch('Nên ứng tuyển.');
   const dai = 'x'.repeat(400);
   const lichSu = Array.from({ length: 10 }, (_, i) => ({ role: (i % 2 ? 'assistant' : 'user') as 'user' | 'assistant', content: i % 2 ? dai : `hỏi ${i}` }));
   await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui(lichSu, 'xem https://x.vn/job giúp');
-  expect(goi[0].url).toBe('/api/crawl');
+  expect(goi[0].url).toBe('/api/doc-viec-link');
   const ai = goi.find(g => g.url === '/api/ai')!.body!;
   expect(ai.system).toContain('Tiêu đề: Tuyển React');
   const msgs = ai.messages as { role: string; content: string }[];
@@ -127,7 +127,7 @@ test('link khong doc duoc (trang chan bot): AI duoc bao ro ly do, khong bia noi 
   const goi: { url: string; body?: Record<string, unknown> }[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     goi.push({ url, body: init?.body ? docThan(init.body) : undefined });
-    if (url === '/api/crawl') return new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 });
+    if (url === '/api/doc-viec-link') return new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 });
     return new Response(JSON.stringify({ content: [{ text: 'Mình chưa đọc được link.' }] }), { status: 200 });
   }));
   const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui([], 'đánh giá https://www.topcv.vn/viec-lam/abc giúp mình');
@@ -136,4 +136,42 @@ test('link khong doc duoc (trang chan bot): AI duoc bao ro ly do, khong bia noi 
   expect(ai.system).toContain('Trang này chặn truy cập tự động (HTTP 403)');
   expect(ai.system).toMatch(/KHÔNG bịa/);
   expect(kq?.link).toEqual({ url: 'https://www.topcv.vn/viec-lam/abc', ok: false, loi: 'Trang này chặn truy cập tự động (HTTP 403)' });
+});
+
+test('doc link: gui cau hoi va ho so hoc (cap do, ky nang da hoc, so bai) de server doan y dinh va cham viec', async () => {
+  const goi = giaFetch('Ok');
+  await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe(20, ['React', 'JavaScript']) }).gui([], 'xem toàn bộ việc IT ở https://careerviet.vn/viec-lam/it-c1-vi.html');
+  const doc = goi.find(g => g.url === '/api/doc-viec-link')!.body!;
+  expect(doc).toMatchObject({ url: 'https://careerviet.vn/viec-lam/it-c1-vi.html', cauHoi: 'xem toàn bộ việc IT ở https://careerviet.vn/viec-lam/it-c1-vi.html', hoSo: { level: 'junior', skills: ['react', 'javascript'], completedLessons: 20 } });
+});
+
+test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim viec lan nua); bao so trang, so viec', async () => {
+  const goi: { url: string; body?: Record<string, unknown> }[] = [];
+  const viec = [
+    { url: 'https://cv.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu · HCM', diem: 0.9 },
+    { url: 'https://cv.vn/vi/tim-viec-lam/java.A2.html', title: 'Java Backend', snippet: 'Cty B · Thương lượng', diem: 0.4 }
+  ];
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+    goi.push({ url, body: init?.body ? docThan(init.body) : undefined });
+    if (url === '/api/doc-viec-link') return new Response(JSON.stringify({ cheDo: 'danh_sach', yDinh: 'ca_web', batDau: 'https://cv.vn/viec-lam/it-c1-vi.html', soTrang: 3, tongViec: 140, dungVi: 'gioi_han_trang', nguonDiem: 'jev', viec }), { status: 200 });
+    return new Response(JSON.stringify({ content: [{ text: 'Nên ứng tuyển React Developer. [SEARCH_JOBS: react]' }] }), { status: 200 });
+  }));
+  const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe(5, ['react']) }).gui([], 'xem hết việc IT ở https://cv.vn/viec-lam/it-c1-vi.html cái nào hợp với tôi');
+  const ai = goi.find(g => g.url === '/api/ai')!.body!;
+  expect(ai.system).toContain('140');
+  expect(ai.system).toContain('React Developer');
+  expect(ai.system).toContain('https://cv.vn/vi/tim-viec-lam/java.A2.html');
+  expect(goi.some(g => g.url.startsWith('/api/jobs'))).toBe(false);
+  expect(kq?.jobs?.map(j => [j.title, j.url, j.matchRate, j.status])).toEqual([
+    ['React Developer', 'https://cv.vn/vi/tim-viec-lam/react.A1.html', 90, 'ready'],
+    ['Java Backend', 'https://cv.vn/vi/tim-viec-lam/java.A2.html', 40, 'gap']
+  ]);
+  expect(kq?.text).not.toContain('SEARCH_JOBS');
+  expect(kq?.link).toMatchObject({ ok: true, soTrang: 3, tongViec: 140 });
+});
+
+test('chat tu van gui taskType career (server chon dung model tu van nghe nghiep)', async () => {
+  const goi = giaFetch('Chào bạn');
+  await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui([], 'mình nên học gì');
+  expect(goi.find(g => g.url === '/api/ai')!.body!.taskType).toBe('career');
 });

@@ -49,6 +49,8 @@ export const BAN_DICH_VI: BanDich = {
     "pickRoadmap": "Chọn một lộ trình bên dưới để bắt đầu",
     "openMenu": "Mở menu",
     "levelProgress": "{level}: {done}/{total} bài",
+    "careerListRead": "🕷️ Đã đọc {pages} trang · {jobs} việc làm",
+    "careerJevMatch": "Phù hợp ~{n}%",
     "careerLinkRead": "🌐 Đã đọc trang: {title}",
     "careerLinkFailed": "⚠️ Không đọc được link: {error}",
     "codeOutputTitle": "Kết quả khi chạy",

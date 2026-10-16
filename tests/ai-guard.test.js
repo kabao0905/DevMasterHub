@@ -45,3 +45,10 @@ test('tu choi yeu cau qua dai', () => {
   const dai = 'a'.repeat(GIOI_HAN.tongKyTu + 1);
   assert.ok(chuanHoaYeuCauAi(hopLe({ messages: [{ role: 'user', content: dai }] })).loi);
 });
+
+test('doan y dinh link (crawlIntent): Gemini Flash, suy nghi muc thap; viec khac giu muc cao', () => {
+  const { MO_HINH_THEO_VIEC, suyNghiCho } = require('../lib/ai-guard.js');
+  assert.strictEqual(MO_HINH_THEO_VIEC.crawlIntent, 'google/gemini-3.8-flash');
+  assert.strictEqual(suyNghiCho('crawlIntent').muc, 'low');
+  assert.strictEqual(suyNghiCho('tutor').muc, 'high');
+});

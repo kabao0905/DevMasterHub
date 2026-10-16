@@ -20,7 +20,11 @@ export type ViecLam = {
   matchRate: number; status: 'ready' | 'gap' | 'target'; badgeText: string; fitRecommendation: string;
 };
 /** Link trong tin nhan: da doc duoc (kem tieu de trang) hay khong (kem ly do) */
-export type KetQuaLink = { url: string; ok: boolean; title?: string; loi?: string };
+export type KetQuaLink = {
+  url: string; ok: boolean; title?: string; loi?: string;
+  /** Nhen doc ca danh sach viec: so trang da doc, tong so viec gom duoc */
+  soTrang?: number; tongViec?: number;
+};
 export type KetQuaTraLoi = { text: string; jobs: ViecLam[] | null; searchKeyword: string; link?: KetQuaLink | null };
 
 type DichVuGoc = {

@@ -54,7 +54,7 @@ export function taoCoVanGoc({ AuthService, I18n, CURRICULUM }) {
     return { stats: null, level: 'newbie', totalLessons: 0, learnedTechs: [] };
   }
 
-  async function buildSystemPrompt(crawledData = null, linkLoi = null) {
+  async function buildSystemPrompt(crawledData = null, linkLoi = null, listData = null) {
     let userContext = 'Người dùng mới bắt đầu (Cấp độ: Newbie, chưa hoàn thành bài học nào).';
     let userLevelName = 'Newbie (Người mới bắt đầu)';
 
@@ -131,7 +131,16 @@ ${userContext}
    ❌ KHÔNG viết bài luận dài lê thê 500 từ, không vẽ bảng markdown dài dòng.
    ❌ KHÔNG trả lời cộc lốc 1 câu cụt lủn. Hãy trả lời tự nhiên, có tâm, mang lại giá trị thật cho người học.`;
 
-    if (crawledData && crawledData.content) {
+    if (listData) {
+      const ds = (listData.viec || []).map((v, i) =>
+        `${i + 1}. ${v.title} — phù hợp ~${Math.round((v.diem || 0) * 100)}% — ${v.url}\n   ${v.snippet || ''}`).join('\n');
+      prompt += `\n\n═══ 🕷️ ĐÃ ĐỌC ${listData.soTrang} TRANG DANH SÁCH VIỆC (${listData.batDau}) — ${listData.tongViec} VIỆC ═══
+Đây là ${(listData.viec || []).length} việc IT hợp nhất với học viên (độ phù hợp đã được chấm sẵn theo hồ sơ học):
+${ds}
+═══════════════════════════════════════════════════════
+Nhiệm vụ: Trả lời câu hỏi của học viên dựa trên danh sách này: chọn 3-5 việc đáng ứng tuyển nhất và giải thích vì sao,
+việc nào còn thiếu kỹ năng gì cần học thêm. Gọi tên việc kèm link. KHÔNG bịa việc ngoài danh sách. KHÔNG dùng thẻ [SEARCH_JOBS] lần này.`;
+    } else if (crawledData && crawledData.content) {
       prompt += `\n\n═══ 🌐 DỮ LIỆU ĐÃ CÀO TỪ LINK (${crawledData.url}) ═══
 Tiêu đề: ${crawledData.pageTitle}
 Nội dung: ${crawledData.content}
@@ -148,6 +157,53 @@ Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link
     return prompt;
   }
 
+  /**
+   * Doc link qua /api/doc-viec-link: server doan y dinh (Gemini), doc mot tin hoac tha nhen doc ca danh sach (code + Jev).
+   * Gui kem ho so hoc de Jev cham do phu hop. Tra null neu bi huy giua chung.
+   */
+  async function docLink(targetUrl, userMessage, signal) {
+    let crawledData = null;
+    let listData = null;
+    let link = null;
+    try {
+      const ctx = await getUserLevelContext();
+      const auth = (typeof AuthService !== 'undefined' && AuthService.isConfigured()) ? await AuthService.authHeaders() : {};
+      const res = await fetch('/api/doc-viec-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...auth },
+        body: dongPhongBi({
+          url: targetUrl, cauHoi: userMessage,
+          hoSo: { level: ctx?.level || 'newbie', skills: ctx?.learnedTechs || [], completedLessons: ctx?.totalLessons || 0 }
+        }),
+        signal
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) link = { url: targetUrl, ok: false, loi: d.error || `HTTP ${res.status}` };
+      else if (d.cheDo === 'danh_sach') listData = d;
+      else crawledData = d;
+    } catch (e) {
+      if (e.name === 'AbortError' || signal.aborted) return null;
+      link = { url: targetUrl, ok: false, loi: 'Không kết nối được máy chủ' };
+    }
+    if (listData) link = { url: targetUrl, ok: true, title: listData.batDau, soTrang: listData.soTrang, tongViec: listData.tongViec };
+    else if (crawledData && crawledData.content) link = { url: targetUrl, ok: true, title: crawledData.pageTitle };
+    else if (!link) link = { url: targetUrl, ok: false, loi: 'Trang không có nội dung đọc được' };
+    return { crawledData, listData, link };
+  }
+
+  /** Viec nhen da cham (diem 0..1) -> the viec lam cua bang goi y */
+  function theTuNhen(v) {
+    const pct = Math.round((v.diem || 0) * 100);
+    let host = '';
+    try { host = new URL(v.url).hostname.replace(/^www\./, ''); } catch { /* url hong: de trong */ }
+    return {
+      title: v.title, company_name: '', company_logo: '', source: host, location: '', is_remote: false,
+      employment_type: '', salary: '', tags: [], url: v.url, description_snippet: v.snippet,
+      matchRate: pct, status: pct >= 67 ? 'ready' : pct >= 34 ? 'gap' : 'target',
+      badgeText: I18n.t('careerJevMatch', { n: pct }), fitRecommendation: v.snippet || ''
+    };
+  }
+
   async function sendMessage(userMessage) {
     if (activeAbortController) {
       activeAbortController.abort();
@@ -159,37 +215,12 @@ Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link
     try {
 
       const urlMatch = userMessage.match(/https?:\/\/[^\s<>"'()]+/i);
-      let crawledData = null;
-      // Ket qua doc link de giao dien bao cho nguoi hoc: { url, ok, title } hoac { url, ok: false, loi }
-      let link = null;
-      if (urlMatch) {
-        const targetUrl = urlMatch[0];
-        try {
-          const crawlAuth = (typeof AuthService !== 'undefined' && AuthService.isConfigured())
-            ? await AuthService.authHeaders() : {};
-          const crawlRes = await fetch('/api/crawl', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...crawlAuth },
-            body: dongPhongBi({ url: targetUrl }),
-            signal
-          });
-          if (crawlRes.ok) {
-            crawledData = await crawlRes.json();
-          } else {
-            const e = await crawlRes.json().catch(() => ({}));
-            link = { url: targetUrl, ok: false, loi: e.error || `HTTP ${crawlRes.status}` };
-          }
-        } catch (e) {
-          if (e.name === 'AbortError' || signal.aborted) return null;
-          link = { url: targetUrl, ok: false, loi: 'Không kết nối được máy chủ' };
-        }
-        if (crawledData && crawledData.content) link = { url: targetUrl, ok: true, title: crawledData.pageTitle };
-        else if (!link) link = { url: targetUrl, ok: false, loi: 'Trang không có nội dung đọc được' };
-      }
+      // Ket qua doc link: { crawledData } (mot tin) / { listData } (nhen doc ca danh sach) + link (bao giao dien)
+      const doc = urlMatch ? await docLink(urlMatch[0], userMessage, signal) : { crawledData: null, listData: null, link: null };
+      if (!doc || signal.aborted) return null;
+      const { crawledData, listData, link } = doc;
 
-      if (signal.aborted) return null;
-
-      const systemPrompt = await buildSystemPrompt(crawledData, link && !link.ok ? link : null);
+      const systemPrompt = await buildSystemPrompt(crawledData, link && !link.ok ? link : null, listData);
 
       const apiMessages = chatHistory.slice(-8).map(m => {
         if (m.role === 'assistant' && m.content.length > 300) {
@@ -208,7 +239,9 @@ Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link
           system: systemPrompt,
           messages: apiMessages,
           temperature: 0.5,
-          max_tokens: 1024
+          max_tokens: 1024,
+          // Thieu taskType thi server chay model "general" thay vi model tu van nghe nghiep
+          taskType: 'career'
         }),
         signal
       });
@@ -228,7 +261,12 @@ Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link
       let usedSearchKeyword = '';
 
       const searchMatch = aiText.match(/\[SEARCH_JOBS:\s*(.+?)\]/i);
-      if (searchMatch) {
+      if (listData) {
+        // Nhen da doc va cham viec tren chinh website hoc vien gui: dung luon, khong tim viec lan nua
+        aiText = aiText.replace(/\[SEARCH_JOBS:[^\]]*\]/gi, '').trim();
+        autoSearchResults = (listData.viec || []).map(theTuNhen);
+        try { usedSearchKeyword = new URL(listData.batDau).hostname.replace(/^www\./, ''); } catch { usedSearchKeyword = ''; }
+      } else if (searchMatch) {
         usedSearchKeyword = searchMatch[1].trim();
 
         const userAskedLocation = tuRieng(DIA_DIEM_VN + '|dn|remote').test(userMessage);

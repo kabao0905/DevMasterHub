@@ -25,7 +25,7 @@ function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern
     gia, json,
     fetch: async (url: string, init?: RequestInit) => {
       if (url === '/api/ai') { const b = docThan(init?.body) as ThanAi; goiAi.push(b); return ai(b); }
-      if (url === '/api/crawl') return crawl();
+      if (url === '/api/doc-viec-link') return crawl();
       if (url.startsWith('/api/jobs')) { timViec.push(new URL(url, 'http://x').searchParams.get('search') ?? ''); return new Response(JSON.stringify({ jobs }), { status: 200 }); }
       return Object.hasOwn(json, url) ? new Response(JSON.stringify(json[url]), { status: 200 }) : new Response('null', { status: 404 });
     }
@@ -154,7 +154,7 @@ test('gui link tin tuyen dung: bao da doc trang; trang chan bot thi bao ro ly do
   mo({
     ai: () => traText('Ok'),
     crawl: () => (lan++ === 0
-      ? new Response(JSON.stringify({ url: 'https://itviec.com/it-jobs/a', pageTitle: 'React Dev | ITviec', content: 'Yêu cầu 2 năm' }), { status: 200 })
+      ? new Response(JSON.stringify({ cheDo: 'mot_tin', url: 'https://itviec.com/it-jobs/a', pageTitle: 'React Dev | ITviec', content: 'Yêu cầu 2 năm' }), { status: 200 })
       : new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 }))
   });
   await waitFor(() => expect(oNhap()).toBeEnabled());
@@ -162,4 +162,22 @@ test('gui link tin tuyen dung: bao da doc trang; trang chan bot thi bao ro ly do
   expect(await screen.findByText(/Đã đọc trang: React Dev \| ITviec/)).toBeInTheDocument();
   await u.type(oNhap(), 'còn https://www.topcv.vn/viec-lam/b{Enter}');
   expect(await screen.findByText(/Không đọc được link: Trang này chặn truy cập tự động \(HTTP 403\)/)).toBeInTheDocument();
+});
+
+test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien trong bang goi y', async () => {
+  const u = userEvent.setup();
+  mo({
+    ai: () => traText('Nên ứng tuyển React Developer.'),
+    crawl: () => new Response(JSON.stringify({ cheDo: 'danh_sach', yDinh: 'ca_web', batDau: 'https://careerviet.vn/viec-lam/it-c1-vi.html', soTrang: 5, tongViec: 250, dungVi: 'gioi_han_trang', nguonDiem: 'jev',
+      viec: [{ url: 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu', diem: 0.9 }] }), { status: 200 })
+  });
+  await waitFor(() => expect(oNhap()).toBeEnabled());
+  await u.type(oNhap(), 'xem toàn bộ việc IT ở https://careerviet.vn/viec-lam/it-c1-vi.html{Enter}');
+  expect(await screen.findByText(/Đã đọc 5 trang · 250 việc làm/)).toBeInTheDocument();
+  const thanh = screen.getByRole('button', { name: /Việc làm AI gợi ý/ });
+  expect(thanh.textContent).toMatch(/careerviet\.vn/);
+  await u.click(thanh);
+  const the = screen.getByRole('link', { name: /React Developer/ });
+  expect(the).toHaveAttribute('href', 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html');
+  expect(the.textContent).toContain('Phù hợp ~90%');
 });
