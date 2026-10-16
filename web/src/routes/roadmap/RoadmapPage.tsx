@@ -65,7 +65,7 @@ export function RoadmapPage() {
             {tech.icon}
           </span>
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight">{tech.name}</h1>
+            <h1 className="text-3xl font-bold tracking-tight pastel:text-4xl pastel:font-semibold">{tech.name}</h1>
             <p className="mt-1 text-muted-foreground">{techDesc(tech.id, tech.description)}</p>
           </div>
         </div>
@@ -94,7 +94,7 @@ export function RoadmapPage() {
           const laCuoi = i === tech.levels.length - 1;
           return (
             <li key={cap.id} className="relative pb-10 pl-14 last:pb-0">
-              {!laCuoi && <span className="absolute top-10 bottom-0 left-[19px] w-px bg-border" aria-hidden="true" />}
+              {!laCuoi && <span className="absolute top-10 bottom-0 left-[19px] w-px bg-border pastel:w-0 pastel:border-l-2 pastel:border-dashed pastel:border-pastel-line pastel:bg-transparent" aria-hidden="true" />}
               <span
                 className={cn(
                   'absolute top-0 left-0 grid size-10 place-items-center rounded-full border text-sm font-semibold tabular-nums',
@@ -123,15 +123,16 @@ export function RoadmapPage() {
                   <span className="shrink-0 text-sm text-muted-foreground tabular-nums">{c.xong}/{c.tong}</span>
                 </div>
 
-                <ul className="mt-3 divide-y overflow-hidden rounded-xl border bg-card">
+                {/* Kieu Pastel: moi bai la mot the rieng, noi nhau bang duong cham xanh (nhu mau thiet ke) */}
+                <ul className="mt-3 divide-y overflow-hidden rounded-xl border bg-card pastel:relative pastel:space-y-3 pastel:divide-y-0 pastel:overflow-visible pastel:rounded-none pastel:border-0 pastel:bg-transparent pastel:before:absolute pastel:before:top-6 pastel:before:bottom-6 pastel:before:left-[29px] pastel:before:border-l-2 pastel:before:border-dashed pastel:before:border-pastel-line">
                   {cap.lessons.map(bai => {
                     const xong = done.has(khoaBai(tech.id, cap.id, bai.id));
                     // Hoc theo thu tu: bai chua toi luot hien khoa, khong vao duoc
                     if (!baiDaMo(tech, cap.id, bai.id, done)) {
                       return (
-                        <li key={bai.id}>
-                          <div aria-disabled="true" title={t('lessonLockedHint')} className="flex cursor-not-allowed items-center gap-3 px-4 py-3 text-muted-foreground/70">
-                            <Lock className="size-5 shrink-0" aria-hidden="true" />
+                        <li key={bai.id} className="pastel:relative">
+                          <div aria-disabled="true" title={t('lessonLockedHint')} className="flex cursor-not-allowed items-center gap-3 px-4 py-3 text-muted-foreground/70 pastel:rounded-2xl pastel:border-2 pastel:border-dashed pastel:border-border pastel:bg-card pastel:px-5 pastel:py-4">
+                            <Lock className="size-5 shrink-0 pastel:relative pastel:z-10 pastel:bg-card" aria-hidden="true" />
                             <span className="min-w-0 flex-1">
                               <span>{translateTitle(bai.title)}</span>
                               <span className="sr-only"> {t('lessonLocked')}</span>
@@ -141,16 +142,23 @@ export function RoadmapPage() {
                       );
                     }
                     return (
-                      <li key={bai.id}>
+                      <li key={bai.id} className="pastel:relative">
                         <Link to={`/lesson/${tech.id}/${cap.id}/${bai.id}`}
-                          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
+                          className={cn('flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+                            'pastel:rounded-2xl pastel:bg-card pastel:px-5 pastel:py-4 pastel:shadow-[0_8px_24px_-14px_rgba(0,0,0,0.2)] pastel:transition-[transform,box-shadow] pastel:hover:-translate-y-0.5 pastel:hover:bg-card motion-reduce:pastel:hover:translate-y-0',
+                            xong && 'pastel:bg-pastel-mint/45 pastel:hover:bg-pastel-mint/60')}>
                           {xong
-                            ? <CircleCheck className={cn('size-5 shrink-0', CHU_CAP[cap.id] ?? 'text-primary')} aria-hidden="true" />
-                            : <Circle className="size-5 shrink-0 text-muted-foreground/50" aria-hidden="true" />}
-                          <span className={cn('min-w-0 flex-1', xong && 'text-muted-foreground')}>
+                            ? <CircleCheck className={cn('size-5 shrink-0 pastel:relative pastel:z-10 pastel:rounded-full pastel:bg-card', CHU_CAP[cap.id] ?? 'text-primary')} aria-hidden="true" />
+                            : <Circle className="size-5 shrink-0 text-muted-foreground/50 pastel:relative pastel:z-10 pastel:rounded-full pastel:bg-card" aria-hidden="true" />}
+                          <span className={cn('min-w-0 flex-1', xong && 'text-muted-foreground pastel:text-foreground')}>
                             {translateTitle(bai.title)}
                             {xong && <span className="sr-only"> {t('statCompleted')}</span>}
                           </span>
+                          {xong && (
+                            <span aria-hidden="true" className="hidden shrink-0 rounded-full bg-pastel-mint px-2.5 py-0.5 text-xs font-medium text-foreground pastel:inline-flex">
+                              ✓ {t('statCompleted')}
+                            </span>
+                          )}
                           <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                         </Link>
                       </li>

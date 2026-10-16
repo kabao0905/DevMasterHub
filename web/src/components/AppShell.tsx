@@ -6,6 +6,8 @@ import { useDongHoHoc } from '@/lib/use-thoi-gian-hoc';
 import { ChaoMung } from '@/components/ChaoMung';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandMark } from '@/components/BrandMark';
+import { TopNav } from '@/components/TopNav';
+import { useGiaoDien } from '@/lib/giao-dien';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -36,6 +38,21 @@ export function AppShell() {
     datThuGon(v);
     try { localStorage.setItem(KHOA_THU_GON, v ? '1' : '0'); } catch { /* che do rieng tu */ }
   };
+  const [giaoDien] = useGiaoDien();
+
+  // Kieu Pastel: thanh dieu huong den tren cung + "cua so" trang bo tron lon chua noi dung (khong sidebar)
+  if (giaoDien === 'pastel') {
+    return (
+      <div className="min-h-dvh px-2 pt-3 pb-6 sm:px-5">
+        <ScrollRestoration getKey={khoaCuon} />
+        <ChaoMung />
+        <TopNav />
+        <main className="mx-auto mt-4 w-full max-w-7xl rounded-[2rem] bg-card px-4 py-6 shadow-sm shadow-black/5 sm:px-8 lg:px-12 lg:py-10">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('min-h-dvh', !thuGon && 'lg:grid lg:grid-cols-[17rem_1fr]')}>

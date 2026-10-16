@@ -10,6 +10,7 @@ import { useProgress } from '@/lib/use-progress';
 import { nhomCongNghe, THU_TU_NHOM, type CongNgheTomTat, type Nhom } from '@/lib/curriculum';
 import { tienDoCongNghe } from '@/lib/progress';
 import { BrandMark } from '@/components/BrandMark';
+import { ChonGiaoDien } from '@/components/ChonGiaoDien';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -87,6 +88,7 @@ export function Sidebar({ onCollapse }: { onCollapse?: () => void } = {}) {
         </Button>
         {hopXacNhan}
       </div>
+      <ChonGiaoDien className="mx-3 mt-2" />
 
       <ScrollArea className="mt-4 min-h-0 flex-1">
         <nav aria-label="DevMaster Hub" className="px-3 pb-4">

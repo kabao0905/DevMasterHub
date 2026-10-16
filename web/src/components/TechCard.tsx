@@ -10,11 +10,11 @@ export function TechCard({ tech, done }: { tech: CongNgheTomTat; done: Set<strin
   return (
     <Link
       to={`/roadmap/${tech.id}`}
-      className="group flex flex-col gap-4 rounded-xl border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="group flex flex-col gap-4 rounded-xl border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring pastel:rounded-3xl pastel:border-transparent pastel:shadow-[0_10px_30px_-14px_rgba(0,0,0,0.18)] pastel:transition-[transform,box-shadow] pastel:hover:-translate-y-0.5 pastel:hover:border-transparent pastel:hover:bg-card pastel:hover:shadow-[0_16px_36px_-14px_rgba(0,0,0,0.22)] motion-reduce:pastel:hover:translate-y-0"
     >
       <div className="flex items-start gap-3">
         <span
-          className="grid size-11 shrink-0 place-items-center rounded-lg text-2xl"
+          className="grid size-11 shrink-0 place-items-center rounded-lg text-2xl pastel:rounded-full"
           style={{ backgroundColor: `color-mix(in oklab, ${tech.color || '#58a6ff'} 18%, transparent)` }}
           aria-hidden="true"
         >
