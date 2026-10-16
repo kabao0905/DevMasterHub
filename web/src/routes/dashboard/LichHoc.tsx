@@ -88,18 +88,18 @@ export function LichHoc({ className }: { className?: string }) {
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
           <h2 id="lich-hoc" className="text-sm font-medium text-muted-foreground">{t('studyCalendar')}</h2>
           <p className="flex items-center gap-1.5 self-center">
-            <Flame className={cn('size-4', hienTai > 0 ? 'text-orange-400' : 'text-muted-foreground')} aria-hidden="true" />
+            <Flame data-dong={hienTai > 0 ? 'lua' : undefined} className={cn('size-4', hienTai > 0 ? 'text-orange-400' : 'text-muted-foreground')} aria-hidden="true" />
             <span className="font-semibold tabular-nums">{t('streakCurrent', { n: hienTai })}</span>
           </p>
           <p className="text-xs text-muted-foreground tabular-nums">{t('streakLongest', { n: daiNhat })}</p>
         </div>
         <div className="flex items-center">
           <Button variant="ghost" size="icon-sm" aria-label={t('prevMonth')} title={t('prevMonth')} onClick={() => doiThang(-1)}>
-            <ChevronLeft />
+            <ChevronLeft data-dong="trai" />
           </Button>
           <span className="min-w-24 text-center text-xs font-medium capitalize tabular-nums" aria-live="polite">{tenThang}</span>
           <Button variant="ghost" size="icon-sm" aria-label={t('nextMonth')} title={t('nextMonth')} disabled={laThangNay} onClick={() => doiThang(1)}>
-            <ChevronRight />
+            <ChevronRight data-dong="phai" />
           </Button>
         </div>
       </div>
@@ -134,9 +134,9 @@ export function LichHoc({ className }: { className?: string }) {
       )}
 
       {/* Thoi gian hoc hom nay: so to + thanh tien do de nguoi hoc thay ngay minh da hoc bao lau */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pastel-butter/70 px-3 py-2">
+      <div className="kich-dong flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pastel-butter/70 px-3 py-2">
         <span className={cn('grid size-9 shrink-0 place-items-center rounded-full text-white shadow-[0_6px_14px_-6px_var(--brand-glow)]', datHomNay ? 'bg-level-newbie' : 'bg-brand')} aria-hidden="true">
-          {datHomNay ? <CircleCheck className="size-5" /> : <Clock className="size-5" />}
+          {datHomNay ? <CircleCheck className="size-5" /> : <Clock data-dong="dong-ho kim" className="size-5" />}
         </span>
         <div className="min-w-40 flex-1" title={t('streakHint')}>
           <div className="flex items-baseline justify-between gap-2">
@@ -160,8 +160,8 @@ export function LichHoc({ className }: { className?: string }) {
           </div>
         </div>
         {/* So phut da hien ben canh: nut chi ghi "Muc tieu"; trinh doc man hinh van nghe du "Muc tieu: N phut/ngay" */}
-        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-foreground/80 hover:bg-white/60 dark:hover:bg-white/10" aria-label={t('goalPerDay', { n: mucTieuPhut })} onClick={() => datMoMucTieu(true)}>
-          <Target className="size-3.5" aria-hidden="true" /> {t('goalShort')}
+        <Button variant="ghost" size="sm" className="kich-dong h-7 gap-1.5 px-2 text-xs text-foreground/80 hover:bg-white/60 dark:hover:bg-white/10" aria-label={t('goalPerDay', { n: mucTieuPhut })} onClick={() => datMoMucTieu(true)}>
+          <Target data-dong="dich" className="size-3.5" aria-hidden="true" /> {t('goalShort')}
         </Button>
       </div>
 

@@ -17,6 +17,7 @@ import { LoadError } from '@/components/LoadError';
 import { SearchResults } from './SearchResults';
 import { LichHoc } from './LichHoc';
 import { cn } from '@/lib/utils';
+import { tachBieuTuong } from '@/lib/bieu-tuong';
 
 function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> }) {
   const { t, translateTitle } = useT();
@@ -66,9 +67,13 @@ export function DashboardPage() {
     return [...m].filter(([, x]) => x.length);
   }, [ds]);
 
+  // Ten lua dau tieu de phong len khi mo trang, re chuot thi bay vut mot vong (styles/icon-dong.css)
+  const [bieuTuong, chuTieuDe] = tachBieuTuong(t('dashboardTitle'));
   const tieuDe = (
     <header className="space-y-1">
-      <h1 className="text-4xl font-semibold tracking-tight">{t('dashboardTitle')}</h1>
+      <h1 className="kich-dong text-4xl font-semibold tracking-tight">
+        {bieuTuong && <><span data-dong="phong"><span data-dong="ten-lua">{bieuTuong}</span></span> </>}{chuTieuDe}
+      </h1>
       <p className="text-muted-foreground">{t('dashboardSubtitle')}</p>
     </header>
   );
@@ -108,8 +113,8 @@ export function DashboardPage() {
 
       {isLoading ? <Skeleton className="h-44 w-full rounded-2xl" /> : <HocTiep viTri={keTiep} done={done} />}
 
-      <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+      <div className="kich-dong relative">
+        <Search data-dong="kinh" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           type="search"
           value={q}

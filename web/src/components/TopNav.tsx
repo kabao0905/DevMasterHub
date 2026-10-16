@@ -27,7 +27,7 @@ const Nhan = ({ mo, children }: { mo: boolean; children: React.ReactNode }) => (
 );
 
 const vien = (dangMo: boolean) => cn(
-  'flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+  'kich-dong flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
   dangMo ? 'bg-white font-medium text-neutral-950' : 'text-white/70 hover:bg-white/10 hover:text-white'
 );
 
@@ -71,15 +71,15 @@ export function TopNav() {
           <Sidebar />
         </SheetContent>
       </Sheet>
-      <Link to="/" className="rounded-full focus-visible:outline-2 focus-visible:outline-white"><BrandMark nho className="whitespace-nowrap" /></Link>
+      <Link to="/" className="kich-dong rounded-full focus-visible:outline-2 focus-visible:outline-white"><BrandMark nho className="whitespace-nowrap" /></Link>
 
       <nav aria-label="DevMaster Hub" className="mx-auto hidden items-center gap-1 lg:flex">
         <NavLink to="/" end className={({ isActive }) => vien(isActive)}>
-          {({ isActive }) => <><LayoutDashboard className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('dashboard')}</Nhan></>}
+          {({ isActive }) => <><LayoutDashboard data-dong="luoi" className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('dashboard')}</Nhan></>}
         </NavLink>
         <DropdownMenu>
           <DropdownMenuTrigger className={vien(laLoTrinh)}>
-            <MapIcon className="size-4" aria-hidden="true" /> <Nhan mo={laLoTrinh}>{t('roadmapsMenu')}</Nhan> <ChevronDown className="size-3.5 opacity-70" aria-hidden="true" />
+            <MapIcon data-dong="ban-do" className="size-4" aria-hidden="true" /> <Nhan mo={laLoTrinh}>{t('roadmapsMenu')}</Nhan> <ChevronDown data-dong="mo" className="size-3.5 opacity-70" aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-[70vh] w-64 overflow-y-auto rounded-2xl p-2">
             {nhom.map(([n, techs], i) => (
@@ -103,13 +103,13 @@ export function TopNav() {
           </DropdownMenuContent>
         </DropdownMenu>
         <Link to="/project" aria-current={laTrangDuAn ? 'page' : undefined} className={vien(laTrangDuAn)}>
-          <FlaskConical className="size-4" aria-hidden="true" /> <Nhan mo={laTrangDuAn}>{t('projectLab')}</Nhan>
+          <FlaskConical data-dong="binh" className="size-4" aria-hidden="true" /> <Nhan mo={laTrangDuAn}>{t('projectLab')}</Nhan>
         </Link>
         <NavLink to="/my-projects" className={({ isActive }) => vien(isActive)}>
-          {({ isActive }) => <><FolderKanban className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('myProjects')}</Nhan></>}
+          {({ isActive }) => <><FolderKanban data-dong="nay" className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('myProjects')}</Nhan></>}
         </NavLink>
         <NavLink to="/career" className={({ isActive }) => vien(isActive)}>
-          {({ isActive }) => <><Briefcase className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('careerAdvisor')}</Nhan></>}
+          {({ isActive }) => <><Briefcase data-dong="cap" className="size-4" aria-hidden="true" /> <Nhan mo={isActive}>{t('careerAdvisor')}</Nhan></>}
         </NavLink>
       </nav>
 
@@ -121,7 +121,7 @@ export function TopNav() {
             {(ten[0] || '?').toUpperCase()}
           </span>
           <span className="hidden max-w-32 truncate xl:inline">{ten}</span>
-          <ChevronDown className="size-4 opacity-70" aria-hidden="true" />
+          <ChevronDown data-dong="mo" className="size-4 opacity-70" aria-hidden="true" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2">
           <DropdownMenuLabel className="truncate">{ten}</DropdownMenuLabel>

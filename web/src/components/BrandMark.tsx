@@ -5,7 +5,7 @@ export function BrandMark({ className, nho = false }: { className?: string; nho?
   return (
     <span className={cn('flex items-center gap-2.5 font-semibold tracking-tight', className)}>
       <span className={cn('grid place-items-center rounded-lg bg-brand text-white shadow-sm', nho ? 'size-7 text-sm' : 'size-9 text-base')} aria-hidden="true">
-        🚀
+        <span data-dong="ten-lua">🚀</span>
       </span>
       <span className={nho ? 'text-sm' : 'text-base'}>DevMaster Hub</span>
     </span>

@@ -131,8 +131,8 @@ export function RoadmapPage() {
                     if (!baiDaMo(tech, cap.id, bai.id, done)) {
                       return (
                         <li key={bai.id} className="relative">
-                          <div aria-disabled="true" title={t('lessonLockedHint')} className="flex cursor-not-allowed items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card px-5 py-4 text-muted-foreground/70">
-                            <Lock className="relative z-10 size-5 shrink-0 bg-card" aria-hidden="true" />
+                          <div aria-disabled="true" title={t('lessonLockedHint')} className="kich-dong flex cursor-not-allowed items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card px-5 py-4 text-muted-foreground/70">
+                            <Lock data-dong="khoa" className="relative z-10 size-5 shrink-0 bg-card" aria-hidden="true" />
                             <span className="min-w-0 flex-1">
                               <span>{translateTitle(bai.title)}</span>
                               <span className="sr-only"> {t('lessonLocked')}</span>
