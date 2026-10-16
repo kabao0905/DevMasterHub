@@ -109,7 +109,7 @@ export function ChallengePage() {
             <h2 id="de-ai" className="font-semibold">{t('aiChallengeTitle')}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t('aiChallengeHint')}</p>
           </div>
-          <Button className="bg-brand text-white hover:opacity-90" onClick={() => { void de.refetch(); }} disabled={dangRa}>
+          <Button className="bg-brand text-white hover:brightness-110" onClick={() => { void de.refetch(); }} disabled={dangRa}>
             {dangRa ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
             {t('aiChallengeBtn')}
           </Button>

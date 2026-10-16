@@ -49,7 +49,7 @@ export function ProjectTopicPage() {
             className="h-11 flex-1 rounded-lg border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           {aiBat && (
-            <Button type="submit" className="h-11 bg-brand text-white hover:opacity-90" disabled={!!kho.dangTao || !kho.topic.trim()}>
+            <Button type="submit" className="h-11 bg-brand text-white hover:brightness-110" disabled={!!kho.dangTao || !kho.topic.trim()}>
               {kho.dangTao ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Bot aria-hidden="true" />}
               {kho.dangTao ? t('generatingIdea') : t('generateIdeaBtn')}
             </Button>

@@ -36,7 +36,7 @@ export function LoiTrang() {
         <p className="text-muted-foreground">{t('pageLoadErrorHint')}</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button size="lg" className="h-10 bg-brand px-5 text-white hover:opacity-90" onClick={() => dieuHuong.taiLai()}>
+        <Button size="lg" className="h-10 bg-brand px-5 text-white hover:brightness-110" onClick={() => dieuHuong.taiLai()}>
           <RotateCw /> {t('reloadPage')}
         </Button>
         {/* Tai trang that: neu loi do ban cu cua app thi Dashboard cung can ban moi */}

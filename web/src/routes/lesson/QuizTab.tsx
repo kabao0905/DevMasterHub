@@ -39,7 +39,7 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
           {aiEnabled === false
             ? <p className="mt-4 text-sm text-muted-foreground">{t('aiDisabled')}</p>
             : !loi && (
-              <Button className="mt-5 bg-brand text-white hover:opacity-90" onClick={tao}>
+              <Button className="mt-5 bg-brand text-white hover:brightness-110" onClick={tao}>
                 <Sparkles aria-hidden="true" /> {t('generateQuizAi')}
               </Button>
             )}
@@ -104,7 +104,7 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
           <Button variant="outline" onClick={tao}><RotateCcw aria-hidden="true" /> {t('newQuiz')}</Button>
         </div>
       ) : (
-        <Button size="lg" className="bg-brand text-white hover:opacity-90" disabled={daTraLoi < tong} onClick={nop}>
+        <Button size="lg" className="bg-brand text-white hover:brightness-110" disabled={daTraLoi < tong} onClick={nop}>
           {t('submitQuizCount', { done: daTraLoi, total: tong })}
         </Button>
       )}

@@ -18,7 +18,7 @@ export function NotFoundPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{t('pageNotFound')}</h1>
           <p className="truncate font-mono text-sm text-muted-foreground">{pathname}</p>
         </div>
-        <Button asChild size="lg" className="h-10 bg-brand px-5 text-white hover:opacity-90">
+        <Button asChild size="lg" className="h-10 bg-brand px-5 text-white hover:brightness-110">
           <a href="/">{t('dashboard')}</a>
         </Button>
       </div>

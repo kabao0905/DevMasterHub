@@ -96,7 +96,7 @@ function NopChamAi({ baiTap, aiEnabled, baiLam, lang }: { baiTap: BaiTapBai; aiE
   if (aiEnabled === false) return null;
   return (
     <div className="space-y-4">
-      <Button className="bg-brand text-white hover:opacity-90" onClick={() => baiTap.cham(baiLam)} disabled={!baiLam.trim() || baiTap.dangCham}>
+      <Button className="bg-brand text-white hover:brightness-110" onClick={() => baiTap.cham(baiLam)} disabled={!baiLam.trim() || baiTap.dangCham}>
         {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
       </Button>
       {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}
@@ -194,7 +194,7 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
 
       <div className="flex flex-wrap items-center gap-2">
         {aiEnabled !== false && (
-          <Button className="bg-brand text-white hover:opacity-90" onClick={() => baiTap.cham()} disabled={!traLoi.trim() || baiTap.dangCham}>
+          <Button className="bg-brand text-white hover:brightness-110" onClick={() => baiTap.cham()} disabled={!traLoi.trim() || baiTap.dangCham}>
             {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
           </Button>
         )}

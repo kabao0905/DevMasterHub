@@ -50,7 +50,7 @@ export function SavedIdeasPage() {
               <span className="block text-5xl" aria-hidden="true">📭</span>
               <h2 className="text-lg font-semibold">{t('noSavedIdeasYet')}</h2>
               <p className="text-muted-foreground">{t('createIdeaThenSave')}</p>
-              <Button asChild className="bg-brand text-white hover:opacity-90"><Link to="/project-topic">{t('createIdeaByTopicBtn')}</Link></Button>
+              <Button asChild className="bg-brand text-white hover:brightness-110"><Link to="/project-topic">{t('createIdeaByTopicBtn')}</Link></Button>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
@@ -76,7 +76,7 @@ export function SavedIdeasPage() {
                       <p>{s.source === 'topic' ? `📝 ${s.topic || t('topicLabel')}` : `📊 ${s.level || s.idea.difficulty}`}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" className="bg-brand text-white hover:opacity-90" onClick={() => batDau(s)}>
+                      <Button size="sm" className="bg-brand text-white hover:brightness-110" onClick={() => batDau(s)}>
                         <Play aria-hidden="true" /> {t('startWorking')}
                       </Button>
                       <Button size="sm" variant="ghost" aria-label={t('deleteIdeaNamed', { name: s.idea.name })} title={t('deleteIdeaNamed', { name: s.idea.name })}

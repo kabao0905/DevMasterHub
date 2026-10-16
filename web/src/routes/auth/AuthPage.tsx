@@ -157,7 +157,7 @@ export function AuthPage() {
               </p>
             )}
 
-            <Button type="submit" size="lg" className="h-10 w-full bg-brand text-white hover:opacity-90" disabled={dangGui}>
+            <Button type="submit" size="lg" className="h-10 w-full bg-brand text-white hover:brightness-110" disabled={dangGui}>
               {dangGui && <Loader2 className="animate-spin" />}
               {nhanNut}
             </Button>

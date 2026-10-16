@@ -93,7 +93,7 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
           {aiBat && (
-            <Button className="bg-brand text-white hover:opacity-90" onClick={duAn.cham} disabled={!!kho.dangCham || !coCode}>
+            <Button className="bg-brand text-white hover:brightness-110" onClick={duAn.cham} disabled={!!kho.dangCham || !coCode}>
               {kho.dangCham ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Bot aria-hidden="true" />}
               {t('projectSubmitBtn', { n: kho.files.length })}
             </Button>

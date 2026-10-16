@@ -135,7 +135,7 @@ export function LichHoc({ className }: { className?: string }) {
 
       {/* Thoi gian hoc hom nay: so to + thanh tien do de nguoi hoc thay ngay minh da hoc bao lau */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pastel-butter/70 px-3 py-2">
-        <span className={cn('grid size-9 shrink-0 place-items-center rounded-full text-white', datHomNay ? 'bg-level-newbie' : 'bg-brand')} aria-hidden="true">
+        <span className={cn('grid size-9 shrink-0 place-items-center rounded-full text-white shadow-[0_6px_14px_-6px_var(--brand-glow)]', datHomNay ? 'bg-level-newbie' : 'bg-brand')} aria-hidden="true">
           {datHomNay ? <CircleCheck className="size-5" /> : <Clock className="size-5" />}
         </span>
         <div className="min-w-40 flex-1" title={t('streakHint')}>
@@ -160,7 +160,7 @@ export function LichHoc({ className }: { className?: string }) {
           </div>
         </div>
         {/* So phut da hien ben canh: nut chi ghi "Muc tieu"; trinh doc man hinh van nghe du "Muc tieu: N phut/ngay" */}
-        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-muted-foreground" aria-label={t('goalPerDay', { n: mucTieuPhut })} onClick={() => datMoMucTieu(true)}>
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs text-foreground/80 hover:bg-white/60 dark:hover:bg-white/10" aria-label={t('goalPerDay', { n: mucTieuPhut })} onClick={() => datMoMucTieu(true)}>
           <Target className="size-3.5" aria-hidden="true" /> {t('goalShort')}
         </Button>
       </div>

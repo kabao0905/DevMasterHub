@@ -25,8 +25,8 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
   const { tech, level, lesson } = viTri;
   const td = tienDoCongNghe(tech, done);
   return (
-    <section aria-labelledby="hoc-tiep" className="relative overflow-hidden rounded-2xl border bg-card p-6 sm:p-7">
-      <div className="absolute inset-y-0 left-0 w-1 bg-brand" aria-hidden="true" />
+    <section aria-labelledby="hoc-tiep" className="relative overflow-hidden rounded-3xl border border-transparent bg-card p-6 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.18)] sm:p-7 dark:border-border dark:shadow-none">
+      <div className="absolute inset-y-0 left-0 w-1.5 bg-brand" aria-hidden="true" />
       <h2 id="hoc-tiep" className="text-sm font-medium text-muted-foreground">{t('continueLearning')}</h2>
       <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
@@ -37,7 +37,7 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
           </p>
           <p className="mt-1.5 text-2xl font-semibold tracking-tight text-balance">{translateTitle(lesson.title)}</p>
         </div>
-        <Button asChild size="lg" className="h-10 shrink-0 bg-brand px-5 text-white hover:opacity-90">
+        <Button asChild size="lg" className="h-10 shrink-0 bg-brand px-5 text-white hover:brightness-110">
           <Link to={`/lesson/${tech.id}/${level.id}/${lesson.id}`}>{t('openLesson')}</Link>
         </Button>
       </div>

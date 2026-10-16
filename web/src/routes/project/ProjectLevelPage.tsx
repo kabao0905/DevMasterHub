@@ -69,7 +69,7 @@ export function ProjectLevelPage() {
           <h2 className="text-lg font-semibold">{t('readyTitle')}</h2>
           <p className="text-muted-foreground"><ChuDam khoa="clickBelowForIdea" bien={{ level: kho.level }} /></p>
           {aiBat === undefined ? null : aiBat
-            ? <Button className="bg-brand text-white hover:opacity-90" onClick={duAn.taoIdea}><Bot aria-hidden="true" /> {t('generateIdeaBtn')}</Button>
+            ? <Button className="bg-brand text-white hover:brightness-110" onClick={duAn.taoIdea}><Bot aria-hidden="true" /> {t('generateIdeaBtn')}</Button>
             : <p className="text-sm text-muted-foreground">⚠️ {t('aiDisabled')}</p>}
         </div>
       )}
