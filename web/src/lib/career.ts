@@ -19,10 +19,12 @@ export type ViecLam = {
   is_remote: boolean; employment_type: string; salary: string; tags: string[]; url: string;
   matchRate: number; status: 'ready' | 'gap' | 'target'; badgeText: string; fitRecommendation: string;
 };
-export type KetQuaTraLoi = { text: string; jobs: ViecLam[] | null; searchKeyword: string };
+/** Link trong tin nhan: da doc duoc (kem tieu de trang) hay khong (kem ly do) */
+export type KetQuaLink = { url: string; ok: boolean; title?: string; loi?: string };
+export type KetQuaTraLoi = { text: string; jobs: ViecLam[] | null; searchKeyword: string; link?: KetQuaLink | null };
 
 type DichVuGoc = {
-  sendMessage(tin: string): Promise<{ text: string; jobs: unknown[] | null; searchKeyword: string } | null>;
+  sendMessage(tin: string): Promise<{ text: string; jobs: unknown[] | null; searchKeyword: string; link?: KetQuaLink | null } | null>;
   searchJobs(tuKhoa: string): Promise<unknown[]>;
   abortMessage(): void;
   datLichSu(lichSu: TinNhan[]): void;
@@ -86,7 +88,7 @@ export function taoCoVan(client: SupabaseLike, { t, lang, thongKe, tenCongNghe =
       goc.datLichSu(lichSu);
       const kq = await goc.sendMessage(tin);
       if (!kq) return null;
-      return { text: kq.text, jobs: kq.jobs ? kq.jobs.map(chuanHoaViec) : null, searchKeyword: kq.searchKeyword || '' };
+      return { text: kq.text, jobs: kq.jobs ? kq.jobs.map(chuanHoaViec) : null, searchKeyword: kq.searchKeyword || '', link: kq.link ?? null };
     },
     async timViec(tuKhoa) {
       return (await goc.searchJobs(tuKhoa)).map(chuanHoaViec);

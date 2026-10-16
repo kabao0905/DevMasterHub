@@ -8,7 +8,8 @@ const { laUrlReact } = require('./lib/route-owner.js');
 const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, laGemini3 } = require('./lib/ai-guard.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
 const { chuanHoaYeuCauChay, chayCpp } = require('./lib/chay-cpp.js');
-const { taiTrang, trichVanBan, layTieuDe } = require('./lib/net-guard.js');
+const { taiTheoChuyenHuong, layTieuDe } = require('./lib/net-guard.js');
+const { trichNoiDungTrang } = require('./lib/trich-trang.js');
 const { moPhongBi } = require('./lib/phong-bi.js');
 
 // Nap .env truoc khi doc bat ky bien nao. Bien dat san tu moi truong (Render) thang .env.
@@ -697,14 +698,15 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
   }
 });
 
-app.post('/api/crawl', sameOrigin, requireUser, rateLimit({ max: 10, scope: 'crawl' }), async (req, res) => {
+app.post('/api/crawl', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 10, scope: 'crawl' }), async (req, res) => {
   const { url } = req.body || {};
   console.log(`[Crawl] Fetching live webpage: ${String(url).slice(0, 300)}`);
 
-  // taiTrang kiem dia chi ngay luc mo socket (chong DNS rebinding) va chi doc toi 2MB
+  // taiTrang kiem dia chi ngay luc mo socket (chong DNS rebinding) va chi doc toi 2MB.
+  // Theo toi da 3 lan chuyen huong (http -> https, link tracking) — moi buoc van qua taiTrang.
   let trang;
   try {
-    trang = await taiTrang(String(url), {
+    trang = await taiTheoChuyenHuong(String(url), {
       toiDa: 2_000_000,
       thoiGian: 9000,
       headers: {
@@ -715,14 +717,15 @@ app.post('/api/crawl', sameOrigin, requireUser, rateLimit({ max: 10, scope: 'cra
     });
   } catch (err) {
     if (err.code === 'EBLOCKED') return res.status(403).json({ error: err.message });
-    if (err.code === 'EINVALIDURL' || err.code === 'EPROTOCOL') return res.status(400).json({ error: err.message });
+    if (err.code === 'EINVALIDURL' || err.code === 'EPROTOCOL' || err.code === 'EREDIRECT') return res.status(400).json({ error: err.message });
     if (err.code === 'ENOTFOUND') return res.status(400).json({ error: 'Không phân giải được tên miền' });
     console.error('[Crawl] Error:', err.message);
     return res.status(502).json({ error: 'Không thể tải trang: ' + err.message });
   }
 
-  if (trang.status >= 300 && trang.status < 400) {
-    return res.status(400).json({ error: 'Trang này chuyển hướng, không thể đọc trực tiếp' });
+  // TopCV, Indeed... chan bot bang 403/429: noi ro de AI va nguoi hoc biet ly do
+  if (trang.status === 403 || trang.status === 429) {
+    return res.status(502).json({ error: `Trang này chặn truy cập tự động (HTTP ${trang.status})` });
   }
   if (trang.status < 200 || trang.status >= 300) {
     return res.status(502).json({ error: `Không thể tải trang (HTTP ${trang.status})` });
@@ -735,9 +738,10 @@ app.post('/api/crawl', sameOrigin, requireUser, rateLimit({ max: 10, scope: 'cra
 
   res.json({
     success: true,
-    url,
+    url: trang.url,
     pageTitle: layTieuDe(trang.body) || 'Trang tuyển dụng',
-    content: trichVanBan(trang.body).substring(0, 6500)
+    // Trang render bang JS (VietnamWorks...) thi lay tu meta / JSON-LD / du lieu Next.js
+    content: trichNoiDungTrang(trang.body).substring(0, 6500)
   });
 });
 

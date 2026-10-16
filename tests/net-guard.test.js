@@ -77,3 +77,34 @@ test('trichVanBan chay tuyen tinh voi hang tram nghin the script khong dong', ()
   assert.ok(Date.now() - bd < 1000, 'mat ' + (Date.now() - bd) + 'ms');
   assert.strictEqual(kq, 'dau');
 });
+
+test('taiTheoChuyenHuong: theo Location (ca duong dan tuong doi), tra ve URL cuoi', async () => {
+  const { taiTheoChuyenHuong } = require('../lib/net-guard.js');
+  const daGoi = [];
+  const tai = async u => {
+    daGoi.push(u);
+    if (u === 'http://viec.vn/job/1') return { status: 301, headers: { location: 'https://viec.vn/job/1' }, body: '' };
+    if (u === 'https://viec.vn/job/1') return { status: 302, headers: { location: '/viec-lam/1?ref=x' }, body: '' };
+    return { status: 200, headers: { 'content-type': 'text/html' }, body: '<p>ok</p>' };
+  };
+  const r = await taiTheoChuyenHuong('http://viec.vn/job/1', {}, { tai });
+  assert.strictEqual(r.status, 200);
+  assert.strictEqual(r.url, 'https://viec.vn/viec-lam/1?ref=x');
+  assert.deepStrictEqual(daGoi, ['http://viec.vn/job/1', 'https://viec.vn/job/1', 'https://viec.vn/viec-lam/1?ref=x']);
+});
+
+test('taiTheoChuyenHuong: chuyen huong vao may noi bo van bi chan (moi buoc qua taiTrang)', async () => {
+  const { taiTheoChuyenHuong } = require('../lib/net-guard.js');
+  const tai = (u, o) => (u.startsWith('https://ngoai.vn')
+    ? Promise.resolve({ status: 302, headers: { location: 'http://127.0.0.1:9/bi-mat' }, body: '' })
+    : taiTrang(u, o));
+  await assert.rejects(taiTheoChuyenHuong('https://ngoai.vn/x', {}, { tai }), { code: 'EBLOCKED' });
+});
+
+test('taiTheoChuyenHuong: vong lap chuyen huong thi dung sau so lan gioi han', async () => {
+  const { taiTheoChuyenHuong } = require('../lib/net-guard.js');
+  let n = 0;
+  const tai = async () => { n++; return { status: 302, headers: { location: '/lap' }, body: '' }; };
+  await assert.rejects(taiTheoChuyenHuong('https://a.vn/lap', {}, { tai, soLan: 3 }), { code: 'EREDIRECT' });
+  assert.strictEqual(n, 4);
+});

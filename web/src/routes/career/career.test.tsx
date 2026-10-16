@@ -12,7 +12,7 @@ const VIEC = [
   { title: 'Senior Go Engineer', company_name: 'Beta', source: 'LinkedIn', location: 'Remote', url: 'javascript:alert(2)', tags: ['go'], is_remote: true }
 ];
 
-function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern]\nBạn hợp **thực tập**.'), chat = [] as unknown[], jobs = VIEC, treo = {} as Record<string, Promise<unknown>> } = {}) {
+function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern]\nBạn hợp **thực tập**.'), chat = [] as unknown[], jobs = VIEC, treo = {} as Record<string, Promise<unknown>>, crawl = (): Response => new Response('null', { status: 404 }) } = {}) {
   const goiAi: ThanAi[] = [];
   const timViec: string[] = [];
   const gia = giaSupabase({ nguoiDung: { id: 'u1' }, treo, bang: {
@@ -25,6 +25,7 @@ function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern
     gia, json,
     fetch: async (url: string, init?: RequestInit) => {
       if (url === '/api/ai') { const b = docThan(init?.body) as ThanAi; goiAi.push(b); return ai(b); }
+      if (url === '/api/crawl') return crawl();
       if (url.startsWith('/api/jobs')) { timViec.push(new URL(url, 'http://x').searchParams.get('search') ?? ''); return new Response(JSON.stringify({ jobs }), { status: 200 }); }
       return Object.hasOwn(json, url) ? new Response(JSON.stringify(json[url]), { status: 200 }) : new Response('null', { status: 404 });
     }
@@ -145,4 +146,20 @@ test('tai lich su loi: van chat duoc nhung khong ghi de lich su tren server', as
   expect(await screen.findByText('thực tập', { selector: 'strong' })).toBeInTheDocument();
   await new Promise(r => setTimeout(r, 30));
   expect(gia.truyVan.some(q => q.bang === 'career_chats' && q.op === 'upsert')).toBe(false);
+});
+
+test('gui link tin tuyen dung: bao da doc trang; trang chan bot thi bao ro ly do', async () => {
+  const u = userEvent.setup();
+  let lan = 0;
+  mo({
+    ai: () => traText('Ok'),
+    crawl: () => (lan++ === 0
+      ? new Response(JSON.stringify({ url: 'https://itviec.com/it-jobs/a', pageTitle: 'React Dev | ITviec', content: 'Yêu cầu 2 năm' }), { status: 200 })
+      : new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 }))
+  });
+  await waitFor(() => expect(oNhap()).toBeEnabled());
+  await u.type(oNhap(), 'xem https://itviec.com/it-jobs/a{Enter}');
+  expect(await screen.findByText(/Đã đọc trang: React Dev \| ITviec/)).toBeInTheDocument();
+  await u.type(oNhap(), 'còn https://www.topcv.vn/viec-lam/b{Enter}');
+  expect(await screen.findByText(/Không đọc được link: Trang này chặn truy cập tự động \(HTTP 403\)/)).toBeInTheDocument();
 });

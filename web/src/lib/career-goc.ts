@@ -54,7 +54,7 @@ export function taoCoVanGoc({ AuthService, I18n, CURRICULUM }) {
     return { stats: null, level: 'newbie', totalLessons: 0, learnedTechs: [] };
   }
 
-  async function buildSystemPrompt(crawledData = null) {
+  async function buildSystemPrompt(crawledData = null, linkLoi = null) {
     let userContext = 'Người dùng mới bắt đầu (Cấp độ: Newbie, chưa hoàn thành bài học nào).';
     let userLevelName = 'Newbie (Người mới bắt đầu)';
 
@@ -137,6 +137,12 @@ Tiêu đề: ${crawledData.pageTitle}
 Nội dung: ${crawledData.content}
 ═══════════════════════════════════════════════════════
 Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất trong link và khuyên học viên nên ứng tuyển hay cần học thêm gì.`;
+    } else if (linkLoi) {
+      // Truoc day cao loi thi im lang: AI tuong khong co link, tra loi nhu khong thay gi
+      prompt += `\n\n═══ 🌐 LINK HỌC VIÊN GỬI (${linkLoi.url}) — KHÔNG ĐỌC ĐƯỢC ═══
+Lý do: ${linkLoi.loi}
+Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link này và lý do. KHÔNG bịa nội dung tin tuyển dụng.
+Đề nghị học viên dán phần mô tả công việc / yêu cầu vào chat để bạn đánh giá độ phù hợp.`;
     }
 
     return prompt;
@@ -154,6 +160,8 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
 
       const urlMatch = userMessage.match(/https?:\/\/[^\s<>"'()]+/i);
       let crawledData = null;
+      // Ket qua doc link de giao dien bao cho nguoi hoc: { url, ok, title } hoac { url, ok: false, loi }
+      let link = null;
       if (urlMatch) {
         const targetUrl = urlMatch[0];
         try {
@@ -162,21 +170,26 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
           const crawlRes = await fetch('/api/crawl', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...crawlAuth },
-            body: JSON.stringify({ url: targetUrl }),
+            body: dongPhongBi({ url: targetUrl }),
             signal
           });
           if (crawlRes.ok) {
             crawledData = await crawlRes.json();
+          } else {
+            const e = await crawlRes.json().catch(() => ({}));
+            link = { url: targetUrl, ok: false, loi: e.error || `HTTP ${crawlRes.status}` };
           }
         } catch (e) {
           if (e.name === 'AbortError' || signal.aborted) return null;
-          console.warn('[CareerAdvisor] Live crawl failed:', e);
+          link = { url: targetUrl, ok: false, loi: 'Không kết nối được máy chủ' };
         }
+        if (crawledData && crawledData.content) link = { url: targetUrl, ok: true, title: crawledData.pageTitle };
+        else if (!link) link = { url: targetUrl, ok: false, loi: 'Trang không có nội dung đọc được' };
       }
 
       if (signal.aborted) return null;
 
-      const systemPrompt = await buildSystemPrompt(crawledData);
+      const systemPrompt = await buildSystemPrompt(crawledData, link && !link.ok ? link : null);
 
       const apiMessages = chatHistory.slice(-8).map(m => {
         if (m.role === 'assistant' && m.content.length > 300) {
@@ -253,7 +266,7 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
       chatHistory = [...chatHistory, { role: 'user', content: userMessage }, { role: 'assistant', content: aiText }];
       isLoading = false;
       activeAbortController = null;
-      return { text: aiText, jobs: autoSearchResults, searchKeyword: usedSearchKeyword };
+      return { text: aiText, jobs: autoSearchResults, searchKeyword: usedSearchKeyword, link };
     } catch (err) {
       isLoading = false;
       activeAbortController = null;

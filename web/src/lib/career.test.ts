@@ -116,3 +116,24 @@ test('lich su chat: doc ban moi nhat, luu upsert theo user_id; dong hong thi bo'
   expect(ghi.payload).toMatchObject({ user_id: 'u1', messages: [{ role: 'user', content: 'Hỏi' }] });
   expect(ghi.tuyChon).toEqual({ onConflict: 'user_id' });
 });
+
+test('link doc duoc: ket qua bao link da doc kem tieu de trang', async () => {
+  giaFetch('Nên ứng tuyển.');
+  const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui([], 'xem https://x.vn/job giúp');
+  expect(kq?.link).toEqual({ url: 'https://x.vn/job', ok: true, title: 'Tuyển React' });
+});
+
+test('link khong doc duoc (trang chan bot): AI duoc bao ro ly do, khong bia noi dung; ket qua bao loi', async () => {
+  const goi: { url: string; body?: Record<string, unknown> }[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+    goi.push({ url, body: init?.body ? docThan(init.body) : undefined });
+    if (url === '/api/crawl') return new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 });
+    return new Response(JSON.stringify({ content: [{ text: 'Mình chưa đọc được link.' }] }), { status: 200 });
+  }));
+  const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui([], 'đánh giá https://www.topcv.vn/viec-lam/abc giúp mình');
+  const ai = goi.find(g => g.url === '/api/ai')!.body!;
+  expect(ai.system).toContain('https://www.topcv.vn/viec-lam/abc');
+  expect(ai.system).toContain('Trang này chặn truy cập tự động (HTTP 403)');
+  expect(ai.system).toMatch(/KHÔNG bịa/);
+  expect(kq?.link).toEqual({ url: 'https://www.topcv.vn/viec-lam/abc', ok: false, loi: 'Trang này chặn truy cập tự động (HTTP 403)' });
+});
