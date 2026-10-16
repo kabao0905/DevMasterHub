@@ -53,3 +53,11 @@ test('trang dau khong tai duoc thi nem loi cua tai (route doi thanh ma HTTP)', a
   const tai = async () => { throw Object.assign(new Error('Địa chỉ bị chặn'), { code: 'EBLOCKED' }); };
   await assert.rejects(docViecTuLink({ url: 'http://10.0.0.1/', cauHoi: '', hoSo: {} }, { tai, hoiAi: hoiAiTra('mot_tin'), jev: jevGia }), { code: 'EBLOCKED' });
 });
+
+test('trang chan bot (403 Cloudflare): loi than thien co ten trang, khong co ma HTTP; ma CHAN de client xu ly', async () => {
+  const tai = async url => ({ status: 403, url, body: '', headers: { 'content-type': 'text/html' } });
+  await assert.rejects(
+    docViecTuLink({ url: 'https://www.topcv.vn/viec-lam/frontend-reactjs/123.html', cauHoi: '', hoSo: {} }, { tai, hoiAi: hoiAiTra('mot_tin'), jev: jevGia }),
+    e => e.code === 'ECHAN' && /topcv\.vn/.test(e.message) && !/403|HTTP/.test(e.message)
+  );
+});

@@ -725,7 +725,8 @@ app.post('/api/doc-viec-link', sameOrigin, moPhongBi, requireUser, rateLimit({ m
     if (['EINVALIDURL', 'EPROTOCOL', 'EREDIRECT'].includes(err.code)) return res.status(400).json({ error: err.message });
     if (err.code === 'ENOTFOUND') return res.status(400).json({ error: 'Không phân giải được tên miền' });
     if (err.code === 'ELOAI') return res.status(415).json({ error: err.message });
-    if (['ECHAN', 'EHTTP', 'EKHONGTAI'].includes(err.code)) return res.status(502).json({ error: err.message });
+    if (err.code === 'ECHAN') return res.status(502).json({ error: err.message, code: 'CHAN' });
+    if (['EHTTP', 'EKHONGTAI'].includes(err.code)) return res.status(502).json({ error: err.message });
     console.error('[DocViec] Error:', err.message);
     res.status(502).json({ error: 'Không thể đọc trang: ' + err.message });
   }

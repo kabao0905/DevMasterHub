@@ -86,10 +86,9 @@ export function CareerPage() {
     try {
       const kq = await (await coVanMoi()).gui(truoc, tin);
       if (!kq || doc(k).phien !== phien) return;
-      // Tin co link: bao doc duoc trang hay khong (truoc day loi thi im lang, tuong nhu mat chuc nang)
+      // Tin co link doc duoc: bao da doc trang / bao nhieu viec. Khong doc duoc thi cau tra loi trong chat da noi, khong bao loi them
       if (kq.link?.ok && kq.link.soTrang) toast.success(t('careerListRead', { pages: kq.link.soTrang, jobs: kq.link.tongViec ?? 0 }));
       else if (kq.link?.ok) toast.success(t('careerLinkRead', { title: kq.link.title || kq.link.url }));
-      else if (kq.link) toast.warning(t('careerLinkFailed', { error: kq.link.loi || kq.link.url }));
       let chat: TinNhan[] = [];
       dat(k, x => {
         chat = [...x.chat, { role: 'assistant', content: kq.text }];

@@ -54,7 +54,7 @@ export function taoCoVanGoc({ AuthService, I18n, CURRICULUM }) {
     return { stats: null, level: 'newbie', totalLessons: 0, learnedTechs: [] };
   }
 
-  async function buildSystemPrompt(crawledData = null, linkLoi = null, listData = null) {
+  async function buildSystemPrompt(crawledData = null, listData = null) {
     let userContext = 'Người dùng mới bắt đầu (Cấp độ: Newbie, chưa hoàn thành bài học nào).';
     let userLevelName = 'Newbie (Người mới bắt đầu)';
 
@@ -146,12 +146,6 @@ Tiêu đề: ${crawledData.pageTitle}
 Nội dung: ${crawledData.content}
 ═══════════════════════════════════════════════════════
 Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất trong link và khuyên học viên nên ứng tuyển hay cần học thêm gì.`;
-    } else if (linkLoi) {
-      // Truoc day cao loi thi im lang: AI tuong khong co link, tra loi nhu khong thay gi
-      prompt += `\n\n═══ 🌐 LINK HỌC VIÊN GỬI (${linkLoi.url}) — KHÔNG ĐỌC ĐƯỢC ═══
-Lý do: ${linkLoi.loi}
-Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link này và lý do. KHÔNG bịa nội dung tin tuyển dụng.
-Đề nghị học viên dán phần mô tả công việc / yêu cầu vào chat để bạn đánh giá độ phù hợp.`;
     }
 
     return prompt;
@@ -220,7 +214,17 @@ Nhiệm vụ: Nói thật ngắn gọn là chưa đọc được nội dung link
       if (!doc || signal.aborted) return null;
       const { crawledData, listData, link } = doc;
 
-      const systemPrompt = await buildSystemPrompt(crawledData, link && !link.ok ? link : null, listData);
+      // Khong doc duoc link (TopCV chong bot, trang loi...): tra loi co dinh, nhe nhang — khong goi AI,
+      // khong neu ma loi; goi y thu trang khac hoac noi muon tim viec gi
+      if (link && !link.ok) {
+        const xinLoi = I18n.t('careerLinkUnreadable');
+        chatHistory = [...chatHistory, { role: 'user', content: userMessage }, { role: 'assistant', content: xinLoi }];
+        isLoading = false;
+        activeAbortController = null;
+        return { text: xinLoi, jobs: null, searchKeyword: '', link };
+      }
+
+      const systemPrompt = await buildSystemPrompt(crawledData, listData);
 
       const apiMessages = chatHistory.slice(-8).map(m => {
         if (m.role === 'assistant' && m.content.length > 300) {

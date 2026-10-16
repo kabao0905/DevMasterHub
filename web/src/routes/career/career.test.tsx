@@ -148,20 +148,22 @@ test('tai lich su loi: van chat duoc nhung khong ghi de lich su tren server', as
   expect(gia.truyVan.some(q => q.bang === 'career_chats' && q.op === 'upsert')).toBe(false);
 });
 
-test('gui link tin tuyen dung: bao da doc trang; trang chan bot thi bao ro ly do', async () => {
+test('gui link tin tuyen dung: bao da doc trang; trang khong doc duoc thi xin loi nhe nhang trong chat, khong bao loi', async () => {
   const u = userEvent.setup();
   let lan = 0;
-  mo({
+  const { goiAi } = mo({
     ai: () => traText('Ok'),
     crawl: () => (lan++ === 0
       ? new Response(JSON.stringify({ cheDo: 'mot_tin', url: 'https://itviec.com/it-jobs/a', pageTitle: 'React Dev | ITviec', content: 'Yêu cầu 2 năm' }), { status: 200 })
-      : new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 }))
+      : new Response(JSON.stringify({ error: 'topcv.vn không cho đọc tự động (trang có lớp chống bot)', code: 'CHAN' }), { status: 502 }))
   });
   await waitFor(() => expect(oNhap()).toBeEnabled());
   await u.type(oNhap(), 'xem https://itviec.com/it-jobs/a{Enter}');
   expect(await screen.findByText(/Đã đọc trang: React Dev \| ITviec/)).toBeInTheDocument();
   await u.type(oNhap(), 'còn https://www.topcv.vn/viec-lam/b{Enter}');
-  expect(await screen.findByText(/Không đọc được link: Trang này chặn truy cập tự động \(HTTP 403\)/)).toBeInTheDocument();
+  expect(await screen.findByText(/Xin lỗi bạn, trang này mình không đọc được/)).toBeInTheDocument();
+  expect(goiAi).toHaveLength(1);
+  expect(screen.queryByText(/403|HTTP|chống bot/)).not.toBeInTheDocument();
 });
 
 test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien trong bang goi y', async () => {

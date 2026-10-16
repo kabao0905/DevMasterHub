@@ -123,19 +123,18 @@ test('link doc duoc: ket qua bao link da doc kem tieu de trang', async () => {
   expect(kq?.link).toEqual({ url: 'https://x.vn/job', ok: true, title: 'Tuyển React' });
 });
 
-test('link khong doc duoc (trang chan bot): AI duoc bao ro ly do, khong bia noi dung; ket qua bao loi', async () => {
-  const goi: { url: string; body?: Record<string, unknown> }[] = [];
-  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    goi.push({ url, body: init?.body ? docThan(init.body) : undefined });
-    if (url === '/api/doc-viec-link') return new Response(JSON.stringify({ error: 'Trang này chặn truy cập tự động (HTTP 403)' }), { status: 502 });
-    return new Response(JSON.stringify({ content: [{ text: 'Mình chưa đọc được link.' }] }), { status: 200 });
+test('link khong doc duoc (TopCV chong bot...): tra loi co dinh xin loi + goi y, khong goi AI, khong tim viec, khong neu ma loi', async () => {
+  const goi: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    goi.push(url);
+    if (url === '/api/doc-viec-link') return new Response(JSON.stringify({ error: 'topcv.vn không cho đọc tự động (trang có lớp chống bot)', code: 'CHAN' }), { status: 502 });
+    return new Response(JSON.stringify({ content: [{ text: 'khong duoc goi' }] }), { status: 200 });
   }));
-  const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui([], 'đánh giá https://www.topcv.vn/viec-lam/abc giúp mình');
-  const ai = goi.find(g => g.url === '/api/ai')!.body!;
-  expect(ai.system).toContain('https://www.topcv.vn/viec-lam/abc');
-  expect(ai.system).toContain('Trang này chặn truy cập tự động (HTTP 403)');
-  expect(ai.system).toMatch(/KHÔNG bịa/);
-  expect(kq?.link).toEqual({ url: 'https://www.topcv.vn/viec-lam/abc', ok: false, loi: 'Trang này chặn truy cập tự động (HTTP 403)' });
+  const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe() }).gui([], 'tìm việc react ở https://www.topcv.vn/viec-lam/frontend-reactjs/123.html giúp mình');
+  expect(goi).toEqual(['/api/doc-viec-link']);
+  expect(kq?.text).toBe('careerLinkUnreadable');
+  expect(kq?.jobs).toBeNull();
+  expect(kq?.link).toMatchObject({ url: 'https://www.topcv.vn/viec-lam/frontend-reactjs/123.html', ok: false });
 });
 
 test('doc link: gui cau hoi va ho so hoc (cap do, ky nang da hoc, so bai) de server doan y dinh va cham viec', async () => {
