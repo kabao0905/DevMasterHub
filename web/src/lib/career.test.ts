@@ -147,7 +147,8 @@ test('doc link: gui cau hoi va ho so hoc (cap do, ky nang da hoc, so bai) de ser
 test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim viec lan nua); bao so trang, so viec', async () => {
   const goi: { url: string; body?: Record<string, unknown> }[] = [];
   const viec = [
-    { url: 'https://cv.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu · HCM', diem: 0.9, diaDiem: 'Hồ Chí Minh · Hybrid', luong: '20-30 triệu' },
+    { url: 'https://cv.vn/vi/tim-viec-lam/react.A1.html', title: 'React Developer', snippet: 'Cty A · 20-30 triệu · HCM', diem: 0.9, diaDiem: 'Hồ Chí Minh · Hybrid', luong: '20-30 triệu',
+      congTy: 'Cty A', logo: 'https://cdn.cv.vn/a.png', hinhThuc: 'FULLTIME', kyNang: ['ReactJS', 'TypeScript', 'Docker'] },
     { url: 'https://cv.vn/vi/tim-viec-lam/java.A2.html', title: 'Java Backend', snippet: 'Cty B · Thương lượng', diem: 0.4 }
   ];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
@@ -159,6 +160,7 @@ test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim 
   const ai = goi.find(g => g.url === '/api/ai')!.body!;
   expect(ai.system).toContain('140');
   expect(ai.system).toContain('React Developer');
+  expect(ai.system).toContain('Cty A · Hồ Chí Minh · Hybrid · 20-30 triệu · kỹ năng: ReactJS, TypeScript, Docker');
   expect(ai.system).toContain('https://cv.vn/vi/tim-viec-lam/java.A2.html');
   expect(goi.some(g => g.url.startsWith('/api/jobs'))).toBe(false);
   expect(kq?.jobs?.map(j => [j.title, j.url, j.matchRate, j.status])).toEqual([
@@ -169,6 +171,12 @@ test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim 
   expect(kq?.link).toMatchObject({ ok: true, soTrang: 3, tongViec: 140 });
   // Dia diem / luong lay tu the tin; khong ghi thi de trong, khong tu cho la Remote
   expect(kq?.jobs?.map(j => [j.location, j.salary, j.is_remote])).toEqual([['Hồ Chí Minh · Hybrid', '20-30 triệu', false], ['', '', false]]);
+  // Thong tin tu trang chi tiet (JobPosting): cong ty, logo, hinh thuc, ky nang
+  expect(kq?.jobs?.[0]).toMatchObject({ company_name: 'Cty A', company_logo: 'https://cdn.cv.vn/a.png', employment_type: 'FULLTIME', tags: ['ReactJS', 'TypeScript', 'Docker'] });
+  // Nhan theo muc phu hop; danh gia = ky nang con thieu so voi lo trinh da hoc (react da hoc -> ReactJS khong tinh la thieu)
+  expect(kq?.jobs?.map(j => j.badgeText)).toEqual(['careerJevReady', 'careerJevGap']);
+  expect(kq?.jobs?.[0].fitRecommendation).toBe('careerMissingSkills');
+  expect(kq?.jobs?.[1].fitRecommendation).toBe('Cty B · Thương lượng');
 });
 
 test('chat tu van gui taskType career (server chon dung model tu van nghe nghiep)', async () => {

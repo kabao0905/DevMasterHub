@@ -3,6 +3,23 @@
 // Ban co kieu nam o career.ts. AuthService/I18n/CURRICULUM la ban gia do career.ts truyen vao.
 import { dongPhongBi } from './phong-bi';
 
+/** Ten ky nang trong tin -> ma lo trinh DevMaster (C++ -> cpp, ReactJS -> react, Node.js -> nodejs...) */
+const BI_DANH_KY_NANG = {
+  'c++': 'cpp', 'c#': 'csharp', 'js': 'javascript', 'ts': 'typescript', 'golang': 'go', 'reactjs': 'react',
+  'vuejs': 'vue', 'angularjs': 'angular', 'nodejs': 'nodejs', 'node': 'nodejs', 'html': 'htmlcss', 'css': 'htmlcss',
+  'html5': 'htmlcss', 'css3': 'htmlcss', 'postgresql': 'sql', 'mysql': 'sql', 'tailwindcss': 'tailwind'
+};
+const maKyNang = s => {
+  const g = String(s).toLowerCase().replace(/[^a-z0-9+#]/g, '');
+  return BI_DANH_KY_NANG[g] || g;
+};
+
+/** Ky nang tin tuyen dung yeu cau ma hoc vien chua hoc lo trinh tuong ung */
+export function kyNangThieu(kyNang, daHoc) {
+  const hoc = new Set(daHoc.map(maKyNang));
+  return kyNang.filter(k => !hoc.has(maKyNang(k)));
+}
+
 export function taoCoVanGoc({ AuthService, I18n, CURRICULUM }) {
   let chatHistory = [];
   let isLoading = false;
@@ -132,8 +149,12 @@ ${userContext}
    ❌ KHÔNG trả lời cộc lốc 1 câu cụt lủn. Hãy trả lời tự nhiên, có tâm, mang lại giá trị thật cho người học.`;
 
     if (listData) {
-      const ds = (listData.viec || []).map((v, i) =>
-        `${i + 1}. ${v.title} — phù hợp ~${Math.round((v.diem || 0) * 100)}% — ${v.url}\n   ${v.snippet || ''}`).join('\n');
+      // Viec da doc trang chi tiet co cong ty / dia diem / luong / ky nang / kinh nghiem: dua het cho AI tu van
+      const ds = (listData.viec || []).map((v, i) => {
+        const thongTin = [v.congTy, v.diaDiem, v.luong, v.kinhNghiem && `kinh nghiệm ${v.kinhNghiem}`,
+          (v.kyNang || []).length ? `kỹ năng: ${v.kyNang.join(', ')}` : ''].filter(Boolean).join(' · ');
+        return `${i + 1}. ${v.title} — phù hợp ~${Math.round((v.diem || 0) * 100)}% — ${v.url}\n   ${thongTin || v.snippet || ''}`;
+      }).join('\n');
       prompt += `\n\n═══ 🕷️ ĐÃ ĐỌC ${listData.soTrang} TRANG DANH SÁCH VIỆC (${listData.batDau}) — ${listData.tongViec} VIỆC ═══
 Đây là ${(listData.viec || []).length} việc IT hợp nhất với học viên (độ phù hợp đã được chấm sẵn theo hồ sơ học):
 ${ds}
@@ -190,13 +211,21 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     const pct = Math.round((v.diem || 0) * 100);
     let host = '';
     try { host = new URL(v.url).hostname.replace(/^www\./, ''); } catch { /* url hong: de trong */ }
-    // Dia diem / luong nhen doc tu the tin; tin khong ghi thi de trong (khong tu cho la Remote)
+    // Dia diem / luong nhen doc tu the tin hoac trang chi tiet; khong ghi thi de trong (khong tu cho la Remote)
     const diaDiem = v.diaDiem || '';
+    const status = pct >= 67 ? 'ready' : pct >= 34 ? 'gap' : 'target';
+    const kyNang = Array.isArray(v.kyNang) ? v.kyNang : [];
+    const thieu = kyNangThieu(kyNang, cachedLearnedTechs || []);
     return {
-      title: v.title, company_name: '', company_logo: '', source: host, location: diaDiem, is_remote: diaDiem === 'Remote',
-      employment_type: '', salary: v.luong || '', tags: [], url: v.url, description_snippet: v.snippet,
-      matchRate: pct, status: pct >= 67 ? 'ready' : pct >= 34 ? 'gap' : 'target',
-      badgeText: I18n.t('careerJevMatch', { n: pct }), fitRecommendation: v.snippet || ''
+      title: v.title, company_name: v.congTy || '', company_logo: v.logo || '', source: host,
+      location: diaDiem, is_remote: diaDiem === 'Remote',
+      employment_type: v.hinhThuc || '', salary: v.luong || '', tags: kyNang, url: v.url, description_snippet: v.moTa || v.snippet,
+      matchRate: pct, status,
+      badgeText: I18n.t(status === 'ready' ? 'careerJevReady' : status === 'gap' ? 'careerJevGap' : 'careerJevTarget', { n: pct }),
+      // Danh gia thuc luc: ky nang tin can ma lo trinh chua hoc; khong biet ky nang thi dung mo ta ngan
+      fitRecommendation: kyNang.length
+        ? (thieu.length ? I18n.t('careerMissingSkills', { skills: thieu.slice(0, 3).join(', ') }) : I18n.t('mrReadyDesc'))
+        : (v.snippet || '')
     };
   }
 

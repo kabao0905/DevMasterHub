@@ -47,7 +47,7 @@ test('trang danh sach: doc trang 1, lat trang theo mau -trang-N, dung khi trang 
   assert.strictEqual(kq.soTrang, 2);
   assert.strictEqual(kq.tongViec, 12);
   assert.strictEqual(kq.dungVi, 'het_tin_moi');
-  assert.deepStrictEqual(da, [BASE, mau(2), mau(3)]);
+  assert.deepStrictEqual(da.filter(u => !u.includes('/tim-viec-lam/')), [BASE, mau(2), mau(3)]);
 });
 
 test('mau doan sai (trang 2 tra lai trang 1) thi thu mau ke tiep', async () => {
@@ -65,7 +65,7 @@ test('gioi han so trang: khong doc qua toiDaTrang', async () => {
   const kq = await nhenViec({ url: BASE, yDinh: 'danh_sach', hoSo: HOSO, tai, jev: giaJev(), cho: async () => {}, toiDaTrang: 3 });
   assert.strictEqual(kq.soTrang, 3);
   assert.strictEqual(kq.dungVi, 'gioi_han_trang');
-  assert.strictEqual(da.length, 3);
+  assert.strictEqual(da.filter(u => !u.includes('/tim-viec-lam/')).length, 3);
 });
 
 test('Jev cham viec: xep theo do phu hop, bo viec khong phai IT, tra toi da toiDaViec; hoi Jev bang tieng Anh kem ho so', async () => {
@@ -133,4 +133,38 @@ test('trang 2 co menu ky nang cung khuon voi tin (ITviec): khong lan vao danh sa
   const kq = await nhenViec({ url: BASE, hoSo: HOSO, tai, jev: giaJev(), cho: async () => {} });
   assert.strictEqual(kq.tongViec, 9);
   assert.ok(kq.viec.every(v => !/click_source|Python$|C\+\+/.test(v.url + v.title)));
+});
+
+/** Trang chi tiet co JSON-LD JobPosting cho tin so i */
+const chiTiet = (i, kyNang = 'React, TypeScript') => `<html><head><script type="application/ld+json">${JSON.stringify({
+  '@type': 'JobPosting', title: `React Developer ${i}`, hiringOrganization: { name: `Cty ${i}`, logo: `https://cdn.x/logo${i}.png` },
+  jobLocation: { address: { addressRegion: 'Hồ Chí Minh' } }, baseSalary: { currency: 'USD', value: { minValue: 1000, maxValue: 2000 } },
+  employmentType: 'FULL_TIME', skills: kyNang })}</script></head><body>x</body></html>`;
+const urlTin = (i, ten = 'lap-trinh-vien-react') => `https://careerviet.vn/vi/tim-viec-lam/${ten}-${i}.AB${1000 + i}C.html`;
+
+test('mo trang chi tiet tin tot nhat: lay cong ty, logo, dia diem, luong, ky nang tu JobPosting; bo bai blog (khong co JobPosting)', async () => {
+  const html = danhSach(1, 4).replace('</body>', theViec(5, 'cv-dai-bao-nhieu-la-vua-du') + theViec(6, 'nen-mang-gi-khi-phong-van') + '</body>');
+  const trang = { [BASE]: html };
+  for (let i = 1; i <= 4; i++) trang[urlTin(i)] = chiTiet(i);
+  trang[urlTin(5, 'cv-dai-bao-nhieu-la-vua-du')] = '<html><script type="application/ld+json">{"@type":"Article","headline":"CV"}</script></html>';
+  trang[urlTin(6, 'nen-mang-gi-khi-phong-van')] = '<html><body>Bài viết cẩm nang</body></html>';
+  const jev = giaJev();
+  const { tai } = giaTai(trang);
+  const kq = await nhenViec({ url: BASE, hoSo: HOSO, tai, jev, cho: async () => {} });
+  assert.strictEqual(kq.viec.length, 4);
+  assert.ok(kq.viec.every(v => !/cv-dai|nen-mang/.test(v.url)));
+  const v1 = kq.viec.find(v => v.url === urlTin(1));
+  assert.deepStrictEqual(
+    { congTy: v1.congTy, logo: v1.logo, diaDiem: v1.diaDiem, luong: v1.luong, hinhThuc: v1.hinhThuc, kyNang: v1.kyNang },
+    { congTy: 'Cty 1', logo: 'https://cdn.x/logo1.png', diaDiem: 'Hồ Chí Minh', luong: '1,000 - 2,000 USD', hinhThuc: 'FULLTIME', kyNang: ['React', 'TypeScript'] });
+  // Jev cham lai bang du lieu day du (co ky nang) — lan cham sau cung thay "React, TypeScript"
+  const chamCuoi = jev.goi.filter(g => Object.keys(g.questions).some(k => k.startsWith('fit'))).at(-1);
+  assert.match(JSON.stringify(chamCuoi.questions), /React, TypeScript/);
+});
+
+test('website khong co JobPosting o trang chi tiet (VietnamWorks...): giu nguyen du lieu tu trang danh sach', async () => {
+  const { tai } = giaTai({ [BASE]: danhSach(1, 6) });
+  const kq = await nhenViec({ url: BASE, hoSo: HOSO, tai, jev: giaJev(), cho: async () => {} });
+  assert.strictEqual(kq.viec.length, 6);
+  assert.ok(kq.viec.every(v => !v.congTy));
 });

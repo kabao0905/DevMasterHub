@@ -120,3 +120,8 @@ test('trichTheViec: dia diem va luong trong the tin (ITviec, CareerViet); khong 
     ['', '']
   ]);
 });
+
+test('link bai viet cam nang / blog / tin tuc (co ma so) khong phai nhom tin viec', () => {
+  const html = [11111, 22222, 33333, 44444].map(n => `<a href="/vi/cam-nang-nghe-nghiep/cv-dai-bao-nhieu-${n}.html">CV ${n}</a><a href="/blog/phong-van-${n}">PV ${n}</a>`).join('');
+  assert.deepStrictEqual(nhomTinViec(layLink(html, GOC), GOC), []);
+});
