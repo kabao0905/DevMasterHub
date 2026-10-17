@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { Bot, Send } from 'lucide-react';
+import { Bot, Send, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { khoaBai } from '@/lib/progress';
 import { hoiGiaSu, nguCanhBai, type BaiTapAi, type TabBai, type TinNhan, type TrangThaiQuiz } from '@/lib/ai';
 import { ChatMarkdown } from '@/components/ChatMarkdown';
+import { useXacNhan } from '@/components/XacNhan';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { BaiDangMo } from './use-quiz-bai';
@@ -32,7 +33,10 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
   const khoa = useMemo<QueryKey>(() => ['tutor', uid, kb], [uid, kb]);
   const { data = RONG } = useQuery({ queryKey: khoa, queryFn: () => RONG, initialData: RONG, staleTime: Infinity, gcTime: Infinity });
   const [nhap, datNhap] = useState('');
+  const [nhacTrong, datNhacTrong] = useState(false);
+  const [hoiXacNhan, hopXacNhan] = useXacNhan();
   const dsRef = useRef<HTMLOListElement>(null);
+  const oRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const el = dsRef.current;
@@ -80,73 +84,96 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
     // Safari bao isComposing = false o phim Enter chot chu nhung keyCode = 229.
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
-      hoi(nhap);
+      guiO();
     }
   }
 
-  const khiGui = (e: FormEvent) => { e.preventDefault(); hoi(nhap); };
+  // Nut Gui luon bam duoc (tru luc dang gui): o trong thi nhac ngay duoi o va dua con tro ve
+  function guiO() {
+    if (!nhap.trim()) {
+      datNhacTrong(true);
+      oRef.current?.focus();
+      return;
+    }
+    hoi(nhap);
+  }
+
+  async function xoaHoiThoai() {
+    if (!(await hoiXacNhan(t('clearChatConfirm'), t('delete')))) return;
+    qc.setQueryData<KhoChat>(khoa, RONG);
+  }
+
+  const khiGui = (e: FormEvent) => { e.preventDefault(); guiO(); };
 
   return (
-    <section aria-labelledby="tieu-de-gia-su" className="overflow-hidden rounded-2xl border bg-card">
-      <header className="flex items-center justify-between gap-3 border-b px-5 py-3">
-        <h2 id="tieu-de-gia-su" className="flex items-center gap-2 text-sm font-semibold">
-          <Bot className="size-4 text-primary" aria-hidden="true" />
+    <section aria-labelledby="tieu-de-gia-su" className="overflow-hidden rounded-3xl bg-card shadow-soft">
+      <header className="flex items-center justify-between gap-3 px-5 py-4">
+        <h2 id="tieu-de-gia-su" className="flex items-center gap-2.5 font-display text-base font-extrabold tracking-tight">
+          <span className="grid size-9 place-items-center rounded-2xl bg-lavender text-lavender-ink" aria-hidden="true"><Bot className="size-5" /></span>
           {t('tutorHeader')} {t(NHAN_TAB[tab])}
         </h2>
         {data.tinNhan.length > 0 && (
-          <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={data.dangGui}
-            onClick={() => qc.setQueryData<KhoChat>(khoa, RONG)}>
-            {t('clearLessonChat')}
+          <Button variant="ghost" size="sm" className="rounded-full text-muted-foreground" disabled={data.dangGui}
+            onClick={() => { void xoaHoiThoai(); }}>
+            <Trash2 aria-hidden="true" /> {t('clearLessonChat')}
           </Button>
         )}
       </header>
 
-      <ol ref={dsRef} aria-live="polite" className="max-h-[28rem] space-y-3 overflow-y-auto px-5 py-4">
+      <ol ref={dsRef} aria-live="polite" className="max-h-[28rem] space-y-3 overflow-y-auto bg-canvas px-5 py-4">
         {data.tinNhan.length === 0 && (
           <li className="space-y-3">
             <p className="text-sm text-muted-foreground">{t('tutorWelcome')}</p>
             <div className="flex flex-wrap gap-2">
               {GOI_Y.map(g => (
-                <Button key={g.nut} variant="outline" size="sm" disabled={data.dangGui} onClick={() => hoi(t(g.cau))}>{t(g.nut)}</Button>
+                <Button key={g.nut} variant="outline" size="sm" className="rounded-full bg-card" disabled={data.dangGui} onClick={() => hoi(t(g.cau))}>{t(g.nut)}</Button>
               ))}
             </div>
           </li>
         )}
         {data.tinNhan.map((m, i) => (
           <li key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+            {/* Nguoi hoc: bong oai huong; AI: the trang noi tren nen canvas */}
             <div className={cn(
-              'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
-              m.role === 'user' ? 'whitespace-pre-wrap bg-primary text-primary-foreground' : 'bg-muted'
+              'max-w-[85%] min-w-0 rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words',
+              m.role === 'user' ? 'whitespace-pre-wrap rounded-br-md bg-lavender text-foreground' : 'rounded-bl-md bg-card shadow-soft'
             )}>
               {m.role === 'user' ? m.content : <ChatMarkdown text={m.content} />}
             </div>
           </li>
         ))}
         {data.dangGui && (
-          <li className="text-sm text-muted-foreground motion-safe:animate-pulse">{t('thinking')}…</li>
+          <li className="w-fit rounded-full bg-lavender px-3 py-1 text-sm text-lavender-ink motion-safe:animate-pulse">{t('thinking')}…</li>
         )}
         {data.loi && !data.dangGui && (
-          <li role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">
-            <span>{t('tutorFailed', { error: data.loi })}</span>
-            <Button variant="outline" size="sm" onClick={guiLai}>{t('resend')}</Button>
+          <li role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+            <span className="min-w-0 break-words">{t('tutorFailed', { error: data.loi })}</span>
+            <Button variant="outline" size="sm" className="rounded-full" onClick={guiLai}>{t('resend')}</Button>
           </li>
         )}
       </ol>
 
-      <form onSubmit={khiGui} className="flex items-end gap-2 border-t p-3">
-        <textarea
-          value={nhap}
-          onChange={e => datNhap(e.target.value)}
-          onKeyDown={khiGo}
-          rows={1}
-          aria-label={t('askAiPlaceholder')}
-          placeholder={t('askAiPlaceholder')}
-          className="max-h-40 min-h-10 flex-1 resize-y rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <Button type="submit" disabled={data.dangGui || !nhap.trim()}>
-          <Send aria-hidden="true" /> {t('sendMessage')}
-        </Button>
+      <form onSubmit={khiGui} className="space-y-1.5 p-3">
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={oRef}
+            name="message"
+            value={nhap}
+            onChange={e => { datNhap(e.target.value); if (nhacTrong) datNhacTrong(false); }}
+            onKeyDown={khiGo}
+            rows={1}
+            aria-label={t('askAiPlaceholder')}
+            aria-describedby="gia-su-nhac"
+            placeholder={t('askAiPlaceholder')}
+            className="field-sizing-content max-h-40 min-h-10 flex-1 resize-none rounded-2xl border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button type="submit" className="rounded-full" disabled={data.dangGui}>
+            <Send aria-hidden="true" /> {t('sendMessage')}
+          </Button>
+        </div>
+        <p id="gia-su-nhac" role="alert" className="px-1 text-sm text-destructive empty:hidden">{nhacTrong && !nhap.trim() ? t('emptyInputHint') : ''}</p>
       </form>
+      {hopXacNhan}
     </section>
   );
 }

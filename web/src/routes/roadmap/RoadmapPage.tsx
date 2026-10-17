@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Check, ChevronRight, Flag, Lock } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Flag, Lock, Play } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useBatDauHoc } from '@/lib/use-thoi-gian-hoc';
@@ -9,7 +9,7 @@ import { useProgress } from '@/lib/use-progress';
 import { useEscape } from '@/lib/use-escape';
 import { timCongNghe } from '@/lib/curriculum';
 import { baiDaMo, khoaBai, tienDoCongNghe } from '@/lib/progress';
-import { LevelLadder, CHU_CAP, MAU_CAP, VIEN_CAP } from '@/components/LevelLadder';
+import { LevelLadder, MAU_CAP } from '@/components/LevelLadder';
 import { BienTuyen } from '@/components/BienTuyen';
 import { LoadError } from '@/components/LoadError';
 import { NotFoundPanel } from '@/components/NotFoundPanel';
@@ -18,18 +18,18 @@ import { cn } from '@/lib/utils';
 
 export function RoadmapPage() {
   const { tech: techId = '', level: capTrenUrl } = useParams();
-  const { t, translateTitle, techDesc } = useT();
+  const { t, lang, translateTitle, techDesc } = useT();
   const navigate = useNavigate();
   const { data: ds = [], isLoading, isError, refetch } = useCurriculumIndex();
   const { done } = useProgress();
   const tech = timCongNghe(ds, techId);
   const tongBai = tech ? tech.levels.reduce((n, l) => n + l.lessons.length, 0) : 0;
 
-  // Giong meta server chen cho lan tai dau, de di bang router hay tai trang deu ra mot tieu de
+  // Tieu de / mo ta theo ngon ngu dang chon; ban tieng Viet trung khop meta server chen cho lan tai dau
   usePageMeta(tech
     ? {
-        title: `Học ${tech.name} Từ Cơ Bản Đến Nâng Cao — ${tongBai} Bài | DevMaster Hub`,
-        description: `Lộ trình ${tech.name} gồm ${tongBai} bài thực chiến chia theo ${tech.levels.length} cấp độ. Học lý thuyết, chạy code ngay trên trình duyệt, làm trắc nghiệm và có AI Tutor kèm 1-1.`,
+        title: `${t('roadmapMetaTitle', { name: tech.name, n: tongBai })} | DevMaster Hub`,
+        description: t('roadmapMetaDesc', { name: tech.name, n: tongBai, levels: tech.levels.length }),
         url: `${window.location.origin}/roadmap/${tech.id}`
       }
     : { title: `${t('pageNotFound')} | DevMaster Hub` });
@@ -45,135 +45,127 @@ export function RoadmapPage() {
   }, [tech, capTrenUrl]);
 
   if (isError) return <LoadError onRetry={() => refetch()} />;
-  if (isLoading) return <Skeleton className="h-96 w-full rounded-2xl" />;
+  if (isLoading) return <Skeleton className="h-96 w-full rounded-3xl" />;
   if (!tech) return <NotFoundPanel />;
 
   const td = tienDoCongNghe(tech, done);
-  // Ga "ban o day": bai dau tien da mo ma chua xong (hoc theo thu tu)
+  const phanTram = new Intl.NumberFormat(lang, { style: 'percent' }).format(td.phanTram / 100);
+  // Bai "dang hoc": bai dau tien da mo ma chua xong (hoc theo thu tu)
   const gaHienTai = tech.levels.flatMap(cap => cap.lessons.map(bai => ({ cap: cap.id, bai: bai.id })))
     .find(g => baiDaMo(tech, g.cap, g.bai, done) && !done.has(khoaBai(tech.id, g.cap, g.bai)));
-  const capCuoi = tech.levels.length - 1;
+  // Loi giai thich khoa chi hien mot lan, o bai khoa dau tien
+  const baiKhoaDau = tech.levels.flatMap(cap => cap.lessons.map(bai => ({ cap: cap.id, bai: bai.id })))
+    .find(g => !baiDaMo(tech, g.cap, g.bai, done));
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" aria-hidden="true" /> {t('back')}
+      <Link to="/" className="inline-flex items-center gap-1.5 rounded-full px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="size-4" aria-hidden="true" /> {t('dashboard')}
       </Link>
 
       <header className="space-y-5">
         <div className="flex items-start gap-4">
           <BienTuyen tech={tech} co="lon" />
           <div className="min-w-0">
-            <h1 className="font-display text-5xl leading-none font-extrabold tracking-tight">{tech.name}</h1>
+            <h1 className="font-display text-4xl leading-none font-extrabold tracking-tight break-words sm:text-5xl">{tech.name}</h1>
             <p className="mt-2 text-muted-foreground">{techDesc(tech.id, tech.description)}</p>
           </div>
         </div>
-        <div className="flex max-w-xl items-center gap-4">
-          <LevelLadder levels={tech.levels} theoCap={td.theoCap} className="flex-1" />
-          <p className="shrink-0 text-sm text-muted-foreground tabular-nums">
-            {td.xong}/{td.tong} {t('lessonsUnit')} <span className="ml-1.5 font-semibold text-foreground">{td.phanTram}%</span>
-          </p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-3xl bg-card px-5 py-4 shadow-soft">
+          <LevelLadder levels={tech.levels} theoCap={td.theoCap} className="min-w-48 flex-1" />
+          <p className="shrink-0 text-sm text-muted-foreground tabular-nums">{td.xong}/{td.tong} {t('lessonsUnit')}</p>
+          <span className="shrink-0 rounded-full bg-mint px-2.5 py-0.5 text-sm font-semibold text-mint-ink tabular-nums">{phanTram}</span>
         </div>
       </header>
 
       {tech.id === 'cybersecurity' && (
-        <Link to="/challenge" className="the-noi flex items-center gap-4 rounded-2xl border bg-card p-5">
-          <Flag className="size-6 shrink-0 text-level-senior" aria-hidden="true" />
-          <span className="min-w-0 flex-1">
-            <span className="block font-semibold">{t('challengeNav')}</span>
-            <span className="block text-sm text-muted-foreground">{t('challengeEntryHint')}</span>
+        <Link to="/challenge" className="the-noi flex items-center gap-4 rounded-3xl bg-peach p-5">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-card text-peach-ink" aria-hidden="true">
+            <Flag className="size-5" />
           </span>
-          <ChevronRight className="size-5 text-muted-foreground" aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg font-extrabold">{t('challengeNav')}</span>
+            <span className="block text-sm">{t('challengeEntryHint')}</span>
+          </span>
+          <ChevronRight className="size-5" aria-hidden="true" />
         </Link>
       )}
 
       {/*
-        So do tuyen doc: moi cap do la mot doan tuyen mang mau cap, moi bai la mot ga tren doan do.
-        Duong tuyen ve tung khuc theo hang (khong khe ho giua cac hang): khuc da di dam mau, khuc chua toi nhat.
-        Dau moi cap la tram doi tuyen (vong tron lon ghi so cap); ga "ban o day" to vang.
+        Lo trinh: moi cap la mot doan, moi bai la mot the pastel noi nhau bang duong cham bac ha ben trai.
+        Bai dang hoc rut ra khoi duong: the oai huong nghieng nhe, noi len, co nut "phat". Bai xong: cham bac ha + dau tich.
+        Bai khoa: the mo, vien net dut.
       */}
-      <ol>
+      <ol className="space-y-8">
         {tech.levels.map((cap, i) => {
           const c = td.theoCap[i];
           const xongCap = c.tong > 0 && c.xong === c.tong;
-          const mau = MAU_CAP[cap.id] ?? 'bg-primary';
-          const daToi = c.xong > 0 || gaHienTai?.cap === cap.id;
           return (
             <li key={cap.id}>
               <section
                 id={`cap-${cap.id}`}
                 aria-labelledby={`tieu-de-cap-${cap.id}`}
                 aria-current={cap.id === capTrenUrl ? 'true' : undefined}
-                className={cn('scroll-mt-24 rounded-2xl', cap.id === capTrenUrl && 'ring-2 ring-ring/40 ring-offset-8 ring-offset-background')}
+                className={cn('scroll-mt-24 rounded-3xl', cap.id === capTrenUrl && 'ring-2 ring-ring/40 ring-offset-8 ring-offset-canvas')}
               >
-                <div className="relative flex items-center justify-between gap-3 py-3 pl-14">
-                  <span aria-hidden="true" className={cn('absolute left-[17px] w-1.5', mau, i === 0 ? 'top-1/2 bottom-0' : 'inset-y-0', !daToi && 'opacity-25')} />
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      'absolute top-1/2 left-0 grid size-10 -translate-y-1/2 place-items-center rounded-full border-[5px] bg-card font-display text-base font-bold tabular-nums',
-                      VIEN_CAP[cap.id] ?? 'border-primary', xongCap && cn(mau, 'text-white dark:text-background')
-                    )}
-                  >
-                    {xongCap ? <Check className="size-4" strokeWidth={3} /> : i + 1}
-                  </span>
-                  <h2 id={`tieu-de-cap-${cap.id}`} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className={cn('rounded-full px-2.5 py-0.5 text-sm font-semibold text-white dark:text-background', mau)}>{cap.name}</span>
-                    <span className="font-display text-2xl font-semibold">{translateTitle(cap.desc || cap.name)}</span>
+                {/* Dien thoai: tieu de cap chiem tron hang, so bai xuong dong rieng ben duoi */}
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                  <h2 id={`tieu-de-cap-${cap.id}`} className="flex min-w-0 flex-col items-start gap-y-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+                    <span className={cn('rounded-full px-3 py-1 text-sm font-bold text-white dark:text-background', MAU_CAP[cap.id] ?? 'bg-primary')}>{cap.name}</span>
+                    <span className="font-display text-2xl font-extrabold text-balance">{translateTitle(cap.desc || cap.name)}</span>
                   </h2>
-                  <span className="shrink-0 text-sm text-muted-foreground tabular-nums">{c.xong}/{c.tong}</span>
+                  <span className={cn('shrink-0 rounded-full px-2.5 py-0.5 text-sm font-semibold tabular-nums', xongCap ? 'bg-mint text-mint-ink' : 'bg-muted text-muted-foreground')}>{c.xong}/{c.tong}</span>
                 </div>
 
-                <ul>
-                  {cap.lessons.map((bai, k) => {
+                <ul className="relative mt-4 space-y-3 pl-9 before:absolute before:top-4 before:bottom-4 before:left-[13px] before:border-l-2 before:border-dotted before:border-trail">
+                  {cap.lessons.map(bai => {
                     const xong = done.has(khoaBai(tech.id, cap.id, bai.id));
                     const oDay = gaHienTai?.cap === cap.id && gaHienTai.bai === bai.id;
-                    const gaCuoi = i === capCuoi && k === cap.lessons.length - 1;
-                    // Khuc tuyen cua hang: da qua ga nay thi dam ca khuc; dang o day thi dam nua tren
-                    const khuc = (
-                      <>
-                        <span aria-hidden="true" className={cn('absolute top-0 left-[17px] w-1.5', mau, gaCuoi ? 'h-1/2' : 'bottom-0', !xong && !oDay && 'opacity-25')} />
-                        {oDay && !gaCuoi && <span aria-hidden="true" className={cn('absolute top-1/2 bottom-0 left-[17px] w-1.5 opacity-25', mau)} />}
-                      </>
-                    );
                     // Hoc theo thu tu: bai chua toi luot hien khoa, khong vao duoc
                     if (!baiDaMo(tech, cap.id, bai.id, done)) {
+                      const laKhoaDau = baiKhoaDau?.cap === cap.id && baiKhoaDau.bai === bai.id;
                       return (
-                        <li key={bai.id} className="relative py-1 pl-14">
-                          {khuc}
-                          <span aria-hidden="true" className="absolute top-1/2 left-[11px] size-[18px] -translate-y-1/2 rounded-full border-[3px] border-muted-foreground/40 bg-card" />
-                          <div aria-disabled="true" title={t('lessonLockedHint')} className="kich-dong flex cursor-not-allowed items-center gap-3 px-3 py-2.5 text-muted-foreground/80">
+                        <li key={bai.id} className="relative">
+                          <span aria-hidden="true" className="absolute top-1/2 -left-[29px] size-3.5 -translate-y-1/2 rounded-full border-2 border-border bg-canvas" />
+                          <div className="kich-dong flex items-center gap-3 rounded-2xl border-2 border-dashed border-border px-4 py-3 text-muted-foreground">
                             <span className="min-w-0 flex-1">
                               <span>{translateTitle(bai.title)}</span>
                               <span className="sr-only"> {t('lessonLocked')}</span>
+                              {laKhoaDau && <span className="mt-0.5 block text-xs">{t('lessonLockedHint')}</span>}
                             </span>
-                            <Lock data-dong="khoa" className="size-4 shrink-0" aria-hidden="true" />
+                            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted" aria-hidden="true">
+                              <Lock data-dong="khoa" className="size-4" />
+                            </span>
                           </div>
                         </li>
                       );
                     }
                     return (
-                      <li key={bai.id} className="relative py-1 pl-14">
-                        {khuc}
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            'absolute top-1/2 -translate-y-1/2 rounded-full border-[3px]',
-                            oDay ? 'left-[9px] size-[22px] border-foreground bg-signal'
-                              : cn('left-[11px] size-[18px]', VIEN_CAP[cap.id], xong ? mau : 'bg-card')
-                          )}
-                        />
+                      <li key={bai.id} className="relative">
+                        <span aria-hidden="true" className={cn('absolute top-1/2 -translate-y-1/2 rounded-full',
+                          oDay ? '-left-[31px] size-[18px] border-4 border-canvas bg-primary ring-2 ring-primary/30'
+                            : xong ? '-left-[29px] size-3.5 bg-trail' : '-left-[29px] size-3.5 border-2 border-trail bg-canvas')} />
                         <Link to={`/lesson/${tech.id}/${cap.id}/${bai.id}`} aria-current={oDay ? 'step' : undefined}
-                          className={cn('the-noi flex items-center gap-3 rounded-xl border border-transparent px-3.5 py-2.5 hover:bg-card',
-                            'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-                            oDay && 'border-border bg-card font-semibold')}>
+                          className={cn('the-noi flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                            oDay ? 'rounded-3xl bg-lavender px-5 py-4 shadow-lift sm:-rotate-[0.6deg] sm:hover:rotate-0'
+                              : 'rounded-2xl bg-card px-4 py-3 shadow-soft')}>
                           <span className="min-w-0 flex-1">
-                            {translateTitle(bai.title)}
-                            {xong && <span className="sr-only"> {t('statCompleted')}</span>}
+                            <span className={cn('block', oDay && 'font-display text-lg font-extrabold')}>
+                              {translateTitle(bai.title)}
+                              {xong && <span className="sr-only"> {t('statCompleted')}</span>}
+                            </span>
                           </span>
-                          {oDay && <span aria-hidden="true" className="shrink-0 rounded-full bg-signal px-2.5 py-0.5 text-xs font-semibold text-signal-foreground">{t('youAreHere')}</span>}
-                          {xong && <Check className={cn('size-4 shrink-0', CHU_CAP[cap.id] ?? 'text-primary')} strokeWidth={3} aria-hidden="true" />}
-                          <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                          {/* Dien thoai: chi dau tich (chu "Hoan thanh" da co san o sr-only trong ten bai), tu sm hien ca chip */}
+                          {xong && (
+                            <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-mint p-1 text-xs font-semibold text-mint-ink sm:px-2.5 sm:py-0.5">
+                              <Check className="size-3.5" strokeWidth={3} /><span className="hidden sm:inline">{t('statCompleted')}</span>
+                            </span>
+                          )}
+                          {/* Danh dau bai dang hoc nam cuoi the, canh nut phat; trinh doc man hinh da nghe qua aria-current="step" */}
+                          {oDay && <span aria-hidden="true" className="hidden shrink-0 rounded-full bg-card px-2.5 py-0.5 text-xs font-semibold text-lavender-ink sm:inline-block">{t('youAreHere')}</span>}
+                          {oDay
+                            ? <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><Play className="size-4 translate-x-px fill-current" /></span>
+                            : <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
                         </Link>
                       </li>
                     );

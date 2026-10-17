@@ -69,3 +69,16 @@ export function baiKeTiep(ds: CongNgheTomTat[], done: Set<string>): ViTriBai | n
   }
   return null;
 }
+
+/** Cac cong nghe dang hoc do (da xong it nhat mot bai, chua xong het) kem bai ke tiep; hoc nhieu nhat dung dau */
+export function dangHocDo(ds: CongNgheTomTat[], done: Set<string>): ViTriBai[] {
+  const ra: { vt: ViTriBai; xong: number }[] = [];
+  for (const tech of ds) {
+    const { xong, tong } = tienDoCongNghe(tech, done);
+    if (xong === 0 || xong >= tong) continue;
+    const level = tech.levels.find(l => l.lessons.some(b => !done.has(khoaBai(tech.id, l.id, b.id))));
+    const lesson = level?.lessons.find(b => !done.has(khoaBai(tech.id, level.id, b.id)));
+    if (level && lesson) ra.push({ vt: { tech, level, lesson }, xong });
+  }
+  return ra.sort((a, b) => b.xong - a.xong).map(x => x.vt);
+}

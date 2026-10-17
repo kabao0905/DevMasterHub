@@ -1,23 +1,34 @@
 // Ket qua cham project: diem tong, 5 tieu chi, diem tung file, cau truc, tung module, phan tich tinh, nhan xet.
-import type { ReactNode } from 'react';
-import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
+import { memo, type ReactNode } from 'react';
+import { ChevronDown, CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { KetQuaCham, TrangThaiCham } from '@/lib/project-ai';
+import { CHIP, CHIP_DIEM, NEN_DIEM, mucDiem } from './mau-diem';
 
 const NHAN_TRANG_THAI: Record<TrangThaiCham, string> = {
   excellent: 'reviewExcellent', good: 'reviewGood', partial: 'reviewPartial', needs_work: 'reviewNeedsWork'
 };
-const ICON_SACH = <CircleCheck className="size-4 text-emerald-400" aria-hidden="true" />;
+const ICON_SACH = <CircleCheck className="size-4 text-mint-ink" aria-hidden="true" />;
 
-/** Mau theo diem /100 (cung nguong voi app cu) */
-const mauDiem = (d: number | null) => d == null ? 'text-muted-foreground' : (d >= 80 ? 'text-emerald-400' : d >= 60 ? 'text-amber-300' : d >= 40 ? 'text-orange-400' : 'text-red-400');
-const nenDiem = (d: number) => (d >= 80 ? 'bg-emerald-400' : d >= 60 ? 'bg-amber-300' : d >= 40 ? 'bg-orange-400' : 'bg-red-400');
+/** Chip diem (cung nguong voi app cu, quy ve /100 de chon mau) */
+function ChipDiem({ diem, tren = 100 }: { diem: number | null; tren?: number }) {
+  return (
+    <span className={cn(CHIP, 'shrink-0 font-mono', CHIP_DIEM[mucDiem(diem == null ? null : (diem * 100) / tren)])}>
+      {diem ?? '?'}/{tren}
+    </span>
+  );
+}
+
+/** Mui ten cua <summary> (display flex lam mat dau mo/dong mac dinh): xoay khi mo */
+const MuiTen = () => (
+  <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
+);
 
 function Thanh({ diem, cao = 'h-2' }: { diem: number | null; cao?: string }) {
   return (
     <div className={cn('w-full overflow-hidden rounded-full bg-muted', cao)} aria-hidden="true">
-      <div className={cn('h-full rounded-full', nenDiem(diem ?? 0))} style={{ width: `${diem ?? 0}%` }} />
+      <div className={cn('h-full rounded-full', NEN_DIEM[mucDiem(diem ?? 0)])} style={{ width: `${diem ?? 0}%` }} />
     </div>
   );
 }
@@ -25,7 +36,7 @@ function Thanh({ diem, cao = 'h-2' }: { diem: number | null; cao?: string }) {
 function Muc({ tieuDe, children }: { tieuDe: ReactNode; children: ReactNode }) {
   return (
     <section className="space-y-3 border-t pt-5">
-      <h3 className="font-semibold">{tieuDe}</h3>
+      <h3 className="font-display font-extrabold tracking-tight">{tieuDe}</h3>
       {children}
     </section>
   );
@@ -33,27 +44,28 @@ function Muc({ tieuDe, children }: { tieuDe: ReactNode; children: ReactNode }) {
 
 const DanhSach = ({ ds }: { ds: string[] }) => <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">{ds.map((x, i) => <li key={i}>{x}</li>)}</ul>;
 
-export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
+/** memo: kq giu nguyen tham chieu khi go code / chat, khong ve lai ca bang diem moi phim */
+export const KetQuaChamView = memo(function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
   const { t } = useT();
   const sr = kq.structureReview;
   const la = kq.localAnalysis;
   return (
-    <article aria-labelledby="ket-qua-cham" className="space-y-5 rounded-2xl border bg-card p-6">
+    <article aria-labelledby="ket-qua-cham" className="space-y-5 rounded-3xl bg-card p-6 shadow-soft">
       <header className="space-y-3">
-        <h2 id="ket-qua-cham" className="text-2xl font-semibold tracking-tight">
-          {t(NHAN_TRANG_THAI[kq.status])} — <span className={mauDiem(kq.score)}>{kq.score ?? '?'}/100</span>
+        <h2 id="ket-qua-cham" className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-2xl font-extrabold tracking-tight">
+          {t(NHAN_TRANG_THAI[kq.status])} — <span className={cn('rounded-full px-3 py-0.5 font-mono text-xl', CHIP_DIEM[mucDiem(kq.score)])}>{kq.score ?? '?'}/100</span>
         </h2>
         <Thanh diem={kq.score} />
         {kq.summary && <p className="leading-relaxed">{kq.summary}</p>}
       </header>
 
       {kq.criteria.length > 0 && (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul aria-label={t('reviewScoresLabel')} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {kq.criteria.map((c, i) => (
-            <li key={i} className="space-y-1 rounded-xl border bg-background p-4">
-              <div className="flex items-baseline justify-between gap-2">
+            <li key={i} className="space-y-1 rounded-2xl bg-background p-4">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-medium">{c.name}</span>
-                <span className={cn('font-mono text-sm font-semibold', mauDiem(c.score * 5))}>{c.score}/20</span>
+                <ChipDiem diem={c.score} tren={20} />
               </div>
               {c.comment && <p className="text-xs leading-relaxed text-muted-foreground">{c.comment}</p>}
             </li>
@@ -65,10 +77,10 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
         <Muc tieuDe={t('reviewPerFile')}>
           <ul className="grid gap-3 sm:grid-cols-2">
             {kq.perFileReviews.map((f, i) => (
-              <li key={i} className="space-y-1.5 rounded-xl border bg-background p-3">
-                <div className="flex items-baseline justify-between gap-2">
+              <li key={i} className="space-y-1.5 rounded-2xl bg-background p-3">
+                <div className="flex items-center justify-between gap-2">
                   <span className="truncate font-mono text-sm">{f.fileName}</span>
-                  <span className={cn('font-mono text-sm font-semibold', mauDiem(f.score))}>{f.score}/100</span>
+                  <ChipDiem diem={f.score} />
                 </div>
                 <Thanh diem={f.score} cao="h-1" />
                 {f.summary && <p className="text-xs text-muted-foreground">{f.summary}</p>}
@@ -79,11 +91,11 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       )}
 
       {sr && (
-        <Muc tieuDe={<>{t('reviewStructureTitle')} — <span className={mauDiem(sr.structureScore)}>{sr.structureScore}/100</span></>}>
+        <Muc tieuDe={<span className="inline-flex flex-wrap items-center gap-2">{t('reviewStructureTitle')} — <ChipDiem diem={sr.structureScore} /></span>}>
           <dl className="grid gap-2 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4">
-            <dt className="font-medium">{t('reviewNaming')}</dt><dd className="text-muted-foreground">{sr.naming || 'N/A'}</dd>
-            <dt className="font-medium">{t('reviewOrganization')}</dt><dd className="text-muted-foreground">{sr.organization || 'N/A'}</dd>
-            <dt className="font-medium">{t('reviewCompleteness')}</dt><dd className="text-muted-foreground">{sr.completeness || 'N/A'}</dd>
+            <dt className="font-medium">{t('reviewNaming')}</dt><dd className="text-muted-foreground">{sr.naming || t('notAvailable')}</dd>
+            <dt className="font-medium">{t('reviewOrganization')}</dt><dd className="text-muted-foreground">{sr.organization || t('notAvailable')}</dd>
+            <dt className="font-medium">{t('reviewCompleteness')}</dt><dd className="text-muted-foreground">{sr.completeness || t('notAvailable')}</dd>
             {sr.missingFiles.length > 0 && <><dt className="font-medium">{t('reviewMissingFiles')}</dt><dd className="font-mono text-muted-foreground">{sr.missingFiles.join(', ')}</dd></>}
           </dl>
           {sr.suggestions.length > 0 && <DanhSach ds={sr.suggestions} />}
@@ -94,18 +106,21 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
         <Muc tieuDe={t('reviewModulesTitle')}>
           <div className="space-y-3">
             {kq.moduleReviews.map((m, i) => (
-              <details key={i} open className="rounded-xl border bg-background p-4">
-                <summary className="flex cursor-pointer flex-wrap items-baseline gap-x-3 gap-y-1">
+              <details key={i} open className="group rounded-2xl bg-background p-4">
+                <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 [&::-webkit-details-marker]:hidden">
+                  <MuiTen />
                   <span className="font-medium">{m.moduleLabel || m.moduleId}</span>
-                  <span className={cn('font-mono text-sm font-semibold', mauDiem(m.score))}>{m.score}/100</span>
-                  <span className="font-mono text-xs text-muted-foreground">Q:{m.codeQuality} L:{m.logic} E:{m.errorHandling} R:{m.relevance}</span>
+                  <ChipDiem diem={m.score} />
+                  <span className="basis-full pl-7 text-xs text-muted-foreground">
+                    {t('reviewModuleScores', { q: m.codeQuality, l: m.logic, e: m.errorHandling, r: m.relevance })}
+                  </span>
                 </summary>
                 <div className="mt-3 space-y-2 text-sm">
                   {m.summary && <p className="leading-relaxed">{m.summary}</p>}
                   {m.fileScores.length > 0 && (
                     <ul className="flex flex-wrap gap-1.5">
                       {m.fileScores.map((f, j) => (
-                        <li key={j} className="rounded-md border px-2 py-0.5 font-mono text-xs">{f.file} <span className={mauDiem(f.score)}>{f.score}</span></li>
+                        <li key={j} className={cn(CHIP, 'gap-1.5 font-mono font-medium', CHIP_DIEM[mucDiem(f.score)])}>{f.file} <span className="font-bold">{f.score}</span></li>
                       ))}
                     </ul>
                   )}
@@ -121,31 +136,32 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       {la && (
         <Muc tieuDe={t('reviewStaticTitle')}>
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <span className="inline-flex items-baseline gap-1.5 rounded-xl border px-3 py-2">
-              <span className={cn('font-mono text-xl font-semibold', mauDiem(la.avgScore))}>{la.avgScore}</span>
-              <span className="text-muted-foreground">{t('reviewLintScore')}</span>
+            <span className={cn('inline-flex items-baseline gap-1.5 rounded-2xl px-3 py-2', CHIP_DIEM[mucDiem(la.avgScore)])}>
+              <span className="font-mono text-xl font-bold">{la.avgScore}</span>
+              <span>{t('reviewLintScore')}</span>
             </span>
-            <span className="inline-flex items-center gap-1.5">{la.totalErrors > 0 ? <CircleX className="size-4 text-red-400" aria-hidden="true" /> : ICON_SACH}{t('reviewErrorsCount', { n: la.totalErrors })}</span>
-            <span className="inline-flex items-center gap-1.5">{la.totalWarnings > 0 ? <TriangleAlert className="size-4 text-amber-300" aria-hidden="true" /> : ICON_SACH}{t('reviewWarningsCount', { n: la.totalWarnings })}</span>
+            <span className="inline-flex items-center gap-1.5">{la.totalErrors > 0 ? <CircleX className="size-4 text-destructive" aria-hidden="true" /> : ICON_SACH}{t('reviewErrorsCount', { n: la.totalErrors })}</span>
+            <span className="inline-flex items-center gap-1.5">{la.totalWarnings > 0 ? <TriangleAlert className="size-4 text-butter-ink" aria-hidden="true" /> : ICON_SACH}{t('reviewWarningsCount', { n: la.totalWarnings })}</span>
             <span className="inline-flex items-center gap-1.5"><Info className="size-4 text-muted-foreground" aria-hidden="true" />{t('reviewInfoCount', { n: la.totalIssues - la.totalErrors - la.totalWarnings })}</span>
           </div>
           {la.files.filter(f => f.issues.length > 0).map((f, i) => (
-            <details key={i} className="rounded-xl border bg-background p-3 text-sm">
-              <summary className="flex cursor-pointer flex-wrap items-baseline gap-x-3">
+            <details key={i} className="group rounded-2xl bg-background p-3 text-sm">
+              <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 [&::-webkit-details-marker]:hidden">
+                <MuiTen />
                 <span className="font-mono">{f.fileName}</span>
                 <span className="font-semibold">{f.grade}</span>
-                <span className={mauDiem(f.score)}>{f.score}/100</span>
+                <ChipDiem diem={f.score} />
               </summary>
               <ul className="mt-2 space-y-1">
                 {f.issues.map((v, j) => (
-                  <li key={j} className={cn(v.severity === 'error' ? 'text-red-400' : v.severity === 'warning' ? 'text-amber-300' : 'text-muted-foreground')}>
+                  <li key={j} className={cn(v.severity === 'error' ? 'text-destructive' : v.severity === 'warning' ? 'text-butter-ink' : 'text-muted-foreground')}>
                     {v.line ? <span className="mr-2 font-mono text-xs">L{v.line}</span> : null}{v.message}
                   </li>
                 ))}
               </ul>
             </details>
           ))}
-          {la.files.every(f => f.issues.length === 0) && <p className="flex items-center gap-1.5 text-sm text-emerald-400"><CircleCheck className="size-4" aria-hidden="true" />{t('reviewClean')}</p>}
+          {la.files.every(f => f.issues.length === 0) && <p className="flex items-center gap-1.5 text-sm text-mint-ink"><CircleCheck className="size-4" aria-hidden="true" />{t('reviewClean')}</p>}
         </Muc>
       )}
 
@@ -154,4 +170,4 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       {kq.tips.length > 0 && <Muc tieuDe={t('reviewTips')}><DanhSach ds={kq.tips} /></Muc>}
     </article>
   );
-}
+});

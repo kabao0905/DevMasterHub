@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { CornerDownLeft, Save } from 'lucide-react';
+import { useXacNhan } from '@/components/XacNhan';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useT } from '@/lib/i18n';
@@ -19,17 +20,19 @@ type Props = { kenh: KenhTerminal; className?: string };
 export function Terminal({ kenh, className }: Props) {
   const { may, nghe } = kenh;
   const { t } = useT();
+  const [hoi, hopXacNhan] = useXacNhan();
   const [dong, datDong] = useState<Dong[]>([{ id: 0, loai: 'chao', text: '' }]);
   const [nhap, datNhap] = useState('');
   const [viTri, datViTri] = useState<number | null>(null);
-  const [soan, datSoan] = useState<{ duong: string; noiDung: string } | null>(null);
+  // goc: noi dung luc mo nano — dong hop khi da sua thi hoi truoc, khong lang le bo mat
+  const [soan, datSoan] = useState<{ duong: string; noiDung: string; goc: string } | null>(null);
   const idRef = useRef(1);
   const manRef = useRef<HTMLDivElement>(null);
   const oRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const boXoa = nghe('xoa', () => datDong([]));
-    const boSoan = nghe('soan', (duong, noiDung) => datSoan({ duong, noiDung }));
+    const boSoan = nghe('soan', (duong, noiDung) => datSoan({ duong, noiDung, goc: noiDung }));
     return () => { boXoa(); boSoan(); };
   }, [nghe]);
 
@@ -81,23 +84,34 @@ export function Terminal({ kenh, className }: Props) {
     oRef.current?.focus();
   }
 
+  async function dongSoan() {
+    if (soan && soan.noiDung !== soan.goc && !(await hoi(t('discardChangesConfirm'), t('discard')))) return;
+    datSoan(null);
+    oRef.current?.focus();
+  }
+
+  // Bam vao man hinh de go tiep (giong terminal that) — tru khi vua boi den chu de sao chep
+  function bamManHinh() {
+    if (window.getSelection()?.toString()) return;
+    oRef.current?.focus();
+  }
+
   return (
-    <div className={cn('overflow-hidden rounded-xl border border-white/10 bg-[#0b1020] font-mono text-[13px] text-[#c9d1d9]', className)}>
+    <div translate="no" className={cn('overflow-hidden rounded-2xl bg-code font-mono text-[13px] text-[#c9d1d9] shadow-soft', className)}>
       <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2 text-xs text-[#8b949e]">
         <span className="flex gap-1.5" aria-hidden="true">
           <span className="size-2.5 rounded-full bg-[#ff5f56]" /><span className="size-2.5 rounded-full bg-[#ffbd2e]" /><span className="size-2.5 rounded-full bg-[#27c93f]" />
         </span>
         <span className="ml-2">hacker@devmaster: {rutGon(may.cwd())}</span>
       </div>
-      {/* Bam vao man hinh de go tiep (giong terminal that) */}
-      <div ref={manRef} onClick={() => oRef.current?.focus()} className="h-80 space-y-1 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
+      <div ref={manRef} onClick={bamManHinh} className="h-80 space-y-1 overflow-y-auto px-4 py-3" role="log" aria-live="polite">
         {dong.map(d => (
           d.loai === 'lenh'
-            ? <div key={d.id}><span className="text-[#7ee787]">hacker@devmaster:{rutGon(d.cwd || '/')}$</span> {d.text}</div>
+            ? <div key={d.id} className="break-all"><span className="text-[#7ee787]">hacker@devmaster:{rutGon(d.cwd || '/')}$</span> {d.text}</div>
             : <pre key={d.id} className={cn('whitespace-pre-wrap break-words', d.loai !== 'ra' && 'text-[#8b949e]')}>{d.loai === 'chao' ? t('termWelcome') : d.text}</pre>
         ))}
       </div>
-      <form onSubmit={guiLenh} className="flex items-center gap-2 border-t border-white/10 py-1.5 pr-1.5 pl-4">
+      <form onSubmit={guiLenh} className="flex items-center gap-2 border-t border-white/10 py-1.5 pr-1.5 pl-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#7ee787]">
         <span className="shrink-0 text-[#7ee787]" aria-hidden="true">{rutGon(may.cwd())}$</span>
         {/* Dien thoai: tat tu sua/viet hoa (iOS doi "ls" thanh "Is"), chu 16px de iOS khong tu phong to khi cham */}
         <input
@@ -119,7 +133,7 @@ export function Terminal({ kenh, className }: Props) {
         </button>
       </form>
 
-      <Dialog open={!!soan} onOpenChange={mo => { if (!mo) datSoan(null); }}>
+      <Dialog open={!!soan} onOpenChange={mo => { if (!mo) void dongSoan(); }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-mono text-sm">{t('termEditing', { path: soan?.duong ?? '' })}</DialogTitle>
@@ -129,14 +143,18 @@ export function Terminal({ kenh, className }: Props) {
             onChange={e => datSoan(s => (s ? { ...s, noiDung: e.target.value } : s))}
             aria-label={t('termFileContent')}
             spellCheck={false}
-            className="h-72 w-full resize-y rounded-lg border bg-code p-3 font-mono text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            autoCapitalize="off"
+            autoCorrect="off"
+            translate="no"
+            className="h-72 w-full resize-y rounded-2xl bg-code p-3 font-mono text-[13px] text-[#e6edf3] caret-[#7ee787] outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => datSoan(null)}>{t('cancelBtn')}</Button>
-            <Button onClick={luu}><Save aria-hidden="true" /> {t('termSaveBtn')}</Button>
+            <Button variant="outline" className="rounded-full" onClick={() => { void dongSoan(); }}>{t('cancelBtn')}</Button>
+            <Button className="rounded-full" onClick={luu}><Save aria-hidden="true" /> {t('termSaveBtn')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {hopXacNhan}
     </div>
   );
 }

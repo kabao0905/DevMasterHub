@@ -22,9 +22,10 @@ function thayGiaTri(el: HTMLTextAreaElement, giaTri: string, conTro: number, cuo
   el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-type Props = { value: string; onChange: (v: string) => void; label: string; className?: string };
+/** id: de nut Cham / Chay dua con tro ve o khi o con trong; describedBy: dong nhac ngay duoi o */
+type Props = { value: string; onChange: (v: string) => void; label: string; className?: string; id?: string; describedBy?: string };
 
-export function CodeArea({ value, onChange, label, className }: Props) {
+export function CodeArea({ value, onChange, label, className, id, describedBy }: Props) {
   function khiGo(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.nativeEvent.isComposing || e.keyCode === 229) return;
     const el = e.currentTarget;
@@ -88,8 +89,11 @@ export function CodeArea({ value, onChange, label, className }: Props) {
     }
   }
 
+  // Mat code luon toi: khung bo goc lon, bong mem; chu goi y xam sang de doc duoc tren nen toi
   return (
     <textarea
+      id={id}
+      aria-describedby={describedBy}
       value={value}
       onChange={e => onChange(e.target.value)}
       onKeyDown={khiGo}
@@ -98,7 +102,8 @@ export function CodeArea({ value, onChange, label, className }: Props) {
       spellCheck={false}
       autoCapitalize="off"
       autoCorrect="off"
-      className={className ?? 'min-h-48 w-full resize-y rounded-xl border bg-code p-4 font-mono text-[13px] leading-6 text-[#e6edf3] outline-none focus-visible:ring-2 focus-visible:ring-ring'}
+      translate="no"
+      className={className ?? 'min-h-48 w-full resize-y rounded-2xl bg-code p-4 font-mono text-[13px] leading-6 text-[#e6edf3] shadow-soft outline-none placeholder:text-[#8b949e] focus-visible:ring-2 focus-visible:ring-ring'}
     />
   );
 }

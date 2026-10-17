@@ -35,7 +35,7 @@ export function Sidebar() {
   const [hoi, hopXacNhan] = useXacNhan();
   const { pathname } = useLocation();
   const laTrangDuAn = /^\/(project|project-level|project-topic|saved-ideas)(\/|$)/.test(pathname);
-  const { data: suc } = useQuery({
+  const { data: suc, isPending: dangKiemTraAi } = useQuery({
     queryKey: ['health'],
     queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'),
     staleTime: 5 * 60_000
@@ -47,6 +47,11 @@ export function Sidebar() {
     return [...m].filter(([, ds]) => ds.length);
   }, [ds]);
 
+  const trangThaiAi = dangKiemTraAi
+    ? { cham: 'bg-muted-foreground/40', khoa: 'aiChecking' }
+    : suc?.aiEnabled
+      ? { cham: 'bg-level-newbie', khoa: 'aiOnline' }
+      : { cham: 'bg-destructive', khoa: 'aiOffline' };
   const ten = profile?.display_name || profile?.username || user?.email?.split('@')[0] || '';
 
   async function dangXuat() {
@@ -71,10 +76,10 @@ export function Sidebar() {
             aria-label={t('langSwitch')}
             value={lang}
             onChange={e => setLang(e.target.value)}
-            className="mt-0.5 w-full cursor-pointer rounded-md bg-transparent text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-0.5 w-full cursor-pointer rounded-md bg-sidebar text-xs text-sidebar-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {Object.values(languages).map(l => (
-              <option key={l.code} value={l.code} className="bg-popover text-popover-foreground">{l.flag} {l.name}</option>
+              <option key={l.code} value={l.code} lang={l.code} className="bg-popover text-popover-foreground">{l.name}</option>
             ))}
           </select>
         </div>
@@ -121,8 +126,9 @@ export function Sidebar() {
       </ScrollArea>
 
       <div className="flex items-center gap-2 border-t border-sidebar-border px-5 py-3 text-xs text-muted-foreground">
-        <span className={cn('size-2 rounded-full', suc?.aiEnabled ? 'bg-level-newbie' : 'bg-destructive')} aria-hidden="true" />
-        {suc?.aiEnabled ? t('aiOnline') : t('aiOffline')}
+        {/* Dang hoi /api/health: cham trung tinh, khong bao offline truoc khi co cau tra loi */}
+        <span className={cn('size-2 rounded-full', trangThaiAi.cham)} aria-hidden="true" />
+        {t(trangThaiAi.khoa)}
       </div>
     </div>
   );

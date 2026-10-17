@@ -1,4 +1,4 @@
-// Thanh dieu huong tren cung: thanh sang mo kinh chay het chieu ngang, muc dang mo la vien thuoc vang nhat, menu "Lo trinh" (cong nghe theo nhom),
+// Thanh dieu huong tren cung: thanh trang bo tron noi tren nen troi (nhu mau Dei), muc dang mo la vien thuoc xanh troi, menu "Lo trinh" (cong nghe theo nhom),
 // cong tac sang / toi va menu "Tai khoan" (ngon ngu, dang xuat). Dien thoai: nut mo menu ben.
 import { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
@@ -27,11 +27,11 @@ const Nhan = ({ mo, children }: { mo: boolean; children: React.ReactNode }) => (
   <span className={mo ? 'whitespace-nowrap' : 'sr-only xl:not-sr-only xl:whitespace-nowrap'}>{children}</span>
 );
 
-/** Muc dang mo: vien thuoc vang nhat (mau chi duong), muc khac chu nhat, re chuot nen xam */
-const DANG_MO = 'bg-signal/30 font-semibold text-foreground dark:bg-signal/20';
+/** Muc dang mo: vien thuoc xanh troi tren thanh trang (nhu tab dang chon), muc khac chu dam vua, re chuot nen xam nhat */
+const DANG_MO = 'bg-sky font-semibold text-sky-ink';
 const vien = (dangMo: boolean) => cn(
-  'kich-dong flex items-center gap-2 rounded-full px-3.5 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-  dangMo ? DANG_MO : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+  'kich-dong flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+  dangMo ? DANG_MO : 'text-foreground/75 hover:bg-muted hover:text-foreground'
 );
 
 export function TopNav() {
@@ -62,8 +62,8 @@ export function TopNav() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-card/85 text-foreground backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-2 px-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 -mx-2 bg-background px-2 pt-2 pb-3 text-foreground sm:-mx-4 sm:px-4 sm:pt-3">
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 rounded-full bg-card px-2 shadow-soft sm:px-3">
       <Sheet open={moMenu} onOpenChange={datMoMenu}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full lg:hidden" aria-label={t('openMenu')}>
@@ -75,7 +75,7 @@ export function TopNav() {
           <Sidebar />
         </SheetContent>
       </Sheet>
-      {/* Logo kiem luon loi vao Dashboard (khong con muc Dashboard rieng tren thanh): dang o Dashboard thi vien thuoc vang nhat */}
+      {/* Logo kiem luon loi vao Dashboard (khong con muc Dashboard rieng tren thanh): dang o Dashboard thi vien thuoc xanh troi */}
       <NavLink to="/" end title={t('dashboard')}
         className={({ isActive }) => cn(
           'kich-dong rounded-full py-1 pr-3.5 pl-1 transition-colors focus-visible:outline-2 focus-visible:outline-ring',
@@ -90,7 +90,7 @@ export function TopNav() {
           <DropdownMenuTrigger className={vien(laLoTrinh)}>
             <MapIcon data-dong="ban-do" className="size-4" aria-hidden="true" /> <Nhan mo={laLoTrinh}>{t('roadmapsMenu')}</Nhan> <ChevronDown data-dong="mo" className="size-3.5 opacity-70" aria-hidden="true" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="max-h-[70vh] w-64 overflow-y-auto rounded-2xl p-2">
+          <DropdownMenuContent align="start" className="max-h-[70vh] w-64 overflow-y-auto overscroll-contain rounded-2xl p-2">
             {nhom.map(([n, techs], i) => (
               <div key={n}>
                 {i > 0 && <DropdownMenuSeparator />}
@@ -124,9 +124,10 @@ export function TopNav() {
 
       <CongTacSangToi className="ml-auto lg:ml-0" />
       <DropdownMenu>
-        <DropdownMenuTrigger aria-label={t('accountMenu')}
-          className="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
-          <span className="grid size-8 place-items-center rounded-full bg-primary font-semibold text-primary-foreground" aria-hidden="true">
+        {/* Ten tai khoan nam trong nhan (WCAG 2.5.3): nguoi doc bang giong noi goi dung chu dang thay */}
+        <DropdownMenuTrigger aria-label={ten ? `${t('accountMenu')}: ${ten}` : t('accountMenu')}
+          className="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+          <span className="grid size-9 place-items-center rounded-full bg-lavender font-display font-extrabold text-lavender-ink" aria-hidden="true">
             {(ten[0] || '?').toUpperCase()}
           </span>
           <span className="hidden max-w-32 truncate xl:inline">{ten}</span>
@@ -138,7 +139,9 @@ export function TopNav() {
           <DropdownMenuLabel className="text-xs text-muted-foreground">{t('langSwitch')}</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={lang} onValueChange={setLang}>
             {Object.values(languages).map(l => (
-              <DropdownMenuRadioItem key={l.code} value={l.code} className="rounded-xl">{l.flag} {l.name}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem key={l.code} value={l.code} className="rounded-xl">
+                <span aria-hidden="true">{l.flag}</span> <span lang={l.code}>{l.name}</span>
+              </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />

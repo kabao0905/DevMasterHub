@@ -4,7 +4,7 @@
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useT } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type CauHoi = { noiDung: string; nutDongY: string };
 
@@ -28,14 +28,15 @@ export function useXacNhan(): [(noiDung: string, nutDongY?: string) => Promise<b
 
   const hop = (
     <Dialog open={!!cauHoi} onOpenChange={mo => { if (!mo) dong(false); }}>
-      <DialogContent className="sm:max-w-sm" showCloseButton={false}>
+      {/* Cau hoi da la tieu de: khong lap lai lam mo ta (aria-describedby={undefined} tat canh bao cua Radix) */}
+      <DialogContent className="sm:max-w-sm" showCloseButton={false} aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="text-base leading-relaxed">{cauHoi?.noiDung}</DialogTitle>
-          <DialogDescription className="sr-only">{cauHoi?.noiDung}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => dong(false)}>{t('cancelBtn')}</Button>
-          <Button variant="destructive" autoFocus onClick={() => dong(true)}>{cauHoi?.nutDongY}</Button>
+          {/* Khong autoFocus nut xoa: Enter ngay khi hop mo khong duoc xac nhan nham; Radix focus nut Huy dau tien */}
+          <Button variant="destructive" onClick={() => dong(true)}>{cauHoi?.nutDongY}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

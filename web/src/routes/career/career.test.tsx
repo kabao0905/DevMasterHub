@@ -72,7 +72,12 @@ test('sua cau hoi: dua cau vao o nhap, cat lich su tu do; tra loi lai: hoi lai d
   expect(goiAi[0].messages.map(m => m.content)).toEqual(['Câu A']);
   expect(screen.getAllByText('Câu A')).toHaveLength(1);
 
+  // Con tin phia sau: hoi truoc khi xoa; Huy thi giu nguyen
   await u.click(screen.getByRole('button', { name: /Sửa câu hỏi/ }));
+  await u.click(within(await screen.findByRole('dialog', { name: /xóa các tin nhắn phía sau/ })).getByRole('button', { name: 'Hủy' }));
+  expect(screen.getByText('Trả lời 1')).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: /Sửa câu hỏi/ }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Đồng ý' }));
   expect(oNhap()).toHaveValue('Câu A');
   expect(screen.queryByText('Trả lời 1')).not.toBeInTheDocument();
   await waitFor(() => expect(daLuu().at(-1)).toEqual([]));
@@ -106,6 +111,7 @@ test('xoa chat co xac nhan; tim viec thu cong', async () => {
 
   await u.click(screen.getByRole('button', { name: /Tìm việc làm/ }));
   const hop = await screen.findByRole('dialog');
+  expect(within(hop).getByRole('button', { name: 'Tìm việc làm' })).toBeInTheDocument(); // nut chi co icon van co ten
   await u.type(within(hop).getByRole('textbox'), 'Python backend{Enter}');
   expect(timViec).toEqual(['Python backend']);
   expect(await screen.findByRole('button', { name: /Việc làm AI gợi ý/ })).toHaveTextContent('Python backend');
@@ -185,7 +191,7 @@ test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien t
   expect(the).toHaveAttribute('href', 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html');
   expect(the.textContent).toContain('90% Sẵn Sàng Ứng Tuyển');
   expect(the.textContent).toContain('Cty A');
-  expect(the.textContent).toContain('Full-time');
+  expect(the.textContent).toContain('Toàn thời gian');
   expect(the.textContent).toContain('Cần học thêm: Docker, Kubernetes');
   expect(the.textContent).toContain('Hồ Chí Minh');
   expect(the.textContent).toContain('20-30 triệu');

@@ -12,13 +12,13 @@ export function NotFoundPage() {
 
   return (
     <main className="grid min-h-dvh place-items-center px-5 py-12">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-sm space-y-6 rounded-3xl bg-card p-6 shadow-soft sm:p-8">
         <BrandMark />
         <div className="space-y-2">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">{t('pageNotFound')}</h1>
-          <p className="truncate font-mono text-sm text-muted-foreground">{pathname}</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance">{t('pageNotFound')}</h1>
+          <p translate="no" title={pathname} className="font-mono text-sm break-all text-muted-foreground">{pathname}</p>
         </div>
-        <Button asChild size="lg" className="h-10 bg-signal px-5 text-signal-foreground hover:bg-signal hover:brightness-105">
+        <Button asChild size="lg" className="h-10 rounded-full bg-signal px-5 text-signal-foreground hover:bg-signal hover:brightness-105">
           <a href="/">{t('dashboard')}</a>
         </Button>
       </div>

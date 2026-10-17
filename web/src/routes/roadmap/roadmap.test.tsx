@@ -74,7 +74,7 @@ test('the cong nghe o Dashboard va menu Lo trinh tren thanh tren di bang router,
   const u = userEvent.setup();
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   const main = await screen.findByRole('main');
-  await u.click(await within(main).findByRole('link', { name: /Python/ }));
+  await u.click(await within(main).findByRole('link', { name: /^Python/ }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/roadmap/python'));
   await u.click(within(await screen.findByRole('navigation', { name: 'DevMaster Hub' })).getByRole('button', { name: /Lộ trình/ }));
   await u.click(await screen.findByRole('menuitem', { name: /An ninh mạng/ }));
@@ -105,7 +105,7 @@ test('di sang trang khac bang router thi cuon len dau; doi tab bai hoc thi khong
   veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   const main = await screen.findByRole('main');
   cuon.mockClear();
-  await u.click(await within(main).findByRole('link', { name: /Python/ }));
+  await u.click(await within(main).findByRole('link', { name: /^Python/ }));
   await screen.findByRole('heading', { level: 1, name: /Python/ });
   await waitFor(() => expect(cuon).toHaveBeenCalledWith(0, 0));
 });

@@ -88,7 +88,7 @@ describe('CtfPanel', () => {
   test('nop co dung o o nhap: bao chinh xac, cong diem, the chuyen da giai; nop qua terminal cung cap nhat', async () => {
     const u = userEvent.setup();
     veVoiNen(<TerminalVaCtf />);
-    const o = await screen.findByRole('textbox', { name: 'Cờ (FLAG{...})' });
+    const o = await screen.findByRole('textbox', { name: 'Cờ (FLAG{…})' });
     // Dan chu: userEvent.type hieu "{...}" la phim dac biet
     await u.click(o);
     await u.paste(CHALLENGES[0].flag);

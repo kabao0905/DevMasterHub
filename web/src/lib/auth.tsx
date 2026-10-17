@@ -16,6 +16,10 @@ const KHOA_VIEC_DANG_LAM = 'devmaster_hub_legacy_session';
 /** Truy van dung chung cho moi nguoi: doi nguoi dung khong can xoa, khoi tai lai */
 const TRUY_VAN_CONG_KHAI = new Set(['i18n', 'curriculum']);
 const emailTu = (ten: string) => `${ten}@devmaster.hub`;
+/** Ma loi on dinh (cung la khoa i18n) ma login/register nem ra */
+export const MA_LOI_AUTH = ['authWrongCredentials', 'authUsernameShort', 'authUsernameLong', 'authUsernameChars', 'authPasswordShort', 'authUsernameTaken'] as const;
+export type MaLoiAuth = (typeof MA_LOI_AUTH)[number];
+export const laMaLoiAuth = (s: string): s is MaLoiAuth => (MA_LOI_AUTH as readonly string[]).includes(s);
 
 type GiaTri = {
   client: SupabaseLike;
@@ -105,25 +109,26 @@ export function AuthProvider({ children, client = supabase }: { children: ReactN
     }
   });
 
+  // Loi nem ra la ma khoa i18n (MA_LOI_AUTH) de trang dich theo ngon ngu; loi la tu Supabase giu nguyen van
   const login = useCallback(async (tenDangNhap: string, matKhau: string) => {
     const ten = tenDangNhap.trim().toLowerCase();
     const { error } = await client.auth.signInWithPassword({ email: emailTu(ten), password: matKhau });
-    if (error) throw new Error(/invalid login/i.test(error.message) ? 'Sai tên đăng nhập hoặc mật khẩu' : error.message);
+    if (error) throw new Error(/invalid login/i.test(error.message) ? 'authWrongCredentials' : error.message);
   }, [client]);
 
   const register = useCallback(async (tenDangNhap: string, matKhau: string) => {
     const ten = tenDangNhap.trim().toLowerCase();
-    if (ten.length < 3) throw new Error('Tên đăng nhập phải có ít nhất 3 ký tự');
-    if (ten.length > 20) throw new Error('Tên đăng nhập tối đa 20 ký tự');
-    if (!/^[a-z0-9_]+$/.test(ten)) throw new Error('Tên đăng nhập chỉ chứa chữ thường, số và dấu _');
-    if (matKhau.length < 6) throw new Error('Mật khẩu phải có ít nhất 6 ký tự');
+    if (ten.length < 3) throw new Error('authUsernameShort');
+    if (ten.length > 20) throw new Error('authUsernameLong');
+    if (!/^[a-z0-9_]+$/.test(ten)) throw new Error('authUsernameChars');
+    if (matKhau.length < 6) throw new Error('authPasswordShort');
 
     const { data, error } = await client.auth.signUp({
       email: emailTu(ten),
       password: matKhau,
       options: { data: { display_name: ten } }
     });
-    if (error) throw new Error(/already registered/i.test(error.message) ? 'Tên đăng nhập đã tồn tại' : error.message);
+    if (error) throw new Error(/already registered/i.test(error.message) ? 'authUsernameTaken' : error.message);
     // Trigger handle_new_user cung tao ho so; upsert de chac chan co username dung
     if (data.user) await client.from('profiles').upsert({ id: data.user.id, username: ten, display_name: ten });
   }, [client]);

@@ -12,12 +12,12 @@ export function TechCard({ tech, done }: { tech: CongNgheTomTat; done: Set<strin
   return (
     <Link
       to={`/roadmap/${tech.id}`}
-      className="group kich-dong the-noi flex flex-col gap-4 rounded-2xl border bg-card p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="group kich-dong the-noi flex flex-col gap-4 rounded-3xl bg-card p-5 shadow-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <div className="flex items-start gap-3">
         <span data-dong="nhay"><BienTuyen tech={tech} /></span>
         <div className="min-w-0">
-          <h3 className="font-semibold leading-tight">{tech.name}</h3>
+          <h3 className="font-display text-lg leading-tight font-extrabold">{tech.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{techDesc(tech.id, tech.description)}</p>
         </div>
       </div>

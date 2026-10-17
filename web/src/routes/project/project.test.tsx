@@ -148,6 +148,44 @@ test('soan nhieu file: them, doi ten theo duoi doi ngon ngu, xoa', async () => {
   expect(screen.queryByRole('button', { name: /Xóa file main\.js/ })).not.toBeInTheDocument(); // con 1 file thi khong xoa duoc
 });
 
+test('xoa file con code thi hoi truoc; Huy thi giu file va code; mui ten chuyen tab', async () => {
+  const u = userEvent.setup();
+  mo('/project-level');
+  await u.click(await screen.findByRole('button', { name: /Mid/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await screen.findByRole('heading', { name: 'Rắn săn mồi' });
+  await u.click(screen.getByRole('button', { name: 'Thêm file' }));
+  await u.click(screen.getByRole('textbox', { name: 'Code của file2.js' }));
+  await u.paste('let y = 2;');
+  await u.click(screen.getByRole('button', { name: 'Xóa file file2.js' }));
+  await u.click(within(await screen.findByRole('dialog', { name: /Xóa file file2\.js/ })).getByRole('button', { name: 'Hủy' }));
+  expect(screen.getByRole('textbox', { name: 'Code của file2.js' })).toHaveValue('let y = 2;');
+  // Tab theo mau ARIA: chi tab dang chon nam trong thu tu Tab, mui ten trai ve file truoc
+  const tab2 = screen.getByRole('tab', { name: /file2\.js/, selected: true });
+  expect(tab2).toHaveAttribute('tabindex', '0');
+  expect(screen.getByRole('tab', { name: /main\.js/ })).toHaveAttribute('tabindex', '-1');
+  tab2.focus();
+  await u.keyboard('{ArrowLeft}');
+  expect(screen.getByRole('tab', { name: /main\.js/, selected: true })).toHaveFocus();
+  await u.keyboard('{ArrowRight}');
+  await u.click(screen.getByRole('button', { name: 'Xóa file file2.js' }));
+  await u.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Xóa' }));
+  expect(screen.queryByRole('tab', { name: /file2\.js/ })).not.toBeInTheDocument();
+});
+
+test('o chat mentor trong: nut Gui van bam duoc va nhac ngay duoi o', async () => {
+  const u = userEvent.setup();
+  const { goiAi } = mo('/project-level');
+  await u.click(await screen.findByRole('button', { name: /Mid/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await screen.findByRole('heading', { name: 'Rắn săn mồi' });
+  const chat = screen.getByRole('region', { name: /Chat với AI Mentor/ });
+  await u.click(within(chat).getByRole('button', { name: /Gửi/ }));
+  expect(within(chat).getByRole('alert')).toHaveTextContent('Hãy nhập nội dung trước đã');
+  expect(within(chat).getByRole('textbox')).toHaveFocus();
+  expect(goiAi.some(b => b.taskType === 'projectChat')).toBe(false);
+});
+
 test('cham project: bao tien do, hien ket qua tung tang, luu vao project_submissions', async () => {
   const u = userEvent.setup();
   let tha!: () => void;

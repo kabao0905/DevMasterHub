@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { Tabs as TabsPrimitive } from 'radix-ui';
 import { useXacNhan } from '@/components/XacNhan';
 import { useT } from '@/lib/i18n';
 import { Monitor, Paintbrush, Play, RotateCcw, Smartphone, Tablet } from 'lucide-react';
@@ -120,6 +121,8 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
 
   const noiDung = files[active] ?? '';
   const soDong = noiDung.split('\n').length;
+  // Cot so dong chi dung lai khi so dong doi, khong phai moi phim go
+  const cotSoDong = useMemo(() => Array.from({ length: soDong }, (_, i) => i + 1).join('\n'), [soDong]);
   const rong = KHO[kho].w;
 
   return (
@@ -129,24 +132,27 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
         style={{ '--chia': `${chia}%` } as React.CSSProperties}
         className="grid gap-3 lg:grid-cols-[var(--chia)_6px_1fr] lg:gap-0"
       >
-        {/* Soan thao */}
-        <div className="min-w-0 overflow-hidden rounded-xl border bg-code lg:rounded-r-none">
+        {/* Soan thao: mat code luon toi (bg-code). Tab tep theo mau Tabs cua Radix: mui ten / Home / End, mot diem dung Tab */}
+        <TabsPrimitive.Root value={active} onValueChange={datActive}
+          className="min-w-0 overflow-hidden rounded-2xl bg-code shadow-soft lg:rounded-r-none">
           <div className="flex items-center justify-between gap-2 border-b border-white/10 px-2">
-            <div role="tablist" aria-label="Tệp" className="flex overflow-x-auto">
-              {tenTep.map(t => (
-                <button key={t} role="tab" aria-selected={t === active} onClick={() => datActive(t)}
-                  className={cn('px-3 py-2 font-mono text-xs whitespace-nowrap', t === active ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                  {t}
-                </button>
+            <TabsPrimitive.List aria-label="Tệp" className="flex overflow-x-auto">
+              {tenTep.map(ten => (
+                <TabsPrimitive.Trigger key={ten} value={ten}
+                  className="border-b-2 border-transparent px-3 py-2 font-mono text-xs whitespace-nowrap text-[#8b949e] transition-colors outline-none hover:text-[#e6edf3] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring data-[state=active]:border-primary data-[state=active]:text-[#e6edf3]">
+                  {ten}
+                </TabsPrimitive.Trigger>
               ))}
-            </div>
-            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { void hoi(t('resetCodeConfirm')).then(ok => { if (ok) onFilesChange(macDinh); }); }}>
+            </TabsPrimitive.List>
+            <Button variant="ghost" size="sm" className="h-7 rounded-full text-xs text-[#8b949e] hover:bg-white/10 hover:text-[#e6edf3]" onClick={() => { void hoi(t('resetCodeConfirm')).then(ok => { if (ok) onFilesChange(macDinh); }); }}>
               <RotateCcw aria-hidden="true" /> Đặt lại
             </Button>
           </div>
-          <div className="flex h-[420px] font-mono text-[13px] leading-6">
-            <pre ref={soDongRef} aria-hidden="true" className="w-10 shrink-0 select-none overflow-hidden py-3 pr-2 text-right text-[#484f58]">
-              {Array.from({ length: soDong }, (_, i) => i + 1).join('\n')}
+          {/* Mot khung soan dung chung: chi ve noi dung cua tab dang mo. Vong sang khi o soan co focus (truoc day khong thay gi) */}
+          <TabsPrimitive.Content value={active} tabIndex={-1}
+            className="flex h-[420px] font-mono text-[13px] leading-6 outline-none focus-within:ring-2 focus-within:ring-inset focus-within:ring-ring">
+            <pre ref={soDongRef} aria-hidden="true" className="w-10 shrink-0 select-none overflow-hidden py-3 pr-2 text-right text-[#6e7681]">
+              {cotSoDong}
             </pre>
             <textarea
               value={noiDung}
@@ -157,11 +163,12 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
+              translate="no"
               wrap="off"
               className="h-full flex-1 resize-none bg-transparent py-3 pr-3 text-[#e6edf3] caret-primary outline-none"
             />
-          </div>
-        </div>
+          </TabsPrimitive.Content>
+        </TabsPrimitive.Root>
 
         {/* Vach chia: keo bang chuot/cham, hoac ←/→ khi focus */}
         <div
@@ -181,28 +188,28 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
         />
 
         {/* Xem truoc + console */}
-        <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card lg:rounded-l-none">
+        <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl bg-card shadow-soft lg:rounded-l-none">
           <div className="flex flex-wrap items-center gap-1 border-b px-2 py-1.5">
             {consoleMode ? (
-              <Button size="sm" className="h-7" onClick={chay}><Play aria-hidden="true" /> Chạy</Button>
+              <Button size="sm" className="h-7 rounded-full" onClick={chay}><Play aria-hidden="true" /> Chạy</Button>
             ) : (
               <>
                 {(Object.keys(KHO) as Kho[]).map(k => {
                   const { nhan, Icon } = KHO[k];
                   return (
-                    <Button key={k} variant="ghost" size="icon" className={cn('size-7', kho === k && 'bg-accent')} aria-label={nhan} aria-pressed={kho === k} onClick={() => datKho(k)}>
+                    <Button key={k} variant="ghost" size="icon" className={cn('size-7 rounded-full', kho === k && 'bg-lavender text-lavender-ink hover:bg-lavender')} aria-label={nhan} aria-pressed={kho === k} onClick={() => datKho(k)}>
                       <Icon aria-hidden="true" />
                     </Button>
                   );
                 })}
-                <Button variant="ghost" size="sm" className={cn('ml-auto h-7', thietKe && 'bg-accent text-primary')} aria-pressed={thietKe} onClick={() => { datThietKe(v => !v); datChon(null); }}>
+                <Button variant="ghost" size="sm" className={cn('ml-auto h-7 rounded-full', thietKe && 'bg-lavender text-lavender-ink hover:bg-lavender')} aria-pressed={thietKe} onClick={() => { datThietKe(v => !v); datChon(null); }}>
                   <Paintbrush aria-hidden="true" /> Thiết kế
                 </Button>
-                <Button variant="ghost" size="icon" className="size-7" aria-label="Tải lại xem trước" onClick={chay}><RotateCcw aria-hidden="true" /></Button>
+                <Button variant="ghost" size="icon" className="size-7 rounded-full" aria-label="Tải lại xem trước" onClick={chay}><RotateCcw aria-hidden="true" /></Button>
               </>
             )}
           </div>
-          <div className={cn('flex justify-center overflow-auto bg-[#f6f8fa]', consoleMode ? 'hidden' : 'h-[300px]')}>
+          <div className={cn('flex justify-center overflow-auto bg-muted', consoleMode ? 'hidden' : 'h-[300px]')}>
             <iframe
               ref={khungRef}
               title="Xem trước"
@@ -215,12 +222,13 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
           <div className={cn('flex flex-col', consoleMode ? 'h-[420px]' : 'h-[120px]', 'border-t')}>
             <div className="flex items-center justify-between px-3 py-1 text-xs text-muted-foreground">
               <span>Console <span className={cn('tabular-nums', logs.some(l => l.level === 'error') && 'text-destructive')}>({logs.length})</span></span>
-              {logs.length > 0 && <button className="hover:text-foreground" onClick={() => datLogs([])}>Xóa</button>}
+              {logs.length > 0 && <button type="button" className="rounded-full px-2 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={() => datLogs([])}>Xóa</button>}
             </div>
-            <ol aria-label="Console" aria-live="polite" className="flex-1 overflow-y-auto px-3 pb-2 font-mono text-xs">
+            {/* Trang web dung lai sau moi lan ngung go: khong doc to lai ca console. Che do console chi doi khi bam Chay */}
+            <ol aria-label="Console" aria-live={consoleMode ? 'polite' : undefined} translate="no" className="flex-1 overflow-y-auto px-3 pb-2 font-mono text-xs">
               {logs.length === 0 && <li className="text-muted-foreground">{consoleMode ? 'Bấm Chạy để chạy code.' : 'console.log() sẽ hiện ở đây.'}</li>}
               {logs.map(l => (
-                <li key={l.id} className={cn('whitespace-pre-wrap break-words border-b border-border/40 py-0.5', l.level === 'error' && 'text-destructive', l.level === 'warn' && 'text-[#d29922]')}>{l.text}</li>
+                <li key={l.id} className={cn('whitespace-pre-wrap break-words border-b border-border/40 py-0.5', l.level === 'error' && 'text-destructive', l.level === 'warn' && 'text-butter-ink')}>{l.text}</li>
               ))}
             </ol>
           </div>

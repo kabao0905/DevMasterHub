@@ -1,17 +1,37 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { memo, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import type { TinNhan } from '@/lib/ai';
 import { ChatMarkdown } from '@/components/ChatMarkdown';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { DuAn } from './use-du-an';
+
+/**
+ * Cac tin da gui. memo: mang chat giu nguyen tham chieu khi go code / chu de / o nhap,
+ * nen khong phai dung lai markdown + khoi code cua ca cuoc tro chuyen moi phim
+ */
+const CacTin = memo(function CacTin({ chat }: { chat: TinNhan[] }) {
+  return chat.map((m, i) => (
+    <li key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+      <div className={cn(
+        'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+        m.role === 'user' ? 'whitespace-pre-wrap break-words bg-lavender text-foreground [overflow-wrap:anywhere]' : 'min-w-0 bg-card shadow-soft'
+      )}>
+        {m.role === 'user' ? m.content : <ChatMarkdown text={m.content} />}
+      </div>
+    </li>
+  ));
+});
 
 /** Chat voi AI Mentor ve project dang lam (gui kem idea va code hien tai) */
 export function MentorChat({ duAn }: { duAn: DuAn }) {
   const { t } = useT();
   const { kho } = duAn;
   const [nhap, datNhap] = useState('');
+  const [nhacRong, datNhacRong] = useState(false);
   const dsRef = useRef<HTMLOListElement>(null);
+  const oNhapRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const el = dsRef.current;
@@ -19,7 +39,13 @@ export function MentorChat({ duAn }: { duAn: DuAn }) {
   }, [kho.chat.length, kho.dangGui]);
 
   function gui() {
-    if (!nhap.trim() || kho.dangGui) return;
+    if (kho.dangGui) return;
+    if (!nhap.trim()) {
+      // O trong: nhac ngay duoi o, dua con tro ve o nhap
+      datNhacRong(true);
+      oNhapRef.current?.focus();
+      return;
+    }
     duAn.hoi(nhap);
     datNhap('');
   }
@@ -34,41 +60,39 @@ export function MentorChat({ duAn }: { duAn: DuAn }) {
   const khiGui = (e: FormEvent) => { e.preventDefault(); gui(); };
 
   return (
-    <section aria-labelledby="tieu-de-mentor" className="overflow-hidden rounded-2xl border bg-card">
-      <h2 id="tieu-de-mentor" className="border-b px-5 py-3 text-sm font-semibold">{t('chatWithAiMentor')}</h2>
-      <ol ref={dsRef} aria-live="polite" className="max-h-[28rem] space-y-3 overflow-y-auto px-5 py-4">
+    <section aria-labelledby="tieu-de-mentor" className="overflow-hidden rounded-3xl bg-card shadow-soft">
+      <h2 id="tieu-de-mentor" className="px-5 py-3.5 font-display font-extrabold tracking-tight">{t('chatWithAiMentor')}</h2>
+      <ol ref={dsRef} aria-live="polite" className="max-h-[28rem] space-y-3 overflow-y-auto overscroll-contain bg-background px-5 py-4">
         {kho.chat.length === 0 && !kho.dangGui && <li className="text-sm text-muted-foreground">{t('askAiAboutProject')}</li>}
-        {kho.chat.map((m, i) => (
-          <li key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
-            <div className={cn(
-              'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
-              m.role === 'user' ? 'whitespace-pre-wrap bg-primary text-primary-foreground' : 'bg-muted'
-            )}>
-              {m.role === 'user' ? m.content : <ChatMarkdown text={m.content} />}
-            </div>
-          </li>
-        ))}
-        {kho.dangGui && <li className="text-sm text-muted-foreground motion-safe:animate-pulse">{t('thinking')}…</li>}
+        <CacTin chat={kho.chat} />
+        {kho.dangGui && <li className="text-sm text-lavender-ink motion-safe:animate-pulse">{t('thinking')}…</li>}
         {kho.loiChat && !kho.dangGui && (
-          <li role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">
+          <li role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
             <span>{t('mentorFailed', { error: kho.loiChat })}</span>
-            <Button variant="outline" size="sm" onClick={duAn.guiLai}>{t('resend')}</Button>
+            <Button variant="outline" size="sm" className="rounded-full" onClick={duAn.guiLai}>{t('resend')}</Button>
           </li>
         )}
       </ol>
-      <form onSubmit={khiGui} className="flex items-center gap-2 border-t p-3">
-        <input
-          value={nhap}
-          onChange={e => datNhap(e.target.value)}
-          onKeyDown={khiGo}
-          aria-label={t('askAboutProject')}
-          placeholder={t('askAboutProject')}
-          autoComplete="off"
-          className="h-10 flex-1 rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <Button type="submit" disabled={kho.dangGui || !nhap.trim()}>
-          <Send aria-hidden="true" /> {t('sendMessage')}
-        </Button>
+      <form onSubmit={khiGui} className="space-y-1.5 p-3">
+        <div className="flex items-center gap-2">
+          <input
+            ref={oNhapRef}
+            name="message"
+            value={nhap}
+            onChange={e => { datNhap(e.target.value); if (nhacRong) datNhacRong(false); }}
+            onKeyDown={khiGo}
+            aria-label={t('askAboutProject')}
+            aria-invalid={nhacRong || undefined}
+            aria-describedby={nhacRong ? 'mentor-nhac' : undefined}
+            placeholder={t('askAboutProject')}
+            autoComplete="off"
+            className="h-10 min-w-0 flex-1 rounded-full border bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button type="submit" className="rounded-full" disabled={kho.dangGui}>
+            <Send aria-hidden="true" /> {t('sendMessage')}
+          </Button>
+        </div>
+        {nhacRong && <p id="mentor-nhac" role="alert" className="px-4 text-xs text-destructive">{t('emptyInputHint')}</p>}
       </form>
     </section>
   );

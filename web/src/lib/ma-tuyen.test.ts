@@ -1,9 +1,12 @@
 import { maTuyen, chuTrenNen } from './ma-tuyen';
 
-test('moi cong nghe co ma tuyen ngan (toi da 4 ky tu) de ghi tren bien tuyen', () => {
+test('moi cong nghe co ma tuyen ngan (toi da 3 ky tu) de bien luon tron deu', () => {
   expect(maTuyen({ id: 'python', name: 'Python' })).toBe('PY');
   expect(maTuyen({ id: 'cpp', name: 'C++' })).toBe('C++');
   expect(maTuyen({ id: 'kubernetes', name: 'Kubernetes' })).toBe('K8S');
+  for (const id of ['java', 'nodejs', 'htmlcss', 'jest', 'docker', 'swift', 'dart']) {
+    expect(maTuyen({ id, name: id }).length).toBeLessThanOrEqual(3);
+  }
 });
 
 test('cong nghe moi chua co ma thi lay chu cai dau cua ten, khong qua 3 ky tu', () => {

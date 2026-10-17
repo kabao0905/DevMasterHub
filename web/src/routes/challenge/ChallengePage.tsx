@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Lightbulb, Loader2, Sparkles } from 'lucide-react';
@@ -34,29 +34,43 @@ function KhungDapAn({ de }: { de: ThuThachAi }) {
   const { t } = useT();
   const [nhap, datNhap] = useState('');
   const [daGiai, datDaGiai] = useState(false);
+  /** Loi hien ngay duoi o: chua nhap hoac sai */
+  const [loi, datLoi] = useState<string | null>(null);
+  const oRef = useRef<HTMLInputElement>(null);
 
   function nop(e: FormEvent) {
     e.preventDefault();
-    if (!nhap.trim()) return;
+    if (!nhap.trim()) {
+      datLoi(t('emptyInputHint'));
+      oRef.current?.focus();
+      return;
+    }
     if (khopDapAn(de.answer, nhap)) {
       datDaGiai(true);
+      datLoi(null);
       toast.success(t('aiChallengeCorrect'));
     } else {
-      toast.error(t('aiChallengeWrong'));
+      datLoi(t('aiChallengeWrong'));
+      oRef.current?.focus();
     }
   }
 
   return (
-    <div className="space-y-3 rounded-xl border bg-background/50 p-4">
+    <div className="space-y-3 rounded-2xl bg-background p-4">
       <p className="font-medium">{de.question}</p>
       {daGiai ? (
-        <p role="status" className="font-medium text-level-newbie">{t('aiChallengeCorrect')}</p>
+        <p role="status" className="inline-flex rounded-full bg-mint px-3 py-1 text-sm font-semibold text-mint-ink">{t('aiChallengeCorrect')}</p>
       ) : (
         <>
-          <form onSubmit={nop} className="flex flex-col gap-2 sm:flex-row">
-            <Input value={nhap} onChange={e => datNhap(e.target.value)} aria-label={t('aiChallengeAnswerLabel')} placeholder={t('aiChallengeAnswerLabel')}
-              autoCapitalize="off" autoCorrect="off" spellCheck={false} className="font-mono" />
-            <Button type="submit" className="shrink-0">{t('submitAnswerBtn')}</Button>
+          <form onSubmit={nop} noValidate className="space-y-1.5">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input ref={oRef} name="answer" value={nhap} onChange={e => { datNhap(e.target.value); if (loi) datLoi(null); }}
+                aria-label={t('aiChallengeAnswerLabel')} placeholder={t('aiChallengeAnswerLabel')}
+                aria-invalid={!!loi || undefined} aria-describedby={loi ? 'dap-an-loi' : undefined}
+                autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} className="font-mono" />
+              <Button type="submit" className="shrink-0 rounded-full">{t('submitAnswerBtn')}</Button>
+            </div>
+            {loi && <p id="dap-an-loi" role="alert" className="text-sm text-destructive">{loi}</p>}
           </form>
           <details className="text-sm">
             <summary className="cursor-pointer text-muted-foreground">{t('showAnswerBtn')}</summary>
@@ -99,34 +113,43 @@ export function ChallengePage() {
         <ArrowLeft className="size-4" aria-hidden="true" /> {t('back')}
       </Link>
       <header className="space-y-1">
-        <h1 className="font-display text-4xl font-extrabold tracking-tight">{t('challengeTitle')}</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">{t('challengeTitle')}</h1>
         <p className="text-muted-foreground">{t('challengeSubtitle')}</p>
       </header>
 
-      <section aria-labelledby="de-ai" className="rounded-2xl border bg-card p-5">
+      <section aria-labelledby="de-ai" className="rounded-3xl bg-card p-5 shadow-soft">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 id="de-ai" className="font-semibold">{t('aiChallengeTitle')}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{t('aiChallengeHint')}</p>
+          <div className="flex items-start gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-lavender text-lavender-ink" aria-hidden="true"><Sparkles className="size-5" /></span>
+            <div>
+              <h2 id="de-ai" className="font-display text-lg font-extrabold tracking-tight">{t('aiChallengeTitle')}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t('aiChallengeHint')}</p>
+            </div>
           </div>
-          <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => { void de.refetch(); }} disabled={dangRa}>
-            {dangRa ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
+          <Button className="rounded-full bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => { void de.refetch(); }} disabled={dangRa}>
+            {dangRa ? <Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
             {t('aiChallengeBtn')}
           </Button>
         </div>
-        {dangRa && <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">{t('aiChallengeLoading')}</p>}
-        {loi && <p role="alert" className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{loi}</p>}
+        {/* Vung bao luon co mat (rong khi khong ra de): chi doi chu */}
+        <p className="text-sm text-lavender-ink not-empty:mt-4" aria-live="polite">{dangRa ? t('aiChallengeLoading') : ''}</p>
+        {loi && <p role="alert" className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">{loi}</p>}
         {de.data && !dangRa && (
           <article className="mt-5 space-y-3 border-t pt-5">
-            <div className="flex flex-wrap items-baseline gap-3">
-              <h3 className="text-lg font-semibold">{de.data.title}</h3>
-              {de.data.level && <span className="rounded-md bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">{de.data.level}</span>}
+            <div className="flex flex-wrap items-center gap-3">
+              <h3 className="font-display text-xl font-extrabold tracking-tight">{de.data.title}</h3>
+              {de.data.level && <span className="inline-flex items-center rounded-full bg-sky px-2.5 py-0.5 text-xs font-semibold text-sky-ink">{de.data.level}</span>}
             </div>
             {de.data.scenario && <p className="text-sm leading-relaxed">{de.data.scenario}</p>}
             {de.data.steps.length > 0 && (
               <ol className="list-decimal space-y-1 pl-5 text-sm">{de.data.steps.map(s => <li key={s}>{s}</li>)}</ol>
             )}
-            {de.data.hint && <p className="flex gap-2 text-sm text-muted-foreground"><Lightbulb className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" /><span>{de.data.hint}</span></p>}
+            {de.data.hint && (
+              <p className="flex gap-3 rounded-2xl bg-butter p-4 text-sm leading-relaxed text-foreground">
+                <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-card text-butter-ink" aria-hidden="true"><Lightbulb className="size-4" /></span>
+                <span className="self-center">{de.data.hint}</span>
+              </p>
+            )}
             {de.data.files.length > 0 && (
               <p className="text-sm text-muted-foreground">{t('aiChallengeFilesAdded', { n: de.data.files.length })}</p>
             )}

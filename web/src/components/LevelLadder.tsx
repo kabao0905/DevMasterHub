@@ -63,7 +63,7 @@ export function LevelLadder({ levels, theoCap, className }: Props) {
             className="relative flex h-3 flex-1 items-center justify-around"
           >
             <span className={cn('absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full opacity-25', mau)} />
-            <span className={cn('absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full transition-[width] duration-500', mau)} style={{ width: `${daDi}%` }} />
+            <span className={cn('absolute inset-x-0 top-1/2 h-1 origin-left -translate-y-1/2 rounded-full transition-transform duration-500 motion-reduce:transition-none', mau)} style={{ transform: `scaleX(${daDi / 100})` }} />
             {Array.from({ length: c.tong }, (_, k) => (
               <span key={k} className={cn('relative size-2 rounded-full border-2', k < c.xong ? cn(mau, VIEN_CAP[cap.id]) : cn('bg-card', VIEN_CAP[cap.id], 'opacity-60'))} />
             ))}

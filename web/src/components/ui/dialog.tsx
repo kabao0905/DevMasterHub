@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
+import { useTNeuCo } from "@/lib/i18n"
 import { XIcon } from "lucide-react"
 
 function Dialog({
@@ -31,6 +32,12 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
+// Nhan nut dong theo ngon ngu dang dung; ngoai I18nProvider (test le) thi "Close"
+function useNhanDong(closeLabel?: string): string {
+  const i18n = useTNeuCo()
+  return closeLabel ?? i18n?.t("close") ?? "Close"
+}
+
 function DialogOverlay({
   className,
   ...props
@@ -51,10 +58,14 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeLabel,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  /** Nhan doc cho nut dong; mac dinh t("close") */
+  closeLabel?: string
 }) {
+  const nhanDong = useNhanDong(closeLabel)
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -75,7 +86,7 @@ function DialogContent({
               size="icon-sm"
             >
               <XIcon />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{nhanDong}</span>
             </Button>
           </DialogPrimitive.Close>
         )}
@@ -97,11 +108,14 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 function DialogFooter({
   className,
   showCloseButton = false,
+  closeLabel,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
+  closeLabel?: string
 }) {
+  const nhanDong = useNhanDong(closeLabel)
   return (
     <div
       data-slot="dialog-footer"
@@ -114,7 +128,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Close</Button>
+          <Button variant="outline">{nhanDong}</Button>
         </DialogPrimitive.Close>
       )}
     </div>

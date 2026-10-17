@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { CircleCheck, CircleX, Lightbulb, Loader2, TriangleAlert } from 'lucide-react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { CircleCheck, CircleX, Lightbulb, Loader2, Sparkles, Trash2, TriangleAlert } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { khoaBai } from '@/lib/progress';
 import { useDanhDauXong } from '@/lib/use-progress';
@@ -9,6 +9,7 @@ import { escapeHtml } from '@/lib/highlight';
 import { presetFor, PRESETS } from '@/lib/sandpack-doc';
 import { seedFilesFromLesson, TECH_FRONTEND } from '@/lib/exercise-seed';
 import { ChatMarkdown } from '@/components/ChatMarkdown';
+import { useXacNhan } from '@/components/XacNhan';
 import { CodeBlock } from '@/components/CodeBlock';
 import { Button } from '@/components/ui/button';
 import { LabPanel } from '@/components/tools/LabPanel';
@@ -55,13 +56,12 @@ function TerminalBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   const kenh = useTerminal();
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-card p-5">
-        <h2 className="mb-2 font-semibold">{t('practiceTerminal')}</h2>
+      <TheDeBai tieuDe={t('practiceTerminal')}>
         <DeBaiGoc text={bai.lesson.exercise} />
-      </div>
+      </TheDeBai>
       <Terminal kenh={kenh} />
-      <CodeArea value={baiTap.traLoi} onChange={baiTap.datTraLoi} label={t('terminalAnswerLabel')} />
-      <NopChamAi baiTap={baiTap} aiEnabled={aiEnabled} baiLam={baiTap.traLoi} lang={bai.lesson.lang} />
+      <CodeArea id={ID_O_TRA_LOI} describedBy={ID_NHAC} value={baiTap.traLoi} onChange={baiTap.datTraLoi} label={t('terminalAnswerLabel')} />
+      <NopChamAi baiTap={baiTap} aiEnabled={aiEnabled} baiLam={baiTap.traLoi} lang={bai.lesson.lang} idO={ID_O_TRA_LOI} />
     </div>
   );
 }
@@ -77,10 +77,9 @@ function IdeBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   }, [seed, tech.id]);
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-card p-5">
-        <h2 className="mb-2 font-semibold">{t('practiceLive')}</h2>
+      <TheDeBai tieuDe={t('practiceLive')}>
         <DeBaiGoc text={lesson.exercise} />
-      </div>
+      </TheDeBai>
       <LiveIde techId={tech.id} files={baiTap.kho.files ?? macDinh} macDinh={macDinh} onFilesChange={baiTap.datFiles} tepDau={seed?.[0]?.name} />
       <NopChamAi baiTap={baiTap} aiEnabled={aiEnabled} baiLam={gopTep(baiTap.kho.files ?? macDinh)} lang={lesson.lang} />
     </div>
@@ -88,18 +87,65 @@ function IdeBaiHoc({ bai, baiTap, aiEnabled }: Props) {
 }
 
 /** Bo tep IDE thanh mot bai lam de AI cham (giong codeDangLam gui gia su) */
+// O soan cau tra loi + dong nhac khi bam Cham / Chay luc o con trong (moi tab Bai tap chi co mot o)
+const ID_O_TRA_LOI = 'o-tra-loi-bai-tap';
+const ID_NHAC = 'nhac-o-tra-loi';
+// Mau du lieu vao / ket qua mong doi: mat code toi, chu dai thi xuong dong thay vi tran khung tren dien thoai
+const LOP_MAU = 'mt-1 overflow-x-auto whitespace-pre-wrap break-words rounded-2xl bg-code p-3 font-mono text-xs text-[#e6edf3]';
+
+/** The de bai cho phong terminal / IDE */
+function TheDeBai({ tieuDe, children }: { tieuDe: string; children: ReactNode }) {
+  return (
+    <div className="rounded-3xl bg-card p-6 shadow-soft">
+      <h2 className="mb-2 font-display text-xl font-extrabold tracking-tight">{tieuDe}</h2>
+      {children}
+    </div>
+  );
+}
+
+function NutChamAi({ dangCham, onCham }: { dangCham: boolean; onCham: () => void }) {
+  const { t } = useT();
+  return (
+    <Button className="rounded-full bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={onCham} disabled={dangCham}>
+      {dangCham ? <><Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> {t('grading')}</> : <><Sparkles aria-hidden="true" /> {t('gradeWithAi')}</>}
+    </Button>
+  );
+}
+
+/** Dong nhac luon gan san (role=alert): chi doi chu khi bam Cham luc o trong */
+function NhacTrong({ id, hien }: { id?: string; hien: boolean }) {
+  const { t } = useT();
+  return <p id={id} role="alert" className="text-sm font-medium text-destructive empty:hidden">{hien ? t('emptyInputHint') : ''}</p>;
+}
+
+function BaoLoi({ children }: { children: ReactNode }) {
+  return <p role="alert" className="rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm break-words text-destructive">{children}</p>;
+}
+
 const gopTep = (files: Record<string, string>) => Object.entries(files).map(([ten, code]) => `--- ${ten} ---\n${code}`).join('\n');
 
 /** Nut AI cham + loi + ket qua, cho bai tap khong co o soan rieng (IDE, terminal) */
-function NopChamAi({ baiTap, aiEnabled, baiLam, lang }: { baiTap: BaiTapBai; aiEnabled: boolean | undefined; baiLam: string; lang?: string }) {
+function NopChamAi({ baiTap, aiEnabled, baiLam, lang, idO }: { baiTap: BaiTapBai; aiEnabled: boolean | undefined; baiLam: string; lang?: string; idO?: string }) {
   const { t } = useT();
+  const [nhacTrong, datNhacTrong] = useState(false);
   if (aiEnabled === false) return null;
+  // Nut Cham luon bam duoc: chua co bai lam thi nhac va dua con tro ve o soan (neu co)
+  function bamCham() {
+    if (!baiLam.trim()) {
+      datNhacTrong(true);
+      if (idO) document.getElementById(idO)?.focus();
+      return;
+    }
+    datNhacTrong(false);
+    baiTap.cham(baiLam);
+  }
   return (
     <div className="space-y-4">
-      <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => baiTap.cham(baiLam)} disabled={!baiLam.trim() || baiTap.dangCham}>
-        {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
-      </Button>
-      {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}
+      <div className="space-y-2">
+        <NutChamAi dangCham={baiTap.dangCham} onCham={bamCham} />
+        <NhacTrong id={idO ? ID_NHAC : undefined} hien={nhacTrong && !baiLam.trim()} />
+      </div>
+      {baiTap.loiCham && <BaoLoi>{t('gradeFailed', { error: baiTap.loiCham.message })}</BaoLoi>}
       {baiTap.nhanXet && <KetQuaCham nhanXet={baiTap.nhanXet} lang={lang} />}
     </div>
   );
@@ -107,13 +153,16 @@ function NopChamAi({ baiTap, aiEnabled, baiLam, lang }: { baiTap: BaiTapBai; aiE
 
 function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
+  const [hoi, hopXacNhan] = useXacNhan();
+  const [nhacTrong, datNhacTrong] = useState(false);
   const { kho, deHienTai, traLoi, nhanXet, coSan, soCoSan, deCoSan } = baiTap;
   const idx = kho.activeExIdx;
   const laJs = /^(javascript|js)$/i.test(bai.lesson.lang || '');
   const nhieuCoSan = coSan.length > 1;
 
   const nut = (j: number, nhan: string) => (
-    <Button key={j} size="sm" variant={idx === j ? 'secondary' : 'outline'} aria-pressed={idx === j} onClick={() => baiTap.chon(j)}>{nhan}</Button>
+    <Button key={j} size="sm" variant="outline" aria-pressed={idx === j} onClick={() => baiTap.chon(j)}
+      className={cn('rounded-full', idx === j && 'border-transparent bg-lavender text-lavender-ink hover:bg-lavender hover:text-lavender-ink')}>{nhan}</Button>
   );
   // Bai AI: "Linear Search · AI #2" khi thuoc mot loai (dem rieng trong loai do), khong thi "AI #n"
   const nutAi = (i: number) => {
@@ -124,11 +173,28 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
   const chiSoAi = kho.aiExercises.map((_, i) => i);
   const loaiCoSan = new Set(coSan.map(bt => bt.title));
 
+  // Nut Cham luon bam duoc: o trong thi nhac ngay duoi o soan va dua con tro ve
+  function bamCham() {
+    if (!traLoi.trim()) {
+      datNhacTrong(true);
+      document.getElementById(ID_O_TRA_LOI)?.focus();
+      return;
+    }
+    datNhacTrong(false);
+    baiTap.cham();
+  }
+
+  // Xoa ca bai dang go (va mat lich su Ctrl+Z cua o): hoi truoc
+  async function xoaBaiLam() {
+    if (!(await hoi(t('clearAnswerConfirm'), t('delete')))) return;
+    baiTap.xoaTraLoi();
+  }
+
   return (
     <div className="space-y-5">
       {/* Bai co nhieu bai tap soan san (vd moi thuat toan mot bai): moi bai mot nut, bai AI tao them dung ngay sau bai cung loai */}
       {(nhieuCoSan || kho.aiExercises.length > 0) && (
-        <div className="flex flex-wrap gap-2" aria-label={t('tabLabelExercise')}>
+        <div role="group" className="flex flex-wrap gap-2" aria-label={t('tabLabelExercise')}>
           {nhieuCoSan ? (
             <>
               {coSan.flatMap((bt, j) => [nut(j, bt.title), ...chiSoAi.filter(i => kho.aiExercises[i].loai === bt.title).map(nutAi)])}
@@ -143,21 +209,21 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         </div>
       )}
 
-      <div className="rounded-xl border bg-card p-5">
+      <div className="rounded-3xl bg-card p-6 shadow-soft">
         {deHienTai ? (
           <div className="space-y-3">
-            <h2 className="font-semibold">{deHienTai.title}</h2>
+            <h2 className="font-display text-xl font-extrabold tracking-tight break-words">{deHienTai.title}</h2>
             <div className="leading-relaxed"><ChatMarkdown text={deHienTai.description} /></div>
             {deHienTai.sampleInput && (
-              <div><p className="text-xs text-muted-foreground">{t('sampleInputLabel')}</p><pre className="mt-1 whitespace-pre-wrap rounded-lg bg-code p-3 font-mono text-xs">{deHienTai.sampleInput}</pre></div>
+              <div><p className="text-xs font-semibold text-muted-foreground">{t('sampleInputLabel')}</p><pre translate="no" className={LOP_MAU}>{deHienTai.sampleInput}</pre></div>
             )}
             {deHienTai.expectedOutput && (
-              <div><p className="text-xs text-muted-foreground">{t('expectedOutputLabel')}</p><pre className="mt-1 whitespace-pre-wrap rounded-lg bg-code p-3 font-mono text-xs">{deHienTai.expectedOutput}</pre></div>
+              <div><p className="text-xs font-semibold text-muted-foreground">{t('expectedOutputLabel')}</p><pre translate="no" className={LOP_MAU}>{deHienTai.expectedOutput}</pre></div>
             )}
           </div>
         ) : deCoSan && coSan.length > 1 ? (
           <div className="space-y-3">
-            <h2 className="font-semibold">{deCoSan.title}</h2>
+            <h2 className="font-display text-xl font-extrabold tracking-tight break-words">{deCoSan.title}</h2>
             <DeBaiGoc text={deCoSan.description} />
           </div>
         ) : (
@@ -169,17 +235,18 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {deHienTai.hints.length > 0 && (
-              <Button variant="outline" size="sm" onClick={baiTap.doiGoiY}>
+              <Button variant="outline" size="sm" className="rounded-full" aria-expanded={!!kho.hienGoiY[idx]} onClick={baiTap.doiGoiY}>
+                <Lightbulb aria-hidden="true" />
                 {kho.hienGoiY[idx] ? t('hideHints') : `${t('showHintsBtn')} (${deHienTai.hints.length})`}
               </Button>
             )}
             {deHienTai.solution && (
-              <Button variant="outline" size="sm" onClick={baiTap.doiLoiGiai}>{kho.hienLoiGiai[idx] ? t('hideSolution') : t('showSolutionBtn')}</Button>
+              <Button variant="outline" size="sm" className="rounded-full" aria-expanded={!!kho.hienLoiGiai[idx]} onClick={baiTap.doiLoiGiai}>{kho.hienLoiGiai[idx] ? t('hideSolution') : t('showSolutionBtn')}</Button>
             )}
           </div>
           {kho.hienGoiY[idx] && (
-            <ul className="space-y-1.5 rounded-xl border bg-card p-4 text-sm">
-              {deHienTai.hints.map(h => <li key={h} className="flex gap-2"><Lightbulb className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" /><span><ChatMarkdown text={h} /></span></li>)}
+            <ul className="space-y-1.5 rounded-3xl bg-butter p-5 text-sm text-foreground">
+              {deHienTai.hints.map(h => <li key={h} className="flex gap-2"><Lightbulb className="mt-0.5 size-3.5 shrink-0 text-butter-ink" aria-hidden="true" /><span className="min-w-0 break-words"><ChatMarkdown text={h} /></span></li>)}
             </ul>
           )}
           {kho.hienLoiGiai[idx] && deHienTai.solution && <CodeBlock code={deHienTai.solution} lang={deHienTai.solutionLang || bai.lesson.lang} />}
@@ -188,31 +255,33 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
 
       {/* Khong tu dien code: hoc vien tu bam neu muon dung code khung (co san phan tu kiem tra) */}
       {deCoSan?.starter && !deHienTai && !traLoi.trim() && (
-        <Button variant="outline" size="sm" onClick={() => baiTap.datTraLoi(deCoSan.starter!)}>{t('useStarterCode')}</Button>
+        <Button variant="outline" size="sm" className="rounded-full" onClick={() => baiTap.datTraLoi(deCoSan.starter!)}>{t('useStarterCode')}</Button>
       )}
-      <CodeArea value={traLoi} onChange={baiTap.datTraLoi} label={t('answerPlaceholder')} />
+      <div className="space-y-2">
+        <CodeArea id={ID_O_TRA_LOI} describedBy={ID_NHAC} value={traLoi} onChange={baiTap.datTraLoi} label={t('answerPlaceholder')} />
+        <NhacTrong id={ID_NHAC} hien={nhacTrong && !traLoi.trim()} />
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {aiEnabled !== false && <NutChamAi dangCham={baiTap.dangCham} onCham={bamCham} />}
+        <Button variant="ghost" className="rounded-full" onClick={() => { void xoaBaiLam(); }} disabled={!traLoi}>
+          <Trash2 aria-hidden="true" /> {t('clearAnswer')}
+        </Button>
         {aiEnabled !== false && (
-          <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => baiTap.cham()} disabled={!traLoi.trim() || baiTap.dangCham}>
-            {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
-          </Button>
-        )}
-        <Button variant="ghost" onClick={baiTap.xoaTraLoi} disabled={!traLoi}>{t('clearAnswer')}</Button>
-        {aiEnabled !== false && (
-          <Button variant="outline" className="ml-auto" onClick={baiTap.taoMoi} disabled={baiTap.dangTao}>
-            {baiTap.dangTao ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('generatingExercise')}</> : t('newAiExercise')}
+          <Button variant="outline" className="ml-auto rounded-full" onClick={baiTap.taoMoi} disabled={baiTap.dangTao}>
+            {baiTap.dangTao ? <><Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> {t('generatingExercise')}</> : <><Sparkles aria-hidden="true" /> {t('newAiExercise')}</>}
           </Button>
         )}
       </div>
-      {laJs && <ChayThuJs code={traLoi} nhan={t('runCode')} />}
+      {laJs && <ChayThuJs code={traLoi} nhan={t('runCode')} idO={ID_O_TRA_LOI} />}
       {/* key: doi bai thi xoa ket qua chay cua bai truoc; bai AI co du lieu mau thi dien san vao stdin */}
-      {laCpp(bai.lesson.lang) && <ChayCpp key={idx} code={traLoi} stdinMacDinh={deHienTai?.sampleInput} />}
+      {laCpp(bai.lesson.lang) && <ChayCpp key={idx} code={traLoi} stdinMacDinh={deHienTai?.sampleInput} idO={ID_O_TRA_LOI} />}
 
-      {baiTap.loiTao && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('exerciseFailed', { error: baiTap.loiTao.message })}</p>}
-      {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}
+      {baiTap.loiTao && <BaoLoi>{t('exerciseFailed', { error: baiTap.loiTao.message })}</BaoLoi>}
+      {baiTap.loiCham && <BaoLoi>{t('gradeFailed', { error: baiTap.loiCham.message })}</BaoLoi>}
 
       {nhanXet && <KetQuaCham nhanXet={nhanXet} lang={bai.lesson.lang} />}
+      {hopXacNhan}
     </div>
   );
 }
@@ -220,12 +289,12 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
 function KetQuaCham({ nhanXet, lang }: { nhanXet: NhanXet; lang?: string }) {
   const { t } = useT();
   return (
-    <section aria-label={t('scoreOutOf', { score: nhanXet.score })} className={cn('space-y-3 rounded-xl border p-5',
-      nhanXet.status === 'correct' ? 'border-level-newbie/50 bg-level-newbie/5' : nhanXet.status === 'partial' ? 'border-level-mid/50 bg-level-mid/5' : 'border-destructive/50 bg-destructive/5')}>
-      <div className="flex flex-wrap items-baseline gap-3">
-        <p className="text-2xl font-semibold tabular-nums">{t('scoreOutOf', { score: nhanXet.score })}</p>
-        <p className={cn('inline-flex items-center gap-1.5 font-semibold',
-          nhanXet.status === 'correct' ? 'text-level-newbie' : nhanXet.status === 'partial' ? 'text-level-mid' : 'text-destructive')}>
+    <section aria-label={t('scoreOutOf', { score: nhanXet.score })} className={cn('space-y-3 rounded-3xl p-6 text-foreground',
+      nhanXet.status === 'correct' ? 'bg-mint' : nhanXet.status === 'partial' ? 'bg-butter' : 'bg-destructive/10')}>
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="font-display text-2xl font-extrabold tracking-tight tabular-nums">{t('scoreOutOf', { score: nhanXet.score })}</p>
+        <p className={cn('inline-flex items-center gap-1.5 rounded-full bg-card px-2.5 py-0.5 text-xs font-semibold',
+          nhanXet.status === 'correct' ? 'text-mint-ink' : nhanXet.status === 'partial' ? 'text-butter-ink' : 'text-destructive')}>
           {nhanXet.status === 'correct' ? <CircleCheck className="size-4" aria-hidden="true" />
             : nhanXet.status === 'partial' ? <TriangleAlert className="size-4" aria-hidden="true" />
             : <CircleX className="size-4" aria-hidden="true" />}

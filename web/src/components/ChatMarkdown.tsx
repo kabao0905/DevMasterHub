@@ -33,7 +33,7 @@ const nghieng: Bien = (s, k) => tach(s, NGHIENG, (m, kk) => <em key={kk}>{m[1]}<
 // LaTeX ($\rightarrow$, $O(n^2)$...) chi doi o chu thuong — trong code giu nguyen van
 const chu: Bien = (s, k) => nghieng(latexSangChu(s), k);
 const codeDong: Bien = (s, k) => tach(s, DONG_HOAC_DAM, (m, kk) => (m[1] !== undefined
-  ? <code key={kk} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em]">{m[1]}</code>
+  ? <code key={kk} translate="no" className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em]">{m[1]}</code>
   : <strong key={kk}>{codeDong(m[2], kk)}</strong>
 ), chu, k);
 

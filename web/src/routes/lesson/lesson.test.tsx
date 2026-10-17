@@ -130,7 +130,7 @@ test('AI cham Gan dung thi chua tich; cham Dung thi bai tu duoc tich hoan thanh'
   const u = userEvent.setup();
   let diem = 70;
   const { gia } = mo('/lesson/python/newbie/a?tab=exercise', { bang: { lesson_progress: [] }, ai: () => traCham(diem) });
-  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'class Stack: push pop');
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' }), 'class Stack: push pop');
   await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
   expect(await screen.findByText('70/100 điểm')).toBeInTheDocument();
   expect(daGhiXong(gia)).toBe(false);
@@ -166,7 +166,7 @@ const nutBaiTap = () => within(screen.getByRole('tabpanel')).getAllByRole('butto
 test('DSA: moi thuat toan mot bai tap rieng; o soan de trong, bam "Dung code khung" moi chen; cau tra loi giu rieng tung bai', async () => {
   const u = userEvent.setup();
   mo('/lesson/dsa/newbie/sorting?tab=exercise');
-  const soan = () => screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' });
+  const soan = () => screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' });
   expect(await screen.findByRole('button', { name: /Bubble Sort/, pressed: true })).toBeInTheDocument();
   expect(screen.queryByRole('textbox', { name: /Soạn main/ })).not.toBeInTheDocument();
   expect(screen.getByText('Cài đặt bubbleSort tăng dần')).toBeInTheDocument();
@@ -322,11 +322,16 @@ test('quiz di du vong: tao, chon, nop khi tra loi du, cham diem, giai thich, qui
   const { goiAi } = mo('/lesson/python/newbie/a?tab=quiz', { ai: () => traText(JSON.stringify(QUIZ)) });
   await u.click(await screen.findByRole('button', { name: /Tạo Quiz với AI/ }));
   const nop = await screen.findByRole('button', { name: 'Nộp bài (0/2)' });
-  expect(nop).toBeDisabled();
   expect(goiAi[0].taskType).toBe('quiz');
 
   const cau1 = screen.getByRole('group', { name: /Câu 1/ });
   const cau2 = screen.getByRole('group', { name: /Câu 2/ });
+  // Nut Nop van bam duoc khi chua lam het: noi con bao nhieu cau, dua con tro toi cau dau tien con thieu, chua cham
+  expect(nop).toBeEnabled();
+  await u.click(nop);
+  expect(screen.getByText('Còn 2 câu chưa trả lời')).toHaveAttribute('role', 'alert');
+  expect(within(cau1).getAllByRole('radio')[0]).toHaveFocus();
+  expect(screen.queryByText(/Đúng \d\/2 câu/)).not.toBeInTheDocument();
   await u.click(within(cau1).getByRole('radio', { name: /==/ }));
   await u.click(within(cau2).getByRole('radio', { name: /print/ }));
   await u.click(screen.getByRole('button', { name: 'Nộp bài (2/2)' }));
@@ -427,7 +432,12 @@ test('xoa hoi thoai thi ve man chao', async () => {
   await u.type(within(chat).getByRole('textbox'), 'Xin chào{Enter}');
   await within(chat).findByText('Chào bạn');
   await u.click(within(chat).getByRole('button', { name: /Xóa hội thoại/ }));
-  expect(within(chat).getByText('Hỏi AI bất cứ điều gì về phần này!')).toBeInTheDocument();
+  // Xoa ca hoi thoai phai hoi truoc: Huy thi giu nguyen, dong y moi xoa
+  await u.click(await screen.findByRole('button', { name: 'Hủy' }));
+  expect(within(chat).getByText('Chào bạn')).toBeInTheDocument();
+  await u.click(within(chat).getByRole('button', { name: /Xóa hội thoại/ }));
+  await u.click(await screen.findByRole('button', { name: 'Xóa' }));
+  expect(await within(chat).findByText('Hỏi AI bất cứ điều gì về phần này!')).toBeInTheDocument();
   expect(within(chat).queryByText('Chào bạn')).not.toBeInTheDocument();
 });
 
@@ -482,7 +492,7 @@ test('bai tap Python: de goc hien nguyen van (Stack<T>); AI tao bai moi thanh ta
     ai: () => traText(JSON.stringify({ title: 'Tong hai so', description: 'Viết hàm **tong**', hints: ['Dùng +'], solution: 'def tong(a, b):\n    return a + b', solutionLang: 'python' }))
   });
   expect(await screen.findByText('Viết lớp Stack<T> có push và pop')).toBeInTheDocument();
-  const soan = screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' });
+  const soan = screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' });
   await u.type(soan, 'class Stack');
   expect(screen.queryByRole('button', { name: /Xem gợi ý/ })).not.toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
@@ -490,13 +500,13 @@ test('bai tap Python: de goc hien nguyen van (Stack<T>); AI tao bai moi thanh ta
   expect(goiAi[0].taskType).toBe('exercise');
   expect(goiAi[0].messages[0].content).toContain('Viết lớp Stack<T>');
   expect(screen.getByText('tong', { selector: 'strong' })).toBeInTheDocument();
-  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('');
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' })).toHaveValue('');
   await u.click(screen.getByRole('button', { name: /Xem gợi ý/ }));
   expect(screen.getByText('Dùng +')).toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: /Xem solution mẫu/ }));
   expect(screen.getByRole('tabpanel').textContent).toMatch(/return a \+ b/);
   await u.click(screen.getByRole('button', { name: /Bài tập gốc/ }));
-  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('class Stack');
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' })).toHaveValue('class Stack');
 });
 
 test('cham bai: hien diem va nhan xet; HTML trong nhan xet hien nhu chu; loi AI co the cham lai', async () => {
@@ -506,7 +516,7 @@ test('cham bai: hien diem va nhan xet; HTML trong nhan xet hien nhu chu; loi AI 
     ai: () => (lan++ === 0 ? new Response('{"error":"AI bận"}', { status: 500 })
       : traText(JSON.stringify({ score: 70, status: 'partial', feedback: 'Thiếu pop <img src=x onerror=alert(1)>', errors: ['Chưa có pop'], suggestions: ['Thêm pop'], correctedCode: 'class Stack: pass' })))
   });
-  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'class Stack: push');
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' }), 'class Stack: push');
   await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
   expect(await screen.findByText(/Không chấm được bài: AI bận/)).toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
@@ -520,10 +530,10 @@ test('cham bai: hien diem va nhan xet; HTML trong nhan xet hien nhu chu; loi AI 
 test('o soan giu cau tra loi khi doi tab roi quay lai; gia su o tab Bai tap thay code hoc vien', async () => {
   const u = userEvent.setup();
   const { goiAi } = mo('/lesson/python/newbie/a?tab=exercise', { ai: () => traText('ok') });
-  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'print(42)');
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' }), 'print(42)');
   await u.click(screen.getByRole('tab', { name: /Lý thuyết/ }));
   await moTabBaiTap(u);
-  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('print(42)');
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' })).toHaveValue('print(42)');
   const chat = screen.getByRole('region', { name: /Hỏi Gia sư AI/ });
   expect(chat).toHaveTextContent('Bài tập thực hành');
   await u.type(within(chat).getByRole('textbox'), 'Sai o dau?{Enter}');
@@ -553,7 +563,7 @@ test('sang trang app cu (tai trang moi) roi quay lai: cau tra loi, hoi thoai gia
       : b.taskType === 'exercise' ? new Promise<Response>(() => {}) // AI chua soan xong luc roi trang
         : traText('Biến là **hộp** chứa giá trị'))
   });
-  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'class Stack');
+  await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' }), 'class Stack');
   await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
   const chat = screen.getByRole('region', { name: /Hỏi Gia sư AI/ });
   await u.click(within(chat).getByRole('button', { name: 'Giải thích đơn giản' }));
@@ -568,7 +578,7 @@ test('sang trang app cu (tai trang moi) roi quay lai: cau tra loi, hoi thoai gia
 
   // App cu dua ve bai (location.assign): tai lieu React moi, cache moi, cung nguoi dang nhap
   mo('/lesson/python/newbie/a?tab=exercise');
-  expect(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('class Stack');
+  expect(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' })).toHaveValue('class Stack');
   expect(screen.getByRole('button', { name: /AI tạo bài tập mới/ })).toBeEnabled();
   expect(within(screen.getByRole('region', { name: /Hỏi Gia sư AI/ })).getByText('hộp', { selector: 'strong' })).toBeInTheDocument();
   await u.click(screen.getByRole('tab', { name: /Trắc nghiệm Quiz/ }));
@@ -588,10 +598,10 @@ test('AI dang tao bai tap thi doi sang bai khac roi quay lai: van thay dang tao,
   expect(await screen.findByRole('button', { name: /AI đang soạn bài tập/ })).toBeDisabled();
   await act(async () => { tha(); });
   expect(await screen.findByRole('button', { name: 'AI #1', pressed: true })).toBeInTheDocument();
-  await u.type(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' }), 'x');
+  await u.type(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' }), 'x');
   expect(screen.getByRole('button', { name: 'AI #1', pressed: true })).toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: /Bài tập gốc/ }));
-  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây...' })).toHaveValue('');
+  expect(screen.getByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' })).toHaveValue('');
   expect(goiAi).toHaveLength(1);
 });
 

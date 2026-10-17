@@ -7,12 +7,15 @@ import { NotFoundPage } from '@/routes/not-found/NotFoundPage';
 import { RoadmapPage } from '@/routes/roadmap/RoadmapPage';
 import { LoiTrang } from '@/routes/loi/LoiTrang';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useT } from '@/lib/i18n';
 
 /** Trong luc tai chunk cua route luoi o lan mo trang dau: khong de trang trang */
 function TaiTrang() {
+  const { t } = useT();
   return (
     <div className="grid min-h-dvh place-items-center" aria-busy="true">
       <Skeleton className="h-10 w-48" />
+      <span role="status" className="sr-only">{t('loading')}</span>
     </div>
   );
 }
@@ -32,7 +35,7 @@ export const cacRoute: RouteObject[] = [
     errorElement: <LoiTrang />,
     children: [{
       // Loi o mot trang (chunk lazy hong sau deploy, loi khi ve): hien trong khung, thanh ben van dung duoc
-      errorElement: <LoiTrang />,
+      errorElement: <LoiTrang trongKhung />,
       children: [
         { index: true, element: <DashboardPage /> },
         { path: 'roadmap', element: <Navigate to="/" replace /> },

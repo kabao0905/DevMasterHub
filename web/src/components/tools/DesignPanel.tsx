@@ -6,12 +6,15 @@ import { apDungThietKe, suaThietKe } from '@/lib/ai';
 import { getProperty, setProperties } from '@/lib/css-patch';
 import { GROUPS, rgbToHex, type TruongThietKe } from '@/lib/design-inject';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export type ChonThietKe = { selector: string; tag: string; text: string; computed: Record<string, string> };
 
 type Props = { chon: ChonThietKe | null; files: Record<string, string>; onFilesChange: (files: Record<string, string>) => void };
 
-const lopO = 'h-8 w-full rounded-md border bg-background px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring';
+const lopO = 'h-8 w-full rounded-lg border bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring';
+
+const MAU_TRANG_THAI = { dang: 'bg-lavender text-lavender-ink', xong: 'bg-mint text-mint-ink', loi: 'bg-destructive/10 text-destructive' } as const;
 
 /**
  * Chinh phan tu dang chon trong khung xem truoc. Code van la goc: moi thay doi chen dung
@@ -19,8 +22,9 @@ const lopO = 'h-8 w-full rounded-md border bg-background px-2 text-sm outline-no
  */
 export function DesignPanel({ chon, files, onFilesChange }: Props) {
   const { client } = useAuth();
-  const { lang } = useT();
+  const { t, lang } = useT();
   const [yeuCau, datYeuCau] = useState('');
+  const oYeuCauRef = useRef<HTMLTextAreaElement>(null);
   const [trangThai, datTrangThai] = useState<{ loai: 'dang' | 'xong' | 'loi'; text: string } | null>(null);
   // Bo tep truoc lan AI sua gan nhat, de Hoan tac (o soan duoc dieu khien nen Ctrl+Z khong lui duoc)
   const [truocAi, datTruocAi] = useState<Record<string, string> | null>(null);
@@ -42,7 +46,13 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
   }
 
   async function hoiAi() {
-    if (!yeuCau.trim() || trangThai?.loai === 'dang') return;
+    if (trangThai?.loai === 'dang') return;
+    // Nut luon bam duoc: o trong thi nhac ngay duoi o va dua con tro ve
+    if (!yeuCau.trim()) {
+      datTrangThai({ loai: 'loi', text: t('emptyInputHint') });
+      oYeuCauRef.current?.focus();
+      return;
+    }
     datTrangThai({ loai: 'dang', text: 'AI đang đọc code của bạn…' });
     try {
       const kq = await suaThietKe(client, { yeuCau: yeuCau.trim(), chon, files: filesRef.current, lang });
@@ -58,10 +68,10 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
   }
 
   return (
-    <section aria-label="Chế độ Thiết kế" className="space-y-4 rounded-xl border bg-card p-4">
+    <section aria-label="Chế độ Thiết kế" className="space-y-4 rounded-3xl bg-card p-5 shadow-soft">
       {chon ? (
         <>
-          <p className="text-sm">Đang chọn <code className="rounded bg-muted px-1.5 py-0.5 font-mono">{`<${chon.tag}>`} {chon.selector}</code></p>
+          <p className="text-sm">Đang chọn <code translate="no" className="rounded-lg bg-sky px-1.5 py-0.5 font-mono break-all text-sky-ink">{`<${chon.tag}>`} {chon.selector}</code></p>
           <div className="grid gap-4 sm:grid-cols-3">
             {GROUPS.map(nhom => (
               <fieldset key={nhom.name} className="space-y-2">
@@ -72,35 +82,39 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
           </div>
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">Bấm vào một phần tử trong khung xem trước để chỉnh màu, chữ, khoảng cách.</p>
+        <p className="rounded-2xl bg-sky px-4 py-3 text-sm text-sky-ink">Bấm vào một phần tử trong khung xem trước để chỉnh màu, chữ, khoảng cách.</p>
       )}
 
       <div className="space-y-2 border-t pt-4">
-        <label htmlFor="dm-yeu-cau" className="text-sm font-medium">Nhờ AI sửa giao diện</label>
+        <label htmlFor="dm-yeu-cau" className="flex items-center gap-2 text-sm font-semibold">
+          <span className="grid size-7 place-items-center rounded-xl bg-lavender text-lavender-ink" aria-hidden="true"><Sparkles className="size-4" /></span>
+          Nhờ AI sửa giao diện
+        </label>
         <div className="flex gap-2">
           <textarea
+            ref={oYeuCauRef}
             id="dm-yeu-cau"
+            aria-describedby="dm-trang-thai"
             value={yeuCau}
             onChange={e => datYeuCau(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) { e.preventDefault(); void hoiAi(); } }}
             rows={1}
-            placeholder="vd: làm nút bo tròn hơn, nền tối hơn"
-            className="min-h-9 flex-1 resize-y rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            placeholder="vd: làm nút bo tròn hơn, nền tối hơn…"
+            className="min-h-9 flex-1 resize-y rounded-xl border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <Button onClick={() => void hoiAi()} disabled={!yeuCau.trim() || trangThai?.loai === 'dang'}>
-            {trangThai?.loai === 'dang' ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />} Sửa
+          <Button className="rounded-full" onClick={() => void hoiAi()} disabled={trangThai?.loai === 'dang'}>
+            {trangThai?.loai === 'dang' ? <Loader2 className="motion-safe:animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />} Sửa
           </Button>
         </div>
-        {trangThai && (
-          <div className="flex flex-wrap items-center gap-3">
-            <p role="status" className={trangThai.loai === 'loi' ? 'text-sm text-destructive' : 'text-sm text-muted-foreground'}>{trangThai.text}</p>
-            {truocAi && trangThai.loai === 'xong' && (
-              <Button variant="ghost" size="sm" onClick={() => { onFilesChange(truocAi); datTruocAi(null); datTrangThai(null); }}>
-                <Undo2 aria-hidden="true" /> Hoàn tác
-              </Button>
-            )}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Vung trang thai luon gan san: chi doi chu ben trong de trinh doc man hinh doc duoc */}
+          <p id="dm-trang-thai" role="status" className={cn('rounded-2xl px-4 py-2 text-sm empty:hidden', trangThai && MAU_TRANG_THAI[trangThai.loai])}>{trangThai?.text ?? ''}</p>
+          {truocAi && trangThai?.loai === 'xong' && (
+            <Button variant="ghost" size="sm" className="rounded-full" onClick={() => { onFilesChange(truocAi); datTruocAi(null); datTrangThai(null); }}>
+              <Undo2 aria-hidden="true" /> Hoàn tác
+            </Button>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -124,8 +138,27 @@ function OChu({ giaTri, onDoi, ...con }: { giaTri: string; onDoi: (v: string) =>
   const [nhap, datNhap] = useNhapTam(giaTri);
   const chot = () => { if (nhap !== giaTri) onDoi(nhap.trim()); };
   return (
-    <input type="text" {...con} value={nhap} onChange={e => datNhap(e.target.value)} onBlur={chot}
+    <input type="text" autoComplete="off" {...con} value={nhap} onChange={e => datNhap(e.target.value)} onBlur={chot}
       onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); chot(); } }} spellCheck={false} />
+  );
+}
+
+/**
+ * O so px: giu ban nhap rieng, chot khi roi o / Enter. Truoc day moi phim ghi value+'px' — xoa trang o
+ * thi ghi 'px' sai va o nhay ve 0 (go 5 thanh '05'). O trong hoac khong phai so thi tra ve gia tri cu.
+ */
+function OPx({ giaTri, onDoi, ...con }: { giaTri: string; onDoi: (v: string) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>) {
+  const so = parseFloat(giaTri);
+  const goc = Number.isFinite(so) ? String(so) : '';
+  const [nhap, datNhap] = useNhapTam(goc);
+  const chot = () => {
+    const n = parseFloat(nhap);
+    if (!nhap.trim() || !Number.isFinite(n)) { datNhap(goc); return; }
+    if (String(n) !== goc) onDoi(n + 'px');
+  };
+  return (
+    <input type="number" inputMode="decimal" autoComplete="off" {...con} value={nhap} onChange={e => datNhap(e.target.value)} onBlur={chot}
+      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); chot(); } }} />
   );
 }
 
@@ -164,7 +197,7 @@ function TruongNhap({ f, giaTri, onDoi }: { f: TruongThietKe; giaTri: string; on
     return (
       <label className="block space-y-1 text-xs">
         <span>{f.label} (px)</span>
-        <input type="number" min={f.min} max={f.max} value={parseFloat(giaTri) || 0} onChange={e => onDoi(e.target.value + 'px')} className={lopO} />
+        <OPx giaTri={giaTri} onDoi={onDoi} min={f.min} max={f.max} placeholder="0" className={lopO} />
       </label>
     );
   }

@@ -11,7 +11,6 @@ import { useEscape } from '@/lib/use-escape';
 import { timCongNghe, viTriBai, type CongNgheTomTat } from '@/lib/curriculum';
 import { baiCanHocTruoc, baiDaMo, type ViTriBai } from '@/lib/progress';
 import { boThe, type TabBai } from '@/lib/ai';
-import { MAU_CAP } from '@/components/LevelLadder';
 import { LoadError } from '@/components/LoadError';
 import { NotFoundPanel } from '@/components/NotFoundPanel';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,13 @@ import { codeDangLam, useBaiTap } from './use-bai-tap';
 import { BienTuyen } from '@/components/BienTuyen';
 
 export const TABS: TabBai[] = ['theory', 'code', 'quiz', 'exercise'];
+
+// Tab bai hoc dang vien thuoc mem: tab dang mo la mang oai huong (dang hoc), che do toi cung vay
+const LOP_TAB = cn(
+  'shrink-0 snap-start rounded-full px-3 transition-colors',
+  'data-active:bg-lavender data-active:text-lavender-ink data-active:shadow-none',
+  'dark:data-active:border-transparent dark:data-active:bg-lavender dark:data-active:text-lavender-ink'
+);
 
 export function LessonPage() {
   const { tech: techId = '', level: levelId = '', lesson: lessonId = '' } = useParams();
@@ -46,7 +52,7 @@ export function LessonPage() {
   const lyThuyet = boThe(vt?.lesson.theory);
   usePageMeta({
     title: ten,
-    description: vt ? (lyThuyet ? lyThuyet.slice(0, 155).trim() + '…' : `Học bài "${vt.lesson.title}" trong lộ trình ${tech.data?.name} (${vt.level.name}) cùng ví dụ code và bài tập thực hành.`) : undefined,
+    description: vt ? (lyThuyet ? lyThuyet.slice(0, 155).trim() + '…' : `Học bài “${vt.lesson.title}” trong lộ trình ${tech.data?.name} (${vt.level.name}) cùng ví dụ code và bài tập thực hành.`) : undefined,
     url: vt ? `${window.location.origin}/lesson/${techId}/${levelId}/${lessonId}` : undefined
   });
 
@@ -107,27 +113,24 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
       </nav>
 
       <header className="space-y-4">
-        <span className={cn('inline-block rounded-full px-2.5 py-0.5 text-sm font-semibold text-white dark:text-background', MAU_CAP[level.id] ?? 'bg-primary')}>
-          {level.name}
-        </span>
-        <h1 className="font-display text-4xl leading-tight font-bold tracking-tight text-balance">{translateTitle(lesson.title)}</h1>
+        <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight text-balance break-words sm:text-4xl">{translateTitle(lesson.title)}</h1>
         {/* Khong co nut tu tich: bai chi duoc tich khi lam DAT bai tap (AI cham Dung / xong lab) */}
         {xong ? (
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-level-newbie/40 bg-level-newbie/10 px-3 py-1.5 text-sm font-medium text-level-newbie"><CircleCheck className="size-4" aria-hidden="true" />{t('completed')}</p>
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1.5 text-sm font-semibold text-mint-ink"><CircleCheck className="size-4" aria-hidden="true" />{t('completed')}</p>
         ) : (
-          <Button variant="outline" disabled={loading} onClick={() => doiTab('exercise')}>
+          <Button variant="outline" className="rounded-full" disabled={loading} onClick={() => doiTab('exercise')}>
             <Dumbbell aria-hidden="true" /> {t('completeByExercise')}
           </Button>
         )}
       </header>
 
       <Tabs value={tab} onValueChange={doiTab}>
-        {/* Dien thoai: 4 tab tren mot hang rong ~530px, tran man 375px va cat mat tab dau/cuoi -> luoi 2x2 */}
-        <TabsList className="grid w-full grid-cols-2 gap-1 group-data-horizontal/tabs:h-auto sm:inline-flex sm:w-auto sm:gap-0 sm:group-data-horizontal/tabs:h-8">
-          <TabsTrigger value="theory" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
-          <TabsTrigger value="code" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
-          <TabsTrigger value="quiz" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><ListChecks aria-hidden="true" /> {t('tabQuiz')}</TabsTrigger>
-          <TabsTrigger value="exercise" className="min-h-9 whitespace-normal text-center leading-tight sm:min-h-0 sm:whitespace-nowrap"><Dumbbell aria-hidden="true" /> {t('tabExercise')}</TabsTrigger>
+        {/* Dien thoai: 4 tab tren mot hang rong ~530px > 375px -> mot hang cuon ngang (an thanh cuon, bat diem tung tab), nhan khong bao gio xuong dong */}
+        <TabsList className="flex w-full max-w-full snap-x snap-proximity justify-start gap-1 overflow-x-auto rounded-full bg-card p-1 shadow-soft [scrollbar-width:none] group-data-horizontal/tabs:h-11 sm:w-fit [&::-webkit-scrollbar]:hidden">
+          <TabsTrigger value="theory" className={LOP_TAB}><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
+          <TabsTrigger value="code" className={LOP_TAB}><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
+          <TabsTrigger value="quiz" className={LOP_TAB}><ListChecks aria-hidden="true" /> {t('tabQuiz')}</TabsTrigger>
+          <TabsTrigger value="exercise" className={LOP_TAB}><Dumbbell aria-hidden="true" /> {t('tabExercise')}</TabsTrigger>
         </TabsList>
         <TabsContent value="theory" className="pt-6"><TheoryTab lesson={lesson} /></TabsContent>
         <TabsContent value="code" className="pt-6"><CodeTab lesson={lesson} /></TabsContent>
@@ -143,19 +146,19 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
 
       <nav aria-label={`${t('prevLesson')} / ${t('nextLesson')}`} className="grid gap-3 sm:grid-cols-2">
         {truoc ? (
-          <Link to={duongDan(truoc)} className="the-noi rounded-2xl border bg-card p-4">
+          <Link to={duongDan(truoc)} className="the-noi rounded-2xl bg-card p-4 shadow-soft">
             <span className="block text-xs text-muted-foreground">{t('prevLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(truoc.lesson.title)}</span>
           </Link>
         ) : <span aria-hidden="true" />}
         {sau && (xong ? (
-          <Link to={duongDan(sau)} className="the-noi rounded-2xl border bg-card p-4 text-right">
+          <Link to={duongDan(sau)} className="the-noi rounded-2xl bg-card p-4 text-right shadow-soft">
             <span className="block text-xs text-muted-foreground">{t('nextLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
           </Link>
         ) : (
           // Hoc theo thu tu: bai tiep theo chi mo khi lam dat bai tap cua bai nay
-          <div aria-disabled="true" className="rounded-xl border border-dashed p-4 text-right text-muted-foreground">
+          <div aria-disabled="true" className="rounded-2xl bg-muted p-4 text-right text-muted-foreground">
             <span className="flex items-center justify-end gap-1.5 text-xs"><Lock className="size-3.5" aria-hidden="true" /> {t('nextLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
             <span className="mt-1 block text-xs">{t('nextLessonLockedHint')}</span>
@@ -170,17 +173,17 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
 function BaiBiKhoa({ tech, truoc }: { tech: CongNgheTomTat; truoc: ViTriBai }) {
   const { t, translateTitle } = useT();
   return (
-    <section className="mx-auto max-w-xl rounded-2xl border bg-card p-8 text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-full bg-muted" aria-hidden="true">
-        <Lock className="size-7 text-muted-foreground" />
+    <section className="mx-auto max-w-xl rounded-3xl bg-card p-8 text-center shadow-soft">
+      <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-butter text-butter-ink" aria-hidden="true">
+        <Lock className="size-7" />
       </span>
-      <h1 className="mt-4 font-display text-3xl font-bold tracking-tight">{t('lessonLockedTitle')}</h1>
+      <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-balance">{t('lessonLockedTitle')}</h1>
       <p className="mt-2 text-muted-foreground">{t('lessonLockedHint')}</p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Button asChild>
+        <Button asChild className="rounded-full">
           <Link to={`/lesson/${tech.id}/${truoc.level.id}/${truoc.lesson.id}`}>{t('lessonLockedGoTo', { title: translateTitle(truoc.lesson.title) })}</Link>
         </Button>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="rounded-full">
           <Link to={`/roadmap/${tech.id}`}>{tech.name}</Link>
         </Button>
       </div>

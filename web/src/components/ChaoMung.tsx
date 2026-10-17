@@ -2,6 +2,7 @@
 // HopMucTieu dung lai de doi muc tieu tu lich hoc tren Dashboard.
 import { useState } from 'react';
 import { Bot, Loader2, Map, Rocket } from 'lucide-react';
+import { RadioGroup } from 'radix-ui';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
@@ -10,10 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
+// Moi diem noi bat mot o mau pastel: lo trinh = mint, AI = lavender, du an/viec lam = butter
 const DIEM_NOI_BAT = [
-  { Icon: Map, khoa: 'welcomePoint1' },
-  { Icon: Bot, khoa: 'welcomePoint2' },
-  { Icon: Rocket, khoa: 'welcomePoint3' }
+  { Icon: Map, khoa: 'welcomePoint1', nen: 'bg-mint', muc: 'text-mint-ink' },
+  { Icon: Bot, khoa: 'welcomePoint2', nen: 'bg-lavender', muc: 'text-lavender-ink' },
+  { Icon: Rocket, khoa: 'welcomePoint3', nen: 'bg-butter', muc: 'text-butter-ink' }
 ] as const;
 
 /**
@@ -43,19 +45,22 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
   return (
     <Dialog open={mo} onOpenChange={m => { if (!m && !chaoMung) onDong(); }}>
       {/* Bang doi muc tieu khong co dong mo ta: aria-describedby={undefined} bao Radix khoi canh bao thieu Description */}
-      <DialogContent className="sm:max-w-md" showCloseButton={!chaoMung} {...(chaoMung ? {} : { 'aria-describedby': undefined })}
+      <DialogContent className="gap-5 rounded-3xl bg-card p-6 shadow-soft ring-0 sm:max-w-md" showCloseButton={!chaoMung}
+        {...(chaoMung ? {} : { 'aria-describedby': undefined })}
         onEscapeKeyDown={e => { if (chaoMung) e.preventDefault(); }}
         onPointerDownOutside={e => { if (chaoMung) e.preventDefault(); }}>
         <DialogHeader>
-          <DialogTitle className="text-xl">{chaoMung ? t('welcomeTitle', { name: ten }) : t('changeGoalTitle')}</DialogTitle>
+          <DialogTitle className="pr-8 font-display text-2xl leading-tight font-extrabold tracking-tight text-balance">
+            {chaoMung ? t('welcomeTitle', { name: ten }) : t('changeGoalTitle')}
+          </DialogTitle>
           {chaoMung && <DialogDescription>{t('welcomeIntro')}</DialogDescription>}
         </DialogHeader>
 
         {chaoMung && (
-          <ul className="space-y-2.5">
-            {DIEM_NOI_BAT.map(({ Icon, khoa }) => (
-              <li key={khoa} className="flex items-start gap-3 text-sm">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary" aria-hidden="true"><Icon className="size-4" /></span>
+          <ul className="grid gap-2">
+            {DIEM_NOI_BAT.map(({ Icon, khoa, nen, muc }) => (
+              <li key={khoa} className={cn('flex items-start gap-3 rounded-2xl p-3 text-sm text-foreground', nen)}>
+                <span className={cn('grid size-8 shrink-0 place-items-center rounded-xl bg-card/70', muc)} aria-hidden="true"><Icon className="size-4" /></span>
                 <span className="pt-1.5">{t(khoa)}</span>
               </li>
             ))}
@@ -63,23 +68,25 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
         )}
 
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium">{t('dailyGoalQuestion')}</legend>
-          <div role="radiogroup" aria-label={t('dailyGoalQuestion')} className="mt-3 grid grid-cols-5 gap-2">
+          <legend className="text-sm font-semibold">{t('dailyGoalQuestion')}</legend>
+          {/* Radix RadioGroup: mot diem Tab, mui ten trai/phai doi lua chon (roving tabindex) */}
+          <RadioGroup.Root value={String(chon)} onValueChange={v => datChon(Number(v))} orientation="horizontal" loop
+            aria-label={t('dailyGoalQuestion')} className="mt-3 grid grid-cols-5 gap-2">
             {CHON_MUC_TIEU.map(n => (
-              <button key={n} type="button" role="radio" aria-checked={chon === n} onClick={() => datChon(n)}
+              <RadioGroup.Item key={n} value={String(n)}
                 className={cn(
-                  'rounded-lg border px-1 py-2.5 text-sm font-medium tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-ring',
-                  chon === n ? 'border-primary bg-primary/15 text-primary' : 'hover:bg-muted'
+                  'rounded-2xl border px-1 py-2.5 text-sm font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                  chon === n ? 'border-transparent bg-lavender text-lavender-ink' : 'bg-card hover:bg-muted'
                 )}>
                 {t('minutesN', { n })}
-              </button>
+              </RadioGroup.Item>
             ))}
-          </div>
+          </RadioGroup.Root>
         </fieldset>
 
-        <DialogFooter>
-          <Button className="w-full bg-signal text-signal-foreground hover:bg-signal hover:brightness-105 sm:w-auto" onClick={() => { void xacNhan(); }} disabled={dangLuu}>
-            {dangLuu && <Loader2 className="animate-spin" aria-hidden="true" />}
+        <DialogFooter className="mx-0 mb-0 rounded-none border-t-0 bg-transparent p-0">
+          <Button className="h-10 w-full rounded-full bg-signal px-5 text-signal-foreground hover:bg-signal hover:brightness-105 sm:w-auto" onClick={() => { void xacNhan(); }} disabled={dangLuu}>
+            {dangLuu && <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />}
             {chaoMung ? t('startLearningBtn') : t('saveGoalBtn')}
           </Button>
         </DialogFooter>

@@ -13,19 +13,19 @@ function moAuth(client: SupabaseLike) {
   return { qc, ...renderHook(() => useAuth(), { wrapper }) };
 }
 
-test('dang nhap sai bao loi tieng Viet; ten dang nhap duoc chuan hoa thanh email noi bo', async () => {
+test('dang nhap sai nem ma loi authWrongCredentials (trang dich theo ngon ngu); ten dang nhap duoc chuan hoa thanh email noi bo', async () => {
   const { client } = giaSupabase({ loiDangNhap: 'Invalid login credentials' });
   const { result } = moAuth(client);
-  await expect(result.current.login('  An_01 ', 'sai')).rejects.toThrow('Sai tên đăng nhập hoặc mật khẩu');
+  await expect(result.current.login('  An_01 ', 'sai')).rejects.toThrow('authWrongCredentials');
   expect(client.auth.signInWithPassword).toHaveBeenCalledWith({ email: 'an_01@devmaster.hub', password: 'sai' });
 });
 
 test('dang ky kiem tra dau vao truoc khi goi Supabase', async () => {
   const { client } = giaSupabase();
   const { result } = moAuth(client);
-  await expect(result.current.register('ab', '123456')).rejects.toThrow('Tên đăng nhập phải có ít nhất 3 ký tự');
-  await expect(result.current.register('an binh', '123456')).rejects.toThrow('chỉ chứa chữ thường, số và dấu _');
-  await expect(result.current.register('anbinh', '123')).rejects.toThrow('Mật khẩu phải có ít nhất 6 ký tự');
+  await expect(result.current.register('ab', '123456')).rejects.toThrow('authUsernameShort');
+  await expect(result.current.register('an binh', '123456')).rejects.toThrow('authUsernameChars');
+  await expect(result.current.register('anbinh', '123')).rejects.toThrow('authPasswordShort');
   expect(client.auth.signUp).not.toHaveBeenCalled();
 });
 

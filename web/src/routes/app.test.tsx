@@ -75,7 +75,7 @@ test('dang ky: mat khau nhap lai khong khop thi bao loi va khong goi Supabase', 
 test('dashboard: the cong nghe theo nhom, phan tram tien do, link sang roadmap', async () => {
   veApp('/', { gia: daDangNhap({ lesson_progress: [{ tech_id: 'python', level_id: 'newbie', lesson_id: 'a', completed: true }] }), json: JSON_GIA });
   const main = await screen.findByRole('main');
-  const thePy = await within(main).findByRole('link', { name: /Python/ });
+  const thePy = await within(main).findByRole('link', { name: /^Python/ });
   expect(thePy).toHaveAttribute('href', '/roadmap/python');
   await waitFor(() => expect(within(thePy).getByText('33%')).toBeInTheDocument());
   expect(within(main).getByRole('heading', { name: 'Ngôn ngữ lập trình' })).toBeInTheDocument();
@@ -99,7 +99,7 @@ test('tim kiem: go khong dau ra bai co dau; khong co ket qua thi noi ro tu khoa'
   expect(screen.getByText('Tìm thấy 1 kết quả')).toBeInTheDocument();
   await u.clear(o);
   await u.type(o, 'xyz');
-  expect(await screen.findByText('Không tìm thấy kết quả phù hợp cho "xyz"')).toBeInTheDocument();
+  expect(await screen.findByText('Không tìm thấy kết quả phù hợp cho “xyz”')).toBeInTheDocument();
 });
 
 test('thanh tren: link toi Project Lab, Du an cua toi, Career; menu Lo trinh co roadmap; doi ngon ngu trong menu Tai khoan', async () => {
@@ -112,7 +112,7 @@ test('thanh tren: link toi Project Lab, Du an cua toi, Career; menu Lo trinh co 
   await u.click(within(nav).getByRole('button', { name: /Lộ trình/ }));
   expect(await screen.findByRole('menuitem', { name: /React/ })).toHaveAttribute('href', '/roadmap/react');
   await u.keyboard('{Escape}');
-  await u.click(screen.getByRole('button', { name: 'Tài khoản' }));
+  await u.click(screen.getByRole('button', { name: /^Tài khoản/ }));
   await u.click(await screen.findByRole('menuitemradio', { name: /English/ }));
   expect(localStorage.getItem('devmaster_hub_lang')).toBe('en');
 });
@@ -134,7 +134,7 @@ test('dang xuat thi ve trang dang nhap', async () => {
   // Trinh duyet nhung (vd. trong app) chan window.confirm: khong duoc dua vao no
   vi.stubGlobal('confirm', () => false);
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
-  await u.click(await screen.findByRole('button', { name: 'Tài khoản' }));
+  await u.click(await screen.findByRole('button', { name: /^Tài khoản/ }));
   await u.click(await screen.findByRole('menuitem', { name: 'Đăng xuất' }));
   const hop = await screen.findByRole('dialog', { name: 'Bạn muốn đăng xuất?' });
   await u.click(within(hop).getByRole('button', { name: 'Đăng xuất' }));
@@ -196,7 +196,7 @@ test('dashboard: tai danh sach cong nghe loi thi bao loi kem nut Thu lai, khong 
   expect(await within(main).findByRole('alert')).toHaveTextContent('Không tải được dữ liệu');
   vi.stubGlobal('fetch', fetchTu(JSON_GIA));
   await u.click(within(main).getByRole('button', { name: 'Thử lại' }));
-  expect(await within(main).findByRole('link', { name: /Python/ })).toBeInTheDocument();
+  expect(await within(main).findByRole('link', { name: /^Python/ })).toBeInTheDocument();
 });
 
 test('tim kiem: tai chi muc loi thi bao loi, khong noi la khong co ket qua', async () => {
@@ -218,7 +218,8 @@ test('cong tac sang / toi tren thanh tren: gat thi ca trang doi mau va nho lua c
     const lan1 = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
     const congTac = await screen.findByRole('switch', { name: 'Chế độ tối' });
     expect(congTac).toHaveAttribute('aria-checked', 'false');
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    // Khong con thanh ben dieu huong kieu cu (cot phai Lich hoc / Sap toi cua Dashboard la aside noi dung, khong co nav)
+    expect(screen.queryAllByRole('complementary').some(a => within(a).queryByRole('navigation'))).toBe(false);
     await u.click(congTac);
     expect(congTac).toHaveAttribute('aria-checked', 'true');
     expect(document.documentElement).toHaveClass('dark');
@@ -250,11 +251,12 @@ test('dashboard: lich chi tich ngay hoc du muc tieu, ngay hoc chua du to nhat, d
   const lich = await screen.findByRole('region', { name: 'Lịch học' });
   expect(await within(lich).findByText('2 ngày liên tiếp')).toBeInTheDocument();
   // Thoi gian hoc hom nay hien noi bat: thanh tien do co nhan doc duoc, dat muc tieu thi bao ro
-  const tienDo = within(lich).getByRole('progressbar', { name: 'Hôm nay: 15/15 phút' });
+  const cotBen = lich;
+  const tienDo = within(cotBen).getByRole('progressbar', { name: 'Hôm nay: 15/15 phút' });
   expect(tienDo).toHaveAttribute('aria-valuenow', '15');
   expect(tienDo).toHaveAttribute('aria-valuemax', '15');
-  expect(within(lich).getByText(/Đạt mục tiêu/)).toBeInTheDocument();
-  expect(within(lich).getByRole('button', { name: /Mục tiêu: 15 phút\/ngày/ })).toBeInTheDocument();
+  expect(within(cotBen).getByText(/Đạt mục tiêu/)).toBeInTheDocument();
+  expect(within(cotBen).getByRole('button', { name: /Mục tiêu: 15 phút\/ngày/ })).toBeInTheDocument();
   // Dau thang thi hom qua / hom kia thuoc thang truoc, khong nam tren lich thang nay
   const ngayThang = new Date().getDate();
   expect(within(lich).getAllByRole('img', { name: /đã học/ })).toHaveLength(ngayThang > 1 ? 2 : 1);

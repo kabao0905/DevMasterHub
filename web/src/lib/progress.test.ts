@@ -1,4 +1,4 @@
-import { baiCanHocTruoc, baiDaMo, baiKeTiep, khoaBai, tienDoCongNghe, tienDoTong } from './progress';
+import { baiCanHocTruoc, baiDaMo, baiKeTiep, dangHocDo, khoaBai, tienDoCongNghe, tienDoTong } from './progress';
 import type { CongNgheTomTat } from './curriculum';
 
 const cn = (id: string, cap: Record<string, string[]>): CongNgheTomTat => ({
@@ -61,4 +61,12 @@ test('khoa bai: bai da xong tu truoc luon mo; bai la khong khoa; bai can hoc tru
   expect(baiDaMo(PY, 'newbie', 'khong-co', xongD)).toBe(true);
   expect(baiCanHocTruoc(PY, 'junior', 'c')).toMatchObject({ level: { id: 'newbie' }, lesson: { id: 'b' } });
   expect(baiCanHocTruoc(PY, 'newbie', 'a')).toBeNull();
+});
+
+test('dang hoc do: moi cong nghe da bat dau ma chua xong, kem bai ke tiep; hoc nhieu nhat dung dau', () => {
+  const ZZ = cn('zz', { newbie: ['m', 'n', 'o'] });
+  const done = new Set([khoaBai('python', 'newbie', 'a'), khoaBai('zz', 'newbie', 'm'), khoaBai('zz', 'newbie', 'n'), khoaBai('js', 'newbie', 'x'), khoaBai('js', 'newbie', 'y')]);
+  const ds = dangHocDo([PY, JS, ZZ], done);
+  expect(ds.map(v => [v.tech.id, v.level.id, v.lesson.id])).toEqual([['zz', 'newbie', 'o'], ['python', 'newbie', 'b']]);
+  expect(dangHocDo([PY, JS], new Set())).toEqual([]);
 });

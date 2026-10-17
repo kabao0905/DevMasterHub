@@ -9,6 +9,7 @@ import type { CapDo, YTuong } from '@/lib/project-ai';
 import { useYTuong } from './use-y-tuong';
 import { MentorChat } from './MentorChat';
 import { KhongGianCode } from './KhongGianCode';
+import { CHIP } from './mau-diem';
 import type { CheDo, DuAn } from './use-du-an';
 
 /** Idea project: ten, cap, thoi gian, mo ta, tech stack, yeu cau, cac buoc, bonus */
@@ -16,20 +17,20 @@ export function IdeaPanel({ idea }: { idea: YTuong }) {
   const { t } = useT();
   const muc = (tieuDe: string, ds: string[], coSo = false) => ds.length > 0 && (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold">{tieuDe}</h3>
+      <h3 className="font-display font-extrabold tracking-tight">{tieuDe}</h3>
       {coSo
         ? <ol className="list-decimal space-y-1 pl-5 text-sm leading-relaxed">{ds.map((x, i) => <li key={i}>{x}</li>)}</ol>
         : <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">{ds.map((x, i) => <li key={i}>{x}</li>)}</ul>}
     </section>
   );
   return (
-    <article className="space-y-5 rounded-2xl border bg-card p-6">
+    <article className="space-y-5 rounded-3xl bg-card p-6 shadow-soft">
       <header className="space-y-3">
-        <h2 className="text-2xl font-semibold tracking-tight">{idea.name}</h2>
-        <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-          <span className={cn('rounded-md px-2 py-0.5 uppercase', NEN_CAP[idea.difficulty], CHU_CAP[idea.difficulty])}>{idea.difficulty}</span>
+        <h2 className="font-display text-2xl font-extrabold tracking-tight text-balance break-words">{idea.name}</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={cn(CHIP, 'uppercase', NEN_CAP[idea.difficulty], CHU_CAP[idea.difficulty])}>{idea.difficulty}</span>
           {idea.estimatedTime && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-muted-foreground">
+            <span className={cn(CHIP, 'gap-1 bg-butter text-butter-ink')}>
               <Clock className="size-3" aria-hidden="true" /> {idea.estimatedTime}
             </span>
           )}
@@ -38,9 +39,9 @@ export function IdeaPanel({ idea }: { idea: YTuong }) {
       {idea.description && <p className="leading-relaxed text-muted-foreground">{idea.description}</p>}
       {idea.techStack.length > 0 && (
         <section className="space-y-2">
-          <h3 className="text-sm font-semibold">Tech Stack</h3>
-          <ul className="flex flex-wrap gap-1.5">
-            {idea.techStack.map((x, i) => <li key={i} className="rounded-md border bg-background px-2 py-0.5 font-mono text-xs">{x}</li>)}
+          <h3 className="font-display font-extrabold tracking-tight">{t('techStackTitle')}</h3>
+          <ul translate="no" className="flex flex-wrap gap-1.5">
+            {idea.techStack.map((x, i) => <li key={i} className={cn(CHIP, 'bg-sky font-mono font-medium text-sky-ink')}>{x}</li>)}
           </ul>
         </section>
       )}
@@ -73,9 +74,9 @@ export function KhuLamViec({ duAn, cheDo, aiBat }: { duAn: DuAn; cheDo: CheDo; a
 export function LoiTaoIdea({ loi, thuLai }: { loi: string; thuLai: () => void }) {
   const { t } = useT();
   return (
-    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm">
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
       <span>{t('projectIdeaFailed', { error: loi })}</span>
-      <Button variant="outline" size="sm" onClick={thuLai}>{t('retry')}</Button>
+      <Button variant="outline" size="sm" className="rounded-full" onClick={thuLai}>{t('retry')}</Button>
     </div>
   );
 }
@@ -103,13 +104,15 @@ export function HanhDongIdea({ idea, nguon, taoMoi, dangTao, aiBat }: {
   return (
     <div className="flex flex-wrap gap-3">
       {aiBat && (
-        <Button variant="outline" onClick={taoMoi} disabled={dangTao}>
-          <RefreshCw className={cn(dangTao && 'animate-spin')} aria-hidden="true" /> {t('newIdeaBtn')}
+        <Button variant="outline" className="rounded-full" onClick={taoMoi} disabled={dangTao}>
+          <RefreshCw className={cn(dangTao && 'motion-safe:animate-spin')} aria-hidden="true" /> {t('newIdeaBtn')}
         </Button>
       )}
-      <Button variant="outline" onClick={luu}>
+      <Button variant="outline" className="rounded-full" onClick={luu}>
         {vuaLuu ? <Check aria-hidden="true" /> : <Save aria-hidden="true" />} {vuaLuu ? t('ideaSavedShort') : t('saveIdeaBtn')}
       </Button>
+      {/* Vung bao luon co mat: chi doi chu, trinh doc man hinh moi doc "Da luu" */}
+      <span role="status" className="sr-only">{vuaLuu ? t('ideaSavedShort') : ''}</span>
     </div>
   );
 }

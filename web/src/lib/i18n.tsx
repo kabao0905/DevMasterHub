@@ -29,12 +29,19 @@ export function chuanHoaKhoa(s: string): string {
 
 const hoTro = (l: string | null | undefined): l is string => !!l && (NGON_NGU_HO_TRO as readonly string[]).includes(l);
 
-export function ngonNguBanDau(ngonNguTrinhDuyet = typeof navigator !== 'undefined' ? navigator.language : 'vi'): string {
+/** Ngon ngu trinh duyet theo thu tu uu tien (navigator.languages), thieu thi navigator.language */
+function ngonNguTrinhDuyetMacDinh(): readonly string[] {
+  if (typeof navigator === 'undefined') return [];
+  return navigator.languages?.length ? navigator.languages : [navigator.language];
+}
+
+export function ngonNguBanDau(ngonNguTrinhDuyet: string | readonly string[] = ngonNguTrinhDuyetMacDinh()): string {
   let daLuu: string | null = null;
   try { daLuu = localStorage.getItem(KHOA_NGON_NGU); } catch { /* che do rieng tu */ }
   if (hoTro(daLuu)) return daLuu;
-  const tuTrinhDuyet = (ngonNguTrinhDuyet || '').toLowerCase().slice(0, 2);
-  return hoTro(tuTrinhDuyet) ? tuTrinhDuyet : 'vi';
+  // Ngon ngu dau tien duoc ho tro trong danh sach uu tien: ['pt-BR', 'en'] -> en
+  const ds = typeof ngonNguTrinhDuyet === 'string' ? [ngonNguTrinhDuyet] : ngonNguTrinhDuyet;
+  return ds.map(l => (l || '').toLowerCase().slice(0, 2)).find(hoTro) ?? 'vi';
 }
 
 const taiMacDinh = async (lang: string): Promise<BanDich> => {
@@ -116,4 +123,9 @@ export function useT(): GiaTri {
   const v = useContext(I18nContext);
   if (!v) throw new Error('useT phải nằm trong <I18nProvider>');
   return v;
+}
+
+/** Nhu useT nhung tra null khi nam ngoai <I18nProvider> (thanh phan ui dung chung, ve rieng le trong test) */
+export function useTNeuCo(): GiaTri | null {
+  return useContext(I18nContext);
 }

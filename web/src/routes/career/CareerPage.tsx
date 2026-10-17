@@ -1,6 +1,6 @@
 // AI Career Advisor: chat tu van nghe nghiep theo ho so hoc that, tu tim viec va danh gia do phu hop.
 import { useXacNhan } from '@/components/XacNhan';
-import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { Banknote, Briefcase, Building2, ChevronDown, Clock, Globe, Lightbulb, MapPin, Pencil, RefreshCw, Search, Send, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,6 +30,29 @@ type KhoCareer = {
 };
 const RONG: KhoCareer = { chat: [], jobs: [], keyword: '', moViec: false, nhap: '' };
 const loiChu = (e: unknown) => (e instanceof Error ? e.message : String(e));
+const CHIP = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold';
+const NUT_TIN = 'h-7 rounded-full text-xs text-peach-ink hover:bg-card/70 hover:text-peach-ink';
+
+/**
+ * Cac tin da gui. memo: mang chat giu nguyen tham chieu khi go o nhap, nen khong dung lai
+ * markdown + khoi code cua ca cuoc tro chuyen moi phim (onSua / onTraLoiLai on dinh)
+ */
+const CacTin = memo(function CacTin({ chat, onSua, onTraLoiLai }: {
+  chat: TinNhan[]; onSua: (i: number) => void; onTraLoiLai: (i: number) => void;
+}) {
+  const { t } = useT();
+  return chat.map((m, i) => (
+    <li key={i} className={cn('flex flex-col gap-1', m.role === 'user' ? 'items-end' : 'items-start')}>
+      <div className={cn('max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+        m.role === 'user' ? 'whitespace-pre-wrap break-words bg-lavender text-foreground [overflow-wrap:anywhere]' : 'min-w-0 bg-card text-foreground shadow-soft')}>
+        {m.role === 'user' ? m.content : <ChatMarkdown text={m.content} />}
+      </div>
+      {m.role === 'user'
+        ? <Button variant="ghost" size="sm" className={NUT_TIN} onClick={() => onSua(i)}><Pencil aria-hidden="true" /> {t('editQuestion')}</Button>
+        : <Button variant="ghost" size="sm" className={NUT_TIN} onClick={() => onTraLoiLai(i)}><RefreshCw aria-hidden="true" /> {t('regenerateAnswer')}</Button>}
+    </li>
+  ));
+});
 
 export function CareerPage() {
   const { t, lang } = useT();
@@ -46,6 +69,12 @@ export function CareerPage() {
   const dsRef = useRef<HTMLOListElement>(null);
   const [moTim, datMoTim] = useState(false);
   const [tuKhoaTim, datTuKhoaTim] = useState('');
+  // Cau dang go giu o day (khong ghi kho moi phim, khong ve lai ca trang); roi trang thi ghi vao kho
+  const [nhap, datNhap] = useState(() => doc(khoa).nhap);
+  const [nhacRong, datNhacRong] = useState(false);
+  const nhapRef = useRef(nhap);
+  useEffect(() => { nhapRef.current = nhap; }, [nhap]);
+  useEffect(() => () => dat(khoa, x => ({ ...x, nhap: nhapRef.current })), [khoa]); // eslint-disable-line react-hooks/exhaustive-deps
   usePageMeta({ title: `${t('careerTitle')} | DevMaster Hub`, description: t('careerSubtitle') });
 
   // Lan dau mo trang trong phien: nap lich su chat da luu (chi khi chua co gi)
@@ -103,9 +132,16 @@ export function CareerPage() {
 
   function gui() {
     const s = doc(khoa);
-    const tin = s.nhap.trim();
-    if (!tin || s.dangGui || !(s.daNap || s.loiNap)) return;
+    if (s.dangGui || !(s.daNap || s.loiNap)) return;
+    const tin = nhap.trim();
+    if (!tin) {
+      // O trong: nhac ngay duoi o, dua con tro ve o nhap
+      datNhacRong(true);
+      oNhapRef.current?.focus();
+      return;
+    }
     dat(khoa, x => ({ ...x, chat: [...x.chat, { role: 'user', content: tin }], nhap: '' }));
+    datNhap('');
     void chay(khoa, s.chat, tin, true);
   }
 
@@ -119,13 +155,19 @@ export function CareerPage() {
   /** Dung cau tra loi dang cho, bat dau phien moi */
   const dungLai = (x: KhoCareer): KhoCareer => ({ ...x, dangGui: false, loi: undefined, phien: (x.phien ?? 0) + 1 });
 
-  function suaCauHoi(i: number) {
+  /** Sua cau hoi: xoa cau nay va moi tin sau no; con tin phia sau thi hoi truoc */
+  async function suaCauHoi(i: number) {
+    const truoc = doc(khoa);
+    if (!truoc.chat[i]) return;
+    if (i < truoc.chat.length - 1 && !(await hoi(t('careerEditConfirm')))) return;
     cvRef.current?.huy();
     const s = doc(khoa);
     const cau = s.chat[i];
     if (!cau) return;
     const chat = s.chat.slice(0, i);
     dat(khoa, x => ({ ...dungLai(x), chat, nhap: cau.content }));
+    datNhap(cau.content);
+    datNhacRong(false);
     luu(khoa, chat);
     setTimeout(() => {
       const o = oNhapRef.current;
@@ -133,7 +175,9 @@ export function CareerPage() {
     }, 0);
   }
 
-  function traLoiLai(i: number) {
+  /** Tra loi lai: bo cau tra loi nay va moi tin sau no; con tin phia sau thi hoi truoc */
+  async function traLoiLai(i: number) {
+    if (i < doc(khoa).chat.length - 1 && !(await hoi(t('careerRegenerateConfirm')))) return;
     cvRef.current?.huy();
     const s = doc(khoa);
     let j = i - 1;
@@ -148,6 +192,7 @@ export function CareerPage() {
     if (!(await hoi(t('clearCareerChatConfirm'), t('clearChat')))) return;
     cvRef.current?.huy();
     dat(khoa, x => ({ ...dungLai(x), ...RONG, daNap: true, phien: (x.phien ?? 0) + 1 }));
+    datNhap('');
     luu(khoa, []);
   }
 
@@ -166,6 +211,12 @@ export function CareerPage() {
     }
   }
 
+  // Ham on dinh cho danh sach tin (memo): luon goi ban moi nhat qua ref
+  const hanhDongRef = useRef({ suaCauHoi, traLoiLai });
+  useEffect(() => { hanhDongRef.current = { suaCauHoi, traLoiLai }; });
+  const onSua = useCallback((i: number) => { void hanhDongRef.current.suaCauHoi(i); }, []);
+  const onTraLoiLai = useCallback((i: number) => { void hanhDongRef.current.traLoiLai(i); }, []);
+
   function khiGo(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
@@ -176,48 +227,45 @@ export function CareerPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <header className="space-y-3">
-        <h1 className="font-display text-4xl font-extrabold tracking-tight">{t('careerTitle')}</h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-balance">{t('careerTitle')}</h1>
         <p className="text-muted-foreground">{t('careerSubtitle')}</p>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => datMoTim(true)}><Search aria-hidden="true" /> {t('careerSearchJobsBtn')}</Button>
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => { void xoaChat(); }}><Trash2 aria-hidden="true" /> {t('clearChat')}</Button>
+          <Button variant="outline" className="rounded-full" onClick={() => datMoTim(true)}><Search aria-hidden="true" /> {t('careerSearchJobsBtn')}</Button>
+          <Button variant="ghost" className="rounded-full text-muted-foreground" onClick={() => { void xoaChat(); }}><Trash2 aria-hidden="true" /> {t('clearChat')}</Button>
         </div>
       </header>
 
-      <section className="overflow-hidden rounded-2xl border bg-card">
-        <ol ref={dsRef} aria-live="polite" className="max-h-[32rem] min-h-48 space-y-4 overflow-y-auto px-5 py-5">
-          {kho.chat.length === 0 && !kho.dangGui && <li className="text-muted-foreground">{t('careerGreeting')}</li>}
-          {kho.chat.map((m, i) => (
-            <li key={i} className={cn('flex flex-col gap-1', m.role === 'user' ? 'items-end' : 'items-start')}>
-              <div className={cn('max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
-                m.role === 'user' ? 'whitespace-pre-wrap bg-primary text-primary-foreground' : 'bg-muted')}>
-                {m.role === 'user' ? m.content : <ChatMarkdown text={m.content} />}
-              </div>
-              {m.role === 'user'
-                ? <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => suaCauHoi(i)}><Pencil aria-hidden="true" /> {t('editQuestion')}</Button>
-                : <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => traLoiLai(i)}><RefreshCw aria-hidden="true" /> {t('regenerateAnswer')}</Button>}
-            </li>
-          ))}
-          {kho.dangGui && <li className="text-sm text-muted-foreground motion-safe:animate-pulse">{t('thinkingShort')}…</li>}
+      <section className="overflow-hidden rounded-3xl bg-card shadow-soft">
+        <ol ref={dsRef} aria-live="polite" className="max-h-[32rem] min-h-48 space-y-4 overflow-y-auto overscroll-contain bg-muted/60 px-5 py-5 text-foreground">
+          {kho.chat.length === 0 && !kho.dangGui && <li>{t('careerGreeting')}</li>}
+          <CacTin chat={kho.chat} onSua={onSua} onTraLoiLai={onTraLoiLai} />
+          {kho.dangGui && <li className="text-sm text-peach-ink motion-safe:animate-pulse">{t('thinkingShort')}…</li>}
           {kho.loi && !kho.dangGui && (
-            <li role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">
+            <li role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl bg-card px-4 py-2.5 text-sm text-destructive shadow-soft">
               <span>{t('careerFailed', { error: kho.loi })}</span>
-              <Button variant="outline" size="sm" onClick={guiLai}>{t('resend')}</Button>
+              <Button variant="outline" size="sm" className="rounded-full" onClick={guiLai}>{t('resend')}</Button>
             </li>
           )}
         </ol>
-        <form onSubmit={e => { e.preventDefault(); gui(); }} className="flex items-end gap-2 border-t p-3">
-          <textarea
-            ref={oNhapRef}
-            value={kho.nhap}
-            onChange={e => dat(khoa, x => ({ ...x, nhap: e.target.value }))}
-            onKeyDown={khiGo}
-            rows={2}
-            aria-label={t('searchJobsPlaceholder')}
-            placeholder={t('searchJobsPlaceholder')}
-            className="max-h-40 min-h-12 flex-1 resize-y rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-          <Button type="submit" disabled={!!kho.dangGui || !kho.nhap.trim() || !(kho.daNap || kho.loiNap)}><Send aria-hidden="true" /> {t('sendMsg')}</Button>
+        <form onSubmit={e => { e.preventDefault(); gui(); }} className="space-y-1.5 p-3">
+          <div className="flex items-end gap-2">
+            <textarea
+              ref={oNhapRef}
+              name="message"
+              value={nhap}
+              onChange={e => { datNhap(e.target.value); if (nhacRong) datNhacRong(false); }}
+              onKeyDown={khiGo}
+              rows={2}
+              autoComplete="off"
+              aria-label={t('searchJobsPlaceholder')}
+              aria-invalid={nhacRong || undefined}
+              aria-describedby={nhacRong ? 'career-nhac' : undefined}
+              placeholder={t('searchJobsPlaceholder')}
+              className="field-sizing-content max-h-40 min-h-12 min-w-0 flex-1 resize-none rounded-2xl border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <Button type="submit" className="rounded-full" disabled={!!kho.dangGui || !(kho.daNap || kho.loiNap)}><Send aria-hidden="true" /> {t('sendMsg')}</Button>
+          </div>
+          {nhacRong && <p id="career-nhac" role="alert" className="px-3 text-xs text-destructive">{t('emptyInputHint')}</p>}
         </form>
       </section>
 
@@ -228,9 +276,9 @@ export function CareerPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>{t('careerSearchJobsBtn')}</DialogTitle></DialogHeader>
           <form onSubmit={e => { void timTay(e); }} className="flex gap-2">
-            <input autoFocus value={tuKhoaTim} onChange={e => datTuKhoaTim(e.target.value)} aria-label={t('jobSearchPlaceholder2')} placeholder={t('jobSearchPlaceholder2')}
-              className="h-10 flex-1 rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-            <Button type="submit" disabled={!tuKhoaTim.trim()}><Search aria-hidden="true" /></Button>
+            <input name="q" autoComplete="off" value={tuKhoaTim} onChange={e => datTuKhoaTim(e.target.value)} aria-label={t('jobSearchPlaceholder2')} placeholder={t('jobSearchPlaceholder2')}
+              className="h-10 min-w-0 flex-1 rounded-full border bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <Button type="submit" size="icon-lg" className="size-10 rounded-full" aria-label={t('careerSearchJobsBtn')} disabled={!tuKhoaTim.trim()}><Search aria-hidden="true" /></Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -238,11 +286,13 @@ export function CareerPage() {
   );
 }
 
-const LOAI_VIEC: Record<string, string> = { FULLTIME: 'Full-time', PARTTIME: 'Part-time', CONTRACTOR: 'Contract', INTERN: 'Intern/Fresher' };
+/** Khoa i18n cua loai hinh viec */
+const LOAI_VIEC: Record<string, string> = { FULLTIME: 'jobFullTime', PARTTIME: 'jobPartTime', CONTRACTOR: 'jobContract', INTERN: 'jobIntern' };
+/** Chip do phu hop theo trang thai: san sang = mint, con thieu = butter, muc tieu xa = peach */
 const MAU_TRANG_THAI: Record<ViecLam['status'], string> = {
-  ready: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
-  gap: 'border-amber-500/40 text-amber-300 bg-amber-500/10',
-  target: 'border-red-500/40 text-red-400 bg-red-500/10'
+  ready: 'bg-mint text-mint-ink',
+  gap: 'bg-butter text-butter-ink',
+  target: 'bg-peach text-peach-ink'
 };
 const VN = /vietnam|việt nam|\bvn\b|hồ chí minh|hà nội|đà nẵng/i;
 
@@ -250,8 +300,8 @@ function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
   const { t } = useT();
   if (kho.jobs.length === 0) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
-        <span className="inline-flex flex-wrap items-center gap-1.5"><Briefcase className="size-4" aria-hidden="true" />{t('jobsSuggestedBar')} (0): <em>{kho.keyword ? t('careerNoJobsFor', { keyword: kho.keyword }) : t('noJobsFound')}</em></span>
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-peach px-4 py-3 text-sm text-foreground">
+        <span className="inline-flex flex-wrap items-center gap-1.5"><Briefcase className="size-4 text-peach-ink" aria-hidden="true" />{t('jobsSuggestedBar')} (0): <em>{kho.keyword ? t('careerNoJobsFor', { keyword: kho.keyword }) : t('noJobsFound')}</em></span>
         <span className="text-xs">{t('autoTriggerChat')}</span>
       </div>
     );
@@ -259,23 +309,24 @@ function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
   return (
     <section className="space-y-3">
       <button type="button" aria-expanded={kho.moViec} aria-controls="ds-viec-lam" onClick={doiMo}
-        className={cn('flex w-full flex-wrap items-center justify-between gap-2 rounded-xl border bg-card px-4 py-3 text-left text-sm transition-colors hover:border-primary/60',
-          kho.moViec && 'border-primary')}>
-        <span className="flex items-center gap-2 font-medium">
-          <ChevronDown className={cn('size-4 text-primary transition-transform', !kho.moViec && '-rotate-90')} aria-hidden="true" />
-          <Briefcase className="size-4 text-muted-foreground" aria-hidden="true" />{t('jobsSuggestedBar')} (<strong className="text-primary">{kho.jobs.length}</strong>): <span className="text-primary">"{kho.keyword}"</span>
+        className="flex w-full flex-wrap items-center justify-between gap-2 rounded-2xl bg-peach px-4 py-3 text-left text-sm text-foreground transition-colors hover:bg-peach/80 focus-visible:outline-2 focus-visible:outline-ring">
+        <span className="flex flex-wrap items-center gap-2 font-medium">
+          <ChevronDown className={cn('size-4 text-peach-ink transition-transform motion-reduce:transition-none', !kho.moViec && '-rotate-90')} aria-hidden="true" />
+          <Briefcase className="size-4 text-peach-ink" aria-hidden="true" />{t('jobsSuggestedBar')} (<strong className="text-peach-ink">{kho.jobs.length}</strong>): <span className="font-semibold text-peach-ink">“{kho.keyword}”</span>
         </span>
-        <span className="text-xs text-primary">{kho.moViec ? t('collapseJobList') : `${t('openJobList')} (${kho.jobs.length})`}</span>
+        <span className="text-xs font-semibold text-peach-ink">{kho.moViec ? t('collapseJobList') : `${t('openJobList')} (${kho.jobs.length})`}</span>
       </button>
       {kho.moViec && (
         <ul id="ds-viec-lam" className="grid gap-3 md:grid-cols-2">
           {kho.jobs.map((j, i) => (
             <li key={i}>
               <a href={j.url} target="_blank" rel="noopener noreferrer"
-                className={cn('the-noi flex h-full flex-col gap-2 rounded-2xl border bg-card p-4', MAU_TRANG_THAI[j.status].split(' ')[0])}>
-                {j.badgeText && <span className={cn('self-start rounded-full border px-2.5 py-0.5 text-xs font-semibold', MAU_TRANG_THAI[j.status])}>{j.badgeText}</span>}
+                className="the-noi flex h-full flex-col gap-2 rounded-3xl bg-card p-4 shadow-soft focus-visible:outline-2 focus-visible:outline-ring">
+                {j.badgeText && <span className={cn(CHIP, 'self-start', MAU_TRANG_THAI[j.status])}>{j.badgeText}</span>}
                 <span className="flex items-center gap-3">
-                  {j.company_logo ? <img src={j.company_logo} alt="" className="size-9 rounded-md bg-white object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} /> : <span aria-hidden="true" className="grid size-9 place-items-center rounded-md bg-muted"><Building2 className="size-4 text-muted-foreground" /></span>}
+                  {j.company_logo
+                    ? <img src={j.company_logo} alt="" width={36} height={36} loading="lazy" className="size-9 rounded-xl bg-white object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    : <span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-peach"><Building2 className="size-4 text-peach-ink" /></span>}
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium">{j.company_name}</span>
                     <span className="block text-xs text-muted-foreground">{j.source}</span>
@@ -283,21 +334,21 @@ function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
                 </span>
                 <span className="font-semibold">{j.title}</span>
                 {j.fitRecommendation && (
-                  <span className="flex gap-2 rounded-md bg-muted/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground"><Lightbulb className="mt-px size-3.5 shrink-0" aria-hidden="true" /><span><strong>{t('careerSkillAssessment')}</strong> {j.fitRecommendation}</span></span>
+                  <span className="flex gap-2 rounded-2xl bg-background px-3 py-2 text-xs leading-relaxed text-foreground"><Lightbulb className="mt-px size-3.5 shrink-0" aria-hidden="true" /><span><strong>{t('careerSkillAssessment')}</strong> {j.fitRecommendation}</span></span>
                 )}
                 <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   {/* Chi hien noi lam viec khi tin co ghi; khong biet thi bo trong, khong tu dien "Remote" */}
                   {(j.location || j.is_remote) && (
                     <span className="inline-flex items-center gap-1">
                       {j.is_remote && !VN.test(j.location) ? <Globe className="size-3.5" aria-hidden="true" /> : <MapPin className="size-3.5" aria-hidden="true" />}
-                      {j.location || 'Remote'}
+                      {j.location || t('jobRemote')}
                     </span>
                   )}
-                  {(LOAI_VIEC[j.employment_type] ?? j.employment_type) && <span className="inline-flex items-center gap-1"><Clock className="size-3.5" aria-hidden="true" />{LOAI_VIEC[j.employment_type] ?? j.employment_type}</span>}
+                  {j.employment_type && <span className="inline-flex items-center gap-1"><Clock className="size-3.5" aria-hidden="true" />{LOAI_VIEC[j.employment_type] ? t(LOAI_VIEC[j.employment_type]) : j.employment_type}</span>}
                   {j.salary && <span className="inline-flex items-center gap-1"><Banknote className="size-3.5" aria-hidden="true" />{j.salary}</span>}
                 </span>
                 {j.tags.length > 0 && (
-                  <span className="flex flex-wrap gap-1.5">{j.tags.slice(0, 3).map((x, k) => <span key={k} className="rounded-md border px-2 py-0.5 font-mono text-xs">{x}</span>)}</span>
+                  <span translate="no" className="flex flex-wrap gap-1.5">{j.tags.slice(0, 3).map((x, k) => <span key={k} className={cn(CHIP, 'bg-muted font-mono font-medium text-muted-foreground')}>{x}</span>)}</span>
                 )}
               </a>
             </li>

@@ -56,6 +56,8 @@ test('AI ra de dua tren du lieu that cua terminal; nop dap an sai thi bao chua d
   await u.type(o, '8080');
   await u.click(screen.getByRole('button', { name: 'Nộp đáp án' }));
   expect(await screen.findByText(/Chưa đúng/)).toBeInTheDocument();
+  expect(o).toHaveAttribute('aria-invalid', 'true');
+  expect(o).toHaveFocus();
   await u.clear(o);
   await u.type(o, '4444');
   await u.click(screen.getByRole('button', { name: 'Nộp đáp án' }));

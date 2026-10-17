@@ -2,15 +2,15 @@
 // Thay cho emoji: nhin mot lan la nhan ra tuyen, va doc duoc tren moi nen.
 
 const MA: Record<string, string> = {
-  cybersecurity: 'SEC', cpp: 'C++', python: 'PY', java: 'JAVA', nodejs: 'NODE', react: 'RCT',
-  htmlcss: 'HTML', sql: 'SQL', jest: 'TEST', docker: 'DOCK', typescript: 'TS', csharp: 'C#',
-  go: 'GO', rust: 'RS', php: 'PHP', swift: 'SWFT', kotlin: 'KT', ruby: 'RB', dart: 'DART',
+  cybersecurity: 'SEC', cpp: 'C++', python: 'PY', java: 'JV', nodejs: 'NJS', react: 'RCT',
+  htmlcss: 'H5', sql: 'SQL', jest: 'JST', docker: 'DKR', typescript: 'TS', csharp: 'C#',
+  go: 'GO', rust: 'RS', php: 'PHP', swift: 'SW', kotlin: 'KT', ruby: 'RB', dart: 'DRT',
   bash: 'SH', dsa: 'DSA', zig: 'ZIG', solidity: 'SOL', lua: 'LUA', r: 'R', scala: 'SCL',
   vue: 'VUE', angular: 'NG', tailwind: 'TW', django: 'DJ', mongodb: 'MDB', graphql: 'GQL',
   kubernetes: 'K8S', cicd: 'CI', nginx: 'NGX'
 };
 
-/** Ma tuyen toi da 4 ky tu; cong nghe chua dat ma thi lay chu cai dau cua ten */
+/** Ma tuyen toi da 3 ky tu (bien luon tron deu); cong nghe chua dat ma thi lay chu cai dau cua ten */
 export function maTuyen(tech: { id: string; name: string }): string {
   const co = MA[tech.id];
   if (co) return co;
