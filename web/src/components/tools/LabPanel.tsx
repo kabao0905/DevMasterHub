@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, ChevronRight, FlaskConical, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { docTienDo, kiemNhiemVu, luuTienDo, tinhDiem, type Lab, type NhiemVu } from '@/lib/lab';
@@ -21,7 +22,7 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
     if (daXong.includes(nv.id)) return;
     const kq = kiemNhiemVu(nv, kenh.may.getFs(), nhap[nv.id] ?? '');
     if (!kq.dat) {
-      datNhan(n => ({ ...n, [nv.id]: '❌ ' + (kq.nhan || 'Chưa đúng.') }));
+      datNhan(n => ({ ...n, [nv.id]: kq.nhan || 'Chưa đúng.' }));
       return;
     }
     const moi = [...daXong, nv.id];
@@ -35,7 +36,7 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
   return (
     <div className="space-y-5">
       <div className="rounded-xl border bg-card p-5">
-        <h2 className="font-semibold">🧪 {lab.tenLab}</h2>
+        <h2 className="flex items-center gap-2 font-semibold"><FlaskConical className="size-4 text-muted-foreground" aria-hidden="true" />{lab.tenLab}</h2>
         <p className="mt-1 text-sm text-muted-foreground">Dùng terminal bên dưới để tìm câu trả lời. Không đoán được đâu — phải thật sự gõ lệnh mới ra.</p>
         <p className="mt-4 text-sm tabular-nums">{`Tiến độ: ${d.xong}/${d.tong} nhiệm vụ · ${d.diem}/${d.tongDiem} điểm`}</p>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
@@ -51,7 +52,9 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
             <fieldset key={nv.id} className={cn('min-w-0 rounded-xl border bg-card p-4', xong && 'border-level-newbie/50')}>
               <legend className="sr-only">{nv.cau}</legend>
               <div className="flex items-start gap-3">
-                <span aria-hidden="true">{xong ? '✅' : '▸'}</span>
+                {xong
+                  ? <Check className="mt-0.5 size-4 shrink-0 text-level-newbie" aria-hidden="true" />
+                  : <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
                 <p className="min-w-0 flex-1 text-sm">{nv.cau}</p>
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{nv.diem}đ</span>
               </div>
@@ -76,14 +79,14 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
                     <Button variant="outline" onClick={() => kiem(nv)}>Kiểm tra</Button>
                     {soGoiY < nv.goiY.length && (
                       <Button variant="ghost" onClick={() => datGoiY(g => ({ ...g, [nv.id]: soGoiY + 1 }))}>
-                        💡 Gợi ý {soGoiY + 1}/{nv.goiY.length}
+                        <Lightbulb aria-hidden="true" /> Gợi ý {soGoiY + 1}/{nv.goiY.length}
                       </Button>
                     )}
                   </div>
                   {nhan[nv.id] && <p role="status" className="text-sm text-destructive">{nhan[nv.id]}</p>}
                   {soGoiY > 0 && (
                     <ul className="space-y-1 text-sm text-muted-foreground">
-                      {nv.goiY.slice(0, soGoiY).map(g => <li key={g}>💡 {g}</li>)}
+                      {nv.goiY.slice(0, soGoiY).map(g => <li key={g} className="flex gap-2"><Lightbulb className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" /><span>{g}</span></li>)}
                     </ul>
                   )}
                 </div>

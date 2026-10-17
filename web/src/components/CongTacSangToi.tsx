@@ -33,7 +33,7 @@ export function CongTacSangToi({ className }: { className?: string }) {
       onClick={gat}
       className={cn(
         'relative h-8 w-15 shrink-0 cursor-pointer overflow-hidden rounded-full shadow-inner ring-1 ring-white/15 transition-colors duration-500 motion-reduce:duration-200 motion-reduce:ease-out',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         toi ? 'bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900' : 'bg-gradient-to-br from-sky-300 to-sky-500',
         className
       )}

@@ -183,7 +183,7 @@ test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien t
   await u.click(thanh);
   const the = screen.getByRole('link', { name: /React Developer/ });
   expect(the).toHaveAttribute('href', 'https://careerviet.vn/vi/tim-viec-lam/react.A1.html');
-  expect(the.textContent).toContain('🟢 90% Sẵn Sàng Ứng Tuyển');
+  expect(the.textContent).toContain('90% Sẵn Sàng Ứng Tuyển');
   expect(the.textContent).toContain('Cty A');
   expect(the.textContent).toContain('Full-time');
   expect(the.textContent).toContain('Cần học thêm: Docker, Kubernetes');

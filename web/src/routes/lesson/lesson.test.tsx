@@ -137,7 +137,7 @@ test('AI cham Gan dung thi chua tich; cham Dung thi bai tu duoc tich hoan thanh'
   diem = 90;
   await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
   expect(await screen.findByText('90/100 điểm')).toBeInTheDocument();
-  expect(await screen.findByText('✅ Đã hoàn thành')).toBeInTheDocument();
+  expect(await screen.findByText('Đã hoàn thành')).toBeInTheDocument();
   await waitFor(() => expect(daGhiXong(gia)).toBe(true));
 });
 
@@ -197,10 +197,10 @@ test('DSA: dang o bai nao thi "AI tao bai tap moi" tao them bai cung loai, nut n
   await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
   expect(await screen.findByRole('button', { name: 'Selection Sort · AI #2', pressed: true })).toBeInTheDocument();
   expect(goiAi[1].messages[0].content).toContain('CHỦ ĐỀ BẮT BUỘC: Selection Sort');
-  await u.click(screen.getByRole('button', { name: /^📝 Bubble Sort/ }));
+  await u.click(screen.getByRole('button', { name: /^Bubble Sort$/ }));
   await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
   expect(await screen.findByRole('button', { name: 'Bubble Sort · AI #1', pressed: true })).toBeInTheDocument();
-  expect(nutBaiTap()).toEqual(['📝 Bubble Sort', 'Bubble Sort · AI #1', '📝 Selection Sort', 'Selection Sort · AI #1', 'Selection Sort · AI #2']);
+  expect(nutBaiTap()).toEqual(['Bubble Sort', 'Bubble Sort · AI #1', 'Selection Sort', 'Selection Sort · AI #1', 'Selection Sort · AI #2']);
 });
 
 test('DSA: AI cham dung bai tap soan san dang mo (de + code C++), dat thi bai duoc tich', async () => {
@@ -333,8 +333,8 @@ test('quiz di du vong: tao, chon, nop khi tra loi du, cham diem, giai thich, qui
 
   expect(await screen.findByText('Đúng 1/2 câu (50%)')).toBeInTheDocument();
   expect(screen.getByText('Khá tốt!')).toBeInTheDocument();
-  expect(within(cau1).getByText('❌ Sai')).toBeInTheDocument();
-  expect(within(cau2).getByText('✅ Đúng')).toBeInTheDocument();
+  expect(within(cau1).getByText('Sai')).toBeInTheDocument();
+  expect(within(cau2).getByText('Đúng')).toBeInTheDocument();
   expect(within(cau1).getByText('Dấu = để gán')).toBeInTheDocument();
   expect(within(cau1).getByRole('radio', { name: /==/ })).toBeDisabled();
 
@@ -511,7 +511,7 @@ test('cham bai: hien diem va nhan xet; HTML trong nhan xet hien nhu chu; loi AI 
   expect(await screen.findByText(/Không chấm được bài: AI bận/)).toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: /AI chấm bài/ }));
   expect(await screen.findByText('70/100 điểm')).toBeInTheDocument();
-  expect(screen.getByText('🟡 Gần đúng')).toBeInTheDocument();
+  expect(screen.getByText('Gần đúng')).toBeInTheDocument();
   expect(screen.getByText(/Thiếu pop <img src=x onerror=alert\(1\)>/)).toBeInTheDocument();
   expect(document.querySelector('[role=tabpanel] img')).toBeNull();
   expect(screen.getByText('Chưa có pop')).toBeInTheDocument();

@@ -32,7 +32,8 @@ test('roadmap: ten, mo ta, tien do tong, tung cap co x/y; bai la link sang trang
   const main = await screen.findByRole('main');
   expect(await within(main).findByRole('heading', { level: 1, name: /Python/ })).toBeInTheDocument();
   expect(within(main).getByText('Ngôn ngữ đa năng')).toBeInTheDocument();
-  await waitFor(() => expect(within(main).getByText('1/3 bài học · 33%')).toBeInTheDocument());
+  await waitFor(() => expect(within(main).getByText('33%')).toBeInTheDocument());
+  expect(within(main).getByText(/1\/3 bài học/)).toBeInTheDocument();
   const newbie = within(main).getByRole('region', { name: /Newbie/ });
   expect(within(newbie).getByText('1/2')).toBeInTheDocument();
   expect(within(newbie).getByText('Nền tảng')).toBeInTheDocument();

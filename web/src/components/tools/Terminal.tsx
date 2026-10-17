@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { CornerDownLeft } from 'lucide-react';
+import { CornerDownLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useT } from '@/lib/i18n';
@@ -122,7 +122,7 @@ export function Terminal({ kenh, className }: Props) {
       <Dialog open={!!soan} onOpenChange={mo => { if (!mo) datSoan(null); }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-mono text-sm">📝 {t('termEditing', { path: soan?.duong ?? '' })}</DialogTitle>
+            <DialogTitle className="font-mono text-sm">{t('termEditing', { path: soan?.duong ?? '' })}</DialogTitle>
           </DialogHeader>
           <textarea
             value={soan?.noiDung ?? ''}
@@ -133,7 +133,7 @@ export function Terminal({ kenh, className }: Props) {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => datSoan(null)}>{t('cancelBtn')}</Button>
-            <Button onClick={luu}>💾 {t('termSaveBtn')}</Button>
+            <Button onClick={luu}><Save aria-hidden="true" /> {t('termSaveBtn')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

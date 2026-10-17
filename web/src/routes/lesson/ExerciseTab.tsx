@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { CircleCheck, CircleX, Lightbulb, Loader2, TriangleAlert } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { khoaBai } from '@/lib/progress';
 import { useDanhDauXong } from '@/lib/use-progress';
@@ -96,7 +96,7 @@ function NopChamAi({ baiTap, aiEnabled, baiLam, lang }: { baiTap: BaiTapBai; aiE
   if (aiEnabled === false) return null;
   return (
     <div className="space-y-4">
-      <Button className="bg-brand text-white hover:brightness-110" onClick={() => baiTap.cham(baiLam)} disabled={!baiLam.trim() || baiTap.dangCham}>
+      <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => baiTap.cham(baiLam)} disabled={!baiLam.trim() || baiTap.dangCham}>
         {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
       </Button>
       {baiTap.loiCham && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm">{t('gradeFailed', { error: baiTap.loiCham.message })}</p>}
@@ -131,12 +131,12 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         <div className="flex flex-wrap gap-2" aria-label={t('tabLabelExercise')}>
           {nhieuCoSan ? (
             <>
-              {coSan.flatMap((bt, j) => [nut(j, `📝 ${bt.title}`), ...chiSoAi.filter(i => kho.aiExercises[i].loai === bt.title).map(nutAi)])}
+              {coSan.flatMap((bt, j) => [nut(j, bt.title), ...chiSoAi.filter(i => kho.aiExercises[i].loai === bt.title).map(nutAi)])}
               {chiSoAi.filter(i => !loaiCoSan.has(kho.aiExercises[i].loai ?? '')).map(nutAi)}
             </>
           ) : (
             <>
-              {nut(0, `📝 ${t('originalExercise')}`)}
+              {nut(0, t('originalExercise'))}
               {chiSoAi.map(nutAi)}
             </>
           )}
@@ -179,7 +179,7 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
           </div>
           {kho.hienGoiY[idx] && (
             <ul className="space-y-1.5 rounded-xl border bg-card p-4 text-sm">
-              {deHienTai.hints.map(h => <li key={h} className="flex gap-2"><span aria-hidden="true">💡</span><span><ChatMarkdown text={h} /></span></li>)}
+              {deHienTai.hints.map(h => <li key={h} className="flex gap-2"><Lightbulb className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" /><span><ChatMarkdown text={h} /></span></li>)}
             </ul>
           )}
           {kho.hienLoiGiai[idx] && deHienTai.solution && <CodeBlock code={deHienTai.solution} lang={deHienTai.solutionLang || bai.lesson.lang} />}
@@ -194,7 +194,7 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
 
       <div className="flex flex-wrap items-center gap-2">
         {aiEnabled !== false && (
-          <Button className="bg-brand text-white hover:brightness-110" onClick={() => baiTap.cham()} disabled={!traLoi.trim() || baiTap.dangCham}>
+          <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => baiTap.cham()} disabled={!traLoi.trim() || baiTap.dangCham}>
             {baiTap.dangCham ? <><Loader2 className="animate-spin" aria-hidden="true" /> {t('grading')}</> : t('gradeWithAi')}
           </Button>
         )}
@@ -221,10 +221,16 @@ function KetQuaCham({ nhanXet, lang }: { nhanXet: NhanXet; lang?: string }) {
   const { t } = useT();
   return (
     <section aria-label={t('scoreOutOf', { score: nhanXet.score })} className={cn('space-y-3 rounded-xl border p-5',
-      nhanXet.status === 'correct' ? 'border-level-newbie/50 bg-level-newbie/5' : nhanXet.status === 'partial' ? 'border-[#d29922]/50' : 'border-destructive/50')}>
+      nhanXet.status === 'correct' ? 'border-level-newbie/50 bg-level-newbie/5' : nhanXet.status === 'partial' ? 'border-level-mid/50 bg-level-mid/5' : 'border-destructive/50 bg-destructive/5')}>
       <div className="flex flex-wrap items-baseline gap-3">
         <p className="text-2xl font-semibold tabular-nums">{t('scoreOutOf', { score: nhanXet.score })}</p>
-        <p>{t(nhanXet.status === 'correct' ? 'answerCorrect' : nhanXet.status === 'partial' ? 'answerPartial' : 'answerWrong')}</p>
+        <p className={cn('inline-flex items-center gap-1.5 font-semibold',
+          nhanXet.status === 'correct' ? 'text-level-newbie' : nhanXet.status === 'partial' ? 'text-level-mid' : 'text-destructive')}>
+          {nhanXet.status === 'correct' ? <CircleCheck className="size-4" aria-hidden="true" />
+            : nhanXet.status === 'partial' ? <TriangleAlert className="size-4" aria-hidden="true" />
+            : <CircleX className="size-4" aria-hidden="true" />}
+          {t(nhanXet.status === 'correct' ? 'answerCorrect' : nhanXet.status === 'partial' ? 'answerPartial' : 'answerWrong')}
+        </p>
       </div>
       {nhanXet.feedback && <div className="leading-relaxed"><ChatMarkdown text={nhanXet.feedback} /></div>}
       {nhanXet.errors.length > 0 && (

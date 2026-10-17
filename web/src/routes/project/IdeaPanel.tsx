@@ -38,7 +38,7 @@ export function IdeaPanel({ idea }: { idea: YTuong }) {
       {idea.description && <p className="leading-relaxed text-muted-foreground">{idea.description}</p>}
       {idea.techStack.length > 0 && (
         <section className="space-y-2">
-          <h3 className="text-sm font-semibold">🛠️ Tech Stack</h3>
+          <h3 className="text-sm font-semibold">Tech Stack</h3>
           <ul className="flex flex-wrap gap-1.5">
             {idea.techStack.map((x, i) => <li key={i} className="rounded-md border bg-background px-2 py-0.5 font-mono text-xs">{x}</li>)}
           </ul>

@@ -9,7 +9,8 @@ import { nhomCongNghe, THU_TU_NHOM, type CongNgheTomTat, type Nhom } from '@/lib
 import { baiKeTiep, tienDoCongNghe, tienDoTong, type ViTriBai } from '@/lib/progress';
 import { TEN_NHOM } from '@/components/Sidebar';
 import { TechCard } from '@/components/TechCard';
-import { LevelLadder, CHU_CAP } from '@/components/LevelLadder';
+import { LevelLadder, MAU_CAP } from '@/components/LevelLadder';
+import { BienTuyen } from '@/components/BienTuyen';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,8 +18,8 @@ import { LoadError } from '@/components/LoadError';
 import { SearchResults } from './SearchResults';
 import { LichHoc } from './LichHoc';
 import { cn } from '@/lib/utils';
-import { tachBieuTuong } from '@/lib/bieu-tuong';
 
+/** Bang "ga tiep theo": nhu bien sân ga — tuyen nao, ga ke la bai gi, va doan tuyen da di cua cong nghe do */
 function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> }) {
   const { t, translateTitle } = useT();
   // Chua hoc bai nao: luoi lo trinh ngay ben duoi da la loi moi, khong can o nhac them
@@ -26,25 +27,26 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
   const { tech, level, lesson } = viTri;
   const td = tienDoCongNghe(tech, done);
   return (
-    <section aria-labelledby="hoc-tiep" className="relative overflow-hidden rounded-3xl border border-transparent bg-card p-6 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.18)] sm:p-7 dark:border-border dark:shadow-none">
-      <div className="absolute inset-y-0 left-0 w-1.5 bg-brand" aria-hidden="true" />
-      <h2 id="hoc-tiep" className="text-sm font-medium text-muted-foreground">{t('continueLearning')}</h2>
-      <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-sm">
-            <span aria-hidden="true">{tech.icon}</span>
-            <span className="font-medium">{tech.name}</span>
-            <span className={cn('font-medium', CHU_CAP[level.id] ?? 'text-primary')}>{level.name}</span>
-          </p>
-          <p className="mt-1.5 text-2xl font-semibold tracking-tight text-balance">{translateTitle(lesson.title)}</p>
+    <section aria-labelledby="hoc-tiep" className="rounded-3xl bg-sign p-6 text-sign-foreground sm:p-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <BienTuyen tech={tech} co="lon" />
+          <div className="min-w-0">
+            <h2 id="hoc-tiep" className="text-sm text-white/70">{t('continueLearning')}</h2>
+            <p className="mt-0.5 font-display text-3xl leading-tight font-semibold text-balance">{translateTitle(lesson.title)}</p>
+            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-white/80">
+              <span>{tech.name}</span>
+              <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold text-white dark:text-background', MAU_CAP[level.id] ?? 'bg-primary')}>{level.name}</span>
+            </p>
+          </div>
         </div>
-        <Button asChild size="lg" className="h-10 shrink-0 bg-brand px-5 text-white hover:brightness-110">
+        <Button asChild size="lg" className="h-12 shrink-0 rounded-full bg-signal px-7 text-base font-semibold text-signal-foreground hover:bg-signal hover:brightness-105">
           <Link to={`/lesson/${tech.id}/${level.id}/${lesson.id}`}>{t('openLesson')}</Link>
         </Button>
       </div>
-      <div className="mt-6 max-w-md">
-        <LevelLadder levels={tech.levels} theoCap={td.theoCap} />
-        <p className="mt-2 text-xs text-muted-foreground tabular-nums">{td.xong}/{td.tong} {t('lessonsUnit')}</p>
+      <div className="mt-6 flex items-center gap-4">
+        <LevelLadder levels={tech.levels} theoCap={td.theoCap} className="max-w-xl flex-1" />
+        <p className="shrink-0 text-xs text-white/70 tabular-nums">{td.xong}/{td.tong} {t('lessonsUnit')}</p>
       </div>
     </section>
   );
@@ -67,13 +69,9 @@ export function DashboardPage() {
     return [...m].filter(([, x]) => x.length);
   }, [ds]);
 
-  // Ten lua dau tieu de phong len khi mo trang, re chuot thi bay vut mot vong (styles/icon-dong.css)
-  const [bieuTuong, chuTieuDe] = tachBieuTuong(t('dashboardTitle'));
   const tieuDe = (
     <header className="space-y-1">
-      <h1 className="kich-dong text-4xl font-semibold tracking-tight">
-        {bieuTuong && <><span data-dong="phong"><span data-dong="ten-lua">{bieuTuong}</span></span> </>}{chuTieuDe}
-      </h1>
+      <h1 className="font-display text-5xl font-extrabold tracking-tight">{t('dashboardTitle')}</h1>
       <p className="text-muted-foreground">{t('dashboardSubtitle')}</p>
     </header>
   );
@@ -93,17 +91,17 @@ export function DashboardPage() {
       <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch">
         <div className="flex shrink-0 flex-col justify-between gap-8">
           {tieuDe}
-          {/* Moi so lieu la mot o mau nhat bo tron, so to o tren, nhan nho o duoi */}
-          <dl className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+          {/* So lieu xep mot hang ngan cach bang vach mong, nhu bang thong tin o ga — khong chia o mau */}
+          <dl className="grid grid-cols-2 rounded-2xl border bg-card sm:flex sm:divide-x">
             {([
-              [t('statTech'), ds.length, 'bg-pastel-sky'],
-              [t('statLessons'), tong.tong, 'bg-pastel-lavender'],
-              [t('statCompleted'), tong.xong, 'bg-pastel-mint'],
-              [t('statProgress'), `${tong.phanTram}%`, 'border-2 border-dashed border-border']
-            ] as const).map(([nhan, so, mau]) => (
-              <div key={String(nhan)} className={cn('flex min-w-28 flex-col-reverse items-center rounded-3xl px-5 py-4', mau)}>
-                <dt className="mt-0.5 text-xs text-foreground/70">{nhan}</dt>
-                <dd className="text-3xl font-bold tabular-nums">{so}</dd>
+              [t('statTech'), ds.length],
+              [t('statLessons'), tong.tong],
+              [t('statCompleted'), tong.xong],
+              [t('statProgress'), `${tong.phanTram}%`]
+            ] as const).map(([nhan, so]) => (
+              <div key={String(nhan)} className="flex flex-col-reverse px-5 py-3">
+                <dt className="text-xs text-muted-foreground">{nhan}</dt>
+                <dd className="font-display text-3xl leading-none font-semibold tabular-nums">{so}</dd>
               </div>
             ))}
           </dl>
@@ -111,17 +109,17 @@ export function DashboardPage() {
         <LichHoc className="xl:flex-1" />
       </div>
 
-      {isLoading ? <Skeleton className="h-44 w-full rounded-2xl" /> : <HocTiep viTri={keTiep} done={done} />}
+      {isLoading ? <Skeleton className="h-44 w-full rounded-3xl" /> : <HocTiep viTri={keTiep} done={done} />}
 
       <div className="kich-dong relative">
-        <Search data-dong="kinh" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Search data-dong="kinh" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           type="search"
           value={q}
           onChange={e => datQ(e.target.value)}
           placeholder={t('searchPlaceholder')}
           aria-label={t('searchPlaceholder')}
-          className="h-11 pl-9 text-base"
+          className="h-12 rounded-full bg-card pl-10 text-base"
         />
       </div>
 
@@ -129,12 +127,16 @@ export function DashboardPage() {
         <SearchResults q={qTre} ds={ds} />
       ) : isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
+          {[0, 1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-40 rounded-2xl" />)}
         </div>
       ) : (
         nhom.map(([n, techs]) => (
           <section key={n} className="space-y-4">
-            <h2 className="text-lg font-semibold">{t(TEN_NHOM[n])}</h2>
+            {/* Tieu de nhom nhu chu thich tren ban do: chu bien ga + vach ke chay het hang */}
+            <h2 className="flex items-center gap-3 font-display text-2xl font-semibold">
+              {t(TEN_NHOM[n])}
+              <span className="h-px flex-1 bg-border" aria-hidden="true" />
+            </h2>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {techs.map(tech => <TechCard key={tech.id} tech={tech} done={done} />)}
             </div>

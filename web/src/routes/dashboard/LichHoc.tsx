@@ -71,8 +71,8 @@ export function LichHoc({ className }: { className?: string }) {
         aria-current={khoa === khoaHomNay ? 'date' : undefined}
         className={cn(
           'grid aspect-square place-items-center rounded-md tabular-nums', coChu,
-          dat ? 'bg-brand font-semibold text-white'
-            : phut > 0 ? 'bg-brand/25 text-foreground'
+          dat ? 'bg-primary font-semibold text-primary-foreground'
+            : phut > 0 ? 'bg-primary/20 text-foreground'
               : khoa > khoaHomNay ? 'bg-muted/30 text-muted-foreground/40' : 'bg-muted/60 text-muted-foreground',
           khoa === khoaHomNay && 'ring-2 ring-primary'
         )}
@@ -83,7 +83,7 @@ export function LichHoc({ className }: { className?: string }) {
   }
 
   return (
-    <section aria-labelledby="lich-hoc" className={cn('flex min-w-0 flex-col justify-between gap-3 rounded-3xl border border-transparent bg-card p-4 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.18)] dark:border-border dark:shadow-none', className)}>
+    <section aria-labelledby="lich-hoc" className={cn('flex min-w-0 flex-col justify-between gap-3 rounded-2xl border bg-card p-5', className)}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
           <h2 id="lich-hoc" className="text-sm font-medium text-muted-foreground">{t('studyCalendar')}</h2>
@@ -134,8 +134,8 @@ export function LichHoc({ className }: { className?: string }) {
       )}
 
       {/* Thoi gian hoc hom nay: so to + thanh tien do de nguoi hoc thay ngay minh da hoc bao lau */}
-      <div className="kich-dong flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-pastel-butter/70 px-3 py-2">
-        <span className={cn('grid size-9 shrink-0 place-items-center rounded-full text-white shadow-[0_6px_14px_-6px_var(--brand-glow)]', datHomNay ? 'bg-level-newbie' : 'bg-brand')} aria-hidden="true">
+      <div className="kich-dong flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-muted px-3 py-2">
+        <span className={cn('grid size-9 shrink-0 place-items-center rounded-full', datHomNay ? 'bg-level-newbie text-white dark:text-background' : 'bg-primary text-primary-foreground')} aria-hidden="true">
           {datHomNay ? <CircleCheck className="size-5" /> : <Clock data-dong="dong-ho kim" className="size-5" />}
         </span>
         <div className="min-w-40 flex-1" title={t('streakHint')}>
@@ -156,7 +156,7 @@ export function LichHoc({ className }: { className?: string }) {
             aria-valuenow={Math.min(phutHomNay, mucTieuPhut)}
             className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted"
           >
-            <div className={cn('h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none', datHomNay ? 'bg-level-newbie' : 'bg-brand')} style={{ width: `${phanTramHomNay}%` }} />
+            <div className={cn('h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none', datHomNay ? 'bg-level-newbie' : 'bg-primary')} style={{ width: `${phanTramHomNay}%` }} />
           </div>
         </div>
         {/* So phut da hien ben canh: nut chi ghi "Muc tieu"; trinh doc man hinh van nghe du "Muc tieu: N phut/ngay" */}

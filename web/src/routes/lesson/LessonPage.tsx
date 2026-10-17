@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { BookOpen, Code2, Dumbbell, ListChecks, Lock } from 'lucide-react';
+import { BookOpen, CircleCheck, Code2, Dumbbell, ListChecks, Lock } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useBatDauHoc } from '@/lib/use-thoi-gian-hoc';
@@ -11,7 +11,7 @@ import { useEscape } from '@/lib/use-escape';
 import { timCongNghe, viTriBai, type CongNgheTomTat } from '@/lib/curriculum';
 import { baiCanHocTruoc, baiDaMo, type ViTriBai } from '@/lib/progress';
 import { boThe, type TabBai } from '@/lib/ai';
-import { CHU_CAP, NEN_CAP } from '@/components/LevelLadder';
+import { MAU_CAP } from '@/components/LevelLadder';
 import { LoadError } from '@/components/LoadError';
 import { NotFoundPanel } from '@/components/NotFoundPanel';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import { TutorChat } from './TutorChat';
 import { useQuizBai, type BaiDangMo } from './use-quiz-bai';
 import { ExerciseTab } from './ExerciseTab';
 import { codeDangLam, useBaiTap } from './use-bai-tap';
+import { BienTuyen } from '@/components/BienTuyen';
 
 export const TABS: TabBai[] = ['theory', 'code', 'quiz', 'exercise'];
 
@@ -50,15 +51,15 @@ export function LessonPage() {
   });
 
   if (ds.isError) return <LoadError onRetry={() => ds.refetch()} />;
-  if (ds.isLoading) return <Skeleton className="h-96 w-full rounded-2xl" />;
+  if (ds.isLoading) return <Skeleton className="h-96 w-full rounded-lg" />;
   if (!coTech) return <NotFoundPanel />;
   if (tech.isError) return <LoadError onRetry={() => tech.refetch()} />;
-  if (!tech.data) return <Skeleton className="h-96 w-full rounded-2xl" />;
+  if (!tech.data) return <Skeleton className="h-96 w-full rounded-lg" />;
   if (!vt) return <NotFoundPanel ve={`/roadmap/${coTech.id}`} nhanVe={coTech.name} />;
   // Hoc theo thu tu: chua xong bai truoc thi chi hien bang khoa (dang tai tien do that thi cho, khong chop noi dung)
   if (!baiDaMo(tech.data, levelId, lessonId, done)) {
     const truoc = baiCanHocTruoc(tech.data, levelId, lessonId);
-    if (dangTaiTienDo || !truoc) return <Skeleton className="h-96 w-full rounded-2xl" />;
+    if (dangTaiTienDo || !truoc) return <Skeleton className="h-96 w-full rounded-lg" />;
     return <BaiBiKhoa tech={tech.data} truoc={truoc} />;
   }
 
@@ -99,20 +100,20 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
         <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
           <li><Link to="/" className="hover:text-foreground">{t('dashboard')}</Link></li>
           <li aria-hidden="true">/</li>
-          <li><Link to={`/roadmap/${tech.id}`} className="hover:text-foreground"><span aria-hidden="true">{tech.icon}</span> {tech.name}</Link></li>
+          <li><Link to={`/roadmap/${tech.id}`} className="inline-flex items-center gap-1.5 hover:text-foreground"><BienTuyen tech={tech} co="nho" /> {tech.name}</Link></li>
           <li aria-hidden="true">/</li>
           <li><Link to={`/roadmap/${tech.id}/${level.id}`} className="hover:text-foreground">{level.name}</Link></li>
         </ol>
       </nav>
 
       <header className="space-y-4">
-        <span className={cn('inline-block rounded-md px-2 py-0.5 text-sm font-semibold', NEN_CAP[level.id] ?? 'bg-primary/15', CHU_CAP[level.id] ?? 'text-primary')}>
+        <span className={cn('inline-block rounded-full px-2.5 py-0.5 text-sm font-semibold text-white dark:text-background', MAU_CAP[level.id] ?? 'bg-primary')}>
           {level.name}
         </span>
-        <h1 className="text-3xl font-bold tracking-tight text-balance">{translateTitle(lesson.title)}</h1>
+        <h1 className="font-display text-4xl leading-tight font-bold tracking-tight text-balance">{translateTitle(lesson.title)}</h1>
         {/* Khong co nut tu tich: bai chi duoc tich khi lam DAT bai tap (AI cham Dung / xong lab) */}
         {xong ? (
-          <p className="inline-flex rounded-lg border border-level-newbie/40 bg-level-newbie/10 px-3 py-1.5 text-sm font-medium text-level-newbie">{t('completed')}</p>
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-level-newbie/40 bg-level-newbie/10 px-3 py-1.5 text-sm font-medium text-level-newbie"><CircleCheck className="size-4" aria-hidden="true" />{t('completed')}</p>
         ) : (
           <Button variant="outline" disabled={loading} onClick={() => doiTab('exercise')}>
             <Dumbbell aria-hidden="true" /> {t('completeByExercise')}
@@ -173,7 +174,7 @@ function BaiBiKhoa({ tech, truoc }: { tech: CongNgheTomTat; truoc: ViTriBai }) {
       <span className="mx-auto grid size-14 place-items-center rounded-full bg-muted" aria-hidden="true">
         <Lock className="size-7 text-muted-foreground" />
       </span>
-      <h1 className="mt-4 text-2xl font-bold tracking-tight">{t('lessonLockedTitle')}</h1>
+      <h1 className="mt-4 font-display text-3xl font-bold tracking-tight">{t('lessonLockedTitle')}</h1>
       <p className="mt-2 text-muted-foreground">{t('lessonLockedHint')}</p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Button asChild>

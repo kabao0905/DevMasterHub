@@ -1,5 +1,6 @@
 // Ket qua cham project: diem tong, 5 tieu chi, diem tung file, cau truc, tung module, phan tich tinh, nhan xet.
 import type { ReactNode } from 'react';
+import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { KetQuaCham, TrangThaiCham } from '@/lib/project-ai';
@@ -7,7 +8,7 @@ import type { KetQuaCham, TrangThaiCham } from '@/lib/project-ai';
 const NHAN_TRANG_THAI: Record<TrangThaiCham, string> = {
   excellent: 'reviewExcellent', good: 'reviewGood', partial: 'reviewPartial', needs_work: 'reviewNeedsWork'
 };
-const BIEU_TUONG: Record<TrangThaiCham, string> = { excellent: '🎉', good: '👍', partial: '💪', needs_work: '📝' };
+const ICON_SACH = <CircleCheck className="size-4 text-emerald-400" aria-hidden="true" />;
 
 /** Mau theo diem /100 (cung nguong voi app cu) */
 const mauDiem = (d: number | null) => d == null ? 'text-muted-foreground' : (d >= 80 ? 'text-emerald-400' : d >= 60 ? 'text-amber-300' : d >= 40 ? 'text-orange-400' : 'text-red-400');
@@ -40,7 +41,7 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
     <article aria-labelledby="ket-qua-cham" className="space-y-5 rounded-2xl border bg-card p-6">
       <header className="space-y-3">
         <h2 id="ket-qua-cham" className="text-2xl font-semibold tracking-tight">
-          <span aria-hidden="true">{BIEU_TUONG[kq.status]} </span>{t(NHAN_TRANG_THAI[kq.status])} — <span className={mauDiem(kq.score)}>{kq.score ?? '?'}/100</span>
+          {t(NHAN_TRANG_THAI[kq.status])} — <span className={mauDiem(kq.score)}>{kq.score ?? '?'}/100</span>
         </h2>
         <Thanh diem={kq.score} />
         {kq.summary && <p className="leading-relaxed">{kq.summary}</p>}
@@ -61,7 +62,7 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       )}
 
       {kq.perFileReviews.length > 0 && (
-        <Muc tieuDe={`📁 ${t('reviewPerFile')}`}>
+        <Muc tieuDe={t('reviewPerFile')}>
           <ul className="grid gap-3 sm:grid-cols-2">
             {kq.perFileReviews.map((f, i) => (
               <li key={i} className="space-y-1.5 rounded-xl border bg-background p-3">
@@ -78,7 +79,7 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       )}
 
       {sr && (
-        <Muc tieuDe={<>🏗️ {t('reviewStructureTitle')} — <span className={mauDiem(sr.structureScore)}>{sr.structureScore}/100</span></>}>
+        <Muc tieuDe={<>{t('reviewStructureTitle')} — <span className={mauDiem(sr.structureScore)}>{sr.structureScore}/100</span></>}>
           <dl className="grid gap-2 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4">
             <dt className="font-medium">{t('reviewNaming')}</dt><dd className="text-muted-foreground">{sr.naming || 'N/A'}</dd>
             <dt className="font-medium">{t('reviewOrganization')}</dt><dd className="text-muted-foreground">{sr.organization || 'N/A'}</dd>
@@ -90,7 +91,7 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       )}
 
       {kq.moduleReviews.length > 0 && (
-        <Muc tieuDe={`🤖 ${t('reviewModulesTitle')}`}>
+        <Muc tieuDe={t('reviewModulesTitle')}>
           <div className="space-y-3">
             {kq.moduleReviews.map((m, i) => (
               <details key={i} open className="rounded-xl border bg-background p-4">
@@ -108,8 +109,8 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
                       ))}
                     </ul>
                   )}
-                  {m.issues.length > 0 && <p><strong>⚠️ {t('reviewIssues')}:</strong> {m.issues.join(' • ')}</p>}
-                  {m.positives.length > 0 && <p><strong>✅ {t('reviewPositives')}:</strong> {m.positives.join(' • ')}</p>}
+                  {m.issues.length > 0 && <p><strong>{t('reviewIssues')}:</strong> {m.issues.join(' • ')}</p>}
+                  {m.positives.length > 0 && <p><strong>{t('reviewPositives')}:</strong> {m.positives.join(' • ')}</p>}
                 </div>
               </details>
             ))}
@@ -118,15 +119,15 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
       )}
 
       {la && (
-        <Muc tieuDe={`🔍 ${t('reviewStaticTitle')}`}>
+        <Muc tieuDe={t('reviewStaticTitle')}>
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="inline-flex items-baseline gap-1.5 rounded-xl border px-3 py-2">
               <span className={cn('font-mono text-xl font-semibold', mauDiem(la.avgScore))}>{la.avgScore}</span>
               <span className="text-muted-foreground">{t('reviewLintScore')}</span>
             </span>
-            <span>{la.totalErrors > 0 ? '🔴' : '✅'} {t('reviewErrorsCount', { n: la.totalErrors })}</span>
-            <span>{la.totalWarnings > 0 ? '🟡' : '✅'} {t('reviewWarningsCount', { n: la.totalWarnings })}</span>
-            <span>ℹ️ {t('reviewInfoCount', { n: la.totalIssues - la.totalErrors - la.totalWarnings })}</span>
+            <span className="inline-flex items-center gap-1.5">{la.totalErrors > 0 ? <CircleX className="size-4 text-red-400" aria-hidden="true" /> : ICON_SACH}{t('reviewErrorsCount', { n: la.totalErrors })}</span>
+            <span className="inline-flex items-center gap-1.5">{la.totalWarnings > 0 ? <TriangleAlert className="size-4 text-amber-300" aria-hidden="true" /> : ICON_SACH}{t('reviewWarningsCount', { n: la.totalWarnings })}</span>
+            <span className="inline-flex items-center gap-1.5"><Info className="size-4 text-muted-foreground" aria-hidden="true" />{t('reviewInfoCount', { n: la.totalIssues - la.totalErrors - la.totalWarnings })}</span>
           </div>
           {la.files.filter(f => f.issues.length > 0).map((f, i) => (
             <details key={i} className="rounded-xl border bg-background p-3 text-sm">
@@ -144,7 +145,7 @@ export function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
               </ul>
             </details>
           ))}
-          {la.files.every(f => f.issues.length === 0) && <p className="text-sm text-emerald-400">✅ {t('reviewClean')}</p>}
+          {la.files.every(f => f.issues.length === 0) && <p className="flex items-center gap-1.5 text-sm text-emerald-400"><CircleCheck className="size-4" aria-hidden="true" />{t('reviewClean')}</p>}
         </Muc>
       )}
 

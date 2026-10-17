@@ -78,7 +78,7 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
         </fieldset>
 
         <DialogFooter>
-          <Button className="w-full bg-brand text-white hover:brightness-110 sm:w-auto" onClick={() => { void xacNhan(); }} disabled={dangLuu}>
+          <Button className="w-full bg-signal text-signal-foreground hover:bg-signal hover:brightness-105 sm:w-auto" onClick={() => { void xacNhan(); }} disabled={dangLuu}>
             {dangLuu && <Loader2 className="animate-spin" aria-hidden="true" />}
             {chaoMung ? t('startLearningBtn') : t('saveGoalBtn')}
           </Button>

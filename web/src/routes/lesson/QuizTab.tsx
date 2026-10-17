@@ -1,4 +1,4 @@
-import { Loader2, RotateCcw, Sparkles } from 'lucide-react';
+import { CircleCheck, CircleX, Loader2, RotateCcw, Sparkles } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import type { BaiDayDu } from '@/lib/curriculum';
 import { ChatMarkdown } from '@/components/ChatMarkdown';
@@ -39,7 +39,7 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
           {aiEnabled === false
             ? <p className="mt-4 text-sm text-muted-foreground">{t('aiDisabled')}</p>
             : !loi && (
-              <Button className="mt-5 bg-brand text-white hover:brightness-110" onClick={tao}>
+              <Button className="mt-5 bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={tao}>
                 <Sparkles aria-hidden="true" /> {t('generateQuizAi')}
               </Button>
             )}
@@ -87,7 +87,10 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
             </div>
             {quiz.submitted && (
               <div className="mt-4 space-y-2 text-sm">
-                <p className="font-medium">{t(dung ? 'answerCorrect' : 'answerWrong')}</p>
+                <p className={cn('inline-flex items-center gap-1.5 font-semibold', dung ? 'text-level-newbie' : 'text-destructive')}>
+                  {dung ? <CircleCheck className="size-4" aria-hidden="true" /> : <CircleX className="size-4" aria-hidden="true" />}
+                  {t(dung ? 'answerCorrect' : 'answerWrong')}
+                </p>
                 <div className="text-muted-foreground"><span className="font-medium text-foreground">{t('explanation')}:</span> <ChatMarkdown text={q.explanation} /></div>
               </div>
             )}
@@ -104,7 +107,7 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
           <Button variant="outline" onClick={tao}><RotateCcw aria-hidden="true" /> {t('newQuiz')}</Button>
         </div>
       ) : (
-        <Button size="lg" className="bg-brand text-white hover:brightness-110" disabled={daTraLoi < tong} onClick={nop}>
+        <Button size="lg" className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" disabled={daTraLoi < tong} onClick={nop}>
           {t('submitQuizCount', { done: daTraLoi, total: tong })}
         </Button>
       )}

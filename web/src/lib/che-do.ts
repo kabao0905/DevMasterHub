@@ -8,7 +8,7 @@ export type CheDo = 'sang' | 'toi';
 export const KHOA_CHE_DO = 'devmaster_hub_che_do';
 const SU_KIEN = 'devmaster-che-do';
 /** Mau thanh trinh duyet tren dien thoai theo che do */
-const MAU_THANH: Record<CheDo, string> = { sang: '#dff3f8', toi: '#0a0e17' };
+const MAU_THANH: Record<CheDo, string> = { sang: '#ffffff', toi: '#121922' };
 const THOI_GIAN_LAN_MS = 550;
 const THOI_GIAN_MO_DAN_MS = 250;
 

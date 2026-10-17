@@ -7,6 +7,7 @@ import { CHU_CAP } from '@/components/LevelLadder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadError } from '@/components/LoadError';
 import { cn } from '@/lib/utils';
+import { BienTuyen } from '@/components/BienTuyen';
 
 export function SearchResults({ q, ds }: { q: string; ds: CongNgheTomTat[] }) {
   const { t, translateTitle } = useT();
@@ -31,8 +32,8 @@ export function SearchResults({ q, ds }: { q: string; ds: CongNgheTomTat[] }) {
           const cap = tech?.levels.find(l => l.id === m.l);
           return (
             <li key={`${m.t}.${m.l}.${m.s}`}>
-              <Link to={`/lesson/${m.t}/${m.l}/${m.s}`} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:outline-ring">
-                <span className="text-xl" aria-hidden="true">{tech?.icon}</span>
+              <Link to={`/lesson/${m.t}/${m.l}/${m.s}`} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring">
+                {tech && <BienTuyen tech={tech} co="nho" className="h-6 min-w-9 text-xs" />}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{translateTitle(m.title)}</span>
                   <span className="block truncate text-xs text-muted-foreground">{tech?.name}</span>

@@ -15,10 +15,10 @@ export function NotFoundPage() {
       <div className="w-full max-w-sm space-y-6">
         <BrandMark />
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{t('pageNotFound')}</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">{t('pageNotFound')}</h1>
           <p className="truncate font-mono text-sm text-muted-foreground">{pathname}</p>
         </div>
-        <Button asChild size="lg" className="h-10 bg-brand px-5 text-white hover:brightness-110">
+        <Button asChild size="lg" className="h-10 bg-signal px-5 text-signal-foreground hover:bg-signal hover:brightness-105">
           <a href="/">{t('dashboard')}</a>
         </Button>
       </div>

@@ -2,7 +2,7 @@
 // khi nguoi dung chua nop bai nao vi lay "danh sach rong" lam dieu kien tai).
 import { Link, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Code, Target } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
@@ -34,13 +34,13 @@ function DanhSachDuAn() {
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">📁 {t('myProjectsTitle')}</h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight">{t('myProjectsTitle')}</h1>
         <p className="text-muted-foreground">{t('myProjectsSubtitle')}</p>
       </header>
       {q.isError ? <LoadError onRetry={() => { void q.refetch(); }} />
         : q.isPending ? <div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-24" /></div>
           : q.data.length === 0 ? (
-            <p className="rounded-2xl border bg-card p-8 text-center text-muted-foreground">📁 {t('noProjectsYet')}</p>
+            <p className="rounded-2xl border bg-card p-8 text-center text-muted-foreground">{t('noProjectsYet')}</p>
           ) : (
             <ul className="space-y-3">
               {q.data.map(p => (
@@ -54,9 +54,9 @@ function DanhSachDuAn() {
                       <span className="block truncate text-lg font-semibold">{p.project_name}</span>
                       {p.project_description && <span className="line-clamp-2 block text-sm text-muted-foreground">{p.project_description}</span>}
                       <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span>📅 {p.submitted_at ? new Date(p.submitted_at).toLocaleDateString(lang) : ''}</span>
-                        <span>🎯 {p.difficulty_level || 'N/A'}</span>
-                        <span>💻 {p.languages_used.join(', ') || 'N/A'}</span>
+                        <span className="inline-flex items-center gap-1"><CalendarDays className="size-3.5" aria-hidden="true" />{p.submitted_at ? new Date(p.submitted_at).toLocaleDateString(lang) : ''}</span>
+                        <span className="inline-flex items-center gap-1"><Target className="size-3.5" aria-hidden="true" />{p.difficulty_level || 'N/A'}</span>
+                        <span className="inline-flex items-center gap-1"><Code className="size-3.5" aria-hidden="true" />{p.languages_used.join(', ') || 'N/A'}</span>
                       </span>
                     </span>
                   </Link>
@@ -91,7 +91,7 @@ function ChiTietDuAn({ id }: { id: string }) {
     <article className="mx-auto max-w-4xl space-y-8">
       {quayLai}
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{p.project_name}</h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight">{p.project_name}</h1>
         {p.project_description && <p className="text-muted-foreground">{p.project_description}</p>}
       </header>
       <ul aria-label={t('scoreOverall')} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -104,7 +104,7 @@ function ChiTietDuAn({ id }: { id: string }) {
       </ul>
       {p.ai_feedback && (
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">💬 {t('aiFeedbackTitle')}</h2>
+          <h2 className="text-lg font-semibold">{t('aiFeedbackTitle')}</h2>
           <div className="rounded-xl border bg-card p-4 text-sm leading-relaxed"><ChatMarkdown text={p.ai_feedback} /></div>
         </section>
       )}
@@ -122,7 +122,7 @@ function ChiTietDuAn({ id }: { id: string }) {
       )}
       {p.files.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">📄 {t('projectCodeFiles')}</h2>
+          <h2 className="text-lg font-semibold">{t('projectCodeFiles')}</h2>
           {p.files.map((f, i) => (
             <div key={i} className="space-y-1.5">
               <p className="flex items-baseline gap-2 font-mono text-sm"><span>{f.name}</span><span className="text-xs text-muted-foreground">{f.lang || 'text'}</span></p>

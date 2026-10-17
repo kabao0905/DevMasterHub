@@ -32,11 +32,11 @@ export function LoiTrang() {
   return (
     <div className="mx-auto grid min-h-[50dvh] max-w-md content-center gap-6 px-5 py-12">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('pageLoadError')}</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t('pageLoadError')}</h1>
         <p className="text-muted-foreground">{t('pageLoadErrorHint')}</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button size="lg" className="h-10 bg-brand px-5 text-white hover:brightness-110" onClick={() => dieuHuong.taiLai()}>
+        <Button size="lg" className="h-10 bg-signal px-5 text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => dieuHuong.taiLai()}>
           <RotateCw /> {t('reloadPage')}
         </Button>
         {/* Tai trang that: neu loi do ban cu cua app thi Dashboard cung can ban moi */}

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Lightbulb, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
@@ -48,7 +48,7 @@ function KhungDapAn({ de }: { de: ThuThachAi }) {
 
   return (
     <div className="space-y-3 rounded-xl border bg-background/50 p-4">
-      <p className="font-medium">❓ {de.question}</p>
+      <p className="font-medium">{de.question}</p>
       {daGiai ? (
         <p role="status" className="font-medium text-level-newbie">{t('aiChallengeCorrect')}</p>
       ) : (
@@ -74,7 +74,7 @@ export function ChallengePage() {
   const { client, user } = useAuth();
   // Diem, co da giai va de AI giu qua cac lan roi trang roi quay lai (ban cu giu ca phien trang)
   const kenh = useTerminalBenVung(['challenge', user?.id, 'may']);
-  usePageMeta({ title: `${t('challengeTitle').replace(/^\S+\s/u, '')} | DevMaster Hub`, description: t('challengeSubtitle') });
+  usePageMeta({ title: `${t('challengeTitle')} | DevMaster Hub`, description: t('challengeSubtitle') });
 
   // De dua tren lenh, noi dung tep va ket qua lenh co that trong terminal nay (truoc kia AI bia du lieu -> khong giai duoc)
   const de = useQuery({
@@ -99,7 +99,7 @@ export function ChallengePage() {
         <ArrowLeft className="size-4" aria-hidden="true" /> {t('back')}
       </Link>
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">{t('challengeTitle')}</h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight">{t('challengeTitle')}</h1>
         <p className="text-muted-foreground">{t('challengeSubtitle')}</p>
       </header>
 
@@ -109,7 +109,7 @@ export function ChallengePage() {
             <h2 id="de-ai" className="font-semibold">{t('aiChallengeTitle')}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t('aiChallengeHint')}</p>
           </div>
-          <Button className="bg-brand text-white hover:brightness-110" onClick={() => { void de.refetch(); }} disabled={dangRa}>
+          <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => { void de.refetch(); }} disabled={dangRa}>
             {dangRa ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
             {t('aiChallengeBtn')}
           </Button>
@@ -126,7 +126,7 @@ export function ChallengePage() {
             {de.data.steps.length > 0 && (
               <ol className="list-decimal space-y-1 pl-5 text-sm">{de.data.steps.map(s => <li key={s}>{s}</li>)}</ol>
             )}
-            {de.data.hint && <p className="text-sm text-muted-foreground">💡 {de.data.hint}</p>}
+            {de.data.hint && <p className="flex gap-2 text-sm text-muted-foreground"><Lightbulb className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" /><span>{de.data.hint}</span></p>}
             {de.data.files.length > 0 && (
               <p className="text-sm text-muted-foreground">{t('aiChallengeFilesAdded', { n: de.data.files.length })}</p>
             )}

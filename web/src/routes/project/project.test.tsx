@@ -215,11 +215,11 @@ test('idea da luu: ngay gio, nguon, xoa co xac nhan, Bat dau lam mo dung trang v
   ];
   const { gia } = mo('/saved-ideas', { bang: { saved_ideas: ideas } });
   const theBlog = (await screen.findByRole('heading', { name: 'Blog cá nhân' })).closest('article')!;
-  expect(within(theBlog).getByText(/📝 Blog/)).toBeInTheDocument();
+  expect(within(theBlog).getByText('Blog')).toBeInTheDocument();
   expect(within(theBlog).getByText('+2')).toBeInTheDocument();
   expect(theBlog.textContent).toMatch(/11\/10\/2026/);
   const theMay = screen.getByRole('heading', { name: 'Máy tính' }).closest('article')!;
-  expect(within(theMay).getByText(/📊 senior/)).toBeInTheDocument();
+  expect(within(theMay).getByText('senior')).toBeInTheDocument();
 
   vi.stubGlobal('confirm', () => false);
   await u.click(within(theMay).getByRole('button', { name: 'Xóa idea Máy tính' }));

@@ -13,6 +13,7 @@ import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { BienTuyen } from '@/components/BienTuyen';
 
 export const TEN_NHOM: Record<Nhom, string> = {
   language: 'catLanguages',
@@ -108,7 +109,7 @@ export function Sidebar() {
                 return (
                   <NavLink key={tech.id} to={`/roadmap/${tech.id}`}
                     className={({ isActive }) => cn(lopMuc, 'py-1.5', isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
-                    <span className="w-5 text-center" aria-hidden="true">{tech.icon}</span>
+                    <BienTuyen tech={tech} co="nho" />
                     <span className="flex-1 truncate">{tech.name}</span>
                     {phanTram > 0 && <span className="text-xs tabular-nums text-muted-foreground">{phanTram}%</span>}
                   </NavLink>

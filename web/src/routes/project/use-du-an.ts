@@ -69,12 +69,12 @@ export function useAiBat(): boolean | undefined {
 }
 
 /** 5 cap do cua Project Lab (renderProjectByLevel cua app cu) */
-export const CAP_HIEN: { id: CapDo; ten: string; emoji: string; moTa: string }[] = [
-  { id: 'newbie', ten: 'Newbie', emoji: '🌱', moTa: 'levelNewbie' },
-  { id: 'junior', ten: 'Junior', emoji: '🌿', moTa: 'levelJunior' },
-  { id: 'mid', ten: 'Mid', emoji: '🌳', moTa: 'levelMid' },
-  { id: 'senior', ten: 'Senior', emoji: '🔥', moTa: 'levelSenior' },
-  { id: 'master', ten: 'Master', emoji: '👑', moTa: 'levelMaster' }
+export const CAP_HIEN: { id: CapDo; ten: string; moTa: string }[] = [
+  { id: 'newbie', ten: 'Newbie', moTa: 'levelNewbie' },
+  { id: 'junior', ten: 'Junior', moTa: 'levelJunior' },
+  { id: 'mid', ten: 'Mid', moTa: 'levelMid' },
+  { id: 'senior', ten: 'Senior', moTa: 'levelSenior' },
+  { id: 'master', ten: 'Master', moTa: 'levelMaster' }
 ];
 
 export function useDuAn(cheDo: CheDo) {

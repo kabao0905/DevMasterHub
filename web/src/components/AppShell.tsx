@@ -10,17 +10,17 @@ import { TopNav } from '@/components/TopNav';
  */
 const khoaCuon = (loc: Location) => (loc.key === 'default' ? loc.pathname + loc.search : loc.key);
 
-/** Khung app: thanh dieu huong den tren cung + "cua so" bo tron lon chua noi dung trang */
+/** Khung app: bang chi dan tren cung + noi dung dat thang tren nen ban do */
 export function AppShell() {
   // Dem thoi gian hoc (mo mon hoc / hoi AI) cho lich tren Dashboard
   useDongHoHoc();
   return (
-    <div className="min-h-dvh px-2 pt-3 pb-6 sm:px-5">
+    <div className="min-h-dvh">
       {/* Trang moi bat dau tu dau; Back/Forward tra lai vi tri cu */}
       <ScrollRestoration getKey={khoaCuon} />
       <ChaoMung />
       <TopNav />
-      <main className="mx-auto mt-4 w-full max-w-7xl rounded-[2rem] bg-card px-4 py-6 shadow-sm shadow-black/5 sm:px-8 lg:px-12 lg:py-10">
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <Outlet />
       </main>
     </div>

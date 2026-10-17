@@ -96,7 +96,7 @@ export const VFS_MAC_DINH: HeThongTep = {
 export const DS_THU_THACH: ThuThach[] = [
   {
     id: 'ctf-1',
-    title: '🚩 Challenge 1: Thám Tử Linux',
+    title: 'Challenge 1: Thám Tử Linux',
     desc: 'Tìm kiếm tệp cờ ẩn đầu tiên trong thư mục cá nhân.',
     hint: 'Dùng lệnh "ls -la" và "cat flag1.txt"',
     flag: 'FLAG{devmaster_linux_explorer_novice}',
@@ -104,7 +104,7 @@ export const DS_THU_THACH: ThuThach[] = [
   },
   {
     id: 'ctf-2',
-    title: '🔐 Challenge 2: Giải Mã Base64',
+    title: 'Challenge 2: Giải Mã Base64',
     desc: 'Admin đã lưu một đoạn chuỗi mã hóa trong "secret_b64.txt". Hãy giải mã nó.',
     hint: 'Dùng lệnh: cat secret_b64.txt | base64 -d hoặc base64 -d secret_b64.txt',
     flag: 'FLAG{devmaster_base64_decoded_success}',
@@ -112,7 +112,7 @@ export const DS_THU_THACH: ThuThach[] = [
   },
   {
     id: 'ctf-3',
-    title: '🕵️ Challenge 3: Điều Tra Nhật Ký (Log Forensics)',
+    title: 'Challenge 3: Điều Tra Nhật Ký (Log Forensics)',
     desc: 'Có dấu vết đăng nhập trái phép trong nhật ký xác thực "/var/log/auth.log".',
     hint: 'Dùng lệnh "cat /var/log/auth.log" hoặc "grep FLAG /var/log/auth.log"',
     flag: 'FLAG{devmaster_log_analyst_pro}',
@@ -120,7 +120,7 @@ export const DS_THU_THACH: ThuThach[] = [
   },
   {
     id: 'ctf-4',
-    title: '🌐 Challenge 4: Quét Cổng Mạng (Port Scanning)',
+    title: 'Challenge 4: Quét Cổng Mạng (Port Scanning)',
     desc: 'Quét máy chủ mục tiêu "192.168.1.100" để tìm các dịch vụ đang mở.',
     hint: 'Dùng lệnh: nmap 192.168.1.100',
     flag: 'FLAG{devmaster_nmap_port_8080_opened}',
@@ -128,7 +128,7 @@ export const DS_THU_THACH: ThuThach[] = [
   },
   {
     id: 'ctf-5',
-    title: '💉 Challenge 5: Rò Rỉ Cấu Hình Web Server',
+    title: 'Challenge 5: Rò Rỉ Cấu Hình Web Server',
     desc: 'Kiểm tra mã nguồn web server trong "/var/www/html/config.php" để lấy mật khẩu bí mật.',
     hint: 'Dùng lệnh: cat /var/www/html/config.php',
     flag: 'FLAG{devmaster_sql_injection_master}',
@@ -136,7 +136,7 @@ export const DS_THU_THACH: ThuThach[] = [
   },
   {
     id: 'ctf-6',
-    title: '🐚 Challenge 6: Truy Tìm Backdoor Ẩn',
+    title: 'Challenge 6: Truy Tìm Backdoor Ẩn',
     desc: 'Máy chủ mở một cổng lạ và có tiến trình chạy ngầm. Lần theo cổng đó để tìm tệp cấu hình của kẻ tấn công.',
     hint: 'Dùng: netstat -tuln → ps aux → cat tệp cấu hình mà tiến trình lạ đang dùng',
     flag: 'FLAG{devmaster_backdoor_port_4444_found}',
@@ -144,7 +144,7 @@ export const DS_THU_THACH: ThuThach[] = [
   },
   {
     id: 'ctf-7',
-    title: '📡 Challenge 7: Rò Rỉ Qua HTTP Header',
+    title: 'Challenge 7: Rò Rỉ Qua HTTP Header',
     desc: 'Web server trên máy này để lộ thông tin qua header phản hồi. Tìm token debug bị quên tắt.',
     hint: 'Dùng: curl -I http://localhost (chỉ xem header) hoặc curl -i http://localhost',
     flag: 'FLAG{devmaster_http_header_leak}',

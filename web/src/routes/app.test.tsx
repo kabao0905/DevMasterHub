@@ -78,8 +78,8 @@ test('dashboard: the cong nghe theo nhom, phan tram tien do, link sang roadmap',
   const thePy = await within(main).findByRole('link', { name: /Python/ });
   expect(thePy).toHaveAttribute('href', '/roadmap/python');
   await waitFor(() => expect(within(thePy).getByText('33%')).toBeInTheDocument());
-  expect(within(main).getByRole('heading', { name: '💻 Ngôn ngữ lập trình' })).toBeInTheDocument();
-  expect(within(main).getByRole('heading', { name: '🎨 Frontend Development' })).toBeInTheDocument();
+  expect(within(main).getByRole('heading', { name: 'Ngôn ngữ lập trình' })).toBeInTheDocument();
+  expect(within(main).getByRole('heading', { name: 'Frontend Development' })).toBeInTheDocument();
 });
 
 test('dashboard: o Hoc tiep tro toi bai dau tien chua xong cua cong nghe dang hoc', async () => {

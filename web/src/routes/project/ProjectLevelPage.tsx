@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { Bot, Loader2 } from 'lucide-react';
+import { Bot, Loader2, Target } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { laCapDo, type CapDo } from '@/lib/project-ai';
 import { ChuDam } from '@/components/ChuDam';
+import { MAU_CAP } from '@/components/LevelLadder';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CAP_HIEN, useAiBat, useDuAn } from './use-du-an';
@@ -18,7 +19,7 @@ export function ProjectLevelPage() {
   const duAn = useDuAn('level');
   const { kho } = duAn;
   const aiBat = useAiBat();
-  usePageMeta({ title: `${t('byLevelHeader').replace(/^\S+\s/u, '')} | DevMaster Hub`, description: t('byLevelHeaderDesc') });
+  usePageMeta({ title: `${t('byLevelHeader')} | DevMaster Hub`, description: t('byLevelHeaderDesc') });
 
   // Link chia se /project-level/<cap>: chon san cap do do — nhung dang lam project thi khong xoa no
   // (Back/Forward toi mot muc lich su cu): dua URL ve cap dang lam
@@ -38,7 +39,7 @@ export function ProjectLevelPage() {
     <div className="mx-auto max-w-5xl space-y-8">
       <Link to="/project" className="inline-flex text-sm text-muted-foreground hover:text-foreground">{t('backToProjectLab')}</Link>
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">{t('byLevelHeader')}</h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight">{t('byLevelHeader')}</h1>
         <p className="text-muted-foreground">{t('byLevelHeaderDesc')}</p>
       </header>
 
@@ -47,8 +48,7 @@ export function ProjectLevelPage() {
           <button key={c.id} type="button" aria-pressed={kho.level === c.id} onClick={() => chon(c.id)}
             className={cn('flex flex-col items-start gap-1 rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary/60 focus-visible:outline-2 focus-visible:outline-ring',
               kho.level === c.id && 'border-primary bg-primary/10')}>
-            <span className="text-2xl" aria-hidden="true">{c.emoji}</span>
-            <span className="font-semibold">{c.ten}</span>
+            <span className="flex items-center gap-2 font-semibold"><span className={cn('size-3 rounded-full', MAU_CAP[c.id])} aria-hidden="true" />{c.ten}</span>
             <span className="text-xs text-muted-foreground">{t(c.moTa)}</span>
           </button>
         ))}
@@ -59,18 +59,18 @@ export function ProjectLevelPage() {
       {kho.level && kho.dangTao && (
         <div className="flex items-center gap-3 rounded-2xl border bg-card p-6 text-sm" aria-live="polite">
           <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
-          <p>🤖 <ChuDam khoa="aiGeneratingLevelIdea" bien={{ level: kho.level }} /></p>
+          <p><ChuDam khoa="aiGeneratingLevelIdea" bien={{ level: kho.level }} /></p>
         </div>
       )}
 
       {kho.level && !kho.idea && !kho.dangTao && (
         <div className="space-y-4 rounded-2xl border bg-card p-10 text-center">
-          <span className="block text-5xl" aria-hidden="true">🎯</span>
+          <Target className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
           <h2 className="text-lg font-semibold">{t('readyTitle')}</h2>
           <p className="text-muted-foreground"><ChuDam khoa="clickBelowForIdea" bien={{ level: kho.level }} /></p>
           {aiBat === undefined ? null : aiBat
-            ? <Button className="bg-brand text-white hover:brightness-110" onClick={duAn.taoIdea}><Bot aria-hidden="true" /> {t('generateIdeaBtn')}</Button>
-            : <p className="text-sm text-muted-foreground">⚠️ {t('aiDisabled')}</p>}
+            ? <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={duAn.taoIdea}><Bot aria-hidden="true" /> {t('generateIdeaBtn')}</Button>
+            : <p className="text-sm text-muted-foreground">{t('aiDisabled')}</p>}
         </div>
       )}
 

@@ -82,7 +82,7 @@ export function AuthPage() {
       <section className="relative hidden flex-col justify-between overflow-hidden border-r bg-sidebar px-12 py-10 lg:flex">
         <BrandMark />
         <div>
-          <h1 className="max-w-md text-4xl leading-tight font-bold tracking-tight text-balance">{t('authSubtitle')}</h1>
+          <h1 className="max-w-md font-display text-5xl leading-tight font-extrabold tracking-tight text-balance">{t('authSubtitle')}</h1>
           <ol className="mt-10 space-y-3" aria-label={t('dashboardSubtitle')}>
             {CAC_CAP.map((cap, i) => (
               <li key={cap.id} className="flex items-center gap-4" style={{ paddingLeft: `${(CAC_CAP.length - 1 - i) * 1.25}rem` }}>
@@ -157,7 +157,7 @@ export function AuthPage() {
               </p>
             )}
 
-            <Button type="submit" size="lg" className="h-10 w-full bg-brand text-white hover:brightness-110" disabled={dangGui}>
+            <Button type="submit" size="lg" className="h-10 w-full bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" disabled={dangGui}>
               {dangGui && <Loader2 className="animate-spin" />}
               {nhanNut}
             </Button>

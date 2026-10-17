@@ -47,10 +47,10 @@ test('ap che do: lop dark tren <html> va mau thanh trinh duyet', () => {
   document.head.appendChild(meta);
   apCheDo('toi');
   expect(document.documentElement.classList.contains('dark')).toBe(true);
-  expect(meta.content).toBe('#0a0e17');
+  expect(meta.content).toBe('#121922');
   apCheDo('sang');
   expect(document.documentElement.classList.contains('dark')).toBe(false);
-  expect(meta.content).toBe('#dff3f8');
+  expect(meta.content).toBe('#ffffff');
   meta.remove();
 });
 

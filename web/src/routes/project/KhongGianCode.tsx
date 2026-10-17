@@ -1,7 +1,7 @@
 // Soan code nhieu file cho project va nop cho AI cham (renderSubmitPanel cua app cu).
 import { useXacNhan } from '@/components/XacNhan';
 import { useEffect, useState } from 'react';
-import { Bot, Loader2, Plus, Trash2, X } from 'lucide-react';
+import { Bot, FileCode, Loader2, Package, Plus, Trash2, TriangleAlert, X } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { CodeArea } from '@/routes/lesson/CodeArea';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,6 @@ const NGON_NGU = [
   { val: 'csharp', ten: 'C#' }, { val: 'go', ten: 'Go' }, { val: 'rust', ten: 'Rust' }, { val: 'php', ten: 'PHP' },
   { val: 'html', ten: 'HTML/CSS' }, { val: 'css', ten: 'CSS' }, { val: 'typescript', ten: 'TypeScript' }, { val: 'json', ten: 'JSON' }
 ];
-const BIEU_TUONG: Record<string, string> = { javascript: '📜', typescript: '🔷', python: '🐍', java: '☕', cpp: '⚡', csharp: '🟣', go: '🔵', rust: '🦀', php: '🐘', html: '🌐', css: '🎨', json: '📋' };
-
 /** Nguong cua app cu: tren 200k ky tu la "file lon", tren 400k thi AI se rut gon */
 const LON = 200_000;
 const RAT_LON = 400_000;
@@ -52,7 +50,7 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
               <div key={j} className={cn('flex items-center rounded-lg border', j === i ? 'border-primary bg-primary/10' : 'bg-background')}>
                 <button type="button" role="tab" aria-selected={j === i} onClick={() => duAn.chonTep(j)}
                   className="flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs">
-                  <span aria-hidden="true">{BIEU_TUONG[f.lang] ?? '📄'}</span> {f.name}
+                  <FileCode className="size-3.5 text-muted-foreground" aria-hidden="true" />{f.name}
                 </button>
                 {kho.files.length > 1 && (
                   <button type="button" aria-label={t('projectRemoveFile', { name: f.name })} onClick={() => duAn.xoaTep(j)}
@@ -88,12 +86,14 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
 
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>{t('projectStats', { files: kho.files.length, lines: soDong })}</span>
-          {soKyTu > RAT_LON ? <span>⚠️ {t('projectSizeHuge')}</span> : soKyTu > LON ? <span>📦 {t('projectSizeLarge')}</span> : null}
+          {soKyTu > RAT_LON
+            ? <span className="inline-flex items-center gap-1"><TriangleAlert className="size-3.5" aria-hidden="true" />{t('projectSizeHuge')}</span>
+            : soKyTu > LON ? <span className="inline-flex items-center gap-1"><Package className="size-3.5" aria-hidden="true" />{t('projectSizeLarge')}</span> : null}
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
           {aiBat && (
-            <Button className="bg-brand text-white hover:brightness-110" onClick={duAn.cham} disabled={!!kho.dangCham || !coCode}>
+            <Button className="bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={duAn.cham} disabled={!!kho.dangCham || !coCode}>
               {kho.dangCham ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Bot aria-hidden="true" />}
               {t('projectSubmitBtn', { n: kho.files.length })}
             </Button>
