@@ -96,7 +96,7 @@ export function LichHoc({ className }: { className?: string }) {
   }
 
   return (
-    <section aria-labelledby="lich-hoc" className={cn('flex min-w-0 flex-col gap-4 rounded-3xl bg-card p-5 shadow-soft', className)}>
+    <section aria-labelledby="lich-hoc" className={cn('flex min-w-0 flex-col justify-between gap-4 rounded-3xl bg-card p-5 shadow-soft', className)}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <h2 id="lich-hoc" className="kich-dong flex items-center gap-2 font-display text-xl font-extrabold">

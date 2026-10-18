@@ -149,7 +149,7 @@ export function DashboardPage() {
       <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch">
         <div className="flex shrink-0 flex-col justify-between gap-6">
           {tieuDe}
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
             {soLieu.map(([nhan, so, mau]) => (
               <div key={nhan} className={cn('flex min-w-28 flex-col-reverse items-center rounded-3xl px-4 py-4 text-center', mau)}>
                 <dt className="mt-0.5 text-xs font-medium">{nhan}</dt>
