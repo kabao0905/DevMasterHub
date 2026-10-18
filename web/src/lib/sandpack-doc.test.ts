@@ -29,7 +29,21 @@ test('thu vien nap truoc code hoc vien; token cau noi console dung token truyen 
   expect(r.token).toBe('sp42');
   expect(r.doc.indexOf('react.development.js')).toBeLessThan(r.doc.indexOf('function App()'));
   expect(r.doc).toContain("__sandpack: 'sp42'");
-  expect(r.doc).toContain('type="text/babel"');
+  expect(r.doc).toContain('__dmChay(true)');
+  expect(r.doc).not.toContain('type="text/babel"');
+});
+
+test('cau noi console nam truoc thu vien; thu vien tai kem crossorigin; bai tu khai bao libs thi thay libs mac dinh', () => {
+  const r = buildDocument('react', PRESETS.react.files, { token: 't' });
+  expect(r.doc.indexOf('window.__dmChay')).toBeLessThan(r.doc.indexOf('react.development.js'));
+  expect(r.doc).toMatch(/react\.development\.js" crossorigin="anonymous"/);
+  expect(r.doc).toContain("var TEN = \"App.jsx\"");
+  const rieng = buildDocument('react', PRESETS.react.files, { token: 't', libs: ['https://unpkg.com/x@1/x.js'] }).doc;
+  expect(rieng).toContain('https://unpkg.com/x@1/x.js');
+  expect(rieng).not.toContain('react.development.js');
+  const web = buildDocument('html', tepHtml({}), { token: 't' }).doc;
+  expect(web).toContain('__dmChay(false)');
+  expect(web).toContain('id="__dm_nguon"');
 });
 
 test('che do thiet ke chi chen script chon phan tu khi duoc truyen vao', () => {

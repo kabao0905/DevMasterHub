@@ -298,6 +298,99 @@ export function presetFor(techId?: string): string {
 
 export const laConsole = (presetId: string): boolean => (Object.hasOwn(PRESETS, presetId) ? PRESETS[presetId] : PRESETS.html).mode === 'console';
 
+function taoCauNoi(token: string, tenTep: string): string {
+  return `
+<script>
+(function () {
+  var TEN = ${JSON.stringify(tenTep)};
+  var BO_QUA = [
+    /^You are using the in-browser Babel transformer/,
+    /cdn\\.tailwindcss\\.com should not be used in production/,
+    /^You are running a development build of Vue/,
+    /Download the React DevTools/,
+    /React Router Future Flag Warning/,
+    /^The above error occurred in the <[^>]+> component/
+  ];
+  var cuoi = { text: '', luc: 0 };
+  function chuoi(a) {
+    try {
+      if (a instanceof Error) return a.name + ': ' + a.message;
+      return typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a);
+    } catch (e) { return String(a); }
+  }
+  function dinhDang(args) {
+    if (typeof args[0] !== 'string' || !/%[sdifoOc]/.test(args[0])) return args.map(chuoi);
+    var con = args.slice(1), i = 0;
+    var dau = args[0].replace(/%([sdifoOc%])/g, function (m, k) {
+      if (k === '%') return '%';
+      if (i >= con.length) return m;
+      var v = con[i++];
+      if (k === 'c') return '';
+      if (k === 'd' || k === 'i') return String(parseInt(v, 10));
+      if (k === 'f') return String(parseFloat(v));
+      return chuoi(v);
+    });
+    return [dau].concat(con.slice(i).map(chuoi));
+  }
+  function send(level, args) {
+    var text = dinhDang(args).join(' ').split('\\n').filter(function (d) { return !/^ {4}at /.test(d); }).join('\\n').replace(/\\s+$/, '');
+    if (!text || BO_QUA.some(function (r) { return r.test(text); })) return;
+    if (level === 'error' || /^(\\[Vue warn\\]|Warning:)/.test(text)) {
+      var bay = Date.now();
+      if (text === cuoi.text && bay - cuoi.luc < 1500) return;
+      cuoi = { text: text, luc: bay };
+    }
+    try { parent.postMessage({ __sandpack: '${token}', level: level, args: [text] }, '*'); } catch (e) {}
+  }
+  function viTri(err, tep, dong) {
+    var st = err && err.stack ? String(err.stack) : '';
+    var m = st.indexOf(TEN + ':') >= 0 ? st.slice(st.indexOf(TEN + ':') + TEN.length + 1).match(/^(\\d+)/) : null;
+    if (m) return TEN + ' · dòng ' + Math.max(1, m[1] - 1) + ': ';
+    if (tep && tep.slice(-TEN.length) === TEN && dong) return TEN + ' · dòng ' + Math.max(1, dong - 1) + ': ';
+    return '';
+  }
+  window.__dmBao = send;
+  ['log', 'warn', 'error', 'info'].forEach(function (lv) {
+    var orig = console[lv];
+    console[lv] = function () { send(lv, [].slice.call(arguments)); orig.apply(console, arguments); };
+  });
+  window.addEventListener('error', function (e) {
+    if (!(e instanceof ErrorEvent)) {
+      var t = e.target || {};
+      var nguon = t.src || t.href || '';
+      if (nguon) send(t.tagName === 'SCRIPT' ? 'error' : 'warn', ['Không tải được ' + (t.tagName === 'SCRIPT' ? 'thư viện' : 'tệp') + ': ' + nguon]);
+      return;
+    }
+    var msg = String(e.message || '').replace(/^Uncaught /, '').replace(/Failed to execute 'appendChild' on 'Node': /, '');
+    if (!msg || msg === 'Script error.') return;
+    send('error', [viTri(e.error, e.filename, e.lineno) + msg]);
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason;
+    send('error', [viTri(r) + 'Promise bị từ chối: ' + chuoi(r)]);
+  });
+  window.__dmChay = function (jsx) {
+    var el = document.getElementById('__dm_nguon');
+    var code = el ? el.textContent.replace(/^\\n/, '') : '';
+    if (jsx) {
+      if (!window.Babel) { send('error', ['Không tải được Babel nên chưa chạy được JSX. Kiểm tra mạng rồi bấm tải lại khung xem trước.']); return; }
+      try {
+        code = Babel.transform(code, { presets: ['react'], retainLines: true, filename: TEN }).code;
+      } catch (e) {
+        var dau = String(e.message || e).replace(/^[^:]*\\.jsx?: /, '');
+        var vt = dau.match(/\\((\\d+):(\\d+)\\)/);
+        send('error', [TEN + (vt ? ' · dòng ' + vt[1] : '') + ': ' + dau.replace(/ ?\\(\\d+:\\d+\\)/, '')]);
+        return;
+      }
+    }
+    var s = document.createElement('script');
+    s.textContent = '//# sourceURL=' + TEN + '\\n' + code;
+    document.body.appendChild(s);
+  };
+})();
+<\/script>`;
+}
+
 export function buildDocument(presetId: string, files: Record<string, string>, { token, designScript = '', libs }: { token: string; designScript?: string; libs?: string[] }): TaiLieu {
   const P = Object.hasOwn(PRESETS, presetId) ? PRESETS[presetId] : PRESETS.html;
 
@@ -307,34 +400,12 @@ export function buildDocument(presetId: string, files: Record<string, string>, {
   const css = chanDongThe(files['style.css'] || '', 'style');
   const js = chanDongThe(files[P.entry] || '', 'script');
 
-  const bridge = `
-<script>
-(function () {
-  var send = function (level, args) {
-    if (/^You are using the in-browser Babel transformer/.test(String(args[0]))) return;
-    try {
-      parent.postMessage({ __sandpack: '${token}', level: level, args: args.map(function (a) {
-        try {
-          if (a instanceof Error) return a.name + ': ' + a.message;
-          return typeof a === 'object' ? JSON.stringify(a) : String(a);
-        } catch (e) { return String(a); }
-      }) }, '*');
-    } catch (e) {}
-  };
-  ['log', 'warn', 'error', 'info'].forEach(function (lv) {
-    var orig = console[lv];
-    console[lv] = function () { send(lv, [].slice.call(arguments)); orig.apply(console, arguments); };
-  });
-  window.addEventListener('error', function (e) { send('error', [e.message + ' (dòng ' + e.lineno + ')']); });
-  window.addEventListener('unhandledrejection', function (e) { send('error', ['Promise bị từ chối: ' + e.reason]); });
-})();
-<\/script>`;
+  const bridge = taoCauNoi(token, P.entry);
 
   let doc = html;
   const styleTag = `<style>\n${css}\n</style>`;
-  const scriptType = P.entry.endsWith('.jsx') ? ' type="text/babel"' : '';
-  const scriptTag = `<script${scriptType}>\n${js}\n<\/script>`;
-  const libTags = (libs ?? P.libs ?? []).map(u => `<script src="${u}"><\/script>`).join('\n');
+  const scriptTag = `<script type="text/plain" id="__dm_nguon">\n${js}\n<\/script>\n<script>__dmChay(${P.entry.endsWith('.jsx')});<\/script>`;
+  const libTags = (libs ?? P.libs ?? []).map(u => `<script src="${u}" crossorigin="anonymous"><\/script>`).join('\n');
 
   const chen = (tim: string | RegExp, them: string) => doc.replace(tim, () => them);
 
@@ -353,9 +424,8 @@ export function buildDocument(presetId: string, files: Record<string, string>, {
     doc = doc.includes('</head>') ? chen('</head>', libTags + '</head>') : libTags + doc;
   }
 
-  let extra = bridge;
-  extra += designScript;
-  doc = doc.includes('</head>') ? chen('</head>', extra + '</head>') : extra + doc;
+  doc = /<head(\s[^>]*)?>/i.test(doc) ? doc.replace(/<head(\s[^>]*)?>/i, m => m + bridge) : bridge + doc;
+  if (designScript) doc = doc.includes('</head>') ? chen('</head>', designScript + '</head>') : designScript + doc;
   return { doc, token };
 }
 
@@ -363,27 +433,7 @@ function buildConsoleDocument(P: Preset, files: Record<string, string>, token: s
   const src = chanDongThe(files[P.entry] || '', 'script');
   const isTs = P.entry.endsWith('.ts');
 
-  const bridge = `
-<script>
-(function () {
-  var send = function (level, args) {
-    if (/^You are using the in-browser Babel transformer/.test(String(args[0]))) return;
-    try {
-      parent.postMessage({ __sandpack: '${token}', level: level, args: args.map(function (a) {
-        try {
-          if (a instanceof Error) return a.name + ': ' + a.message;
-          return typeof a === 'object' ? JSON.stringify(a) : String(a);
-        } catch (e) { return String(a); }
-      }) }, '*');
-    } catch (e) {}
-  };
-  ['log', 'warn', 'error', 'info'].forEach(function (lv) {
-    var orig = console[lv];
-    console[lv] = function () { send(lv, [].slice.call(arguments)); orig.apply(console, arguments); };
-  });
-  window.addEventListener('error', function (e) { send('error', [e.message + ' (dòng ' + e.lineno + ')']); });
-})();
-<\/script>`;
+  const bridge = taoCauNoi(token, P.entry);
 
   const runner = isTs ? `
 <script>
