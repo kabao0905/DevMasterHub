@@ -1,7 +1,7 @@
 // Che do sang / toi cua giao dien. Luu tren may; chua chon thi theo he dieu hanh (prefers-color-scheme).
 // <html class="dark"> doi bang mau (globals.css). index.html ap san truoc khi ve trang de khong nhay mau.
-// Doi che do co hieu ung: mau moi lan ra tu chinh cong tac, giu hinh vien thuoc bo tron cua no roi gian ra phu ca
-// man hinh (View Transitions API, neu trinh duyet co). Ca khi may bat giam chuyen dong van lan cham nhu thuong
+// Doi che do co hieu ung: mau moi la chinh vien thuoc cua cong tac phong to deu (giu ti le, hai dau tron) toi khi
+// phu kin man hinh (View Transitions API, neu trinh duyet co). Ca khi may bat giam chuyen dong van lan cham nhu thuong
 // (nguoi dung tu bam gat, chu nhan muon thay ro hieu ung).
 import { useCallback, useSyncExternalStore } from 'react';
 
@@ -37,6 +37,34 @@ type CoViewTransition = Document & { startViewTransition?: (f: () => void) => Vi
 /** Khung cua cong tac tren man hinh (getBoundingClientRect); khong co thi lan tu goc tren phai */
 type Khung = { left: number; top: number; width: number; height: number };
 
+/**
+ * Vien thuoc cua cong tac phong to deu tiLe lan quanh tam cua no (giu ti le va hai dau tron nua chieu cao).
+ * Moi canh va ban kinh deu tuyen tinh theo tiLe, nen noi suy giua hai khung hinh chinh la phong to deu that.
+ * Canh am = vien thuoc tran ra ngoai man hinh (clip-path inset cho phep).
+ */
+function vienThuoc(left: number, top: number, width: number, height: number, tiLe: number) {
+  const cx = left + width / 2, cy = top + height / 2;
+  const a = (width / 2) * tiLe, b = (height / 2) * tiLe;
+  const W = window.innerWidth, H = window.innerHeight;
+  return `inset(${cy - b}px ${W - cx - a}px ${H - cy - b}px ${cx - a}px round ${b}px)`;
+}
+
+/** Ti le phong to nho nhat de vien thuoc (tam o cong tac) phu kin ca man hinh W x H — tim nhi phan, du 2% cho chac */
+export function tiLePhuKin(left: number, top: number, width: number, height: number, W: number, H: number): number {
+  const cx = left + width / 2, cy = top + height / 2;
+  const a0 = Math.max(width, 1) / 2, b0 = Math.max(height, 1) / 2;
+  // Goc man hinh xa tam nhat; vien thuoc doi xung va loi nen phu goc nay la phu ca man hinh
+  const dx = Math.max(cx, W - cx), dy = Math.max(cy, H - cy);
+  const phu = (s: number) => {
+    const b = b0 * s, thang = Math.max(0, (a0 - b0) * s); // nua doan thang giua hai dau tron
+    return dy <= b && (dx <= thang || (dx - thang) ** 2 + dy ** 2 <= b ** 2);
+  };
+  let lo = 1, hi = 2;
+  while (!phu(hi)) hi *= 2;
+  for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (phu(m)) hi = m; else lo = m; }
+  return hi * 1.02;
+}
+
 function doiCheDo(c: CheDo, khung?: Khung) {
   const lam = () => {
     try { localStorage.setItem(KHOA_CHE_DO, c); } catch { /* che do rieng tu: chi doi trong phien */ }
@@ -46,15 +74,13 @@ function doiCheDo(c: CheDo, khung?: Khung) {
   const doc = document as CoViewTransition;
   if (!doc.startViewTransition) { lam(); return; }
 
-  const { left, top, width, height } = khung ?? { left: window.innerWidth, top: 0, width: 0, height: 0 };
-  // Bat dau dung bang vien thuoc cua cong tac (bo tron nua chieu cao), gian ra thanh ca man hinh.
-  // Giua chung van bo goc lon de nhin ra hinh cong tac dang no ra, het moi vuong goc
-  const le = [top, window.innerWidth - left - width, window.innerHeight - top - height, left];
-  const hinh = (tiLe: number, bo: number) => `inset(${le.map(v => `${v * tiLe}px`).join(' ')} round ${bo}px)`;
+  const { left, top, width, height } = khung ?? { left: window.innerWidth - 60, top: 0, width: 60, height: 32 };
+  const tu = vienThuoc(left, top, width, height, 1);
+  const den = vienThuoc(left, top, width, height, tiLePhuKin(left, top, width, height, window.innerWidth, window.innerHeight));
   const chuyen = doc.startViewTransition(lam);
   chuyen.ready.then(() => {
     document.documentElement.animate?.(
-      { clipPath: [hinh(1, height / 2), hinh(0.5, 48), hinh(0, 0)] },
+      { clipPath: [tu, den] },
       {
         duration: THOI_GIAN_LAN_MS,
         easing: 'cubic-bezier(.4, 0, .2, 1)',
