@@ -28,7 +28,7 @@ export function CodeBlock({ code, lang, className }: { code: string; lang?: stri
   }
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl border bg-code', className)}>
+    <div className={cn('relative overflow-hidden rounded-xl border bg-code text-[#e6edf3]', className)}>
       <Button variant="ghost" size="sm" onClick={chep}
         className="absolute top-2 right-2 h-7 bg-background/90 px-2 text-xs text-muted-foreground hover:text-foreground">
         {daChep ? <><Check aria-hidden="true" />{t('copied')}</> : t('copyCode')}
