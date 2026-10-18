@@ -65,28 +65,36 @@ test('useCheDo: gat sang toi thi luu, ap ngay, moi noi dung hook cap nhat (khong
   expect(b.result.current[0]).toBe('toi');
 });
 
-test('trinh duyet co View Transitions: trang moi lan ra thanh vong tron tu diem bam', async () => {
+test('trinh duyet co View Transitions: trang moi lan ra tu hinh vien thuoc cua cong tac toi ca man hinh', async () => {
   giaHeThong(false);
   const gia = giaViewTransition();
   const { result } = renderHook(() => useCheDo());
-  await act(async () => result.current[1]('toi', { x: 10, y: 20 }));
+  await act(async () => result.current[1]('toi', { left: 10, top: 20, width: 60, height: 32 }));
   expect(document.documentElement.classList.contains('dark')).toBe(true);
   expect(gia.hieuUng).toHaveLength(1);
   const { khung, tuyChon } = gia.hieuUng[0];
-  expect(String((khung as PropertyIndexedKeyframes).clipPath)).toContain('circle(0px at 10px 20px)');
+  expect((khung as PropertyIndexedKeyframes).clipPath).toEqual([
+    `inset(20px ${innerWidth - 70}px ${innerHeight - 52}px 10px round 16px)`,
+    `inset(10px ${(innerWidth - 70) / 2}px ${(innerHeight - 52) / 2}px 5px round 48px)`,
+    'inset(0px 0px 0px 0px round 0px)'
+  ]);
   expect(tuyChon).toMatchObject({ pseudoElement: '::view-transition-new(root)' });
   gia.don();
 });
 
-test('may bat giam chuyen dong: van lan tron tu diem bam (nguoi dung tu gat), chi nhanh hon', async () => {
+test('may bat giam chuyen dong: van lan ra tu cong tac (nguoi dung tu gat), chi nhanh hon', async () => {
   giaHeThong(false, true);
   const gia = giaViewTransition();
   const { result } = renderHook(() => useCheDo());
-  await act(async () => result.current[1]('toi', { x: 10, y: 20 }));
+  await act(async () => result.current[1]('toi', { left: 10, top: 20, width: 60, height: 32 }));
   expect(document.documentElement.classList.contains('dark')).toBe(true);
   expect(gia.hieuUng).toHaveLength(1);
   const { khung, tuyChon } = gia.hieuUng[0];
-  expect(String((khung as PropertyIndexedKeyframes).clipPath)).toContain('circle(0px at 10px 20px)');
+  expect((khung as PropertyIndexedKeyframes).clipPath).toEqual([
+    `inset(20px ${innerWidth - 70}px ${innerHeight - 52}px 10px round 16px)`,
+    `inset(10px ${(innerWidth - 70) / 2}px ${(innerHeight - 52) / 2}px 5px round 48px)`,
+    'inset(0px 0px 0px 0px round 0px)'
+  ]);
   expect(tuyChon).toMatchObject({ duration: 400, pseudoElement: '::view-transition-new(root)' });
   gia.don();
 });

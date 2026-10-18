@@ -19,8 +19,8 @@ export function CongTacSangToi({ className }: { className?: string }) {
   const toi = cheDo === 'toi';
 
   const gat = (e: MouseEvent<HTMLButtonElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    doiCheDo(toi ? 'sang' : 'toi', { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    doiCheDo(toi ? 'sang' : 'toi', { left, top, width, height });
   };
 
   return (

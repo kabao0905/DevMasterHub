@@ -1,7 +1,8 @@
 // Che do sang / toi cua giao dien. Luu tren may; chua chon thi theo he dieu hanh (prefers-color-scheme).
 // <html class="dark"> doi bang mau (globals.css). index.html ap san truoc khi ve trang de khong nhay mau.
-// Doi che do co hieu ung: mau moi lan ra thanh vong tron tu cong tac (View Transitions API, neu trinh duyet co).
-// Ca khi may bat giam chuyen dong van lan tron (nguoi dung tu bam gat, chu nhan muon thay hieu ung), chi nhanh hon.
+// Doi che do co hieu ung: mau moi lan ra tu chinh cong tac, giu hinh vien thuoc bo tron cua no roi gian ra phu ca
+// man hinh (View Transitions API, neu trinh duyet co). Ca khi may bat giam chuyen dong van lan (nguoi dung tu bam gat,
+// chu nhan muon thay hieu ung), chi nhanh hon.
 import { useCallback, useSyncExternalStore } from 'react';
 
 export type CheDo = 'sang' | 'toi';
@@ -33,10 +34,10 @@ export function apCheDo(c: CheDo, goc: HTMLElement = document.documentElement) {
 type ViewTransition = { ready: Promise<void> };
 type CoViewTransition = Document & { startViewTransition?: (f: () => void) => ViewTransition };
 
-/** Diem bat dau hieu ung (giua cong tac); khong co thi lan tu goc tren phai */
-type Goc = { x: number; y: number };
+/** Khung cua cong tac tren man hinh (getBoundingClientRect); khong co thi lan tu goc tren phai */
+type Khung = { left: number; top: number; width: number; height: number };
 
-function doiCheDo(c: CheDo, goc?: Goc) {
+function doiCheDo(c: CheDo, khung?: Khung) {
   const lam = () => {
     try { localStorage.setItem(KHOA_CHE_DO, c); } catch { /* che do rieng tu: chi doi trong phien */ }
     apCheDo(c);
@@ -45,19 +46,20 @@ function doiCheDo(c: CheDo, goc?: Goc) {
   const doc = document as CoViewTransition;
   if (!doc.startViewTransition) { lam(); return; }
 
-  // Giam chuyen dong (vd. Windows tat "hieu ung hoat hinh"): van lan tron tu cong tac nhung ngan hon.
+  // Giam chuyen dong (vd. Windows tat "hieu ung hoat hinh"): van lan ra tu cong tac nhung ngan hon.
   // Truoc day chi mo dan 250ms -> tren may chu nhan trong nhu doi ngay, mat hieu ung lan ra ca man hinh
   const giamChuyenDong = (() => {
     try { return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false; } catch { return false; }
   })();
-  const x = goc?.x ?? window.innerWidth;
-  const y = goc?.y ?? 0;
-  // Ban kinh du phu ca man hinh tinh tu diem bat dau
-  const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  const { left, top, width, height } = khung ?? { left: window.innerWidth, top: 0, width: 0, height: 0 };
+  // Bat dau dung bang vien thuoc cua cong tac (bo tron nua chieu cao), gian ra thanh ca man hinh.
+  // Giua chung van bo goc lon de nhin ra hinh cong tac dang no ra, het moi vuong goc
+  const le = [top, window.innerWidth - left - width, window.innerHeight - top - height, left];
+  const hinh = (tiLe: number, bo: number) => `inset(${le.map(v => `${v * tiLe}px`).join(' ')} round ${bo}px)`;
   const chuyen = doc.startViewTransition(lam);
   chuyen.ready.then(() => {
     document.documentElement.animate?.(
-      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+      { clipPath: [hinh(1, height / 2), hinh(0.5, 48), hinh(0, 0)] },
       {
         duration: giamChuyenDong ? THOI_GIAN_LAN_GIAM_MS : THOI_GIAN_LAN_MS,
         easing: 'cubic-bezier(.4, 0, .2, 1)',
@@ -76,8 +78,8 @@ function dangKy(bao: () => void) {
   };
 }
 
-/** [che do hien tai, doi che do (kem diem bat dau hieu ung)] — moi component dung hook cap nhat cung luc */
-export function useCheDo(): [CheDo, (c: CheDo, goc?: Goc) => void] {
+/** [che do hien tai, doi che do (kem khung cong tac de lan ra tu do)] — moi component dung hook cap nhat cung luc */
+export function useCheDo(): [CheDo, (c: CheDo, khung?: Khung) => void] {
   const c = useSyncExternalStore(dangKy, docCheDo, () => 'sang' as CheDo);
   return [c, useCallback(doiCheDo, [])];
 }
