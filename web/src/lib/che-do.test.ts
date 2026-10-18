@@ -82,7 +82,7 @@ test('trinh duyet co View Transitions: trang moi lan ra tu hinh vien thuoc cua c
   gia.don();
 });
 
-test('may bat giam chuyen dong: van lan ra tu cong tac (nguoi dung tu gat), chi nhanh hon', async () => {
+test('may bat giam chuyen dong: van lan ra tu cong tac cham nhu thuong (nguoi dung tu gat)', async () => {
   giaHeThong(false, true);
   const gia = giaViewTransition();
   const { result } = renderHook(() => useCheDo());
@@ -95,6 +95,6 @@ test('may bat giam chuyen dong: van lan ra tu cong tac (nguoi dung tu gat), chi 
     `inset(10px ${(innerWidth - 70) / 2}px ${(innerHeight - 52) / 2}px 5px round 48px)`,
     'inset(0px 0px 0px 0px round 0px)'
   ]);
-  expect(tuyChon).toMatchObject({ duration: 400, pseudoElement: '::view-transition-new(root)' });
+  expect(tuyChon).toMatchObject({ duration: 900, pseudoElement: '::view-transition-new(root)' });
   gia.don();
 });

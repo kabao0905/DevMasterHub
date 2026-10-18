@@ -1,8 +1,8 @@
 // Che do sang / toi cua giao dien. Luu tren may; chua chon thi theo he dieu hanh (prefers-color-scheme).
 // <html class="dark"> doi bang mau (globals.css). index.html ap san truoc khi ve trang de khong nhay mau.
 // Doi che do co hieu ung: mau moi lan ra tu chinh cong tac, giu hinh vien thuoc bo tron cua no roi gian ra phu ca
-// man hinh (View Transitions API, neu trinh duyet co). Ca khi may bat giam chuyen dong van lan (nguoi dung tu bam gat,
-// chu nhan muon thay hieu ung), chi nhanh hon.
+// man hinh (View Transitions API, neu trinh duyet co). Ca khi may bat giam chuyen dong van lan cham nhu thuong
+// (nguoi dung tu bam gat, chu nhan muon thay ro hieu ung).
 import { useCallback, useSyncExternalStore } from 'react';
 
 export type CheDo = 'sang' | 'toi';
@@ -10,8 +10,8 @@ export const KHOA_CHE_DO = 'devmaster_hub_che_do';
 const SU_KIEN = 'devmaster-che-do';
 /** Mau thanh trinh duyet tren dien thoai theo che do */
 const MAU_THANH: Record<CheDo, string> = { sang: '#ffffff', toi: '#121922' };
-const THOI_GIAN_LAN_MS = 550;
-const THOI_GIAN_LAN_GIAM_MS = 400;
+/** Du cham de thay ro mau lan tu cong tac ra ca man hinh (550ms / 400ms truoc day: nguoi dung thay qua nhanh) */
+const THOI_GIAN_LAN_MS = 900;
 
 const heThongToi = () => {
   try { return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false; } catch { return false; }
@@ -46,11 +46,6 @@ function doiCheDo(c: CheDo, khung?: Khung) {
   const doc = document as CoViewTransition;
   if (!doc.startViewTransition) { lam(); return; }
 
-  // Giam chuyen dong (vd. Windows tat "hieu ung hoat hinh"): van lan ra tu cong tac nhung ngan hon.
-  // Truoc day chi mo dan 250ms -> tren may chu nhan trong nhu doi ngay, mat hieu ung lan ra ca man hinh
-  const giamChuyenDong = (() => {
-    try { return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false; } catch { return false; }
-  })();
   const { left, top, width, height } = khung ?? { left: window.innerWidth, top: 0, width: 0, height: 0 };
   // Bat dau dung bang vien thuoc cua cong tac (bo tron nua chieu cao), gian ra thanh ca man hinh.
   // Giua chung van bo goc lon de nhin ra hinh cong tac dang no ra, het moi vuong goc
@@ -61,7 +56,7 @@ function doiCheDo(c: CheDo, khung?: Khung) {
     document.documentElement.animate?.(
       { clipPath: [hinh(1, height / 2), hinh(0.5, 48), hinh(0, 0)] },
       {
-        duration: giamChuyenDong ? THOI_GIAN_LAN_GIAM_MS : THOI_GIAN_LAN_MS,
+        duration: THOI_GIAN_LAN_MS,
         easing: 'cubic-bezier(.4, 0, .2, 1)',
         pseudoElement: '::view-transition-new(root)'
       }
