@@ -1,5 +1,4 @@
 import { docThan } from '@/test/doc-than';
-// Logic Project Lab: ban nop, phan tich tinh, cham nhieu tang, chuan hoa du lieu AI.
 import {
   chamDuAn, chuanHoaKetQua, chuanHoaYTuong, hoiMentor, nguCanhDuAn, nhomModule, phanTichTatCa, phanTichTinh, taoBanNop, taoYTuong,
   type TepDuAn, type TienDoCham, type YTuong
@@ -11,7 +10,6 @@ const khongCho = async () => {};
 
 type ThanGui = { system: string; messages: { role: string; content: string }[]; temperature: number; max_tokens: number; taskType: string };
 
-/** fetch gia cho /api/ai: ghi lai body, tra loi theo ham `traLoi` */
 function giaAi(traLoi: (b: ThanGui) => string | Error) {
   const goi: ThanGui[] = [];
   vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
@@ -42,8 +40,6 @@ const REVIEW = {
   strengths: ['Đặt tên rõ ràng'], improvements: ['Thêm try/catch'], tips: []
 };
 
-// ── Ban nop (chep tu tests/project-submission.test.js cua app cu) ──
-
 test('ban nop mang dung diem/nhan xet tu ket qua cham', () => {
   const b = taoBanNop({
     review: chuanHoaKetQua(REVIEW), idea: IDEA,
@@ -66,13 +62,11 @@ test('AI doi ten tieu chi thi van map theo vi tri, khong de null', () => {
   expect(b.scoreCreativity).toBe(60);
 });
 
-// ── Phan tich tinh ──
-
 test('phan tich tinh JS: var, ==, eval, catch rong; diem tru theo muc do', () => {
   const kq = phanTichTinh('var x = 1;\nif (x == 2) {}\neval("1");\ntry { a() } catch (e) {}\n', 'app.js');
   const loai = kq.issues.map(i => i.severity);
-  expect(kq.errorCount).toBe(2); // eval, catch rong
-  expect(loai.filter(s => s === 'warning').length).toBeGreaterThanOrEqual(2); // var, ==
+  expect(kq.errorCount).toBe(2);
+  expect(loai.filter(s => s === 'warning').length).toBeGreaterThanOrEqual(2);
   expect(kq.score).toBeLessThan(80);
   expect(kq.grade).toMatch(/[A-F]/);
   expect(kq.issues.find(i => /eval/.test(i.message))?.line).toBe(3);
@@ -96,8 +90,6 @@ test('nhom file theo module; ngon ngu la vao nhom logic', () => {
   expect(m.find(x => x.id === 'logic')?.files.map(f => f.name)).toEqual(['a.js', 'x.lua']);
 });
 
-// ── Chuan hoa du lieu AI: React nem loi neu ve object lam con, nen phai loc truoc ──
-
 test('idea AI sai kieu: loc mang chi con chu, thieu ten thi bao khong hop le', () => {
   const y = chuanHoaYTuong({ name: 'Game', description: 5, difficulty: 'xyz', techStack: ['JS', { a: 1 }, 3], requirements: 'khong phai mang' }, 'junior');
   expect(y).toEqual({ name: 'Game', description: '5', difficulty: 'junior', techStack: ['JS', '3'], requirements: [], steps: [], bonusFeatures: [], estimatedTime: '' });
@@ -114,8 +106,6 @@ test('ket qua cham sai kieu: diem kep 0..100, trang thai suy tu diem, tieu chi k
   expect(k.strengths).toEqual(['Tốt']);
   expect(chuanHoaKetQua({ score: 40 }).status).toBe('needs_work');
 });
-
-// ── Goi AI ──
 
 test('tao idea: gui taskType projectIdea, chuan hoa ket qua; AI tra rac thi bao loi', async () => {
   const goi = giaAi(() => JSON.stringify({ name: 'Snake', description: 'Rắn săn mồi', difficulty: 'newbie', techStack: ['Canvas'] }));
@@ -165,7 +155,7 @@ test('cham project: 1 lan cau truc + 1 lan moi module + 1 lan tong hop, bao tien
   const goi = giaAi(traLoiCham);
   const buoc: TienDoCham[] = [];
   const kq = await chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', khiTienDo: b => buoc.push(b), cho: khongCho });
-  expect(goi).toHaveLength(4); // cau truc, markup, logic, tong hop (file rong khong cham)
+  expect(goi).toHaveLength(4);
   expect(goi.slice(1).every(b => b.taskType === 'projectReview')).toBe(true);
   expect(buoc.map(b => b.buoc)).toEqual(['tinh', 'cauTruc', 'module', 'module', 'tongHop']);
   expect(buoc[2]).toMatchObject({ i: 1, n: 2 });

@@ -1,19 +1,12 @@
-// Ban dich cua terminal gia lap (8 ngon ngu cua trang). Loi chuan Linux ("No such file or directory",
-// "command not found", "Permission denied"...) KHONG dich: may that luon in tieng Anh, hoc vien can nhan ra chung.
-// Chi dich phan goi y / giai thich ma terminal gia lap them vao, tieu de help, de CTF va tep mac dinh.
-
 export const NGON_NGU_TERMINAL = ['vi', 'en', 'ja', 'ko', 'zh', 'fr', 'de', 'es'] as const;
 export type MaNgonNgu = (typeof NGON_NGU_TERMINAL)[number];
-/** Mot cau du 8 ban, dung thu tu NGON_NGU_TERMINAL */
 export type Dich8 = readonly [string, string, string, string, string, string, string, string];
 
-/** Lay ban theo ngon ngu; ngon ngu la thi dung tieng Anh */
 export function chonBan(ds: Dich8, lang: string): string {
   const i = (NGON_NGU_TERMINAL as readonly string[]).indexOf(lang);
   return ds[i >= 0 ? i : 1];
 }
 
-/** Thay {ten} trong cau bang gia tri */
 export const chenBien = (s: string, bien: Record<string, string | number> = {}) =>
   s.replace(/\{(\w+)\}/g, (m, k: string) => (k in bien ? String(bien[k]) : m));
 
@@ -63,7 +56,6 @@ export const THONG_BAO = {
 export type KhoaThongBao = keyof typeof THONG_BAO;
 export type HamDich = (khoa: KhoaThongBao, bien?: Record<string, string | number>) => string;
 
-/** Ham dich cho mot ngon ngu; khiLoi duoc goi khi dung khoa 'loi.*' de && / || biet lenh vua hong */
 export function taoHamDich(lang: () => string, khiLoi: () => void = () => {}): HamDich {
   return (khoa, bien) => {
     if (khoa.startsWith('loi.')) khiLoi();
@@ -72,7 +64,6 @@ export function taoHamDich(lang: () => string, khiLoi: () => void = () => {}): H
 }
 
 type DeCtf = { title: Dich8; desc: Dich8; hint: Dich8 };
-// Ten de giu chu "Challenge N" o moi ngon ngu (giao dien va bai kiem tim theo chu nay)
 const DE_CTF: Record<string, DeCtf> = {
   'ctf-1': {
     title: ['Challenge 1: Thám Tử Linux', 'Challenge 1: Linux Detective', 'Challenge 1: Linux 探偵', 'Challenge 1: 리눅스 탐정', 'Challenge 1: Linux 侦探', 'Challenge 1 : Détective Linux', 'Challenge 1: Linux-Detektiv', 'Challenge 1: Detective de Linux'],
@@ -111,16 +102,11 @@ const DE_CTF: Record<string, DeCtf> = {
   }
 };
 
-/** Ten / mo ta / goi y cua de CTF theo ngon ngu; de khong co ban dich thi giu nguyen */
 export function dichThuThach<T extends { id: string; title: string; desc: string; hint: string }>(c: T, lang: string): T {
   const d = DE_CTF[c.id];
   return d ? { ...c, title: chonBan(d.title, lang), desc: chonBan(d.desc, lang), hint: chonBan(d.hint, lang) } : c;
 }
 
-/**
- * Tep van ban mac dinh theo ngon ngu. Gia tri can tim (mat khau admin123, cong 8080...) giong nhau o moi ban
- * de de CTF va de AI van giai duoc.
- */
 export const TEP_MAC_DINH: Record<string, Dich8> = {
   '/home/hacker/readme.txt': [
     'Chào mừng chiến binh An ninh mạng! Hãy dùng các lệnh Linux (ls, cat, grep, nmap, base64) để tìm cờ ẩn trong hệ thống.',

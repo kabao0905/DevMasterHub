@@ -1,11 +1,9 @@
-// Supabase cho Career Advisor: ho so hoc tap (getUserStats cua app cu) va lich su chat (career_chats).
 import type { SupabaseLike } from './auth';
 import type { TinNhan } from './ai';
 import type { DuAnTomTat, ThongKe } from './career';
 
 type Dong = Record<string, unknown>;
 
-/** Cap cao nhat da hoc o mot cong nghe */
 function capCaoNhat(caps: string[]): string {
   for (const c of ['master', 'senior', 'mid', 'junior', 'newbie']) if (caps.includes(c)) return c;
   return caps[0] || 'newbie';
@@ -19,7 +17,6 @@ export async function taiThongKe(client: SupabaseLike, uid: string): Promise<Tho
       .select('project_name, project_description, difficulty_level, topic, score_overall, score_code_quality, score_functionality, score_best_practices, score_creativity, ai_feedback, ai_strengths, ai_improvements, languages_used, submitted_at')
       .eq('user_id', uid).order('submitted_at', { ascending: false })
   ]);
-  // Ban cu: loi doc tung bang thi coi nhu rong, van tu van duoc
   const daXong = ((tienDo.data as Dong[] | null) ?? []).filter(p => p.completed);
   const theoCongNghe = new Map<string, { completed: number; caps: Set<string> }>();
   for (const p of daXong) {

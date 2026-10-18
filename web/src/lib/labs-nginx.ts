@@ -1,8 +1,6 @@
-// Du lieu phong lab chu de Nginx (chep tu public/labs-nginx.js; ham kiem nen khong de duoc o JSON).
 import type { HeThongTep } from './terminal';
 import type { Lab } from './lab';
 
-// Moi phong lab gan voi mot bai hoc qua lessonKey = `${tech.id}.${level.id}.${lesson.id}`.
 export const LABS_NGINX: Record<string, Lab> = (() => {
   const CONF_MACDINH = [
     'user  nginx;',
@@ -133,9 +131,6 @@ export const LABS_NGINX: Record<string, Lab> = (() => {
         }
       ],
 
-      // Day buoc giai mau, chay tuan tu. Chi dung cho bo kiem, khong hien cho hoc vien.
-      // Phan tu la chuoi thi chay nhu lenh; la object {nano, noiDung} thi ghi tep
-      // — dung thu ma nano goi khi hoc vien bam Luu.
       loiGiai: [
         'find / -name nginx.conf',
         'cat /etc/nginx/nginx.conf',

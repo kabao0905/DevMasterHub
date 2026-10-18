@@ -1,4 +1,3 @@
-// Nut "Chay Code" cho bai C++: gui code (va stdin tuy chon) len server, hien ket qua hoac loi bien dich.
 import { useEffect, useRef, useState } from 'react';
 import { Loader2, Play } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
@@ -6,11 +5,9 @@ import { useT } from '@/lib/i18n';
 import { chayCpp, type KetQuaChay } from '@/lib/chay-cpp';
 import { Button } from '@/components/ui/button';
 
-// Mat code luon toi (bg-code): chu sang, loi do sang de doc ro tren nen toi o ca hai che do
 const lopKhung = 'max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-2xl bg-code p-4 font-mono text-xs text-[#e6edf3] shadow-soft';
 const lopLoi = 'text-[#ff7b72]';
 
-/** idO: o soan code — bam Chay khi chua co code thi nhac va dua con tro ve o do */
 export function ChayCpp({ code, stdinMacDinh = '', idO }: { code: string; stdinMacDinh?: string; idO?: string }) {
   const { t } = useT();
   const { client } = useAuth();
@@ -21,12 +18,10 @@ export function ChayCpp({ code, stdinMacDinh = '', idO }: { code: string; stdinM
   const [loi, datLoi] = useState('');
   const [nhacTrong, datNhacTrong] = useState(false);
   const huyRef = useRef<AbortController | null>(null);
-  // Roi trang / doi bai khi dang chay: bo ket qua ve muon
   useEffect(() => () => huyRef.current?.abort(), []);
 
   async function chay() {
     if (dangChay) return;
-    // Nut luon bam duoc: chua co code thi noi ro ly do thay vi im lang
     if (!code.trim()) {
       datNhacTrong(true);
       if (idO) document.getElementById(idO)?.focus();
@@ -66,7 +61,6 @@ export function ChayCpp({ code, stdinMacDinh = '', idO }: { code: string; stdinM
           className="w-full rounded-2xl border bg-background p-3 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring" />
       )}
       {loi && <p role="alert" className="rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">{t('runFailed', { error: loi })}</p>}
-      {/* Mot vung live luon gan san: ket qua moi ve chi doi noi dung ben trong nen trinh doc man hinh doc duoc */}
       <section aria-live="polite" className="space-y-1 empty:hidden">
         {kq && 'bienDichLoi' in kq && (
           <>

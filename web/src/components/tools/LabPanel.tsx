@@ -7,11 +7,9 @@ import { cn } from '@/lib/utils';
 import { Terminal } from './Terminal';
 import { useTerminal } from './use-terminal';
 
-/** Phong lab: danh sach nhiem vu o tren, terminal rieng (nap bo tep cua lab) o duoi. onHoanThanh: vua xong het nhiem vu */
 export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => void }) {
   const kenh = useTerminal(lab.fs);
   const [daXong, datDaXong] = useState(() => docTienDo(lab.lessonKey));
-  // O nhap cua tung nhiem vu giu rieng — ban cu ve lai ca danh sach, xoa chu dang go o nhiem vu khac
   const [nhap, datNhap] = useState<Record<string, string>>({});
   const [goiY, datGoiY] = useState<Record<string, number>>({});
   const [nhan, datNhan] = useState<Record<string, string>>({});
@@ -33,7 +31,6 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
     datNhan(n => ({ ...n, [nv.id]: '' }));
   }
 
-  // Gui bang form: Enter (ca phim "Di" cua ban phim ao Android) va go chu co dau (IME) deu chuan
   function nop(e: FormEvent, nv: NhiemVu) {
     e.preventDefault();
     kiem(nv);
@@ -51,7 +48,6 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
         </div>
         <p className="mt-4 text-sm font-medium tabular-nums">{`Tiến độ: ${d.xong}/${d.tong} nhiệm vụ · ${d.diem}/${d.tongDiem} điểm`}</p>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-mint" aria-hidden="true">
-          {/* Chi chuyen dong transform (scaleX), tat khi may bat giam chuyen dong */}
           <div className="h-full origin-left rounded-full bg-mint-ink transition-transform duration-500 motion-reduce:transition-none" style={{ transform: `scaleX(${phanTram / 100})` }} />
         </div>
       </div>
@@ -100,7 +96,6 @@ export function LabPanel({ lab, onHoanThanh }: { lab: Lab; onHoanThanh?: () => v
                       </Button>
                     )}
                   </form>
-                  {/* Vung thong bao luon gan san cho moi nhiem vu: chi doi chu ben trong */}
                   <p id={`lab-nhan-${nv.id}`} role="status" className="text-sm text-destructive empty:hidden">{nhan[nv.id] ?? ''}</p>
                   {soGoiY > 0 && (
                     <ul className="space-y-1 rounded-2xl bg-butter p-3 text-sm text-foreground">

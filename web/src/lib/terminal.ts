@@ -1,6 +1,4 @@
-// @ts-nocheck — engine chep nguyen tu public/cyber-terminal.js (da co bai kiem); kieu nam o API ben duoi.
-// Khac ban cu: moi lan goi createTerminal() la mot may rieng (he thong tep, thu muc, lich su, co CTF),
-// nen terminal bai hoc, lab va Thu thach khong ghi de nhau. Cho cham DOM (clear, nano, diem) thanh callback.
+// @ts-nocheck
 
 import { phanTichDong } from './shell-cu-phap';
 import { LENH_VAN_BAN, tachCo } from './terminal-van-ban';
@@ -11,7 +9,6 @@ import { MO_TA_LENH } from './terminal-mo-ta-lenh';
 import { chayCurl } from './terminal-curl';
 import { TEP_MAC_DINH, chonBan, dichThuThach, taoHamDich } from './terminal-ban-dich';
 
-// mode: quyen kieu 0o755 khi da chmod; khong co thi lay mac dinh (thu muc/bin 755, tep 644)
 export type NutTep = { type: 'dir'; children: string[]; mode?: number } | { type: 'file'; content: string; mode?: number };
 export type HeThongTep = Record<string, NutTep>;
 export type ThuThach = { id: string; title: string; desc: string; hint: string; flag: string; points: number };
@@ -23,7 +20,6 @@ export type SuKienTerminal = {
 };
 export type MayTerminal = {
   executeCommand(lenh: string): string;
-  /** Doi ngon ngu cua help / goi y / CTF (vi, en, ja, ko, zh, fr, de, es) */
   datNgonNgu(ma: string): void;
   ngonNgu(): string;
   checkFlag(co: string): string;
@@ -48,7 +44,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
   let capturedFlags = new Set();
   let userScore = 0;
   let ngonNgu = ngonNguBanDau;
-  // Lenh vua chay co bao loi qua cau 'loi.*' khong — && / || dua vao day vi terminal gia lap khong co ma thoat that
   let coLoi = false;
   const tb = taoHamDich(() => ngonNgu, () => { coLoi = true; });
 
@@ -56,20 +51,13 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
   let VFS_MACDINH = boMacDinh(ngonNgu);
   const CHALLENGES = DS_THU_THACH;
 
-  // He thong tep la du lieu nap duoc, khong con la hang so dung chung.
-  // Moi phong lab nap bo tep rieng; bo San co la mac dinh.
   let VFS = saoChepSau(VFS_MACDINH);
-  // VFS la bien dung chung cho moi terminal tren trang. Phai nho dang nap bo cua lab
-  // de terminal CTF ve sau biet ma tra lai bo San co (truoc day CTF chay tren bo
-  // Nginx, khong con tep co nao cho toi khi tai lai trang).
   let dangDungBoLab = false;
 
-  /** Sao chep sau de lab khong lam ban du lieu goc */
   function saoChepSau(o) {
     return JSON.parse(JSON.stringify(o));
   }
 
-  /** Thay toan bo he thong tep bang bo moi */
   function loadFs(duLieu) {
     VFS = saoChepSau(duLieu || VFS_MACDINH);
     dangDungBoLab = !!duLieu && duLieu !== VFS_MACDINH;
@@ -77,24 +65,20 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return VFS;
   }
 
-  /** Tra ve he thong tep dang dung — ham kiem cua phong lab doc truc tiep tu day */
   function getFs() {
     return VFS;
   }
 
-  /** Nap lai bo tep San co */
   function resetFs() {
     return loadFs(VFS_MACDINH);
   }
 
-  /** Bo tep San co voi cac tep van ban (readme, ghi chu...) viet theo ngon ngu */
   function boMacDinh(lang) {
     const bo = saoChepSau(VFS_MAC_DINH);
     for (const [p, ds] of Object.entries(TEP_MAC_DINH)) if (bo[p]) bo[p].content = chonBan(ds, lang);
     return bo;
   }
 
-  /** Doi ngon ngu: tep van ban mac dinh chua bi sua doi theo; tep hoc vien da sua giu nguyen */
   function datNgonNgu(moi) {
     if (!moi || moi === ngonNgu) return;
     for (const [p, ds] of Object.entries(TEP_MAC_DINH)) {
@@ -106,14 +90,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
   }
 
 
-  /**
-   * Danh sach lenh CO THAT cua terminal gia lap. Day la nguon duy nhat:
-   * lenh "help" in ra tu day, va cau lenh mo ta gui cho AI cung lay tu day.
-   * Truoc kia hai cho ghi tay rieng nen lech nhau — AI ra de bang netstat/ps
-   * trong khi terminal chua cai, hoc vien go vao thi "command not found".
-   * Lenh can he thong tep / trang thai may nam o switch ben duoi (LENH_MAY);
-   * lenh thuan (van ban, ma hoa, he thong co dinh) nam o cac module terminal-*.ts.
-   */
   const LENH_MAY = [
     { name: 'ls',      usage: 'ls [-la] [path]' },
     { name: 'cd',      usage: 'cd <path>' },
@@ -151,13 +127,10 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     ['help.maHoa', moTa(LENH_MA_HOA)],
     ['help.heThong', moTa(LENH_HE_THONG)]
   ];
-  // desc tieng Viet di vao cau lenh cho AI ra de (prompt viet tieng Viet); help in theo ngon ngu dang chon
   const COMMANDS = NHOM_TRO_GIUP.flatMap(([, ds]) => ds).map(c => ({ ...c, desc: MO_TA_LENH[c.name]?.[0] ?? '' }));
 
-  // Script goi script (hoac bash -c) long nhau toi da chung nay tang — chan vong lap vo han
   const SAU_TOI_DA = 5;
   const BYTE = new TextEncoder();
-  // Tep nhi phan bat dau bang so ma ELF nhu tep that (file / bash nhan ra theo day, khong theo chu)
   const ELF = '\u007fELF';
 
   function executeCommand(input) {
@@ -165,7 +138,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     if (!raw) return '';
     history.push(raw);
     historyIdx = history.length;
-    // Lenh hoc vien go la tuy y: loi bat ngo trong engine chi duoc thanh mot dong bao, khong lam vo man hinh
     try {
       return chayDong(raw, 0);
     } catch (e) {
@@ -173,15 +145,10 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     }
   }
 
-  /**
-   * Loi chuan Linux (tieng Anh o moi ngon ngu) cua lenh vua chay. Cung voi co coLoi (cau goi y 'loi.*'),
-   * && / || dua vao day de biet lenh truoc hong — terminal gia lap khong co ma thoat that.
-   */
   function laLoi(ra) {
     return /^[\w.\/-]+: .*(No such file|not found|cannot|Permission denied|Is a directory|invalid|missing|usage|test failed|Could not resolve|Failed to connect|no URL specified)/im.test(ra);
   }
 
-  /** Chay mot dong lenh: nhieu cau noi bang ; && ||, moi cau la mot pipeline */
   function chayDong(raw, doSau) {
     const cau = phanTichDong(raw);
     if (!Array.isArray(cau)) return `bash: ${tb(cau.loi.khoa, cau.loi.bien)}`;
@@ -197,7 +164,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return ra.join('\n');
   }
 
-  /** Chay pipeline: ket qua lenh truoc thanh stdin cua lenh sau; < > >> theo tung doan */
   function chayOng(ong, doSau) {
     let stdin = null;
     let ra = '';
@@ -217,13 +183,11 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
         const loi = ghiTep(resolvePath(doan.ra.tep), ra ? ra + '\n' : '', doan.ra.noiThem);
         ra = loi ? `bash: ${doan.ra.tep}: ${loi}` : '';
       }
-      // Lenh that luon in xuong dong cuoi: giu dung de wc -c, sha256sum, base64 cho ket qua nhu Linux
       stdin = ra ? ra + '\n' : '';
     }
     return { ra, ok: !coLoi && !laLoi(ra) };
   }
 
-  /** Bung * va ? (khong nam trong dau nhay) o doan cuoi cua duong dan; khong khop thi giu nguyen nhu bash */
   function bungGlob(tu) {
     return tu.flatMap(({ v, coNhay }) => {
       if (coNhay || !/[*?]/.test(v)) return [v];
@@ -241,7 +205,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     });
   }
 
-  /** Ngu canh cho lenh thuan: doc tep qua he thong tep cua may nay */
   function nguCanh(stdin) {
     return {
       stdin,
@@ -263,7 +226,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     };
   }
 
-  /** Quyen mac dinh: thu muc 755, tep trong thu muc bin 755, con lai 644 */
   function quyenCua(p, n) {
     if (n.mode !== undefined) return n.mode;
     if (n.type === 'dir' || /^\/(usr\/(local\/)?)?s?bin\//.test(p)) return 0o755;
@@ -272,7 +234,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
 
   const chuoiQuyen = m => [6, 3, 0].map(s => ((m >> s) & 4 ? 'r' : '-') + ((m >> s) & 2 ? 'w' : '-') + ((m >> s) & 1 ? 'x' : '-')).join('');
 
-  /** Mot dong cua ls -l */
   function dongDai(p, ten) {
     const n = VFS[p];
     const chu = p.startsWith('/home/hacker') ? 'hacker' : 'root';
@@ -280,7 +241,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return `${n.type === 'dir' ? 'd' : '-'}${chuoiQuyen(quyenCua(p, n))} 1 ${chu.padEnd(6)} ${chu.padEnd(6)} ${String(coLon).padStart(5)} Oct 12 20:41 ${ten}`;
   }
 
-  /** chmod 755 / +x / u+x,go-w -> quyen moi; sai cu phap thi null */
   function tinhQuyen(che, cu) {
     if (/^[0-7]{3,4}$/.test(che)) return parseInt(che.slice(-3), 8);
     let m = cu;
@@ -299,7 +259,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return m;
   }
 
-  /** Chay tep script tung dong (bo dong trong va chu thich) */
   function chayScript(duong, canQuyenX, doSau) {
     if (doSau >= SAU_TOI_DA) return `bash: ${tb('loi.longNhau')}`;
     const p = resolvePath(duong);
@@ -313,7 +272,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
       .map(d => chayDong(d, doSau + 1)).filter(Boolean).join('\n');
   }
 
-  /** Dinh dang danh sach muc cua ls: -l chi tiet; bi pipe thi moi ten mot dong, khong mau */
   function dinhDangLs(ds, dai, biChuyen) {
     if (dai) return ds.map(x => dongDai(x.p, x.ten)).join('\n');
     if (biChuyen) return ds.map(x => x.ten).join('\n');
@@ -322,7 +280,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
 
   function chayLenh(lenhGo, args, stdin, biChuyen, doSau) {
     if (!lenhGo) return '';
-    // ./script.sh hoac /duong/toi/script: can quyen thuc thi nhu Linux that
     if (lenhGo.includes('/')) return chayScript(lenhGo, true, doSau);
     const cmd = lenhGo.toLowerCase();
     if (Object.hasOwn(LENH_THUAN, cmd)) return LENH_THUAN[cmd].chay(args, nguCanh(stdin));
@@ -570,7 +527,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
       }
 
       case 'curl':
-        // Web server tren may ao nam o terminal-curl.ts: Nginx khi co cau hinh (lab Nginx), khong thi Apache + PHP
         return chayCurl(args, {
           docTep: p => (VFS[p] && VFS[p].type === 'file' ? VFS[p].content || '' : null),
           nginx: () => ({ coCauHinh: VFS[NGINX_CONF]?.type === 'file', dat: kiemCuPhapNginx().dat, root: docRootNginx() }),
@@ -620,7 +576,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     }
   }
 
-  /** Duyet ca cay thu muc, gom moi duong dan lai */
   function thuThapDuongDan(goc, ra) {
     ra.push(goc);
     const e = VFS[goc];
@@ -630,7 +585,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     }
   }
 
-  /** So khop ten tep voi mau co dau * (va ? = mot ky tu), vi du "*.conf" hay ".sys*" */
   function khopTenTep(ten, mau) {
     const re = new RegExp('^' + mau.split('*')
       .map(x => x.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\?/g, '.'))
@@ -640,10 +594,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
 
   const NGINX_CONF = '/etc/nginx/nginx.conf';
 
-  /**
-   * Kiem cu phap nginx.conf o muc rut gon: can bang dau ngoac va dau cham phay.
-   * Khong hieu het cu phap that cua Nginx — du de hoc vien nhan ra loi thuong gap.
-   */
   function kiemCuPhapNginx() {
     const tep = VFS[NGINX_CONF];
     if (!tep || tep.type !== 'file') {
@@ -659,7 +609,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
         else if (c === '}') mo--;
         if (mo < 0) return { dat: false, dong: i + 1, khoa: 'nginx.thuaNgoac' };
       }
-      // Dong khai bao chi thi (khong mo/dong khoi) phai ket thuc bang dau cham phay
       if (!/[{}]$/.test(d) && !d.endsWith(';')) {
         return { dat: false, dong: i + 1, khoa: 'nginx.thieuChamPhay' };
       }
@@ -668,7 +617,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return { dat: true };
   }
 
-  /** Doc chi thi root trong nginx.conf; khong co thi tra ve null */
   function docRootNginx() {
     const tep = VFS[NGINX_CONF];
     if (!tep) return null;
@@ -676,27 +624,23 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return m ? m[1] : null;
   }
 
-  /** Noi mot ten con vao danh sach children cua thu muc cha */
   function themVaoCha(cha, ten) {
     if (!VFS[cha]) VFS[cha] = { type: 'dir', children: [] };
     if (!VFS[cha].children) VFS[cha].children = [];
     if (!VFS[cha].children.includes(ten)) VFS[cha].children.push(ten);
   }
 
-  /** Go mot ten con khoi danh sach children cua thu muc cha */
   function goKhoiCha(cha, ten) {
     if (VFS[cha] && VFS[cha].children) {
       VFS[cha].children = VFS[cha].children.filter(x => x !== ten);
     }
   }
 
-  /** Tach duong dan thanh [thu muc cha, ten] */
   function tachDuong(duong) {
     const i = duong.lastIndexOf('/');
     return [duong.slice(0, i) || '/', duong.slice(i + 1)];
   }
 
-  /** Tao thu muc va moi thu muc cha con thieu */
   function taoThuMuc(duong) {
     const phan = duong.split('/').filter(Boolean);
     let hienTai = '';
@@ -708,7 +652,6 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     }
   }
 
-  /** Ghi noi dung vao tep. Tra ve null neu xong, hoac chuoi loi. */
   function ghiTep(duong, noiDung, noiThem) {
     const [cha, ten] = tachDuong(duong);
     if (!ten) return 'khong ghi duoc vao thu muc goc';
@@ -721,18 +664,11 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
     return null;
   }
 
-  /** Ghi noi dung tu o soan thao nano. Mo ra ngoai de bo kiem goi truc tiep. */
   function luuTuSoanThao(duong, noiDung) {
     return ghiTep(duong, String(noiDung), false);
   }
 
-  /**
-   * nano mo mot cua so noi de len terminal, co nut Luu / Huy.
-   * Khong mo phong giao dien nano that voi Ctrl+O / Ctrl+X — nguoi moi
-   * se mac ket o cho thoat ra.
-   */
   function moOSoanThao(duong, noiDungCu) {
-    // Giao dien soan thao do React ve (Dialog); luu qua luuTuSoanThao
     nghe.moSoanThao?.(duong, noiDungCu);
   }
 
@@ -791,6 +727,5 @@ export function createTerminal(nghe: SuKienTerminal = {}, ngonNguBanDau = 'vi'):
 }
 
 const mau = createTerminal();
-/** Bang lenh co that — nguon duy nhat cho "help" va cho de AI ra */
 export const COMMANDS: LenhTerminal[] = mau.COMMANDS;
 export const CHALLENGES: ThuThach[] = mau.CHALLENGES;

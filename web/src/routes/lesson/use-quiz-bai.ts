@@ -1,5 +1,3 @@
-// Quiz AI cua mot bai: luu trong react-query theo nguoi dung (dang xuat la xoa), song qua
-// viec doi tab/doi bai trong phien — nhu quizCache cua app cu.
 import { useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
@@ -25,7 +23,6 @@ export function useQuizBai({ tech, level, lesson }: BaiDangMo) {
       answers: {},
       submitted: false
     }),
-    // Chi tao khi nguoi hoc bam (moi lan tao ton luot AI)
     enabled: false,
     staleTime: Infinity,
     gcTime: Infinity,

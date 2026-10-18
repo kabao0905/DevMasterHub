@@ -1,4 +1,3 @@
-// Tu dien tieng Viet rut gon cho bai kiem (trich tu public/i18n.js). Them khoa khi component dung khoa moi.
 import type { BanDich } from '@/lib/i18n';
 
 export const BAN_DICH_VI: BanDich = {

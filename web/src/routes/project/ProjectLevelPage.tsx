@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 import { CAP_HIEN, useAiBat, useDuAn } from './use-du-an';
 import { KhuLamViec, LoiTaoIdea } from './IdeaPanel';
 
-/** Project theo cap do: chon cap -> AI tao idea -> chat mentor, soan code, nop cham */
 export function ProjectLevelPage() {
   const { t } = useT();
   const { level: capUrl } = useParams();
@@ -21,14 +20,12 @@ export function ProjectLevelPage() {
   const aiBat = useAiBat();
   usePageMeta({ title: `${t('byLevelHeader')} | DevMaster Hub`, description: t('byLevelHeaderDesc') });
 
-  // Link chia se /project-level/<cap>: chon san cap do do — nhung dang lam project thi khong xoa no
-  // (Back/Forward toi mot muc lich su cu): dua URL ve cap dang lam
   const { chonCap } = duAn;
   useEffect(() => {
     if (!laCapDo(capUrl) || capUrl === kho.level) return;
     if (kho.idea && kho.level) navigate(`/project-level/${kho.level}`, { replace: true, preventScrollReset: true });
     else chonCap(capUrl);
-  }, [capUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [capUrl]);
 
   function chon(cap: CapDo) {
     duAn.chonCap(cap);
@@ -58,7 +55,6 @@ export function ProjectLevelPage() {
 
       {kho.level && kho.loiTao && !kho.dangTao && <LoiTaoIdea loi={kho.loiTao} thuLai={duAn.taoIdea} />}
 
-      {/* Vung bao luon co mat; chi noi dung ben trong doi: trinh doc man hinh doc duoc ngay lan dau */}
       <div aria-live="polite" className="empty:m-0">
         {kho.level && kho.dangTao && (
           <div className="flex items-center gap-3 rounded-3xl bg-lavender p-6 text-sm text-foreground">

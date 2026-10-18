@@ -16,7 +16,6 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  // Nho trang dang mo (link duoc chia se) de dang nhap xong quay lai dung cho
   if (!user) return <Navigate to="/auth" replace state={{ from: location.pathname + location.search }} />;
   return children;
 }

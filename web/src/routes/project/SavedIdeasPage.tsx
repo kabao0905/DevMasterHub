@@ -15,7 +15,6 @@ import { useYTuong } from './use-y-tuong';
 import { CHIP } from './mau-diem';
 import { moYTuongDaLuu } from './use-du-an';
 
-/** Idea da bookmark de quay lai lam sau */
 export function SavedIdeasPage() {
   const { t, lang } = useT();
   const { user } = useAuth();
@@ -30,7 +29,6 @@ export function SavedIdeasPage() {
     navigate(cheDo === 'topic' ? '/project-topic' : '/project-level');
   }
 
-  // Mot bo dinh dang cho ca ngay va gio: thu tu, dau ngan cach theo ngon ngu
   const dinhDang = new Intl.DateTimeFormat(lang, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const ngayGio = (iso: string) => {
     const d = new Date(iso);

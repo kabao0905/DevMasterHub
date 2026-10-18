@@ -29,7 +29,6 @@ const NGX: CongNgheDayDu = {
   id: 'nginx', name: 'Nginx', icon: '🟩', color: '#090', gradient: '', category: 'devops', description: 'Web server',
   levels: [{ id: 'newbie', name: 'Newbie', lessons: [{ id: 'intro', title: 'Giới thiệu', theory: '<p>nginx</p>' }] }]
 };
-// DSA: bai co nhieu bai tap soan san (moi thuat toan mot bai), code khung C++
 const DSA_T: CongNgheDayDu = {
   id: 'dsa', name: 'DSA', icon: '🧮', color: '#888', gradient: '', category: 'tool', description: 'Giải thuật',
   levels: [{ id: 'newbie', name: 'Newbie', lessons: [{
@@ -46,12 +45,10 @@ const INDEX: CongNgheTomTat[] = TECHS.map(t => ({ ...t, levels: t.levels.map(l =
 type ThanAi = { system: string; messages: { content: string }[]; taskType: string };
 type TuyChon = {
   ai?: (b: ThanAi) => Response | Promise<Response>; dich?: (url: string) => Response; aiEnabled?: boolean;
-  /** Gia lap /api/run-cpp: tra ket qua chay (khong truyen thi may chu bao loi 502) */
   chay?: (b: { code: string; stdin: string }) => unknown;
 };
 const traText = (text: string) => new Response(JSON.stringify({ content: [{ type: 'text', text }] }), { status: 200 });
 
-/** Mang gia: JSON giao trinh, /api/ai va may dich; tra ve danh sach than cac lan goi AI */
 function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', bang = {}, loiDoc }: TuyChon & { lang?: string; bang?: Record<string, unknown[]>; loiDoc?: Record<string, string> } = {}) {
   const json: Record<string, unknown> = { '/curriculum/index.json': INDEX, '/api/health': { aiEnabled } };
   for (const t of TECHS) json[`/curriculum/${t.id}.json`] = t;
@@ -78,13 +75,11 @@ function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', b
   return { ...kq, gia, goiAi, thanChay };
 }
 
-// Nap san chunk trang bai hoc (route luoi, keo theo Prism): lan import dau rat cham khi may dang ban
 beforeAll(async () => { await import('./LessonPage'); }, 30000);
 beforeEach(() => { window.scrollTo = vi.fn() as unknown as typeof window.scrollTo; });
 afterEach(() => vi.unstubAllGlobals());
 
 const tieuDe = () => screen.findByRole('heading', { level: 1 });
-// Hoc theo thu tu: mo bai b / bai c can da xong cac bai truoc
 const XONG_PY = (...bai: string[]) => ({ lesson_progress: bai.map(id => ({ tech_id: 'python', level_id: id === 'c' ? 'junior' : 'newbie', lesson_id: id, completed: true })) });
 
 test('bai hoac cong nghe la: bao khong tim thay kem duong quay ve', async () => {
@@ -193,7 +188,6 @@ test('DSA: dang o bai nao thi "AI tao bai tap moi" tao them bai cung loai, nut n
   expect(goiAi[0].taskType).toBe('exercise');
   expect(goiAi[0].messages[0].content).toContain('CHỦ ĐỀ BẮT BUỘC: Selection Sort');
   expect(goiAi[0].messages[0].content).toContain('NGÔN NGỮ: cpp');
-  // Dang o bai AI vua tao: tao tiep van cung loai
   await u.click(screen.getByRole('button', { name: /AI tạo bài tập mới/ }));
   expect(await screen.findByRole('button', { name: 'Selection Sort · AI #2', pressed: true })).toBeInTheDocument();
   expect(goiAi[1].messages[0].content).toContain('CHỦ ĐỀ BẮT BUỘC: Selection Sort');
@@ -271,7 +265,6 @@ test('may dich loi thi giu ban goc', async () => {
   let lanDich = 0;
   mo('/lesson/python/newbie/a', { lang: 'en', dich: () => { lanDich++; return new Response('', { status: 429 }); } });
   const panel = await screen.findByRole('tabpanel');
-  // Doi may dich tra loi loi xong (het "Dang dich") roi moi kiem — khong phai luc chua kip goi
   await waitFor(() => expect(lanDich).toBeGreaterThan(0));
   await waitFor(() => expect(screen.queryByText('Đang dịch…')).not.toBeInTheDocument());
   expect(within(panel).getByText(/giá trị/)).toBeInTheDocument();
@@ -286,7 +279,6 @@ test('tab Code: to mau, co nut chep, tab nam tren URL; bai khong co code thi noi
   const panel = screen.getByRole('tabpanel');
   expect(panel.querySelector('pre code .token')).not.toBeNull();
   expect(within(panel).getByRole('button', { name: /Sao chép/ })).toBeInTheDocument();
-  // Ket qua chay that cua code mau (sinh boi scripts/tao-ket-qua-code.mjs) hien ngay duoi code
   const ketQua = within(panel).getByRole('region', { name: 'Kết quả khi chạy' });
   expect(ketQua).toHaveTextContent(/^Kết quả khi chạy\s*1$/);
   await act(() => router.navigate('/lesson/python/newbie/b?tab=code'));
@@ -304,8 +296,6 @@ test('quiz tren dien thoai: cau hoi khong bi code dai day rong trang; giai thich
   mo('/lesson/python/newbie/a?tab=quiz', { ai: () => traText(JSON.stringify(QUIZ)) });
   await u.click(await screen.findByRole('button', { name: /Tạo Quiz với AI/ }));
   const cau2 = await screen.findByRole('group', { name: /Câu 2/ });
-  // <fieldset> mac dinh min-width: min-content — dong code dai lam ca trang rong hon man hinh,
-  // dien thoai thu nho trang lai (chu nho, vo khung). min-w-0 cho no co lai theo man hinh.
   expect(cau2).toHaveClass('min-w-0');
   await u.click(within(screen.getByRole('group', { name: /Câu 1/ })).getByRole('radio', { name: /^A/ }));
   await u.click(within(cau2).getByRole('radio', { name: /print/ }));
@@ -326,7 +316,6 @@ test('quiz di du vong: tao, chon, nop khi tra loi du, cham diem, giai thich, qui
 
   const cau1 = screen.getByRole('group', { name: /Câu 1/ });
   const cau2 = screen.getByRole('group', { name: /Câu 2/ });
-  // Nut Nop van bam duoc khi chua lam het: noi con bao nhieu cau, dua con tro toi cau dau tien con thieu, chua cham
   expect(nop).toBeEnabled();
   await u.click(nop);
   expect(screen.getByText('Còn 2 câu chưa trả lời')).toHaveAttribute('role', 'alert');
@@ -432,7 +421,6 @@ test('xoa hoi thoai thi ve man chao', async () => {
   await u.type(within(chat).getByRole('textbox'), 'Xin chào{Enter}');
   await within(chat).findByText('Chào bạn');
   await u.click(within(chat).getByRole('button', { name: /Xóa hội thoại/ }));
-  // Xoa ca hoi thoai phai hoi truoc: Huy thi giu nguyen, dong y moi xoa
   await u.click(await screen.findByRole('button', { name: 'Hủy' }));
   expect(within(chat).getByText('Chào bạn')).toBeInTheDocument();
   await u.click(within(chat).getByRole('button', { name: /Xóa hội thoại/ }));
@@ -462,8 +450,6 @@ test('gia su: Enter luc dang go chu co dau tren Safari (keyCode 229) khong gui',
   expect(goiAi).toHaveLength(0);
   expect(o).toHaveValue('Vòng lặ');
 });
-
-// ── Tab Bai tap ──
 
 const moTabBaiTap = async (u: ReturnType<typeof userEvent.setup>) => u.click(await screen.findByRole('tab', { name: /Bài tập/ }));
 
@@ -548,7 +534,6 @@ test('IDE React: sua code, doi sang Ly thuyet roi quay lai van con', async () =>
   await moTabBaiTap(u);
   const soan = await screen.findByRole('textbox', { name: 'Soạn App.jsx' }) as HTMLTextAreaElement;
   const cu = soan.value;
-  // Go that tung phim (truoc day o nhap dieu khien bang cache bat dong bo lam mat chu khi go)
   await u.type(soan, ' // da sua', { initialSelectionStart: cu.length, initialSelectionEnd: cu.length });
   expect(soan.value).toBe(cu + ' // da sua');
   await u.click(screen.getByRole('tab', { name: /Lý thuyết/ }));
@@ -560,7 +545,7 @@ test('sang trang app cu (tai trang moi) roi quay lai: cau tra loi, hoi thoai gia
   const u = userEvent.setup();
   const a = mo('/lesson/python/newbie/a?tab=exercise', {
     ai: b => (b.taskType === 'quiz' ? traText(JSON.stringify(QUIZ))
-      : b.taskType === 'exercise' ? new Promise<Response>(() => {}) // AI chua soan xong luc roi trang
+      : b.taskType === 'exercise' ? new Promise<Response>(() => {})
         : traText('Biến là **hộp** chứa giá trị'))
   });
   await u.type(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' }), 'class Stack');
@@ -572,11 +557,9 @@ test('sang trang app cu (tai trang moi) roi quay lai: cau tra loi, hoi thoai gia
   await u.click(await screen.findByRole('button', { name: /Tạo Quiz với AI/ }));
   await u.click(within(await screen.findByRole('group', { name: /Câu 1/ })).getByRole('radio', { name: /==/ }));
 
-  // Link sang app cu tai trang that: trinh duyet phat pagehide roi bo tai lieu React
   act(() => { window.dispatchEvent(new PageTransitionEvent('pagehide')); });
   a.unmount();
 
-  // App cu dua ve bai (location.assign): tai lieu React moi, cache moi, cung nguoi dang nhap
   mo('/lesson/python/newbie/a?tab=exercise');
   expect(await screen.findByRole('textbox', { name: 'Viết code hoặc đáp án ở đây…' })).toHaveValue('class Stack');
   expect(screen.getByRole('button', { name: /AI tạo bài tập mới/ })).toBeEnabled();

@@ -1,5 +1,3 @@
-// Du lieu mac dinh cua terminal gia lap: he thong tep "San co" va cac thu thach CTF.
-// Tach khoi terminal.ts de engine chi con logic; createTerminal() sao chep sau truoc khi dung.
 import type { HeThongTep, ThuThach } from './terminal';
 
 export const VFS_MAC_DINH: HeThongTep = {

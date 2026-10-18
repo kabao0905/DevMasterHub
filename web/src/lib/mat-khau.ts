@@ -1,4 +1,3 @@
-// Cham do manh mat khau cho o dang ky: chi de goi y nguoi dung, khong chan dang ky.
 export type DoManh = 'yeu' | 'trungBinh' | 'manh';
 
 const DO_DAI_TOI_THIEU = 8;
@@ -6,7 +5,6 @@ const DO_DAI_TOT = 12;
 
 export function doManhMatKhau(mk: string): DoManh | null {
   if (!mk) return null;
-  // Ngan thi co tron ky tu den may cung de do: luon yeu
   if (mk.length < DO_DAI_TOI_THIEU) return 'yeu';
   const diem = [
     true,

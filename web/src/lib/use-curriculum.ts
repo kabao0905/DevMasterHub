@@ -7,7 +7,6 @@ export async function taiJson<T>(url: string): Promise<T> {
   return r.json() as Promise<T>;
 }
 
-/** Danh sach cong nghe kem ten bai (khong co noi dung bai) — du cho Dashboard va sidebar */
 export function useCurriculumIndex() {
   return useQuery({
     queryKey: ['curriculum', 'index'],
@@ -16,7 +15,6 @@ export function useCurriculumIndex() {
   });
 }
 
-/** Chi muc tim kiem (~100KB) chi tai khi nguoi dung bat dau go vao o tim */
 export function useSearchIndex(bat: boolean) {
   return useQuery({
     queryKey: ['curriculum', 'search'],
@@ -26,7 +24,6 @@ export function useSearchIndex(bat: boolean) {
   });
 }
 
-/** Noi dung day du cua mot cong nghe (ly thuyet, code...). Id la thi khong goi mang. */
 export function useTech(id: string | undefined) {
   return useQuery({
     queryKey: ['curriculum', 'tech', id],

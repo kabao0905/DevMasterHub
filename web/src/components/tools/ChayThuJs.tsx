@@ -7,11 +7,6 @@ import { cn } from '@/lib/utils';
 
 type Log = { id: number; level: string; text: string };
 
-/**
- * Chay thu doan JavaScript trong khung sandbox an (khong allow-same-origin), in console ra duoi.
- * Chi dung cho bai JavaScript — app cu chay MOI ngon ngu nhu JS (Python cung bi eval).
- * idO: o soan code — bam Chay khi chua co code thi nhac va dua con tro ve o do.
- */
 export function ChayThuJs({ code, nhan, idO }: { code: string; nhan: string; idO?: string }) {
   const { t } = useT();
   const [taiLieu, datTaiLieu] = useState<{ doc: string; token: string } | null>(null);
@@ -37,7 +32,6 @@ export function ChayThuJs({ code, nhan, idO }: { code: string; nhan: string; idO
   }, []);
 
   function chay() {
-    // Nut luon bam duoc: chua co code thi noi ro ly do thay vi im lang
     if (!code.trim()) {
       datNhacTrong(true);
       if (idO) document.getElementById(idO)?.focus();

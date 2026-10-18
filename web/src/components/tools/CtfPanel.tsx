@@ -15,7 +15,6 @@ const MAU_KET_QUA: Record<KetQuaNop['loai'], string> = {
   sai: 'bg-destructive/10 text-destructive'
 };
 
-/** Bang thu thach CTF gan voi mot terminal: diem, the thu thach, o nop co */
 export function CtfPanel({ kenh }: { kenh: KenhTerminal }) {
   const { may, nghe } = kenh;
   const { t, lang } = useT();
@@ -23,7 +22,6 @@ export function CtfPanel({ kenh }: { kenh: KenhTerminal }) {
   const [co, datCo] = useState('');
   const [ketQua, datKetQua] = useState<KetQuaNop | null>(null);
   const oRef = useRef<HTMLInputElement>(null);
-  // Nop co bang lenh "submit" trong terminal cung phai cap nhat bang nay
   useEffect(() => nghe('diem', () => veLai(v => v + 1)), [nghe]);
 
   const daGiai = may.coDaGiai();
@@ -35,12 +33,10 @@ export function CtfPanel({ kenh }: { kenh: KenhTerminal }) {
       oRef.current?.focus();
       return;
     }
-    // Phan loai theo trang thai may (so co da giai), khong theo chu trong cau bao — cau bao da dich theo ngon ngu
     const truoc = may.coDaGiai().size;
     const kq = may.checkFlag(co);
     if (may.coDaGiai().size > truoc) {
       datKetQua({ loai: 'dung', text: kq });
-      // Chi xoa o khi dung: sai thi giu nguyen de sua loi go
       datCo('');
     } else {
       datKetQua({ loai: may.CHALLENGES.some(c => c.flag === co.trim()) ? 'trung' : 'sai', text: kq });
@@ -67,7 +63,6 @@ export function CtfPanel({ kenh }: { kenh: KenhTerminal }) {
             aria-describedby="ctf-ket-qua" className="flex-1 font-mono" />
           <Button type="submit" className="rounded-full"><Flag aria-hidden="true" /> {t('ctfSubmitBtn')}</Button>
         </form>
-        {/* Vung thong bao luon gan san: chi doi chu ben trong */}
         <p id="ctf-ket-qua" role="status" className={cn('rounded-2xl px-4 py-2.5 text-sm font-medium empty:hidden', ketQua && MAU_KET_QUA[ketQua.loai])}>{ketQua?.text ?? ''}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

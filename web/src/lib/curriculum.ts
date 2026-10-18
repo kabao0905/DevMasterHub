@@ -1,5 +1,3 @@
-// Kieu du lieu giao trinh (khop scripts/xuat-du-lieu.mjs) va cac ham thuan tren no.
-
 export type BaiTomTat = { id: string; title: string };
 export type CapTomTat = { id: string; name: string; desc?: string; badge?: string; lessons: BaiTomTat[] };
 export type CongNgheTomTat = {
@@ -12,13 +10,11 @@ export type CongNgheTomTat = {
   description: string;
   levels: CapTomTat[];
 };
-/** Mot dong trong curriculum/search.json: t = cong nghe, l = cap, s = bai */
 export type MucTimKiem = { t: string; l: string; s: string; title: string; text: string };
 
 export type Nhom = 'language' | 'frontend' | 'backend' | 'mobile' | 'tool';
 export const THU_TU_NHOM: Nhom[] = ['language', 'frontend', 'backend', 'mobile', 'tool'];
 
-/** Gom cong nghe vao 5 nhom, cung quy tac voi sidebar cua app cu */
 export function nhomCongNghe(tech: { id: string; category?: string }): Nhom {
   const cat = (tech.category || '').toLowerCase();
   if (tech.id === 'dart' || tech.id === 'flutter') return 'mobile';
@@ -30,7 +26,6 @@ export function nhomCongNghe(tech: { id: string; category?: string }): Nhom {
   return 'language';
 }
 
-/** Bo dau tieng Viet de nguoi go "vong lap" van tim ra "Vòng lặp" */
 export function boDau(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
 }
@@ -48,28 +43,22 @@ export function timBaiHoc(ds: MucTimKiem[], q: string, gioiHan = 50): MucTimKiem
   return ra;
 }
 
-/** Bai tap soan san cua mot bai (vd moi thuat toan sap xep mot bai); starter: code khung dien san vao o soan */
 export type BaiTapCoSan = { title: string; description: string; starter?: string };
 
-/** Noi dung day du cua mot bai (curriculum/<tech>.json) */
 export type BaiDayDu = BaiTomTat & {
   theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string;
-  /** Ket qua that khi chay code mau (scripts/tao-ket-qua-code.mjs); khong co = chua chay duoc / khong on dinh */
   output?: string;
-  /** Co thi tab Bai tap hien moi bai mot nut (thay cho mot "Bai tap goc") */
   exercises?: BaiTapCoSan[];
 };
 export type CapDayDu = Omit<CapTomTat, 'lessons'> & { lessons: BaiDayDu[] };
 export type CongNgheDayDu = Omit<CongNgheTomTat, 'levels'> & { levels: CapDayDu[] };
 
-/** So khop dung id — khong tra kieu CURRICULUM[id] vi "constructor" cung la thuoc tinh co that */
 export function timCongNghe<T extends { id: string }>(ds: T[], id: string): T | undefined {
   return ds.find(x => x.id === id);
 }
 
 type ViTri<C extends { lessons: unknown[] }> = { level: C; lesson: C['lessons'][number] };
 
-/** Bai dang mo cung bai truoc/sau, noi lien qua ranh gioi cap (bai cuoi Newbie -> bai dau Junior) */
 export function viTriBai<C extends { id: string; lessons: { id: string }[] }>(
   tech: { levels: C[] }, levelId: string, lessonId: string
 ): (ViTri<C> & { truoc: ViTri<C> | null; sau: ViTri<C> | null }) | null {

@@ -27,10 +27,6 @@ import type { BaiDangMo } from './use-quiz-bai';
 
 type Props = { bai: BaiDangMo; baiTap: BaiTapBai; aiEnabled: boolean | undefined };
 
-/**
- * Tab Bai tap, theo dung thu tu cua app cu: phong lab -> terminal (An ninh mang) ->
- * IDE truc tiep (cong nghe frontend) -> o soan + bai tap AI + AI cham.
- */
 export function ExerciseTab({ bai, baiTap, aiEnabled }: Props) {
   const danhDauXong = useDanhDauXong();
   const lab = timLab(khoaBai(bai.tech.id, bai.level.id, bai.lesson.id));
@@ -40,17 +36,14 @@ export function ExerciseTab({ bai, baiTap, aiEnabled }: Props) {
   return <BaiTapSoan bai={bai} baiTap={baiTap} aiEnabled={aiEnabled} />;
 }
 
-/** De bai goc cua giao trinh la chu thuong (co "Stack<T>"): escape truoc roi moi dich/hien nhu HTML */
 function DeBaiGoc({ text }: { text?: string }) {
   const { t, lang } = useT();
   const html = useMemo(() => (text ? `<p>${escapeHtml(text)}</p>` : ''), [text]);
   const dich = useDichNoiDung(html, lang);
   if (!text) return <p className="text-muted-foreground">{t('noExerciseYet')}</p>;
-  // Noi dung da escape (va ban dich da qua lamSachHtml)
   return <div className="noi-dung-bai whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: dich.html }} />;
 }
 
-/** Terminal mo phong khong tu cham duoc: hoc vien dan lenh da chay + ket qua de AI cham */
 function TerminalBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
   const kenh = useTerminal();
@@ -70,7 +63,6 @@ function IdeBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
   const { tech, lesson } = bai;
   const seed = useMemo(() => seedFilesFromLesson(lesson, tech.id), [lesson, tech.id]);
-  // Tep khoi tao = bo tep cua preset, ghi de bang code mau cua bai hoc
   const macDinh = useMemo(() => {
     const p = PRESETS[presetFor(tech.id)] ?? PRESETS.html;
     return { ...p.files, ...Object.fromEntries((seed ?? []).map(f => [f.name, f.code])) };
@@ -86,14 +78,10 @@ function IdeBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   );
 }
 
-/** Bo tep IDE thanh mot bai lam de AI cham (giong codeDangLam gui gia su) */
-// O soan cau tra loi + dong nhac khi bam Cham / Chay luc o con trong (moi tab Bai tap chi co mot o)
 const ID_O_TRA_LOI = 'o-tra-loi-bai-tap';
 const ID_NHAC = 'nhac-o-tra-loi';
-// Mau du lieu vao / ket qua mong doi: mat code toi, chu dai thi xuong dong thay vi tran khung tren dien thoai
 const LOP_MAU = 'mt-1 overflow-x-auto whitespace-pre-wrap break-words rounded-2xl bg-code p-3 font-mono text-xs text-[#e6edf3]';
 
-/** The de bai cho phong terminal / IDE */
 function TheDeBai({ tieuDe, children }: { tieuDe: string; children: ReactNode }) {
   return (
     <div className="rounded-3xl bg-card p-6 shadow-soft">
@@ -112,7 +100,6 @@ function NutChamAi({ dangCham, onCham }: { dangCham: boolean; onCham: () => void
   );
 }
 
-/** Dong nhac luon gan san (role=alert): chi doi chu khi bam Cham luc o trong */
 function NhacTrong({ id, hien }: { id?: string; hien: boolean }) {
   const { t } = useT();
   return <p id={id} role="alert" className="text-sm font-medium text-destructive empty:hidden">{hien ? t('emptyInputHint') : ''}</p>;
@@ -124,12 +111,10 @@ function BaoLoi({ children }: { children: ReactNode }) {
 
 const gopTep = (files: Record<string, string>) => Object.entries(files).map(([ten, code]) => `--- ${ten} ---\n${code}`).join('\n');
 
-/** Nut AI cham + loi + ket qua, cho bai tap khong co o soan rieng (IDE, terminal) */
 function NopChamAi({ baiTap, aiEnabled, baiLam, lang, idO }: { baiTap: BaiTapBai; aiEnabled: boolean | undefined; baiLam: string; lang?: string; idO?: string }) {
   const { t } = useT();
   const [nhacTrong, datNhacTrong] = useState(false);
   if (aiEnabled === false) return null;
-  // Nut Cham luon bam duoc: chua co bai lam thi nhac va dua con tro ve o soan (neu co)
   function bamCham() {
     if (!baiLam.trim()) {
       datNhacTrong(true);
@@ -164,7 +149,6 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
     <Button key={j} size="sm" variant="outline" aria-pressed={idx === j} onClick={() => baiTap.chon(j)}
       className={cn('rounded-full', idx === j && 'border-transparent bg-lavender text-lavender-ink hover:bg-lavender hover:text-lavender-ink')}>{nhan}</Button>
   );
-  // Bai AI: "Linear Search · AI #2" khi thuoc mot loai (dem rieng trong loai do), khong thi "AI #n"
   const nutAi = (i: number) => {
     const loai = kho.aiExercises[i].loai;
     const thuTu = kho.aiExercises.slice(0, i + 1).filter(x => x.loai === loai).length;
@@ -173,7 +157,6 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
   const chiSoAi = kho.aiExercises.map((_, i) => i);
   const loaiCoSan = new Set(coSan.map(bt => bt.title));
 
-  // Nut Cham luon bam duoc: o trong thi nhac ngay duoi o soan va dua con tro ve
   function bamCham() {
     if (!traLoi.trim()) {
       datNhacTrong(true);
@@ -184,7 +167,6 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
     baiTap.cham();
   }
 
-  // Xoa ca bai dang go (va mat lich su Ctrl+Z cua o): hoi truoc
   async function xoaBaiLam() {
     if (!(await hoi(t('clearAnswerConfirm'), t('delete')))) return;
     baiTap.xoaTraLoi();
@@ -192,7 +174,6 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
 
   return (
     <div className="space-y-5">
-      {/* Bai co nhieu bai tap soan san (vd moi thuat toan mot bai): moi bai mot nut, bai AI tao them dung ngay sau bai cung loai */}
       {(nhieuCoSan || kho.aiExercises.length > 0) && (
         <div role="group" className="flex flex-wrap gap-2" aria-label={t('tabLabelExercise')}>
           {nhieuCoSan ? (
@@ -253,7 +234,6 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         </div>
       )}
 
-      {/* Khong tu dien code: hoc vien tu bam neu muon dung code khung (co san phan tu kiem tra) */}
       {deCoSan?.starter && !deHienTai && !traLoi.trim() && (
         <Button variant="outline" size="sm" className="rounded-full" onClick={() => baiTap.datTraLoi(deCoSan.starter!)}>{t('useStarterCode')}</Button>
       )}
@@ -274,7 +254,6 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         )}
       </div>
       {laJs && <ChayThuJs code={traLoi} nhan={t('runCode')} idO={ID_O_TRA_LOI} />}
-      {/* key: doi bai thi xoa ket qua chay cua bai truoc; bai AI co du lieu mau thi dien san vao stdin */}
       {laCpp(bai.lesson.lang) && <ChayCpp key={idx} code={traLoi} stdinMacDinh={deHienTai?.sampleInput} idO={ID_O_TRA_LOI} />}
 
       {baiTap.loiTao && <BaoLoi>{t('exerciseFailed', { error: baiTap.loiTao.message })}</BaoLoi>}

@@ -1,5 +1,4 @@
 import { docThan } from '@/test/doc-than';
-// Career Advisor: bat y dinh tim viec, cham do phu hop viec lam, Supabase.
 import { giaSupabase } from '@/test/gia-supabase';
 import { taoCoVan, type ThongKe } from './career';
 import { luuChat, taiChat, taiThongKe } from './career-db';
@@ -54,7 +53,6 @@ test('AI bao [SEARCH_JOBS: ...]: bo the khoi cau tra loi, tim theo tu khoa, bo d
   expect(kq?.text).toBe('Bạn hợp vị trí intern.');
   expect(kq?.searchKeyword).toBe('React Developer');
   expect(new URL(goi.find(g => g.url.startsWith('/api/jobs'))!.url, 'http://x').searchParams.get('search')).toBe('React Developer');
-  // Link viec lam chi http/https
   expect(kq?.jobs?.[0].url).toBe('#');
   expect(kq?.jobs?.[0].company_logo).toBe('https://cdn.x/logo.png');
 });
@@ -75,7 +73,6 @@ test('tin nhan co link: doc link qua /api/doc-viec-link kem token, noi dung vao 
 test('huy giua chung (sua cau hoi, xoa chat): tra null, khong tim viec', async () => {
   let tha!: () => void;
   vi.stubGlobal('fetch', vi.fn((url: string, init?: RequestInit) => new Promise<Response>((ok, loi) => {
-    // Nhu fetch that: signal da huy san thi tu choi ngay
     if (init?.signal?.aborted) return loi(new DOMException('huy', 'AbortError'));
     init?.signal?.addEventListener('abort', () => loi(new DOMException('huy', 'AbortError')));
     tha = () => ok(new Response(JSON.stringify({ content: [{ text: 'muộn' }] }), { status: 200 }));
@@ -88,8 +85,6 @@ test('huy giua chung (sua cau hoi, xoa chat): tra null, khong tim viec', async (
   tha?.();
   expect(await p).toBeNull();
 });
-
-// ── Supabase ──
 
 test('thong ke hoc vien: bai da xong theo cong nghe, gio hoc, du an va diem trung binh', async () => {
   const g = giaSupabase({ nguoiDung: { id: 'u1' }, bang: {
@@ -169,11 +164,8 @@ test('che do danh sach: viec da cham dua vao prompt va bang viec lam (khong tim 
   ]);
   expect(kq?.text).not.toContain('SEARCH_JOBS');
   expect(kq?.link).toMatchObject({ ok: true, soTrang: 3, tongViec: 140 });
-  // Dia diem / luong lay tu the tin; khong ghi thi de trong, khong tu cho la Remote
   expect(kq?.jobs?.map(j => [j.location, j.salary, j.is_remote])).toEqual([['Hồ Chí Minh · Hybrid', '20-30 triệu', false], ['', '', false]]);
-  // Thong tin tu trang chi tiet (JobPosting): cong ty, logo, hinh thuc, ky nang
   expect(kq?.jobs?.[0]).toMatchObject({ company_name: 'Cty A', company_logo: 'https://cdn.cv.vn/a.png', employment_type: 'FULLTIME', tags: ['ReactJS', 'TypeScript', 'Docker'] });
-  // Nhan theo muc phu hop; danh gia = ky nang con thieu so voi lo trinh da hoc (react da hoc -> ReactJS khong tinh la thieu)
   expect(kq?.jobs?.map(j => j.badgeText)).toEqual(['careerJevReady', 'careerJevGap']);
   expect(kq?.jobs?.[0].fitRecommendation).toBe('careerMissingSkills');
   expect(kq?.jobs?.[1].fitRecommendation).toBe('Cty B · Thương lượng');

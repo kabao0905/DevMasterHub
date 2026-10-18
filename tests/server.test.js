@@ -2,8 +2,6 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
 
-// Server goi nhieu dich vu ngoai. Thay fetch toan cuc bang ban gia de kiem
-// ma khong ra mang that, va ghi lai moi request de soi.
 const fetchThat = globalThis.fetch;
 const KHOA_AI = ['OPENROUTER_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY', 'CLAUDE_API_KEY', 'GROQ_API_KEY'];
 
@@ -29,7 +27,6 @@ async function moServer({ khoa = {}, traLoi }) {
   return {
     daGoi,
     goc,
-    // Dong ca ket noi keep-alive: cong duoc cap lai cho server sau thi fetch khong dung lai socket cu
     dong: () => { sv.closeAllConnections(); sv.close(); globalThis.fetch = fetchThat; }
   };
 }
@@ -54,7 +51,6 @@ test('/api/ai bo qua model va max_tokens tuy y cua client', async () => {
     assert.strictEqual(res.status, 200);
     const or = s.daGoi.find(g => g.url.includes('openrouter.ai'));
     assert.strictEqual(or.body.model, 'google/gemini-3.8-flash');
-    // Gemini 3.8 Flash suy nghi muc high; token suy nghi tinh chung gioi han dau ra nen cong them phan rieng
     assert.deepStrictEqual(or.body.reasoning, { effort: 'high' });
     assert.strictEqual(or.body.max_tokens, 8192 + 16384);
     assert.strictEqual('temperature' in or.body, false, 'Gemini 3 nen de temperature mac dinh');
@@ -218,7 +214,6 @@ test('/api/jobs: tu khoa "technical lead" khong bi loc nham theo Ha Noi', async 
 });
 
 test('/api/jobs: nguoi moi chua hoc bai nao (AI goi y "Intern Developer") van ra viec', async () => {
-  // Truoc day phai hoc it nhat 1 bai (vd C++) thi tu khoa moi co cong nghe cu the va moi ra viec
   const s = await moServer({
     traLoi: vnWorks([{
       jobId: 2, alias: 'fresher-java', jobTitle: 'Fresher Java Developer', companyName: 'ACME',

@@ -1,4 +1,3 @@
-// Ve mot component voi nen toi thieu: react-query, ban dich tieng Viet, phien dang nhap gia va noi hien toast.
 import type { ReactElement } from 'react';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

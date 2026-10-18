@@ -1,5 +1,3 @@
-// Thanh dieu huong tren cung: thanh trang bo tron noi tren nen troi (nhu mau Dei), muc dang mo la vien thuoc xanh troi, menu "Lo trinh" (cong nghe theo nhom),
-// cong tac sang / toi va menu "Tai khoan" (ngon ngu, dang xuat). Dien thoai: nut mo menu ben.
 import { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { Briefcase, ChevronDown, FlaskConical, FolderKanban, LogOut, Map as MapIcon, Menu } from 'lucide-react';
@@ -22,12 +20,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-/** Nhan muc: man rong hien chu moi muc; man vua chi muc dang mo hien chu, muc khac chi icon (van co ten cho trinh doc man hinh) */
 const Nhan = ({ mo, children }: { mo: boolean; children: React.ReactNode }) => (
   <span className={mo ? 'whitespace-nowrap' : 'sr-only xl:not-sr-only xl:whitespace-nowrap'}>{children}</span>
 );
 
-/** Muc dang mo: vien thuoc xanh troi tren thanh trang (nhu tab dang chon), muc khac chu dam vua, re chuot nen xam nhat */
 const DANG_MO = 'bg-sky font-semibold text-sky-ink';
 const vien = (dangMo: boolean) => cn(
   'kich-dong flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
@@ -43,7 +39,6 @@ export function TopNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [moMenu, datMoMenu] = useState(false);
-  // Di trang bang router khong tai lai trang: tu dong menu ben tren dien thoai
   useEffect(() => { datMoMenu(false); }, [pathname]);
   const laTrangDuAn = /^\/(project|project-level|project-topic|saved-ideas)(\/|$)/.test(pathname);
   const laLoTrinh = /^\/(roadmap|lesson)\//.test(pathname);
@@ -75,7 +70,6 @@ export function TopNav() {
           <Sidebar />
         </SheetContent>
       </Sheet>
-      {/* Logo kiem luon loi vao Dashboard (khong con muc Dashboard rieng tren thanh): dang o Dashboard thi vien thuoc xanh troi */}
       <NavLink to="/" end title={t('dashboard')}
         className={({ isActive }) => cn(
           'kich-dong rounded-full py-1 pr-3.5 pl-1 transition-colors focus-visible:outline-2 focus-visible:outline-ring',
@@ -124,7 +118,6 @@ export function TopNav() {
 
       <CongTacSangToi className="ml-auto lg:ml-0" />
       <DropdownMenu>
-        {/* Ten tai khoan nam trong nhan (WCAG 2.5.3): nguoi doc bang giong noi goi dung chu dang thay */}
         <DropdownMenuTrigger aria-label={ten ? `${t('accountMenu')}: ${ten}` : t('accountMenu')}
           className="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
           <span className="grid size-9 place-items-center rounded-full bg-lavender font-display font-extrabold text-lavender-ink" aria-hidden="true">

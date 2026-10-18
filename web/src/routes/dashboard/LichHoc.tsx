@@ -1,6 +1,3 @@
-// Lich hoc tren Dashboard (ben phai o so lieu): dai ngang ca thang tren mot hang (nhu ban truoc nguoi dung thich), to mau pastel:
-// ngay hoc du so phut muc tieu to bac ha, hoc chua du to vang bo, hom nay co vong xanh; dem chuoi ngay dat muc tieu.
-// Dien thoai (duoi 640px) dai 31 ngay qua chat nen doi sang luoi thang 7 cot, tuan bat dau theo ngon ngu.
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, CircleCheck, Clock, Flame, Target } from 'lucide-react';
 import { useT } from '@/lib/i18n';
@@ -13,7 +10,6 @@ import { cn } from '@/lib/utils';
 const dauThang = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
 const phutTu = (giay: number) => Math.floor(giay / 60);
 
-/** Man hep hon breakpoint sm (640px) cua Tailwind; may khong co matchMedia (jsdom) coi la man rong */
 const MAN_HEP = '(max-width: 639px)';
 function useManHep(): boolean {
   return useSyncExternalStore(
@@ -27,7 +23,6 @@ function useManHep(): boolean {
   );
 }
 
-/** Ngay dau tuan theo ngon ngu (1 = thu Hai ... 7 = Chu nhat); trinh duyet chua ho tro weekInfo thi lay thu Hai */
 function ngayDauTuan(lang: string): number {
   try {
     const loc = new Intl.Locale(lang) as Intl.Locale & { getWeekInfo?: () => { firstDay: number }; weekInfo?: { firstDay: number } };
@@ -54,11 +49,10 @@ export function LichHoc({ className }: { className?: string }) {
   const tenThang = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(thang);
   const thuNgan = new Intl.DateTimeFormat(lang, { weekday: 'narrow' });
   const ngayDayDu = new Intl.DateTimeFormat(lang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const dauTuan = ngayDauTuan(lang) % 7; // 0 = Chu nhat, khop Date.getDay()
+  const dauTuan = ngayDauTuan(lang) % 7;
   const doiThang = (buoc: number) => datThang(new Date(thang.getFullYear(), thang.getMonth() + buoc, 1));
   const manHep = useManHep();
 
-  // Dai ngang hep qua phai cuon: dua hom nay vao giua tam nhin thay vi dau thang
   const dai = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = dai.current;
@@ -66,7 +60,6 @@ export function LichHoc({ className }: { className?: string }) {
     if (el && o && el.scrollWidth > el.clientWidth) el.scrollLeft = o.offsetLeft - el.clientWidth / 2;
   }, [thang]);
 
-  /** Mot o ngay (ngay thu i+1 cua thang dang xem) */
   function oNgay(i: number, coChu: string) {
     const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
     const khoa = ngayDiaPhuong(d);
@@ -131,9 +124,7 @@ export function LichHoc({ className }: { className?: string }) {
           {Array.from({ length: soNgay }, (_, i) => oNgay(i, 'text-sm'))}
         </div>
       ) : (
-        // Ca thang tren mot hang: thu o tren, ngay o duoi. Hep qua thi cuon ngang
         <div ref={dai} className="-mx-1 overflow-x-auto overscroll-x-contain px-1 py-1.5">
-          {/* Man rong (xl) lich nam canh o so lieu, hep hon: o ngay nho lai de vua ca thang khong phai cuon */}
           <div className="grid grid-cols-[repeat(var(--so-ngay),minmax(1.5rem,1fr))] gap-x-1 gap-y-1.5 text-center xl:grid-cols-[repeat(var(--so-ngay),minmax(1.125rem,1fr))] xl:gap-x-0.5"
             style={{ '--so-ngay': soNgay } as CSSProperties}>
             {Array.from({ length: soNgay }, (_, i) => {
@@ -150,7 +141,6 @@ export function LichHoc({ className }: { className?: string }) {
         </div>
       )}
 
-      {/* Thoi gian hoc hom nay: hang vang bo (muc tieu), dat muc tieu thi sang bac ha */}
       <div className={cn('kich-dong flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl px-3 py-2.5', datHomNay ? 'bg-mint' : 'bg-butter')}>
         <span className={cn('grid size-9 shrink-0 place-items-center rounded-full bg-card', datHomNay ? 'text-mint-ink' : 'text-butter-ink')} aria-hidden="true">
           {datHomNay ? <CircleCheck className="size-5" /> : <Clock data-dong="dong-ho kim" className="size-5" />}
@@ -176,13 +166,11 @@ export function LichHoc({ className }: { className?: string }) {
           </div>
           <p className="mt-1.5 text-xs text-foreground/75">{t('streakHint')}</p>
         </div>
-        {/* Nut chi ghi "Muc tieu"; trinh doc man hinh van nghe du "Muc tieu: N phut/ngay" */}
         <Button variant="ghost" size="sm" className="kich-dong h-8 shrink-0 gap-1.5 rounded-full bg-card/70 px-3 text-xs hover:bg-card" aria-label={t('goalPerDay', { n: mucTieuPhut })} onClick={() => datMoMucTieu(true)}>
           <Target data-dong="dich" className="size-3.5" aria-hidden="true" /> {t('goalShort')}
         </Button>
       </div>
 
-      {/* Chi gan khi mo: moi lan mo lay lai muc tieu hien tai lam lua chon ban dau */}
       {moMucTieu && <HopMucTieu mo onDong={() => datMoMucTieu(false)} />}
     </section>
   );

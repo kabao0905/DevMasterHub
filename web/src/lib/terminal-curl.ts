@@ -1,24 +1,16 @@
-// curl cua terminal gia lap + cac web server tren mang ao, cho khop voi ps / netstat / nmap:
-//  - may nay (localhost): Nginx neu co /etc/nginx/nginx.conf (lab Nginx), khong thi Apache + PHP phuc vu /var/www/html
-//  - may muc tieu 192.168.1.100: Apache cong 80, API gateway cong 8080
-// Giong curl that: mac dinh chi in than trang; -I chi header (HEAD); -i ca hai; -v hien request/response.
 import type { HamDich } from './terminal-ban-dich';
 
 export type MoiTruongWeb = {
-  /** Noi dung tep theo duong dan tuyet doi; null neu khong co hoac la thu muc */
   docTep: (duong: string) => string | null;
-  /** Trang thai Nginx tren may nay; coCauHinh = false thi may chay Apache */
   nginx: () => { coCauHinh: boolean; dat: boolean; root: string | null };
   t: HamDich;
 };
 
 type PhanHoi = { ma: number; header: [string, string][]; than: string };
 
-// Token debug quen tat tren server that — bai "Phan tich HTTP voi cURL" yeu cau tim co nay trong header
 export const CO_HEADER_HTTP = 'FLAG{devmaster_http_header_leak}';
 const MAY_NAY = new Set(['localhost', '127.0.0.1', '0.0.0.0', 'devmaster-cyber-box', '192.168.1.50']);
 const MAY_MUC_TIEU = new Set(['192.168.1.100', 'target-bank-api.local']);
-// Cong web dang mo (khop netstat / nmap): 80 va 8080
 const CONG_WEB = [80, 8080];
 const TEN_MA: Record<number, string> = { 200: 'OK', 404: 'Not Found', 405: 'Method Not Allowed', 502: 'Bad Gateway' };
 const DOC_ROOT_APACHE = '/var/www/html';
@@ -28,7 +20,6 @@ const BYTE = new TextEncoder();
 const chuanHoa = (p: string) =>
   '/' + p.split('/').filter(s => s && s !== '.').reduce<string[]>((ds, s) => (s === '..' ? ds.slice(0, -1) : [...ds, s]), []).join('/');
 
-/** PHP chay tren server: chu ngoai <?php ?> giu nguyen, ben trong chi lay cac chuoi echo — ma nguon khong lo ra */
 function chayPhp(nguon: string): string {
   return nguon.split(/<\?php([\s\S]*?)(?:\?>|$)/).map((phan, i) => {
     if (i % 2 === 0) return phan;
@@ -96,7 +87,6 @@ function tachTuyChon(args: string[]): TuyChon {
     else if (['-d', '--data', '--data-raw'].includes(a)) { i++; if (tc.phuongThuc === 'GET') tc.phuongThuc = 'POST'; }
     else if (['-H', '--header', '-A', '--user-agent', '-o', '--output', '-u', '--user', '-b', '--cookie'].includes(a)) i++;
     else if (/^-[a-zA-Z]+$/.test(a)) {
-      // co gop: -sI, -si, -sv, -Lk ... (s, L, k khong doi ket qua o day)
       if (a.includes('I')) tc.chiHeader = true;
       if (a.includes('i')) tc.kemHeader = true;
       if (a.includes('v')) tc.chiTiet = true;
@@ -105,7 +95,6 @@ function tachTuyChon(args: string[]): TuyChon {
   return tc;
 }
 
-/** Chay curl; tra ve chu in ra man hinh. Loi ket noi in dang "curl: (N) ..." nhu curl that */
 export function chayCurl(args: string[], mt: MoiTruongWeb): string {
   const tc = tachTuyChon(args);
   if (!tc.url) return "curl: no URL specified!\ncurl: try 'curl --help' for more information";

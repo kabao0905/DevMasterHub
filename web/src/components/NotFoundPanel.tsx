@@ -2,7 +2,6 @@ import { Link } from 'react-router';
 import { useT } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
-/** Khong tim thay noi dung trong khung app (id cong nghe/bai la): noi ro va cho duong quay ve */
 export function NotFoundPanel({ ve = '/', nhanVe }: { ve?: string; nhanVe?: string }) {
   const { t } = useT();
   return (

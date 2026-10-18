@@ -12,7 +12,6 @@ function taoDongHo({ loiGhi = false } = {}) {
     capNhat: async (id, d) => { if (loiGhi) return false; capNhat.push([id, d]); return true; }
   };
   const dh = new DongHoHoc({ bayGio: () => bayGio, ghi, daGhi: (ngay, giay) => daGhi.push([ngay, giay]) });
-  /** Troi `ms`, dem tung nhip 15 giay nhu interval that */
   const troi = (ms: number, { hien = true, thaoTac = true } = {}) => {
     for (let t = 0; t < ms; t += 15_000) {
       bayGio += 15_000;

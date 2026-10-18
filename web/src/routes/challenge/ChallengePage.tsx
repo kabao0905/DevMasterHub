@@ -14,27 +14,22 @@ import { Terminal } from '@/components/tools/Terminal';
 import { CtfPanel } from '@/components/tools/CtfPanel';
 import { useTerminalBenVung } from '@/components/tools/use-terminal';
 
-// Lenh co ket qua dang de ra de: tien trinh, cong dang mo, quet mang, nguoi dung
 const LENH_CHUP = ['ps aux', 'netstat -tulpn', 'nmap 192.168.1.100', 'whoami', 'id', 'last'];
 const boMaMau = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
 
-/** Du lieu that cua may dang choi (tep hien tai + ket qua lenh) de AI ra de giai duoc */
 function chupMay(may: MayTerminal) {
   const fs = may.getFs();
   const tep = Object.fromEntries(Object.entries(fs).flatMap(([duong, nut]) => (nut.type === 'file' ? [[duong, nut.content]] : [])));
-  // Chay lenh tren ban sao: khong chen dong nao vao man hinh / lich su lenh cua hoc vien
   const tam = createTerminal();
   tam.loadFs(fs);
   const dauRa = Object.fromEntries(LENH_CHUP.map(l => [l, boMaMau(tam.executeCommand(l)).trim()]));
   return { lenh: may.commandNames(), tep, dauRa };
 }
 
-/** Cau hoi cua de AI + o nop dap an; bi thi xem dap an */
 function KhungDapAn({ de }: { de: ThuThachAi }) {
   const { t } = useT();
   const [nhap, datNhap] = useState('');
   const [daGiai, datDaGiai] = useState(false);
-  /** Loi hien ngay duoi o: chua nhap hoac sai */
   const [loi, datLoi] = useState<string | null>(null);
   const oRef = useRef<HTMLInputElement>(null);
 
@@ -82,20 +77,16 @@ function KhungDapAn({ de }: { de: ThuThachAi }) {
   );
 }
 
-/** Thu thach Linux & An ninh mang: terminal gia lap, bang co CTF va de do AI ra */
 export function ChallengePage() {
   const { t, lang } = useT();
   const { client, user } = useAuth();
-  // Diem, co da giai va de AI giu qua cac lan roi trang roi quay lai (ban cu giu ca phien trang)
   const kenh = useTerminalBenVung(['challenge', user?.id, 'may']);
   usePageMeta({ title: `${t('challengeTitle')} | DevMaster Hub`, description: t('challengeSubtitle') });
 
-  // De dua tren lenh, noi dung tep va ket qua lenh co that trong terminal nay (truoc kia AI bia du lieu -> khong giai duoc)
   const de = useQuery({
     queryKey: ['challenge', user?.id, 'de'],
     queryFn: async ({ signal }) => {
       const deMoi = await taoThuThach(client, { ...chupMay(kenh.may), lang, signal });
-      // Dung hien truong: ghi tep AI tao vao chinh may hoc vien dang go (tu tao thu muc cha)
       for (const f of deMoi.files) kenh.may.luuTuSoanThao(f.path, f.content);
       return deMoi;
     },
@@ -131,7 +122,6 @@ export function ChallengePage() {
             {t('aiChallengeBtn')}
           </Button>
         </div>
-        {/* Vung bao luon co mat (rong khi khong ra de): chi doi chu */}
         <p className="text-sm text-lavender-ink not-empty:mt-4" aria-live="polite">{dangRa ? t('aiChallengeLoading') : ''}</p>
         {loi && <p role="alert" className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">{loi}</p>}
         {de.data && !dangRa && (
@@ -153,7 +143,6 @@ export function ChallengePage() {
             {de.data.files.length > 0 && (
               <p className="text-sm text-muted-foreground">{t('aiChallengeFilesAdded', { n: de.data.files.length })}</p>
             )}
-            {/* key: de moi thi o nop dap an trong lai */}
             {de.data.question && de.data.answer && <KhungDapAn key={de.dataUpdatedAt} de={de.data} />}
           </article>
         )}

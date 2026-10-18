@@ -1,6 +1,3 @@
-// Xuat giao trinh (data/curriculum/*.json) va ban dich (data/i18n.json) ra JSON tach nho cho app React.
-// Thu muc data/ la noi sua noi dung; file trong web/public la ban sinh ra, khong commit.
-//   node scripts/xuat-du-lieu.mjs            -> ghi vao web/public/
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,12 +13,10 @@ function ghiJson(thuMuc, ten, duLieu) {
   fs.writeFileSync(path.join(thuMuc, ten), JSON.stringify(duLieu));
 }
 
-/** data/i18n.json: { LANGUAGES, translations, canonicalTitles, techDescriptions } */
 function napBanDich(thuMucDuLieu) {
   return JSON.parse(fs.readFileSync(path.join(thuMucDuLieu, 'i18n.json'), 'utf8'));
 }
 
-// Bo gia tri rong de thu tu gop "ngon ngu > en > vi" giong ham t() cua app cu
 const khongRong = obj => Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v));
 
 function banDichCho(lang, { translations, canonicalTitles, techDescriptions, LANGUAGES }) {

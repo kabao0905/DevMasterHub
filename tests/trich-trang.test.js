@@ -5,7 +5,6 @@ const { trichNoiDungTrang } = require('../lib/trich-trang.js');
 const day = s => `self.__next_f.push(${JSON.stringify([1, s])})`;
 
 test('trang Next.js (VietnamWorks): chu nam trong du lieu __next_f, ghep ca doan bi cat qua 2 lan push', () => {
-  // Ban ghi van ban RSC "<id>:T<so byte UTF-8 dang hex>,<noi dung>", ban ghi sau dinh lien khong xuong dong
   const van = '<p><strong>Yêu cầu</strong></p><p>- 2 năm kinh nghiệm React, TypeScript</p>';
   const luong = `1:HL["/_next/static/media/a.woff2","font"]\n9:I[95751,["static/chunks/app.js"],""]\n1a:T${Buffer.byteLength(van).toString(16)},${van}2d:{"skillName":"HTML5","skillId":80349}\n`;
   const cat = luong.indexOf(', TypeScript');

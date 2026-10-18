@@ -1,33 +1,17 @@
-// @ts-nocheck — chep nguyen tu public/css-patch.js (da co bai kiem); kieu nam o cac ham xuat ra.
-/**
- * CssPatch — doc, sua va ghi lai CSS ma GIU NGUYEN phan con lai cua file.
- *
- * Day la loi cua che do "code la goc": khi hoc vien keo tha tren trang that,
- * he thong khong sinh lai ca file CSS (lam mat code ho tu go) ma chi
- * chen dung mot khai bao vao dung mot rule.
- *
- * Khong dung eval, khong dung thu vien ngoai.
- */
+// @ts-nocheck
 export type QuyTacCss = { selector: string; body: string; atRule: boolean; start: number; end: number; bodyStart: number; bodyEnd: number };
 export type KhaiBaoCss = { prop: string; value: string } & Record<string, unknown>;
 
 
-/**
- * Tach CSS thanh danh sach rule o muc cao nhat.
- * Tra ve [{ selector, body, start, end, bodyStart, bodyEnd, atRule }]
- * start/end la chi so ky tu trong chuoi goc, dung de cat/dan chinh xac.
- */
 export function parseRules(css: string): QuyTacCss[] {
   const rules = [];
   let i = 0;
   const n = css.length;
 
   while (i < n) {
-    // bo qua khoang trang
     while (i < n && /\s/.test(css[i])) i++;
     if (i >= n) break;
 
-    // bo qua comment
     if (css[i] === '/' && css[i + 1] === '*') {
       const end = css.indexOf('*/', i + 2);
       i = end === -1 ? n : end + 2;
@@ -36,17 +20,15 @@ export function parseRules(css: string): QuyTacCss[] {
 
     const start = i;
 
-    // doc selector cho toi dau {
     let depth = 0;
     let bodyStart = -1;
     while (i < n) {
       if (css[i] === '{') { bodyStart = i; break; }
-      if (css[i] === ';' && depth === 0) { break; }   // at-rule khong than, vd @import
+      if (css[i] === ';' && depth === 0) { break; }
       i++;
     }
 
     if (bodyStart === -1) {
-      // @import ...;  hoac rac
       while (i < n && css[i] !== ';') i++;
       i++;
       continue;
@@ -54,7 +36,6 @@ export function parseRules(css: string): QuyTacCss[] {
 
     const selector = css.slice(start, bodyStart).trim();
 
-    // tim dau } khop, co dem long nhau cho @media
     depth = 1;
     let j = bodyStart + 1;
     while (j < n && depth > 0) {
@@ -67,7 +48,7 @@ export function parseRules(css: string): QuyTacCss[] {
       j++;
     }
 
-    const bodyEnd = j - 1;   // vi tri dau }
+    const bodyEnd = j - 1;
     rules.push({
       selector,
       body: css.slice(bodyStart + 1, bodyEnd),
@@ -83,7 +64,6 @@ export function parseRules(css: string): QuyTacCss[] {
   return rules;
 }
 
-/** Tach than rule thanh cac khai bao, giu ca vi tri de sua tai cho */
 export function parseDeclarations(body: string): KhaiBaoCss[] {
   const decls = [];
   let i = 0;
@@ -103,7 +83,6 @@ export function parseDeclarations(body: string): KhaiBaoCss[] {
     const colon = body.indexOf(':', i);
     if (colon === -1) break;
 
-    // gia tri co the chua dau ; trong ngoac, vd url(...) hay gradient
     let j = colon + 1;
     let paren = 0;
     while (j < n) {
@@ -129,36 +108,24 @@ export function parseDeclarations(body: string): KhaiBaoCss[] {
   return decls;
 }
 
-/** So sanh selector bo qua khac biet ve khoang trang */
 function sameSelector(a, b) {
   const norm = s => String(s).replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',').trim().toLowerCase();
   return norm(a) === norm(b);
 }
 
-/** Doan thut dau dong dang dung trong file de code sinh ra khong lech */
 function detectIndent(css) {
   const m = css.match(/\n([ \t]+)[a-zA-Z-]+\s*:/);
   return m ? m[1] : '  ';
 }
 
-/**
- * Chen hoac cap nhat cac thuoc tinh cho mot selector.
- * @param {string} css     noi dung file CSS hien tai
- * @param {string} selector  vd '.card' hoac '#btn'
- * @param {object} props   { 'background-color': '#fff', ... }
- *                         gia tri null/'' nghia la XOA thuoc tinh do
- * @returns {{ css: string, changed: boolean, created: boolean }}
- */
 export function setProperties(css: string, selector: string, props: Record<string, string | null | undefined>): { css: string; changed: boolean; created: boolean } {
   const entries = Object.entries(props || {});
   if (!entries.length) return { css, changed: false, created: false };
 
   const indent = detectIndent(css);
   const rules = parseRules(css);
-  // chi tim rule o muc cao nhat, khong chui vao @media de tranh sua nham
   const target = rules.find(r => !r.atRule && sameSelector(r.selector, selector));
 
-  // ── Chua co rule: them moi vao cuoi file ──
   if (!target) {
     const lines = entries
       .filter(([, v]) => v !== null && v !== '')
@@ -173,7 +140,6 @@ export function setProperties(css: string, selector: string, props: Record<strin
     };
   }
 
-  // ── Da co rule: sua tai cho ──
   let body = target.body;
   for (const [prop, value] of entries) {
     const decls = parseDeclarations(body);
@@ -192,7 +158,7 @@ export function setProperties(css: string, selector: string, props: Record<strin
     } else {
       const trimmed = body.replace(/\s+$/, '');
       const needsSemi = trimmed.length && !trimmed.endsWith(';');
-      const tail = body.slice(trimmed.length);           // giu nguyen xuong dong cuoi
+      const tail = body.slice(trimmed.length);
       body = trimmed + (needsSemi ? ';' : '') + `\n${indent}${prop}: ${value};` + (tail || '\n');
     }
   }
@@ -204,7 +170,6 @@ export function setProperties(css: string, selector: string, props: Record<strin
   };
 }
 
-/** Doc gia tri hien tai cua mot thuoc tinh trong mot selector (neu co) */
 export function getProperty(css: string, selector: string, prop: string): string | null {
   const rule = parseRules(css).find(r => !r.atRule && sameSelector(r.selector, selector));
   if (!rule) return null;
@@ -212,7 +177,6 @@ export function getProperty(css: string, selector: string, prop: string): string
   return d ? d.value : null;
 }
 
-/** Liet ke selector dang co, dung de goi y va de biet phan tu da co rule chua */
 export function listSelectors(css: string): string[] {
   return parseRules(css).filter(r => !r.atRule).map(r => r.selector);
 }

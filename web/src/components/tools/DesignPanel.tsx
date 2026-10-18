@@ -16,19 +16,13 @@ const lopO = 'h-8 w-full rounded-lg border bg-background px-2 text-sm text-foreg
 
 const MAU_TRANG_THAI = { dang: 'bg-lavender text-lavender-ink', xong: 'bg-mint text-mint-ink', loi: 'bg-destructive/10 text-destructive' } as const;
 
-/**
- * Chinh phan tu dang chon trong khung xem truoc. Code van la goc: moi thay doi chen dung
- * mot khai bao vao style.css qua CssPatch, khong sinh lai ca tep.
- */
 export function DesignPanel({ chon, files, onFilesChange }: Props) {
   const { client } = useAuth();
   const { t, lang } = useT();
   const [yeuCau, datYeuCau] = useState('');
   const oYeuCauRef = useRef<HTMLTextAreaElement>(null);
   const [trangThai, datTrangThai] = useState<{ loai: 'dang' | 'xong' | 'loi'; text: string } | null>(null);
-  // Bo tep truoc lan AI sua gan nhat, de Hoan tac (o soan duoc dieu khien nen Ctrl+Z khong lui duoc)
   const [truocAi, datTruocAi] = useState<Record<string, string> | null>(null);
-  // Tep moi nhat: AI tra loi sau vai giay, hoc vien co the da go them trong luc cho
   const filesRef = useRef(files);
   useEffect(() => { filesRef.current = files; }, [files]);
   const css = files['style.css'] || '';
@@ -39,7 +33,6 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
     if (r.changed) onFilesChange({ ...files, 'style.css': r.css });
   }
 
-  /** Gia tri dang dung: uu tien khai bao trong style.css, khong co thi lay style tinh toan tu khung xem truoc */
   function giaTriCua(f: TruongThietKe): string {
     if (!chon) return '';
     return getProperty(css, chon.selector, f.writeProp || f.prop) ?? getProperty(css, chon.selector, f.prop) ?? chon.computed[f.prop] ?? '';
@@ -47,7 +40,6 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
 
   async function hoiAi() {
     if (trangThai?.loai === 'dang') return;
-    // Nut luon bam duoc: o trong thi nhac ngay duoi o va dua con tro ve
     if (!yeuCau.trim()) {
       datTrangThai({ loai: 'loi', text: t('emptyInputHint') });
       oYeuCauRef.current?.focus();
@@ -107,7 +99,6 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
           </Button>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {/* Vung trang thai luon gan san: chi doi chu ben trong de trinh doc man hinh doc duoc */}
           <p id="dm-trang-thai" role="status" className={cn('rounded-2xl px-4 py-2 text-sm empty:hidden', trangThai && MAU_TRANG_THAI[trangThai.loai])}>{trangThai?.text ?? ''}</p>
           {truocAi && trangThai?.loai === 'xong' && (
             <Button variant="ghost" size="sm" className="rounded-full" onClick={() => { onFilesChange(truocAi); datTruocAi(null); datTrangThai(null); }}>
@@ -120,10 +111,6 @@ export function DesignPanel({ chon, files, onFilesChange }: Props) {
   );
 }
 
-/**
- * Nhap tam cho o chu: dang go do dang ("re" truoc khi thanh "red") khong ghi vao CSS — truoc day moi phim
- * deu ghi, gia tri tinh toan nhay lai ngay khi xoa o. Gia tri ngoai doi (chon phan tu khac) thi lam moi.
- */
 function useNhapTam(giaTri: string) {
   const [nhap, datNhap] = useState(giaTri);
   const [goc, datGoc] = useState(giaTri);
@@ -143,10 +130,6 @@ function OChu({ giaTri, onDoi, ...con }: { giaTri: string; onDoi: (v: string) =>
   );
 }
 
-/**
- * O so px: giu ban nhap rieng, chot khi roi o / Enter. Truoc day moi phim ghi value+'px' — xoa trang o
- * thi ghi 'px' sai va o nhay ve 0 (go 5 thanh '05'). O trong hoac khong phai so thi tra ve gia tri cu.
- */
 function OPx({ giaTri, onDoi, ...con }: { giaTri: string; onDoi: (v: string) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>) {
   const so = parseFloat(giaTri);
   const goc = Number.isFinite(so) ? String(so) : '';

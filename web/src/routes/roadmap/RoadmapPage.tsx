@@ -25,7 +25,6 @@ export function RoadmapPage() {
   const tech = timCongNghe(ds, techId);
   const tongBai = tech ? tech.levels.reduce((n, l) => n + l.lessons.length, 0) : 0;
 
-  // Tieu de / mo ta theo ngon ngu dang chon; ban tieng Viet trung khop meta server chen cho lan tai dau
   usePageMeta(tech
     ? {
         title: `${t('roadmapMetaTitle', { name: tech.name, n: tongBai })} | DevMaster Hub`,
@@ -34,10 +33,8 @@ export function RoadmapPage() {
       }
     : { title: `${t('pageNotFound')} | DevMaster Hub` });
   useEscape(() => navigate('/'));
-  // Mo mot mon hoc: bat dong ho dem thoi gian hoc (lich tren Dashboard)
   useBatDauHoc(tech?.id ?? '', 'roadmap');
 
-  // /roadmap/python/junior: dua cap do vao tam nhin
   useEffect(() => {
     if (!tech || !capTrenUrl) return;
     const giamChuyenDong = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -50,10 +47,8 @@ export function RoadmapPage() {
 
   const td = tienDoCongNghe(tech, done);
   const phanTram = new Intl.NumberFormat(lang, { style: 'percent' }).format(td.phanTram / 100);
-  // Bai "dang hoc": bai dau tien da mo ma chua xong (hoc theo thu tu)
   const gaHienTai = tech.levels.flatMap(cap => cap.lessons.map(bai => ({ cap: cap.id, bai: bai.id })))
     .find(g => baiDaMo(tech, g.cap, g.bai, done) && !done.has(khoaBai(tech.id, g.cap, g.bai)));
-  // Loi giai thich khoa chi hien mot lan, o bai khoa dau tien
   const baiKhoaDau = tech.levels.flatMap(cap => cap.lessons.map(bai => ({ cap: cap.id, bai: bai.id })))
     .find(g => !baiDaMo(tech, g.cap, g.bai, done));
 
@@ -91,11 +86,6 @@ export function RoadmapPage() {
         </Link>
       )}
 
-      {/*
-        Lo trinh: moi cap la mot doan, moi bai la mot the pastel noi nhau bang duong cham bac ha ben trai.
-        Bai dang hoc rut ra khoi duong: the oai huong nghieng nhe, noi len, co nut "phat". Bai xong: cham bac ha + dau tich.
-        Bai khoa: the mo, vien net dut.
-      */}
       <ol className="space-y-8">
         {tech.levels.map((cap, i) => {
           const c = td.theoCap[i];
@@ -108,7 +98,6 @@ export function RoadmapPage() {
                 aria-current={cap.id === capTrenUrl ? 'true' : undefined}
                 className={cn('scroll-mt-24 rounded-3xl', cap.id === capTrenUrl && 'ring-2 ring-ring/40 ring-offset-8 ring-offset-canvas')}
               >
-                {/* Dien thoai: tieu de cap chiem tron hang, so bai xuong dong rieng ben duoi */}
                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <h2 id={`tieu-de-cap-${cap.id}`} className="flex min-w-0 flex-col items-start gap-y-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
                     <span className={cn('rounded-full px-3 py-1 text-sm font-bold text-white dark:text-background', MAU_CAP[cap.id] ?? 'bg-primary')}>{cap.name}</span>
@@ -121,7 +110,6 @@ export function RoadmapPage() {
                   {cap.lessons.map(bai => {
                     const xong = done.has(khoaBai(tech.id, cap.id, bai.id));
                     const oDay = gaHienTai?.cap === cap.id && gaHienTai.bai === bai.id;
-                    // Hoc theo thu tu: bai chua toi luot hien khoa, khong vao duoc
                     if (!baiDaMo(tech, cap.id, bai.id, done)) {
                       const laKhoaDau = baiKhoaDau?.cap === cap.id && baiKhoaDau.bai === bai.id;
                       return (
@@ -155,13 +143,11 @@ export function RoadmapPage() {
                               {xong && <span className="sr-only"> {t('statCompleted')}</span>}
                             </span>
                           </span>
-                          {/* Dien thoai: chi dau tich (chu "Hoan thanh" da co san o sr-only trong ten bai), tu sm hien ca chip */}
                           {xong && (
                             <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-mint p-1 text-xs font-semibold text-mint-ink sm:px-2.5 sm:py-0.5">
                               <Check className="size-3.5" strokeWidth={3} /><span className="hidden sm:inline">{t('statCompleted')}</span>
                             </span>
                           )}
-                          {/* Danh dau bai dang hoc nam cuoi the, canh nut phat; trinh doc man hinh da nghe qua aria-current="step" */}
                           {oDay && <span aria-hidden="true" className="hidden shrink-0 rounded-full bg-card px-2.5 py-0.5 text-xs font-semibold text-lavender-ink sm:inline-block">{t('youAreHere')}</span>}
                           {oDay
                             ? <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><Play className="size-4 translate-x-px fill-current" /></span>

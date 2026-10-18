@@ -11,14 +11,12 @@ import type { QuizBai } from './use-quiz-bai';
 const SO_CAU = 4;
 const chuCai = (i: number) => String.fromCharCode(65 + i);
 
-/** Mang ket qua: tu 80% bac ha, tu 50% vang bo, duoi do do nhat */
 const mauDiem = (pt: number) => (pt >= 80 ? 'bg-mint text-mint-ink' : pt >= 50 ? 'bg-butter text-butter-ink' : 'bg-destructive/10 text-destructive');
 const nhanXetDiem = (pt: number) => (pt >= 80 ? 'scoreExcellent' : pt >= 50 ? 'scoreGood' : 'scoreNeedsReview');
 
 export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai: QuizBai; aiEnabled: boolean | undefined }) {
   const { t } = useT();
   const { quiz, dangTao } = quizBai;
-  // Mot vung live luon gan san (ca luc dang tao lan luc da cham): chi doi chu nen trinh doc man hinh doc chac chan
   let thongBao = '';
   if (dangTao) thongBao = t('generatingQuiz');
   else if (quiz?.submitted) {
@@ -41,7 +39,6 @@ function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai
 
   if (dangTao) {
     return (
-      // Trinh doc man hinh nghe qua vung live o tren, khong doc hai lan
       <div aria-hidden="true" className="flex items-center gap-3 rounded-3xl bg-lavender p-6 font-medium text-lavender-ink">
         <Loader2 className="size-5 motion-safe:animate-spin" aria-hidden="true" /> {t('generatingQuiz')}
       </div>
@@ -84,7 +81,6 @@ function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai
   const diem = quiz.questions.filter((q, i) => quiz.answers[i] === q.correct).length;
   const phanTram = Math.round((diem / tong) * 100);
 
-  // Nut Nop luon bam duoc: con cau chua lam thi noi so cau va dua con tro toi cau dau tien con thieu
   function bamNop() {
     if (!quiz) return;
     const thieu = quiz.questions.findIndex((_, i) => quiz.answers[i] === undefined);
@@ -104,7 +100,6 @@ function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai
         const daChon = quiz.answers[i];
         const dung = daChon === q.correct;
         return (
-          // min-w-0: <fieldset> mac dinh min-width: min-content — dong code dai se day rong ca trang tren dien thoai
           <fieldset key={i} className="min-w-0 rounded-3xl bg-card p-5 shadow-soft">
             <legend className="float-left mb-3 w-full">
               <span className="rounded-full bg-sky px-2.5 py-0.5 text-xs font-semibold text-sky-ink">{t('quizQuestion', { n: i + 1 })}</span>

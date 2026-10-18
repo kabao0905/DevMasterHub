@@ -1,4 +1,3 @@
-// Ket qua cham project: diem tong, 5 tieu chi, diem tung file, cau truc, tung module, phan tich tinh, nhan xet.
 import { memo, type ReactNode } from 'react';
 import { ChevronDown, CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useT } from '@/lib/i18n';
@@ -11,7 +10,6 @@ const NHAN_TRANG_THAI: Record<TrangThaiCham, string> = {
 };
 const ICON_SACH = <CircleCheck className="size-4 text-mint-ink" aria-hidden="true" />;
 
-/** Chip diem (cung nguong voi app cu, quy ve /100 de chon mau) */
 function ChipDiem({ diem, tren = 100 }: { diem: number | null; tren?: number }) {
   return (
     <span className={cn(CHIP, 'shrink-0 font-mono', CHIP_DIEM[mucDiem(diem == null ? null : (diem * 100) / tren)])}>
@@ -20,7 +18,6 @@ function ChipDiem({ diem, tren = 100 }: { diem: number | null; tren?: number }) 
   );
 }
 
-/** Mui ten cua <summary> (display flex lam mat dau mo/dong mac dinh): xoay khi mo */
 const MuiTen = () => (
   <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
 );
@@ -44,7 +41,6 @@ function Muc({ tieuDe, children }: { tieuDe: ReactNode; children: ReactNode }) {
 
 const DanhSach = ({ ds }: { ds: string[] }) => <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">{ds.map((x, i) => <li key={i}>{x}</li>)}</ul>;
 
-/** memo: kq giu nguyen tham chieu khi go code / chat, khong ve lai ca bang diem moi phim */
 export const KetQuaChamView = memo(function KetQuaChamView({ kq }: { kq: KetQuaCham }) {
   const { t } = useT();
   const sr = kq.structureReview;

@@ -72,7 +72,6 @@ test('Back tra lai trang React tu bfcache: nap ban chup moi hon do trang React s
   act(() => phat('SIGNED_IN', { user: { id: 'u1' } }));
   await waitFor(() => expect(result.current.user?.id).toBe('u1'));
   qc.setQueryData(['exercise', 'u1', 'k'], { answers: { 0: 'cu' } });
-  // Mot trang React khac (mo sau, nap tu ban chup cua trang nay roi go tiep) da roi di va ghi ban chup moi
   const trangSau = new QueryClient();
   trangSau.setQueryData(['exercise', 'u1', 'k'], { answers: { 0: 'cu + moi' } });
   chupViecDangLam(trangSau, 'u1');
@@ -103,7 +102,7 @@ test('mo trang ma phien cu da het han (INITIAL_SESSION rong, khong co SIGNED_OUT
   localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true}');
   localStorage.setItem('devmaster_hub_profile_cache', '{"id":"u1"}');
   const { client, phat } = giaSupabase();
-  client.auth.getSession.mockImplementation(() => new Promise(() => {}));   // su kien den truoc
+  client.auth.getSession.mockImplementation(() => new Promise(() => {}));
   moAuth(client);
   act(() => phat('INITIAL_SESSION', null));
   await waitFor(() => expect(localStorage.getItem('devmaster_hub_progress_cache')).toBeNull());

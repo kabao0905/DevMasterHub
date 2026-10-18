@@ -6,7 +6,6 @@ const theViec = (i, ten) => `<div><a href="/vi/tim-viec-lam/${ten}-${i}.AB${1000
 const danhSach = (tu, den, ten = 'lap-trinh-vien-react') => `<html><body><a href="/vi/dang-nhap">Đăng nhập</a>${
   Array.from({ length: den - tu + 1 }, (_, k) => theViec(tu + k, ten)).join('')}</body></html>`;
 
-/** tai gia: map URL -> HTML; URL khong co thi 404. Ghi lai thu tu goi */
 function giaTai(trang) {
   const da = [];
   const tai = async url => {
@@ -16,7 +15,6 @@ function giaTai(trang) {
   return { tai, da };
 }
 
-/** Jev gia: cham link theo tu trong link, cham viec theo so thu tu (viec so lon phu hop hon), laIT theo ten */
 function giaJev({ hong = false } = {}) {
   const goi = [];
   return {
@@ -135,7 +133,6 @@ test('trang 2 co menu ky nang cung khuon voi tin (ITviec): khong lan vao danh sa
   assert.ok(kq.viec.every(v => !/click_source|Python$|C\+\+/.test(v.url + v.title)));
 });
 
-/** Trang chi tiet co JSON-LD JobPosting cho tin so i */
 const chiTiet = (i, kyNang = 'React, TypeScript') => `<html><head><script type="application/ld+json">${JSON.stringify({
   '@type': 'JobPosting', title: `React Developer ${i}`, hiringOrganization: { name: `Cty ${i}`, logo: `https://cdn.x/logo${i}.png` },
   jobLocation: { address: { addressRegion: 'Hồ Chí Minh' } }, baseSalary: { currency: 'USD', value: { minValue: 1000, maxValue: 2000 } },
@@ -157,7 +154,6 @@ test('mo trang chi tiet tin tot nhat: lay cong ty, logo, dia diem, luong, ky nan
   assert.deepStrictEqual(
     { congTy: v1.congTy, logo: v1.logo, diaDiem: v1.diaDiem, luong: v1.luong, hinhThuc: v1.hinhThuc, kyNang: v1.kyNang },
     { congTy: 'Cty 1', logo: 'https://cdn.x/logo1.png', diaDiem: 'Hồ Chí Minh', luong: '1,000 - 2,000 USD', hinhThuc: 'FULLTIME', kyNang: ['React', 'TypeScript'] });
-  // Jev cham lai bang du lieu day du (co ky nang) — lan cham sau cung thay "React, TypeScript"
   const chamCuoi = jev.goi.filter(g => Object.keys(g.questions).some(k => k.startsWith('fit'))).at(-1);
   assert.match(JSON.stringify(chamCuoi.questions), /React, TypeScript/);
 });

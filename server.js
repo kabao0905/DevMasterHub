@@ -14,7 +14,6 @@ const { taiTheoChuyenHuong, layTieuDe } = require('./lib/net-guard.js');
 const { trichNoiDungTrang } = require('./lib/trich-trang.js');
 const { moPhongBi } = require('./lib/phong-bi.js');
 
-// Nap .env truoc khi doc bat ky bien nao. Bien dat san tu moi truong (Render) thang .env.
 try {
   napEnv(fs.readFileSync(path.join(__dirname, '.env'), 'utf8'));
 } catch (e) {
@@ -30,7 +29,6 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || '';
 
-// Mot nha cung cap treo khong duoc giu ca chuoi du phong lai mai mai
 const AI_TIMEOUT_MS = 90000;
 const JOBS_TIMEOUT_MS = 8000;
 const coHan = ms => AbortSignal.timeout(ms);
@@ -38,8 +36,6 @@ const coHan = ms => AbortSignal.timeout(ms);
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nlkljhpqwepabglrqkmz.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_0s-SglEeMENWRqgbC2QWuQ_w0pzWJMe';
 
-// App React: dev = Vite nhung trong Express (`node server.js --dev`), prod = ban build trong dist/.
-// Chua build (vd. Render chua doi Build Command) thi tra 503 kem huong dan.
 const DIST_DIR = process.env.DIST_DIR || path.join(__dirname, 'dist');
 const CHE_DO_DEV = process.argv.includes('--dev');
 const REACT_HTML = CHE_DO_DEV ? null : (() => {
@@ -63,17 +59,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// /index.html cu (bookmark, crawler) ve /. De static tra ban React o day thi router React
-// coi la URL la, tai lai trang va nhan lai chinh no — vong lap vo han.
 app.get('/index.html', (req, res) => {
   const q = req.originalUrl.indexOf('?');
   res.redirect(301, q === -1 ? '/' : '/' + req.originalUrl.slice(q));
 });
 
-// Dev: Vite phuc vu /src, /@vite, HMR va file trong web/public (JSON giao trinh)
 app.use((req, res, next) => (vite && !req.path.startsWith('/api') ? vite.middlewares(req, res, next) : next()));
 
-// Prod: file cua ban build. Ten trong assets/ co hash nen cache 1 nam; JSON giao trinh thi kiem lai moi lan.
 if (!CHE_DO_DEV) {
   app.use(express.static(DIST_DIR, {
     index: false,
@@ -146,8 +138,6 @@ async function callGemini(system, messages, maxTokens = 4096) {
   }));
 
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
-  // Gemini 3: Google khuyen de temperature mac dinh (ha xuong de bi lap). Token suy nghi tinh chung
-  // vao maxOutputTokens nen cong them phan rieng cho muc suy nghi high.
   const payload = {
     system_instruction: system ? { parts: [{ text: system }] } : undefined,
     contents: formattedContents,
@@ -170,7 +160,6 @@ async function callGemini(system, messages, maxTokens = 4096) {
   }
 
   const data = await res.json();
-  // Bo phan suy nghi (neu co) va noi cac phan chu: cau tra loi co the bi chia nhieu phan
   const parts = data.candidates?.[0]?.content?.parts || [];
   return parts.filter(p => !p.thought && typeof p.text === 'string').map(p => p.text).join('');
 }
@@ -240,7 +229,6 @@ async function callGroq(system, messages, temperature = 0.7, maxTokens = 4096) {
 async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4096, taskType = 'general') {
   if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY not configured');
 
-  // Model luon do server chon theo taskType — client khong duoc chi dinh
   const selectedModel = MO_HINH_THEO_VIEC[taskType] || MO_HINH_THEO_VIEC.general;
   console.log(`[OpenRouter] Routing taskType="${taskType}" -> Model="${selectedModel}"`);
 
@@ -257,7 +245,6 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
       'X-Title': 'DevMaster Hub'
     },
     body: JSON.stringify(laGemini3(selectedModel)
-      // Gemini 3: OpenRouter doi reasoning.effort sang thinkingLevel; de temperature mac dinh, cong token cho suy nghi
       ? { model: selectedModel, messages: formattedMessages, max_tokens: maxTokens + suyNghiCho(taskType).themToken, reasoning: { effort: suyNghiCho(taskType).muc } }
       : { model: selectedModel, messages: formattedMessages, temperature, max_tokens: maxTokens }),
     signal: coHan(AI_TIMEOUT_MS)
@@ -272,9 +259,6 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
   return data.choices?.[0]?.message?.content || '';
 }
 
-// Goi REST truc tiep thay vi SDK vi du an khong them phu thuoc npm.
-// claude-opus-5-5 tra 400 neu gui temperature, va luon bat thinking: khoi dau
-// tien cua content co the la 'thinking' nen phai gom cac khoi 'text'.
 async function callClaude(system, messages, maxTokens = 4096) {
   if (!CLAUDE_API_KEY) throw new Error('CLAUDE_API_KEY not configured');
 
@@ -307,7 +291,6 @@ async function callClaude(system, messages, maxTokens = 4096) {
 }
 
 app.post('/api/ai', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 30, scope: 'ai' }), async (req, res) => {
-  // model va max_tokens tu client khong duoc tin: moi request tinh tien vao khoa cua server
   const yc = chuanHoaYeuCauAi(req.body);
   if (yc.loi) return res.status(400).json({ error: yc.loi });
   const { system, messages, temperature, maxTokens, taskType } = yc;
@@ -333,7 +316,6 @@ app.post('/api/ai', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 30, sco
     try {
       console.log(`[AI Router] Attempting provider: ${provider.name}...`);
       const text = await provider.fn();
-      // Tra ve rong thi client cung bao loi — thu nha cung cap ke tiep con hon
       if (!text) throw new Error('Phản hồi rỗng');
       console.log(`[AI Router] Success with ${provider.name}!`);
 
@@ -354,7 +336,6 @@ app.post('/api/ai', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 30, sco
   });
 });
 
-// Chay code C++ cua bai hoc (DSA, C++): qua dich vu bien dich ben ngoai, xem lib/chay-cpp.js
 app.post('/api/run-cpp', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 20, scope: 'run-cpp' }), async (req, res) => {
   const yc = chuanHoaYeuCauChay(req.body);
   if (yc.loi) return res.status(400).json({ error: yc.loi });
@@ -409,7 +390,6 @@ const NON_IT_BLACKLIST = [
   'lawyer', 'legal counsel', 'paralegal'
 ];
 
-// Bo HTML trong mo ta viec lam roi cat ngan
 const tomTat = (html, n) => String(html || '').replace(/<[^<>]*>/g, '').substring(0, n) + '...';
 
 async function layVietnamWorks(cleanTechQuery, coreTech, isVi) {
@@ -479,7 +459,6 @@ async function layVietnamWorks(cleanTechQuery, coreTech, isVi) {
   });
 }
 
-// Moi nguon ngoai deu la du lieu ben thu ba: link khong phai http/https thi bo ca viec
 const ngoaiVN = { isHcm: false, isHn: false, isDanang: false };
 
 async function layRemoteOK(tuKhoa) {
@@ -594,7 +573,6 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
     const targetCity = doanThanhPho(queryLower);
     const { cleanTechQuery, coreTech } = lamSachTuKhoa(queryLower);
 
-    // Cac nguon doc lap nhau nen goi song song; nguon nao loi/treo thi bo qua nguon do
     const tenNguon = ['VietnamWorks', 'RemoteOK', 'Arbeitnow', 'Remotive', 'WeWorkRemotely'];
     const ketQua = await Promise.allSettled([
       layVietnamWorks(cleanTechQuery, coreTech, isVi),
@@ -609,8 +587,6 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
       return [];
     });
 
-    // coreTech cung la tu khop: "intern developer" bo cap bac con "developer", neu khong
-    // thi chi viec co dung nguyen cum "intern developer" moi qua loc -> nguoi moi luon 0 viec
     let synonyms = [...new Set([cleanTechQuery, queryLower, coreTech].filter(Boolean))];
     for (const [k, synList] of Object.entries(TECH_ROLE_SYNONYMS)) {
       if (cleanTechQuery.includes(k) || synList.some(s => cleanTechQuery.includes(s))) {
@@ -706,8 +682,6 @@ const DAU_TRINH_DUYET = Object.freeze({
   'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8'
 });
 
-// Doc link viec lam theo y dinh cau hoi: mot tin, ca danh sach tren trang, hay ca website.
-// Gemini doan y dinh, code + Jev (System One) lat trang va cham viec — xem lib/doc-viec-link.js.
 app.post('/api/doc-viec-link', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 6, scope: 'doc-viec' }), async (req, res) => {
   const yc = chuanHoaYeuCauDocViec(req.body);
   if (yc.loi) return res.status(400).json({ error: yc.loi });
@@ -736,8 +710,6 @@ app.post('/api/crawl', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 10, 
   const { url } = req.body || {};
   console.log(`[Crawl] Fetching live webpage: ${String(url).slice(0, 300)}`);
 
-  // taiTrang kiem dia chi ngay luc mo socket (chong DNS rebinding) va chi doc toi 2MB.
-  // Theo toi da 3 lan chuyen huong (http -> https, link tracking) — moi buoc van qua taiTrang.
   let trang;
   try {
     trang = await taiTheoChuyenHuong(String(url), {
@@ -757,7 +729,6 @@ app.post('/api/crawl', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 10, 
     return res.status(502).json({ error: 'Không thể tải trang: ' + err.message });
   }
 
-  // TopCV, Indeed... chan bot bang 403/429: noi ro de AI va nguoi hoc biet ly do
   if (trang.status === 403 || trang.status === 429) {
     return res.status(502).json({ error: `Trang này chặn truy cập tự động (HTTP ${trang.status})` });
   }
@@ -774,7 +745,6 @@ app.post('/api/crawl', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 10, 
     success: true,
     url: trang.url,
     pageTitle: layTieuDe(trang.body) || 'Trang tuyển dụng',
-    // Trang render bang JS (VietnamWorks...) thi lay tu meta / JSON-LD / du lieu Next.js
     content: trichNoiDungTrang(trang.body).substring(0, 6500)
   });
 });
@@ -847,12 +817,9 @@ function escapeAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/** Chen title/description/canonical/og/twitter theo URL vao template HTML cua app React */
 function chenMeta(template, urlPath) {
   const { title, desc, url } = metaForPath(urlPath);
   const t = escapeAttr(title), d = escapeAttr(desc), u = escapeAttr(url);
-  // Gia tri chen vao di qua ham: chuoi thay the hieu $' $` $& la ky hieu dac biet,
-  // ma url lay tu duong dan nguoi dung go — "/x$'" tung lam ca trang bi nhan ban.
   const gan = giaTri => (_, dau) => dau + giaTri;
   return template
     .replace(/<title>[\s\S]*?<\/title>/, () => `<title>${t}</title>`)
@@ -915,7 +882,6 @@ app.get('*', async (req, res, next) => {
     return res.status(503).type('text/plain; charset=utf-8').send('Chưa có bản build giao diện. Chạy: npm run build');
   }
   try {
-    // URL la van tra trang React (router hien "Không tìm thấy") nhung voi ma 404 cho may tim kiem
     const html = await renderReact(req);
     res.status(laUrlReact(req.path) ? 200 : 404).type('html').set('Cache-Control', 'no-cache').send(html);
   } catch (err) {
@@ -938,7 +904,6 @@ async function khoiDong() {
   server.listen(PORT, inBangKhoiDong);
 }
 
-// Bo kiem require file nay de lay app ma khong mo cong
 module.exports = app;
 if (require.main === module) khoiDong();
 

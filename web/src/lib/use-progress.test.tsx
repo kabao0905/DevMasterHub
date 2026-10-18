@@ -16,7 +16,6 @@ function boc(gia: ReturnType<typeof giaSupabase>) {
   );
 }
 
-/** Them ban dich va noi hien toast cho hook co bao loi */
 function bocDayDu(gia: ReturnType<typeof giaSupabase>) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   localStorage.setItem('devmaster_hub_lang', 'vi');
@@ -93,7 +92,6 @@ test('tich hoan thanh: ghi dung mot dong, co completed_at, va cache cho app cu',
   let tha!: () => void;
   gia.treo.lesson_progress = new Promise<void>(r => { tha = r; });
   act(() => result.current.d('python', 'newbie', 'b'));
-  // Doi tren giao dien ngay, chua can server tra loi
   await waitFor(() => expect(result.current.p.isDone('python', 'newbie', 'b')).toBe(true));
   tha();
   await waitFor(() => expect(ghiTienDo(gia)).toHaveLength(1));
@@ -139,7 +137,6 @@ test('Supabase tu choi ghi: hoan tac va bao loi; lan dat sau ghi lai duoc', asyn
 test('chua tai duoc tien do tu server (loi): van ghi "xong" len server, khong dung den cache cua may', async () => {
   const gia = giaSupabase({ bang: { lesson_progress: [] } });
   const daGhi: unknown[] = [];
-  // Doc tien do loi (mat mang luc tai), ghi van duoc
   gia.client.from.mockImplementation(() => ({
     select: () => ({ eq: () => Promise.resolve({ data: null, error: { message: 'mat mang' } }) }),
     upsert: (p: unknown) => { daGhi.push(p); return Promise.resolve({ data: null, error: null }); }
@@ -147,10 +144,8 @@ test('chua tai duoc tien do tu server (loi): van ghi "xong" len server, khong du
   const kq = renderHook(() => ({ p: useProgress(), d: useDanhDauXong() }), { wrapper: bocDayDu(gia) });
   await waitFor(() => expect(kq.result.current).not.toBeNull());
   act(() => gia.phat('SIGNED_IN', { user: { id: 'u1' } }));
-  // Cache tren may (vd app cu vua ghi) co nhieu bai hon nhung gi giao dien dang thay
   localStorage.setItem('devmaster_hub_progress_cache', '{"python.newbie.a":true,"python.newbie.c":true}');
   await new Promise(r => setTimeout(r, 50));
-  // Tai loi thi thoi "dang tai" (truoc day giu true mai -> trang bai bi khoa xoay skeleton khong dung)
   expect(kq.result.current.p.loading).toBe(false);
   act(() => kq.result.current.d('python', 'newbie', 'b'));
   await waitFor(() => expect(daGhi).toEqual([expect.objectContaining({ lesson_id: 'b', completed: true })]));

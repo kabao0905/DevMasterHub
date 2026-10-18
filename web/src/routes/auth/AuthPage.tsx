@@ -13,18 +13,15 @@ import { cn } from '@/lib/utils';
 import { doManhMatKhau, type DoManh } from '@/lib/mat-khau';
 
 type CheDo = 'login' | 'register';
-/** O nhap gan voi loi; null = loi chung cua ca form (sai mat khau, loi mang...) */
 type Truong = 'ten' | 'matKhau' | 'nhapLai' | null;
 type Loi = { truong: Truong; thongBao: string };
 
-/** bac: so vach sang (0..2) tren thanh do manh */
 const MUC_MANH: Record<DoManh, { bac: number; nen: string; chu: string; khoa: string }> = {
   yeu: { bac: 0, nen: 'bg-destructive', chu: 'text-destructive', khoa: 'pwWeak' },
   trungBinh: { bac: 1, nen: 'bg-butter-ink', chu: 'text-butter-ink', khoa: 'pwMedium' },
   manh: { bac: 2, nen: 'bg-mint-ink', chu: 'text-mint-ink', khoa: 'pwStrong' }
 };
 
-/** Ma loi tu lib/auth thuoc o nao (de danh dau aria-invalid va dua focus toi) */
 const TRUONG_CUA_MA: Record<MaLoiAuth, Truong> = {
   authWrongCredentials: null,
   authUsernameShort: 'ten',
@@ -34,20 +31,17 @@ const TRUONG_CUA_MA: Record<MaLoiAuth, Truong> = {
   authPasswordShort: 'matKhau'
 };
 
-// Gioi thieu that cua nen tang (cung chu voi bang chao mung), moi diem mot o pastel
 const DIEM_NOI_BAT = [
   { Icon: Map, khoa: 'welcomePoint1', nen: 'bg-mint', muc: 'text-mint-ink', rong: 'col-span-2' },
   { Icon: Bot, khoa: 'welcomePoint2', nen: 'bg-lavender', muc: 'text-lavender-ink', rong: '' },
   { Icon: Rocket, khoa: 'welcomePoint3', nen: 'bg-butter', muc: 'text-butter-ink', rong: '' }
 ] as const;
 
-/** Chi quay lai duong dan noi bo ("/x"), khong phai "//host" hay URL ngoai */
 function noiQuayLai(state: unknown): string {
   const tu = (state as { from?: unknown } | null)?.from;
   return typeof tu === 'string' && /^\/(?![/\\])/.test(tu) ? tu : '/';
 }
 
-/** Ben trai (man hinh lon): tieu de va cac o pastel gioi thieu tinh nang */
 function GioiThieu() {
   const { t } = useT();
   return (
@@ -69,7 +63,6 @@ function GioiThieu() {
   );
 }
 
-/** Dong loi ngay duoi o nhap: aria-describedby cua o tro toi id nay */
 function LoiTruong({ id, loi }: { id: string; loi: string }) {
   return <p id={id} role="alert" className="text-sm font-medium text-destructive">{loi}</p>;
 }
@@ -81,7 +74,6 @@ export function AuthPage() {
   const location = useLocation();
   const [thamSo, datThamSo] = useSearchParams();
   const quayLai = noiQuayLai(location.state);
-  // Che do nam tren URL (?mode=register) de gui link thang toi form dang ky
   const cheDo: CheDo = thamSo.get('mode') === 'register' ? 'register' : 'login';
   const [ten, datTen] = useState('');
   const [matKhau, datMatKhau] = useState('');
@@ -92,15 +84,12 @@ export function AuthPage() {
   const oTen = useRef<HTMLInputElement>(null);
   const oMatKhau = useRef<HTMLInputElement>(null);
   const oNhapLai = useRef<HTMLInputElement>(null);
-  // Chi cham khi dang ky: luc dang nhap mat khau da dat tu truoc, cham khong giup gi
   const doManh = cheDo === 'register' ? doManhMatKhau(matKhau) : null;
 
-  // Nguoi chua dang nhap (ca may tim kiem) mo / se thay trang nay: giu tieu de trang chu
   usePageMeta({ title: TIEU_DE_TRANG_CHU });
 
   if (!loading && user && !dangGui) return <Navigate to={quayLai} replace />;
 
-  /** Hien loi va dua focus toi o sai (loi chung: o mat khau, thuong la cho go nham) */
   function baoLoi(truong: Truong, thongBao: string) {
     datLoi({ truong, thongBao });
     const o = { ten: oTen, matKhau: oMatKhau, nhapLai: oNhapLai }[truong ?? 'matKhau'];
@@ -108,7 +97,6 @@ export function AuthPage() {
   }
 
   function doiCheDo(v: string) {
-    // Giu state (trang can quay lai sau khi dang nhap) khi doi tham so URL
     datThamSo(v === 'register' ? { mode: 'register' } : {}, { replace: true, state: location.state });
     datLoi(null);
   }
@@ -126,7 +114,6 @@ export function AuthPage() {
     } catch (err) {
       datDangGui(false);
       const thongBao = err instanceof Error ? err.message : String(err);
-      // Ma loi da biet thi dich; loi la (tu Supabase, mang) hien nguyen van
       if (laMaLoiAuth(thongBao)) baoLoi(TRUONG_CUA_MA[thongBao], t(thongBao));
       else baoLoi(null, thongBao);
     }
@@ -205,7 +192,6 @@ export function AuthPage() {
 
       <main className="flex items-center justify-center px-4 py-10 sm:px-5 sm:py-12">
         <div className="w-full max-w-md rounded-3xl bg-card p-6 shadow-soft sm:p-8">
-          {/* Man hinh nho khong co cot gioi thieu: van co h1 o day */}
           <div className="mb-6 lg:hidden">
             <BrandMark />
             <h1 className="mt-4 font-display text-3xl leading-tight font-extrabold tracking-tight text-balance">{t('authSubtitle')}</h1>
@@ -216,7 +202,6 @@ export function AuthPage() {
               <TabsTrigger value="login" className="flex-1 rounded-full">{t('authLogin')}</TabsTrigger>
               <TabsTrigger value="register" className="flex-1 rounded-full">{t('authRegister')}</TabsTrigger>
             </TabsList>
-            {/* Moi tab mot tabpanel that (aria-controls cua tab tro dung cho); chi panel dang chon ve form */}
             {(['login', 'register'] as const).map(v => (
               <TabsContent key={v} value={v} className="mt-4 rounded-2xl">{v === cheDo && form}</TabsContent>
             ))}

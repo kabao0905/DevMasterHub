@@ -1,5 +1,3 @@
-// Bang chao mung sau khi tao tai khoan: gioi thieu nen tang va hoi muc tieu hoc moi ngay.
-// HopMucTieu dung lai de doi muc tieu tu lich hoc tren Dashboard.
 import { useState } from 'react';
 import { Bot, Loader2, Map, Rocket } from 'lucide-react';
 import { RadioGroup } from 'radix-ui';
@@ -11,17 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-// Moi diem noi bat mot o mau pastel: lo trinh = mint, AI = lavender, du an/viec lam = butter
 const DIEM_NOI_BAT = [
   { Icon: Map, khoa: 'welcomePoint1', nen: 'bg-mint', muc: 'text-mint-ink' },
   { Icon: Bot, khoa: 'welcomePoint2', nen: 'bg-lavender', muc: 'text-lavender-ink' },
   { Icon: Rocket, khoa: 'welcomePoint3', nen: 'bg-butter', muc: 'text-butter-ink' }
 ] as const;
 
-/**
- * chaoMung: lan dau (co gioi thieu, bat buoc chon — khong dong bang Esc/bam ra ngoai).
- * Khong chaoMung: doi muc tieu, dong duoc.
- */
 export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDong: () => void; chaoMung?: boolean }) {
   const { t } = useT();
   const { profile, user } = useAuth();
@@ -44,7 +37,6 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
 
   return (
     <Dialog open={mo} onOpenChange={m => { if (!m && !chaoMung) onDong(); }}>
-      {/* Bang doi muc tieu khong co dong mo ta: aria-describedby={undefined} bao Radix khoi canh bao thieu Description */}
       <DialogContent className="gap-5 rounded-3xl bg-card p-6 shadow-soft ring-0 sm:max-w-md" showCloseButton={!chaoMung}
         {...(chaoMung ? {} : { 'aria-describedby': undefined })}
         onEscapeKeyDown={e => { if (chaoMung) e.preventDefault(); }}
@@ -69,7 +61,6 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
 
         <fieldset className="space-y-3">
           <legend className="text-sm font-semibold">{t('dailyGoalQuestion')}</legend>
-          {/* Radix RadioGroup: mot diem Tab, mui ten trai/phai doi lua chon (roving tabindex) */}
           <RadioGroup.Root value={String(chon)} onValueChange={v => datChon(Number(v))} orientation="horizontal" loop
             aria-label={t('dailyGoalQuestion')} className="mt-3 grid grid-cols-5 gap-2">
             {CHON_MUC_TIEU.map(n => (
@@ -95,7 +86,6 @@ export function HopMucTieu({ mo, onDong, chaoMung = false }: { mo: boolean; onDo
   );
 }
 
-/** Dat o khung app: nguoi chua chon muc tieu (vua tao tai khoan) thi hien bang chao mung */
 export function ChaoMung() {
   const { daChon } = useMucTieu();
   const [daDong, datDaDong] = useState(false);

@@ -1,4 +1,3 @@
-// HTML khong do minh viet tung chu (ban dich may cua ly thuyet...) phai qua day truoc khi chen.
 import DOMPurify from 'dompurify';
 
 export function lamSachHtml(html: string): string {

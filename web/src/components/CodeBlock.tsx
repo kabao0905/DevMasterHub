@@ -6,11 +6,9 @@ import { tenNgonNgu, toMauCode } from '@/lib/highlight';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-/** Khoi code da to mau, co nut chep */
 export function CodeBlock({ code, lang, className }: { code: string; lang?: string; className?: string }) {
   const { t } = useT();
   const [daChep, datDaChep] = useState(false);
-  // toMauCode tra HTML da escape tung token nen chen duoc
   const html = useMemo(() => toMauCode(code, lang), [code, lang]);
   const nhan = lang ? `${t('codeBlockLabel')} (${lang})` : t('codeBlockLabel');
 
@@ -35,9 +33,7 @@ export function CodeBlock({ code, lang, className }: { code: string; lang?: stri
         className="absolute top-2 right-2 h-7 bg-background/90 px-2 text-xs text-muted-foreground hover:text-foreground">
         {daChep ? <><Check aria-hidden="true" />{t('copied')}</> : t('copyCode')}
       </Button>
-      {/* Bao ket qua chep cho trinh doc man hinh: vung luon gan san, chi doi chu */}
       <span role="status" className="sr-only">{daChep ? t('copied') : ''}</span>
-      {/* Cuon ngang bang ban phim duoc (tabIndex); translate="no": trinh duyet dich trang khong sua code */}
       <pre tabIndex={0} translate="no" aria-label={nhan}
         className="overflow-x-auto rounded-xl p-4 pr-28 font-mono text-[13px] leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
         <code className={`language-${tenNgonNgu(lang) || 'plaintext'}`} dangerouslySetInnerHTML={{ __html: html }} />

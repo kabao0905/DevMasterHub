@@ -10,7 +10,6 @@ import { LoadError } from '@/components/LoadError';
 import { cn } from '@/lib/utils';
 import { BienTuyen } from '@/components/BienTuyen';
 
-/** So ket qua toi da timBaiHoc tra ve: cham tran thi noi ro chi dang hien phan dau */
 const GIOI_HAN = 50;
 
 export function SearchResults({ q, ds }: { q: string; ds: CongNgheTomTat[] }) {
@@ -21,14 +20,12 @@ export function SearchResults({ q, ds }: { q: string; ds: CongNgheTomTat[] }) {
 
   if (isError) return <LoadError onRetry={() => refetch()} />;
 
-  // Vung thong bao luon gan san (rong khi dang tai): trinh doc man hinh nghe duoc moi lan so ket qua doi
   const thongBao = isLoading ? ''
     : !ketQua.length ? t('noSearchResults', { q })
       : ketQua.length >= GIOI_HAN ? t('searchResultsCapped', { n: GIOI_HAN }) : t('searchFound', { n: ketQua.length });
 
   return (
     <section className="space-y-3">
-      {/* Mot phan tu duy nhat, chi doi chu va kieu: khong ket qua thi chinh no thanh the xanh troi */}
       <p role="status" className={cn(!isLoading && !ketQua.length
         ? 'flex flex-col items-center gap-3 rounded-3xl bg-sky px-6 py-10 text-center font-medium text-balance break-words text-sky-ink'
         : 'text-sm text-muted-foreground')}>

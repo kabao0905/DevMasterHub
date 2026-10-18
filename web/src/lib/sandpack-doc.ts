@@ -1,10 +1,6 @@
-// Ghep cac tep cua IDE thanh mot tai lieu HTML cho khung xem truoc (chep tu public/sandpack-live.js).
-// Ham thuan: token va script Thiet ke do ben goi truyen vao, khong doc trang thai chung nao.
-
 export type Preset = { label: string; files: Record<string, string>; libs?: string[]; entry: string; mode?: 'console' };
 export type TaiLieu = { doc: string; token: string };
 
-/** </script> trong code nhung vao trang se dong the som: doi thanh <\/script */
 function chanDongThe(s: string, the: 'script' | 'style'): string {
   return s.replace(new RegExp('</' + the, 'gi'), '<\\/' + the);
 }
@@ -62,10 +58,6 @@ document.getElementById('btn').addEventListener('click', () => {
 });`
 };
 
-/**
- * Moi cong nghe co bo file va thu vien rieng (thu vien chi tai trong khung xem truoc).
- * Bai React ma mo ra trang HTML thuan thi hoc vien khong hoc duoc gi.
- */
 export const PRESETS: Record<string, Preset> = {
   html: {
     label: 'HTML / CSS',
@@ -296,7 +288,6 @@ document.getElementById('btn').addEventListener('click', () => {
   }
 };
 
-/** Chon preset theo id cong nghe cua bai hoc */
 export function presetFor(techId?: string): string {
   if (techId === 'react') return 'react';
   if (techId === 'vue') return 'vue';
@@ -305,24 +296,17 @@ export function presetFor(techId?: string): string {
   return 'html';
 }
 
-/** Che do console (TypeScript, JS thuan): khong co trang web, chi chay code va in ket qua */
 export const laConsole = (presetId: string): boolean => (Object.hasOwn(PRESETS, presetId) ? PRESETS[presetId] : PRESETS.html).mode === 'console';
 
-// Ghep 3 file thanh mot tai lieu HTML hoan chinh
 export function buildDocument(presetId: string, files: Record<string, string>, { token, designScript = '' }: { token: string; designScript?: string }): TaiLieu {
   const P = Object.hasOwn(PRESETS, presetId) ? PRESETS[presetId] : PRESETS.html;
 
-  // Che do console: khong co trang web de hien thi, chi chay code va in ket qua.
-  // Van dung iframe sandbox de code chay tach biet khoi trang chinh.
   if (P.mode === 'console') return buildConsoleDocument(P, files, token);
 
   const html = files['index.html'] || '';
-  // Code hoc vien chua </script> hay </style> se dong the som: viet thanh <\/script (cung nghia trong JS/CSS)
   const css = chanDongThe(files['style.css'] || '', 'style');
   const js = chanDongThe(files[P.entry] || '', 'script');
 
-  // Cau noi console: khung xem truoc chay o origin rieng nen chi postMessage duoc
-  // voi targetOrigin '*'. Ben nhan phai doi chieu event.source truoc khi tin.
   const bridge = `
 <script>
 (function () {
@@ -347,18 +331,13 @@ export function buildDocument(presetId: string, files: Record<string, string>, {
 
   let doc = html;
   const styleTag = `<style>\n${css}\n</style>`;
-  // JSX phai chay qua Babel, con lai la script thuong
   const scriptType = P.entry.endsWith('.jsx') ? ' type="text/babel"' : '';
   const scriptTag = `<script${scriptType}>\n${js}\n<\/script>`;
   const libTags = (P.libs || []).map(u => `<script src="${u}"><\/script>`).join('\n');
 
-  // Chuoi thay the LUON truyen qua ham: replace(a, chuoi) hieu $$, $&, $' trong
-  // chuoi la ky hieu dac biet, nen code `Giá: $${gia}` cua hoc vien mat dau $.
   const chen = (tim: string | RegExp, them: string) => doc.replace(tim, () => them);
 
-  // thay <link href="style.css"> bang style thuc te
   doc = chen(/<link[^>]*href=["']style\.css["'][^>]*>/i, styleTag);
-  // thay the script tro toi file entry bang noi dung thuc te
   const entryRe = new RegExp('<script[^>]*src=["\']' +
     P.entry.replace('.', '\\.') + '["\'][^>]*>\\s*<\\/script>', 'i');
   doc = chen(entryRe, scriptTag);
@@ -369,24 +348,17 @@ export function buildDocument(presetId: string, files: Record<string, string>, {
   if (!doc.includes(scriptTag) && js) {
     doc = doc.includes('</body>') ? chen('</body>', scriptTag + '</body>') : doc + scriptTag;
   }
-  // Thu vien phai nap TRUOC code cua hoc vien
   if (libTags) {
     doc = doc.includes('</head>') ? chen('</head>', libTags + '</head>') : libTags + doc;
   }
 
   let extra = bridge;
-  // Che do thiet ke: chen them lop phu bat hover/click de chon phan tu
   extra += designScript;
   doc = doc.includes('</head>') ? chen('</head>', extra + '</head>') : extra + doc;
   return { doc, token };
 }
 
-/**
- * Trang cho che do console. Nguon duoc dat trong the text/plain roi doc ra,
- * khong noi chuoi vao script.
- */
 function buildConsoleDocument(P: Preset, files: Record<string, string>, token: string): TaiLieu {
-  // Nguon nam trong the text/plain: </script> trong code cung dong the som nen phai chan
   const src = chanDongThe(files[P.entry] || '', 'script');
   const isTs = P.entry.endsWith('.ts');
 

@@ -56,7 +56,6 @@ function SheetContent({
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
-  /** Nhan doc cho nut dong; mac dinh t("close") */
   closeLabel?: string
 }) {
   const i18n = useTNeuCo()

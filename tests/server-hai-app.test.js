@@ -4,7 +4,6 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-// Ban build gia cua app React: chi can co cac the meta de server chen SEO
 function taoDist() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'dist-'));
   fs.mkdirSync(path.join(d, 'assets'));

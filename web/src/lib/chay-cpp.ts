@@ -1,4 +1,3 @@
-// Chay code C++ qua /api/run-cpp cua server (server goi Compiler Explorer, du phong Wandbox; can dang nhap).
 import type { SupabaseLike } from './auth';
 import { dongPhongBi } from './phong-bi';
 
@@ -6,7 +5,6 @@ export type KetQuaChay =
   | { stdout: string; stderr: string; maThoat: number; dichVu: string }
   | { bienDichLoi: string; dichVu: string };
 
-/** Bai hoc viet bang C++ (lang trong giao trinh) */
 export const laCpp = (lang?: string) => /^(cpp|c\+\+|cc|cxx)$/i.test(lang ?? '');
 
 export async function chayCpp(client: SupabaseLike, code: string, stdin = '', signal?: AbortSignal): Promise<KetQuaChay> {

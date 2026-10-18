@@ -1,6 +1,3 @@
-// Phan thuan cua che do Thiet ke (chep tu public/design-mode.js): bang thuoc tinh chinh tay
-// va script chay BEN TRONG khung xem truoc de chon phan tu, gui selector ve trang cha.
-
 export type TruongThietKe = {
   prop: string;
   writeProp?: string;
@@ -14,7 +11,6 @@ export type TruongThietKe = {
 };
 export type NhomThuocTinh = { name: string; fields: TruongThietKe[] };
 
-// Cac thuoc tinh cho chinh bang tay, chia nhom de do roi mat
 export const GROUPS: NhomThuocTinh[] = [
   {
     name: 'Nền & màu',

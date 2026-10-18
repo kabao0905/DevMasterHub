@@ -1,5 +1,3 @@
-// Khong gian lam project (idea, chat mentor, file code, ket qua cham) cua trang theo cap do / theo chu de.
-// Moi trang mot kho rieng theo nguoi dung: roi trang roi quay lai van con, dang xuat thi xoa.
 import { useMemo } from 'react';
 import { useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
 import { taiJson } from '@/lib/use-curriculum';
@@ -17,7 +15,6 @@ import { luuBaiNop, type YTuongDaLuu } from '@/lib/project-db';
 export type CheDo = 'level' | 'topic';
 
 export type KhoDuAn = {
-  /** Theo cap do: cap da chon. Theo chu de: cap mong muon (null = AI tu chon) */
   level: CapDo | null;
   topic: string;
   idea: YTuong | null;
@@ -28,17 +25,12 @@ export type KhoDuAn = {
   dangTao?: boolean; loiTao?: string;
   dangGui?: boolean; loiChat?: string;
   dangCham?: boolean; tienDo?: TienDoCham | null; loiCham?: string;
-  /**
-   * Tang moi khi bat dau lai tu idea (doi cap, Idea moi, mo idea da luu): ket qua AI cua phien cu ve muon
-   * thi bo, khong roi vao project moi. phienCham tang them khi Xoa tat ca (diem cua code da xoa).
-   */
   phien?: number; phienCham?: number;
 };
 
 export const TEP_MAC_DINH: TepDuAn = { name: 'main.js', lang: 'javascript', code: '' };
 export const KHO_RONG: KhoDuAn = { level: null, topic: '', idea: null, chat: [], files: [TEP_MAC_DINH], tepDangMo: 0, ketQua: null };
 
-/** Bat dau lai tu idea (resetProjectState cua app cu), giu cap/chu de da chon */
 const lamMoi = (s: KhoDuAn, level = s.level): KhoDuAn => ({ ...KHO_RONG, level, topic: s.topic, phien: (s.phien ?? 0) + 1, phienCham: s.phienCham });
 
 export const DUOI_THEO_NGON_NGU: Record<string, string> = {
@@ -50,7 +42,6 @@ const NGON_NGU_THEO_DUOI: Record<string, string> = {
 
 export const khoaDuAn = (uid: string | undefined, cheDo: CheDo): QueryKey => ['project', uid, cheDo];
 
-/** "Bat dau lam" tu trang Idea da luu: dat idea vao kho cua trang tuong ung */
 export function moYTuongDaLuu(qc: QueryClient, uid: string | undefined, yt: YTuongDaLuu): CheDo {
   const cheDo: CheDo = yt.source === 'topic' ? 'topic' : 'level';
   const level = cheDo === 'level' ? (yt.level ?? yt.idea.difficulty ?? 'mid') : yt.level;
@@ -61,14 +52,12 @@ export function moYTuongDaLuu(qc: QueryClient, uid: string | undefined, yt: YTuo
 
 const loiChu = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-/** May chu co bat AI khong (tat thi an nut tao idea / cham); undefined = dang hoi, chua noi gi */
 export function useAiBat(): boolean | undefined {
   const { data, isError } = useQuery({ queryKey: ['health'], queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'), staleTime: 5 * 60_000 });
   if (isError) return false;
   return data ? !!data.aiEnabled : undefined;
 }
 
-/** 5 cap do cua Project Lab (renderProjectByLevel cua app cu) */
 export const CAP_HIEN: { id: CapDo; ten: string; moTa: string }[] = [
   { id: 'newbie', ten: 'Newbie', moTa: 'levelNewbie' },
   { id: 'junior', ten: 'Junior', moTa: 'levelJunior' },
@@ -129,11 +118,9 @@ export function useDuAn(cheDo: CheDo) {
       dat(k, x => (cung(x) ? { ...x, dangCham: false, tienDo: null, loiCham: loiChu(e) } : x));
       return;
     }
-    // Project da doi thi khong hien diem o day; ban nop van luu (diem that cua code da nop)
     dat(k, x => (cung(x) ? { ...x, ketQua, dangCham: false, tienDo: null } : x));
     if (!uid) return;
     try {
-      // Ban cu: `projectSelectedLevel || projectTopicLevel || 'mid'` va chu de (rong o trang cap do)
       await luuBaiNop(client, uid, taoBanNop({ review: ketQua, idea, files, difficulty: s.level ?? idea.difficulty, topic: s.topic }));
       void qc.invalidateQueries({ queryKey: ['submissions', uid] });
       toast.success(t('submissionSaved'));
@@ -148,7 +135,6 @@ export function useDuAn(cheDo: CheDo) {
   return {
     kho,
     tepMo,
-    /** Theo cap do: doi cap thi bat dau lai (selectProjectLevel cua app cu) */
     chonCap: (level: CapDo | null) => dat(khoa, x => (cheDo === 'level' ? (x.level === level ? x : lamMoi(x, level)) : { ...x, level })),
     datChuDe: (topic: string) => dat(khoa, x => ({ ...x, topic })),
     taoIdea: () => { void taoIdea(); },
@@ -176,7 +162,6 @@ export function useDuAn(cheDo: CheDo) {
       const files = x.files.filter((_, j) => j !== i);
       return { ...x, files, tepDangMo: Math.min(x.tepDangMo > i ? x.tepDangMo - 1 : x.tepDangMo, files.length - 1) };
     }),
-    /** Doi ten; duoi tep quen thuoc thi doi luon ngon ngu (renameProjectFile cua app cu) */
     doiTenTep: (ten: string) => {
       const moi = ten.trim();
       if (!moi) return;

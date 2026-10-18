@@ -1,6 +1,3 @@
-// Career Advisor: chat tu van nghe nghiep, tu tim viec lam va cham do phu hop voi trinh do hoc vien.
-// Prompt, bat y dinh tim viec, cham do phu hop chep nguyen van tu app cu (career-goc.ts);
-// o day them kieu, token dang nhap, lich su chat tu react-query va loc link viec lam.
 import type { SupabaseLike } from './auth';
 import type { TinNhan } from './ai';
 import { taoCoVanGoc } from './career-goc';
@@ -19,10 +16,8 @@ export type ViecLam = {
   is_remote: boolean; employment_type: string; salary: string; tags: string[]; url: string;
   matchRate: number; status: 'ready' | 'gap' | 'target'; badgeText: string; fitRecommendation: string;
 };
-/** Link trong tin nhan: da doc duoc (kem tieu de trang) hay khong (kem ly do) */
 export type KetQuaLink = {
   url: string; ok: boolean; title?: string; loi?: string;
-  /** Nhen doc ca danh sach viec: so trang da doc, tong so viec gom duoc */
   soTrang?: number; tongViec?: number;
 };
 export type KetQuaTraLoi = { text: string; jobs: ViecLam[] | null; searchKeyword: string; link?: KetQuaLink | null };
@@ -35,7 +30,6 @@ type DichVuGoc = {
 };
 const taoGoc = taoCoVanGoc as unknown as (dv: Record<string, unknown>) => DichVuGoc;
 
-/** Chi http/https (link viec lam, logo do server cao ve tu trang ngoai) */
 export function urlAnToan(x: unknown): string {
   try {
     const u = new URL(String(x ?? '').trim());
@@ -63,7 +57,6 @@ function chuanHoaViec(x: unknown): ViecLam {
 }
 
 export type CoVan = {
-  /** Gui cau hoi kem lich su truoc do; null neu bi huy giua chung */
   gui(lichSu: TinNhan[], tin: string): Promise<KetQuaTraLoi | null>;
   timViec(tuKhoa: string): Promise<ViecLam[]>;
   huy(): void;
@@ -73,7 +66,6 @@ export function taoCoVan(client: SupabaseLike, { t, lang, thongKe, tenCongNghe =
   t: (khoa: string, bien?: Record<string, string | number>) => string;
   lang: string;
   thongKe: ThongKe | null;
-  /** id -> ten cong nghe (CURRICULUM[id].name cua app cu) */
   tenCongNghe?: Record<string, string>;
 }): CoVan {
   const AuthService = {

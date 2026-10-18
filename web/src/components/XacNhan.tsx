@@ -1,6 +1,3 @@
-// Hop xac nhan trong app thay cho window.confirm: trinh duyet nhung (webview, che do chan hop thoai)
-// tu tra "khong" cho confirm nen nut dang xuat/xoa bam khong an. Dung:
-//   const [hoi, hop] = useXacNhan();  ...  if (await hoi(t('logoutConfirm'), t('logout'))) ...;  return <>{hop}...</>;
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useT } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
@@ -14,7 +11,6 @@ export function useXacNhan(): [(noiDung: string, nutDongY?: string) => Promise<b
   const traLoiRef = useRef<((dongY: boolean) => void) | null>(null);
 
   const hoi = useCallback((noiDung: string, nutDongY?: string) => new Promise<boolean>(tra => {
-    // Hoi chong len cau dang cho: cau cu coi nhu Huy
     traLoiRef.current?.(false);
     traLoiRef.current = tra;
     datCauHoi({ noiDung, nutDongY: nutDongY ?? t('confirmBtn') });
@@ -28,14 +24,12 @@ export function useXacNhan(): [(noiDung: string, nutDongY?: string) => Promise<b
 
   const hop = (
     <Dialog open={!!cauHoi} onOpenChange={mo => { if (!mo) dong(false); }}>
-      {/* Cau hoi da la tieu de: khong lap lai lam mo ta (aria-describedby={undefined} tat canh bao cua Radix) */}
       <DialogContent className="sm:max-w-sm" showCloseButton={false} aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="text-base leading-relaxed">{cauHoi?.noiDung}</DialogTitle>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => dong(false)}>{t('cancelBtn')}</Button>
-          {/* Khong autoFocus nut xoa: Enter ngay khi hop mo khong duoc xac nhan nham; Radix focus nut Huy dau tien */}
           <Button variant="destructive" onClick={() => dong(true)}>{cauHoi?.nutDongY}</Button>
         </DialogFooter>
       </DialogContent>

@@ -1,18 +1,15 @@
-// Hook cho lich hoc: doc thoi gian hoc moi ngay, muc tieu phut/ngay, va chay dong ho hoc trong khung app.
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './auth';
 import { luiNgay, ngayDatMucTieu, tongTheoNgay, type DongThoiGian } from './ngay-hoc';
 import { batDauHoc, DongHoHoc, layYeuCauCho, NHIP_MS, SU_KIEN_BAT_DAU_HOC, type Mon } from './dong-ho-hoc';
 
-/** Du cho lich lui lai ca nam va chuoi dai nhat trong nam */
 const SO_NGAY_TAI = 400;
 export const CHON_MUC_TIEU = [10, 15, 30, 45, 60] as const;
 export const MUC_TIEU_MAC_DINH = 15;
 const MUC_TIEU_TOI_DA = 600;
 const khoaTruyVan = (uid: string | undefined) => ['thoi-gian-hoc', uid];
 
-/** Muc tieu phut/ngay luu trong user_metadata cua Supabase Auth (khong can them cot DB) */
 export function useMucTieu() {
   const { client, user } = useAuth();
   const raw = user?.user_metadata?.daily_goal_minutes;
@@ -48,14 +45,12 @@ export function useThoiGianHoc() {
   return { giayTheoNgay, ngayDat, mucTieuPhut, loi: q.isError };
 }
 
-/** Vao trang mot mon/bai hoc: bat dong ho hoc */
 export function useBatDauHoc(techId: string, lessonId: string) {
   useEffect(() => { if (techId) batDauHoc({ techId, lessonId }); }, [techId, lessonId]);
 }
 
 const SU_KIEN_THAO_TAC = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'] as const;
 
-/** Dat o khung app (AppShell): dem thoi gian hoc va ghi dan len Supabase */
 export function useDongHoHoc() {
   const { client, user } = useAuth();
   const qc = useQueryClient();
@@ -86,7 +81,6 @@ export function useDongHoHoc() {
     const khiThaoTac = () => dh.thaoTac();
     const khiDoiHien = () => {
       if (dangHien()) { dh.dem(false); dh.thaoTac(); return; }
-      // Vua an tab: tinh phan con hien toi luc nay roi ghi luon (co the khong quay lai)
       dh.dem(true);
       void dh.ghi(true);
     };

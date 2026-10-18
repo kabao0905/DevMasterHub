@@ -6,7 +6,6 @@ const giaHeThong = (toi: boolean, giamChuyenDong = false) => vi.stubGlobal('matc
   media: q, addEventListener() {}, removeEventListener() {}
 }));
 
-/** Gia View Transitions: chay ham doi ngay, ghi lai hieu ung duoc gan vao trang moi */
 function giaViewTransition() {
   const hieuUng: { khung: Keyframe[] | PropertyIndexedKeyframes | null; tuyChon?: number | KeyframeAnimationOptions }[] = [];
   Object.assign(document, { startViewTransition: (f: () => void) => { f(); return { ready: Promise.resolve(), finished: Promise.resolve() }; } });
@@ -65,7 +64,6 @@ test('useCheDo: gat sang toi thi luu, ap ngay, moi noi dung hook cap nhat (khong
   expect(b.result.current[0]).toBe('toi');
 });
 
-/** Cong tac 60x32 o (10, 20): bat dau dung bang no, ket thuc la chinh no phong to deu s lan quanh tam (40, 36) */
 function vienThuocMongDoi() {
   const s = tiLePhuKin(10, 20, 60, 32, innerWidth, innerHeight);
   return [
@@ -74,7 +72,6 @@ function vienThuocMongDoi() {
   ];
 }
 
-/** Diem (x, y) co nam trong vien thuoc tam (cx, cy), nua rong a, nua cao b (hai dau tron ban kinh b) */
 function trongVienThuoc(x: number, y: number, cx: number, cy: number, a: number, b: number) {
   const dx = Math.abs(x - cx), dy = Math.abs(y - cy), thang = a - b;
   return dy <= b && (dx <= thang || (dx - thang) ** 2 + dy ** 2 <= b ** 2);

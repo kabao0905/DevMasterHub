@@ -1,4 +1,3 @@
-// App cu tung dung URL dang hash (/#roadmap/python). Link cu da chia se van phai mo dung trang.
 const ROUTE_CU = new Set([
   'roadmap', 'lesson', 'challenge', 'career', 'project', 'project-level',
   'project-topic', 'saved-ideas', 'my-projects', 'auth', 'dashboard'

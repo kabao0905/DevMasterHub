@@ -1,11 +1,8 @@
-// Supabase cho Project Lab (bang saved_ideas, project_submissions) — cot giong auth-service.js cu.
-// Khac ban cu: loi ghi/doc duoc nem ra de giao dien bao, khong nuot im lang.
 import type { SupabaseLike } from './auth';
 import { chuanHoaYTuong, laCapDo, type BanNop, type CapDo, type TepDuAn, type YTuong } from './project-ai';
 
 export type YTuongDaLuu = {
   id: string; idea: YTuong; savedAt: string;
-  /** Tao tu trang theo chu de hay theo cap do (mo lai dung trang do) */
   source: 'topic' | 'level'; topic: string | null; level: CapDo | null;
 };
 

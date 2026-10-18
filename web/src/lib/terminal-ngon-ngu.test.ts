@@ -1,9 +1,7 @@
-// Terminal noi theo ngon ngu dang chon: help, goi y loi, CTF, tep mac dinh. Loi chuan Linux giu tieng Anh nhu may that.
 import { createTerminal, CHALLENGES } from './terminal';
 import { MO_TA_LENH } from './terminal-mo-ta-lenh';
 import { NGON_NGU_TERMINAL, THONG_BAO, dichThuThach } from './terminal-ban-dich';
 
-// Chu chi tieng Viet moi co (tieng Phap/Duc/TBN khong dung): de bat chu Viet lot vao ban dich khac
 const CHU_VIET = /[ạảãầấậẩẫăằắặẳẵđẹẻẽềếệểễịỉĩọỏõồốộổỗơờớợởỡụủũưừứựửữỳỵỷỹ]/i;
 const boMau = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
 

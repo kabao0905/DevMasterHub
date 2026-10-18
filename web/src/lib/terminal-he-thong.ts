@@ -1,5 +1,3 @@
-// Lenh he thong / mang cua terminal gia lap: ket qua co dinh nhung KHOP nhau (cung may devmaster-cyber-box,
-// cung tien trinh .sysupdate mo cong 4444 va noi ra 10.0.0.66) de hoc vien doi chieu duoc giua cac lenh.
 import { tachCo, type LenhThuan } from './terminal-van-ban';
 import type { HamDich } from './terminal-ban-dich';
 
@@ -86,7 +84,6 @@ const IP_ADDR = `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNK
 
 const IP_ROUTE = `default via 192.168.1.1 dev eth0\n192.168.1.0/24 dev eth0 proto kernel scope link src ${IP_MAY}`;
 
-// Hai lan root dang nhap tu 10.0.0.66 luc nua dem — khop exfil_host trong cau hinh backdoor
 const LAST = `hacker   pts/0        192.168.1.5      Mon Oct 12 20:41   still logged in
 root     pts/1        10.0.0.66        Sun Oct 11 03:12 - 03:47  (00:35)
 root     pts/1        10.0.0.66        Sun Oct 11 02:58 - 03:01  (00:03)

@@ -1,7 +1,6 @@
 import { useT } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 
-/** Tai du lieu loi: noi ro va cho thu lai, khong de nguoi dung nhin trang rong */
 export function LoadError({ onRetry }: { onRetry: () => void }) {
   const { t } = useT();
   return (

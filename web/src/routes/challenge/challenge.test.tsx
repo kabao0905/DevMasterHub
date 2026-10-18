@@ -26,7 +26,6 @@ function mo(ai: (b: ThanAi) => Response) {
   return { ...kq, goiAi };
 }
 
-// Nap san chunk cua route luoi (terminal, AI) truoc khi do thoi gian
 beforeAll(async () => { await import('./ChallengePage'); await import('@/routes/lesson/LessonPage'); }, 30000);
 afterEach(() => vi.unstubAllGlobals());
 
@@ -38,7 +37,6 @@ test('trang Thu thach: terminal, du the CTF, link quay ve roadmap An ninh mang',
   expect(within(screen.getByRole('main')).getByRole('link', { name: /Quay lại/ })).toHaveAttribute('href', '/roadmap/cybersecurity');
 });
 
-// De hop le: dap an "4444" co that trong /etc/.hidden/backdoor.conf, khong lo trong de
 const DE_HOP_LE = JSON.stringify({
   title: 'Tim cong cua cua hau', level: 'Trung bình', scenario: 'Máy chủ có tiến trình lạ', steps: ['Tìm tệp cấu hình ẩn trong /etc', 'Đọc cấu hình'],
   hint: 'dùng ls -la /etc', question: 'Cửa hậu đang mở cổng nào?', answer: '4444'

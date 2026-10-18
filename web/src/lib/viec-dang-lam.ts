@@ -1,21 +1,15 @@
-// Viec dang lam cua hoc vien trong app React (bai tap, quiz, gia su, de thu thach AI) chi nam trong react-query.
-// Sang trang app cu la tai trang moi -> mat het. Cat tam vao sessionStorage khi roi trang (pagehide),
-// nap lai o tai lieu React ke tiep neu van dung nguoi dang nhap. Chieu nguoc lai (app cu -> React) la
-// devmaster_hub_legacy_session trong public/app.js.
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 
 export const KHOA_VIEC_REACT = 'devmaster_hub_react_session';
 
 type BanChup = { uid: string; ds: [QueryKey, unknown][] };
 
-/** Chi du lieu thuan (JSON duoc); may terminal ['challenge', uid, 'may'] co ham nen khong cat */
 function cotCat(k: QueryKey, uid: string): boolean {
   if (k[1] !== uid) return false;
   if (k[0] === 'exercise' || k[0] === 'quiz' || k[0] === 'tutor' || k[0] === 'project' || k[0] === 'career') return true;
   return k[0] === 'challenge' && k[2] === 'de';
 }
 
-/** Yeu cau AI dang cho da mat theo trang cu: bo co "dang..." de nut khong treo mai */
 function boCoDangCho(k: QueryKey, du: unknown): unknown {
   if (!du || typeof du !== 'object') return du;
   if (k[0] === 'exercise') return { ...du, dangTao: false, dangCham: false };
@@ -25,16 +19,12 @@ function boCoDangCho(k: QueryKey, du: unknown): unknown {
   return du;
 }
 
-/**
- * Viec dang lam chi nam trong cache: khi chua co trang nao dang dung (vua nap lai sau khi sang app cu,
- * vua mo idea da luu) thi gcTime mac dinh 5 phut se don mat. Goi mot lan khi tao app.
- */
 export function datMacDinhViecDangLam(qc: QueryClient): void {
   for (const p of ['exercise', 'quiz', 'tutor', 'project', 'challenge', 'career']) qc.setQueryDefaults([p], { gcTime: Infinity });
 }
 
 function xoa() {
-  try { sessionStorage.removeItem(KHOA_VIEC_REACT); } catch { /* che do rieng tu */ }
+  try { sessionStorage.removeItem(KHOA_VIEC_REACT); } catch {}
 }
 
 export function chupViecDangLam(qc: QueryClient, uid: string | null | undefined): void {
@@ -46,12 +36,10 @@ export function chupViecDangLam(qc: QueryClient, uid: string | null | undefined)
   try {
     sessionStorage.setItem(KHOA_VIEC_REACT, JSON.stringify(ban));
   } catch {
-    // Day bo nho phien: bo ban chup cu (da cu hon viec dang lam) thay vi nap nham ve sau
     xoa();
   }
 }
 
-/** Nap ban chup cua dung nguoi `uid` vao cache roi xoa no; cua nguoi khac thi chi xoa */
 export function napViecDangLam(qc: QueryClient, uid: string): void {
   let ban: unknown;
   try {

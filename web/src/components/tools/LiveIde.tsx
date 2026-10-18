@@ -12,10 +12,8 @@ import { DesignPanel, type ChonThietKe } from './DesignPanel';
 type Props = {
   techId: string;
   files: Record<string, string>;
-  /** Bo tep de "Dat lai" ve */
   macDinh: Record<string, string>;
   onFilesChange: (files: Record<string, string>) => void;
-  /** Tep mo san luc dau (vd App.jsx chua code mau cua bai) */
   tepDau?: string;
 };
 type Log = { id: number; level: string; text: string };
@@ -23,10 +21,6 @@ type Log = { id: number; level: string; text: string };
 const KHO = { desktop: { w: null, nhan: 'Desktop', Icon: Monitor }, tablet: { w: 768, nhan: 'Tablet', Icon: Tablet }, mobile: { w: 375, nhan: 'Mobile', Icon: Smartphone } } as const;
 type Kho = keyof typeof KHO;
 
-/**
- * IDE truc tiep: tab tep, cot so dong, vach chia keo duoc, khung xem truoc sandbox
- * (khong allow-same-origin: code hoc vien khong doc duoc token dang nhap cua trang).
- */
 export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props) {
   const [hoi, hopXacNhan] = useXacNhan();
   const { t } = useT();
@@ -47,7 +41,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
   const luoiRef = useRef<HTMLDivElement>(null);
   const soDongRef = useRef<HTMLPreElement>(null);
 
-  // Moi lan dung lai trang la mot token moi: tin nhan cua trang cu (con dang chay) bi bo qua
   const dung = useCallback((): TaiLieu => {
     const token = 'sp' + ++demRef.current;
     return buildDocument(presetId, files, { token, designScript: thietKe && !consoleMode ? injectScript(token) : '' });
@@ -57,7 +50,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
   const tokenRef = useRef(taiLieu.token);
   useEffect(() => { tokenRef.current = taiLieu.token; }, [taiLieu]);
 
-  // Trang web: cap nhat sau khi ngung go 300ms. Che do console (TypeScript tai ~9MB) chi chay khi bam Chay.
   useEffect(() => {
     if (consoleMode) return;
     const h = setTimeout(() => { datLogs([]); datTaiLieu(dung()); }, 300);
@@ -66,7 +58,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
 
   useEffect(() => {
     function nghe(e: MessageEvent) {
-      // Chi tin dung khung xem truoc cua minh, dung token cua lan dung hien tai
       if (!khungRef.current || e.source !== khungRef.current.contentWindow) return;
       const d: unknown = e.data;
       if (!d || typeof d !== 'object') return;
@@ -100,7 +91,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
 
   function khiGo(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key !== 'Tab' || e.shiftKey) return;
-    // Tab chen 2 dau cach thay vi nhay khoi o soan (Esc roi Tab de ra ngoai bang ban phim)
     e.preventDefault();
     const el = e.currentTarget;
     const { selectionStart: a, selectionEnd: b, value } = el;
@@ -121,7 +111,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
 
   const noiDung = files[active] ?? '';
   const soDong = noiDung.split('\n').length;
-  // Cot so dong chi dung lai khi so dong doi, khong phai moi phim go
   const cotSoDong = useMemo(() => Array.from({ length: soDong }, (_, i) => i + 1).join('\n'), [soDong]);
   const rong = KHO[kho].w;
 
@@ -132,7 +121,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
         style={{ '--chia': `${chia}%` } as React.CSSProperties}
         className="grid gap-3 lg:grid-cols-[var(--chia)_6px_1fr] lg:gap-0"
       >
-        {/* Soan thao: mat code luon toi (bg-code). Tab tep theo mau Tabs cua Radix: mui ten / Home / End, mot diem dung Tab */}
         <TabsPrimitive.Root value={active} onValueChange={datActive}
           className="min-w-0 overflow-hidden rounded-2xl bg-code shadow-soft lg:rounded-r-none">
           <div className="flex items-center justify-between gap-2 border-b border-white/10 px-2">
@@ -148,7 +136,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
               <RotateCcw aria-hidden="true" /> Đặt lại
             </Button>
           </div>
-          {/* Mot khung soan dung chung: chi ve noi dung cua tab dang mo. Vong sang khi o soan co focus (truoc day khong thay gi) */}
           <TabsPrimitive.Content value={active} tabIndex={-1}
             className="flex h-[420px] font-mono text-[13px] leading-6 outline-none focus-within:ring-2 focus-within:ring-inset focus-within:ring-ring">
             <pre ref={soDongRef} aria-hidden="true" className="w-10 shrink-0 select-none overflow-hidden py-3 pr-2 text-right text-[#6e7681]">
@@ -170,7 +157,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
           </TabsPrimitive.Content>
         </TabsPrimitive.Root>
 
-        {/* Vach chia: keo bang chuot/cham, hoac ←/→ khi focus */}
         <div
           role="separator"
           aria-orientation="vertical"
@@ -187,7 +173,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
           className="hidden cursor-col-resize touch-none bg-border transition-colors hover:bg-primary/60 focus-visible:bg-primary focus-visible:outline-none lg:block"
         />
 
-        {/* Xem truoc + console */}
         <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl bg-card shadow-soft lg:rounded-l-none">
           <div className="flex flex-wrap items-center gap-1 border-b px-2 py-1.5">
             {consoleMode ? (
@@ -224,7 +209,6 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
               <span>Console <span className={cn('tabular-nums', logs.some(l => l.level === 'error') && 'text-destructive')}>({logs.length})</span></span>
               {logs.length > 0 && <button type="button" className="rounded-full px-2 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" onClick={() => datLogs([])}>Xóa</button>}
             </div>
-            {/* Trang web dung lai sau moi lan ngung go: khong doc to lai ca console. Che do console chi doi khi bam Chay */}
             <ol aria-label="Console" aria-live={consoleMode ? 'polite' : undefined} translate="no" className="flex-1 overflow-y-auto px-3 pb-2 font-mono text-xs">
               {logs.length === 0 && <li className="text-muted-foreground">{consoleMode ? 'Bấm Chạy để chạy code.' : 'console.log() sẽ hiện ở đây.'}</li>}
               {logs.map(l => (

@@ -1,5 +1,3 @@
-// Idea da luu cua nguoi dung: server (saved_ideas) la nguon dung. Luu/xoa cap nhat ngay tren man hinh,
-// Supabase bao loi thi tra lai nhu cu va bao. Ghi them cache cua app cu de hai app khop nhau.
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
@@ -9,10 +7,9 @@ import type { CapDo, YTuong } from '@/lib/project-ai';
 
 const KHOA_CACHE_CU = 'devmaster_hub_ideas_cache';
 const ghiCacheCu = (ds: YTuongDaLuu[]) => {
-  try { localStorage.setItem(KHOA_CACHE_CU, JSON.stringify(ds)); } catch { /* che do rieng tu */ }
+  try { localStorage.setItem(KHOA_CACHE_CU, JSON.stringify(ds)); } catch {}
 };
 
-/** Id giong app cu: thoi gian + ngau nhien, base36 */
 const taoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 const loiChu = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -43,7 +40,6 @@ export function useYTuong() {
     loi: q.error,
     taiLai: () => { void q.refetch(); },
     daLuu: (idea: YTuong) => doc().some(s => s.idea.name === idea.name && s.idea.description === idea.description),
-    /** Tra 'trung' neu idea nay da luu (cung ten + mo ta, nhu app cu) */
     luu: (idea: YTuong, nguon: { source: 'topic' | 'level'; topic: string | null; level: CapDo | null }): 'trung' | 'ok' => {
       if (!uid) return 'ok';
       const truoc = doc();
@@ -64,7 +60,6 @@ export function useYTuong() {
       const bo = truoc[viTri];
       ghi(truoc.filter(s => s.id !== id));
       xoaYTuong(client, uid, id).catch((e: unknown) => {
-        // Tra lai dung cho cu
         const hienTai = doc();
         ghi([...hienTai.slice(0, viTri), bo, ...hienTai.slice(viTri)]);
         toast.error(t('ideaDeleteFailed', { error: loiChu(e) }));

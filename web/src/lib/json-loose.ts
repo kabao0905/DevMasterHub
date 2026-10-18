@@ -1,8 +1,3 @@
-// Doc JSON doi tuong tu cau tra loi cua AI, chiu duoc cau tra loi bi cat ngang (chep tu public/app.js).
-
-/**
- * Dong lai chuoi va cac ngoac con dang mo trong mot doan JSON bi cat ngang.
- */
 function dongNgoacJson(doan: string): string | null {
   let trongChuoi = false, thoat = false;
   const chong: string[] = [];
@@ -20,7 +15,6 @@ function dongNgoacJson(doan: string): string | null {
   let out = doan;
   if (trongChuoi) out += '"';
 
-  // Bo phan thua o duoi: dau phay le, hoac cap "khoa": chua kip co gia tri
   let truoc: string;
   do {
     truoc = out;
@@ -33,12 +27,6 @@ function dongNgoacJson(doan: string): string | null {
   return out;
 }
 
-/**
- * Doc JSON tu cau tra loi cua AI. Khi AI cham tran so token, cau tra loi bi
- * cat ngang giua dau nhay va JSON.parse nem "Unterminated string in JSON".
- * Ham nay va lai bang cach dong cac ngoac con mo, lui dan diem cat cho toi
- * khi doc duoc — nen van giu lai duoc phan de bai da kip sinh ra.
- */
 export function parseJsonLoose(raw: unknown): Record<string, unknown> | null {
   let s = String(raw || '')
     .replace(/^\uFEFF/, '')
@@ -53,7 +41,7 @@ export function parseJsonLoose(raw: unknown): Record<string, unknown> | null {
   try {
     const kq = JSON.parse(s);
     if (kq && typeof kq === 'object' && !Array.isArray(kq)) return kq;
-  } catch { /* roi xuong phan va lai ben duoi */ }
+  } catch {}
 
   for (let end = s.length; end > 1; end--) {
     const ch = s[end - 1];
@@ -63,7 +51,7 @@ export function parseJsonLoose(raw: unknown): Record<string, unknown> | null {
     try {
       const kq = JSON.parse(ung);
       if (kq && typeof kq === 'object' && !Array.isArray(kq)) return kq;
-    } catch { /* thu diem cat ngan hon */ }
+    } catch {}
   }
   return null;
 }

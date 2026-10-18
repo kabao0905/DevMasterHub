@@ -1,5 +1,3 @@
-// Logo that cua tung cong nghe (bo Simple Icons, giay phep CC0) ve tren bien tuyen thay cho ma chu.
-// Chi import dung cac logo can dung de Vite bo phan con lai khoi ban build.
 import {
   siAngular, siCplusplus, siDart, siDjango, siDocker, siDotnet, siGithubactions, siGnubash, siGo, siGraphql,
   siHtml5, siJest, siKalilinux, siKotlin, siKubernetes, siLua, siMongodb, siNginx, siNodedotjs, siOpenjdk,
@@ -17,7 +15,6 @@ const LOGO: Record<string, { path: string }> = {
   dsa: siThealgorithms
 };
 
-/** Duong ve SVG (khung 24x24) cua logo cong nghe; cong nghe chua co logo thi tra undefined de dung ma chu */
 export function logoCongNghe(id: string): string | undefined {
   return LOGO[id]?.path;
 }

@@ -1,7 +1,5 @@
-// To mau code bang Prism tu npm, chi nap cac ngon ngu giao trinh dung (thay 24 the script CDN).
 import './prism-thiet-lap';
 import Prism from 'prismjs';
-// Thu tu nap theo phu thuoc giua cac ngon ngu cua Prism
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-clike';
@@ -40,7 +38,6 @@ const BI_DANH: Record<string, string> = {
   sh: 'bash', shell: 'bash', cs: 'csharp', golang: 'go', py: 'python', yml: 'yaml'
 };
 
-/** Ten ngon ngu Prism hieu (lesson.lang trong giao trinh co the la bi danh) */
 export function tenNgonNgu(lang?: string): string {
   const l = (lang || '').toLowerCase();
   return Object.hasOwn(BI_DANH, l) ? BI_DANH[l] : l;
@@ -50,7 +47,6 @@ export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/** HTML an toan de chen: Prism escape tung token; ngon ngu chua nap thi chi escape */
 export function toMauCode(code: string, lang?: string): string {
   const ten = tenNgonNgu(lang);
   const ngu = Object.hasOwn(Prism.languages, ten) ? Prism.languages[ten] : undefined;

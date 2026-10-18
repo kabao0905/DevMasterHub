@@ -1,4 +1,3 @@
-// Soan code nhieu file cho project va nop cho AI cham (renderSubmitPanel cua app cu).
 import { useXacNhan } from '@/components/XacNhan';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Bot, FileCode, Loader2, Package, Plus, Trash2, TriangleAlert, X } from 'lucide-react';
@@ -16,7 +15,6 @@ const NGON_NGU = [
   { val: 'csharp', ten: 'C#' }, { val: 'go', ten: 'Go' }, { val: 'rust', ten: 'Rust' }, { val: 'php', ten: 'PHP' },
   { val: 'html', ten: 'HTML/CSS' }, { val: 'css', ten: 'CSS' }, { val: 'typescript', ten: 'TypeScript' }, { val: 'json', ten: 'JSON' }
 ];
-/** Nguong cua app cu: tren 200k ky tu la "file lon", tren 400k thi AI se rut gon */
 const LON = 200_000;
 const RAT_LON = 400_000;
 const ID_KHUNG = 'khung-tep-code';
@@ -36,7 +34,6 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
   const [hoi, hopXacNhan] = useXacNhan();
   const i = Math.min(kho.tepDangMo, kho.files.length - 1);
   const tabRef = useRef<(HTMLButtonElement | null)[]>([]);
-  // Ten file soan tam: ghi khi roi o hoac Enter (onchange cua app cu), khong doi ten giua chung
   const [tenTam, datTenTam] = useState(tepMo.name);
   useEffect(() => { datTenTam(tepMo.name); }, [tepMo.name, i]);
   const chotTen = () => { if (tenTam.trim() && tenTam !== tepMo.name) duAn.doiTenTep(tenTam); else datTenTam(tepMo.name); };
@@ -45,7 +42,6 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
   const soKyTu = kho.files.reduce((s, f) => s + f.code.length, 0);
   const coCode = kho.files.some(f => f.code.trim());
 
-  /** Tab theo mau ARIA: mui ten trai/phai, Home/End chuyen tep va dua focus theo */
   function khiGoTab(e: KeyboardEvent<HTMLButtonElement>) {
     const n = kho.files.length;
     const moi = e.key === 'ArrowRight' ? (i + 1) % n : e.key === 'ArrowLeft' ? (i - 1 + n) % n : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1;
@@ -55,7 +51,6 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
     tabRef.current[moi]?.focus();
   }
 
-  /** Xoa tep dang mo; tep con code thi hoi truoc (mat code la mat that) */
   async function xoaTepMo() {
     if (tepMo.code.trim() && !(await hoi(t('projectRemoveFileConfirm', { name: tepMo.name }), t('delete')))) return;
     duAn.xoaTep(i);
@@ -128,7 +123,6 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
             onClick={() => { void hoi(t('projectClearConfirm')).then(ok => { if (ok) duAn.xoaHet(); }); }}>
             <Trash2 aria-hidden="true" /> {t('projectClearAll')}
           </Button>
-          {/* Vung bao tien do luon co mat (rong khi khong cham): trinh doc man hinh doc ca buoc dau */}
           <p className="text-sm text-lavender-ink" aria-live="polite">{kho.dangCham ? chuTienDo(t, kho.tienDo) : ''}</p>
         </div>
         {kho.loiCham && !kho.dangCham && (

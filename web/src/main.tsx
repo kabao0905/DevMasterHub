@@ -10,12 +10,10 @@ import { ganTaiLaiKhiLoiChunk } from './lib/tai-lai-chunk';
 import { Toaster } from './components/ui/sonner';
 import './styles/globals.css';
 
-// Link cu dang /#roadmap/python: chuyen sang duong dan that truoc khi ve gi
 const tuHash = duongDanTuHashCu(window.location.hash);
 if (tuHash) {
   window.location.replace(tuHash);
 } else {
-  // Tab mo tu truoc lan deploy: tep chunk cu da bi xoa -> tai lai trang mot lan
   ganTaiLaiKhiLoiChunk();
   const queryClient = new QueryClient({
     defaultOptions: { queries: { staleTime: 60_000, retry: 1, refetchOnWindowFocus: false } }

@@ -1,5 +1,3 @@
-// Tuyen mini 5 cap: moi doan la mot cap do, moi cham la mot bai (ga).
-// Mau mang thong tin (cap nao), nen dung chung mau voi badge cap do o moi noi.
 import { cn } from '@/lib/utils';
 import { useT } from '@/lib/i18n';
 import type { CapTomTat } from '@/lib/curriculum';
@@ -20,7 +18,6 @@ export const CHU_CAP: Record<string, string> = {
   master: 'text-level-master'
 };
 
-/** Vien ga cung mau cap */
 export const VIEN_CAP: Record<string, string> = {
   newbie: 'border-level-newbie',
   junior: 'border-level-junior',
@@ -29,7 +26,6 @@ export const VIEN_CAP: Record<string, string> = {
   master: 'border-level-master'
 };
 
-/** Nen nhat cung mau cap (badge, nut tren timeline) */
 export const NEN_CAP: Record<string, string> = {
   newbie: 'bg-level-newbie/15',
   junior: 'bg-level-junior/15',
@@ -44,10 +40,6 @@ type Props = {
   className?: string;
 };
 
-/**
- * Tuyen mini: moi cap do la mot doan tuyen mang mau cap, moi bai la mot ga tren doan do.
- * Ga da qua to dac, doan da di dam mau; phan chua toi nhat mau, ga rong. Giua hai cap la cho doi tuyen (khe ho).
- */
 export function LevelLadder({ levels, theoCap, className }: Props) {
   const { t } = useT();
   return (

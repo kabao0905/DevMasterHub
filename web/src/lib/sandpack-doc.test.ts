@@ -1,4 +1,3 @@
-// Chuyen tu tests/sandpack.test.js va bo sung cac ca cua ban TS.
 import { buildDocument, presetFor, PRESETS } from './sandpack-doc';
 import { injectScript, rgbToHex, GROUPS } from './design-inject';
 

@@ -1,9 +1,6 @@
-// Mo ta tung lenh trong "help" cua terminal gia lap, du 8 ngon ngu theo thu tu NGON_NGU_TERMINAL
-// (vi, en, ja, ko, zh, fr, de, es). Ban tieng Viet (cot 0) cung la mo ta gui cho AI ra de.
 import type { Dich8 } from './terminal-ban-dich';
 
 export const MO_TA_LENH: Record<string, Dich8> = {
-  // ---- Tep, thu muc & shell ----
   ls: ['Liệt kê thư mục (-l: quyền, kích thước; -a: cả tệp ẩn)', 'List a directory (-l: permissions, size; -a: hidden files too)', 'ディレクトリを一覧表示 (-l: 権限とサイズ, -a: 隠しファイルも)', '디렉터리 목록 보기 (-l: 권한·크기, -a: 숨김 파일 포함)', '列出目录 (-l: 权限和大小; -a: 包括隐藏文件)', 'Lister un dossier (-l : droits, taille ; -a : fichiers cachés aussi)', 'Verzeichnis auflisten (-l: Rechte, Größe; -a: auch versteckte Dateien)', 'Listar un directorio (-l: permisos, tamaño; -a: también ocultos)'],
   cd: ['Chuyển thư mục làm việc', 'Change the working directory', '作業ディレクトリを移動', '작업 디렉터리 이동', '切换工作目录', 'Changer de dossier de travail', 'Arbeitsverzeichnis wechseln', 'Cambiar el directorio de trabajo'],
   pwd: ['Hiển thị thư mục hiện tại', 'Show the current directory', '現在のディレクトリを表示', '현재 디렉터리 표시', '显示当前目录', 'Afficher le dossier courant', 'Aktuelles Verzeichnis anzeigen', 'Mostrar el directorio actual'],
@@ -32,7 +29,6 @@ export const MO_TA_LENH: Record<string, Dich8> = {
   help: ['Xem danh sách lệnh này', 'Show this command list', 'このコマンド一覧を表示', '이 명령 목록 보기', '显示本命令列表', 'Afficher cette liste de commandes', 'Diese Befehlsliste anzeigen', 'Mostrar esta lista de comandos'],
   submit: ['Nộp cờ CTF để nhận điểm XP', 'Submit a CTF flag to earn XP', 'CTF フラグを提出して XP を獲得', 'CTF 플래그 제출하고 XP 받기', '提交 CTF 旗帜获得 XP', 'Soumettre un drapeau CTF pour gagner des XP', 'CTF-Flagge einreichen und XP erhalten', 'Enviar una bandera CTF para ganar XP'],
 
-  // ---- Xu ly van ban ----
   cat: ['Đọc nội dung tệp (-n: đánh số dòng)', 'Print file contents (-n: number lines)', 'ファイルの内容を表示 (-n: 行番号)', '파일 내용 보기 (-n: 줄 번호)', '显示文件内容 (-n: 行号)', 'Afficher le contenu (-n : numéroter les lignes)', 'Dateiinhalt ausgeben (-n: Zeilennummern)', 'Mostrar el contenido (-n: numerar líneas)'],
   less: ['Xem tệp dài (ở đây in ra như cat)', 'View a long file (prints like cat here)', '長いファイルを表示 (ここでは cat と同じ)', '긴 파일 보기 (여기선 cat 과 동일)', '查看长文件 (此处同 cat)', 'Lire un long fichier (ici comme cat)', 'Lange Datei ansehen (hier wie cat)', 'Ver un archivo largo (aquí como cat)'],
   more: ['Xem tệp dài (ở đây in ra như cat)', 'View a long file (prints like cat here)', '長いファイルを表示 (ここでは cat と同じ)', '긴 파일 보기 (여기선 cat 과 동일)', '查看长文件 (此处同 cat)', 'Lire un long fichier (ici comme cat)', 'Lange Datei ansehen (hier wie cat)', 'Ver un archivo largo (aquí como cat)'],
@@ -52,12 +48,10 @@ export const MO_TA_LENH: Record<string, Dich8> = {
   nl: ['Đánh số các dòng không trống', 'Number the non-empty lines', '空でない行に番号を付ける', '빈 줄이 아닌 줄에 번호 매기기', '给非空行编号', 'Numéroter les lignes non vides', 'Nicht-leere Zeilen nummerieren', 'Numerar las líneas no vacías'],
   diff: ['So sánh hai tệp theo dòng', 'Compare two files line by line', '2 つのファイルを行ごとに比較', '두 파일을 줄 단위로 비교', '逐行比较两个文件', 'Comparer deux fichiers ligne par ligne', 'Zwei Dateien zeilenweise vergleichen', 'Comparar dos archivos línea a línea'],
 
-  // ---- Ma hoa ----
   base64: ['Mã hóa / giải mã Base64 (-d: giải mã)', 'Encode / decode Base64 (-d: decode)', 'Base64 のエンコード / デコード (-d: デコード)', 'Base64 인코딩 / 디코딩 (-d: 디코딩)', 'Base64 编码 / 解码 (-d: 解码)', 'Encoder / décoder en Base64 (-d : décoder)', 'Base64 kodieren / dekodieren (-d: dekodieren)', 'Codificar / decodificar Base64 (-d: decodificar)'],
   sha256sum: ['Tính mã băm SHA-256', 'Compute a SHA-256 hash', 'SHA-256 ハッシュを計算', 'SHA-256 해시 계산', '计算 SHA-256 哈希', 'Calculer un hachage SHA-256', 'SHA-256-Hash berechnen', 'Calcular un hash SHA-256'],
   xxd: ['Xem nội dung dạng hex', 'Show contents as hex', '内容を 16 進数で表示', '내용을 16진수로 보기', '以十六进制查看内容', 'Afficher le contenu en hexadécimal', 'Inhalt als Hex anzeigen', 'Ver el contenido en hexadecimal'],
 
-  // ---- He thong & mang ----
   whoami: ['Hiển thị người dùng hiện tại', 'Show the current user', '現在のユーザーを表示', '현재 사용자 보기', '显示当前用户', "Afficher l'utilisateur courant", 'Aktuellen Benutzer anzeigen', 'Mostrar el usuario actual'],
   id: ['Xem uid / gid / nhóm của người dùng', "Show the user's uid / gid / groups", 'ユーザーの uid / gid / グループを表示', '사용자 uid / gid / 그룹 보기', '查看用户的 uid / gid / 组', "Voir l'uid / gid / groupes de l'utilisateur", 'uid / gid / Gruppen des Benutzers anzeigen', 'Ver uid / gid / grupos del usuario'],
   uname: ['Xem thông tin kernel Linux', 'Show Linux kernel info', 'Linux カーネル情報を表示', '리눅스 커널 정보 보기', '查看 Linux 内核信息', 'Infos sur le noyau Linux', 'Linux-Kernel-Infos anzeigen', 'Ver información del kernel Linux'],

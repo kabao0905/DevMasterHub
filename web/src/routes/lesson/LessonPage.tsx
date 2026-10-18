@@ -28,7 +28,6 @@ import { BienTuyen } from '@/components/BienTuyen';
 
 export const TABS: TabBai[] = ['theory', 'code', 'quiz', 'exercise'];
 
-// Tab bai hoc dang vien thuoc mem: tab dang mo la mang oai huong (dang hoc), che do toi cung vay
 const LOP_TAB = cn(
   'shrink-0 snap-start rounded-full px-3 transition-colors',
   'data-active:bg-lavender data-active:text-lavender-ink data-active:shadow-none',
@@ -62,7 +61,6 @@ export function LessonPage() {
   if (tech.isError) return <LoadError onRetry={() => tech.refetch()} />;
   if (!tech.data) return <Skeleton className="h-96 w-full rounded-lg" />;
   if (!vt) return <NotFoundPanel ve={`/roadmap/${coTech.id}`} nhanVe={coTech.name} />;
-  // Hoc theo thu tu: chua xong bai truoc thi chi hien bang khoa (dang tai tien do that thi cho, khong chop noi dung)
   if (!baiDaMo(tech.data, levelId, lessonId, done)) {
     const truoc = baiCanHocTruoc(tech.data, levelId, lessonId);
     if (dangTaiTienDo || !truoc) return <Skeleton className="h-96 w-full rounded-lg" />;
@@ -84,13 +82,11 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   const xong = isDone(tech.id, level.id, lesson.id);
   const quizBai = useQuizBai(bai);
   const baiTap = useBaiTap(bai);
-  // Tab Bai tap (IDE, terminal) chi dung khi mo lan dau, roi giu nguyen khi doi tab: khong mat code dang go
   const [daMoBaiTap, datDaMoBaiTap] = useState(tab === 'exercise');
   useEffect(() => { if (tab === 'exercise') datDaMoBaiTap(true); }, [tab]);
   const { data: suc } = useQuery({ queryKey: ['health'], queryFn: () => taiJson<{ aiEnabled: boolean }>('/api/health'), staleTime: 5 * 60_000 });
 
   function doiTab(v: string) {
-    // Thay URL (khong them lich su, khong cuon len dau): Back van ve trang truoc, link chia se mo dung tab
     datParams(p => {
       if (v === 'theory') p.delete('tab'); else p.set('tab', v);
       return p;
@@ -100,7 +96,6 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   const duongDan = (x: NonNullable<LanCan>) => `/lesson/${tech.id}/${x.level.id}/${x.lesson.id}`;
 
   return (
-    // Tab Bai tap (IDE chia doi, terminal) can rong hon khung doc ly thuyet
     <article className={cn('mx-auto space-y-8', tab === 'exercise' ? 'max-w-6xl' : 'max-w-3xl')}>
       <nav aria-label="breadcrumb">
         <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
@@ -114,7 +109,6 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
 
       <header className="space-y-4">
         <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight text-balance break-words sm:text-4xl">{translateTitle(lesson.title)}</h1>
-        {/* Khong co nut tu tich: bai chi duoc tich khi lam DAT bai tap (AI cham Dung / xong lab) */}
         {xong ? (
           <p className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1.5 text-sm font-semibold text-mint-ink"><CircleCheck className="size-4" aria-hidden="true" />{t('completed')}</p>
         ) : (
@@ -125,7 +119,6 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
       </header>
 
       <Tabs value={tab} onValueChange={doiTab}>
-        {/* Dien thoai: 4 tab tren mot hang rong ~530px > 375px -> mot hang cuon ngang (an thanh cuon, bat diem tung tab), nhan khong bao gio xuong dong */}
         <TabsList className="flex w-full max-w-full snap-x snap-proximity justify-start gap-1 overflow-x-auto rounded-full bg-card p-1 shadow-soft [scrollbar-width:none] group-data-horizontal/tabs:h-11 sm:w-fit [&::-webkit-scrollbar]:hidden">
           <TabsTrigger value="theory" className={LOP_TAB}><BookOpen aria-hidden="true" /> {t('tabTheory')}</TabsTrigger>
           <TabsTrigger value="code" className={LOP_TAB}><Code2 aria-hidden="true" /> {t('tabCode')}</TabsTrigger>
@@ -157,7 +150,6 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
             <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
           </Link>
         ) : (
-          // Hoc theo thu tu: bai tiep theo chi mo khi lam dat bai tap cua bai nay
           <div aria-disabled="true" className="rounded-2xl bg-muted p-4 text-right text-muted-foreground">
             <span className="flex items-center justify-end gap-1.5 text-xs"><Lock className="size-3.5" aria-hidden="true" /> {t('nextLesson')}</span>
             <span className="mt-1 block font-medium">{translateTitle(sau.lesson.title)}</span>
@@ -169,7 +161,6 @@ function NoiDungBai({ bai, truoc, sau }: { bai: BaiDangMo; truoc: LanCan; sau: L
   );
 }
 
-/** Bai chua toi luot: chi duong ve bai can hoc truoc */
 function BaiBiKhoa({ tech, truoc }: { tech: CongNgheTomTat; truoc: ViTriBai }) {
   const { t, translateTitle } = useT();
   return (

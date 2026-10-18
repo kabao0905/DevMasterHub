@@ -38,7 +38,6 @@ test('khong chan dia chi cong khai', () => {
 });
 
 test('tra cuu DNS ra dia chi noi bo thi bao loi ngay luc ket noi', async () => {
-  // localhost luon phan giai ve 127.0.0.1 / ::1
   const loi = await new Promise(xong => traCuuAnToan('localhost', {}, err => xong(err)));
   assert.ok(loi, 'phai tu choi');
   assert.strictEqual(loi.code, 'EBLOCKED');

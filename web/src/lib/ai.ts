@@ -1,4 +1,3 @@
-// Goi AI qua /api/ai cua server (server giu khoa API, kiem dang nhap va gioi han luot).
 import type { SupabaseLike } from './auth';
 import type { BaiDayDu } from './curriculum';
 import { baoDaHoiAi } from './dong-ho-hoc';
@@ -20,7 +19,6 @@ type ThamSoGoi = {
   temperature?: number;
   maxTokens?: number;
   signal?: AbortSignal;
-  /** Cho giua cac lan thu lai; bai kiem truyen ham khong cho */
   cho?: (ms: number) => Promise<void>;
 };
 
@@ -32,9 +30,8 @@ function tinHieu(signal?: AbortSignal): AbortSignal {
   return signal && typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, hetGio]) : signal ?? hetGio;
 }
 
-/** "Failed to fetch", "signal timed out" la loi cua trinh duyet: doi thanh cau nguoi hoc hieu duoc */
 function loiDeHieu(e: unknown, signalNguoiDung?: AbortSignal): unknown {
-  if (signalNguoiDung?.aborted) return e; // nguoi dung tu huy (roi trang...): de nguyen cho noi goi bo qua
+  if (signalNguoiDung?.aborted) return e;
   const ten = e instanceof Error || e instanceof DOMException ? e.name : '';
   if (ten === 'TimeoutError' || ten === 'AbortError') return new Error('AI phản hồi quá lâu. Thử lại sau ít phút.');
   if (e instanceof TypeError) return new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.');
@@ -43,13 +40,11 @@ function loiDeHieu(e: unknown, signalNguoiDung?: AbortSignal): unknown {
 
 export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string> {
   const cho = p.cho ?? choThat;
-  // Hoi AI cung la dang hoc: bat dong ho hoc (lich tren Dashboard)
   baoDaHoiAi();
   const { data } = await client.auth.getSession();
   const token = data.session?.access_token;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  // Boc base64: lich su chat co "../../", "${...}" thi tuong lua Cloudflare truoc Render chan 403
   const body = dongPhongBi({
     system: p.system + chiThiNgonNgu(p.lang),
     messages: [{ role: 'user', content: p.user }],
@@ -66,7 +61,6 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
     try {
       r = await fetch('/api/ai', { method: 'POST', headers, body, signal });
     } catch (e) {
-      // Mat mang thoang qua: thu lai mot lan (khong thu khi nguoi dung huy)
       if (e instanceof TypeError && loiMang++ < 1 && !signal.aborted) { await cho(2000); continue; }
       throw loiDeHieu(e, p.signal);
     }
@@ -78,7 +72,6 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
     }
     const json = (await r.json().catch(() => null)) as { error?: string; content?: { text?: string }[] } | null;
     if (r.status === 401) throw new Error(json?.error || 'Bạn cần đăng nhập để dùng tính năng AI.');
-    // 403 khong kem JSON: khong phai server cua minh tu choi ma tuong lua phia truoc chan
     if (r.status === 403 && !json) throw new Error('Yêu cầu bị chặn bởi tường lửa. Xoá hội thoại rồi hỏi lại nhé.');
     if (!r.ok) throw new Error(json?.error || `AI API Error: ${r.status}`);
     const text = json?.content?.[0]?.text;
@@ -87,14 +80,13 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
   }
 }
 
-/** AI hay boc JSON trong ``` hoac them chu thua: thu lan luot tung cach doc */
 export function docJson(text: string): unknown {
   const sach = text.trim().replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-  try { return JSON.parse(sach); } catch { /* thu cach khac */ }
+  try { return JSON.parse(sach); } catch {}
   const mang = sach.match(/\[[\s\S]*\]/);
-  if (mang) { try { return JSON.parse(mang[0]); } catch { /* thu cach khac */ } }
+  if (mang) { try { return JSON.parse(mang[0]); } catch {} }
   const doiTuong = sach.match(/\{[\s\S]*\}/);
-  if (doiTuong) { try { return JSON.parse(doiTuong[0]); } catch { /* het cach */ } }
+  if (doiTuong) { try { return JSON.parse(doiTuong[0]); } catch {} }
   throw new Error('Cannot parse AI response as JSON');
 }
 
@@ -105,7 +97,6 @@ export type TrangThaiQuiz = { questions: CauHoi[]; answers: Record<number, numbe
 
 const chuoiCoChu = (x: unknown): x is string => typeof x === 'string' && x.trim() !== '';
 
-/** Cau hoi AI tao chi dung duoc khi du truong va dap an dung nam trong danh sach lua chon */
 function laCauHopLe(x: unknown): x is CauHoi {
   if (!x || typeof x !== 'object') return false;
   const q = x as Record<string, unknown>;
@@ -115,7 +106,6 @@ function laCauHopLe(x: unknown): x is CauHoi {
     && Number.isInteger(q.correct) && (q.correct as number) >= 0 && (q.correct as number) < opts.length;
 }
 
-/** AI hay ghi "code": null (hoac "") cho cau khong co code: coi nhu khong co */
 const codeHopLe = (x: unknown) => (typeof x === 'string' && x.trim() !== '' ? x : undefined);
 
 type BaiChoAi = { tech: { name: string }; level: { name: string }; lesson: BaiDayDu };
@@ -136,7 +126,6 @@ export async function taoQuiz(client: SupabaseLike, { tech, level, lesson, lang,
 
 const chuCai = (i: number) => String.fromCharCode(65 + i);
 
-/** Noi dung bai gui kem cau hoi cho gia su, theo tab hoc vien DANG mo (app cu ket o tab ly thuyet) */
 export function nguCanhBai({ tech, level, lesson, tab, quiz, baiTap }: BaiChoAi & {
   tab: TabBai; quiz?: TrangThaiQuiz; baiTap?: { hienTai?: BaiTapAi | null; code?: string };
 }): string {
@@ -195,8 +184,6 @@ export async function hoiGiaSu(client: SupabaseLike, { nguCanh, lichSu, cauHoi, 
   return goiAi(client, { system: promptGiaSu(nguCanh, tab, daNopQuiz), user: truoc + cauHoi, temperature: 0.7, maxTokens: 4096, taskType: 'tutor', lang, signal, cho });
 }
 
-// ── Bai tap AI, cham bai, che do Thiet ke, de thu thach ──
-
 const chuoi = (x: unknown): string => (typeof x === 'string' ? x.trim() : '');
 const dsChuoi = (x: unknown, toiDa = 10): string[] => (Array.isArray(x) ? x.map(chuoi).filter(Boolean).slice(0, toiDa) : []);
 const tuyChonChuoi = (x: unknown): string | undefined => chuoi(x) || undefined;
@@ -204,13 +191,11 @@ const tuyChonChuoi = (x: unknown): string | undefined => chuoi(x) || undefined;
 export type BaiTapAi = {
   title: string;
   description: string;
-  /** Bai AI tao them cho loai nao (tieu de bai tap soan san, vd "Linear Search"); khong co = bai chung cua bai hoc */
   loai?: string;
   hints: string[];
   sampleInput?: string;
   expectedOutput?: string;
   solution?: string;
-  /** Ten ngon ngu de to mau loi giai — chi nhan ten hop le (ban cu chen thang vao thuoc tinh class) */
   solutionLang?: string;
 };
 
@@ -224,7 +209,6 @@ export async function taoBaiTap(client: SupabaseLike, { tech, level, lesson, cu,
     temperature: 0.85, maxTokens: 4096, taskType: 'exercise', lang, signal, cho
   });
   const o = parseJsonLoose(text);
-  // AI hay doi ten truong mo ta; khong co mo ta thi bai tap vo dung
   const description = o ? [o.description, o.content, o.task, o.exercise].map(chuoi).find(Boolean) : undefined;
   if (!o || !description) throw new Error('AI trả về bài tập không hợp lệ');
   const ngon = chuoi(o.solutionLang);
@@ -276,14 +260,13 @@ export async function chamBai(client: SupabaseLike, { tech, deBai, baiLam, ngonN
   };
 }
 
-/** JSON doi tuong doc chat: bo ``` boc ngoai, thu ca chuoi roi doan {...} ngoai cung; hong thi null */
 function docJsonChat(text: string): Record<string, unknown> | null {
   const s = text.trim().replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
   for (const ung of [s, s.slice(s.indexOf('{'), s.lastIndexOf('}') + 1)]) {
     try {
       const o: unknown = JSON.parse(ung);
       if (o && typeof o === 'object' && !Array.isArray(o)) return o as Record<string, unknown>;
-    } catch { /* thu cach sau */ }
+    } catch {}
   }
   return null;
 }
@@ -300,11 +283,8 @@ export async function suaThietKe(client: SupabaseLike, { yeuCau, chon, files, la
   const nguCanh = chon
     ? `Người dùng đang chọn phần tử <${chon.tag}> có selector "${chon.selector}".`
     : 'Người dùng chưa chọn phần tử nào cụ thể.';
-  // Gui DUNG bo file dang mo: bai React co App.jsx, bai Vue co App.js
   const user = [nguCanh, '', 'YÊU CẦU CỦA NGƯỜI DÙNG: ' + yeuCau, '', ...tenFile.flatMap(ten => [`--- ${ten} ---`, files[ten] || ''])].join('\n');
   const text = await goiAi(client, { system: promptThietKe(tenFile), user, temperature: 0.3, maxTokens: 2000, taskType: 'general', lang, signal, cho });
-  // Doc CHAT, khong va JSON hong: ban va lui diem cat se lay mot phan noi dung tep (bi cat, hoac rong)
-  // roi ghi de tep cua hoc vien — o soan duoc dieu khien nen Ctrl+Z khong cuu duoc.
   const o = docJsonChat(text);
   if (!o) throw new Error('AI trả về không đúng định dạng, hãy diễn đạt lại yêu cầu.');
   const edits: SuaThietKe[] = [];
@@ -317,7 +297,6 @@ export async function suaThietKe(client: SupabaseLike, { yeuCau, chon, files, la
         .map(([k, v]) => [k, String(v)]));
       if (Object.keys(props).length) edits.push({ type: 'css', selector: chuoi(x.selector), props });
     } else if (x.type === 'file' && typeof x.file === 'string' && tenFile.includes(x.file) && typeof x.content === 'string' && x.content.trim()) {
-      // Chi sua tep dang co, va khong bao gio xoa trang tep — khong de AI tao tep la
       edits.push({ type: 'file', file: x.file, content: x.content });
     }
   }
@@ -325,7 +304,6 @@ export async function suaThietKe(client: SupabaseLike, { yeuCau, chon, files, la
   return { edits, explain: chuoi(o.explain) };
 }
 
-/** Ap chinh sua thiet ke vao bo tep moi (khong sua bo cu): CSS qua CssPatch vao style.css, tep thay ca noi dung */
 export function apDungThietKe(files: Record<string, string>, edits: SuaThietKe[]): { files: Record<string, string>; soThayDoi: number } {
   const moi = { ...files };
   let soThayDoi = 0;
@@ -347,16 +325,12 @@ export function apDungThietKe(files: Record<string, string>, edits: SuaThietKe[]
 export type TepDe = { path: string; content: string };
 export type ThuThachAi = {
   title: string; level: string; scenario: string; steps: string[]; hint: string;
-  /** Cau hoi hoc vien tra loi bang cach tim tren terminal; answer co nguyen van trong du lieu cua may */
   question: string; answer: string;
-  /** Tep AI dung hien truong, trang Thu thach ghi vao terminal truoc khi hoc vien lam */
   files: TepDe[];
 };
 
-// Duong dan tuyet doi, moi doan chi chu/so/._- (tep an ".env" duoc; ".." bi loai rieng ben duoi)
 const DUONG_TEP_DE = /^(\/[\w.-]+)+$/;
 
-/** Giu tep AI them co duong dan an toan, nam trong thu muc cho phep va khong ghi de tep dang co */
 function locTepDe(tho: unknown, tepCo: Record<string, string>): TepDe[] {
   if (!Array.isArray(tho)) return [];
   const kq: TepDe[] = [];
@@ -373,18 +347,12 @@ function locTepDe(tho: unknown, tepCo: Record<string, string>): TepDe[] {
   return kq;
 }
 
-/** So dap an: khong phan biet hoa thuong, bo khoang trang va dau nhay bao ngoai */
 const chuanDapAn = (s: string) => s.trim().replace(/^["'`]+|["'`]+$/g, '').trim().replace(/\s+/g, ' ').toLowerCase();
 export const khopDapAn = (dapAn: string, nhap: string) => !!chuanDapAn(nhap) && chuanDapAn(nhap) === chuanDapAn(dapAn);
 
 const SO_LAN_RA_DE = 2;
 const DAP_AN_TOI_DA = 120;
 
-/**
- * AI dung hien truong bang cach THEM tep vao terminal (log, cau hinh, tep an...), roi hoi mot dap an nam trong do.
- * Chi nhan de co dap an nguyen van trong du lieu se co tren may (tep dang co + tep hop le AI them + ket qua lenh)
- * va khong lo san trong de; khong dat thi ra lai.
- */
 export async function taoThuThach(client: SupabaseLike, { lenh, tep, dauRa, lang, signal, cho }: {
   lenh: string[]; tep: Record<string, string>; dauRa: Record<string, string>; lang: string; signal?: AbortSignal; cho?: ThamSoGoi['cho'];
 }): Promise<ThuThachAi> {
@@ -397,7 +365,6 @@ export async function taoThuThach(client: SupabaseLike, { lenh, tep, dauRa, lang
         : 'Đề trước không hợp lệ: answer phải nằm NGUYÊN VĂN trong nội dung tệp bạn thêm (đường dẫn hợp lệ, không trùng tệp đang có) và không được lộ trong đề. Ra một đề khác, đúng quy tắc.',
       temperature: 1.0, maxTokens: 3000, taskType: 'general', lang, signal, cho
     });
-    // AI hay cham tran token o giua de: van giu phan da kip sinh ra
     const o = parseJsonLoose(text);
     if (!o || !chuoi(o.title)) continue;
     const de: ThuThachAi = {

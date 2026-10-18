@@ -1,6 +1,3 @@
-// Project Lab: tao idea, chat mentor, cham project nhieu tang, ban nop cho Supabase.
-// Prompt va phan tich tinh chep nguyen van tu app cu (project-ai-goc.ts); o day them kieu,
-// chuan hoa du lieu AI (React nem loi khi ve object lam con) va dieu phoi cham co tien do.
 import type { SupabaseLike } from './auth';
 import type { TinNhan } from './ai';
 import { taoDichVuDuAn as taoGoc } from './project-ai-goc';
@@ -29,7 +26,6 @@ export type DanhGiaModule = {
 export type TieuChi = { name: string; score: number; comment: string };
 export type TrangThaiCham = 'excellent' | 'good' | 'partial' | 'needs_work';
 export type KetQuaCham = {
-  /** null: AI khong cho diem tong va khong co tieu chi de tinh (ban cu luu null, hien '?') */
   score: number | null; status: TrangThaiCham; summary: string; criteria: TieuChi[];
   strengths: string[]; improvements: string[]; tips: string[];
   perFileReviews: { fileName: string; score: number; summary: string }[];
@@ -48,7 +44,6 @@ export type BanNop = {
 
 type TuyChonGoi = { lang: string; signal?: AbortSignal; cho?: (ms: number) => Promise<void> };
 
-/** Hinh dang ban chep nguyen van (file sinh khong kiem kieu) */
 type DichVuGoc = {
   generateProjectIdea(level: CapDo | null, topic: string | null): Promise<unknown>;
   chatAboutProject(nguCanh: string, lichSu: TinNhan[], cauHoi: string): Promise<string>;
@@ -62,8 +57,6 @@ type DichVuGoc = {
   buildSubmission(p: { review: KetQuaCham; idea: YTuong; files: TepDuAn[]; difficulty?: string | null; topic?: string | null }): BanNop;
 };
 const taoDichVuDuAn = taoGoc as unknown as (client: unknown, tc: TuyChonGoi & { ngauNhien?: () => number }) => DichVuGoc;
-
-// ── Chuan hoa ──
 
 const chu = (x: unknown): string => (typeof x === 'string' ? x : typeof x === 'number' || typeof x === 'boolean' ? String(x) : '');
 const so = (x: unknown, thap: number, cao: number): number => {
@@ -113,7 +106,6 @@ export function chuanHoaKetQua(x: unknown): KetQuaCham {
   const o = laDoiTuong(x) ? x : {};
   const criteria = (Array.isArray(o.criteria) ? o.criteria : []).filter(laDoiTuong).map(c => ({ name: chu(c.name), score: so(c.score, 0, 20), comment: chu(c.comment) }));
   const coDiem = typeof o.score === 'number' || (typeof o.score === 'string' && o.score.trim() !== '' && Number.isFinite(Number(o.score)));
-  // Thieu diem tong: 5 tieu chi /20 cong lai la /100; khong co gi thi de trong, khong bia ra 0
   const score = coDiem ? so(o.score, 0, 100) : criteria.length ? Math.min(100, criteria.reduce((s, c) => s + c.score, 0)) : null;
   return {
     score,
@@ -125,14 +117,10 @@ export function chuanHoaKetQua(x: unknown): KetQuaCham {
       .map(p => ({ fileName: chu(p.fileName), score: so(p.score, 0, 100), summary: chu(p.summary) })),
     moduleReviews: (Array.isArray(o.moduleReviews) ? o.moduleReviews : []).map(chuanHoaModule),
     structureReview: laDoiTuong(o.structureReview) ? chuanHoaCauTruc(o.structureReview) : null,
-    // Ket qua phan tich tinh do chinh trinh duyet tinh ra (khong qua AI)
     localAnalysis: laDoiTuong(o.localAnalysis) ? (o.localAnalysis as unknown as PhanTichTinh) : null
   };
 }
 
-// ── Logic thuan (chep nguyen van) ──
-
-/** Cac ham khong goi AI dung chung mot ban dich vu */
 const thuan = taoDichVuDuAn({ auth: { getSession: async () => ({ data: { session: null } }) } }, { lang: 'vi' });
 
 export const phanTichTinh = (code: string, tenTep: string): KetQuaTep => thuan.localAnalyze(code, tenTep);
@@ -141,11 +129,9 @@ export const nhomModule = (files: TepDuAn[]): ModuleDuAn[] => thuan.groupFilesIn
 export const catGonCode = (code: string, soDong = 300): string => thuan.smartTruncateCode(code, soDong);
 
 export function taoBanNop(p: { review: KetQuaCham; idea: YTuong; files: TepDuAn[]; difficulty?: string | null; topic?: string | null }): BanNop {
-  // buildSubmission cu doc Number(score): null thanh 0 — bo han de no luu null
   return thuan.buildSubmission(p.review.score == null ? { ...p, review: { ...p.review, score: undefined as unknown as number } } : p);
 }
 
-/** Ngu canh gui mentor (sendProjectChat cua app cu): idea + code hien tai, file dai cat giua */
 export function nguCanhDuAn(idea: YTuong, files: TepDuAn[]): string {
   const codeContext = files
     .filter(f => f.code.trim())
@@ -159,8 +145,6 @@ export function nguCanhDuAn(idea: YTuong, files: TepDuAn[]): string {
     }).join('\n');
   return `Project: ${idea.name}\nMô tả: ${idea.description}\nYêu cầu: ${(idea.requirements || []).join(', ')}${codeContext ? '\n\n📁 Code hiện tại của học viên:' + codeContext : ''}`;
 }
-
-// ── Goi AI ──
 
 export async function taoYTuong(client: SupabaseLike, { level, topic, ngauNhien, ...tc }: TuyChonGoi & {
   level: CapDo | null; topic: string | null; ngauNhien?: () => number;
@@ -177,7 +161,6 @@ export async function hoiMentor(client: SupabaseLike, { nguCanh, lichSu, cauHoi,
 
 const thongBao = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-/** reviewProject cua app cu: phan tich tinh, cau truc, tung module, tong hop. Huy (roi trang) thi dung ngay. */
 export async function chamDuAn(client: SupabaseLike, { idea, files, khiTienDo, ...tc }: TuyChonGoi & {
   idea: YTuong; files: TepDuAn[]; khiTienDo?: (b: TienDoCham) => void;
 }): Promise<KetQuaCham> {

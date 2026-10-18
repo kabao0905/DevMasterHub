@@ -1,7 +1,7 @@
 import { ngayDatMucTieu, ngayDiaPhuong, tinhStreak, tongTheoNgay } from './ngay-hoc';
 
 const ngay = (...ds: string[]) => new Set(ds);
-const HOM_NAY = new Date(2026, 9, 11, 9, 0); // 11/10/2026, gio may
+const HOM_NAY = new Date(2026, 9, 11, 9, 0);
 
 test('ngayDiaPhuong lay ngay theo gio may, khong lech ngay nhu toISOString o mui gio +7', () => {
   expect(ngayDiaPhuong(new Date(2026, 9, 11, 0, 30))).toBe('2026-10-11');

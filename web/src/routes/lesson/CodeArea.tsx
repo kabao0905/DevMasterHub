@@ -1,11 +1,8 @@
-// O soan code cho cau tra loi bai tap (chep hanh vi enhanceCodeEditor cua app cu):
-// Tab/Shift+Tab thut le, tu dong dong ngoac va dau nhay, Enter giu thut le, Backspace xoa ca cap ngoac rong.
 import { type KeyboardEvent } from 'react';
 
 const CAP: Record<string, string> = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
 const DONG = new Set([')', ']', '}']);
 
-/** Chen chu tai con tro: uu tien execCommand de trinh duyet giu lich su Hoan tac (Ctrl+Z) */
 function chen(el: HTMLTextAreaElement, text: string) {
   el.focus();
   const ok = typeof document.execCommand === 'function' && document.execCommand('insertText', false, text);
@@ -22,7 +19,6 @@ function thayGiaTri(el: HTMLTextAreaElement, giaTri: string, conTro: number, cuo
   el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-/** id: de nut Cham / Chay dua con tro ve o khi o con trong; describedBy: dong nhac ngay duoi o */
 type Props = { value: string; onChange: (v: string) => void; label: string; className?: string; id?: string; describedBy?: string };
 
 export function CodeArea({ value, onChange, label, className, id, describedBy }: Props) {
@@ -89,7 +85,6 @@ export function CodeArea({ value, onChange, label, className, id, describedBy }:
     }
   }
 
-  // Mat code luon toi: khung bo goc lon, bong mem; chu goi y xam sang de doc duoc tren nen toi
   return (
     <textarea
       id={id}

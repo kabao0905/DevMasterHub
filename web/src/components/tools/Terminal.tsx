@@ -7,16 +7,13 @@ import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { KenhTerminal } from './use-terminal';
 
-// chao: dong chao dau tien, dich lai moi lan ve (doi ngon ngu / ban dich tai xong thi doi theo)
 type Dong = { id: number; loai: 'lenh' | 'ra' | 'he' | 'chao'; cwd?: string; text: string };
 
-// Engine in ma mau ANSI (ls to xanh thu muc) — man hinh nay ve chu thuong
 const boMaMau = (s: string) => s.replace(/\u001b\[[0-9;]*m/g, '');
 const rutGon = (cwd: string) => (cwd === '/home/hacker' ? '~' : cwd.startsWith('/home/hacker/') ? '~' + cwd.slice(12) : cwd);
 
 type Props = { kenh: KenhTerminal; className?: string };
 
-/** Man hinh terminal gia lap: nhap lenh, ↑/↓ xem lai lenh cu, nano mo hop soan thao */
 export function Terminal({ kenh, className }: Props) {
   const { may, nghe } = kenh;
   const { t } = useT();
@@ -24,7 +21,6 @@ export function Terminal({ kenh, className }: Props) {
   const [dong, datDong] = useState<Dong[]>([{ id: 0, loai: 'chao', text: '' }]);
   const [nhap, datNhap] = useState('');
   const [viTri, datViTri] = useState<number | null>(null);
-  // goc: noi dung luc mo nano — dong hop khi da sua thi hoi truoc, khong lang le bo mat
   const [soan, datSoan] = useState<{ duong: string; noiDung: string; goc: string } | null>(null);
   const idRef = useRef(1);
   const manRef = useRef<HTMLDivElement>(null);
@@ -45,13 +41,10 @@ export function Terminal({ kenh, className }: Props) {
 
   function chay(lenh: string) {
     them({ loai: 'lenh', cwd: may.cwd(), text: lenh });
-    // "clear" goi lai xoa man hinh ngay trong luc chay: dong lenh vua them cung mat, dung nhu terminal that
     const ra = boMaMau(may.executeCommand(lenh)).replace(/^\n+|\n+$/g, '');
     if (ra) them({ loai: 'ra', text: ra });
   }
 
-  // Enter (ca phim "Di"/"Gui" cua ban phim ao tren dien thoai) gui form -> chay lenh.
-  // Truoc day bat Enter trong onKeyDown: nhieu ban phim Android khong phat keydown Enter dung chuan nen khong chay duoc.
   function guiLenh(e: FormEvent) {
     e.preventDefault();
     if (nhap.trim()) chay(nhap);
@@ -90,7 +83,6 @@ export function Terminal({ kenh, className }: Props) {
     oRef.current?.focus();
   }
 
-  // Bam vao man hinh de go tiep (giong terminal that) — tru khi vua boi den chu de sao chep
   function bamManHinh() {
     if (window.getSelection()?.toString()) return;
     oRef.current?.focus();
@@ -113,7 +105,6 @@ export function Terminal({ kenh, className }: Props) {
       </div>
       <form onSubmit={guiLenh} className="flex items-center gap-2 border-t border-white/10 py-1.5 pr-1.5 pl-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#7ee787]">
         <span className="shrink-0 text-[#7ee787]" aria-hidden="true">{rutGon(may.cwd())}$</span>
-        {/* Dien thoai: tat tu sua/viet hoa (iOS doi "ls" thanh "Is"), chu 16px de iOS khong tu phong to khi cham */}
         <input
           ref={oRef}
           value={nhap}

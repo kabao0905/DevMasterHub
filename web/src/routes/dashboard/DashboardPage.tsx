@@ -20,13 +20,8 @@ import { cn } from '@/lib/utils';
 
 const duongDanBai = ({ tech, level, lesson }: ViTriBai) => `/lesson/${tech.id}/${level.id}/${lesson.id}`;
 
-/**
- * "Hoc tiep": bai can lam ngay, nhu to giay nho duoc rut ra khoi lo trinh — the oai huong nghieng nhe, noi len,
- * re chuot thi thang lai. Kem doan lo trinh da di cua cong nghe do.
- */
 function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> }) {
   const { t, translateTitle } = useT();
-  // Chua hoc bai nao: cot "Goi y bat dau" ben phai va luoi lo trinh ben duoi da la loi moi
   if (!viTri) return null;
   const { tech, level, lesson } = viTri;
   const td = tienDoCongNghe(tech, done);
@@ -35,7 +30,6 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
       className="rounded-[1.75rem] bg-lavender p-6 shadow-lift transition-transform duration-300 sm:p-7 xl:-rotate-[0.6deg] xl:hover:rotate-0 motion-reduce:transition-none">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
         <div className="min-w-0 flex-1">
-          {/* Nhan "Hoc tiep" chi cho trinh doc man hinh: the oai huong nghieng da noi ro day la bai can lam ngay */}
           <h2 id="hoc-tiep" className="sr-only">{t('continueLearning')}</h2>
           <p className="font-display text-3xl leading-tight font-extrabold text-balance">{translateTitle(lesson.title)}</p>
           <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
@@ -60,10 +54,8 @@ function HocTiep({ viTri, done }: { viTri: ViTriBai | null; done: Set<string> })
   );
 }
 
-/** Mau nen cho the "Sap toi" — moi the mot mang pastel, xoay vong */
 const NEN_SAP_TOI = ['bg-sky', 'bg-butter', 'bg-pink', 'bg-peach'];
 
-/** Hang "Sap toi": bai ke tiep cua cac cong nghe khac dang hoc do; chua hoc gi thi goi y bai dau cua vai cong nghe */
 function SapToi({ ds, done, boQua }: { ds: CongNgheTomTat[]; done: Set<string>; boQua?: string }) {
   const { t, translateTitle } = useT();
   const dangHoc = useMemo(() => dangHocDo(ds, done).filter(v => v.tech.id !== boQua).slice(0, 3), [ds, done, boQua]);
@@ -99,7 +91,6 @@ export function DashboardPage() {
   const { t } = useT();
   const { data: ds = [], isLoading, isError, refetch } = useCurriculumIndex();
   const { done } = useProgress();
-  // Tu khoa tim kiem nam tren URL (?q=): tai lai / quay lai / chia se link van giu ket qua
   const [thamSo, datThamSo] = useSearchParams();
   const q = thamSo.get('q') ?? '';
   const qTre = useDeferredValue(q);
@@ -135,7 +126,6 @@ export function DashboardPage() {
     );
   }
 
-  // So lieu: bon o gon nhu ban truoc nguoi dung thich — so cong nghe, tong so bai, bai da xong, tien do %
   const soLieu: [string, number | string, string][] = [
     [t('statTech'), ds.length, 'bg-sky text-sky-ink'],
     [t('statLessons'), tong.tong, 'bg-lavender text-lavender-ink'],
@@ -145,7 +135,6 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Tieu de + so lieu ben trai, lich hoc ben phai cao bang ca khoi do; man hep thi xep doc */}
       <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch">
         <div className="flex shrink-0 flex-col justify-between gap-6">
           {tieuDe}

@@ -1,4 +1,3 @@
-// Lenh ma hoa / xem byte cua terminal gia lap: base64, sha256sum, xxd. Lam viec tren byte UTF-8 nhu Linux that.
 import { docNguon, tachCo, type LenhThuan } from './terminal-van-ban';
 
 const maHoa = new TextEncoder();
@@ -16,7 +15,6 @@ const base64: LenhThuan['chay'] = (args, nc) => {
   let vao: string;
   if (conLai[0]) {
     const r = nc.docTep(conLai[0]);
-    // Ban cu cho "base64 -d <chuoi>" giai thang chuoi go vao: giu de bai cu khong gay
     if ('loi' in r) {
       if (!giai) return `base64: ${conLai[0]}: ${r.loi}`;
       vao = conLai[0];
@@ -32,7 +30,6 @@ const base64: LenhThuan['chay'] = (args, nc) => {
   }
 };
 
-// SHA-256 dong bo (crypto.subtle la bat dong bo, khong dung duoc trong terminal chay dong bo)
 const K = new Uint32Array([
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -85,7 +82,6 @@ const sha256sum: LenhThuan['chay'] = (args, nc) => {
   }).join('\n');
 };
 
-/** xxd: 16 byte moi dong, nhom 2 byte, cot ASCII ben phai */
 const xxd: LenhThuan['chay'] = (args, nc) => {
   const r = docNguon('xxd', tachCo(args).conLai, nc);
   if ('loi' in r) return r.loi;

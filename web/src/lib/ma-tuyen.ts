@@ -1,6 +1,3 @@
-// Bien tuyen cho moi cong nghe (nhu "M1", "L2" tren ban do tau dien): ma ngan + mau rieng cua cong nghe.
-// Thay cho emoji: nhin mot lan la nhan ra tuyen, va doc duoc tren moi nen.
-
 const MA: Record<string, string> = {
   cybersecurity: 'SEC', cpp: 'C++', python: 'PY', java: 'JV', nodejs: 'NJS', react: 'RCT',
   htmlcss: 'H5', sql: 'SQL', jest: 'JST', docker: 'DKR', typescript: 'TS', csharp: 'C#',
@@ -10,7 +7,6 @@ const MA: Record<string, string> = {
   kubernetes: 'K8S', cicd: 'CI', nginx: 'NGX'
 };
 
-/** Ma tuyen toi da 3 ky tu (bien luon tron deu); cong nghe chua dat ma thi lay chu cai dau cua ten */
 export function maTuyen(tech: { id: string; name: string }): string {
   const co = MA[tech.id];
   if (co) return co;
@@ -33,7 +29,6 @@ function doSang(hex: string): number | null {
 
 const tuongPhan = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
-/** Chu trang hay chu toi tren nen mau nay: chon ben nao tuong phan cao hon (WCAG) */
 export function chuTrenNen(hex: string): 'trang' | 'toi' {
   const l = doSang(hex);
   if (l === null) return 'trang';

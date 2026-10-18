@@ -1,10 +1,5 @@
 import { cn } from '@/lib/utils';
 
-/**
- * Logo: huy hieu tron vang tin hieu ve dau ma "</>" (thay chu "DM") + ten chu tron.
- * Icon tu song: hai ngoac nhip ra vao, gach cheo nghieng theo (icon-dong.css, data-dong="logo");
- * re chuot vao muc chua logo (.kich-dong) thi ngoac bat ra. Ten thuong hieu khong cho trinh duyet tu dich.
- */
 export function BrandMark({ className, nho = false }: { className?: string; nho?: boolean }) {
   return (
     <span className={cn('flex items-center gap-2 font-display font-extrabold', className)}>

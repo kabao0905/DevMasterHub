@@ -1,4 +1,3 @@
-// Chuyen tu tests/terminal-fs, terminal-lenh, terminal-nginx, ctf-khong-hoi-quy (app cu).
 import { createTerminal, CHALLENGES, type HeThongTep } from './terminal';
 import NGUON from './terminal.ts?raw';
 import { LENH_VAN_BAN } from './terminal-van-ban';
@@ -97,7 +96,6 @@ describe('he thong tep', () => {
 });
 
 describe('bang lenh la nguon duy nhat', () => {
-  // Lenh can he thong tep la case trong terminal.ts; lenh thuan nam trong cac module terminal-*.ts
   const nhanCase = () => [
     ...[...NGUON.matchAll(/^\s*case '([a-z0-9_]+)':/gm)].map(m => m[1]),
     ...Object.keys({ ...LENH_VAN_BAN, ...LENH_MA_HOA, ...LENH_HE_THONG })
@@ -187,8 +185,6 @@ describe('nginx', () => {
   });
 });
 
-// Bai "Phan tich HTTP voi cURL": may mac dinh khong co Nginx — Apache (dung nhu ps/netstat) phuc vu /var/www/html.
-// Truoc day curl chi biet Nginx nen bai nay luc nao cung 502 Bad Gateway.
 describe('curl tren may mac dinh (Apache) giong curl that', () => {
   test('mac dinh chi in than trang; -I chi in header; -i ca hai; header lo co bi mat', () => {
     const T = createTerminal();

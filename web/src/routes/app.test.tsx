@@ -131,7 +131,6 @@ test('logo DevMaster Hub la loi vao Dashboard: thanh tren khong con muc Dashboar
 
 test('dang xuat thi ve trang dang nhap', async () => {
   const u = userEvent.setup();
-  // Trinh duyet nhung (vd. trong app) chan window.confirm: khong duoc dua vao no
   vi.stubGlobal('confirm', () => false);
   const { router } = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   await u.click(await screen.findByRole('button', { name: /^Tài khoản/ }));
@@ -141,12 +140,10 @@ test('dang xuat thi ve trang dang nhap', async () => {
   await waitFor(() => expect(router.state.location.pathname).toBe('/auth'));
 });
 
-// Moi lan vao thang mot trang React (tu app cu qua location.assign, go URL) muc lich su dau deu co khoa "default"
 const KHOA_CUON = 'react-router-scroll-positions';
 
 test('vao thang trang React khong nhan vi tri cuon da luu cua mot trang khac', async () => {
   window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
-  // Lan truoc: dang o trang dau (khoa "default") cuon xuong 1234 roi di tiep, sang app cu
   sessionStorage.setItem(KHOA_CUON, JSON.stringify({ default: 1234 }));
   veApp('/', { gia: daDangNhap(), json: JSON_GIA });
   await screen.findByRole('main');
@@ -218,7 +215,6 @@ test('cong tac sang / toi tren thanh tren: gat thi ca trang doi mau va nho lua c
     const lan1 = veApp('/', { gia: daDangNhap(), json: JSON_GIA });
     const congTac = await screen.findByRole('switch', { name: 'Chế độ tối' });
     expect(congTac).toHaveAttribute('aria-checked', 'false');
-    // Khong con thanh ben dieu huong kieu cu (cot phai Lich hoc / Sap toi cua Dashboard la aside noi dung, khong co nav)
     expect(screen.queryAllByRole('complementary').some(a => within(a).queryByRole('navigation'))).toBe(false);
     await u.click(congTac);
     expect(congTac).toHaveAttribute('aria-checked', 'true');
@@ -226,7 +222,6 @@ test('cong tac sang / toi tren thanh tren: gat thi ca trang doi mau va nho lua c
     expect(localStorage.getItem(KHOA_CHE_DO)).toBe('toi');
     lan1.unmount();
 
-    // Tai lai trang: van o che do toi, gat lai thi ve sang
     veApp('/', { gia: daDangNhap(), json: JSON_GIA });
     const lai = await screen.findByRole('switch', { name: 'Chế độ tối' });
     expect(lai).toHaveAttribute('aria-checked', 'true');
@@ -250,14 +245,12 @@ test('dashboard: lich chi tich ngay hoc du muc tieu, ngay hoc chua du to nhat, d
   ] }), json: JSON_GIA });
   const lich = await screen.findByRole('region', { name: 'Lịch học' });
   expect(await within(lich).findByText('2 ngày liên tiếp')).toBeInTheDocument();
-  // Thoi gian hoc hom nay hien noi bat: thanh tien do co nhan doc duoc, dat muc tieu thi bao ro
   const cotBen = lich;
   const tienDo = within(cotBen).getByRole('progressbar', { name: 'Hôm nay: 15/15 phút' });
   expect(tienDo).toHaveAttribute('aria-valuenow', '15');
   expect(tienDo).toHaveAttribute('aria-valuemax', '15');
   expect(within(cotBen).getByText(/Đạt mục tiêu/)).toBeInTheDocument();
   expect(within(cotBen).getByRole('button', { name: /Mục tiêu: 15 phút\/ngày/ })).toBeInTheDocument();
-  // Dau thang thi hom qua / hom kia thuoc thang truoc, khong nam tren lich thang nay
   const ngayThang = new Date().getDate();
   expect(within(lich).getAllByRole('img', { name: /đã học/ })).toHaveLength(ngayThang > 1 ? 2 : 1);
   if (ngayThang > 2) expect(within(lich).getByRole('img', { name: /học 5 phút/ })).toBeInTheDocument();
@@ -295,7 +288,6 @@ test('da chon muc tieu thi khong hien lai bang chao mung; bam muc tieu tren lich
 });
 
 test('mo mot mon hoc thi dong ho chay va ghi thoi gian hoc cho mon do', async () => {
-  // jsdom mac dinh coi trang la dang an (khong ve): gia lap tab dang hien de dong ho chay
   Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
   try {
@@ -303,7 +295,6 @@ test('mo mot mon hoc thi dong ho chay va ghi thoi gian hoc cho mon do', async ()
     veApp('/roadmap/python', { gia, json: JSON_GIA });
     await screen.findByRole('heading', { name: /Python/ });
     act(() => { vi.advanceTimersByTime(45_000); });
-    // waitFor tu kiem lai bang setInterval (dang bi gia lap): tra timer that truoc khi cho
     vi.useRealTimers();
     await waitFor(() => expect(ghiThoiGian(gia)).toHaveLength(1));
     expect(ghiThoiGian(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'python', duration_seconds: 30 });

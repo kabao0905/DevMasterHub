@@ -1,5 +1,3 @@
-// Moi lan goi la mot may terminal rieng (he thong tep, lich su, co CTF rieng).
-// Cac component ve (man hinh, hop nano, bang CTF) dang ky nghe su kien cua may qua kenh nay.
 import { useEffect, useState } from 'react';
 import { useQuery, type QueryKey } from '@tanstack/react-query';
 import { useT } from '@/lib/i18n';
@@ -12,7 +10,6 @@ type SuKien = {
 };
 export type KenhTerminal = {
   may: MayTerminal;
-  /** Dang ky nghe; tra ve ham huy dang ky (dung lam cleanup cua useEffect) */
   nghe: <K extends keyof SuKien>(ten: K, fn: SuKien[K]) => () => void;
 };
 
@@ -34,7 +31,6 @@ function taoKenh(boTep: HeThongTep | undefined, ngonNgu: string): KenhTerminal {
   };
 }
 
-/** May rieng cho component nay, mat khi component go ra (terminal bai hoc, lab) */
 export function useTerminal(boTep?: HeThongTep): KenhTerminal {
   const { lang } = useT();
   const [kenh] = useState<KenhTerminal>(() => taoKenh(boTep, lang));
@@ -42,15 +38,10 @@ export function useTerminal(boTep?: HeThongTep): KenhTerminal {
   return kenh;
 }
 
-/** help, goi y loi va de CTF cua may doi theo ngon ngu dang chon tren trang */
 function useTheoNgonNgu(may: MayTerminal, lang: string) {
   useEffect(() => { may.datNgonNgu(lang); }, [may, lang]);
 }
 
-/**
- * May giu qua cac lan roi trang roi quay lai trong phien (trang Thu thach: diem, co da giai).
- * Nam trong react-query theo khoa co id nguoi dung, nen dang xuat la xoa.
- */
 export function useTerminalBenVung(khoa: QueryKey): KenhTerminal {
   const { lang } = useT();
   const { data } = useQuery({
@@ -60,7 +51,6 @@ export function useTerminalBenVung(khoa: QueryKey): KenhTerminal {
     enabled: false,
     staleTime: Infinity,
     gcTime: Infinity,
-    // May co ham va trang thai trong closure: khong so sanh/sao chep sau nhu du lieu thuong
     structuralSharing: false
   });
   useTheoNgonNgu(data.may, lang);

@@ -6,7 +6,6 @@ import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon
 import { useCheDo } from "@/lib/che-do"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // Thong bao theo che do sang / toi
   const [cheDo] = useCheDo()
 
   return (

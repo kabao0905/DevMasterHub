@@ -25,7 +25,6 @@ export const TEN_NHOM: Record<Nhom, string> = {
 
 const lopMuc = 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/85 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-sidebar-ring';
 
-/** Menu day du (cong nghe theo nhom, tai khoan, ngon ngu): mo tu nut menu cua thanh tren cung tren dien thoai */
 export function Sidebar() {
   const { t, lang, setLang, languages } = useT();
   const { profile, user, logout } = useAuth();
@@ -94,7 +93,6 @@ export function Sidebar() {
           <NavLink to="/" end className={({ isActive }) => cn(lopMuc, isActive && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
             <LayoutDashboard className="size-4" /> {t('dashboard')}
           </NavLink>
-          {/* Project Lab gom ca trang theo cap do / chu de / idea da luu */}
           <Link to="/project" aria-current={laTrangDuAn ? 'page' : undefined}
             className={cn(lopMuc, laTrangDuAn && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground')}>
             <FlaskConical className="size-4" /> {t('projectLab')}
@@ -126,7 +124,6 @@ export function Sidebar() {
       </ScrollArea>
 
       <div className="flex items-center gap-2 border-t border-sidebar-border px-5 py-3 text-xs text-muted-foreground">
-        {/* Dang hoi /api/health: cham trung tinh, khong bao offline truoc khi co cau tra loi */}
         <span className={cn('size-2 rounded-full', trangThaiAi.cham)} aria-hidden="true" />
         {t(trangThaiAi.khoa)}
       </div>

@@ -1,4 +1,3 @@
-// Supabase cho Project Lab: dung cot nhu auth-service.js cu, bao loi thay vi nuot.
 import { giaSupabase } from '@/test/gia-supabase';
 import { luuBaiNop, luuYTuong, taiBaiNop, taiYTuong, xoaYTuong, type YTuongDaLuu } from './project-db';
 import { chuanHoaKetQua, taoBanNop } from './project-ai';

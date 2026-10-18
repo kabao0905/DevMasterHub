@@ -1,5 +1,4 @@
 import { docThan } from '@/test/doc-than';
-// Career Advisor: chat, viec lam tu goi y, sua cau hoi, tra loi lai, xoa chat, tim viec, loi AI.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
@@ -56,7 +55,7 @@ test('nap lich su da luu; hoi -> tra loi markdown, tu tim viec, danh sach thu go
   expect(the).toHaveAttribute('href', 'https://jobs.x/1');
   expect(the).toHaveAttribute('target', '_blank');
   expect(the.textContent).toContain('<b>ACME</b>');
-  expect(the.querySelector('img')).toBeNull(); // logo javascript: bi bo
+  expect(the.querySelector('img')).toBeNull();
   expect(screen.getByRole('link', { name: /Senior Go Engineer/ })).toHaveAttribute('href', '#');
   await waitFor(() => expect(daLuu().at(-1)).toHaveLength(4));
 });
@@ -72,7 +71,6 @@ test('sua cau hoi: dua cau vao o nhap, cat lich su tu do; tra loi lai: hoi lai d
   expect(goiAi[0].messages.map(m => m.content)).toEqual(['Câu A']);
   expect(screen.getAllByText('Câu A')).toHaveLength(1);
 
-  // Con tin phia sau: hoi truoc khi xoa; Huy thi giu nguyen
   await u.click(screen.getByRole('button', { name: /Sửa câu hỏi/ }));
   await u.click(within(await screen.findByRole('dialog', { name: /xóa các tin nhắn phía sau/ })).getByRole('button', { name: 'Hủy' }));
   expect(screen.getByText('Trả lời 1')).toBeInTheDocument();
@@ -111,7 +109,7 @@ test('xoa chat co xac nhan; tim viec thu cong', async () => {
 
   await u.click(screen.getByRole('button', { name: /Tìm việc làm/ }));
   const hop = await screen.findByRole('dialog');
-  expect(within(hop).getByRole('button', { name: 'Tìm việc làm' })).toBeInTheDocument(); // nut chi co icon van co ten
+  expect(within(hop).getByRole('button', { name: 'Tìm việc làm' })).toBeInTheDocument();
   await u.type(within(hop).getByRole('textbox'), 'Python backend{Enter}');
   expect(timViec).toEqual(['Python backend']);
   expect(await screen.findByRole('button', { name: /Việc làm AI gợi ý/ })).toHaveTextContent('Python backend');
@@ -195,6 +193,5 @@ test('gui link danh sach: bao so trang, so viec nhen da doc; viec da cham hien t
   expect(the.textContent).toContain('Cần học thêm: Docker, Kubernetes');
   expect(the.textContent).toContain('Hồ Chí Minh');
   expect(the.textContent).toContain('20-30 triệu');
-  // Tin khong ghi noi lam viec: khong tu dien "Remote"
   expect(screen.getByRole('link', { name: /Java Backend/ }).textContent).not.toMatch(/Remote/);
 });

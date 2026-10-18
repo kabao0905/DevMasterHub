@@ -9,7 +9,6 @@ import { LoiTrang } from '@/routes/loi/LoiTrang';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useT } from '@/lib/i18n';
 
-/** Trong luc tai chunk cua route luoi o lan mo trang dau: khong de trang trang */
 function TaiTrang() {
   const { t } = useT();
   return (
@@ -20,7 +19,6 @@ function TaiTrang() {
   );
 }
 
-/** /lesson/<tech>[/<cap>] thieu bai: ve roadmap tuong ung */
 function VeRoadmap() {
   const { tech, level } = useParams();
   return <Navigate to={level ? `/roadmap/${tech}/${level}` : `/roadmap/${tech}`} replace />;
@@ -31,10 +29,8 @@ export const cacRoute: RouteObject[] = [
   {
     element: <RequireAuth><AppShell /></RequireAuth>,
     HydrateFallback: TaiTrang,
-    // Loi o chinh khung app (thanh ben...)
     errorElement: <LoiTrang />,
     children: [{
-      // Loi o mot trang (chunk lazy hong sau deploy, loi khi ve): hien trong khung, thanh ben van dung duoc
       errorElement: <LoiTrang trongKhung />,
       children: [
         { index: true, element: <DashboardPage /> },
@@ -42,10 +38,8 @@ export const cacRoute: RouteObject[] = [
         { path: 'roadmap/:tech/:level?', element: <RoadmapPage /> },
         { path: 'lesson', element: <Navigate to="/" replace /> },
         { path: 'lesson/:tech/:level?', element: <VeRoadmap /> },
-        // Trang bai hoc va Thu thach (Prism, AI, terminal, IDE) tach chunk rieng
         { path: 'lesson/:tech/:level/:lesson', lazy: async () => ({ Component: (await import('@/routes/lesson/LessonPage')).LessonPage }) },
         { path: 'challenge', lazy: async () => ({ Component: (await import('@/routes/challenge/ChallengePage')).ChallengePage }) },
-        // Project Lab, idea da luu, du an cua toi
         { path: 'project', lazy: async () => ({ Component: (await import('@/routes/project/ProjectHubPage')).ProjectHubPage }) },
         { path: 'project-level/:level?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectLevelPage')).ProjectLevelPage }) },
         { path: 'project-topic/:topic?', lazy: async () => ({ Component: (await import('@/routes/project/ProjectTopicPage')).ProjectTopicPage }) },
@@ -55,7 +49,6 @@ export const cacRoute: RouteObject[] = [
       ]
     }]
   },
-  // URL la (server tra 404 kem trang nay)
   { path: '*', element: <NotFoundPage /> }
 ];
 

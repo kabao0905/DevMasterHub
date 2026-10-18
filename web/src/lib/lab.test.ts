@@ -1,4 +1,3 @@
-// Chuyen tu tests/lab-runner.test.js va tests/lab-nginx-intro.test.js (app cu).
 import { chuanHoa, docTienDo, kiemNhiemVu, luuTienDo, soKhop, timLab, tinhDiem, type BuocGiai, type NhiemVu } from './lab';
 import { LABS_NGINX } from './labs-nginx';
 import { createTerminal, type MayTerminal } from './terminal';

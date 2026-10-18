@@ -1,4 +1,3 @@
-// Terminal giong shell that hon: pipe, dau nhay, glob, ; && , < > >>, va bo lenh xu ly van ban / he thong.
 import { createHash } from 'node:crypto';
 import { createTerminal, type HeThongTep } from './terminal';
 

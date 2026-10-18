@@ -21,7 +21,6 @@ const GOI_Y = [
   { nut: 'keyTakeawaysBtn', cau: 'keyTakeaways' }
 ];
 
-/** Gia su AI cua bai dang mo. Ngu canh gui di theo tab DANG mo (quiz: co cau hoi, chua lo dap an) */
 type Props = { bai: BaiDangMo; tab: TabBai; quiz?: TrangThaiQuiz; baiTap?: { hienTai?: BaiTapAi | null; code?: string } };
 
 export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
@@ -43,8 +42,6 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [data.tinNhan.length, data.dangGui]);
 
-  // Ghi theo khoa cua bai LUC HOI: tra loi ve sau khi da doi bai van vao dung bai.
-  // Da dang xuat (truy van bi xoa) thi bo qua, khong tao lai du lieu cua nguoi cu.
   const capNhat = (k: QueryKey, f: (s: KhoChat) => KhoChat) => {
     if (!qc.getQueryState(k)) return;
     qc.setQueryData<KhoChat>(k, s => f(s ?? RONG));
@@ -65,7 +62,6 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
 
   function hoi(cauHoi: string) {
     const hienTai = qc.getQueryData<KhoChat>(khoa) ?? RONG;
-    // Doc tu cache (cap nhat ngay) chu khong tu lan ve truoc: Enter + bam nut cung luc chi gui mot lan
     if (hienTai.dangGui || !cauHoi.trim()) return;
     capNhat(khoa, s => ({ ...s, tinNhan: [...s.tinNhan, { role: 'user', content: cauHoi.trim() }] }));
     datNhap('');
@@ -80,15 +76,12 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
   }
 
   function khiGo(e: KeyboardEvent<HTMLTextAreaElement>) {
-    // Dang go chu co dau (IME) thi Enter la chot chu, khong phai gui.
-    // Safari bao isComposing = false o phim Enter chot chu nhung keyCode = 229.
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
       guiO();
     }
   }
 
-  // Nut Gui luon bam duoc (tru luc dang gui): o trong thi nhac ngay duoi o va dua con tro ve
   function guiO() {
     if (!nhap.trim()) {
       datNhacTrong(true);
@@ -133,7 +126,6 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
         )}
         {data.tinNhan.map((m, i) => (
           <li key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
-            {/* Nguoi hoc: bong oai huong; AI: the trang noi tren nen canvas */}
             <div className={cn(
               'max-w-[85%] min-w-0 rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words',
               m.role === 'user' ? 'whitespace-pre-wrap rounded-br-md bg-lavender text-foreground' : 'rounded-bl-md bg-card shadow-soft'

@@ -1,28 +1,20 @@
-// Lenh xu ly van ban cua terminal gia lap (cat, head, grep, awk, sed...). Thuan: khong cham he thong tep,
-// doc tep qua docTep do terminal.ts truyen vao; dau vao tu pipe nam o stdin; cau goi y dich qua t.
 import type { HamDich } from './terminal-ban-dich';
 
 export type DocTep = { noiDung: string } | { loi: string };
 export type NguCanhLenh = {
-  /** Ket qua cua lenh dung truoc trong pipe (hoac < tep); null khi khong co */
   stdin: string | null;
   docTep: (duong: string) => DocTep;
-  /** Moi tep (de quy) trong thu muc, ten hien thi bat dau bang duong da go; null neu khong phai thu muc */
   tepDeQuy: (duong: string) => string[] | null;
-  /** Dich cau goi y theo ngon ngu dang chon (loi chuan Linux giu tieng Anh) */
   t: HamDich;
 };
-// Mo ta lenh cho "help" nam o terminal-mo-ta-lenh.ts (du 8 ngon ngu)
 export type LenhThuan = { usage: string; chay: (args: string[], nc: NguCanhLenh) => string };
 
-/** Tach dong; bo dong rong cuoi do ky tu xuong dong ket thuc */
 export function tachDong(s: string): string[] {
   const d = s.split('\n');
   if (d.length && d[d.length - 1] === '') d.pop();
   return d;
 }
 
-/** Doc dau vao tu cac tep (noi lai) hoac tu stdin */
 export function docNguon(ten: string, tep: string[], nc: NguCanhLenh): { text: string } | { loi: string } {
   if (!tep.length) {
     if (nc.stdin !== null) return { text: nc.stdin };
@@ -37,10 +29,6 @@ export function docNguon(ten: string, tep: string[], nc: NguCanhLenh): { text: s
   return { text: phan.join('\n') };
 }
 
-/**
- * Tach co dang -abc / -n 5 / -n5. coGiaTri: cac co nhan gia tri (vd 'ndft').
- * Doi so khong bat dau bang '-' (hoac sau '--') vao conLai.
- */
 export function tachCo(args: string[], coGiaTri = ''): { co: Record<string, string | true>; conLai: string[] } {
   const co: Record<string, string | true> = {};
   const conLai: string[] = [];
@@ -71,7 +59,6 @@ function lenhCat(ten: string): LenhThuan['chay'] {
   };
 }
 
-/** head/tail: -n N, -N; tail con nhan +N (tu dong N tro di) */
 function lenhDauCuoi(ten: 'head' | 'tail'): LenhThuan['chay'] {
   return (args, nc) => {
     let so = '10';
@@ -142,7 +129,6 @@ const uniq: LenhThuan['chay'] = (args, nc) => {
     .join('\n');
 };
 
-/** "1,3" / "2-4" / "3-" / "-2" -> ham kiem vi tri (dem tu 1) */
 function danhSachViTri(ds: string): ((i: number) => boolean) | null {
   const khoang: [number, number][] = [];
   for (const p of ds.split(',')) {
@@ -171,7 +157,6 @@ const cut: LenhThuan['chay'] = (args, nc) => {
   }).join('\n');
 };
 
-/** Bung tap ky tu cua tr: a-z, [:upper:], \n \t */
 function bungTap(s: string): string[] {
   const lop: Record<string, string> = {
     '[:upper:]': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '[:lower:]': 'abcdefghijklmnopqrstuvwxyz',
@@ -217,7 +202,6 @@ function theoDong(ten: string, bien: (dong: string[]) => string[]): LenhThuan['c
   };
 }
 
-/** Regex co ban (BRE) cua grep/sed -> regex JS: \| \( \) \+ \? \{ \} la toan tu, con | ( ) + ? { } la chu */
 function breSangJs(p: string): string {
   let kq = '';
   for (let i = 0; i < p.length; i++) {
@@ -231,7 +215,6 @@ function breSangJs(p: string): string {
 
 const thoatRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Tao regex; sai cu phap thi coi mau la chuoi thuong (nguoi moi hay go ky tu dac biet) */
 function taoRegex(mau: string, { ere = false, coDinh = false, khongHoaThuong = false, tron = false, toanCuc = false } = {}): RegExp {
   let nguon = coDinh ? thoatRegex(mau) : ere ? mau : breSangJs(mau);
   if (tron) nguon = `(?<![\\w])(?:${nguon})(?![\\w])`;
@@ -278,11 +261,8 @@ const grep: LenhThuan['chay'] = (args, nc) => {
   return [...loi, ...ra].join('\n');
 };
 
-// ---------- awk (tap con hay dung: -F, /mau/, so sanh truong, print, BEGIN/END) ----------
-
 type GiaTriAwk = (truong: string[], nr: number) => string;
 
-/** Bieu thuc don: $N, $NF, $(NF-1), $0, NR, NF, so, "chuoi" */
 function bieuThucAwk(s: string): GiaTriAwk | null {
   const t = s.trim();
   let m: RegExpMatchArray | null;
@@ -300,7 +280,6 @@ function bieuThucAwk(s: string): GiaTriAwk | null {
   return null;
 }
 
-/** print a, b "x" c -> cac muc cach bang dau phay (noi bang dau cach), moi muc la chuoi ghep */
 function lenhPrintAwk(s: string): GiaTriAwk | null {
   const than = s.trim().replace(/^print\b/, '').trim();
   if (!than) return f => f[0];
@@ -355,7 +334,6 @@ function dieuKienAwk(s: string): ((f: string[], nr: number) => boolean) | null {
 
 type LuatAwk = { dk: (f: string[], nr: number) => boolean; lam: GiaTriAwk[] };
 
-/** Tach chuong trinh awk thanh BEGIN / cac luat / END; khong ho tro thi null */
 function phanTichAwk(ct: string): { begin: GiaTriAwk[]; luat: LuatAwk[]; end: GiaTriAwk[] } | null {
   const kq = { begin: [] as GiaTriAwk[], luat: [] as LuatAwk[], end: [] as GiaTriAwk[] };
   const khoi = (s: string) => {
@@ -364,7 +342,6 @@ function phanTichAwk(ct: string): { begin: GiaTriAwk[]; luat: LuatAwk[]; end: Gi
   };
   let con = ct.trim();
   while (con) {
-    // [BEGIN|END] [dieu kien] [{ lenh }] [phan con lai]; dieu kien an tham den dau '{' dau tien
     const m = con.match(/^(BEGIN|END)?\s*([^{]*)(?:\{([^}]*)\})?\s*(.*)$/s);
     if (!m || (!m[1] && !m[2].trim() && m[3] === undefined)) return null;
     const lam = m[3] !== undefined ? khoi(m[3]) : [((f: string[]) => f[0]) as GiaTriAwk];
@@ -409,12 +386,9 @@ const awk: LenhThuan['chay'] = (args, nc) => {
   return ra.join('\n');
 };
 
-// ---------- sed (s///, d, p voi dia chi N, N,M, /re/, $) ----------
-
 type DiaChi = { loai: 'so'; n: number } | { loai: 'cuoi' } | { loai: 're'; re: RegExp };
 type LenhSed = { tu?: DiaChi; den?: DiaChi; lenh: 's' | 'd' | 'p'; re?: RegExp; thay?: string; p?: boolean };
 
-/** Phan thay the cua sed -> chuoi thay cua JS: & la ca chuoi khop, \1 la nhom 1 */
 const thaySed = (s: string) =>
   s.replace(/\$/g, '$$$$').replace(/\\(\d)/g, '$$$1').replace(/(^|[^\\])&/g, '$1$$&').replace(/\\&/g, '&');
 
@@ -498,7 +472,6 @@ const sed: LenhThuan['chay'] = (args, nc) => {
   return ra.join('\n');
 };
 
-/** diff dang thuong (2c2 / < cu / --- / > moi) dua tren day con chung dai nhat */
 const diff: LenhThuan['chay'] = (args, nc) => {
   const { conLai } = tachCo(args);
   if (conLai.length < 2) return `diff: ${nc.t('loi.cachDung', { cu: 'diff <file1> <file2>' })}`;

@@ -1,7 +1,3 @@
-// Bien tuyen: hinh tron deu mang mau cua cong nghe, ben trong la logo that cua cong nghe (Simple Icons);
-// cong nghe chua co logo thi ghi ma tuyen toi da 3 ky tu (PY, C++, RS...).
-// Logo / chu trang hay toi chon theo mot luat: ben nao tuong phan cao hon voi nen (lib/ma-tuyen chuTrenNen).
-// Chi de nhan dien bang mat: ten cong nghe luon dung ngay canh nen bien an voi trinh doc man hinh.
 import { chuTrenNen, maTuyen } from '@/lib/ma-tuyen';
 import { logoCongNghe } from '@/lib/logo-cong-nghe';
 import { cn } from '@/lib/utils';

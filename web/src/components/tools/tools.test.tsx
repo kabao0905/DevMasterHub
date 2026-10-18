@@ -89,7 +89,6 @@ describe('CtfPanel', () => {
     const u = userEvent.setup();
     veVoiNen(<TerminalVaCtf />);
     const o = await screen.findByRole('textbox', { name: 'Cờ (FLAG{…})' });
-    // Dan chu: userEvent.type hieu "{...}" la phim dac biet
     await u.click(o);
     await u.paste(CHALLENGES[0].flag);
     await u.click(screen.getByRole('button', { name: 'Nộp cờ' }));
@@ -188,7 +187,6 @@ describe('LiveIde', () => {
     });
     const mauChu = await screen.findByRole('textbox', { name: 'Màu chữ' });
     expect(mauChu).toHaveValue('#e2e8f0');
-    // Dang go do dang ("re") khong ghi; go xong (roi o / Enter) moi ghi
     onDoi.mockClear();
     fireEvent.change(mauChu, { target: { value: 're' } });
     expect(mauChu).toHaveValue('re');

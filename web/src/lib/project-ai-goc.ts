@@ -1,10 +1,7 @@
 // @ts-nocheck
-// SINH TU public/ai-service.js bang chuyen-t4.cjs (scratchpad) — chep NGUYEN VAN, dung sua tay.
-// Ban co kieu va phan dieu phoi cham bai nam o project-ai.ts.
 import { goiAi, docJson } from './ai';
 
 export function taoDichVuDuAn(client, { lang, signal, cho, ngauNhien = Math.random } = {}) {
-  // Ban cu doc ngon ngu tu I18n va so ngau nhien tu Math.random: thay bang tham so de kiem duoc
   const I18n = { getLang: () => lang };
   const Math = Object.assign(Object.create(globalThis.Math), { random: ngauNhien });
   const parseJSON = docJson;
@@ -628,7 +625,6 @@ Trả về JSON:
 
   function buildSubmission({ review, idea, files, difficulty, topic }) {
     const tieuChi = Array.isArray(review && review.criteria) ? review.criteria : [];
-    // Tim tieu chi theo ten; AI doi ten thi lui ve vi tri trong prompt synthesizeReview
     const diem = (mau, viTri) => {
       const c = tieuChi.find(x => mau.test(String(x && x.name))) || tieuChi[viTri];
       const so = Number(c && c.score);

@@ -4,7 +4,6 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { napGiaoTrinh } = require('../lib/curriculum.js');
-// Ban dich goc (noi sua noi dung)
 const DU_LIEU_I18N = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'i18n.json'), 'utf8'));
 
 let ra;

@@ -1,9 +1,6 @@
 // @ts-nocheck
-// SINH TU public/career-advisor.js bang chuyen-t5.cjs (scratchpad) — chep NGUYEN VAN, dung sua tay.
-// Ban co kieu nam o career.ts. AuthService/I18n/CURRICULUM la ban gia do career.ts truyen vao.
 import { dongPhongBi } from './phong-bi';
 
-/** Ten ky nang trong tin -> ma lo trinh DevMaster (C++ -> cpp, ReactJS -> react, Node.js -> nodejs...) */
 const BI_DANH_KY_NANG = {
   'c++': 'cpp', 'c#': 'csharp', 'js': 'javascript', 'ts': 'typescript', 'golang': 'go', 'reactjs': 'react',
   'vuejs': 'vue', 'angularjs': 'angular', 'nodejs': 'nodejs', 'node': 'nodejs', 'html': 'htmlcss', 'css': 'htmlcss',
@@ -14,7 +11,6 @@ const maKyNang = s => {
   return BI_DANH_KY_NANG[g] || g;
 };
 
-/** Ky nang tin tuyen dung yeu cau ma hoc vien chua hoc lo trinh tuong ung */
 export function kyNangThieu(kyNang, daHoc) {
   const hoc = new Set(daHoc.map(maKyNang));
   return kyNang.filter(k => !hoc.has(maKyNang(k)));
@@ -28,8 +24,6 @@ export function taoCoVanGoc({ AuthService, I18n, CURRICULUM }) {
   let cachedStats = null;
   let activeAbortController = null;
 
-  // \b cua JavaScript chi hieu ky tu ASCII: \bđà nẵng\b khong bao gio khop.
-  // Ranh gioi tu o day tinh theo moi chu cai Unicode.
   const tuRieng = (nguon, co = 'iu') =>
     new RegExp('(?<![\\p{L}\\p{N}_])(?:' + nguon + ')(?![\\p{L}\\p{N}_])', co);
   const DIA_DIEM_VN = 'tp\\.?\\s*hcm|tp\\s*hồ chí minh|hồ chí minh|ho chi minh|hcm|saigon|sài gòn|hà nội|ha noi|hn|đà nẵng|da nang|vietnam|việt nam|vn';
@@ -149,7 +143,6 @@ ${userContext}
    ❌ KHÔNG trả lời cộc lốc 1 câu cụt lủn. Hãy trả lời tự nhiên, có tâm, mang lại giá trị thật cho người học.`;
 
     if (listData) {
-      // Viec da doc trang chi tiet co cong ty / dia diem / luong / ky nang / kinh nghiem: dua het cho AI tu van
       const ds = (listData.viec || []).map((v, i) => {
         const thongTin = [v.congTy, v.diaDiem, v.luong, v.kinhNghiem && `kinh nghiệm ${v.kinhNghiem}`,
           (v.kyNang || []).length ? `kỹ năng: ${v.kyNang.join(', ')}` : ''].filter(Boolean).join(' · ');
@@ -172,10 +165,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     return prompt;
   }
 
-  /**
-   * Doc link qua /api/doc-viec-link: server doan y dinh (Gemini), doc mot tin hoac tha nhen doc ca danh sach (code + Jev).
-   * Gui kem ho so hoc de Jev cham do phu hop. Tra null neu bi huy giua chung.
-   */
   async function docLink(targetUrl, userMessage, signal) {
     let crawledData = null;
     let listData = null;
@@ -206,12 +195,10 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     return { crawledData, listData, link };
   }
 
-  /** Viec nhen da cham (diem 0..1) -> the viec lam cua bang goi y */
   function theTuNhen(v) {
     const pct = Math.round((v.diem || 0) * 100);
     let host = '';
-    try { host = new URL(v.url).hostname.replace(/^www\./, ''); } catch { /* url hong: de trong */ }
-    // Dia diem / luong nhen doc tu the tin hoac trang chi tiet; khong ghi thi de trong (khong tu cho la Remote)
+    try { host = new URL(v.url).hostname.replace(/^www\./, ''); } catch {}
     const diaDiem = v.diaDiem || '';
     const status = pct >= 67 ? 'ready' : pct >= 34 ? 'gap' : 'target';
     const kyNang = Array.isArray(v.kyNang) ? v.kyNang : [];
@@ -222,7 +209,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
       employment_type: v.hinhThuc || '', salary: v.luong || '', tags: kyNang, url: v.url, description_snippet: v.moTa || v.snippet,
       matchRate: pct, status,
       badgeText: I18n.t(status === 'ready' ? 'careerJevReady' : status === 'gap' ? 'careerJevGap' : 'careerJevTarget', { n: pct }),
-      // Danh gia thuc luc: ky nang tin can ma lo trinh chua hoc; khong biet ky nang thi dung mo ta ngan
       fitRecommendation: kyNang.length
         ? (thieu.length ? I18n.t('careerMissingSkills', { skills: thieu.slice(0, 3).join(', ') }) : I18n.t('mrReadyDesc'))
         : (v.snippet || '')
@@ -240,13 +226,10 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     try {
 
       const urlMatch = userMessage.match(/https?:\/\/[^\s<>"'()]+/i);
-      // Ket qua doc link: { crawledData } (mot tin) / { listData } (nhen doc ca danh sach) + link (bao giao dien)
       const doc = urlMatch ? await docLink(urlMatch[0], userMessage, signal) : { crawledData: null, listData: null, link: null };
       if (!doc || signal.aborted) return null;
       const { crawledData, listData, link } = doc;
 
-      // Khong doc duoc link (TopCV chong bot, trang loi...): tra loi co dinh, nhe nhang — khong goi AI,
-      // khong neu ma loi; goi y thu trang khac hoac noi muon tim viec gi
       if (link && !link.ok) {
         const xinLoi = I18n.t('careerLinkUnreadable');
         chatHistory = [...chatHistory, { role: 'user', content: userMessage }, { role: 'assistant', content: xinLoi }];
@@ -275,7 +258,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
           messages: apiMessages,
           temperature: 0.5,
           max_tokens: 1024,
-          // Thieu taskType thi server chay model "general" thay vi model tu van nghe nghiep
           taskType: 'career'
         }),
         signal
@@ -297,7 +279,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
 
       const searchMatch = aiText.match(/\[SEARCH_JOBS:\s*(.+?)\]/i);
       if (listData) {
-        // Nhen da doc va cham viec tren chinh website hoc vien gui: dung luon, khong tim viec lan nua
         aiText = aiText.replace(/\[SEARCH_JOBS:[^\]]*\]/gi, '').trim();
         autoSearchResults = (listData.viec || []).map(theTuNhen);
         try { usedSearchKeyword = new URL(listData.batDau).hostname.replace(/^www\./, ''); } catch { usedSearchKeyword = ''; }
@@ -459,8 +440,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     let statusClass = 'match-gap';
     let fitRecommendation = I18n.t('mr50Desc');
 
-    // Phai khai bao truoc nhanh !hasLearnedRelevantTech: nhanh do doc isSenior,
-    // dat sau thi dinh TDZ va ca danh sach viec lam bi nuot thanh rong.
     const isIntern = title.includes('intern') || title.includes('thực tập') || title.includes('trainee');
     const isFresher = title.includes('fresher') || title.includes('entry') || title.includes('graduate');
     const isJunior = title.includes('junior') || title.includes('associate');
@@ -623,7 +602,6 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
     }
   }
 
-  /** Them cho ban React: lich su chat nam trong react-query, nap vao truoc moi lan gui */
   function datLichSu(lichSu) { chatHistory = [...lichSu]; }
 
   return { sendMessage, searchJobs, abortMessage, getUserLevelContext, buildSystemPrompt, detectJobSearchIntent, evaluateJobMatch, datLichSu };

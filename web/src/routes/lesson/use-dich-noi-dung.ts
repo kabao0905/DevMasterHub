@@ -1,17 +1,13 @@
-// Dich may noi dung bai (viet bang tieng Viet) cho nguoi hoc ngon ngu khac, nhu app cu.
-// Ket qua tu dich vu ngoai nen luon qua lamSachHtml truoc khi chen; loi thi giu ban goc.
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { lamSachHtml } from '@/lib/sanitize';
 
-/** Bam ngan gon de lam khoa cache (app cu dung 30 ky tu dau nen hai bai dau giong nhau bi trung) */
 function bam(s: string): string {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36) + s.length.toString(36);
 }
 
-// Cache ban dich tren may co gioi han: localStorage day thi Supabase khong luu duoc phien dang nhap
 const TOI_DA = 60;
 const khoaDs = (lang: string) => `devmaster_hub_dich_${lang}__ds`;
 const khoaMuc = (lang: string, ma: string) => `devmaster_hub_dich_${lang}_${ma}`;
@@ -26,10 +22,9 @@ function docDs(lang: string): string[] {
 }
 
 function ghiDs(lang: string, ds: string[]) {
-  try { localStorage.setItem(khoaDs(lang), JSON.stringify(ds)); } catch { /* het cho luu */ }
+  try { localStorage.setItem(khoaDs(lang), JSON.stringify(ds)); } catch {}
 }
 
-/** Doc ban dich da luu; doc xong thi muc do thanh moi nhat (bo muc lau khong dung truoc) */
 export function docCacheDich(lang: string, ma: string): string | null {
   try {
     const v = localStorage.getItem(khoaMuc(lang, ma));
@@ -41,14 +36,13 @@ export function docCacheDich(lang: string, ma: string): string | null {
   }
 }
 
-/** Luu ban dich, giu toi da TOI_DA muc moi ngon ngu */
 export function ghiCacheDich(lang: string, ma: string, text: string): void {
   const ds = [...docDs(lang).filter(x => x !== ma), ma];
   while (ds.length > TOI_DA) {
     const cu = ds.shift()!;
-    try { localStorage.removeItem(khoaMuc(lang, cu)); } catch { /* bo qua */ }
+    try { localStorage.removeItem(khoaMuc(lang, cu)); } catch {}
   }
-  try { localStorage.setItem(khoaMuc(lang, ma), text); } catch { /* het cho luu */ }
+  try { localStorage.setItem(khoaMuc(lang, ma), text); } catch {}
   ghiDs(lang, ds);
 }
 

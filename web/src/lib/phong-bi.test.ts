@@ -7,7 +7,6 @@ test('boc body thanh { b64 }: chuoi giong tan cong khong con lo ra cho tuong lua
   expect(than).not.toContain('../');
   expect(than).not.toContain('${');
   expect(Object.keys(JSON.parse(than))).toEqual(['b64']);
-  // Mo ra dung nhu cu, ke ca tieng Viet va emoji (UTF-8 nhieu byte)
   expect(docThan(than)).toEqual(goc);
 });
 

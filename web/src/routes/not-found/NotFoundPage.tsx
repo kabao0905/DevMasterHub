@@ -4,7 +4,6 @@ import { usePageMeta } from '@/lib/page-meta';
 import { BrandMark } from '@/components/BrandMark';
 import { Button } from '@/components/ui/button';
 
-/** Server giao URL nay cho React nhung router khong co trang tuong ung */
 export function NotFoundPage() {
   const { t } = useT();
   const { pathname } = useLocation();

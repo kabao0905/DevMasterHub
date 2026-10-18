@@ -1,26 +1,17 @@
-// Phan tich mot dong lenh shell cho terminal gia lap: dau nhay, \ , pipe |, ; && ||, chuyen huong < > >> 2>.
-// Khong chay gi o day — chi tach thanh cau truc de terminal.ts chay. Loi tra ve khoa dich, terminal.ts dich theo ngon ngu.
-
-/** Loi cu phap: khoa trong THONG_BAO cua terminal-ban-dich.ts + gia tri chen vao */
 export type LoiCuPhap = { loi: { khoa: 'loi.thieuNhay' | 'loi.cuPhap'; bien: Record<string, string> } };
 
-/** Mot tu cua lenh. coNhay: co phan nam trong dau nhay -> khong bung glob (giong bash) */
 export type Tu = { v: string; coNhay: boolean };
 export type DoanLenh = {
   tu: Tu[];
-  /** < tep: doc stdin tu tep */
   vao?: string;
-  /** > tep / >> tep */
   ra?: { tep: string; noiThem: boolean };
 };
-/** Mot cau lenh = mot pipeline; noi: cach noi voi cau sau (; && ||) */
 export type CauLenh = { ong: DoanLenh[]; noi: ';' | '&&' | '||' | null };
 
 type Token = { loai: 'tu'; tu: Tu } | { loai: 'toan-tu'; v: string };
 
 const TOAN_TU = ['&&', '||', '>>', '2>', '|', ';', '>', '<'];
 const LA_KHOANG_TRANG = /\s/;
-// Trong dau nhay kep, \ chi thoat cac ky tu nay (nhu bash); con lai giu nguyen \ (vd regex "\.")
 const THOAT_TRONG_NHAY_KEP = new Set(['"', '\\', '$', '`']);
 
 function tachToken(dong: string): Token[] | LoiCuPhap {
@@ -60,7 +51,6 @@ function tachToken(dong: string): Token[] | LoiCuPhap {
     }
     if (LA_KHOANG_TRANG.test(c)) { dayTu(); continue; }
     const tt = TOAN_TU.find(t => dong.startsWith(t, i));
-    // "2>" chi la toan tu khi dung dau mot tu (con "a2>b" la tu thuong)
     if (tt && !(tt === '2>' && coTu)) {
       dayTu();
       ra.push({ loai: 'toan-tu', v: tt });
@@ -73,7 +63,6 @@ function tachToken(dong: string): Token[] | LoiCuPhap {
   return ra;
 }
 
-/** Tach dong lenh thanh cac cau lenh; tra ve { loi } khi sai cu phap */
 export function phanTichDong(dong: string): CauLenh[] | LoiCuPhap {
   const token = tachToken(dong);
   if (!Array.isArray(token)) return token;
@@ -92,7 +81,6 @@ export function phanTichDong(dong: string): CauLenh[] | LoiCuPhap {
       i++;
       if (t.v === '<') doan.vao = sau.tu.v;
       else if (t.v !== '2>') doan.ra = { tep: sau.tu.v, noiThem: t.v === '>>' };
-      // 2> tep: terminal gia lap khong tach stderr — bo qua (hay gap: find / -name x 2>/dev/null)
       continue;
     }
     if (!doan.tu.length) return loiGan(t.v);

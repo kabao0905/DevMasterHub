@@ -1,4 +1,3 @@
-// AI Career Advisor: chat tu van nghe nghiep theo ho so hoc that, tu tim viec va danh gia do phu hop.
 import { useXacNhan } from '@/components/XacNhan';
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
@@ -21,11 +20,8 @@ import { cn } from '@/lib/utils';
 type KhoCareer = {
   chat: TinNhan[]; jobs: ViecLam[]; keyword: string; moViec: boolean; nhap: string;
   dangGui?: boolean; loi?: string;
-  /** Da tai lich su tu server (moi duoc ghi len server, tranh ghi de lich su chua tai) */
   daNap?: boolean;
-  /** Tai lich su loi: van chat duoc trong phien nhung khong ghi len server */
   loiNap?: boolean;
-  /** Tang khi sua cau hoi / tra loi lai / xoa chat: tra loi cu ve muon thi bo */
   phien?: number;
 };
 const RONG: KhoCareer = { chat: [], jobs: [], keyword: '', moViec: false, nhap: '' };
@@ -33,10 +29,6 @@ const loiChu = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const CHIP = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold';
 const NUT_TIN = 'h-7 rounded-full text-xs text-peach-ink hover:bg-card/70 hover:text-peach-ink';
 
-/**
- * Cac tin da gui. memo: mang chat giu nguyen tham chieu khi go o nhap, nen khong dung lai
- * markdown + khoi code cua ca cuoc tro chuyen moi phim (onSua / onTraLoiLai on dinh)
- */
 const CacTin = memo(function CacTin({ chat, onSua, onTraLoiLai }: {
   chat: TinNhan[]; onSua: (i: number) => void; onTraLoiLai: (i: number) => void;
 }) {
@@ -69,22 +61,19 @@ export function CareerPage() {
   const dsRef = useRef<HTMLOListElement>(null);
   const [moTim, datMoTim] = useState(false);
   const [tuKhoaTim, datTuKhoaTim] = useState('');
-  // Cau dang go giu o day (khong ghi kho moi phim, khong ve lai ca trang); roi trang thi ghi vao kho
   const [nhap, datNhap] = useState(() => doc(khoa).nhap);
   const [nhacRong, datNhacRong] = useState(false);
   const nhapRef = useRef(nhap);
   useEffect(() => { nhapRef.current = nhap; }, [nhap]);
-  useEffect(() => () => dat(khoa, x => ({ ...x, nhap: nhapRef.current })), [khoa]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => dat(khoa, x => ({ ...x, nhap: nhapRef.current })), [khoa]);
   usePageMeta({ title: `${t('careerTitle')} | DevMaster Hub`, description: t('careerSubtitle') });
 
-  // Lan dau mo trang trong phien: nap lich su chat da luu (chi khi chua co gi)
   useEffect(() => {
     if (!uid || doc(khoa).daNap) return;
     taiChat(client, uid)
-      // Tin vua chat khi lan tai truoc bi loi chua tung duoc luu: ghep sau lich su that
       .then(ds => dat(khoa, x => (x.daNap ? x : { ...x, daNap: true, loiNap: false, chat: [...ds, ...x.chat] })))
       .catch(() => dat(khoa, x => ({ ...x, loiNap: true })));
-  }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [uid]);
 
   useEffect(() => {
     const el = dsRef.current;
@@ -92,13 +81,11 @@ export function CareerPage() {
   }, [kho.chat.length, kho.dangGui]);
 
   const luu = (k: QueryKey, chat: TinNhan[]) => {
-    // Chua tai duoc lich su (hoac da dang xuat: kho bi xoa) thi khong ghi — ghi la xoa mat lich su that
     if (!uid || !doc(k).daNap) return;
     luuChat(client, uid, chat).catch((e: unknown) => toast.error(t('careerChatSaveFailed', { error: loiChu(e) })));
   };
 
   async function coVanMoi(): Promise<CoVan> {
-    // Ho so hoc tap moi nhat (ban cu tinh lai moi lan gui); loi thi tu van nhu nguoi moi
     const thongKe = uid
       ? await qc.fetchQuery({ queryKey: ['careerStats', uid], queryFn: () => taiThongKe(client, uid), staleTime: 60_000 }).catch(() => null)
       : null;
@@ -107,7 +94,6 @@ export function CareerPage() {
     return cv;
   }
 
-  /** Hoi AI voi lich su `truoc` + cau `tin` (tin nguoi hoc da nam cuoi chat) */
   async function chay(k: QueryKey, truoc: TinNhan[], tin: string, xoaViecNeuRong: boolean) {
     dat(k, x => ({ ...x, dangGui: true, loi: undefined }));
     baoDaHoiAi();
@@ -115,7 +101,6 @@ export function CareerPage() {
     try {
       const kq = await (await coVanMoi()).gui(truoc, tin);
       if (!kq || doc(k).phien !== phien) return;
-      // Tin co link doc duoc: bao da doc trang / bao nhieu viec. Khong doc duoc thi cau tra loi trong chat da noi, khong bao loi them
       if (kq.link?.ok && kq.link.soTrang) toast.success(t('careerListRead', { pages: kq.link.soTrang, jobs: kq.link.tongViec ?? 0 }));
       else if (kq.link?.ok) toast.success(t('careerLinkRead', { title: kq.link.title || kq.link.url }));
       let chat: TinNhan[] = [];
@@ -135,7 +120,6 @@ export function CareerPage() {
     if (s.dangGui || !(s.daNap || s.loiNap)) return;
     const tin = nhap.trim();
     if (!tin) {
-      // O trong: nhac ngay duoi o, dua con tro ve o nhap
       datNhacRong(true);
       oNhapRef.current?.focus();
       return;
@@ -152,10 +136,8 @@ export function CareerPage() {
     void chay(khoa, s.chat.slice(0, -1), cuoi.content, true);
   }
 
-  /** Dung cau tra loi dang cho, bat dau phien moi */
   const dungLai = (x: KhoCareer): KhoCareer => ({ ...x, dangGui: false, loi: undefined, phien: (x.phien ?? 0) + 1 });
 
-  /** Sua cau hoi: xoa cau nay va moi tin sau no; con tin phia sau thi hoi truoc */
   async function suaCauHoi(i: number) {
     const truoc = doc(khoa);
     if (!truoc.chat[i]) return;
@@ -175,7 +157,6 @@ export function CareerPage() {
     }, 0);
   }
 
-  /** Tra loi lai: bo cau tra loi nay va moi tin sau no; con tin phia sau thi hoi truoc */
   async function traLoiLai(i: number) {
     if (i < doc(khoa).chat.length - 1 && !(await hoi(t('careerRegenerateConfirm')))) return;
     cvRef.current?.huy();
@@ -211,7 +192,6 @@ export function CareerPage() {
     }
   }
 
-  // Ham on dinh cho danh sach tin (memo): luon goi ban moi nhat qua ref
   const hanhDongRef = useRef({ suaCauHoi, traLoiLai });
   useEffect(() => { hanhDongRef.current = { suaCauHoi, traLoiLai }; });
   const onSua = useCallback((i: number) => { void hanhDongRef.current.suaCauHoi(i); }, []);
@@ -286,9 +266,7 @@ export function CareerPage() {
   );
 }
 
-/** Khoa i18n cua loai hinh viec */
 const LOAI_VIEC: Record<string, string> = { FULLTIME: 'jobFullTime', PARTTIME: 'jobPartTime', CONTRACTOR: 'jobContract', INTERN: 'jobIntern' };
-/** Chip do phu hop theo trang thai: san sang = mint, con thieu = butter, muc tieu xa = peach */
 const MAU_TRANG_THAI: Record<ViecLam['status'], string> = {
   ready: 'bg-mint text-mint-ink',
   gap: 'bg-butter text-butter-ink',
@@ -337,7 +315,6 @@ function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
                   <span className="flex gap-2 rounded-2xl bg-background px-3 py-2 text-xs leading-relaxed text-foreground"><Lightbulb className="mt-px size-3.5 shrink-0" aria-hidden="true" /><span><strong>{t('careerSkillAssessment')}</strong> {j.fitRecommendation}</span></span>
                 )}
                 <span className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  {/* Chi hien noi lam viec khi tin co ghi; khong biet thi bo trong, khong tu dien "Remote" */}
                   {(j.location || j.is_remote) && (
                     <span className="inline-flex items-center gap-1">
                       {j.is_remote && !VN.test(j.location) ? <Globe className="size-3.5" aria-hidden="true" /> : <MapPin className="size-3.5" aria-hidden="true" />}

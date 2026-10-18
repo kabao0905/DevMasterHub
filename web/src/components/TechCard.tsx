@@ -5,7 +5,6 @@ import type { CongNgheTomTat } from '@/lib/curriculum';
 import { LevelLadder } from '@/components/LevelLadder';
 import { BienTuyen } from '@/components/BienTuyen';
 
-/** The tuyen: bien tuyen + ten + tuyen mini cac ga da qua — moi cong nghe la mot tuyen tren ban do */
 export function TechCard({ tech, done }: { tech: CongNgheTomTat; done: Set<string> }) {
   const { t, techDesc } = useT();
   const td = tienDoCongNghe(tech, done);

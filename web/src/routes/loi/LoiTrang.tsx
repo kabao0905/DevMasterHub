@@ -7,11 +7,6 @@ import { dieuHuong } from '@/lib/dieu-huong';
 import { laLoiTaiChunk, taiLaiMotLan } from '@/lib/tai-lai-chunk';
 import { Button } from '@/components/ui/button';
 
-/**
- * Trang loi cua router (errorElement). Chunk cua trang da bi xoa sau khi deploy ban moi: tai lai mot lan.
- * Loi khac (hoac vua tai lai ma van hong): noi ro, cho tai lai hoac ve Dashboard thay vi man hinh loi mac dinh.
- * trongKhung: ve ben trong <main> cua AppShell; khong thi tu boc <main> (trang /auth, loi o chinh khung app).
- */
 export function LoiTrang({ trongKhung = false }: { trongKhung?: boolean }) {
   const loi = useRouteError();
   const { t } = useT();
@@ -26,7 +21,6 @@ export function LoiTrang({ trongKhung = false }: { trongKhung?: boolean }) {
   if (trangThai !== 'loi') {
     return (
       <Vo className="grid min-h-[50dvh] place-items-center px-5" aria-busy="true">
-        {/* Vung trang thai luon gan san (rong luc cho) de trinh doc man hinh doc khi chu hien ra */}
         <p className="text-muted-foreground" role="status">{trangThai === 'taiLai' ? t('appUpdatedReloading') : ''}</p>
       </Vo>
     );
@@ -43,7 +37,6 @@ export function LoiTrang({ trongKhung = false }: { trongKhung?: boolean }) {
           <Button size="lg" className="h-10 rounded-full bg-signal px-5 text-signal-foreground hover:bg-signal hover:brightness-105" onClick={() => dieuHuong.taiLai()}>
             <RotateCw aria-hidden="true" /> {t('reloadPage')}
           </Button>
-          {/* Tai trang that: neu loi do ban cu cua app thi Dashboard cung can ban moi */}
           <Button asChild size="lg" variant="outline" className="h-10 rounded-full px-5">
             <a href="/">{t('dashboard')}</a>
           </Button>

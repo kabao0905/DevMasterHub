@@ -1,5 +1,3 @@
-// Prompt gui AI, chep tu public/ai-service.js (giu nguyen loi van da chinh qua thuc te).
-
 export const CHI_THI_NGON_NGU: Record<string, string> = {
   vi: '\n\n[MANDATORY LANGUAGE DIRECTIVE]: Học viên đang học bằng Tiếng Việt. Bạn BẮT BUỘC phản hồi 100% bằng Tiếng Việt chuẩn mực, sư phạm, giải thích tận tình và dễ hiểu.',
   en: '\n\n[MANDATORY LANGUAGE DIRECTIVE]: The user is learning in English. You MUST respond 100% completely and naturally in English with high pedagogical clarity.',
@@ -103,13 +101,10 @@ Học viên đang xem tab: ${NHAN_TAB[tab] ?? 'bài học'}
 ${nguCanh}`;
 }
 
-// ── Bai tap (chep tu ai-service.js generateExercise / checkAnswer) ──
-
 export const BAI_TAP_SYSTEM = 'Bạn là giảng viên lập trình. Luôn trả lời bằng JSON hợp lệ.';
 
 export function promptBaiTap({ congNghe, capDo, baiHoc, lyThuyet, cu, chuDe, ngonNgu }: {
   congNghe: string; capDo: string; baiHoc: string; lyThuyet: string; cu: string;
-  /** Bai hoc co nhieu bai tap (vd moi thuat toan sap xep mot bai): bai moi phai cung loai voi bai dang mo */
   chuDe?: string;
   ngonNgu?: string;
 }) {
@@ -144,8 +139,6 @@ Trả về JSON:
 {"score":0-100,"status":"correct|partial|incorrect","feedback":"nhận xét tổng thể","errors":["lỗi nếu có"],"suggestions":["gợi ý cải thiện"],"correctedCode":"code sửa nếu cần"}`;
 }
 
-// ── Che do Thiet ke (chep tu design-mode.js askAi) ──
-
 export function promptThietKe(tenFile: string[]) {
   return [
     'Bạn là trợ lý sửa giao diện web cho một nền tảng dạy lập trình.',
@@ -166,14 +159,6 @@ export function promptThietKe(tenFile: string[]) {
   ].join('\n');
 }
 
-// ── Thu thach CTF do AI ra (chep tu app.js generateChallenge) ──
-
-/**
- * De thu thach phai GIAI DUOC tren terminal gia lap: AI nhan danh sach lenh, NOI DUNG THAT cua moi tep va ket qua
- * that cua vai lenh (truoc day chi co ten tep nen AI bia du lieu khong ton tai -> de khong lam duoc).
- * De phai kem cau hoi + dap an co nguyen van trong du lieu de app cham duoc.
- */
-// Gioi han tep AI duoc them vao terminal khi ra de (prompt va bo loc o ai.ts dung chung)
 export const THU_MUC_DE = ['/home/hacker', '/var', '/etc', '/tmp', '/opt', '/srv'];
 export const SO_TEP_DE_TOI_THIEU = 1;
 export const SO_TEP_DE_TOI_DA = 5;

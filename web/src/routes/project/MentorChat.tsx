@@ -7,10 +7,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { DuAn } from './use-du-an';
 
-/**
- * Cac tin da gui. memo: mang chat giu nguyen tham chieu khi go code / chu de / o nhap,
- * nen khong phai dung lai markdown + khoi code cua ca cuoc tro chuyen moi phim
- */
 const CacTin = memo(function CacTin({ chat }: { chat: TinNhan[] }) {
   return chat.map((m, i) => (
     <li key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
@@ -24,7 +20,6 @@ const CacTin = memo(function CacTin({ chat }: { chat: TinNhan[] }) {
   ));
 });
 
-/** Chat voi AI Mentor ve project dang lam (gui kem idea va code hien tai) */
 export function MentorChat({ duAn }: { duAn: DuAn }) {
   const { t } = useT();
   const { kho } = duAn;
@@ -41,7 +36,6 @@ export function MentorChat({ duAn }: { duAn: DuAn }) {
   function gui() {
     if (kho.dangGui) return;
     if (!nhap.trim()) {
-      // O trong: nhac ngay duoi o, dua con tro ve o nhap
       datNhacRong(true);
       oNhapRef.current?.focus();
       return;
@@ -51,7 +45,6 @@ export function MentorChat({ duAn }: { duAn: DuAn }) {
   }
 
   function khiGo(e: KeyboardEvent<HTMLInputElement>) {
-    // Dang go chu co dau (IME) thi Enter la chot chu; Safari bao keyCode 229
     if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
       e.preventDefault();
       gui();

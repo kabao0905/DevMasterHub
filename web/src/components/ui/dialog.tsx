@@ -32,7 +32,6 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-// Nhan nut dong theo ngon ngu dang dung; ngoai I18nProvider (test le) thi "Close"
 function useNhanDong(closeLabel?: string): string {
   const i18n = useTNeuCo()
   return closeLabel ?? i18n?.t("close") ?? "Close"
@@ -62,7 +61,6 @@ function DialogContent({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
-  /** Nhan doc cho nut dong; mac dinh t("close") */
   closeLabel?: string
 }) {
   const nhanDong = useNhanDong(closeLabel)

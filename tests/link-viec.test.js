@@ -42,7 +42,6 @@ test('mauTrangSau: lay tu link so trang tren trang; khong co thi doan theo kieu 
   const doan = mauTrangSau(GOC, []);
   assert.ok(doan.includes('https://careerviet.vn/viec-lam/cntt-phan-mem-tai-ho-chi-minh-c1l8-trang-{n}-vi.html'));
   assert.ok(doan.includes(`${GOC}?page={n}`));
-  // URL da co so trang thi chi thay so
   assert.deepStrictEqual(mauTrangSau('https://x.vn/jobs?page=1&q=it', []), ['https://x.vn/jobs?page={n}&q=it']);
 });
 

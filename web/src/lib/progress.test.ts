@@ -41,7 +41,6 @@ test('bai ke tiep: chua hoc gi hoac da xong het thi null', () => {
   expect(baiKeTiep([JS], xongHet)).toBeNull();
 });
 
-// Hoc theo thu tu: xong bai truoc moi mo bai sau, noi lien qua cac cap (xong bai cuoi Newbie thi mo bai dau Junior)
 test('khoa bai: chi bai dau mo; xong bai nao thi mo bai ngay sau, ke ca sang cap moi', () => {
   const chuaHoc = new Set<string>();
   expect(baiDaMo(PY, 'newbie', 'a', chuaHoc)).toBe(true);

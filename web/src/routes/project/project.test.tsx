@@ -1,5 +1,4 @@
 import { docThan } from '@/test/doc-than';
-// Project Lab: hub, theo cap do, theo chu de — tao idea, luu idea, chat mentor, soan file, cham project.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
@@ -14,7 +13,6 @@ const REVIEW = {
   criteria: [{ name: 'Cấu trúc project', score: 14, comment: 'Ổn' }, { name: 'Code quality', score: 16, comment: 'Gọn' }],
   strengths: ['Đặt tên rõ ràng'], improvements: ['Thêm try/catch'], tips: ['Viết test']
 };
-/** AI gia: tra loi theo loai viec */
 function aiMacDinh(b: ThanAi): Response | Promise<Response> {
   if (b.taskType === 'projectIdea') return traText(JSON.stringify(IDEA));
   if (b.taskType === 'projectChat') return traText('Dùng **requestAnimationFrame**');
@@ -145,7 +143,7 @@ test('soan nhieu file: them, doi ten theo duoi doi ngon ngu, xoa', async () => {
   expect(screen.getByRole('combobox', { name: 'Ngôn ngữ của file' })).toHaveValue('css');
   await u.click(screen.getByRole('button', { name: 'Xóa file style.css' }));
   expect(screen.queryByRole('tab', { name: /style\.css/ })).not.toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: /Xóa file main\.js/ })).not.toBeInTheDocument(); // con 1 file thi khong xoa duoc
+  expect(screen.queryByRole('button', { name: /Xóa file main\.js/ })).not.toBeInTheDocument();
 });
 
 test('xoa file con code thi hoi truoc; Huy thi giu file va code; mui ten chuyen tab', async () => {
@@ -160,7 +158,6 @@ test('xoa file con code thi hoi truoc; Huy thi giu file va code; mui ten chuyen 
   await u.click(screen.getByRole('button', { name: 'Xóa file file2.js' }));
   await u.click(within(await screen.findByRole('dialog', { name: /Xóa file file2\.js/ })).getByRole('button', { name: 'Hủy' }));
   expect(screen.getByRole('textbox', { name: 'Code của file2.js' })).toHaveValue('let y = 2;');
-  // Tab theo mau ARIA: chi tab dang chon nam trong thu tu Tab, mui ten trai ve file truoc
   const tab2 = screen.getByRole('tab', { name: /file2\.js/, selected: true });
   expect(tab2).toHaveAttribute('tabindex', '0');
   expect(screen.getByRole('tab', { name: /main\.js/ })).toHaveAttribute('tabindex', '-1');
@@ -203,7 +200,7 @@ test('cham project: bao tien do, hien ket qua tung tang, luu vao project_submiss
   expect(await screen.findByRole('heading', { name: /Tốt! — 78\/100/ })).toBeInTheDocument();
   expect(screen.getByText('Code gọn, thiếu xử lý lỗi.')).toBeInTheDocument();
   expect(screen.getByText('README.md', { exact: false })).toBeInTheDocument();
-  expect(screen.getByText(/Dùng "var"/)).toBeInTheDocument(); // phan tich tinh
+  expect(screen.getByText(/Dùng "var"/)).toBeInTheDocument();
   expect(screen.getByText('Viết test')).toBeInTheDocument();
   await waitFor(() => expect(gia.truyVan.some(q => q.bang === 'project_submissions' && q.op === 'insert')).toBe(true));
   const dong = gia.truyVan.find(q => q.bang === 'project_submissions')!.payload as Record<string, unknown>;
@@ -242,8 +239,6 @@ test('roi trang roi quay lai: idea, code va chat van con', async () => {
   expect(await screen.findByRole('heading', { name: 'Rắn săn mồi' })).toBeInTheDocument();
   expect(screen.getByRole('textbox', { name: 'Code của main.js' })).toHaveValue('let x = 1;');
 });
-
-// ── Idea da luu ──
 
 test('idea da luu: ngay gio, nguon, xoa co xac nhan, Bat dau lam mo dung trang voi idea', async () => {
   const u = userEvent.setup();
@@ -288,8 +283,6 @@ test('idea da luu: rong thi moi tao theo chu de; xoa loi thi tra lai va bao', as
   expect(await screen.findByText(/Không xóa được idea: mất mạng/)).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Snake' })).toBeInTheDocument();
 });
-
-// ── My Projects ──
 
 const BAI_NOP = {
   id: 7, user_id: 'u1', project_name: '<img src=x onerror=alert(1)>Todo', project_description: 'Quản lý việc', difficulty_level: 'mid', topic: 'web',
@@ -341,11 +334,8 @@ test('thanh ben: Project Lab va Du an cua toi la link trong app, danh dau trang 
   const nav = (await screen.findAllByRole('navigation', { name: 'DevMaster Hub' }))[0];
   expect(within(nav).getByRole('link', { name: /Project Lab/ })).toHaveAttribute('aria-current', 'page');
   expect(within(nav).getByRole('link', { name: /Dự án của tôi/ })).not.toHaveAttribute('aria-current');
-  // Link chia se /project-level/<cap> chon san cap do
   expect(await screen.findByRole('button', { name: /Senior/, pressed: true })).toBeInTheDocument();
 });
-
-// ── Sua sau review ──
 
 test('doi cap khi AI dang tao idea: idea cua cap cu khong roi vao cap moi', async () => {
   const u = userEvent.setup();

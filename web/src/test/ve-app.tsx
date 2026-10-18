@@ -1,4 +1,3 @@
-// Ve toan bo app (du provider + router that) tai mot URL, voi Supabase va fetch gia.
 import { render } from '@testing-library/react';
 import { vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -12,7 +11,6 @@ import type { giaSupabase } from './gia-supabase';
 
 export function veApp(duongDan: string, { gia, json = {}, lang = 'vi', fetch }: {
   gia: ReturnType<typeof giaSupabase>; json?: Record<string, unknown>; lang?: string;
-  /** fetch gia rieng (AI, dich may...); mac dinh chi tra JSON theo `json` */
   fetch?: (url: string, init?: RequestInit) => Promise<unknown>;
 }) {
   vi.stubGlobal('fetch', vi.fn(fetch ?? (async (url: string) => {
@@ -22,8 +20,6 @@ export function veApp(duongDan: string, { gia, json = {}, lang = 'vi', fetch }: 
       : { ok: true, status: 200, json: async () => v };
   })));
   localStorage.setItem('devmaster_hub_lang', lang);
-  // react-router giu vi tri cuon da luu trong bien cap module (song qua cac test cung file); bang rong trong
-  // sessionStorage lam no nap lai tu dau. Test nao tu dat san (gia lap lan tai truoc) thi giu nguyen.
   if (!sessionStorage.getItem('react-router-scroll-positions')) sessionStorage.setItem('react-router-scroll-positions', '{}');
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const router = createMemoryRouter(cacRoute, { initialEntries: [duongDan] });

@@ -7,7 +7,6 @@ import { ChuDam } from '@/components/ChuDam';
 import { cn } from '@/lib/utils';
 import { useYTuong } from './use-y-tuong';
 
-/** Mot loi vao: ca the la mot mang pastel, o icon trang, chu muc dam cung mau */
 function LoiVao({ to, nen, muc, Icon, tieuDe, moTa, nut }: {
   to: string; nen: string; muc: string; Icon: LucideIcon; tieuDe: string; moTa: ReactNode; nut: ReactNode;
 }) {
@@ -25,7 +24,6 @@ function LoiVao({ to, nen, muc, Icon, tieuDe, moTa, nut }: {
   );
 }
 
-/** Project Lab: ba loi vao — theo cap do (hong), theo chu de (tim), idea da luu (xanh troi) */
 export function ProjectHubPage() {
   const { t } = useT();
   const { ds, dangTai } = useYTuong();

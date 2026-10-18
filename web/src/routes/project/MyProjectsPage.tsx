@@ -1,5 +1,3 @@
-// Du an da nop va ket qua AI cham. Tai mot lan qua react-query (ban cu tung goi Supabase lap vo han
-// khi nguoi dung chua nop bai nao vi lay "danh sach rong" lam dieu kien tai).
 import { Link, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, CalendarDays, Code, Target } from 'lucide-react';

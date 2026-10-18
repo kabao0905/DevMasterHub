@@ -11,10 +11,8 @@ import { laCapDo, type CapDo } from '@/lib/project-ai';
 import { CAP_HIEN, useAiBat, useDuAn } from './use-du-an';
 import { KhuLamViec, LoiTaoIdea } from './IdeaPanel';
 
-/** Goi y chu de (nhan tieng Anh nhu app cu) */
 const GOI_Y = ['Game', 'Website', 'Mobile App', 'Chatbot', 'Dashboard', 'E-commerce', 'Todo App', 'Music Player', 'Weather App', 'Social Media'];
 
-/** Project theo chu de: go chu de (va cap mong muon) -> AI thiet ke project */
 export function ProjectTopicPage() {
   const { t } = useT();
   const { topic: chuDeUrl } = useParams();
@@ -25,22 +23,18 @@ export function ProjectTopicPage() {
   const aiBat = useAiBat();
   usePageMeta({ title: `${t('byTopicHeader')} | DevMaster Hub`, description: t('byTopicHeaderDesc') });
 
-  // Chu de dang go giu o day (khong ghi kho moi phim): go khong ve lai idea, chat, code, ket qua cham
   const [nhap, datNhap] = useState(kho.topic);
   const [nhacRong, datNhacRong] = useState(false);
   const oRef = useRef<HTMLInputElement>(null);
   const nhapRef = useRef(nhap);
   useEffect(() => { nhapRef.current = nhap; }, [nhap]);
-  // Kho doi tu ngoai (mo idea da luu, link) thi o nhap theo
   useEffect(() => { datNhap(kho.topic); }, [kho.topic]);
-  // Roi trang: ghi chu de dang go vao kho, quay lai van con
   const { datChuDe, chonCap } = duAn;
-  useEffect(() => () => datChuDe(nhapRef.current), []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => datChuDe(nhapRef.current), []);
 
-  // Link /project-topic/<chu de>?level=<cap>: dien san chu de va cap
-  useEffect(() => { if (chuDeUrl) datChuDe(chuDeUrl); }, [chuDeUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (chuDeUrl) datChuDe(chuDeUrl); }, [chuDeUrl]);
   const capUrl = thamSo.get('level');
-  useEffect(() => { if (laCapDo(capUrl)) chonCap(capUrl); }, [capUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (laCapDo(capUrl)) chonCap(capUrl); }, [capUrl]);
 
   function khiGui(e: FormEvent) {
     e.preventDefault();
@@ -52,7 +46,6 @@ export function ProjectTopicPage() {
     }
     datChuDe(chuDe);
     duAn.taoIdea();
-    // Ghi chu de va cap len URL: chia se / tai lai van giu
     const q = kho.level ? `?level=${kho.level}` : '';
     navigate(`/project-topic/${encodeURIComponent(chuDe)}${q}`, { replace: true, preventScrollReset: true });
   }
@@ -114,7 +107,6 @@ export function ProjectTopicPage() {
       </section>
 
       {kho.loiTao && !kho.dangTao && <LoiTaoIdea loi={kho.loiTao} thuLai={duAn.taoIdea} />}
-      {/* Vung bao luon co mat; chi noi dung ben trong doi */}
       <div aria-live="polite" className="empty:m-0">
         {kho.dangTao && (
           <div className="flex items-center gap-3 rounded-3xl bg-lavender p-6 text-sm text-foreground">

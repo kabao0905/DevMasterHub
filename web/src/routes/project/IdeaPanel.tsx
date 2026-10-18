@@ -12,7 +12,6 @@ import { KhongGianCode } from './KhongGianCode';
 import { CHIP } from './mau-diem';
 import type { CheDo, DuAn } from './use-du-an';
 
-/** Idea project: ten, cap, thoi gian, mo ta, tech stack, yeu cau, cac buoc, bonus */
 export function IdeaPanel({ idea }: { idea: YTuong }) {
   const { t } = useT();
   const muc = (tieuDe: string, ds: string[], coSo = false) => ds.length > 0 && (
@@ -52,7 +51,6 @@ export function IdeaPanel({ idea }: { idea: YTuong }) {
   );
 }
 
-/** Phan lam viec chung cua trang theo cap do / theo chu de khi da co idea */
 export function KhuLamViec({ duAn, cheDo, aiBat }: { duAn: DuAn; cheDo: CheDo; aiBat: boolean }) {
   const { kho } = duAn;
   if (!kho.idea) return null;
@@ -70,7 +68,6 @@ export function KhuLamViec({ duAn, cheDo, aiBat }: { duAn: DuAn; cheDo: CheDo; a
   );
 }
 
-/** Loi tao idea: noi ro, cho thu lai */
 export function LoiTaoIdea({ loi, thuLai }: { loi: string; thuLai: () => void }) {
   const { t } = useT();
   return (
@@ -81,7 +78,6 @@ export function LoiTaoIdea({ loi, thuLai }: { loi: string; thuLai: () => void })
   );
 }
 
-/** "Idea moi" va "Luu Idea" duoi panel */
 export function HanhDongIdea({ idea, nguon, taoMoi, dangTao, aiBat }: {
   idea: YTuong;
   nguon: { source: 'topic' | 'level'; topic: string | null; level: CapDo | null };
@@ -111,7 +107,6 @@ export function HanhDongIdea({ idea, nguon, taoMoi, dangTao, aiBat }: {
       <Button variant="outline" className="rounded-full" onClick={luu}>
         {vuaLuu ? <Check aria-hidden="true" /> : <Save aria-hidden="true" />} {vuaLuu ? t('ideaSavedShort') : t('saveIdeaBtn')}
       </Button>
-      {/* Vung bao luon co mat: chi doi chu, trinh doc man hinh moi doc "Da luu" */}
       <span role="status" className="sr-only">{vuaLuu ? t('ideaSavedShort') : ''}</span>
     </div>
   );
