@@ -62,20 +62,29 @@ function TerminalBaiHoc({ bai, baiTap, aiEnabled }: Props) {
 function IdeBaiHoc({ bai, baiTap, aiEnabled }: Props) {
   const { t } = useT();
   const { tech, lesson } = bai;
-  const seed = useMemo(() => seedFilesFromLesson(lesson, tech.id), [lesson, tech.id]);
+  const playground = lesson.playground;
+  const seed = useMemo(() => (playground ? null : seedFilesFromLesson(lesson, tech.id)), [playground, lesson, tech.id]);
   const macDinh = useMemo(() => {
+    if (playground) return playground.files;
     const p = PRESETS[presetFor(tech.id)] ?? PRESETS.html;
     return { ...p.files, ...Object.fromEntries((seed ?? []).map(f => [f.name, f.code])) };
-  }, [seed, tech.id]);
+  }, [playground, seed, tech.id]);
+  const tepDau = playground ? tepChinh(playground.files, tech.id) : seed?.[0]?.name;
   return (
     <div className="space-y-4">
       <TheDeBai tieuDe={t('practiceLive')}>
         <DeBaiGoc text={lesson.exercise} />
       </TheDeBai>
-      <LiveIde techId={tech.id} files={baiTap.kho.files ?? macDinh} macDinh={macDinh} onFilesChange={baiTap.datFiles} tepDau={seed?.[0]?.name} />
+      <LiveIde techId={tech.id} files={baiTap.kho.files ?? macDinh} macDinh={macDinh} onFilesChange={baiTap.datFiles} tepDau={tepDau} libs={playground?.libs} />
       <NopChamAi baiTap={baiTap} aiEnabled={aiEnabled} baiLam={gopTep(baiTap.kho.files ?? macDinh)} lang={lesson.lang} />
     </div>
   );
+}
+
+function tepChinh(files: Record<string, string>, techId: string): string | undefined {
+  const entry = PRESETS[presetFor(techId)]?.entry;
+  if (techId !== 'htmlcss' && techId !== 'tailwind' && entry && entry in files) return entry;
+  return 'index.html' in files ? 'index.html' : Object.keys(files)[0];
 }
 
 const ID_O_TRA_LOI = 'o-tra-loi-bai-tap';

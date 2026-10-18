@@ -66,3 +66,32 @@ test('giao trinh JSON: moi cong nghe co id trung ten file, thu-tu.json liet ke d
   assert.deepStrictEqual([...thuTu].sort(), [...tep].sort());
   for (const id of thuTu) assert.strictEqual(giaoTrinh[id].id, id);
 });
+
+test('moi bai co khung chay code (HTML/CSS, React, Vue, Tailwind, TypeScript) co bo file thuc hanh rieng', () => {
+  const tepChinh = { htmlcss: 'index.html', react: 'App.jsx', vue: 'App.js', tailwind: 'index.html', typescript: 'main.ts' };
+  for (const [id, tep] of Object.entries(tepChinh)) {
+    const t = doc(`curriculum/${id}.json`);
+    for (const l of t.levels) {
+      for (const ls of l.lessons) {
+        const pg = ls.playground;
+        assert.ok(pg, `${id}/${l.id}/${ls.id} chua co playground`);
+        assert.ok(pg.files[tep]?.trim(), `${id}/${l.id}/${ls.id} thieu ${tep}`);
+        if (id !== 'typescript') assert.ok(pg.files['index.html'], `${id}/${l.id}/${ls.id} thieu index.html`);
+        if (pg.libs) assert.ok(Array.isArray(pg.libs) && pg.libs.every(u => /^https:\/\/(unpkg\.com|cdn\.tailwindcss\.com)\//.test(u)), `${id}/${l.id}/${ls.id} libs sai`);
+      }
+    }
+  }
+});
+
+test('napPlayground: index.html, style.css truoc roi moi den file code; doc libs.json', async () => {
+  const { napPlayground } = await import('../scripts/xuat-du-lieu.mjs');
+  const thu = fs.mkdtempSync(path.join(os.tmpdir(), 'pg-'));
+  fs.writeFileSync(path.join(thu, 'App.jsx'), 'x');
+  fs.writeFileSync(path.join(thu, 'style.css'), 'y');
+  fs.writeFileSync(path.join(thu, 'index.html'), 'z');
+  fs.writeFileSync(path.join(thu, 'libs.json'), '["https://unpkg.com/a.js"]');
+  const pg = napPlayground(thu);
+  assert.deepStrictEqual(Object.keys(pg.files), ['index.html', 'style.css', 'App.jsx']);
+  assert.deepStrictEqual(pg.libs, ['https://unpkg.com/a.js']);
+  assert.strictEqual(napPlayground(path.join(thu, 'khong-co')), null);
+});

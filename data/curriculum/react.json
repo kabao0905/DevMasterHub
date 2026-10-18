@@ -135,7 +135,7 @@
         },
         {
           "id": "performance",
-          "title": "Tối ưu hóa hiệu năng & Bộ nhớ Span/Memory",
+          "title": "Tối ưu hiệu năng: memo, useMemo, useCallback",
           "theory": "<p><code>React.memo</code> tránh re-render không cần thiết. <code>useMemo</code> cache giá trị tính toán. <code>useCallback</code> cache function references. React DevTools Profiler tìm bottleneck.</p>",
           "code": "import { useState, useMemo, useCallback, memo } from \"react\";\n\n// memo: skip re-render nếu props không đổi\nconst ExpensiveList = memo(function({ items, onSelect }) {\n  console.log(\"ExpensiveList rendered\");\n  return (\n    <ul>\n      {items.map(item => (\n        <li key={item.id} onClick={() => onSelect(item.id)}>\n          {item.name}\n        </li>\n      ))}\n    </ul>\n  );\n});\n\nfunction Dashboard() {\n  const [filter, setFilter] = useState(\"\");\n  const [selectedId, setSelectedId] = useState(null);\n  const [items] = useState(() =>\n    Array.from({ length: 10000 }, (_, i) => ({\n      id: i, name: `Item ${i}`, category: i % 3 === 0 ? \"A\" : \"B\"\n    }))\n  );\n\n  // useMemo: cache expensive computation\n  const filtered = useMemo(() => {\n    return items.filter(i =>\n      i.name.toLowerCase().includes(filter.toLowerCase())\n    );\n  }, [items, filter]);\n\n  // useCallback: stable function reference\n  const handleSelect = useCallback((id) => {\n    setSelectedId(id);\n  }, []);\n\n  return (\n    <div>\n      <input value={filter} onChange={e => setFilter(e.target.value)} />\n      <p>Showing {filtered.length} items</p>\n      <ExpensiveList items={filtered} onSelect={handleSelect} />\n    </div>\n  );\n}",
           "lang": "javascript",

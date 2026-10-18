@@ -17,6 +17,20 @@ function napBanDich(thuMucDuLieu) {
   return JSON.parse(fs.readFileSync(path.join(thuMucDuLieu, 'i18n.json'), 'utf8'));
 }
 
+const THU_TU_TEP = ['index.html', 'style.css', 'script.js', 'App.jsx', 'App.js', 'main.ts'];
+
+export function napPlayground(thuMucBai) {
+  if (!fs.existsSync(thuMucBai)) return null;
+  const ten = fs.readdirSync(thuMucBai).filter(f => f !== 'libs.json' && fs.statSync(path.join(thuMucBai, f)).isFile());
+  if (!ten.length) return null;
+  const hang = f => (THU_TU_TEP.includes(f) ? THU_TU_TEP.indexOf(f) : THU_TU_TEP.length);
+  ten.sort((a, b) => hang(a) - hang(b) || a.localeCompare(b));
+  const files = Object.fromEntries(ten.map(f => [f, fs.readFileSync(path.join(thuMucBai, f), 'utf8')]));
+  const tepLibs = path.join(thuMucBai, 'libs.json');
+  const libs = fs.existsSync(tepLibs) ? JSON.parse(fs.readFileSync(tepLibs, 'utf8')) : undefined;
+  return libs ? { files, libs } : { files };
+}
+
 const khongRong = obj => Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v));
 
 function banDichCho(lang, { translations, canonicalTitles, techDescriptions, LANGUAGES }) {
@@ -55,6 +69,12 @@ export function xuatDuLieu({ thuMucDuLieu = path.join(GOC, 'data'), thuMucRa = p
 
   const timKiem = [];
   for (const t of congNghe) {
+    for (const l of t.levels || []) {
+      for (const ls of l.lessons || []) {
+        const pg = napPlayground(path.join(thuMucDuLieu, 'playground', t.id, l.id, ls.id));
+        if (pg) ls.playground = pg;
+      }
+    }
     ghiJson(thuMucGT, `${t.id}.json`, t);
     for (const l of t.levels || []) {
       for (const ls of l.lessons || []) {

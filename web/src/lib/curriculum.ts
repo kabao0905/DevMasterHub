@@ -49,6 +49,7 @@ export type BaiDayDu = BaiTomTat & {
   theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string;
   output?: string;
   exercises?: BaiTapCoSan[];
+  playground?: { files: Record<string, string>; libs?: string[] };
 };
 export type CapDayDu = Omit<CapTomTat, 'lessons'> & { lessons: BaiDayDu[] };
 export type CongNgheDayDu = Omit<CongNgheTomTat, 'levels'> & { levels: CapDayDu[] };

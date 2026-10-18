@@ -298,7 +298,7 @@ export function presetFor(techId?: string): string {
 
 export const laConsole = (presetId: string): boolean => (Object.hasOwn(PRESETS, presetId) ? PRESETS[presetId] : PRESETS.html).mode === 'console';
 
-export function buildDocument(presetId: string, files: Record<string, string>, { token, designScript = '' }: { token: string; designScript?: string }): TaiLieu {
+export function buildDocument(presetId: string, files: Record<string, string>, { token, designScript = '', libs }: { token: string; designScript?: string; libs?: string[] }): TaiLieu {
   const P = Object.hasOwn(PRESETS, presetId) ? PRESETS[presetId] : PRESETS.html;
 
   if (P.mode === 'console') return buildConsoleDocument(P, files, token);
@@ -311,6 +311,7 @@ export function buildDocument(presetId: string, files: Record<string, string>, {
 <script>
 (function () {
   var send = function (level, args) {
+    if (/^You are using the in-browser Babel transformer/.test(String(args[0]))) return;
     try {
       parent.postMessage({ __sandpack: '${token}', level: level, args: args.map(function (a) {
         try {
@@ -333,7 +334,7 @@ export function buildDocument(presetId: string, files: Record<string, string>, {
   const styleTag = `<style>\n${css}\n</style>`;
   const scriptType = P.entry.endsWith('.jsx') ? ' type="text/babel"' : '';
   const scriptTag = `<script${scriptType}>\n${js}\n<\/script>`;
-  const libTags = (P.libs || []).map(u => `<script src="${u}"><\/script>`).join('\n');
+  const libTags = (libs ?? P.libs ?? []).map(u => `<script src="${u}"><\/script>`).join('\n');
 
   const chen = (tim: string | RegExp, them: string) => doc.replace(tim, () => them);
 
@@ -366,6 +367,7 @@ function buildConsoleDocument(P: Preset, files: Record<string, string>, token: s
 <script>
 (function () {
   var send = function (level, args) {
+    if (/^You are using the in-browser Babel transformer/.test(String(args[0]))) return;
     try {
       parent.postMessage({ __sandpack: '${token}', level: level, args: args.map(function (a) {
         try {

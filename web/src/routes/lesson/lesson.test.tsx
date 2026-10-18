@@ -39,7 +39,17 @@ const DSA_T: CongNgheDayDu = {
     ]
   }] }]
 };
-const TECHS = [PY, REACT_T, CYB, NGX, DSA_T];
+const VUE_T: CongNgheDayDu = {
+  id: 'vue', name: 'Vue.js', icon: '💚', color: '#42b883', gradient: '', category: 'frontend', description: 'Framework UI',
+  levels: [{ id: 'newbie', name: 'Newbie', lessons: [{
+    id: 'intro', title: 'Vue', theory: '<p>Vue</p>', code: '<template><p>chi de doc</p></template>', lang: 'markup', exercise: 'Làm bộ đếm',
+    playground: {
+      files: { 'index.html': '<div id="app"></div>', 'style.css': '.box {}', 'App.js': "Vue.createApp({ template: '<p>Tu playground</p>' }).mount('#app');" },
+      libs: ['https://unpkg.com/vue@3.5.43/dist/vue.global.js']
+    }
+  }] }]
+};
+const TECHS = [PY, REACT_T, CYB, NGX, DSA_T, VUE_T];
 const INDEX: CongNgheTomTat[] = TECHS.map(t => ({ ...t, levels: t.levels.map(l => ({ ...l, lessons: l.lessons.map(b => ({ id: b.id, title: b.title })) })) }));
 
 type ThanAi = { system: string; messages: { content: string }[]; taskType: string };
@@ -470,6 +480,17 @@ test('bai tap: React hien IDE truc tiep seed tu code bai hoc; an ninh mang hien 
   mo('/lesson/nginx/newbie/intro?tab=exercise');
   expect(await screen.findByText(/Làm quen máy chủ Nginx/)).toBeInTheDocument();
   expect(screen.getByRole('textbox', { name: 'Lệnh terminal' })).toBeInTheDocument();
+});
+
+test('bai tap co playground: IDE dung dung bo file cua bai (khong tron file mau), mo san file code chinh', async () => {
+  const u = userEvent.setup();
+  mo('/lesson/vue/newbie/intro');
+  await moTabBaiTap(u);
+  const soan = await screen.findByRole('textbox', { name: 'Soạn App.js' }) as HTMLTextAreaElement;
+  expect(soan.value).toContain('Tu playground');
+  const tab = screen.getAllByRole('tab').map(t => t.textContent);
+  expect(tab).toEqual(expect.arrayContaining(['index.html', 'style.css', 'App.js']));
+  expect(tab.filter(t => /\.(html|css|js|jsx)$/.test(t ?? ''))).toHaveLength(3);
 });
 
 test('bai tap Python: de goc hien nguyen van (Stack<T>); AI tao bai moi thanh tab AI #1; cau tra loi giu rieng tung bai', async () => {

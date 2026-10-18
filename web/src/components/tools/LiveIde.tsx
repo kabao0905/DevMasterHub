@@ -15,13 +15,14 @@ type Props = {
   macDinh: Record<string, string>;
   onFilesChange: (files: Record<string, string>) => void;
   tepDau?: string;
+  libs?: string[];
 };
 type Log = { id: number; level: string; text: string };
 
 const KHO = { desktop: { w: null, nhan: 'Desktop', Icon: Monitor }, tablet: { w: 768, nhan: 'Tablet', Icon: Tablet }, mobile: { w: 375, nhan: 'Mobile', Icon: Smartphone } } as const;
 type Kho = keyof typeof KHO;
 
-export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props) {
+export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau, libs }: Props) {
   const [hoi, hopXacNhan] = useXacNhan();
   const { t } = useT();
   const presetId = presetFor(techId);
@@ -43,8 +44,8 @@ export function LiveIde({ techId, files, macDinh, onFilesChange, tepDau }: Props
 
   const dung = useCallback((): TaiLieu => {
     const token = 'sp' + ++demRef.current;
-    return buildDocument(presetId, files, { token, designScript: thietKe && !consoleMode ? injectScript(token) : '' });
-  }, [presetId, files, thietKe, consoleMode]);
+    return buildDocument(presetId, files, { token, designScript: thietKe && !consoleMode ? injectScript(token) : '', libs });
+  }, [presetId, files, thietKe, consoleMode, libs]);
 
   const [taiLieu, datTaiLieu] = useState<TaiLieu>(() => dung());
   const tokenRef = useRef(taiLieu.token);
