@@ -78,7 +78,7 @@ test('trinh duyet co View Transitions: trang moi lan ra thanh vong tron tu diem 
   gia.don();
 });
 
-test('may bat giam chuyen dong: khong lan tron ma mo dan nhe (van co chuyen tiep, khong doi dot ngot)', async () => {
+test('may bat giam chuyen dong: van lan tron tu diem bam (nguoi dung tu gat), chi nhanh hon', async () => {
   giaHeThong(false, true);
   const gia = giaViewTransition();
   const { result } = renderHook(() => useCheDo());
@@ -86,8 +86,7 @@ test('may bat giam chuyen dong: khong lan tron ma mo dan nhe (van co chuyen tiep
   expect(document.documentElement.classList.contains('dark')).toBe(true);
   expect(gia.hieuUng).toHaveLength(1);
   const { khung, tuyChon } = gia.hieuUng[0];
-  expect(khung).toEqual({ opacity: [0, 1] });
-  expect(khung).not.toHaveProperty('clipPath');
-  expect(tuyChon).toMatchObject({ pseudoElement: '::view-transition-new(root)' });
+  expect(String((khung as PropertyIndexedKeyframes).clipPath)).toContain('circle(0px at 10px 20px)');
+  expect(tuyChon).toMatchObject({ duration: 400, pseudoElement: '::view-transition-new(root)' });
   gia.don();
 });

@@ -1,7 +1,7 @@
-// Lich hoc tren Dashboard: dai ngang ca thang tren mot hang (nhu ban truoc nguoi dung thich), to mau pastel:
+// Lich hoc tren Dashboard (ben phai o so lieu): dai ngang ca thang tren mot hang (nhu ban truoc nguoi dung thich), to mau pastel:
 // ngay hoc du so phut muc tieu to bac ha, hoc chua du to vang bo, hom nay co vong xanh; dem chuoi ngay dat muc tieu.
 // Dien thoai (duoi 640px) dai 31 ngay qua chat nen doi sang luoi thang 7 cot, tuan bat dau theo ngon ngu.
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, CircleCheck, Clock, Flame, Target } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { ngayDiaPhuong, tinhStreak } from '@/lib/ngay-hoc';
@@ -133,7 +133,9 @@ export function LichHoc({ className }: { className?: string }) {
       ) : (
         // Ca thang tren mot hang: thu o tren, ngay o duoi. Hep qua thi cuon ngang
         <div ref={dai} className="-mx-1 overflow-x-auto overscroll-x-contain px-1 py-1.5">
-          <div className="grid gap-x-1 gap-y-1.5 text-center" style={{ gridTemplateColumns: `repeat(${soNgay}, minmax(1.5rem, 1fr))` }}>
+          {/* Man rong (xl) lich nam canh o so lieu, hep hon: o ngay nho lai de vua ca thang khong phai cuon */}
+          <div className="grid grid-cols-[repeat(var(--so-ngay),minmax(1.5rem,1fr))] gap-x-1 gap-y-1.5 text-center xl:grid-cols-[repeat(var(--so-ngay),minmax(1.125rem,1fr))] xl:gap-x-0.5"
+            style={{ '--so-ngay': soNgay } as CSSProperties}>
             {Array.from({ length: soNgay }, (_, i) => {
               const d = new Date(thang.getFullYear(), thang.getMonth(), i + 1);
               const cuoiTuan = d.getDay() === 0 || d.getDay() === 6;

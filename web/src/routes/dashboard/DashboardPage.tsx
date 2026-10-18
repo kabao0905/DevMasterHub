@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { CircleCheck, Hourglass, Layers, Play, Search, type LucideIcon } from 'lucide-react';
+import { Play, Search } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { usePageMeta } from '@/lib/page-meta';
 import { useCurriculumIndex } from '@/lib/use-curriculum';
@@ -120,12 +120,50 @@ export function DashboardPage() {
   }, [ds]);
 
   const tieuDe = (
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{t('dashboardTitle')}</h1>
-        <p className="mt-1 text-muted-foreground">{t('dashboardSubtitle')}</p>
+    <header className="min-w-0">
+      <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">{t('dashboardTitle')}</h1>
+      <p className="mt-1 text-muted-foreground">{t('dashboardSubtitle')}</p>
+    </header>
+  );
+
+  if (isError) {
+    return (
+      <div className="space-y-8">
+        {tieuDe}
+        <LoadError onRetry={() => refetch()} />
       </div>
-      <div className="kich-dong relative w-full sm:max-w-xs">
+    );
+  }
+
+  // So lieu: bon o gon nhu ban truoc nguoi dung thich — so cong nghe, tong so bai, bai da xong, tien do %
+  const soLieu: [string, number | string, string][] = [
+    [t('statTech'), ds.length, 'bg-sky text-sky-ink'],
+    [t('statLessons'), tong.tong, 'bg-lavender text-lavender-ink'],
+    [t('statCompleted'), tong.xong, 'bg-mint text-mint-ink'],
+    [t('statProgress'), `${tong.phanTram}%`, 'border-2 border-dashed border-border']
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Tieu de + so lieu ben trai, lich hoc ben phai cao bang ca khoi do; man hep thi xep doc */}
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-stretch">
+        <div className="flex shrink-0 flex-col justify-between gap-6">
+          {tieuDe}
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {soLieu.map(([nhan, so, mau]) => (
+              <div key={nhan} className={cn('flex min-w-28 flex-col-reverse items-center rounded-3xl px-4 py-4 text-center', mau)}>
+                <dt className="mt-0.5 text-xs font-medium">{nhan}</dt>
+                <dd className="font-display text-3xl leading-none font-extrabold tabular-nums">{so}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <LichHoc className="xl:flex-1" />
+      </div>
+      {isLoading ? <Skeleton className="h-52 w-full rounded-[1.75rem]" /> : <HocTiep viTri={keTiep} done={done} />}
+      {!isLoading && <SapToi ds={ds} done={done} boQua={keTiep?.tech.id} />}
+
+      <div className="kich-dong relative">
         <Search data-dong="kinh" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
           type="search"
@@ -139,46 +177,6 @@ export function DashboardPage() {
           className="h-11 rounded-full border-transparent bg-card pl-10 shadow-soft"
         />
       </div>
-    </header>
-  );
-
-  if (isError) {
-    return (
-      <div className="space-y-8">
-        {tieuDe}
-        <LoadError onRetry={() => refetch()} />
-      </div>
-    );
-  }
-
-  // So lieu: ba o pastel nhu mau Dei — so cong nghe, bai da xong, bai con lai; moi o mot icon dong rieng
-  // (lop chong roi xuong, dau tick tu ve, dong ho cat lat). Tien do % da nam tren tung vet tuyen.
-  const soLieu: [string, number, string, LucideIcon, string][] = [
-    [t('statTech'), ds.length, 'bg-butter text-butter-ink', Layers, 'tang'],
-    [t('statCompleted'), tong.xong, 'bg-mint text-mint-ink', CircleCheck, 've-dau'],
-    [t('statRemaining'), tong.tong - tong.xong, 'bg-sky text-sky-ink', Hourglass, 'cat']
-  ];
-
-  return (
-    <div className="space-y-8">
-      {tieuDe}
-      <dl className="grid grid-cols-3 gap-3">
-        {soLieu.map(([nhan, so, mau, Icon, dong]) => (
-          <div key={nhan} className={cn('kich-dong flex flex-col-reverse items-center rounded-3xl px-3 py-4 text-center', mau)}>
-            <dt className="mt-0.5 text-sm font-medium">{nhan}</dt>
-            <dd className="flex flex-col items-center gap-2">
-              <span className="grid size-10 place-items-center rounded-full bg-card/80" aria-hidden="true">
-                <Icon data-dong={dong} className="size-5" />
-              </span>
-              <span className="font-display text-4xl leading-none font-extrabold tabular-nums">{so}</span>
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {/* Lich hoc: dai ngang ca thang chay het chieu rong, ngay duoi o so lieu (nhu ban truoc) */}
-      <LichHoc />
-      {isLoading ? <Skeleton className="h-52 w-full rounded-[1.75rem]" /> : <HocTiep viTri={keTiep} done={done} />}
-      {!isLoading && <SapToi ds={ds} done={done} boQua={keTiep?.tech.id} />}
 
       <div className="min-w-0 space-y-10 pt-2">
         {qTre.trim() ? (

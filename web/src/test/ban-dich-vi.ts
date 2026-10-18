@@ -78,7 +78,6 @@ export const BAN_DICH_VI: BanDich = {
     "aiChecking": "Đang kiểm tra AI…",
     "upcomingTitle": "Sắp tới",
     "suggestStartTitle": "Gợi ý bắt đầu",
-    "statRemaining": "Còn lại",
     "roadmapMetaTitle": "Học {name} Từ Cơ Bản Đến Nâng Cao — {n} Bài",
     "roadmapMetaDesc": "Lộ trình {name} gồm {n} bài thực chiến chia theo {levels} cấp độ. Học lý thuyết, chạy code ngay trên trình duyệt, làm trắc nghiệm và có AI Tutor kèm 1-1.",
     "authWrongCredentials": "Sai tên đăng nhập hoặc mật khẩu. Kiểm tra lại và để ý phím Caps Lock.",
