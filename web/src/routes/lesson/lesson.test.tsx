@@ -63,7 +63,7 @@ function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', b
   const json: Record<string, unknown> = { '/curriculum/index.json': INDEX, '/api/health': { aiEnabled } };
   for (const t of TECHS) json[`/curriculum/${t.id}.json`] = t;
   const goiAi: ThanAi[] = [];
-  const thanChay: { code: string; stdin: string }[] = [];
+  const thanChay: { lang: string; code: string; stdin: string }[] = [];
   const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }], ...bang }, loiDoc });
   const kq = veApp(duongDan, {
     gia, json, lang,
@@ -73,8 +73,8 @@ function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', b
         goiAi.push(b);
         return ai ? ai(b) : new Response('{"error":"AI tắt"}', { status: 500 });
       }
-      if (url === '/api/run-cpp') {
-        const b = docThan(init?.body) as { code: string; stdin: string };
+      if (url === '/api/run') {
+        const b = docThan(init?.body) as { lang: string; code: string; stdin: string };
         thanChay.push(b);
         return chay ? new Response(JSON.stringify(chay(b)), { status: 200 }) : new Response('{"error":"Không chạy được"}', { status: 502 });
       }
@@ -219,7 +219,7 @@ test('DSA: AI cham dung bai tap soan san dang mo (de + code C++), dat thi bai du
   await waitFor(() => expect(daGhiXong(gia)).toBe(true));
 });
 
-test('C++: chay code ngay trong tab Bai tap (qua /api/run-cpp): hien ket qua; loi bien dich thi bao ro', async () => {
+test('C++: chay code ngay trong tab Bai tap (qua /api/run): hien ket qua; loi bien dich thi bao ro', async () => {
   const u = userEvent.setup();
   let lan = 0;
   const { thanChay } = mo('/lesson/dsa/newbie/sorting?tab=exercise', {
@@ -230,7 +230,7 @@ test('C++: chay code ngay trong tab Bai tap (qua /api/run-cpp): hien ket qua; lo
   await u.click(await screen.findByRole('button', { name: /Dùng code khung/ }));
   await u.click(screen.getByRole('button', { name: /Chạy Code/ }));
   expect(await screen.findByText('Sắp xếp đúng rồi')).toBeInTheDocument();
-  expect(thanChay[0]).toMatchObject({ code: 'void bubbleSort(vector<int>& a) {}' });
+  expect(thanChay[0]).toMatchObject({ lang: 'cpp', code: 'void bubbleSort(vector<int>& a) {}' });
   await u.click(screen.getByRole('button', { name: /Chạy Code/ }));
   expect(await screen.findByText('error: expected semicolon')).toBeInTheDocument();
   expect(screen.getByText('Lỗi biên dịch')).toBeInTheDocument();
@@ -243,7 +243,7 @@ test('C++: tab Code Lab chay duoc code mau cua bai', async () => {
   });
   await u.click(await screen.findByRole('button', { name: /Chạy Code/ }));
   expect(await screen.findByText('Code mẫu chạy xong')).toBeInTheDocument();
-  expect(thanChay[0]).toMatchObject({ code: 'int main() {}' });
+  expect(thanChay[0]).toMatchObject({ lang: 'cpp', code: 'int main() {}' });
 });
 
 test('ly thuyet da lam sach; diem chinh hien nguyen van, ke ca #include <iostream>', async () => {

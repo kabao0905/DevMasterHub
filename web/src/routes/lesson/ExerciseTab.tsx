@@ -16,8 +16,8 @@ import { LabPanel } from '@/components/tools/LabPanel';
 import { LiveIde } from '@/components/tools/LiveIde';
 import { Terminal } from '@/components/tools/Terminal';
 import { ChayThuJs } from '@/components/tools/ChayThuJs';
-import { ChayCpp } from '@/components/tools/ChayCpp';
-import { laCpp } from '@/lib/chay-cpp';
+import { ChayCode } from '@/components/tools/ChayCode';
+import { ngonNguChay } from '@/lib/chay-code';
 import { useTerminal } from '@/components/tools/use-terminal';
 import { cn } from '@/lib/utils';
 import { CodeArea } from './CodeArea';
@@ -263,7 +263,7 @@ function BaiTapSoan({ bai, baiTap, aiEnabled }: Props) {
         )}
       </div>
       {laJs && <ChayThuJs code={traLoi} nhan={t('runCode')} idO={ID_O_TRA_LOI} />}
-      {laCpp(bai.lesson.lang) && <ChayCpp key={idx} code={traLoi} stdinMacDinh={deHienTai?.sampleInput} idO={ID_O_TRA_LOI} />}
+      {ngonNguChay(bai.lesson.lang) && <ChayCode key={idx} lang={bai.lesson.lang ?? ''} code={traLoi} stdinMacDinh={deHienTai?.sampleInput} idO={ID_O_TRA_LOI} />}
 
       {baiTap.loiTao && <BaoLoi>{t('exerciseFailed', { error: baiTap.loiTao.message })}</BaoLoi>}
       {baiTap.loiCham && <BaoLoi>{t('gradeFailed', { error: baiTap.loiCham.message })}</BaoLoi>}

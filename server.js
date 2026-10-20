@@ -9,7 +9,8 @@ const { chuanHoaYeuCauAi, MO_HINH_THEO_VIEC, SUY_NGHI_GEMINI, suyNghiCho, laGemi
 const { taoJev } = require('./lib/jev.js');
 const { chuanHoaYeuCauDocViec, docViecTuLink } = require('./lib/doc-viec-link.js');
 const { doanThanhPho, lamSachTuKhoa, chiNhanHttp } = require('./lib/job-query.js');
-const { chuanHoaYeuCauChay, chayCpp } = require('./lib/chay-cpp.js');
+const { chuanHoaYeuCauChay, chuanHoaNgonNgu, taoBoChay, MAU_TU_KIEM } = require('./lib/chay-code.js');
+const boChay = taoBoChay();
 const { taiTheoChuyenHuong, layTieuDe } = require('./lib/net-guard.js');
 const { trichNoiDungTrang } = require('./lib/trich-trang.js');
 const { moPhongBi } = require('./lib/phong-bi.js');
@@ -336,15 +337,30 @@ app.post('/api/ai', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 30, sco
   });
 });
 
-app.post('/api/run-cpp', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 20, scope: 'run-cpp' }), async (req, res) => {
-  const yc = chuanHoaYeuCauChay(req.body);
-  if (yc.loi) return res.status(400).json({ error: yc.loi });
-  try {
-    res.json(await chayCpp(yc));
-  } catch (err) {
-    console.error('[run-cpp] Error:', err && err.message);
-    res.status(502).json({ error: 'Không chạy được code lúc này (dịch vụ biên dịch bận). Thử lại sau ít phút.' });
-  }
+function xuLyChay(langMacDinh) {
+  return async (req, res) => {
+    const yc = chuanHoaYeuCauChay(req.body, langMacDinh);
+    if (yc.loi) return res.status(400).json({ error: yc.loi });
+    try {
+      res.json(await boChay.chayCode(yc));
+    } catch (err) {
+      console.error(`[run:${yc.lang}] Error:`, err && err.message);
+      res.status(502).json({ error: 'Không chạy được code lúc này (dịch vụ biên dịch bận). Thử lại sau ít phút.' });
+    }
+  };
+}
+
+app.post('/api/run', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 20, scope: 'run' }), xuLyChay());
+app.post('/api/run-cpp', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 20, scope: 'run' }), xuLyChay('cpp'));
+
+let tuKiemNho = null;
+app.get('/api/run/tu-kiem', rateLimit({ max: 6, scope: 'run-tu-kiem' }), async (req, res) => {
+  const ds = String(req.query.lang || '').split(',').map(chuanHoaNgonNgu).filter(l => l && MAU_TU_KIEM[l]);
+  const khoa = ds.join(',');
+  if (tuKiemNho && tuKiemNho.khoa === khoa && tuKiemNho.het > Date.now()) return res.json(tuKiemNho.kq);
+  const kq = await boChay.tuKiem(ds.length ? ds : undefined);
+  tuKiemNho = { khoa, kq, het: Date.now() + 10 * 60 * 1000 };
+  res.json(kq);
 });
 
 app.get('/api/health', (req, res) => {

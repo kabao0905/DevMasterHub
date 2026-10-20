@@ -2,8 +2,8 @@ import { SquareTerminal } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import type { BaiDayDu } from '@/lib/curriculum';
 import { CodeBlock } from '@/components/CodeBlock';
-import { ChayCpp } from '@/components/tools/ChayCpp';
-import { laCpp } from '@/lib/chay-cpp';
+import { ChayCode } from '@/components/tools/ChayCode';
+import { ngonNguChay } from '@/lib/chay-code';
 
 export function CodeTab({ lesson }: { lesson: BaiDayDu }) {
   const { t } = useT();
@@ -20,7 +20,7 @@ export function CodeTab({ lesson }: { lesson: BaiDayDu }) {
           <pre className="max-h-80 overflow-auto px-4 py-3 font-mono text-[13px] leading-6 whitespace-pre-wrap text-[#e6edf3]">{lesson.output}</pre>
         </section>
       )}
-      {laCpp(lesson.lang) && <ChayCpp code={lesson.code} />}
+      {ngonNguChay(lesson.lang) && <ChayCode key={lesson.code} lang={lesson.lang ?? ''} code={lesson.code} nhacCanhBao />}
     </div>
   );
 }

@@ -103,7 +103,7 @@ test('/api/run-cpp: chay C++ qua Compiler Explorer, tra ve stdout va ma thoat', 
   try {
     const res = await goiChay(s.goc, { code: 'int main() {}', stdin: '21' });
     assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(await res.json(), { stdout: 'Xin chào\n42', stderr: '', maThoat: 0, dichVu: 'godbolt' });
+    assert.deepStrictEqual(await res.json(), { stdout: 'Xin chào\n42', stderr: '', maThoat: 0, trinhBienDich: 'x86-64 gcc 13.2', dichVu: 'godbolt' });
     const gb = s.daGoi.find(g => g.url.includes('godbolt.org'));
     assert.strictEqual(gb.body.source, 'int main() {}');
     assert.strictEqual(gb.body.options.executeParameters.stdin, '21');
@@ -118,7 +118,7 @@ test('/api/run-cpp: loi bien dich tra ve chu de doc (bo ma mau ANSI), khong chay
   });
   try {
     const data = await (await goiChay(s.goc, { code: 'int main() { int x }' })).json();
-    assert.deepStrictEqual(data, { bienDichLoi: '<source>:3:5: error: expected ;', dichVu: 'godbolt' });
+    assert.deepStrictEqual(data, { bienDichLoi: '<source>:3:5: error: expected ;', trinhBienDich: 'x86-64 gcc 13.2', dichVu: 'godbolt' });
   } finally { s.dong(); }
 });
 
@@ -129,7 +129,7 @@ test('/api/run-cpp: Compiler Explorer hong thi chuyen sang Wandbox', async () =>
   });
   try {
     const data = await (await goiChay(s.goc, { code: 'int main() {}' })).json();
-    assert.deepStrictEqual(data, { stdout: 'ok\n', stderr: '', maThoat: 0, dichVu: 'wandbox' });
+    assert.deepStrictEqual(data, { stdout: 'ok\n', stderr: '', maThoat: 0, trinhBienDich: 'gcc-head', dichVu: 'wandbox' });
   } finally { s.dong(); }
 });
 
@@ -140,6 +140,95 @@ test('/api/run-cpp: chua dang nhap thi 401; code rong hoac qua dai thi 400, khon
     assert.strictEqual((await goiChay(s.goc, { code: '   ' })).status, 400);
     assert.strictEqual((await goiChay(s.goc, { code: 'x'.repeat(60000) })).status, 400);
     assert.ok(!s.daGoi.some(g => /godbolt|wandbox/.test(g.url)));
+  } finally { s.dong(); }
+});
+
+const goiRun = (goc, body) => fetch(goc + '/api/run', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', authorization: 'Bearer tok' },
+  body: JSON.stringify(body)
+});
+
+const DS_JAVA = [
+  { id: 'java2100', name: 'jdk 21.0.0', semver: '21.0.0', supportsExecute: true },
+  { id: 'java2400', name: 'jdk 24.0.1', semver: '24.0.1', supportsExecute: true },
+  { id: 'javatrunk', name: 'jdk trunk', semver: 'trunk', supportsExecute: true },
+  { id: 'java2500', name: 'jdk 25.0.0', semver: '25.0.0', supportsExecute: false }
+];
+
+test('/api/run: Java tu do trinh bien dich Compiler Explorer moi nhat chay duoc, bo public o lop ngoai cung', async () => {
+  const s = await moServer({
+    traLoi: u => (u.includes('/api/compilers/java') ? json(DS_JAVA)
+      : u.includes('/api/compiler/java2400/compile') && json({ didExecute: true, code: 0, stdout: [{ text: 'Hello' }], stderr: [], buildResult: { code: 0 } }))
+  });
+  try {
+    const code = 'public class HelloWorld {\n  public static void main(String[] a) { System.out.println("Hello"); }\n}';
+    const data = await (await goiRun(s.goc, { lang: 'java', code })).json();
+    assert.deepStrictEqual(data, { stdout: 'Hello', stderr: '', maThoat: 0, trinhBienDich: 'jdk 24.0.1', dichVu: 'godbolt' });
+    const gb = s.daGoi.find(g => g.url.endsWith('/compile'));
+    assert.ok(gb.body.source.startsWith('class HelloWorld {'), gb.body.source);
+    assert.ok(gb.body.source.includes('  public static void main'));
+    assert.strictEqual(gb.body.lang, 'java');
+    await goiRun(s.goc, { lang: 'java', code });
+    assert.strictEqual(s.daGoi.filter(g => g.url.includes('/api/compilers/java')).length, 1, 'danh sach trinh bien dich phai duoc nho lai');
+  } finally { s.dong(); }
+});
+
+test('/api/run: Compiler Explorer khong chay duoc thi tu chon trinh Wandbox theo ngon ngu', async () => {
+  const s = await moServer({
+    traLoi: u => (u.includes('godbolt.org') ? new Response('loi', { status: 503 })
+      : u.endsWith('/api/list.json') ? json([
+        { name: 'go-head', language: 'Go', version: 'head' },
+        { name: 'go-1.21.4', language: 'Go', version: '1.21.4', 'display-name': 'go' },
+        { name: 'go-1.23.1', language: 'Go', version: '1.23.1', 'display-name': 'go' },
+        { name: 'rust-1.80.0', language: 'Rust', version: '1.80.0' }
+      ])
+      : u.endsWith('/api/compile.json') && json({ status: '0', program_output: 'ok 42\n', program_error: '' }))
+  });
+  try {
+    const data = await (await goiRun(s.goc, { lang: 'golang', code: 'package main\nfunc main() {}', stdin: '5' })).json();
+    assert.deepStrictEqual(data, { stdout: 'ok 42\n', stderr: '', maThoat: 0, trinhBienDich: 'go 1.23.1', dichVu: 'wandbox' });
+    const wb = s.daGoi.find(g => g.url.endsWith('/api/compile.json'));
+    assert.strictEqual(wb.body.compiler, 'go-1.23.1');
+    assert.strictEqual(wb.body.stdin, '5');
+  } finally { s.dong(); }
+});
+
+test('/api/run: Wandbox bao loi chuong trinh (ngon ngu thong dich) tra ve stderr va ma thoat', async () => {
+  const s = await moServer({
+    traLoi: u => (u.endsWith('/api/list.json') ? json([{ name: 'php-8.3.3', language: 'PHP', version: '8.3.3' }])
+      : u.endsWith('/api/compile.json') && json({ status: '255', program_output: 'truoc\n', program_error: 'PHP Parse error: syntax error' }))
+  });
+  try {
+    const data = await (await goiRun(s.goc, { lang: 'php', code: '<?php echo "truoc\n"; x(' })).json();
+    assert.deepStrictEqual(data, { stdout: 'truoc\n', stderr: 'PHP Parse error: syntax error', maThoat: 255, trinhBienDich: 'PHP 8.3.3', dichVu: 'wandbox' });
+    assert.ok(!s.daGoi.some(g => g.url.includes('godbolt.org')), 'PHP khong co tren Compiler Explorer thi khong goi');
+  } finally { s.dong(); }
+});
+
+test('/api/run: ngon ngu khong ho tro tra 400, khong goi dich vu ngoai', async () => {
+  const s = await moServer({ traLoi: () => null });
+  try {
+    const res = await goiRun(s.goc, { lang: 'cobol', code: 'DISPLAY "HI".' });
+    assert.strictEqual(res.status, 400);
+    assert.ok(!s.daGoi.some(g => /godbolt|wandbox/.test(g.url)));
+  } finally { s.dong(); }
+});
+
+test('/api/run/tu-kiem: chay chuong trinh mau tung ngon ngu, bao ngon ngu nao chay duoc', async () => {
+  const s = await moServer({
+    traLoi: u => (u.includes('/api/compilers/rust') ? json([{ id: 'r1830', name: 'rustc 1.83.0', semver: '1.83.0', supportsExecute: true }])
+      : u.includes('/api/compiler/r1830/compile') ? json({ didExecute: true, code: 0, stdout: [{ text: 'ok 42' }], stderr: [], buildResult: { code: 0 } })
+      : u.endsWith('/api/list.json') ? json([{ name: 'ruby-3.3.0', language: 'Ruby', version: '3.3.0' }])
+      : u.endsWith('/api/compile.json') ? json({ status: '1', program_output: '', program_error: 'boom' })
+      : u.includes('godbolt.org') && new Response('loi', { status: 503 }))
+  });
+  try {
+    const data = await (await fetch(s.goc + '/api/run/tu-kiem?lang=rust,rb,cobol')).json();
+    assert.deepStrictEqual(Object.keys(data).sort(), ['ruby', 'rust']);
+    assert.strictEqual(data.rust.ok, true);
+    assert.strictEqual(data.rust.trinhBienDich, 'rustc 1.83.0');
+    assert.strictEqual(data.ruby.ok, false);
   } finally { s.dong(); }
 });
 

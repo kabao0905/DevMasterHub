@@ -68,7 +68,7 @@ Lịch học cả tháng, chuỗi ngày học liên tiếp, mục tiêu số ph�
 | | |
 |---|---|
 | **Lý thuyết** | Ngắn gọn, có điểm chính tóm tắt cuối bài |
-| **Code Lab** | Code mẫu tô màu kèm kết quả chạy; bài C++ bấm chạy được ngay |
+| **Code Lab** | Code mẫu tô màu, bấm **Chạy Code** là chạy thật: Python, SQL (PostgreSQL) và Lua chạy ngay trong trình duyệt; C++, Java, Go, Rust, C#, Kotlin, Swift, PHP, Ruby… biên dịch trên máy chủ |
 | **Trắc nghiệm** | Câu hỏi do AI sinh theo đúng nội dung bài |
 | **Bài tập** | Viết code và nhận chấm điểm, nhận xét từ AI |
 | **Gia sư AI** | Hỏi bất cứ lúc nào, trả lời đúng ngôn ngữ bạn đang dùng |
