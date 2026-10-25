@@ -34,7 +34,7 @@
         "Tự lưu business history chuẩn event sourcing."
       ],
       "correct": 1,
-      "explanation": "Log format là công cụ quan sát,không thay data architecture."
+      "explanation": "Log format là công cụ quan sát, không thay data architecture."
     },
     {
       "id": "easy-03",
@@ -146,7 +146,7 @@
         "Chỉ trả fallback cố định."
       ],
       "correct": 1,
-      "explanation": "Closed là trạng thái hoạt động bình thường,không phải socket closed."
+      "explanation": "Closed là trạng thái hoạt động bình thường, không phải socket closed."
     },
     {
       "id": "easy-11",
@@ -188,7 +188,7 @@
         "30000."
       ],
       "correct": 0,
-      "explanation": "Đây là cấu hình ví dụ,chưa là policy phù hợp mọi dependency."
+      "explanation": "Đây là cấu hình ví dụ, chưa là policy phù hợp mọi dependency."
     },
     {
       "id": "easy-14",
@@ -208,12 +208,12 @@
       "id": "easy-15",
       "difficulty": "easy",
       "objective": "Failure count",
-      "question": "Khi fn throw/reject được catch trong nguồn,failures thay đổi thế nào?",
+      "question": "Khi fn throw/reject được catch trong nguồn, failures thay đổi thế nào?",
       "options": [
-        "Luôn thànhthreshold trước gọi fn.",
+        "Luôn thành threshold trước gọi fn.",
         "Không bao giờ đổi.",
-        "Tăng1.",
-        "Luôn về0."
+        "Tăng 1.",
+        "Luôn về 0."
       ],
       "correct": 2,
       "explanation": "Concurrent completions có thể làm semantics counter phức tạp hơn gọi tuần tự."
@@ -272,7 +272,7 @@
         "Mọi services bắt buộc hai databases."
       ],
       "correct": 2,
-      "explanation": "Có nhiều mức triển khai;không luôn đòi physical deployment tách biệt."
+      "explanation": "Có nhiều mức triển khai; không luôn đòi physical deployment tách biệt."
     },
     {
       "id": "easy-20",
@@ -316,7 +316,7 @@
         "undefined CLOSED 0"
       ],
       "correct": 1,
-      "explanation": "Success trả7 và reset state/counter."
+      "explanation": "Success trả 7 và reset state/counter."
     },
     {
       "id": "medium-23",
@@ -346,7 +346,7 @@
         "OPEN 2 31000"
       ],
       "correct": 3,
-      "explanation": "Failure thứ2 mở circuit và đặt1000+30000."
+      "explanation": "Failure thứ 2 mở circuit và đặt 1000+30000."
     },
     {
       "id": "medium-25",
@@ -376,7 +376,7 @@
         "7 HALF-OPEN 5"
       ],
       "correct": 1,
-      "explanation": "Điều kiện chặn là now<nextAttempt,nên bằng mốc được thử và success đóng circuit."
+      "explanation": "Điều kiện chặn là now<nextAttempt, nên bằng mốc được thử và success đóng circuit."
     },
     {
       "id": "medium-27",
@@ -406,7 +406,7 @@
         "OPEN 3"
       ],
       "correct": 3,
-      "explanation": "Counter cũ2 tăng3 vượt threshold2 nên mở lại."
+      "explanation": "Counter cũ 2 tăng 3 vượt threshold2 nên mở lại."
     },
     {
       "id": "medium-29",
@@ -451,7 +451,7 @@
         "true"
       ],
       "correct": 2,
-      "explanation": "Source không có timer/race hủy underlying call đang chờ;test resolve sau log để hoàn tất hữu hạn."
+      "explanation": "Source không có timer/race hủy underlying call đang chờ; test resolve sau log để hoàn tất hữu hạn."
     },
     {
       "id": "medium-32",
@@ -466,7 +466,7 @@
         "OPEN 1"
       ],
       "correct": 3,
-      "explanation": "Threshold0 được constructor nhận,một failure thỏa>=0;production cần validate config."
+      "explanation": "Threshold0 được constructor nhận, một failure thỏa>=0;production cần validate config."
     },
     {
       "id": "medium-33",
@@ -481,7 +481,7 @@
         "TypeError tự động."
       ],
       "correct": 0,
-      "explanation": "Timeout-100 không bị validate;nó tạo nextAttempt1000-100."
+      "explanation": "Timeout-100 không bị validate; nó tạo nextAttempt1000-100."
     },
     {
       "id": "medium-34",
@@ -511,7 +511,7 @@
         "A"
       ],
       "correct": 2,
-      "explanation": "this.fn() gọi fn với breaker làm receiver,không giữ repo receiver gốc."
+      "explanation": "this.fn() gọi fn với breaker làm receiver, không giữ repo receiver gốc."
     },
     {
       "id": "medium-36",
@@ -547,7 +547,7 @@
       "id": "medium-38",
       "difficulty": "medium",
       "objective": "Wall clock duration model",
-      "question": "Output là gì nếu fake wall clock lùi từ1000 về900 trước finish?",
+      "question": "Output là gì nếu fake wall clock lùi từ 1000 về 900 trước finish?",
       "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const{EventEmitter}=await import(\"node:events\");const res=new EventEmitter();const start=Date.now();res.on(\"finish\",()=>console.log(Date.now()-start));now=900;res.emit(\"finish\");}finally{Date.now=saved;}",
       "options": [
         "TypeError.",
@@ -571,13 +571,13 @@
         "false"
       ],
       "correct": 2,
-      "explanation": "Random UUID được kiểm tra shape,không in credential hoặc dự đoán giá trị."
+      "explanation": "Random UUID được kiểm tra shape, không in credential hoặc dự đoán giá trị."
     },
     {
       "id": "medium-40",
       "difficulty": "medium",
       "objective": "Mean concurrency model",
-      "question": "Hệ ổn định có200 requests/s và mean time trong hệ0.05s,theo mô hình Little L=lambda*W,output là gì?",
+      "question": "Hệ ổn định có 200 requests/s và mean time trong hệ 0.05s,theo mô hình Little L=lambda*W,output là gì?",
       "code": "const rate=200,meanSeconds=0.05;console.log(rate*meanSeconds);",
       "options": [
         "4000",
@@ -586,7 +586,7 @@
         "10"
       ],
       "correct": 3,
-      "explanation": "Mô hình dùng means và steady state,không lấy p99 thay W hay suy capacity khi overload."
+      "explanation": "Mô hình dùng means và steady state, không lấy p99 thay W hay suy capacity khi overload."
     },
     {
       "id": "medium-41",
@@ -594,7 +594,7 @@
       "objective": "Timeout meaning source",
       "question": "timeout trong CircuitBreaker nguồn có thực thi deadline tự động cho fn không?",
       "options": [
-        "Không;nó là khoảng cooldown trước nextAttempt.",
+        "Không; nó là khoảng cooldown trước nextAttempt.",
         "Có và tự abort mọi I/O.",
         "Có vì await fn.",
         "Có vì default30000."
@@ -609,9 +609,9 @@
       "question": "Khi một probe đang HALF-OPEN,request tiếp theo có bị source giới hạn về chỉ một probe không?",
       "options": [
         "Có vì JavaScript async.",
-        "Không;source chỉ có guard cho OPEN.",
+        "Không; source chỉ có guard cho OPEN.",
         "Có vì tên HALF-OPEN.",
-        "Có vì failures chưa0."
+        "Có vì failures chưa 0."
       ],
       "correct": 1,
       "explanation": "State name không tự thực thi concurrency policy."
@@ -624,7 +624,7 @@
       "options": [
         "Mọi call tạo breaker riêng.",
         "Không có interleaving vì async.",
-        "Thứ tự completions có thể đổi state/counter,không phải một chuỗi request tuần tự đơn giản.",
+        "Thứ tự completions có thể đổi state/counter, không phải một chuỗi request tuần tự đơn giản.",
         "Mọi kết quả luôn được serialize theo thời điểm gọi."
       ],
       "correct": 2,
@@ -638,7 +638,7 @@
       "options": [
         "Chỉ truthy.",
         "Chỉ tên field.",
-        "Chỉ convert mọi String thànhNumber rồi tin.",
+        "Chỉ convert mọi String thành Number rồi tin.",
         "Type,finite range và ý nghĩa policy trước sử dụng."
       ],
       "correct": 3,
@@ -648,7 +648,7 @@
       "id": "medium-45",
       "difficulty": "medium",
       "objective": "Replica scope",
-      "question": "Mỗi process có CircuitBreaker instance riêng;state có tự đồng bộ mọi replica không?",
+      "question": "Mỗi process có CircuitBreaker instance riêng; state có tự đồng bộ mọi replica không?",
       "options": [
         "Không.",
         "Có vì cùng class.",
@@ -656,7 +656,7 @@
         "Có vì threshold giống nhau."
       ],
       "correct": 0,
-      "explanation": "Local breaker có thể là lựa chọn đúng nhưng phải hiểu scope,không hứa global state."
+      "explanation": "Local breaker có thể là lựa chọn đúng nhưng phải hiểu scope, không hứa global state."
     },
     {
       "id": "medium-46",
@@ -665,7 +665,7 @@
       "question": "CLOSED circuit có tự giới hạn số fn calls đang chạy không?",
       "options": [
         "Có vì constructor private.",
-        "Không;bulkhead/concurrency budget là policy khác.",
+        "Không; bulkhead/concurrency budget là policy khác.",
         "Có theo threshold failure count.",
         "Có theo timeout cooldown."
       ],
@@ -676,7 +676,7 @@
       "id": "medium-47",
       "difficulty": "medium",
       "objective": "Request ID input",
-      "question": "Client gửi request ID rất dài/tùy ý;server cần gì?",
+      "question": "Client gửi request ID rất dài/tùy ý; server cần gì?",
       "options": [
         "Dùng nó làm quyền admin.",
         "Log mọi input vô hạn.",
@@ -695,10 +695,10 @@
         "Có vì env luôn đáng tin về mọi value.",
         "Có vì logger tự hiểu nghiệp vụ.",
         "Chỉ cần fallback info cho mọi chuỗi.",
-        "Không;kiểm tra level hợp lệ và exposure/volume phù hợp."
+        "Không; kiểm tra level hợp lệ và exposure/volume phù hợp."
       ],
       "correct": 3,
-      "explanation": "Fallback || chỉ xử lý falsy,không xác nhận chuỗi level hợp lệ."
+      "explanation": "Fallback || chỉ xử lý falsy, không xác nhận chuỗi level hợp lệ."
     },
     {
       "id": "medium-49",
@@ -712,7 +712,7 @@
         "Chỉ requestId server."
       ],
       "correct": 0,
-      "explanation": "Redact/normalize route fields theo use case,không public raw sensitive logs."
+      "explanation": "Redact/normalize route fields theo use case, không public raw sensitive logs."
     },
     {
       "id": "medium-50",
@@ -726,7 +726,7 @@
         "Có vì development."
       ],
       "correct": 1,
-      "explanation": "Dependency phải có trong artifact/môi trường phù hợp;không tự npm install khi import."
+      "explanation": "Dependency phải có trong artifact/môi trường phù hợp; không tự npm install khi import."
     },
     {
       "id": "medium-51",
@@ -746,7 +746,7 @@
       "id": "medium-52",
       "difficulty": "medium",
       "objective": "Duration clock",
-      "question": "Muốn đo elapsed duration chống wall-clock jumps,nên chọn gì?",
+      "question": "Muốn đo elapsed duration chống wall-clock jumps, nên chọn gì?",
       "options": [
         "Chỉ Date.now vì luôn monotonic.",
         "Client Date header tùy ý.",
@@ -792,7 +792,7 @@
       "options": [
         "Có vì Node version mới.",
         "Có vì có breaker.",
-        "Không;cần readiness contract bounded theo kiến trúc.",
+        "Không; cần readiness contract bounded theo kiến trúc.",
         "Có vì loop còn chạy."
       ],
       "correct": 2,
@@ -818,7 +818,7 @@
       "objective": "Event logs distinction",
       "question": "Structured diagnostic logs có tự đủ làm event-sourcing store không?",
       "options": [
-        "Không;thiếu domain persistence/order/schema/replay guarantees tương ứng.",
+        "Không; thiếu domain persistence/order/schema/replay guarantees tương ứng.",
         "Có vì JSON mỗi dòng.",
         "Có vì timestamp.",
         "Có vì logger là Pino."
@@ -833,7 +833,7 @@
       "question": "Sharding và replication khác nhau nổi bật ở điều gì?",
       "options": [
         "Replication tự làm mọi writes cross-shard atomic.",
-        "Sharding phân vùng dữ liệu;replication sao chép theo topology/consistency phù hợp.",
+        "Sharding phân vùng dữ liệu; replication sao chép theo topology/consistency phù hợp.",
         "Hai từ luôn cùng một cơ chế.",
         "Sharding là backup duy nhất."
       ],
@@ -844,12 +844,12 @@
       "id": "medium-59",
       "difficulty": "medium",
       "objective": "Concurrent user definition",
-      "question": "1M registered users và1M simultaneous active requests có cùng workload không?",
+      "question": "1M registered users và 1M simultaneous active requests có cùng workload không?",
       "options": [
         "Có nếu dùng cache.",
         "Có nếu Kubernetes.",
         "Không.",
-        "Có vì cùng số1M."
+        "Có vì cùng số 1M."
       ],
       "correct": 2,
       "explanation": "Cần mô hình arrivals,think time,connections và task cost để tính capacity."
@@ -858,7 +858,7 @@
       "id": "medium-60",
       "difficulty": "medium",
       "objective": "Success criteria",
-      "question": "Khi load tăng,cần theo dõi gì cùng throughput?",
+      "question": "Khi load tăng, cần theo dõi gì cùng throughput?",
       "options": [
         "Chỉ requests count.",
         "Chỉ worker names.",
@@ -881,13 +881,13 @@
         "Circuit open luôn."
       ],
       "correct": 0,
-      "explanation": "Probe đầu đổi HALF-OPEN nhưng không chặn call thứ hai;cả hai fn được gọi."
+      "explanation": "Probe đầu đổi HALF-OPEN nhưng không chặn call thứ hai; cả hai fn được gọi."
     },
     {
       "id": "hard-62",
       "difficulty": "hard",
       "objective": "Late success state race",
-      "question": "Output là gì khi call thứ hai fail trước,call đầu success sau?",
+      "question": "Output là gì khi call thứ hai fail trước, call đầu success sau?",
       "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let ok,fail,calls=0;const b=new CircuitBreaker(()=>new Promise((r,j)=>{if(++calls===1)ok=r;else fail=j;}),{threshold:1});const p=b.call();const q=b.call().catch(()=>{});fail(new Error(\"x\"));await q;const before=b.state;ok(7);await p;console.log(before,b.state);}finally{Date.now=saved;}",
       "options": [
         "HALF-OPEN CLOSED",
@@ -896,7 +896,7 @@
         "CLOSED OPEN"
       ],
       "correct": 1,
-      "explanation": "Success cũ vẫn reset state sau failure mới;source thiếu epoch/state coordination."
+      "explanation": "Success cũ vẫn reset state sau failure mới; source thiếu epoch/state coordination."
     },
     {
       "id": "hard-63",
@@ -906,7 +906,7 @@
       "options": [
         "Có vì breaker OPEN.",
         "Có vì elapsed duration.",
-        "Không;phải propagate cancellation/deadline theo API và quản lý effects.",
+        "Không; phải propagate cancellation/deadline theo API và quản lý effects.",
         "Có vì Promise thua bị kill tự động."
       ],
       "correct": 2,
@@ -933,7 +933,7 @@
       "question": "Mỗi tầng retry3 lần qua nhiều tầng có thể gây vấn đề gì?",
       "options": [
         "Khuếch đại attempts/latency và duplicate mutations.",
-        "Luôn giữ tổng attempts bằng3.",
+        "Luôn giữ tổng attempts bằng 3.",
         "Tự hạn chế theo SLO.",
         "Chỉ thêm logs vô hại."
       ],
@@ -944,10 +944,10 @@
       "id": "hard-66",
       "difficulty": "hard",
       "objective": "Bulkhead role",
-      "question": "Dependency rất chậm nhưng chưa throw nhiều lỗi;breaker threshold có đủ ngăn inflight tasks vô hạn không?",
+      "question": "Dependency rất chậm nhưng chưa throw nhiều lỗi; breaker threshold có đủ ngăn inflight tasks vô hạn không?",
       "options": [
         "Có vì fn async.",
-        "Không;cần timeout/concurrency/queue budgets phù hợp.",
+        "Không; cần timeout/concurrency/queue budgets phù hợp.",
         "Có vì state CLOSED.",
         "Có vì threshold5."
       ],
@@ -958,7 +958,7 @@
       "id": "hard-67",
       "difficulty": "hard",
       "objective": "Series availability model",
-      "question": "Giả sử3 dependencies độc lập bắt buộc đều có availability0.999,mô hình product cho request xấp xỉ gì?",
+      "question": "Giả sử 3 dependencies độc lập bắt buộc đều có availability0.999, mô hình product cho request xấp xỉ gì?",
       "options": [
         "1.0.",
         "2.997.",
@@ -966,13 +966,13 @@
         "0.999999."
       ],
       "correct": 2,
-      "explanation": "0.999^3;đây là mô hình có giả định độc lập,không đo thực tế hoặc áp cho failures tương quan."
+      "explanation": "0.999^3; đây là mô hình có giả định độc lập, không đo thực tế hoặc áp cho failures tương quan."
     },
     {
       "id": "hard-68",
       "difficulty": "hard",
       "objective": "Connection memory budget",
-      "question": "1M connections mỗi connection riêng2KiB dữ liệu,chưa tính overhead,cần xấp xỉ bao nhiêu GiB?",
+      "question": "1M connections mỗi connection riêng 2KiB dữ liệu, chưa tính overhead, cần xấp xỉ bao nhiêu GiB?",
       "options": [
         "0.002GiB.",
         "2KiB tổng.",
@@ -988,8 +988,8 @@
       "objective": "Little law scope",
       "question": "Có nên thay mean time bằng p99 trong Little L=lambda*W rồi coi đó là average concurrency chính xác không?",
       "options": [
-        "Không;model dùng means và điều kiện steady state phù hợp.",
-        "Có vì p99 luôn bằngmean.",
+        "Không; model dùng means và điều kiện steady state phù hợp.",
+        "Có vì p99 luôn bằng mean.",
         "Có nếu Node async.",
         "Có nếu queue bounded."
       ],
@@ -1005,7 +1005,7 @@
         "Tự giảm latency.",
         "Tăng wait/memory và vượt deadlines;admission/degradation cần hữu hạn.",
         "Tự tạo capacity downstream.",
-        "Luôn tránh mấtrequest không cócost."
+        "Luôn tránh mất request không có cost."
       ],
       "correct": 1,
       "explanation": "Control pending work và overload contract quan trọng như active concurrency."
@@ -1016,7 +1016,7 @@
       "objective": "Metric cardinality",
       "question": "Dùng requestId hoặc user email làm metric label không giới hạn có rủi ro gì?",
       "options": [
-        "Không ảnh hưởng vì labels làString.",
+        "Không ảnh hưởng vì labels là String.",
         "Tự được Prometheus gộp vô hạn.",
         "Bùng nổ time series,chi phí memory/storage và dữ liệu nhạy cảm.",
         "Luôn là cách tối ưu aggregation."
@@ -1033,7 +1033,7 @@
         "Không vì structured log luôn miễn phí.",
         "Tự làm app nhanh hơn.",
         "Không cần retention.",
-        "CPU/serialization/I O/backpressure và privacy;đặt budget/redaction theo nhu cầu."
+        "CPU/serialization/I O/backpressure và privacy; đặt budget/redaction theo nhu cầu."
       ],
       "correct": 3,
       "explanation": "JSON format không loại chi phí và rủi ro dữ liệu."
@@ -1056,9 +1056,9 @@
       "id": "hard-74",
       "difficulty": "hard",
       "objective": "Read your writes",
-      "question": "CQRS read model lag nhưng UI cần thấy command vừa hoàn tất ngay,nên làm gì?",
+      "question": "CQRS read model lag nhưng UI cần thấy command vừa hoàn tất ngay, nên làm gì?",
       "options": [
-        "Ẩn lỗi bằng200.",
+        "Ẩn lỗi bằng 200.",
         "Thiết kế consistency/read-your-writes hoặc pending/reconciliation contract phù hợp.",
         "Hứa immediate fresh dù chưa đồng bộ.",
         "Chỉ tăng cache TTL."
@@ -1074,11 +1074,11 @@
       "options": [
         "Có vì client typed.",
         "Có vì Docker network.",
-        "Không;cần distributed transaction/workflow/compensation phù hợp yêu cầu.",
+        "Không; cần distributed transaction/workflow/compensation phù hợp yêu cầu.",
         "Có vì cùng model name."
       ],
       "correct": 2,
-      "explanation": "Partitioning đổi failure/consistency boundaries,cần chọn tradeoffs rõ."
+      "explanation": "Partitioning đổi failure/consistency boundaries, cần chọn tradeoffs rõ."
     },
     {
       "id": "hard-76",
@@ -1102,7 +1102,7 @@
       "options": [
         "Cho quyền đã thu hồi ngoài SLA;degradation phải theo security policy.",
         "Luôn an toàn vì cache hit.",
-        "Không vì JWT cósignature.",
+        "Không vì JWT có signature.",
         "Chỉ sai UI text."
       ],
       "correct": 0,
@@ -1114,10 +1114,10 @@
       "objective": "Fault injection evidence",
       "question": "Chỉ happy-path load test có đủ chứng minh breaker/retry/degrade hoạt động khi dependency lỗi chậm chưa?",
       "options": [
-        "Có vì cómetrics.",
-        "Chưa;cần failure scenarios/deadlines và effects assertions theo scope.",
+        "Có vì có metrics.",
+        "Chưa; cần failure scenarios/deadlines và effects assertions theo scope.",
         "Có vì throughput đạt target.",
-        "Có vì class tênCircuitBreaker."
+        "Có vì class tên CircuitBreaker."
       ],
       "correct": 1,
       "explanation": "Resilience cần bằng chứng ở các trạng thái/failure modes mà policy hứa."
@@ -1130,8 +1130,8 @@
       "options": [
         "Tự được logger redact response.",
         "Không có secret ở config nào.",
-        "Lộ dữ liệu/control-plane details;cần tách public health và restricted diagnostics.",
-        "Luôn vô hại vì chỉread."
+        "Lộ dữ liệu/control-plane details; cần tách public health và restricted diagnostics.",
+        "Luôn vô hại vì chỉ read."
       ],
       "correct": 2,
       "explanation": "Quan sát hệ thống phải giữ authorization và data boundaries."
@@ -1140,15 +1140,15 @@
       "id": "hard-80",
       "difficulty": "hard",
       "objective": "Capacity claim limits",
-      "question": "Có cache,queue,load balancer và breaker có đủ cam kết1M concurrent users chưa?",
+      "question": "Có cache,queue,load balancer và breaker có đủ cam kết 1M concurrent users chưa?",
       "options": [
-        "Đủ vì đủ tênpatterns.",
+        "Đủ vì đủ tên patterns.",
         "Đủ vì class chạy một lần.",
         "Đủ vì Node24.",
-        "Chưa;cần workload/resource/SLO assumptions và capacity evidence đại diện."
+        "Chưa; cần workload/resource/SLO assumptions và capacity evidence đại diện."
       ],
       "correct": 3,
-      "explanation": "Thiết kế và kiểm tra phải khớp loại concurrency,dữ liệu,bottlenecks và failure budget."
+      "explanation": "Thiết kế và kiểm tra phải khớp loại concurrency, dữ liệu, bottlenecks và failure budget."
     }
   ]
 }
