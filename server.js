@@ -14,6 +14,7 @@ const boChay = taoBoChay();
 const { taiTheoChuyenHuong, layTieuDe } = require('./lib/net-guard.js');
 const { trichNoiDungTrang } = require('./lib/trich-trang.js');
 const { moPhongBi } = require('./lib/phong-bi.js');
+const { docSse } = require('./lib/doc-sse.js');
 
 try {
   napEnv(fs.readFileSync(path.join(__dirname, '.env'), 'utf8'));
@@ -227,15 +228,23 @@ async function callGroq(system, messages, temperature = 0.7, maxTokens = 4096) {
   return data.choices?.[0]?.message?.content || '';
 }
 
-async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4096, taskType = 'general') {
+function ghiSoDo(taskType, model, batDau, dauTien, usage) {
+  const u = usage || {};
+  const cache = u.prompt_tokens_details?.cached_tokens;
+  console.log(`[AI] task=${taskType} model=${model} dau_tien=${dauTien == null ? '-' : dauTien - batDau}ms tong=${Date.now() - batDau}ms` +
+    ` in=${u.prompt_tokens ?? '-'} out=${u.completion_tokens ?? '-'} cache=${cache ?? '-'}`);
+}
+
+async function goiOpenRouter(system, messages, temperature, maxTokens, taskType, { dong = false, signal } = {}) {
   if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY not configured');
-
   const selectedModel = MO_HINH_THEO_VIEC[taskType] || MO_HINH_THEO_VIEC.general;
-  console.log(`[OpenRouter] Routing taskType="${taskType}" -> Model="${selectedModel}"`);
-
   const formattedMessages = [];
   if (system) formattedMessages.push({ role: 'system', content: system });
   messages.forEach(m => formattedMessages.push({ role: m.role, content: m.content }));
+  const than = laGemini3(selectedModel)
+    ? { model: selectedModel, messages: formattedMessages, max_tokens: maxTokens + suyNghiCho(taskType).themToken, reasoning: { effort: suyNghiCho(taskType).muc } }
+    : { model: selectedModel, messages: formattedMessages, temperature, max_tokens: maxTokens };
+  if (dong) than.stream = true;
 
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -245,19 +254,41 @@ async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4
       'HTTP-Referer': 'https://devmaster-hub.onrender.com',
       'X-Title': 'DevMaster Hub'
     },
-    body: JSON.stringify(laGemini3(selectedModel)
-      ? { model: selectedModel, messages: formattedMessages, max_tokens: maxTokens + suyNghiCho(taskType).themToken, reasoning: { effort: suyNghiCho(taskType).muc } }
-      : { model: selectedModel, messages: formattedMessages, temperature, max_tokens: maxTokens }),
-    signal: coHan(AI_TIMEOUT_MS)
+    body: JSON.stringify(than),
+    signal: signal ? AbortSignal.any([signal, coHan(AI_TIMEOUT_MS)]) : coHan(AI_TIMEOUT_MS)
   });
 
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`OpenRouter API Error ${res.status} (${selectedModel}): ${errText}`);
   }
+  return { res, selectedModel };
+}
 
+async function callOpenRouter(system, messages, temperature = 0.7, maxTokens = 4096, taskType = 'general') {
+  const batDau = Date.now();
+  const { res, selectedModel } = await goiOpenRouter(system, messages, temperature, maxTokens, taskType);
   const data = await res.json();
+  ghiSoDo(taskType, selectedModel, batDau, null, data.usage);
   return data.choices?.[0]?.message?.content || '';
+}
+
+async function callOpenRouterDong(system, messages, temperature, maxTokens, taskType, signal, khiCo) {
+  const batDau = Date.now();
+  const { res, selectedModel } = await goiOpenRouter(system, messages, temperature, maxTokens, taskType, { dong: true, signal });
+  let text = '', dauTien = null, usage = null;
+  for await (const goi of docSse(res.body)) {
+    if (goi.error) throw new Error(`OpenRouter stream error: ${goi.error.message || JSON.stringify(goi.error)}`);
+    if (goi.usage) usage = goi.usage;
+    const phan = goi.choices?.[0]?.delta?.content;
+    if (typeof phan === 'string' && phan) {
+      dauTien ??= Date.now();
+      text += phan;
+      khiCo(phan);
+    }
+  }
+  ghiSoDo(taskType, selectedModel, batDau, dauTien, usage);
+  return text;
 }
 
 async function callClaude(system, messages, maxTokens = 4096) {
@@ -313,7 +344,48 @@ app.post('/api/ai', sameOrigin, moPhongBi, requireUser, rateLimit({ max: 30, sco
   }
 
   let lastError = null;
-  for (const provider of activeProviders) {
+  let conLai = activeProviders;
+  if (req.body.stream === true) {
+    const huy = new AbortController();
+    res.on('close', () => { if (!res.writableEnded) huy.abort(); });
+    const gui = obj => {
+      if (!res.headersSent) res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no' });
+      res.write(`data: ${JSON.stringify(obj)}\n\n`);
+    };
+    const xong = ten => { gui({ xong: true, provider: ten }); res.end(); };
+    if (OPENROUTER_API_KEY) {
+      const ten = providers[0].name;
+      try {
+        if (await callOpenRouterDong(system, messages, temperature, maxTokens, taskType, huy.signal, t => gui({ t }))) return xong(ten);
+        throw new Error('Phản hồi rỗng');
+      } catch (err) {
+        if (huy.signal.aborted) return;
+        if (res.headersSent) {
+          console.warn(`[AI Router] ${ten} stream bị ngắt:`, err.message);
+          gui({ loi: 'AI bị ngắt giữa chừng. Thử lại nhé.' });
+          return res.end();
+        }
+        console.warn(`[AI Router] Provider ${ten} failed:`, err.message);
+        lastError = err;
+      }
+      conLai = activeProviders.filter(p => p !== providers[0]);
+    }
+    for (const provider of conLai) {
+      try {
+        const text = await provider.fn();
+        if (!text) throw new Error('Phản hồi rỗng');
+        if (huy.signal.aborted) return;
+        gui({ t: text });
+        return xong(provider.name);
+      } catch (err) {
+        console.warn(`[AI Router] Provider ${provider.name} failed:`, err.message);
+        lastError = err;
+      }
+    }
+    conLai = [];
+  }
+
+  for (const provider of conLai) {
     try {
       console.log(`[AI Router] Attempting provider: ${provider.name}...`);
       const text = await provider.fn();

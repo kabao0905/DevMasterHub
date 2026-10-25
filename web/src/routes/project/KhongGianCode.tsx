@@ -128,6 +128,11 @@ export function KhongGianCode({ duAn, aiBat }: { duAn: DuAn; aiBat: boolean }) {
         {kho.loiCham && !kho.dangCham && (
           <p role="alert" className="rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">{t('reviewFailed', { error: kho.loiCham })}</p>
         )}
+        {kho.banNopCho && !kho.dangCham && (
+          <Button variant="outline" className="rounded-full" onClick={duAn.luuLai} disabled={!!kho.dangLuu}>
+            {kho.dangLuu && <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />} {t('submissionSaveRetry')}
+          </Button>
+        )}
       </section>
 
       {hopXacNhan}

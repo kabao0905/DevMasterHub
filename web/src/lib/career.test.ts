@@ -1,7 +1,7 @@
 import { docThan } from '@/test/doc-than';
 import { giaSupabase } from '@/test/gia-supabase';
 import { taoCoVan, type ThongKe } from './career';
-import { luuChat, taiChat, taiThongKe } from './career-db';
+import { gopTinNhan, luuChat, taiChat, taiThongKe } from './career-db';
 
 const t = (k: string) => k;
 const thongKe = (tongBai = 0, kyNang: string[] = []): ThongKe => ({
@@ -52,9 +52,11 @@ test('AI bao [SEARCH_JOBS: ...]: bo the khoi cau tra loi, tim theo tu khoa, bo d
   const kq = await taoCoVan(client, { t, lang: 'vi', thongKe: thongKe(3, ['react']) }).gui([], 'mình nên làm gì?');
   expect(kq?.text).toBe('Bạn hợp vị trí intern.');
   expect(kq?.searchKeyword).toBe('React Developer');
+  expect(kq?.jobs).toBeNull();
+  const viec = await kq?.choViec;
   expect(new URL(goi.find(g => g.url.startsWith('/api/jobs'))!.url, 'http://x').searchParams.get('search')).toBe('React Developer');
-  expect(kq?.jobs?.[0].url).toBe('#');
-  expect(kq?.jobs?.[0].company_logo).toBe('https://cdn.x/logo.png');
+  expect(viec?.[0].url).toBe('#');
+  expect(viec?.[0].company_logo).toBe('https://cdn.x/logo.png');
 });
 
 test('tin nhan co link: doc link qua /api/doc-viec-link kem token, noi dung vao prompt; lich su gui toi da 8 tin, tin AI dai bi cat', async () => {
@@ -100,6 +102,30 @@ test('thong ke hoc vien: bai da xong theo cong nghe, gio hoc, du an va diem trun
   expect(tk).toMatchObject({ totalLessonsCompleted: 2, totalTimeHours: 1.5, averageProjectScore: 71 });
   expect(tk.techBreakdown).toEqual([{ tech: 'python', completed: 2, highestLevel: 'junior' }]);
   expect(tk.projects).toHaveLength(2);
+});
+
+test('thong ke: mot truy van loi thi bao loi, khong bien thanh "0 bai, 0 gio"', async () => {
+  const g = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { lesson_progress: [{ tech_id: 'python', level_id: 'newbie', lesson_id: 'a', completed: true }] }, loiDoc: { learning_sessions: 'timeout' } });
+  await expect(taiThongKe(g.client, 'u1')).rejects.toThrow('timeout');
+});
+
+const tin = (role: 'user' | 'assistant', content: string) => ({ role, content });
+
+test('gop tin nhan: may khac da ghi them thi giu ca hai ben; sua/xoa chu dong thi ghi de', () => {
+  const coSo = [tin('user', 'A'), tin('assistant', 'a')];
+  const mayKhac = [...coSo, tin('user', 'B'), tin('assistant', 'b')];
+  const mayNay = [...coSo, tin('user', 'C'), tin('assistant', 'c')];
+  expect(gopTinNhan(mayKhac, coSo, mayNay)).toEqual([...mayKhac, tin('user', 'C'), tin('assistant', 'c')]);
+  expect(gopTinNhan(coSo, coSo, mayNay)).toEqual(mayNay);
+  expect(gopTinNhan(mayKhac, coSo, [tin('user', 'A')])).toEqual([tin('user', 'A')]);
+});
+
+test('luu chat co co so: doc ban tren may chu truoc, gop roi moi ghi, tra ve ban da ghi', async () => {
+  const coSo = [tin('user', 'A'), tin('assistant', 'a')];
+  const g = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { career_chats: [{ user_id: 'u1', messages: [...coSo, tin('user', 'B')] }] } });
+  const daGhi = await luuChat(g.client, 'u1', [...coSo, tin('user', 'C')], coSo);
+  expect(daGhi).toEqual([...coSo, tin('user', 'B'), tin('user', 'C')]);
+  expect(g.truyVan.find(q => q.op === 'upsert')!.payload).toMatchObject({ messages: daGhi });
 });
 
 test('lich su chat: doc ban moi nhat, luu upsert theo user_id; dong hong thi bo', async () => {

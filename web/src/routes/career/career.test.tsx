@@ -11,7 +11,7 @@ const VIEC = [
   { title: 'Senior Go Engineer', company_name: 'Beta', source: 'LinkedIn', location: 'Remote', url: 'javascript:alert(2)', tags: ['go'], is_remote: true }
 ];
 
-function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern]\nBạn hợp **thực tập**.'), chat = [] as unknown[], jobs = VIEC, treo = {} as Record<string, Promise<unknown>>, crawl = (): Response => new Response('null', { status: 404 }) } = {}) {
+function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern]\nBạn hợp **thực tập**.'), chat = [] as unknown[], jobs = VIEC, treo = {} as Record<string, Promise<unknown>>, crawl = (): Response => new Response('null', { status: 404 }), choJobs = Promise.resolve() } = {}) {
   const goiAi: ThanAi[] = [];
   const timViec: string[] = [];
   const gia = giaSupabase({ nguoiDung: { id: 'u1' }, treo, bang: {
@@ -25,7 +25,7 @@ function mo({ ai = (_b: ThanAi): Response => traText('[SEARCH_JOBS: React Intern
     fetch: async (url: string, init?: RequestInit) => {
       if (url === '/api/ai') { const b = docThan(init?.body) as ThanAi; goiAi.push(b); return ai(b); }
       if (url === '/api/doc-viec-link') return crawl();
-      if (url.startsWith('/api/jobs')) { timViec.push(new URL(url, 'http://x').searchParams.get('search') ?? ''); return new Response(JSON.stringify({ jobs }), { status: 200 }); }
+      if (url.startsWith('/api/jobs')) { timViec.push(new URL(url, 'http://x').searchParams.get('search') ?? ''); await choJobs; return new Response(JSON.stringify({ jobs }), { status: 200 }); }
       return Object.hasOwn(json, url) ? new Response(JSON.stringify(json[url]), { status: 200 }) : new Response('null', { status: 404 });
     }
   });
@@ -38,6 +38,19 @@ beforeEach(() => { window.scrollTo = vi.fn() as unknown as typeof window.scrollT
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 const oNhap = () => screen.getByRole('textbox', { name: /Nhập câu hỏi/ });
+
+test('loi tu van hien ngay, khong cho tim viec; viec lam cap nhat khi tim xong', async () => {
+  const u = userEvent.setup();
+  let tha!: () => void;
+  mo({ choJobs: new Promise<void>(r => { tha = r; }) });
+  await u.type(await screen.findByRole('textbox', { name: /Nhập câu hỏi/ }), 'mình nên làm gì?{Enter}');
+  expect(await screen.findByText('thực tập', { selector: 'strong' })).toBeInTheDocument();
+  expect(screen.getByText(/Đang tìm việc phù hợp với “React Intern”/)).toBeInTheDocument();
+  await act(async () => { tha(); });
+  const thanh = await screen.findByRole('button', { name: /Việc làm AI gợi ý/ });
+  expect(thanh.textContent).toMatch(/2/);
+  expect(screen.queryByText(/Đang tìm việc phù hợp/)).not.toBeInTheDocument();
+});
 
 test('nap lich su da luu; hoi -> tra loi markdown, tu tim viec, danh sach thu gon roi mo; luu lich su', async () => {
   const u = userEvent.setup();

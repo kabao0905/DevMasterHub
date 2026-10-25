@@ -276,6 +276,11 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
 
       let autoSearchResults = null;
       let usedSearchKeyword = '';
+      let choViec = null;
+      const timNen = tuKhoa => searchJobs(tuKhoa, signal).catch(e => {
+        if (e.name !== 'AbortError' && !signal.aborted) console.warn('[CareerAdvisor] Job search failed:', e);
+        return null;
+      });
 
       const searchMatch = aiText.match(/\[SEARCH_JOBS:\s*(.+?)\]/i);
       if (listData) {
@@ -295,23 +300,13 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
         }
 
         aiText = aiText.replace(/\[SEARCH_JOBS:[^\]]*\]/gi, '').replace(/\n\s*🔍\s*\*\*\s*/g, '\n').replace(/^\s*🔍\s*/g, '').trim();
-        try {
-          autoSearchResults = await searchJobs(usedSearchKeyword, signal);
-        } catch (e) {
-          if (e.name === 'AbortError' || signal.aborted) return null;
-          console.warn('[CareerAdvisor] Auto job search failed:', e);
-        }
+        choViec = timNen(usedSearchKeyword);
       } else {
 
         const fallbackKeyword = detectJobSearchIntent(userMessage);
         if (fallbackKeyword) {
           usedSearchKeyword = fallbackKeyword;
-          try {
-            autoSearchResults = await searchJobs(fallbackKeyword, signal);
-          } catch (e) {
-            if (e.name === 'AbortError' || signal.aborted) return null;
-            console.warn('[CareerAdvisor] Fallback job search failed:', e);
-          }
+          choViec = timNen(fallbackKeyword);
         }
       }
 
@@ -320,7 +315,7 @@ Nhiệm vụ: Viết ngắn gọn 3 câu tóm tắt vị trí phù hợp nhất 
       chatHistory = [...chatHistory, { role: 'user', content: userMessage }, { role: 'assistant', content: aiText }];
       isLoading = false;
       activeAbortController = null;
-      return { text: aiText, jobs: autoSearchResults, searchKeyword: usedSearchKeyword, link };
+      return { text: aiText, jobs: autoSearchResults, searchKeyword: usedSearchKeyword, link, choViec };
     } catch (err) {
       isLoading = false;
       activeAbortController = null;

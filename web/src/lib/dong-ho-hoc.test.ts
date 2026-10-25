@@ -83,6 +83,53 @@ test('ghi loi thi giu lai so giay, lan sau ghi duoc se ghi du', async () => {
   expect(loi.dh.giayChoGhi).toBe(60);
 });
 
+test('doi mon giua chung: thoi gian moi mon ghi vao dong rieng cua mon do', async () => {
+  const { dh, troi, chen, capNhat } = taoDongHo();
+  dh.batDau({ techId: 'python', lessonId: 'a' });
+  troi(35_000);
+  dh.batDau({ techId: 'go', lessonId: 'b' });
+  troi(35_000);
+  await dh.ghi(true);
+  await dh.ghi(true);
+  const theoMon: Record<string, number> = {};
+  for (const d of chen as { tech_id: string; duration_seconds: number }[]) theoMon[d.tech_id] = d.duration_seconds;
+  expect(theoMon).toEqual({ python: 45, go: 45 });
+  expect(capNhat).toHaveLength(0);
+});
+
+test('dang hoc bai ma hoi AI (gia su trong bai) thi van tinh cho bai, khong doi sang muc "ai"', async () => {
+  const { dh, troi, chen } = taoDongHo();
+  dh.batDau({ techId: 'python', lessonId: 'a' });
+  troi(PHUT);
+  dh.batDau({ techId: 'ai', lessonId: 'ai' });
+  troi(PHUT);
+  await dh.ghi(true);
+  expect(chen).toEqual([expect.objectContaining({ tech_id: 'python', duration_seconds: 120 })]);
+});
+
+test('doi mon roi quay lai mon cu: van mo dong moi, khong cong vao dong cua mon kia', async () => {
+  const { dh, troi, chen } = taoDongHo();
+  dh.batDau({ techId: 'python', lessonId: 'a' });
+  troi(PHUT);
+  await dh.ghi(true);
+  dh.batDau({ techId: 'go', lessonId: 'b' });
+  troi(PHUT);
+  await dh.ghi(true);
+  expect((chen as { tech_id: string }[]).map(d => d.tech_id)).toEqual(['python', 'go']);
+});
+
+test('hoc qua nua dem: ngay hien thi trung voi ngay doc lai tu started_at', async () => {
+  const { dh, troi, chen, daGhi, datGio } = taoDongHo();
+  datGio(new Date(2026, 9, 12, 23, 59, 30).getTime());
+  dh.batDau({ techId: 'python', lessonId: 'a' });
+  troi(PHUT);
+  await dh.ghi(true);
+  const dong = chen[0] as { started_at: string };
+  const ngayDocLai = new Date(dong.started_at);
+  const khoa = `${ngayDocLai.getFullYear()}-${String(ngayDocLai.getMonth() + 1).padStart(2, '0')}-${String(ngayDocLai.getDate()).padStart(2, '0')}`;
+  expect(daGhi.map(([ngay]) => ngay)).toEqual([khoa]);
+});
+
 test('sang ngay moi thi chen dong moi cho ngay do', async () => {
   const { dh, troi, chen, datGio } = taoDongHo();
   dh.batDau({ techId: 'python', lessonId: 'a' });

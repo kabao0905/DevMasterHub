@@ -20,10 +20,10 @@ export type KetQuaLink = {
   url: string; ok: boolean; title?: string; loi?: string;
   soTrang?: number; tongViec?: number;
 };
-export type KetQuaTraLoi = { text: string; jobs: ViecLam[] | null; searchKeyword: string; link?: KetQuaLink | null };
+export type KetQuaTraLoi = { text: string; jobs: ViecLam[] | null; searchKeyword: string; link?: KetQuaLink | null; choViec?: Promise<ViecLam[] | null> };
 
 type DichVuGoc = {
-  sendMessage(tin: string): Promise<{ text: string; jobs: unknown[] | null; searchKeyword: string; link?: KetQuaLink | null } | null>;
+  sendMessage(tin: string): Promise<{ text: string; jobs: unknown[] | null; searchKeyword: string; link?: KetQuaLink | null; choViec?: Promise<unknown[] | null> | null } | null>;
   searchJobs(tuKhoa: string): Promise<unknown[]>;
   abortMessage(): void;
   datLichSu(lichSu: TinNhan[]): void;
@@ -84,7 +84,10 @@ export function taoCoVan(client: SupabaseLike, { t, lang, thongKe, tenCongNghe =
       goc.datLichSu(lichSu);
       const kq = await goc.sendMessage(tin);
       if (!kq) return null;
-      return { text: kq.text, jobs: kq.jobs ? kq.jobs.map(chuanHoaViec) : null, searchKeyword: kq.searchKeyword || '', link: kq.link ?? null };
+      return {
+        text: kq.text, jobs: kq.jobs ? kq.jobs.map(chuanHoaViec) : null, searchKeyword: kq.searchKeyword || '', link: kq.link ?? null,
+        ...(kq.choViec ? { choViec: kq.choViec.then(ds => (ds ? ds.map(chuanHoaViec) : null)) } : {})
+      };
     },
     async timViec(tuKhoa) {
       return (await goc.searchJobs(tuKhoa)).map(chuanHoaViec);

@@ -208,6 +208,40 @@ test('cham project: bao tien do, hien ket qua tung tang, luu vao project_submiss
   expect(await screen.findByText('Đã lưu vào Dự án của tôi')).toBeInTheDocument();
 });
 
+async function chamMotFile(u: ReturnType<typeof userEvent.setup>) {
+  await u.click(await screen.findByRole('button', { name: /Mid/ }));
+  await u.click(await screen.findByRole('button', { name: /Tạo Idea/ }));
+  await screen.findByRole('heading', { name: 'Rắn săn mồi' });
+  await u.click(screen.getByRole('textbox', { name: 'Code của main.js' }));
+  await u.paste('var diem = 0;');
+  await u.click(screen.getByRole('button', { name: /AI chấm toàn diện project \(1 file\)/ }));
+}
+
+test('cham xong ma luu loi: giu ban nop, bam Luu lai thi luu dung 1 lan', async () => {
+  const u = userEvent.setup();
+  const { gia } = mo('/project-level');
+  gia.loiGhi.project_submissions = 'mất mạng';
+  await chamMotFile(u);
+  expect(await screen.findByText(/chưa lưu được vào Dự án của tôi: mất mạng/)).toBeInTheDocument();
+  delete gia.loiGhi.project_submissions;
+  await u.click(screen.getByRole('button', { name: 'Lưu lại vào Dự án của tôi' }));
+  expect((await screen.findAllByText('Đã lưu vào Dự án của tôi')).length).toBeGreaterThan(0);
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Lưu lại vào Dự án của tôi' })).not.toBeInTheDocument());
+  expect(gia.truyVan.filter(q => q.bang === 'project_submissions' && q.op === 'insert')).toHaveLength(2);
+});
+
+test('mot phan chua cham duoc: bao ro, hien "Chua cham duoc" thay vi 0 diem, khong luu', async () => {
+  const u = userEvent.setup();
+  const { gia } = mo('/project-level', {
+    ai: b => (/CẤU TRÚC project/.test(b.system) ? new Response(JSON.stringify({ error: 'bận' }), { status: 500 }) : aiMacDinh(b))
+  });
+  await chamMotFile(u);
+  expect(await screen.findByText(/Một phần chưa chấm được do AI lỗi/)).toBeInTheDocument();
+  expect(screen.getByText('Chưa chấm được')).toBeInTheDocument();
+  expect(gia.truyVan.some(q => q.bang === 'project_submissions')).toBe(false);
+  expect(screen.queryByRole('button', { name: 'Lưu lại vào Dự án của tôi' })).not.toBeInTheDocument();
+});
+
 test('AI tat: khong co nut tao idea; loi AI thi bao kem Thu lai', async () => {
   const u = userEvent.setup();
   const a = mo('/project-level', { aiEnabled: false });

@@ -1,7 +1,7 @@
 import { useXacNhan } from '@/components/XacNhan';
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { Banknote, Briefcase, Building2, ChevronDown, Clock, Globe, Lightbulb, MapPin, Pencil, RefreshCw, Search, Send, Trash2 } from 'lucide-react';
+import { Banknote, Briefcase, Building2, ChevronDown, Clock, Globe, Lightbulb, Loader2, MapPin, Pencil, RefreshCw, Search, Send, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { useT } from '@/lib/i18n';
@@ -22,6 +22,8 @@ type KhoCareer = {
   dangGui?: boolean; loi?: string;
   daNap?: boolean;
   loiNap?: boolean;
+  dongBo?: TinNhan[];
+  dangTimViec?: boolean;
   phien?: number;
 };
 const RONG: KhoCareer = { chat: [], jobs: [], keyword: '', moViec: false, nhap: '' };
@@ -71,7 +73,7 @@ export function CareerPage() {
   useEffect(() => {
     if (!uid || doc(khoa).daNap) return;
     taiChat(client, uid)
-      .then(ds => dat(khoa, x => (x.daNap ? x : { ...x, daNap: true, loiNap: false, chat: [...ds, ...x.chat] })))
+      .then(ds => dat(khoa, x => (x.daNap ? x : { ...x, daNap: true, loiNap: false, dongBo: ds, chat: [...ds, ...x.chat] })))
       .catch(() => dat(khoa, x => ({ ...x, loiNap: true })));
   }, [uid]);
 
@@ -80,9 +82,12 @@ export function CareerPage() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [kho.chat.length, kho.dangGui]);
 
+  const hangLuu = useRef<Promise<unknown>>(Promise.resolve());
   const luu = (k: QueryKey, chat: TinNhan[]) => {
     if (!uid || !doc(k).daNap) return;
-    luuChat(client, uid, chat).catch((e: unknown) => toast.error(t('careerChatSaveFailed', { error: loiChu(e) })));
+    hangLuu.current = hangLuu.current.then(() => luuChat(client, uid, chat, doc(k).dongBo)
+      .then(daGhi => dat(k, x => ({ ...x, dongBo: daGhi, chat: x.chat === chat ? daGhi : x.chat })))
+      .catch((e: unknown) => toast.error(t('careerChatSaveFailed', { error: loiChu(e) }))));
   };
 
   async function coVanMoi(): Promise<CoVan> {
@@ -104,12 +109,17 @@ export function CareerPage() {
       if (kq.link?.ok && kq.link.soTrang) toast.success(t('careerListRead', { pages: kq.link.soTrang, jobs: kq.link.tongViec ?? 0 }));
       else if (kq.link?.ok) toast.success(t('careerLinkRead', { title: kq.link.title || kq.link.url }));
       let chat: TinNhan[] = [];
+      const chonViec = (ds: ViecLam[] | null, cu: ViecLam[]) => (ds && ds.length > 0 ? ds : kq.searchKeyword && xoaViecNeuRong ? [] : cu);
       dat(k, x => {
         chat = [...x.chat, { role: 'assistant', content: kq.text }];
-        const jobs = kq.jobs && kq.jobs.length > 0 ? kq.jobs : kq.searchKeyword && xoaViecNeuRong ? [] : x.jobs;
-        return { ...x, chat, dangGui: false, jobs, keyword: kq.searchKeyword || x.keyword };
+        const jobs = kq.choViec ? x.jobs : chonViec(kq.jobs, x.jobs);
+        return { ...x, chat, dangGui: false, jobs, keyword: kq.searchKeyword || x.keyword, dangTimViec: !!kq.choViec };
       });
       luu(k, chat);
+      if (kq.choViec) {
+        const ds = await kq.choViec;
+        if (doc(k).phien === phien) dat(k, x => ({ ...x, dangTimViec: false, jobs: chonViec(ds, x.jobs) }));
+      }
     } catch (e) {
       if (doc(k).phien === phien) dat(k, x => ({ ...x, dangGui: false, loi: loiChu(e) }));
     }
@@ -136,7 +146,7 @@ export function CareerPage() {
     void chay(khoa, s.chat.slice(0, -1), cuoi.content, true);
   }
 
-  const dungLai = (x: KhoCareer): KhoCareer => ({ ...x, dangGui: false, loi: undefined, phien: (x.phien ?? 0) + 1 });
+  const dungLai = (x: KhoCareer): KhoCareer => ({ ...x, dangGui: false, dangTimViec: false, loi: undefined, phien: (x.phien ?? 0) + 1 });
 
   async function suaCauHoi(i: number) {
     const truoc = doc(khoa);
@@ -172,7 +182,7 @@ export function CareerPage() {
   async function xoaChat() {
     if (!(await hoi(t('clearCareerChatConfirm'), t('clearChat')))) return;
     cvRef.current?.huy();
-    dat(khoa, x => ({ ...dungLai(x), ...RONG, daNap: true, phien: (x.phien ?? 0) + 1 }));
+    dat(khoa, x => ({ ...dungLai(x), ...RONG, daNap: true, dongBo: undefined, phien: (x.phien ?? 0) + 1 }));
     datNhap('');
     luu(khoa, []);
   }
@@ -276,6 +286,14 @@ const VN = /vietnam|việt nam|\bvn\b|hồ chí minh|hà nội|đà nẵng/i;
 
 function ViecLamGoiY({ kho, doiMo }: { kho: KhoCareer; doiMo: () => void }) {
   const { t } = useT();
+  if (kho.dangTimViec) {
+    return (
+      <p role="status" className="flex items-center gap-2 rounded-2xl bg-peach px-4 py-3 text-sm text-foreground">
+        <Loader2 className="size-4 text-peach-ink motion-safe:animate-spin" aria-hidden="true" />
+        {t('careerFindingJobs', { keyword: kho.keyword })}
+      </p>
+    );
+  }
   if (kho.jobs.length === 0) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-peach px-4 py-3 text-sm text-foreground">

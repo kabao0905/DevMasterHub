@@ -33,6 +33,31 @@ test('goi /api/ai kem token, taskType va chi thi ngon ngu cua nguoi hoc', async 
   expect(b.system).toContain('respond 100% completely and naturally in English');
 });
 
+const traSse = (...goi: string[]) => new Response(new ReadableStream({
+  start(c) { for (const g of goi) c.enqueue(new TextEncoder().encode(g)); c.close(); }
+}), { status: 200, headers: { 'content-type': 'text/event-stream; charset=utf-8' } });
+
+test('stream: xin stream, nhan tung phan qua khiCo, tra ve ca cau', async () => {
+  const goi = giaFetch(traSse('data: {"t":"Xin "}\n\ndata: {"t":"ch', 'ào"}\n\n', 'data: {"xong":true,"provider":"x"}\n\n'));
+  const phan: string[] = [];
+  expect(await goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', khiCo: p => phan.push(p) })).toBe('Xin chào');
+  expect(phan).toEqual(['Xin ', 'chào']);
+  expect(body(goi[0]).stream).toBe(true);
+});
+
+test('stream: may chu bao loi giua chung thi nem loi; tra JSON (loi 4xx hay khong stream) van doc duoc', async () => {
+  giaFetch(traSse('data: {"t":"Mot nua"}\n\n', 'data: {"loi":"AI bị ngắt giữa chừng."}\n\n'));
+  await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', khiCo: () => {} })).rejects.toThrow('AI bị ngắt giữa chừng.');
+  giaFetch(traText('ca cau'));
+  const phan: string[] = [];
+  expect(await goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', khiCo: p => phan.push(p) })).toBe('ca cau');
+  expect(phan).toEqual(['ca cau']);
+  giaFetch(new Response(JSON.stringify({ error: 'Chưa đăng nhập' }), { status: 401 }));
+  await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', khiCo: () => {} })).rejects.toThrow('Chưa đăng nhập');
+  giaFetch(traSse('data: {"t":"cut"}\n\n'));
+  await expect(goiAi(client, { system: 's', user: 'u', taskType: 'tutor', lang: 'vi', khiCo: () => {} })).rejects.toThrow(/ngắt/);
+});
+
 test('body gui AI duoc boc base64: tuong lua Cloudflare khong chan vi lich su chat co "../../" hay "${..."', async () => {
   const goi = giaFetch(traText('ok'));
   await goiAi(client, { system: 's', user: 'mở ../../data rồi in `${ten}`', taskType: 'tutor', lang: 'vi' });
@@ -171,6 +196,18 @@ describe('bai tap AI', () => {
     expect((await chamBai(client, { tech: { name: 'Python' }, deBai: 'x', baiLam: 'y', ngonNgu: 'python', lang: 'vi' })).status).toBe('partial');
     giaFetch(traText('{"feedback":"khong co diem"}'));
     await expect(chamBai(client, { tech: { name: 'Python' }, deBai: 'x', baiLam: 'y', ngonNgu: 'python', lang: 'vi' })).rejects.toThrow('AI chấm bài không hợp lệ');
+  });
+
+  test('cham bai: AI bao dung nhung diem thap thi khong tinh la dung (de khong danh dau xong bai sai)', async () => {
+    const cham = () => chamBai(client, { tech: { name: 'Python' }, deBai: 'x', baiLam: 'y', ngonNgu: 'python', lang: 'vi' });
+    giaFetch(traText('{"score":0,"status":"correct"}'));
+    expect(await cham()).toMatchObject({ score: 0, status: 'incorrect' });
+    giaFetch(traText('{"score":60,"status":"correct"}'));
+    expect(await cham()).toMatchObject({ score: 60, status: 'partial' });
+    giaFetch(traText('{"score":95,"status":"incorrect"}'));
+    expect(await cham()).toMatchObject({ score: 95, status: 'incorrect' });
+    giaFetch(traText('{"status":"correct"}'));
+    expect(await cham()).toMatchObject({ score: 100, status: 'correct' });
   });
 
   test('sua thiet ke: JSON hong (xuong dong tho trong chuoi) hay bi cat ngang thi bao loi, KHONG sua tep nao', async () => {

@@ -17,6 +17,8 @@ export async function taiThongKe(client: SupabaseLike, uid: string): Promise<Tho
       .select('project_name, project_description, difficulty_level, topic, score_overall, score_code_quality, score_functionality, score_best_practices, score_creativity, ai_feedback, ai_strengths, ai_improvements, languages_used, submitted_at')
       .eq('user_id', uid).order('submitted_at', { ascending: false })
   ]);
+  const loi = tienDo.error || phien.error || duAn.error;
+  if (loi) throw new Error(loi.message);
   const daXong = ((tienDo.data as Dong[] | null) ?? []).filter(p => p.completed);
   const theoCongNghe = new Map<string, { completed: number; caps: Set<string> }>();
   for (const p of daXong) {
@@ -46,7 +48,17 @@ export async function taiChat(client: SupabaseLike, uid: string): Promise<TinNha
     !!m && typeof m === 'object' && ((m as Dong).role === 'user' || (m as Dong).role === 'assistant') && typeof (m as Dong).content === 'string');
 }
 
-export async function luuChat(client: SupabaseLike, uid: string, messages: TinNhan[]): Promise<void> {
-  const { error } = await client.from('career_chats').upsert({ user_id: uid, messages, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+const giongNhau = (a: TinNhan[], b: TinNhan[]) => a.length === b.length && a.every((m, i) => m.role === b[i].role && m.content === b[i].content);
+
+export function gopTinNhan(tuMayChu: TinNhan[], coSo: TinNhan[], cuaMay: TinNhan[]): TinNhan[] {
+  const noiTiepCoSo = cuaMay.length >= coSo.length && giongNhau(cuaMay.slice(0, coSo.length), coSo);
+  if (giongNhau(tuMayChu, coSo) || !noiTiepCoSo) return cuaMay;
+  return [...tuMayChu, ...cuaMay.slice(coSo.length)];
+}
+
+export async function luuChat(client: SupabaseLike, uid: string, messages: TinNhan[], coSo?: TinNhan[]): Promise<TinNhan[]> {
+  const ghi = coSo ? gopTinNhan(await taiChat(client, uid), coSo, messages) : messages;
+  const { error } = await client.from('career_chats').upsert({ user_id: uid, messages: ghi, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
   if (error) throw new Error(error.message);
+  return ghi;
 }

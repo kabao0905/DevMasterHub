@@ -31,7 +31,7 @@ export function MentorChat({ duAn }: { duAn: DuAn }) {
   useEffect(() => {
     const el = dsRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [kho.chat.length, kho.dangGui]);
+  }, [kho.chat.length, kho.dangGui, kho.dangViet]);
 
   function gui() {
     if (kho.dangGui) return;
@@ -58,7 +58,13 @@ export function MentorChat({ duAn }: { duAn: DuAn }) {
       <ol ref={dsRef} aria-live="polite" className="max-h-[28rem] space-y-3 overflow-y-auto overscroll-contain bg-background px-5 py-4">
         {kho.chat.length === 0 && !kho.dangGui && <li className="text-sm text-muted-foreground">{t('askAiAboutProject')}</li>}
         <CacTin chat={kho.chat} />
-        {kho.dangGui && <li className="text-sm text-lavender-ink motion-safe:animate-pulse">{t('thinking')}…</li>}
+        {kho.dangGui && (kho.dangViet
+          ? (
+            <li aria-hidden="true" className="flex justify-start">
+              <div className="max-w-[85%] min-w-0 rounded-2xl bg-card px-4 py-2.5 text-sm leading-relaxed shadow-soft"><ChatMarkdown text={kho.dangViet} /></div>
+            </li>
+          )
+          : <li className="text-sm text-lavender-ink motion-safe:animate-pulse">{t('thinking')}…</li>)}
         {kho.loiChat && !kho.dangGui && (
           <li role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
             <span>{t('mentorFailed', { error: kho.loiChat })}</span>

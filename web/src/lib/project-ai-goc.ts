@@ -1,12 +1,12 @@
 // @ts-nocheck
 import { goiAi, docJson } from './ai';
 
-export function taoDichVuDuAn(client, { lang, signal, cho, ngauNhien = Math.random } = {}) {
+export function taoDichVuDuAn(client, { lang, signal, cho, khiCo, ngauNhien = Math.random } = {}) {
   const I18n = { getLang: () => lang };
   const Math = Object.assign(Object.create(globalThis.Math), { random: ngauNhien });
   const parseJSON = docJson;
   const callClaude = (system, userMessage, temperature = 0.8, maxTokens = 4096, taskType = 'general') =>
-    goiAi(client, { system, user: userMessage, temperature, maxTokens, taskType, lang, signal, cho });
+    goiAi(client, { system, user: userMessage, temperature, maxTokens, taskType, lang, signal, cho, khiCo: taskType === 'projectChat' ? khiCo : undefined });
 
   async function generateProjectIdea(level, topic = null) {
     const system = `Bạn là mentor lập trình giàu kinh nghiệm, chuyên thiết kế project thực hành.
@@ -571,7 +571,9 @@ Trả về JSON:
   async function synthesizeReview(structureReview, moduleReviews, localAnalysis, projectIdea, totalFiles) {
     const system = `Bạn là giảng viên lập trình. Tổng hợp đánh giá TẤT CẢ các tầng thành kết luận cuối cùng. Trả lời bằng JSON.`;
 
-    const structureSummary = `CẤU TRÚC (${structureReview.structureScore}/100):
+    const structureSummary = structureReview.chuaCham
+      ? 'CẤU TRÚC: chưa chấm được (lỗi khi gọi AI). Bỏ qua tầng này, KHÔNG trừ điểm vì thiếu tầng này.'
+      : `CẤU TRÚC (${structureReview.structureScore}/100):
 - Đặt tên: ${structureReview.naming || 'N/A'}
 - Tổ chức: ${structureReview.organization || 'N/A'}
 - Đầy đủ: ${structureReview.completeness || 'N/A'}

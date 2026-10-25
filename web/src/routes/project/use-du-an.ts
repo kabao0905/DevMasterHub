@@ -7,8 +7,8 @@ import { useT } from '@/lib/i18n';
 import { useKho } from '@/lib/use-kho';
 import type { TinNhan } from '@/lib/ai';
 import {
-  chamDuAn, hoiMentor, nguCanhDuAn, taoBanNop, taoYTuong,
-  type CapDo, type KetQuaCham, type TepDuAn, type TienDoCham, type YTuong
+  chamChuaDayDu, chamDuAn, hoiMentor, nguCanhDuAn, taoBanNop, taoYTuong,
+  type BanNop, type CapDo, type KetQuaCham, type TepDuAn, type TienDoCham, type YTuong
 } from '@/lib/project-ai';
 import { luuBaiNop, type YTuongDaLuu } from '@/lib/project-db';
 
@@ -23,8 +23,9 @@ export type KhoDuAn = {
   tepDangMo: number;
   ketQua: KetQuaCham | null;
   dangTao?: boolean; loiTao?: string;
-  dangGui?: boolean; loiChat?: string;
+  dangGui?: boolean; loiChat?: string; dangViet?: string;
   dangCham?: boolean; tienDo?: TienDoCham | null; loiCham?: string;
+  banNopCho?: BanNop | null; dangLuu?: boolean;
   phien?: number; phienCham?: number;
 };
 
@@ -93,13 +94,16 @@ export function useDuAn(cheDo: CheDo) {
   }
 
   async function guiMentor(k: QueryKey, cauHoi: string, lichSu: TinNhan[], idea: YTuong, files: TepDuAn[]) {
-    dat(k, x => ({ ...x, dangGui: true, loiChat: undefined }));
+    dat(k, x => ({ ...x, dangGui: true, loiChat: undefined, dangViet: undefined }));
     const phien = doc(k).phien;
     try {
-      const traLoi = await hoiMentor(client, { nguCanh: nguCanhDuAn(idea, files), lichSu, cauHoi, lang });
-      dat(k, x => (x.phien !== phien ? x : { ...x, chat: [...x.chat, { role: 'assistant', content: traLoi }], dangGui: false }));
+      const traLoi = await hoiMentor(client, {
+        nguCanh: nguCanhDuAn(idea, files), lichSu, cauHoi, lang,
+        khiCo: phan => dat(k, x => (x.phien !== phien ? x : { ...x, dangViet: (x.dangViet ?? '') + phan }))
+      });
+      dat(k, x => (x.phien !== phien ? x : { ...x, chat: [...x.chat, { role: 'assistant', content: traLoi }], dangGui: false, dangViet: undefined }));
     } catch (e) {
-      dat(k, x => (x.phien !== phien ? x : { ...x, dangGui: false, loiChat: loiChu(e) }));
+      dat(k, x => (x.phien !== phien ? x : { ...x, dangGui: false, dangViet: undefined, loiChat: loiChu(e) }));
     }
   }
 
@@ -118,13 +122,26 @@ export function useDuAn(cheDo: CheDo) {
       dat(k, x => (cung(x) ? { ...x, dangCham: false, tienDo: null, loiCham: loiChu(e) } : x));
       return;
     }
-    dat(k, x => (cung(x) ? { ...x, ketQua, dangCham: false, tienDo: null } : x));
-    if (!uid) return;
+    if (chamChuaDayDu(ketQua) || !uid) {
+      dat(k, x => (cung(x) ? { ...x, ketQua, dangCham: false, tienDo: null, banNopCho: null } : x));
+      return;
+    }
+    const banNop = taoBanNop({ review: ketQua, idea, files, difficulty: s.level ?? idea.difficulty, topic: s.topic });
+    dat(k, x => (cung(x) ? { ...x, ketQua, dangCham: false, tienDo: null, banNopCho: banNop } : x));
+    await luu(k);
+  }
+
+  async function luu(k: QueryKey) {
+    const banNop = doc(k).banNopCho;
+    if (!uid || !banNop || doc(k).dangLuu) return;
+    dat(k, x => ({ ...x, dangLuu: true }));
     try {
-      await luuBaiNop(client, uid, taoBanNop({ review: ketQua, idea, files, difficulty: s.level ?? idea.difficulty, topic: s.topic }));
+      await luuBaiNop(client, uid, banNop);
+      dat(k, x => ({ ...x, dangLuu: false, banNopCho: x.banNopCho === banNop ? null : x.banNopCho }));
       void qc.invalidateQueries({ queryKey: ['submissions', uid] });
       toast.success(t('submissionSaved'));
     } catch (e) {
+      dat(k, x => ({ ...x, dangLuu: false }));
       toast.error(t('submissionSaveFailed', { error: loiChu(e) }));
     }
   }
@@ -171,7 +188,8 @@ export function useDuAn(cheDo: CheDo) {
     doiNgonNgu: (lang: string) => datTep((files, i) => files.map((f, j) => (j === i ? { ...f, lang } : f))),
     datCode: (code: string) => datTep((files, i) => files.map((f, j) => (j === i ? { ...f, code } : f))),
     xoaHet: () => dat(khoa, x => ({ ...x, files: [TEP_MAC_DINH], tepDangMo: 0, ketQua: null, dangCham: false, tienDo: null, phienCham: (x.phienCham ?? 0) + 1 })),
-    cham: () => { void cham(); }
+    cham: () => { void cham(); },
+    luuLai: () => { void luu(khoa); }
   };
 }
 

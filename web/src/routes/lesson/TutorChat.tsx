@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { BaiDangMo } from './use-quiz-bai';
 
-type KhoChat = { tinNhan: TinNhan[]; dangGui: boolean; loi?: string };
+type KhoChat = { tinNhan: TinNhan[]; dangGui: boolean; loi?: string; dangViet?: string };
 const RONG: KhoChat = { tinNhan: [], dangGui: false };
 
 const NHAN_TAB: Record<TabBai, string> = { theory: 'tabLabelTheory', code: 'tabLabelCode', quiz: 'tabLabelQuiz', exercise: 'tabLabelExercise' };
@@ -40,7 +40,7 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
   useEffect(() => {
     const el = dsRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [data.tinNhan.length, data.dangGui]);
+  }, [data.tinNhan.length, data.dangGui, data.dangViet]);
 
   const capNhat = (k: QueryKey, f: (s: KhoChat) => KhoChat) => {
     if (!qc.getQueryState(k)) return;
@@ -48,15 +48,16 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
   };
 
   async function gui(k: QueryKey, cauHoi: string, lichSu: TinNhan[]) {
-    capNhat(k, s => ({ ...s, dangGui: true, loi: undefined }));
+    capNhat(k, s => ({ ...s, dangGui: true, loi: undefined, dangViet: undefined }));
     try {
       const traLoi = await hoiGiaSu(client, {
         nguCanh: nguCanhBai({ ...bai, tab, quiz, baiTap }), lichSu, cauHoi, tab,
-        daNopQuiz: tab === 'quiz' && !!quiz?.submitted, lang
+        daNopQuiz: tab === 'quiz' && !!quiz?.submitted, lang,
+        khiCo: phan => capNhat(k, s => ({ ...s, dangViet: (s.dangViet ?? '') + phan }))
       });
       capNhat(k, s => ({ tinNhan: [...s.tinNhan, { role: 'assistant', content: traLoi }], dangGui: false }));
     } catch (e) {
-      capNhat(k, s => ({ ...s, dangGui: false, loi: e instanceof Error ? e.message : String(e) }));
+      capNhat(k, s => ({ ...s, dangGui: false, dangViet: undefined, loi: e instanceof Error ? e.message : String(e) }));
     }
   }
 
@@ -134,8 +135,15 @@ export function TutorChat({ bai, tab, quiz, baiTap }: Props) {
             </div>
           </li>
         ))}
-        {data.dangGui && (
-          <li className="w-fit rounded-full bg-lavender px-3 py-1 text-sm text-lavender-ink motion-safe:animate-pulse">{t('thinking')}…</li>
+        {data.dangGui && (data.dangViet
+          ? (
+            <li aria-hidden="true" className="flex justify-start">
+              <div className="max-w-[85%] min-w-0 rounded-2xl rounded-bl-md bg-card px-4 py-2.5 text-sm leading-relaxed break-words shadow-soft">
+                <ChatMarkdown text={data.dangViet} />
+              </div>
+            </li>
+          )
+          : <li className="w-fit rounded-full bg-lavender px-3 py-1 text-sm text-lavender-ink motion-safe:animate-pulse">{t('thinking')}…</li>
         )}
         {data.loi && !data.dangGui && (
           <li role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl bg-destructive/10 px-4 py-2.5 text-sm text-destructive">

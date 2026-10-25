@@ -1,6 +1,6 @@
 import { docThan } from '@/test/doc-than';
 import {
-  chamDuAn, chuanHoaKetQua, chuanHoaYTuong, hoiMentor, nguCanhDuAn, nhomModule, phanTichTatCa, phanTichTinh, taoBanNop, taoYTuong,
+  chamChuaDayDu, chamDuAn, chuanHoaKetQua, chuanHoaYTuong, hoiMentor, nguCanhDuAn, nhomModule, phanTichTatCa, phanTichTinh, taoBanNop, taoYTuong,
   type TepDuAn, type TienDoCham, type YTuong
 } from './project-ai';
 import type { SupabaseLike } from './auth';
@@ -137,6 +137,23 @@ test('chat mentor gui lich su va cau hoi, taskType projectChat', async () => {
   expect(goi[0].system).toContain('Project: X');
 });
 
+test('chat mentor: chi gui 10 luot gan nhat va toi da 12000 ky tu lich su, giu nguyen cau hoi moi', async () => {
+  const goi = giaAi(() => 'ok');
+  const lichSu = Array.from({ length: 30 }, (_, i) => ({ role: (i % 2 ? 'assistant' : 'user') as 'user' | 'assistant', content: `tin-${i}` }));
+  await hoiMentor(client, { nguCanh: 'P', lichSu, cauHoi: 'Moi?', lang: 'vi', cho: khongCho });
+  const gui = goi[0].messages[0].content;
+  expect(gui).toContain('tin-29');
+  expect(gui).toContain('tin-20');
+  expect(gui).not.toContain('tin-19');
+  expect(gui.endsWith('Moi?')).toBe(true);
+
+  const goi2 = giaAi(() => 'ok');
+  const dai = [{ role: 'user' as const, content: 'cu-' + 'x'.repeat(11000) }, { role: 'assistant' as const, content: 'moi-' + 'y'.repeat(5000) }];
+  await hoiMentor(client, { nguCanh: 'P', lichSu: dai, cauHoi: 'Q', lang: 'vi', cho: khongCho });
+  expect(goi2[0].messages[0].content).not.toContain('cu-');
+  expect(goi2[0].messages[0].content).toContain('moi-');
+});
+
 const TRA_CAU_TRUC = JSON.stringify({ structureScore: 70, naming: 'Ổn', organization: 'Gọn', completeness: 'Đủ', missingFiles: [], suggestions: ['Thêm README'] });
 const traModule = (b: ThanGui) => JSON.stringify({
   moduleId: /MODULE "📄/.test(b.messages[0].content) ? 'markup' : 'logic', moduleLabel: 'M', score: 80, codeQuality: 8, logic: 8, errorHandling: 6, relevance: 9, cohesion: 7,
@@ -167,16 +184,50 @@ test('cham project: 1 lan cau truc + 1 lan moi module + 1 lan tong hop, bao tien
 });
 
 test('cham project: cau truc / mot module loi thi van cham tiep; tong hop loi thi bao loi', async () => {
-  giaAi(b => (/CẤU TRÚC project/.test(b.system) ? new Error('AI bận') : /MODULE/.test(b.system) && /📄/.test(b.messages[0].content) ? new Error('quá tải') : traLoiCham(b)));
+  const goi = giaAi(b => (/CẤU TRÚC project/.test(b.system) ? new Error('AI bận') : /MODULE/.test(b.system) && /📄/.test(b.messages[0].content) ? new Error('quá tải') : traLoiCham(b)));
   const kq = await chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', cho: khongCho });
-  expect(kq.structureReview).toMatchObject({ structureScore: 0, suggestions: ['Lỗi: AI bận'] });
+  expect(kq.structureReview).toMatchObject({ chuaCham: true, suggestions: ['Lỗi: AI bận'] });
   const hong = kq.moduleReviews.find(m => m.moduleId === 'markup');
-  expect(hong).toMatchObject({ score: 0, issues: ['Không thể đánh giá'] });
+  expect(hong).toMatchObject({ chuaCham: true });
   expect(hong?.summary).toContain('quá tải');
+  expect(chamChuaDayDu(kq)).toBe(true);
+  const tongHop = goi.find(b => /Tổng hợp/.test(b.system))!.messages[0].content;
+  expect(tongHop).toContain('chưa chấm được');
+  expect(tongHop).not.toContain('Không thể đánh giá');
+  expect(kq.perFileReviews.map(f => f.fileName)).not.toContain('index.html');
 
   giaAi(b => (/Tổng hợp/.test(b.system) ? new Error('hết lượt') : traLoiCham(b)));
   await expect(chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', cho: khongCho })).rejects.toThrow('hết lượt');
   await expect(chamDuAn(client, { idea: IDEA, files: [{ name: 'a.js', lang: 'javascript', code: ' ' }], lang: 'vi', cho: khongCho })).rejects.toThrow(/Không có file code/);
+});
+
+test('cham project: cac module cham song song toi da 3 cung luc, ket qua giu dung thu tu module', async () => {
+  let dangChay = 0, nhieuNhat = 0;
+  vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: RequestInit) => {
+    const b = docThan(init?.body) as ThanGui;
+    const laModule = /MODULE/.test(b.system) && !/CẤU TRÚC project/.test(b.system) && !/Tổng hợp/.test(b.system);
+    if (laModule) { dangChay++; nhieuNhat = Math.max(nhieuNhat, dangChay); await new Promise(r => setTimeout(r, 5)); dangChay--; }
+    return new Response(JSON.stringify({ content: [{ type: 'text', text: traLoiCham(b) }] }), { status: 200 });
+  }));
+  const files: TepDuAn[] = [
+    { name: 'index.html', lang: 'html', code: '<p>x</p>' }, { name: 'a.css', lang: 'css', code: 'p{}' },
+    { name: 'a.js', lang: 'javascript', code: 'let a=1;' }, { name: 'cfg.json', lang: 'json', code: '{}' }
+  ];
+  const kq = await chamDuAn(client, { idea: IDEA, files, lang: 'vi', cho: khongCho });
+  expect(nhieuNhat).toBeGreaterThan(1);
+  expect(nhieuNhat).toBeLessThanOrEqual(3);
+  expect(kq.moduleReviews).toHaveLength(nhomModule(files).length);
+});
+
+test('cham project: khong module nao cham duoc thi bao loi, khong tra diem 0 gia', async () => {
+  const goi = giaAi(b => (/MODULE/.test(b.system) ? new Error('quá tải') : traLoiCham(b)));
+  await expect(chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', cho: khongCho })).rejects.toThrow(/quá tải/);
+  expect(goi.some(b => /Tổng hợp/.test(b.system))).toBe(false);
+});
+
+test('cham project day du thi khong bi danh dau la chua cham', async () => {
+  giaAi(traLoiCham);
+  expect(chamChuaDayDu(await chamDuAn(client, { idea: IDEA, files: FILES, lang: 'vi', cho: khongCho }))).toBe(false);
 });
 
 test('huy giua chung (roi trang): dung ngay, khong cham tiep cac module con lai', async () => {

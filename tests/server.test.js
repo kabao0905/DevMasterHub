@@ -58,6 +58,67 @@ test('/api/ai bo qua model va max_tokens tuy y cua client', async () => {
   } finally { s.dong(); }
 });
 
+const sseTu = dong => new Response(new ReadableStream({
+  start(c) { for (const d of dong) c.enqueue(new TextEncoder().encode(d)); c.close(); }
+}), { status: 200, headers: { 'content-type': 'text/event-stream' } });
+
+async function docSuKien(res) {
+  const ds = [];
+  for (const khoi of (await res.text()).split('\n\n')) {
+    const dong = khoi.trim();
+    if (dong.startsWith('data: ')) ds.push(JSON.parse(dong.slice(6)));
+  }
+  return ds;
+}
+
+test('/api/ai stream: chuyen tiep tung phan tu OpenRouter ve trinh duyet roi bao xong', async () => {
+  const s = await moServer({
+    khoa: { OPENROUTER_API_KEY: 'or', GEMINI_API_KEY: 'gk' },
+    traLoi: u => u.includes('openrouter.ai') && sseTu([
+      ': OPENROUTER PROCESSING\n\n',
+      'data: {"choices":[{"delta":{"reasoning":"nghi"}}]}\n\n',
+      'data: {"choices":[{"delta":{"content":"Xin "}}]}\n\ndata: {"choices":[{"delta":{"con',
+      'tent":"chào"}}]}\n\n',
+      'data: {"choices":[{"delta":{}}],"usage":{"prompt_tokens":10,"completion_tokens":2}}\n\n',
+      'data: [DONE]\n\n'
+    ])
+  });
+  try {
+    const res = await goiAi(s.goc, { messages: [{ role: 'user', content: 'hi' }], taskType: 'tutor', stream: true });
+    assert.strictEqual(res.status, 200);
+    assert.match(res.headers.get('content-type'), /text\/event-stream/);
+    const ds = await docSuKien(res);
+    assert.strictEqual(ds.filter(d => d.t).map(d => d.t).join(''), 'Xin chào');
+    assert.deepStrictEqual(ds.at(-1), { xong: true, provider: 'OpenRouter (tutor)' });
+    assert.strictEqual(s.daGoi.find(g => g.url.includes('openrouter.ai')).body.stream, true);
+    assert.strictEqual(s.daGoi.some(g => g.url.includes('generativelanguage')), false);
+  } finally { s.dong(); }
+});
+
+test('/api/ai stream: OpenRouter loi truoc khi gui gi thi chuyen sang nha cung cap du phong, tra ca cau mot lan', async () => {
+  const s = await moServer({
+    khoa: { OPENROUTER_API_KEY: 'or', GEMINI_API_KEY: 'gk' },
+    traLoi: u => (u.includes('openrouter.ai') ? json({ error: 'busy' }, 503)
+      : u.includes('generativelanguage') && json({ candidates: [{ content: { parts: [{ text: 'Dự phòng' }] } }] }))
+  });
+  try {
+    const ds = await docSuKien(await goiAi(s.goc, { messages: [{ role: 'user', content: 'hi' }], taskType: 'tutor', stream: true }));
+    assert.deepStrictEqual(ds, [{ t: 'Dự phòng' }, { xong: true, provider: 'Gemini (Google)' }]);
+  } finally { s.dong(); }
+});
+
+test('/api/ai khong xin stream thi van tra JSON nhu cu', async () => {
+  const s = await moServer({
+    khoa: { OPENROUTER_API_KEY: 'or' },
+    traLoi: u => u.includes('openrouter.ai') && json({ choices: [{ message: { content: 'ok' } }] })
+  });
+  try {
+    const res = await goiAi(s.goc, { messages: [{ role: 'user', content: 'hi' }], taskType: 'tutor' });
+    assert.deepStrictEqual(await res.json(), { content: [{ type: 'text', text: 'ok' }], provider: 'OpenRouter (tutor)' });
+    assert.strictEqual('stream' in s.daGoi.find(g => g.url.includes('openrouter.ai')).body, false);
+  } finally { s.dong(); }
+});
+
 test('/api/ai: viec Career dung Claude Sonnet 5.5 qua OpenRouter, khong bat suy nghi Gemini', async () => {
   const s = await moServer({
     khoa: { OPENROUTER_API_KEY: 'or' },

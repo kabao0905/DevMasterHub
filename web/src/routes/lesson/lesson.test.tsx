@@ -433,6 +433,31 @@ test('gia su: goi y gui dung cau, cau tra loi hien markdown, dang gui thi khong 
   expect(await within(chat).findByText('hộp', { selector: 'strong' })).toBeInTheDocument();
 });
 
+test('gia su stream: hien dan cau tra loi khi AI dang viet, xong thi thanh tin nhan that', async () => {
+  const u = userEvent.setup();
+  let ghi!: (s: string) => void;
+  let dong!: () => void;
+  const { goiAi } = mo('/lesson/python/newbie/a', {
+    ai: () => new Response(new ReadableStream({
+      start(c) {
+        ghi = s => c.enqueue(new TextEncoder().encode(s));
+        dong = () => c.close();
+      }
+    }), { status: 200, headers: { 'content-type': 'text/event-stream' } })
+  });
+  const chat = await screen.findByRole('region', { name: /Hỏi Gia sư AI/ });
+  await u.type(within(chat).getByRole('textbox'), 'Biến là gì?{Enter}');
+  await waitFor(() => expect(goiAi).toHaveLength(1));
+  expect((goiAi[0] as unknown as { stream?: boolean }).stream).toBe(true);
+  await act(async () => { ghi('data: {"t":"Biến là "}\n\n'); });
+  expect(await within(chat).findByText('Biến là')).toBeInTheDocument();
+  expect(within(chat).getByRole('button', { name: 'Gửi' })).toBeDisabled();
+  await act(async () => { ghi('data: {"t":"**hộp**"}\n\ndata: {"xong":true,"provider":"x"}\n\n'); dong(); });
+  expect(await within(chat).findByText('hộp', { selector: 'strong' })).toBeInTheDocument();
+  await waitFor(() => expect(within(chat).getByRole('button', { name: 'Gửi' })).toBeEnabled());
+  expect(within(chat).getAllByText('hộp', { selector: 'strong' })).toHaveLength(1);
+});
+
 test('gia su: loi thi hien kem Gui lai, loi khong lot vao lich su gui AI', async () => {
   const u = userEvent.setup();
   let lan = 0;

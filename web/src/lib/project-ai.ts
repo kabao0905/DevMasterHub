@@ -18,10 +18,10 @@ export type KetQuaTep = {
   stats: { totalLines: number; codeLines: number; commentLines: number; blankLines: number; longestLine: number; functions: number; classes: number };
 };
 export type PhanTichTinh = { files: KetQuaTep[]; avgScore: number; totalIssues: number; totalErrors: number; totalWarnings: number };
-export type DanhGiaCauTruc = { structureScore: number; naming: string; organization: string; completeness: string; missingFiles: string[]; suggestions: string[] };
+export type DanhGiaCauTruc = { structureScore: number; naming: string; organization: string; completeness: string; missingFiles: string[]; suggestions: string[]; chuaCham?: true };
 export type DanhGiaModule = {
   moduleId: string; moduleLabel: string; score: number; codeQuality: number; logic: number; errorHandling: number; relevance: number; cohesion: number;
-  summary: string; fileScores: { file: string; score: number }[]; issues: string[]; positives: string[];
+  summary: string; fileScores: { file: string; score: number }[]; issues: string[]; positives: string[]; chuaCham?: true;
 };
 export type TieuChi = { name: string; score: number; comment: string };
 export type TrangThaiCham = 'excellent' | 'good' | 'partial' | 'needs_work';
@@ -42,7 +42,18 @@ export type BanNop = {
   aiFeedback: string; aiStrengths: string[]; aiImprovements: string[]; languagesUsed: string[];
 };
 
-type TuyChonGoi = { lang: string; signal?: AbortSignal; cho?: (ms: number) => Promise<void> };
+type TuyChonGoi = { lang: string; signal?: AbortSignal; cho?: (ms: number) => Promise<void>; khiCo?: (phan: string) => void };
+
+const SO_LUOT_MENTOR = 10;
+const KY_TU_LICH_SU_MENTOR = 12_000;
+
+export function catLichSu(lichSu: TinNhan[], soLuot = SO_LUOT_MENTOR, toiDaKyTu = KY_TU_LICH_SU_MENTOR): TinNhan[] {
+  const gan = lichSu.slice(-soLuot);
+  let tong = gan.reduce((s, m) => s + m.content.length, 0);
+  let dau = 0;
+  while (dau < gan.length && tong > toiDaKyTu) tong -= gan[dau++].content.length;
+  return gan.slice(dau);
+}
 
 type DichVuGoc = {
   generateProjectIdea(level: CapDo | null, topic: string | null): Promise<unknown>;
@@ -83,11 +94,13 @@ export function chuanHoaYTuong(x: unknown, capMacDinh: CapDo | null): YTuong {
 const TRANG_THAI: TrangThaiCham[] = ['excellent', 'good', 'partial', 'needs_work'];
 const trangThaiTheoDiem = (d: number | null): TrangThaiCham => d == null ? 'partial' : (d >= 85 ? 'excellent' : d >= 70 ? 'good' : d >= 50 ? 'partial' : 'needs_work');
 
+const coChuaCham = (o: Record<string, unknown>) => (o.chuaCham === true ? { chuaCham: true as const } : {});
+
 function chuanHoaCauTruc(x: unknown): DanhGiaCauTruc {
   const o = laDoiTuong(x) ? x : {};
   return {
     structureScore: so(o.structureScore, 0, 100), naming: chu(o.naming), organization: chu(o.organization),
-    completeness: chu(o.completeness), missingFiles: dsChu(o.missingFiles), suggestions: dsChu(o.suggestions)
+    completeness: chu(o.completeness), missingFiles: dsChu(o.missingFiles), suggestions: dsChu(o.suggestions), ...coChuaCham(o)
   };
 }
 
@@ -98,9 +111,11 @@ function chuanHoaModule(x: unknown): DanhGiaModule {
     codeQuality: so(o.codeQuality, 0, 10), logic: so(o.logic, 0, 10), errorHandling: so(o.errorHandling, 0, 10),
     relevance: so(o.relevance, 0, 10), cohesion: so(o.cohesion, 0, 10), summary: chu(o.summary),
     fileScores: (Array.isArray(o.fileScores) ? o.fileScores : []).filter(laDoiTuong).map(f => ({ file: chu(f.file), score: so(f.score, 0, 100) })),
-    issues: dsChu(o.issues), positives: dsChu(o.positives)
+    issues: dsChu(o.issues), positives: dsChu(o.positives), ...coChuaCham(o)
   };
 }
+
+export const chamChuaDayDu = (kq: KetQuaCham): boolean => !!kq.structureReview?.chuaCham || kq.moduleReviews.some(m => m.chuaCham);
 
 export function chuanHoaKetQua(x: unknown): KetQuaCham {
   const o = laDoiTuong(x) ? x : {};
@@ -156,10 +171,25 @@ export async function taoYTuong(client: SupabaseLike, { level, topic, ngauNhien,
 export async function hoiMentor(client: SupabaseLike, { nguCanh, lichSu, cauHoi, ...tc }: TuyChonGoi & {
   nguCanh: string; lichSu: TinNhan[]; cauHoi: string;
 }): Promise<string> {
-  return taoDichVuDuAn(client, tc).chatAboutProject(nguCanh, lichSu, cauHoi);
+  return taoDichVuDuAn(client, tc).chatAboutProject(nguCanh, catLichSu(lichSu), cauHoi);
 }
 
 const thongBao = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+const SO_MODULE_CUNG_LUC = 3;
+
+async function chayGioiHan<T, R>(ds: T[], gioiHan: number, f: (x: T, i: number) => Promise<R>): Promise<R[]> {
+  const kq: R[] = new Array(ds.length);
+  let tiep = 0;
+  const tho = async () => {
+    while (tiep < ds.length) {
+      const i = tiep++;
+      kq[i] = await f(ds[i], i);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(gioiHan, ds.length) }, tho));
+  return kq;
+}
 
 export async function chamDuAn(client: SupabaseLike, { idea, files, khiTienDo, ...tc }: TuyChonGoi & {
   idea: YTuong; files: TepDuAn[]; khiTienDo?: (b: TienDoCham) => void;
@@ -178,32 +208,34 @@ export async function chamDuAn(client: SupabaseLike, { idea, files, khiTienDo, .
     structureReview = chuanHoaCauTruc(await dv.reviewStructure(codeFiles, idea));
   } catch (err) {
     dungNeuHuy();
-    structureReview = { structureScore: 0, naming: 'Lỗi', organization: 'Lỗi', completeness: 'Lỗi', missingFiles: [], suggestions: [`Lỗi: ${thongBao(err)}`] };
+    structureReview = { structureScore: 0, naming: '', organization: '', completeness: '', missingFiles: [], suggestions: [`Lỗi: ${thongBao(err)}`], chuaCham: true };
   }
   dungNeuHuy();
 
   const modules: ModuleDuAn[] = dv.groupFilesIntoModules(codeFiles);
-  const moduleReviews: DanhGiaModule[] = [];
-  for (let i = 0; i < modules.length; i++) {
-    khiTienDo?.({ buoc: 'module', i: i + 1, n: modules.length, nhan: modules[i].label });
+  let loiCuoi: unknown = null;
+  const moduleReviews = await chayGioiHan(modules, SO_MODULE_CUNG_LUC, async (m, i): Promise<DanhGiaModule> => {
+    dungNeuHuy();
+    khiTienDo?.({ buoc: 'module', i: i + 1, n: modules.length, nhan: m.label });
     try {
-      moduleReviews.push(chuanHoaModule(await dv.reviewModule(modules[i], idea, localResults)));
+      return chuanHoaModule(await dv.reviewModule(m, idea, localResults));
     } catch (err) {
       dungNeuHuy();
-      moduleReviews.push({
-        moduleId: modules[i].id, moduleLabel: modules[i].label,
+      loiCuoi = err;
+      return {
+        moduleId: m.id, moduleLabel: m.label,
         score: 0, codeQuality: 0, logic: 0, errorHandling: 0, relevance: 0, cohesion: 0,
         summary: `Lỗi khi chấm module: ${thongBao(err)}`,
-        fileScores: modules[i].files.map(f => ({ file: f.name, score: 0 })),
-        issues: ['Không thể đánh giá'],
-        positives: []
-      });
+        fileScores: [], issues: [], positives: [], chuaCham: true
+      };
     }
-    dungNeuHuy();
-  }
+  });
+  dungNeuHuy();
+  const daCham = moduleReviews.filter(m => !m.chuaCham);
+  if (!daCham.length) throw new Error(`Chưa chấm được phần code nào: ${thongBao(loiCuoi)}`);
 
   khiTienDo?.({ buoc: 'tongHop' });
-  const tong = await dv.synthesizeReview(structureReview, moduleReviews, localResults, idea, files.length);
-  const perFileReviews = moduleReviews.flatMap(m => m.fileScores.map(fs => ({ fileName: fs.file, score: fs.score, summary: m.summary })));
+  const tong = await dv.synthesizeReview(structureReview, daCham, localResults, idea, files.length);
+  const perFileReviews = daCham.flatMap(m => m.fileScores.map(fs => ({ fileName: fs.file, score: fs.score, summary: m.summary })));
   return chuanHoaKetQua({ ...(laDoiTuong(tong) ? tong : {}), perFileReviews, moduleReviews, structureReview, localAnalysis: localResults });
 }

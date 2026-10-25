@@ -20,6 +20,7 @@ type ThamSoGoi = {
   maxTokens?: number;
   signal?: AbortSignal;
   cho?: (ms: number) => Promise<void>;
+  khiCo?: (phan: string) => void;
 };
 
 const choThat = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
@@ -50,7 +51,8 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
     messages: [{ role: 'user', content: p.user }],
     temperature: p.temperature ?? 0.7,
     max_tokens: p.maxTokens ?? 4096,
-    taskType: p.taskType
+    taskType: p.taskType,
+    ...(p.khiCo ? { stream: true } : {})
   });
   const signal = tinHieu(p.signal);
 
@@ -70,14 +72,48 @@ export async function goiAi(client: SupabaseLike, p: ThamSoGoi): Promise<string>
       quaTai++;
       continue;
     }
+    if (p.khiCo && r.ok && r.body && /text\/event-stream/.test(r.headers.get('content-type') ?? '')) {
+      try {
+        return await docDong(r.body, p.khiCo);
+      } catch (e) {
+        throw loiDeHieu(e, p.signal);
+      }
+    }
     const json = (await r.json().catch(() => null)) as { error?: string; content?: { text?: string }[] } | null;
     if (r.status === 401) throw new Error(json?.error || 'Bạn cần đăng nhập để dùng tính năng AI.');
     if (r.status === 403 && !json) throw new Error('Yêu cầu bị chặn bởi tường lửa. Xoá hội thoại rồi hỏi lại nhé.');
     if (!r.ok) throw new Error(json?.error || `AI API Error: ${r.status}`);
     const text = json?.content?.[0]?.text;
     if (!text) throw new Error('AI không trả lời. Thử lại nhé.');
+    p.khiCo?.(text);
     return text;
   }
+}
+
+async function docDong(body: ReadableStream<Uint8Array>, khiCo: (phan: string) => void): Promise<string> {
+  const reader = body.getReader();
+  const giaiMa = new TextDecoder();
+  let dem = '';
+  let text = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    dem += giaiMa.decode(value, { stream: true });
+    let i;
+    while ((i = dem.indexOf('\n\n')) >= 0) {
+      const khoi = dem.slice(0, i).trim();
+      dem = dem.slice(i + 2);
+      if (!khoi.startsWith('data:')) continue;
+      const goi = JSON.parse(khoi.slice(5)) as { t?: string; loi?: string; xong?: boolean };
+      if (goi.loi) throw new Error(goi.loi);
+      if (goi.xong) {
+        if (!text) throw new Error('AI không trả lời. Thử lại nhé.');
+        return text;
+      }
+      if (goi.t) { text += goi.t; khiCo(goi.t); }
+    }
+  }
+  throw new Error('Kết nối với AI bị ngắt giữa chừng. Thử lại nhé.');
 }
 
 export function docJson(text: string): unknown {
@@ -173,15 +209,15 @@ export function nguCanhBai({ tech, level, lesson, tab, quiz, baiTap }: BaiChoAi 
 
 export type TinNhan = { role: 'user' | 'assistant'; content: string };
 
-export async function hoiGiaSu(client: SupabaseLike, { nguCanh, lichSu, cauHoi, tab, daNopQuiz, lang, signal, cho }: {
+export async function hoiGiaSu(client: SupabaseLike, { nguCanh, lichSu, cauHoi, tab, daNopQuiz, lang, signal, cho, khiCo }: {
   nguCanh: string; lichSu: TinNhan[]; cauHoi: string; tab: TabBai; daNopQuiz: boolean; lang: string;
-  signal?: AbortSignal; cho?: ThamSoGoi['cho'];
+  signal?: AbortSignal; cho?: ThamSoGoi['cho']; khiCo?: ThamSoGoi['khiCo'];
 }): Promise<string> {
   const gan = lichSu.slice(-10);
   const truoc = gan.length
     ? 'Lịch sử hội thoại:\n' + gan.map(m => `${m.role === 'user' ? 'Học viên' : 'Gia sư'}: ${m.content}`).join('\n') + '\n\n'
     : '';
-  return goiAi(client, { system: promptGiaSu(nguCanh, tab, daNopQuiz), user: truoc + cauHoi, temperature: 0.7, maxTokens: 4096, taskType: 'tutor', lang, signal, cho });
+  return goiAi(client, { system: promptGiaSu(nguCanh, tab, daNopQuiz), user: truoc + cauHoi, temperature: 0.7, maxTokens: 4096, taskType: 'tutor', lang, signal, cho, khiCo });
 }
 
 const chuoi = (x: unknown): string => (typeof x === 'string' ? x.trim() : '');
@@ -252,7 +288,7 @@ export async function chamBai(client: SupabaseLike, { tech, deBai, baiLam, ngonN
   const score = coDiem ? Math.round(Math.min(100, Math.max(0, so))) : status === 'correct' ? 100 : status === 'partial' ? 50 : 0;
   return {
     score,
-    status: status ?? theoDiem(score),
+    status: status === 'correct' && coDiem ? theoDiem(score) : status ?? theoDiem(score),
     feedback: chuoi(o.feedback),
     errors: dsChuoi(o.errors),
     suggestions: dsChuoi(o.suggestions),

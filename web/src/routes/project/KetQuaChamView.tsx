@@ -2,7 +2,7 @@ import { memo, type ReactNode } from 'react';
 import { ChevronDown, CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import type { KetQuaCham, TrangThaiCham } from '@/lib/project-ai';
+import { chamChuaDayDu, type KetQuaCham, type TrangThaiCham } from '@/lib/project-ai';
 import { CHIP, CHIP_DIEM, NEN_DIEM, mucDiem } from './mau-diem';
 
 const NHAN_TRANG_THAI: Record<TrangThaiCham, string> = {
@@ -16,6 +16,11 @@ function ChipDiem({ diem, tren = 100 }: { diem: number | null; tren?: number }) 
       {diem ?? '?'}/{tren}
     </span>
   );
+}
+
+function ChipChuaCham() {
+  const { t } = useT();
+  return <span className={cn(CHIP, 'shrink-0 bg-muted text-muted-foreground')}>{t('reviewNotGraded')}</span>;
 }
 
 const MuiTen = () => (
@@ -52,6 +57,11 @@ export const KetQuaChamView = memo(function KetQuaChamView({ kq }: { kq: KetQuaC
           {t(NHAN_TRANG_THAI[kq.status])} — <span className={cn('rounded-full px-3 py-0.5 font-mono text-xl', CHIP_DIEM[mucDiem(kq.score)])}>{kq.score ?? '?'}/100</span>
         </h2>
         <Thanh diem={kq.score} />
+        {chamChuaDayDu(kq) && (
+          <p role="status" className="flex items-start gap-2 rounded-2xl bg-butter px-4 py-2.5 text-sm text-butter-ink">
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> {t('reviewIncomplete')}
+          </p>
+        )}
         {kq.summary && <p className="leading-relaxed">{kq.summary}</p>}
       </header>
 
@@ -87,7 +97,7 @@ export const KetQuaChamView = memo(function KetQuaChamView({ kq }: { kq: KetQuaC
       )}
 
       {sr && (
-        <Muc tieuDe={<span className="inline-flex flex-wrap items-center gap-2">{t('reviewStructureTitle')} — <ChipDiem diem={sr.structureScore} /></span>}>
+        <Muc tieuDe={<span className="inline-flex flex-wrap items-center gap-2">{t('reviewStructureTitle')} — {sr.chuaCham ? <ChipChuaCham /> : <ChipDiem diem={sr.structureScore} />}</span>}>
           <dl className="grid gap-2 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4">
             <dt className="font-medium">{t('reviewNaming')}</dt><dd className="text-muted-foreground">{sr.naming || t('notAvailable')}</dd>
             <dt className="font-medium">{t('reviewOrganization')}</dt><dd className="text-muted-foreground">{sr.organization || t('notAvailable')}</dd>
@@ -106,10 +116,12 @@ export const KetQuaChamView = memo(function KetQuaChamView({ kq }: { kq: KetQuaC
                 <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 [&::-webkit-details-marker]:hidden">
                   <MuiTen />
                   <span className="font-medium">{m.moduleLabel || m.moduleId}</span>
-                  <ChipDiem diem={m.score} />
-                  <span className="basis-full pl-7 text-xs text-muted-foreground">
-                    {t('reviewModuleScores', { q: m.codeQuality, l: m.logic, e: m.errorHandling, r: m.relevance })}
-                  </span>
+                  {m.chuaCham ? <ChipChuaCham /> : <ChipDiem diem={m.score} />}
+                  {!m.chuaCham && (
+                    <span className="basis-full pl-7 text-xs text-muted-foreground">
+                      {t('reviewModuleScores', { q: m.codeQuality, l: m.logic, e: m.errorHandling, r: m.relevance })}
+                    </span>
+                  )}
                 </summary>
                 <div className="mt-3 space-y-2 text-sm">
                   {m.summary && <p className="leading-relaxed">{m.summary}</p>}

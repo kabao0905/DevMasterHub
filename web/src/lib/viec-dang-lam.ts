@@ -13,9 +13,9 @@ function cotCat(k: QueryKey, uid: string): boolean {
 function boCoDangCho(k: QueryKey, du: unknown): unknown {
   if (!du || typeof du !== 'object') return du;
   if (k[0] === 'exercise') return { ...du, dangTao: false, dangCham: false };
-  if (k[0] === 'tutor') return { ...du, dangGui: false };
-  if (k[0] === 'career') return { ...du, dangGui: false };
-  if (k[0] === 'project') return { ...du, dangTao: false, dangGui: false, dangCham: false, tienDo: null };
+  if (k[0] === 'tutor') return { ...du, dangGui: false, dangViet: undefined };
+  if (k[0] === 'career') return { ...du, dangGui: false, dangTimViec: false };
+  if (k[0] === 'project') return { ...du, dangTao: false, dangGui: false, dangViet: undefined, dangCham: false, dangLuu: false, tienDo: null };
   return du;
 }
 
