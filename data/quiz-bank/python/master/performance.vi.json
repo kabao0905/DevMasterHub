@@ -1,0 +1,1133 @@
+{
+  "version": 1,
+  "tech": "python",
+  "level": "master",
+  "lesson": "performance",
+  "language": "vi",
+  "sourceHash": "3f1f1afe9619b5be8105acc338922522de02f0ba0a15bf4bb48acdfa140f4cf1",
+  "status": "approved",
+  "review": "Tự biên soạn, không API. Phạm vi CPython 3.12 build có GIL; rà profiling, tính tương đương workload, process/thread, bộ nhớ và benchmark. Đính chính ví dụ chia chunks đang lặp các khoảng từ 0 nên không tương đương tổng bình phương toàn khoảng; không cam kết speedup 5x khi chưa đo.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Profile trước tối ưu",
+      "question": "Profiling chủ yếu giúp trả lời câu hỏi nào?",
+      "options": [
+        "Thời gian/tài nguyên đang được dùng ở đâu trên workload được đo?",
+        "Mọi requirement đã đúng chưa?",
+        "Mọi phiên bản tương lai có cùng tốc độ không?",
+        "Tên biến nào đẹp nhất?"
+      ],
+      "correct": 0,
+      "explanation": "Profiling cung cấp bằng chứng về hoạt động thực tế, không thay correctness test."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "cProfile",
+      "question": "cProfile của thư viện chuẩn thường dùng để làm gì?",
+      "options": [
+        "Tự cấp thêm CPU core.",
+        "Thu thập thống kê gọi hàm và thời gian thực thi.",
+        "Tự chuyển mọi Python sang C.",
+        "Tự sửa mọi thuật toán chậm."
+      ],
+      "correct": 1,
+      "explanation": "Profiler giúp tìm bottleneck, không tự tạo tối ưu."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "CPU bound",
+      "question": "Tác vụ nào điển hình là CPU-bound?",
+      "options": [
+        "Chờ người dùng nhập bàn phím.",
+        "Chỉ mở một tên file chưa đọc.",
+        "Tính nhiều phép toán Python thuần trong vòng lặp dài.",
+        "Đợi phản hồi mạng mà CPU gần như rảnh."
+      ],
+      "correct": 2,
+      "explanation": "CPU-bound dành phần lớn công việc cho tính toán."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "I/O bound",
+      "question": "Tác vụ I/O-bound thường bị giới hạn chủ yếu bởi gì?",
+      "options": [
+        "Luôn số lượng dòng comment.",
+        "Luôn độ dài tên class.",
+        "Luôn số field type hint.",
+        "Thời gian chờ I/O như mạng/đĩa."
+      ],
+      "correct": 3,
+      "explanation": "Cần xác định thời gian chờ và tài nguyên tương ứng thay vì chỉ nhìn cú pháp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "GIL phạm vi",
+      "question": "Trong CPython 3.12 build có GIL, GIL chủ yếu hạn chế điều gì?",
+      "options": [
+        "Nhiều thread cùng thực thi Python bytecode đồng thời trong cùng interpreter theo cơ chế đó.",
+        "Mọi process trên máy chỉ được dùng một core chung.",
+        "Mọi thao tác I/O đều không thể chồng lấp.",
+        "Mọi thư viện C đều bị cấm chạy."
+      ],
+      "correct": 0,
+      "explanation": "Không nên suy rộng GIL thành cấm mọi parallelism hay áp cho mọi Python implementation."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Multiprocessing",
+      "question": "Multiprocessing có thể giúp CPU-bound Python thuần tận dụng đa core bằng cách nào?",
+      "options": [
+        "Chuyển mọi số thành chuỗi.",
+        "Dùng các process riêng với interpreter/trạng thái thực thi riêng.",
+        "Tự xóa GIL của mọi thread cùng process.",
+        "Chỉ đổi tên hàm thành cpu_heavy."
+      ],
+      "correct": 1,
+      "explanation": "Lợi ích còn phụ thuộc overhead và cách phân việc."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Process pool",
+      "question": "ProcessPoolExecutor chủ yếu quản lý gì?",
+      "options": [
+        "Một server HTTP bắt buộc.",
+        "Mọi tệp tạm của hệ điều hành.",
+        "Pool worker process cho các công việc được submit/map.",
+        "Một list không có thực thi."
+      ],
+      "correct": 2,
+      "explanation": "Executor hỗ trợ gửi và nhận kết quả từ worker theo mô hình của nó."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Đồng hồ đo khoảng",
+      "question": "Hàm nào phù hợp để đo elapsed time trong ví dụ?",
+      "options": [
+        "len(function.__name__)",
+        "str(datetime) rồi đo độ dài",
+        "random.random()",
+        "time.perf_counter()"
+      ],
+      "correct": 3,
+      "explanation": "perf_counter phục vụ đo chênh lệch thời gian với độ phân giải phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Speedup",
+      "question": "Nếu thời gian trước là old và sau là new, speedup thường tính thế nào?",
+      "options": [
+        "old / new",
+        "new / old luôn là speedup tăng tốc",
+        "old + new",
+        "old - new rồi gọi là số lần"
+      ],
+      "correct": 0,
+      "explanation": "Tỷ số old/new lớn hơn 1 khi bản sau nhanh hơn."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Correctness trước speed",
+      "question": "Trước khi so tốc độ hai triển khai, cần bảo đảm điều gì?",
+      "options": [
+        "Cùng số lệnh print bất kể kết quả.",
+        "Chúng thực hiện công việc/kết quả tương đương theo hợp đồng.",
+        "Tên hàm có cùng độ dài.",
+        "Số dòng code bằng nhau."
+      ],
+      "correct": 1,
+      "explanation": "So hai workload khác nhau không chứng minh tối ưu hợp lệ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Overhead",
+      "question": "Overhead multiprocessing có thể gồm gì?",
+      "options": [
+        "Chỉ đổi tên process.",
+        "Luôn bằng 0.",
+        "Khởi tạo worker, truyền/serialize dữ liệu và nhận kết quả.",
+        "Chỉ thời gian viết comment."
+      ],
+      "correct": 2,
+      "explanation": "Lợi ích parallelism phải vượt chi phí điều phối/truyền dữ liệu."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Reference counting",
+      "question": "CPython sử dụng reference counting chủ yếu để hỗ trợ việc gì?",
+      "options": [
+        "Tự đếm số request HTTP.",
+        "Tự tạo cache nghiệp vụ.",
+        "Tự bỏ mọi vòng tham chiếu mà không cơ chế khác.",
+        "Quản lý vòng đời object theo các tham chiếu."
+      ],
+      "correct": 3,
+      "explanation": "CPython còn có cơ chế xử lý cyclic garbage; không nên đồng nhất hai việc."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Chu kỳ tham chiếu",
+      "question": "Vì sao chỉ reference counting đơn giản không đủ xử lý mọi object không còn reachable?",
+      "options": [
+        "Một nhóm object có thể tham chiếu vòng giữ reference count của nhau.",
+        "Mọi số nguyên đều có vòng tham chiếu.",
+        "CPython không có object mutable.",
+        "Mọi list đều sống vĩnh viễn theo định nghĩa."
+      ],
+      "correct": 0,
+      "explanation": "Cyclic garbage collection giải quyết lớp tình huống bổ sung này."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Bộ nhớ shallow",
+      "question": "sys.getsizeof(obj) chủ yếu trả thông tin theo phạm vi nào?",
+      "options": [
+        "Dung lượng database production.",
+        "Kích thước nông của object theo hỗ trợ implementation, không tự cộng mọi object con.",
+        "Tổng RAM toàn máy.",
+        "Kích thước mọi file trên đĩa."
+      ],
+      "correct": 1,
+      "explanation": "Cần phương pháp đo thích hợp cho đồ thị dữ liệu hoặc peak allocations."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Tracemalloc",
+      "question": "tracemalloc thường hữu ích cho việc gì?",
+      "options": [
+        "Tự nhân số core.",
+        "Tự đo băng thông mạng luôn chính xác.",
+        "Theo dõi các cấp phát bộ nhớ Python được công cụ hỗ trợ.",
+        "Tự ép mọi object thành slots."
+      ],
+      "correct": 2,
+      "explanation": "Nó có phạm vi đo, không đồng nghĩa tổng mọi tài nguyên ngoài Python."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Cython",
+      "question": "Cython thường được dùng nhằm mục tiêu nào?",
+      "options": [
+        "Tự tăng tốc mọi code bất kỳ mà không cần kiểm chứng.",
+        "Chỉ nén file JSON.",
+        "Chỉ tạo class decorator.",
+        "Biên dịch mã theo công cụ của nó và có thể tăng tốc phần phù hợp khi thiết kế đúng."
+      ],
+      "correct": 3,
+      "explanation": "Công cụ native cần đo và xét tính đúng, không phải cam kết tăng tốc tự động."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "ctypes",
+      "question": "ctypes chủ yếu cho phép gì?",
+      "options": [
+        "Gọi thư viện native theo giao diện C phù hợp.",
+        "Chạy mọi hàm Python trên GPU tự động.",
+        "Tự sửa memory safety mọi code C.",
+        "Tự chia database theo user."
+      ],
+      "correct": 0,
+      "explanation": "FFI cần khai báo kiểu/giao diện đúng và kiểm soát vòng đời dữ liệu."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Tối ưu thuật toán",
+      "question": "Giảm từ thuật toán bậc hai sang tuyến tính có thể có lợi gì?",
+      "options": [
+        "Tự giải phóng mọi biến global.",
+        "Giảm tăng trưởng công việc khi dữ liệu lớn nếu giữ đúng hợp đồng.",
+        "Bảo đảm mọi input đều nhanh đúng một tỷ lệ cố định.",
+        "Tự giảm mọi network latency về 0."
+      ],
+      "correct": 1,
+      "explanation": "Độ phức tạp là một yếu tố quan trọng, vẫn cần xét hằng số và workload."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Đo nhiều lần",
+      "question": "Vì sao thường cần benchmark lặp có kiểm soát?",
+      "options": [
+        "Để bảo đảm code không cần test.",
+        "Để tự làm CPU mạnh hơn vĩnh viễn.",
+        "Để quan sát nhiễu/biến thiên thay vì kết luận từ một lần đo.",
+        "Để lựa riêng số đẹp nhất làm báo cáo."
+      ],
+      "correct": 2,
+      "explanation": "Phương pháp báo cáo nên phản ánh dữ liệu và điều kiện đo rõ ràng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Không có con số phổ quát",
+      "question": "Có thể cam kết mọi hàm đều nhanh hơn 5x chỉ bằng dùng process pool không?",
+      "options": [
+        "Có, luôn đúng bằng số worker",
+        "Chỉ cần có 5 dòng code",
+        "Chỉ cần đổi kiểu trả về int",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Speedup là kết quả cần đo, phụ thuộc khả năng phân việc và overhead."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Tính speedup",
+      "question": "Bản cũ mất 10s và bản mới mất 2s trên công việc tương đương. Speedup là bao nhiêu?",
+      "options": [
+        "5x",
+        "0.2x",
+        "8x",
+        "12x"
+      ],
+      "correct": 0,
+      "explanation": "10/2=5."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Trường hợp chậm hơn",
+      "question": "Bản cũ 2s, bản mới 4s. old/new bằng bao nhiêu và có tăng tốc không?",
+      "options": [
+        "0x, công việc không chạy.",
+        "0.5x, bản mới chậm hơn.",
+        "2x, bản mới nhanh hơn.",
+        "6x, bản mới nhanh hơn."
+      ],
+      "correct": 1,
+      "explanation": "Tỷ số nhỏ hơn 1 thể hiện chậm hơn theo cách định nghĩa speedup này."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Kết quả cpu heavy nhỏ",
+      "question": "Đoạn code in gì?",
+      "code": "def cpu_heavy(n):\n    total = 0\n    for i in range(n):\n        total += i ** 2\n    return total\nprint(cpu_heavy(4))",
+      "options": [
+        "6",
+        "4",
+        "14",
+        "30"
+      ],
+      "correct": 2,
+      "explanation": "range(4) có 0,1,2,3; tổng bình phương là 0+1+4+9."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Phân tích tottime",
+      "question": "Trong thống kê profiler, tottime thường tập trung vào gì?",
+      "options": [
+        "Luôn toàn bộ wall-clock của process và mọi child.",
+        "Chỉ thời gian network request.",
+        "Số lần gọi hàm.",
+        "Thời gian trong chính hàm, không gồm thời gian của các hàm con."
+      ],
+      "correct": 3,
+      "explanation": "Cần đọc đúng ý nghĩa cột thay vì coi mọi thời gian đều như nhau."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Phân tích cumtime",
+      "question": "cumtime thường thể hiện gì?",
+      "options": [
+        "Thời gian tích lũy của hàm gồm các lời gọi con theo cách profiler đo.",
+        "Chỉ số byte của source.",
+        "Chỉ số core CPU.",
+        "Luôn bằng số lần gọi."
+      ],
+      "correct": 0,
+      "explanation": "Nó giúp thấy chuỗi gọi gây tổng chi phí, khác self time."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Số lần gọi quá lớn",
+      "question": "Một hàm rất ngắn được gọi hàng triệu lần xuất hiện tốn tổng thời gian đáng kể. Nên cân nhắc gì?",
+      "options": [
+        "Tăng số comment.",
+        "Giảm số lần gọi/lặp công việc hoặc thay cách tổ chức nếu giữ đúng hành vi.",
+        "Chỉ tối ưu hàm dài nhất theo số dòng.",
+        "Bỏ qua vì mỗi lần gọi ngắn."
+      ],
+      "correct": 1,
+      "explanation": "Tổng chi phí phụ thuộc cả số lần và chi phí mỗi lần."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "In trong benchmark",
+      "question": "Nếu mục tiêu đo tính toán thuần nhưng vòng lặp print liên tục, phép đo có thể bị gì?",
+      "options": [
+        "Profiler tự xóa mọi print.",
+        "Kết quả luôn phản ánh đúng chỉ phép toán.",
+        "Chi phí I/O làm nhiễu hoặc chi phối kết quả.",
+        "Print không bao giờ có chi phí."
+      ],
+      "correct": 2,
+      "explanation": "Cần đo đúng phần việc cần so sánh."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Giữ môi trường đo",
+      "question": "Hai benchmark chạy trên máy khác cấu hình mà không kiểm soát có hạn chế gì?",
+      "options": [
+        "Luôn là bằng chứng tối ưu hoàn hảo.",
+        "Tên máy tự chuẩn hóa CPU.",
+        "Python tự điều chỉnh mọi kết quả về cùng chuẩn.",
+        "Khó quy nguyên nhân chênh lệch cho đúng thay đổi code."
+      ],
+      "correct": 3,
+      "explanation": "Môi trường và tải nền là các yếu tố cần ghi nhận."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Warm cache",
+      "question": "Chạy lần hai nhanh hơn do cache có nghĩa thuật toán mới chắc chắn tốt hơn không?",
+      "options": [
+        "Không, cần so sánh điều kiện warm/cold tương ứng.",
+        "Có, cache chứng minh mọi workload đều nhanh hơn.",
+        "Chỉ cần chọn lần nhanh nhất.",
+        "Không có cache trong Python."
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện khởi động và cache ảnh hưởng kết quả."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Process truyền dữ liệu lớn",
+      "question": "Nếu mỗi task chỉ tính rất ít nhưng phải gửi object rất lớn sang process, chuyện gì có thể xảy ra?",
+      "options": [
+        "Mọi task đều nhanh hơn theo số core.",
+        "Overhead truyền dữ liệu lấn át lợi ích tính toán song song.",
+        "Dữ liệu tự chia sẻ miễn phí trong mọi hệ điều hành.",
+        "Process pool tự loại mọi serialize."
+      ],
+      "correct": 1,
+      "explanation": "Granularity và chi phí giao tiếp quyết định hiệu quả."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Batch công việc nhỏ",
+      "question": "Với rất nhiều công việc cực nhỏ, gộp thành batch hợp lý có thể giúp gì?",
+      "options": [
+        "Tự bỏ mọi chi phí bộ nhớ.",
+        "Tự bỏ nhu cầu validate output.",
+        "Giảm số lần điều phối/truyền so với một task tí hon mỗi lần.",
+        "Tự bảo đảm mọi batch có cùng kết quả dù chia sai."
+      ],
+      "correct": 2,
+      "explanation": "Batching cần giữ cách chia/tổng hợp đúng và cân bằng tải."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Guard main trên spawn",
+      "question": "Với ví dụ process pool chạy trên nền tảng dùng spawn, phần khởi chạy chương trình thường nên được bảo vệ bằng gì?",
+      "options": [
+        "if process == True:",
+        "Chỉ đặt tên file là main.",
+        "Chỉ thêm async vào def.",
+        "if __name__ == \"__main__\":"
+      ],
+      "correct": 3,
+      "explanation": "Guard tránh worker import lại module rồi vô ý khởi động pool mới từ top-level."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Hàm worker import được",
+      "question": "Vì sao hàm worker top-level thường dễ dùng hơn lambda cục bộ với process pool dùng pickle chuẩn?",
+      "options": [
+        "Có thể được tham chiếu/import/serialize theo cơ chế được hỗ trợ.",
+        "Lambda luôn được biên dịch thành C tự động.",
+        "Mọi closure đều được serialize hoàn hảo.",
+        "Tên hàm không bao giờ liên quan serialize."
+      ],
+      "correct": 0,
+      "explanation": "Cần xét cơ chế khởi tạo process và giới hạn serialization thực tế."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Bounded memory",
+      "question": "Tối ưu RAM cho dữ liệu lớn, cách nào thường tránh giữ list kết quả trung gian đầy đủ?",
+      "options": [
+        "Giữ mọi bản cũ trong global cache vô hạn.",
+        "Xử lý luồng/iterator khi hợp đồng cho phép.",
+        "Luôn gọi list() ở mọi bước.",
+        "Deepcopy toàn bộ dữ liệu nhiều lần."
+      ],
+      "correct": 1,
+      "explanation": "Tiêu thụ theo luồng cần xét cả nguồn và bên tiêu thụ để giữ lợi ích."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Set cho membership",
+      "question": "Nếu chỉ cần nhiều phép kiểm tra thành viên trên dữ liệu hashable không cần lặp/thứ tự, set có thể hữu ích vì sao?",
+      "options": [
+        "Set hỗ trợ chỉ số ổn định.",
+        "Set luôn có thời gian đúng tuyệt đối không đổi với mọi key.",
+        "Membership trung bình có thể nhanh hơn dò tuyến tính list.",
+        "Set luôn giữ nguyên mọi bản trùng và thứ tự đầu vào."
+      ],
+      "correct": 2,
+      "explanation": "Lợi ích có điều kiện và còn chi phí tạo set/bộ nhớ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Không tối ưu việc đã rẻ",
+      "question": "Profiler cho thấy 95% thời gian ở đọc mạng, còn phép nối chuỗi chiếm 0.1%. Ưu tiên nào có cơ sở hơn?",
+      "options": [
+        "Chỉ sửa mọi tên biến.",
+        "Bỏ qua phần 95%.",
+        "Cam kết tăng tốc 100x bằng đổi dấu nháy.",
+        "Điều tra/giảm phần chờ mạng theo khả năng và yêu cầu trước khi tập trung micro-opt nối chuỗi."
+      ],
+      "correct": 3,
+      "explanation": "Tập trung bottleneck giúp chọn công việc có tác động thực."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Cached result khác workload",
+      "question": "Benchmark bản mới chỉ trả cache còn bản cũ tính lần đầu có hạn chế gì?",
+      "options": [
+        "Nó đo hai trạng thái workload khác nhau; cần nói rõ warm/cold và mục tiêu.",
+        "Luôn là so sánh công bằng cho mọi user.",
+        "Cache tự chứng minh kết quả không bao giờ cũ.",
+        "Không cần kiểm tra key."
+      ],
+      "correct": 0,
+      "explanation": "Báo cáo phải phản ánh điều kiện thực được so sánh."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Đo wall time",
+      "question": "Wall-clock elapsed của thao tác có thể gồm gì?",
+      "options": [
+        "Chỉ thời gian import module.",
+        "Cả thời gian chờ và thời gian chạy theo phạm vi đo.",
+        "Chỉ bytecode CPU trong mọi trường hợp.",
+        "Chỉ số reference count."
+      ],
+      "correct": 1,
+      "explanation": "Chọn wall time hoặc CPU time theo câu hỏi hiệu năng cần trả lời."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Memory pool không miễn phí mọi cấp phát",
+      "question": "Biết CPython dùng memory pools có cho phép giả định tạo hàng triệu object không tốn RAM không?",
+      "options": [
+        "Chỉ cần del tên biến là RAM toàn process chắc chắn về 0",
+        "Chỉ cần __slots__ là không có allocation",
+        "Không",
+        "Có, mọi object nhỏ dùng chung một byte"
+      ],
+      "correct": 2,
+      "explanation": "Allocator tối ưu quản lý bộ nhớ, không xóa chi phí lưu object sống."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Test sau tối ưu",
+      "question": "Sau thay đổi thuật toán để nhanh hơn, kiểm tra quan trọng nào vẫn cần?",
+      "options": [
+        "Chỉ tốc độ trên một input đẹp.",
+        "Chỉ số dòng code giảm.",
+        "Chỉ tên hàm giữ nguyên.",
+        "Hành vi/kết quả và các trường hợp biên theo hợp đồng."
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu sai kết quả không phải hoàn thành yêu cầu."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Chunks trong ví dụ",
+      "question": "cpu_heavy(n) cộng bình phương từ 0 đến n-1. Gọi nó bốn lần với N//4 có tạo bốn đoạn khác nhau của 0..N-1 không?",
+      "options": [
+        "Không, cả bốn lần bắt đầu từ 0.",
+        "Có, pool tự cộng offset cho từng worker.",
+        "Có, thứ tự process quyết định start.",
+        "Chỉ cần bốn worker là tự đúng."
+      ],
+      "correct": 0,
+      "explanation": "Giá trị n là độ dài, không chứa cận start cho từng phân đoạn."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Cần offset khi chia việc",
+      "question": "Muốn phân tổng bình phương [0,N) thành các đoạn, worker nên biết gì?",
+      "options": [
+        "Chỉ thời gian bắt đầu.",
+        "Cận start/stop hoặc dữ liệu đoạn tương ứng.",
+        "Chỉ số worker theo tên chuỗi rồi tự đoán.",
+        "Chỉ tổng số core."
+      ],
+      "correct": 1,
+      "explanation": "Phân việc phải bao phủ đúng miền và không chồng/sót ngoài ý muốn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Phần dư chia đoạn",
+      "question": "N không chia hết số worker. Khi chia bằng N//workers, cần xử lý gì?",
+      "options": [
+        "Giả định pool tự thêm mọi phần tử dư.",
+        "Chỉ đổi kiểu N thành float.",
+        "Các phần tử dư để không bỏ sót dữ liệu.",
+        "Tự bỏ phần dư vì hiệu năng quan trọng hơn kết quả."
+      ],
+      "correct": 2,
+      "explanation": "Chia việc cần kiểm tra độ phủ và biên cuối."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Cộng kết quả từng đoạn",
+      "question": "Nếu mỗi worker trả tổng một đoạn rời nhau, kết quả toàn phần thường lấy thế nào?",
+      "options": [
+        "Chỉ dùng kết quả worker đầu.",
+        "Lấy độ dài list kết quả.",
+        "Nối các số thành chuỗi.",
+        "Cộng các tổng đoạn theo phép tổng phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Tổng hợp phải tương ứng phép chia bài toán."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Nhiệm vụ quá nhỏ",
+      "question": "Một job mất 1ms nhưng tạo pool mất đáng kể hơn. Dùng pool cho một job có bảo đảm nhanh hơn không?",
+      "options": [
+        "Không",
+        "Có, nhiều process luôn nhanh",
+        "Chỉ cần worker=100",
+        "Chỉ cần return int"
+      ],
+      "correct": 0,
+      "explanation": "Chi phí cố định có thể làm phương án song song chậm hơn."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Warm worker",
+      "question": "Đo mỗi lần đều khởi tạo pool so với tái dùng pool phản ánh hai điều kiện nào?",
+      "options": [
+        "Tự thay đổi thuật toán toán học.",
+        "Có/không bao gồm chi phí khởi tạo theo cách triển khai thực tế.",
+        "Luôn là hai kết quả cùng điều kiện.",
+        "Không ảnh hưởng wall time."
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi đo cần theo nhu cầu một lần hay dịch vụ chạy lâu."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Exceptions trong worker",
+      "question": "Nếu worker lỗi, báo benchmark chỉ gồm thời gian mà không kiểm tra kết quả có rủi ro gì?",
+      "options": [
+        "Process pool tự bỏ mọi lỗi và hoàn tất nghiệp vụ.",
+        "Không thể có exception ở worker.",
+        "Một phương án có thể trông nhanh vì chưa làm xong hoặc đã thất bại.",
+        "Worker lỗi tự tạo kết quả đúng."
+      ],
+      "correct": 2,
+      "explanation": "Thời gian chỉ có ý nghĩa cùng trạng thái hoàn tất và kết quả hợp lệ."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Không giữ tham chiếu ngoài ý muốn",
+      "question": "Một global list append mọi kết quả cũ có thể gây gì?",
+      "options": [
+        "Tự bị GC xóa dù vẫn reachable.",
+        "Tự chuyển thành weak reference.",
+        "Không tốn bộ nhớ vì global không tính.",
+        "Giữ object sống và tăng bộ nhớ theo thời gian."
+      ],
+      "correct": 3,
+      "explanation": "GC không xóa dữ liệu vẫn được tham chiếu như hợp đồng hiện tại."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Del tên không bằng xóa mọi object",
+      "question": "a và b cùng trỏ một list. del a có bảo đảm list không còn được b giữ không?",
+      "options": [
+        "Không",
+        "Có, del luôn xóa object khỏi mọi tên",
+        "Chỉ khi list dài hơn 1",
+        "Chỉ nếu b viết hoa"
+      ],
+      "correct": 0,
+      "explanation": "del a gỡ binding a; b vẫn có thể giữ object sống."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Cyclic GC bổ sung refcount",
+      "question": "Một cycle không còn reachable nhưng các object giữ tham chiếu nhau cho thấy cần cơ chế gì ngoài đếm đơn giản?",
+      "options": [
+        "Tự chạy nhiều thread hơn.",
+        "Phát hiện/thu gom chu kỳ phù hợp.",
+        "Chỉ đổi tên biến.",
+        "Chỉ dùng print."
+      ],
+      "correct": 1,
+      "explanation": "Reference count không tự về 0 chỉ vì bên ngoài không còn đường tới cycle."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Native extension có thể release GIL",
+      "question": "Với CPython build có GIL, có nên kết luận mọi công việc trong C extension đều không thể song song qua thread không?",
+      "options": [
+        "Chỉ cần là extension thì luôn thả GIL.",
+        "Không extension nào nhận dữ liệu Python.",
+        "Không, một số extension có thể thả GIL trong phần thực thi phù hợp.",
+        "Có, mọi mã C bắt buộc chạy một core toàn máy."
+      ],
+      "correct": 2,
+      "explanation": "Cần biết hành vi cụ thể của extension, không suy từ nhãn CPU-bound một cách tuyệt đối."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Giữ nguyên precision",
+      "question": "Thay thuật toán số để nhanh hơn nhưng làm sai độ chính xác được yêu cầu có chấp nhận tự động không?",
+      "options": [
+        "Có, nhanh hơn là tiêu chí duy nhất.",
+        "Chỉ cần benchmark nhiều lần.",
+        "Chỉ cần đổi kiểu hint.",
+        "Không, phải giữ hợp đồng hoặc chốt trade-off rõ."
+      ],
+      "correct": 3,
+      "explanation": "Performance không tự ghi đè yêu cầu correctness/precision."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Tối ưu lookup list thành set",
+      "question": "Trước khi thay list bằng set, cần xét gì ngoài tốc độ membership?",
+      "options": [
+        "Yêu cầu thứ tự, phần tử trùng, hashability và chi phí tạo/bộ nhớ.",
+        "Chỉ tên biến có chữ list.",
+        "Chỉ số dòng code.",
+        "Không cần xét vì hai cấu trúc luôn tương đương."
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu cấu trúc dữ liệu không được âm thầm đổi ngữ nghĩa."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Đo peak khác retained",
+      "question": "Peak allocation và lượng object còn được giữ sau khi thao tác xong có luôn bằng nhau không?",
+      "options": [
+        "Chỉ nếu có GIL",
+        "Không",
+        "Có, mọi cấp phát tồn tại vĩnh viễn",
+        "Chỉ nếu dùng dict"
+      ],
+      "correct": 1,
+      "explanation": "Đỉnh tạm thời và footprint còn lại là hai phép đo khác nhau."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Bottleneck chuyển chỗ",
+      "question": "Sau tối ưu tính toán, phần I/O trở thành chi phí lớn nhất. Điều đó gợi ý gì?",
+      "options": [
+        "Profiler tự giảm I/O.",
+        "Không bao giờ cần đo sau thay đổi.",
+        "Cần đo lại để biết nút thắt mới, không tiếp tục dựa hoàn toàn profile cũ.",
+        "Tối ưu trước chắc chắn sai."
+      ],
+      "correct": 2,
+      "explanation": "Tỷ trọng chi phí có thể thay đổi khi một phần được tăng tốc."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Tránh lưu mọi intermediate",
+      "question": "Pipeline tạo nhiều list trung gian có thể làm tăng gì?",
+      "options": [
+        "Luôn giảm RAM về 0.",
+        "Tự giảm độ phức tạp mọi thuật toán.",
+        "Tự tăng số core.",
+        "Cấp phát và peak memory so với thiết kế luồng phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Có thể tối ưu lượng dữ liệu sống đồng thời nếu hợp đồng cho phép."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Profile đúng workload",
+      "question": "Profile trên 10 record rất đơn giản có đại diện chắc cho 1 triệu record phức tạp không?",
+      "options": [
+        "Không",
+        "Có, input nhỏ luôn đủ đại diện",
+        "Chỉ cần tên hàm giống nhau",
+        "Chỉ cần dùng cùng IDE"
+      ],
+      "correct": 0,
+      "explanation": "Cần dữ liệu/phân bố kích thước phù hợp mục tiêu cần tối ưu."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Memory metric có đơn vị",
+      "question": "Khi báo giảm RAM, điều gì nên được nêu rõ?",
+      "options": [
+        "Chỉ tên class",
+        "Đơn vị, công cụ, phạm vi đo và điều kiện trước/sau.",
+        "Chỉ một phần trăm không có nguồn.",
+        "Chỉ ảnh đẹp của profiler."
+      ],
+      "correct": 1,
+      "explanation": "Con số chỉ có thể đánh giá khi biết nó đo cái gì."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Caching trade-off",
+      "question": "Cache kết quả có thể đánh đổi thời gian tính với gì?",
+      "options": [
+        "Tự giảm mọi lỗi phân quyền.",
+        "Tự bảo đảm kết quả đúng vĩnh viễn.",
+        "Bộ nhớ, độ mới dữ liệu và chi phí quản lý cache.",
+        "Không có chi phí nào."
+      ],
+      "correct": 2,
+      "explanation": "Cache cần key, giới hạn, ownership và invalidation phù hợp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Kiểm tra tài nguyên hệ thống",
+      "question": "Số worker lớn hơn số core rất nhiều có luôn giúp CPU-bound thuần nhanh hơn không?",
+      "options": [
+        "Có, speedup luôn bằng worker.",
+        "Chỉ cần worker là số chẵn.",
+        "Chỉ cần bật profiler.",
+        "Không, có thể tăng tranh chấp và overhead."
+      ],
+      "correct": 3,
+      "explanation": "Cần đo theo tài nguyên và giới hạn thực, không tăng worker tùy ý."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Benchmark của ví dụ không cùng bài toán",
+      "question": "N=8, f(n)=sum(i*i for i in range(n)). f(8) và 4*f(2) lần lượt là gì?",
+      "options": [
+        "140 và 4",
+        "140 và 140",
+        "4 và 140",
+        "64 và 16"
+      ],
+      "correct": 0,
+      "explanation": "f(8)=0+1+4+9+16+25+36+49=140; f(2)=1 nên bốn lần là 4, không tương đương."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Kiểm tra độ phủ phân đoạn",
+      "question": "Một bộ test phân việc nên xác minh điều gì để so hiệu năng đúng?",
+      "options": [
+        "Chỉ các chunk có cùng độ dài.",
+        "Mọi phần tử miền gốc được xử lý đúng số lần và tổng hợp cho kết quả như bản chuẩn.",
+        "Chỉ có đủ số worker.",
+        "Chỉ tổng thời gian nhỏ hơn."
+      ],
+      "correct": 1,
+      "explanation": "Chunk đều vẫn có thể chồng lặp hoặc bỏ phần dư; phải kiểm tra ngữ nghĩa toàn bộ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Phần tuần tự giới hạn speedup",
+      "question": "Nếu một phần đáng kể không thể song song, thêm worker vô hạn có làm thời gian tổng về 0 không?",
+      "options": [
+        "Chỉ cần ProcessPoolExecutor.",
+        "Chỉ cần chuyển biến global thành int.",
+        "Không, phần tuần tự và overhead vẫn tạo giới hạn.",
+        "Có, cứ đủ worker là 0s."
+      ],
+      "correct": 2,
+      "explanation": "Cần xét tỷ trọng song song hóa được, không chỉ số core."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Speedup với workload ít hơn là bằng chứng gì",
+      "question": "Bản multi nhanh 5x nhưng chỉ tính phần nhỏ/khác dữ liệu so với bản single. Có thể công bố tối ưu 5x cho cùng bài toán không?",
+      "options": [
+        "Có, mọi thời gian thấp hơn đều hợp lệ",
+        "Chỉ cần có cùng tên hàm",
+        "Chỉ cần kết quả cùng kiểu int",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Khác workload làm phép so sánh mất ý nghĩa cho yêu cầu ban đầu."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Báo số đo có provenance",
+      "question": "Muốn báo speedup có thể kiểm tra lại, cần giữ gì?",
+      "options": [
+        "Code/revision, workload, môi trường, phương pháp đo, kết quả correctness và dữ liệu thời gian liên quan.",
+        "Chỉ số nhanh nhất không có log.",
+        "Chỉ screenshot một con số.",
+        "Chỉ nhận xét cảm tính."
+      ],
+      "correct": 0,
+      "explanation": "Bằng chứng nguồn giúp người khác đánh giá con số và giới hạn thực tế."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Profiler có overhead",
+      "question": "Vì sao không nên coi thời gian chạy dưới profiler luôn là latency production chính xác?",
+      "options": [
+        "Mọi clock đều chỉ đo CPU cycles không có overhead.",
+        "Profiler có overhead và điều kiện đo có thể khác thực tế.",
+        "Profiler tự tăng tốc mọi hàm.",
+        "Production luôn chạy cProfile."
+      ],
+      "correct": 1,
+      "explanation": "Dùng profiler tìm vị trí tốn chi phí, rồi benchmark thích hợp để đánh giá tác động."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Tối ưu micro phần rất nhỏ",
+      "question": "Một phần chỉ chiếm 1% thời gian và được làm nhanh vô hạn. Lợi ích tổng có thể bị giới hạn bởi điều gì?",
+      "options": [
+        "Profiler tự bỏ mọi phần còn lại.",
+        "Số dòng source bằng 1%.",
+        "99% phần còn lại vẫn phải chạy.",
+        "Tổng luôn nhanh vô hạn theo phần đó."
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu cục bộ cần được đánh giá theo tỷ trọng end-to-end."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "GIL không thay khóa dữ liệu",
+      "question": "Có GIL có đủ bảo đảm mọi chuỗi đọc-sửa-ghi nhiều bước giữa thread đều đúng logic không?",
+      "options": [
+        "Có, GIL là transaction cho mọi nghiệp vụ.",
+        "Có, mọi shared object tự rollback.",
+        "Chỉ cần tên biến bắt đầu lock.",
+        "Không, invariant nhiều bước vẫn cần phân tích đồng bộ."
+      ],
+      "correct": 3,
+      "explanation": "Bảo vệ thực thi interpreter khác hợp đồng atomic của một thao tác nghiệp vụ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Kết quả số thực khi đổi thứ tự tổng",
+      "question": "Chia tổng float thành nhiều đoạn rồi cộng theo thứ tự khác có cần kiểm tra precision không?",
+      "options": [
+        "Có, làm tròn số thực có thể khiến kết quả khác ở mức cần đánh giá.",
+        "Không, float luôn tuân mọi tính chất đại số của số thực chính xác.",
+        "Chỉ số nguyên mới có lỗi làm tròn.",
+        "Process pool tự bảo đảm mọi bit như bản tuần tự."
+      ],
+      "correct": 0,
+      "explanation": "Cần dung sai/hợp đồng phù hợp hoặc phương pháp số đảm bảo yêu cầu."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Phụ thuộc trạng thái trong worker",
+      "question": "Worker đọc biến global mutable mà cha vừa thay đổi có được bảo đảm thấy cùng trạng thái trên mọi cách start process không?",
+      "options": [
+        "Chỉ cần type hint.",
+        "Không, cần mô hình truyền/chia sẻ dữ liệu tường minh theo cách khởi tạo.",
+        "Có, mọi global luôn được chia sẻ live.",
+        "Chỉ cần tên biến giống nhau."
+      ],
+      "correct": 1,
+      "explanation": "Process riêng không đồng nghĩa cùng một namespace sống với cha."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Windows spawn và top level",
+      "question": "Vì sao ví dụ gọi benchmark có tạo pool trực tiếp ở top-level cần được rà trên Windows?",
+      "options": [
+        "Mọi import đều tự tạo GIL riêng cho thread.",
+        "CProfile tự bỏ guard.",
+        "Worker spawn import module có thể chạy lại logic khởi tạo pool nếu thiếu guard phù hợp.",
+        "Windows không chạy được số nguyên."
+      ],
+      "correct": 2,
+      "explanation": "Điểm vào chương trình và khả năng import an toàn là yêu cầu thực tế của multiprocessing."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Warm pool có đúng mục tiêu không",
+      "question": "Chỉ báo thời gian không gồm tạo worker có phù hợp cho tác vụ CLI chạy một lần rồi thoát không?",
+      "options": [
+        "Luôn là con số end-to-end thật.",
+        "Startup không tồn tại ở CLI.",
+        "Chỉ cần số worker lớn hơn 1.",
+        "Cần nêu rõ và cân nhắc thêm tổng thời gian gồm startup vì đó là chi phí người dùng chịu."
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi đo phải khớp cách sử dụng cần đánh giá."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Bản nhanh hơn nhưng tăng RAM lớn",
+      "question": "Tối ưu giảm latency nhưng vượt giới hạn RAM deployment. Có thể coi hoàn tất mọi yêu cầu không?",
+      "options": [
+        "Không, cần đánh giá trade-off theo giới hạn hệ thống.",
+        "Có, tốc độ luôn là tiêu chí duy nhất.",
+        "Chỉ cần giảm tên biến.",
+        "Profiler thời gian tự bảo đảm bộ nhớ."
+      ],
+      "correct": 0,
+      "explanation": "Hiệu năng có nhiều tài nguyên và ràng buộc, không chỉ một chỉ số."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "FFI sai khai báo kiểu",
+      "question": "Gọi thư viện C bằng ctypes với argtypes/restype sai có rủi ro gì?",
+      "options": [
+        "Chỉ ảnh hưởng màu output.",
+        "Sai kết quả hoặc lỗi bộ nhớ/process tùy giao diện, không chỉ một exception Python sạch.",
+        "Python type hints tự ngăn mọi truy cập sai.",
+        "C luôn tự đoán mọi kiểu."
+      ],
+      "correct": 1,
+      "explanation": "Native boundary cần khai báo và kiểm thử đúng, cùng vòng đời buffer hợp lệ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Refcount không là mọi Python",
+      "question": "Từ hành vi thu hồi object ở CPython 3.12, có thể suy mọi implementation Python đều thu hồi đúng thời điểm y hệt không?",
+      "options": [
+        "Chỉ cần cùng phiên bản cú pháp",
+        "Chỉ cần object là list",
+        "Không",
+        "Có, language spec buộc mọi runtime dùng đúng allocator CPython"
+      ],
+      "correct": 2,
+      "explanation": "Phải phân biệt semantics ngôn ngữ với chi tiết implementation."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Get sizeof và object graph",
+      "question": "Một list mới và một list chứa tham chiếu tới object rất lớn có thể có shallow size gần nhau. Điều này cho thấy gì?",
+      "options": [
+        "Object lớn không dùng RAM.",
+        "Get sizeof luôn hỏng.",
+        "Slots tự đếm deep memory.",
+        "Cần tính cả object con/ownership nếu muốn footprint toàn dữ liệu."
+      ],
+      "correct": 3,
+      "explanation": "Container và các object nó trỏ tới không cùng một khối dữ liệu nông."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Cache không giới hạn có thể đảo lợi ích",
+      "question": "Cache giảm tính toán nhưng giữ quá nhiều kết quả lâu dài có thể gây gì?",
+      "options": [
+        "Tăng RAM, áp lực hệ thống và thậm chí làm latency xấu đi.",
+        "Luôn nhanh hơn và không thể hết bộ nhớ.",
+        "GC tự xóa mọi mục cache dù còn tham chiếu.",
+        "Dict tự giới hạn theo dung lượng máy."
+      ],
+      "correct": 0,
+      "explanation": "Hiệu quả cache cần giới hạn, eviction và số đo theo workload."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Thay thuật toán bằng công thức",
+      "question": "Muốn thay tổng bình phương vòng lặp bằng công thức đóng, bước nào không được bỏ?",
+      "options": [
+        "Chỉ chạy một N thuận lợi.",
+        "Chứng minh/kiểm tra miền giá trị, biên và kết quả tương đương trước benchmark.",
+        "Chỉ so số dòng ít hơn.",
+        "Chỉ kiểm tra công thức trả int."
+      ],
+      "correct": 1,
+      "explanation": "Giảm độ phức tạp chỉ là tối ưu hợp lệ nếu ngữ nghĩa vẫn đúng trên miền cần hỗ trợ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Không công bố từ lần tốt nhất đơn lẻ",
+      "question": "Chọn lần chạy nhanh nhất của bản mới và lần chậm nhất của bản cũ rồi báo một tỷ lệ có vấn đề gì?",
+      "options": [
+        "Chỉ cần profiler là mọi chọn mẫu đúng.",
+        "Python tự chuẩn hóa kết quả nên không sao.",
+        "Có thể thiên lệch, không phản ánh phân bố/điều kiện đo tương ứng.",
+        "Đây luôn là cách khách quan nhất."
+      ],
+      "correct": 2,
+      "explanation": "Phương pháp lấy mẫu/tổng hợp cần nhất quán và được nêu rõ."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Mục tiêu 5x là giả thuyết cần kiểm chứng",
+      "question": "Bài tập đặt mục tiêu tăng tốc 5x. Nếu sau tối ưu đúng và đo phù hợp chỉ đạt 2x thì nên báo gì?",
+      "options": [
+        "Đổi nhãn thành 5x để khớp đề.",
+        "So với workload khác để lấy số 5x.",
+        "Bỏ correctness test cho nhanh hơn.",
+        "Báo 2x kèm bằng chứng, giới hạn và phần còn cần cải thiện."
+      ],
+      "correct": 3,
+      "explanation": "Mục tiêu không cho phép bịa kết quả hoặc đổi điều kiện so sánh ngoài hợp đồng."
+    }
+  ]
+}

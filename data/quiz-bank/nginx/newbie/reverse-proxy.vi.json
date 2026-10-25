@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "nginx",
+  "level": "newbie",
+  "lesson": "reverse-proxy",
+  "language": "vi",
+  "sourceHash": "48a3c373fdc2695ef3580c0b666303313917f4e19c201343d233d7f29995a376",
+  "status": "approved",
+  "review": "Tự soạn theo ba sibling locations và nginx.org proxy/WebSocket/core docs. /api/ không kế thừa headers/upgrade từ sibling /; proxy_read_timeout là giữa read operations. root /var/www với /static/ giữ đoạn static trong path. Source Connection upgrade cố định; phiên bản default proxy HTTP thay đổi1.29.7 nên không giả mọi version giống nhau. Không chạy Nginx/backend/network/browser.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Reverse proxy role",
+      "question": "Reverse proxy chủ yếu đứng ở vị trí nào trong flow bài?",
+      "options": [
+        "Nhận request client rồi chuyển tới backend phù hợp",
+        "Chỉ là database client",
+        "Chạy trong mọi browser thay frontend",
+        "Tự tạo tất cả dữ liệu"
+      ],
+      "correct": 0,
+      "explanation": "Nginx có thể xử lý một số path trực tiếp và proxy path khác."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Proxy listener",
+      "question": "Server block này listen port nào?",
+      "options": [
+        "3001",
+        "80",
+        "443",
+        "3000"
+      ],
+      "correct": 1,
+      "explanation": "Backend port khác với listener phía client."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Proxy host name",
+      "question": "server_name là gì?",
+      "options": [
+        "localhost:3000",
+        "backend.internal",
+        "api.example.com",
+        "example.com www.example.com"
+      ],
+      "correct": 2,
+      "explanation": "DNS và virtual host routing vẫn cần cấu hình đúng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Main upstream",
+      "question": "Location / chuyển request tới địa chỉ nào?",
+      "options": [
+        "https://localhost:443",
+        "/var/www/static",
+        "http://example.com:80",
+        "http://localhost:3000"
+      ],
+      "correct": 3,
+      "explanation": "Source proxy_pass không có phần URI riêng sau host/port ở location này."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Proxy directive",
+      "question": "Directive nào chọn nơi chuyển HTTP request?",
+      "options": [
+        "proxy_pass",
+        "root",
+        "expires",
+        "access_log"
+      ],
+      "correct": 0,
+      "explanation": "Protocol/address và URI mapping cần đúng hợp đồng backend."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Forwarded host",
+      "question": "Source đặt header Host bằng biến nào trong location /?",
+      "options": [
+        "$http_upgrade",
+        "$host",
+        "$scheme",
+        "$uri"
+      ],
+      "correct": 1,
+      "explanation": "Host forwarding không tự xác thực host hay user."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Real IP header",
+      "question": "X-Real-IP được gán giá trị nào?",
+      "options": [
+        "$host",
+        "$server_name",
+        "$remote_addr",
+        "$request_uri"
+      ],
+      "correct": 2,
+      "explanation": "Ý nghĩa remote_addr có thể chịu cấu hình real-IP/trust proxy khác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Forwarded chain header",
+      "question": "Header nào dùng $proxy_add_x_forwarded_for?",
+      "options": [
+        "Content-Type",
+        "Upgrade",
+        "Authorization",
+        "X-Forwarded-For"
+      ],
+      "correct": 3,
+      "explanation": "Biến này hỗ trợ thêm địa chỉ vào chuỗi forwarding theo semantics module."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Forwarded scheme",
+      "question": "X-Forwarded-Proto nhận biến nào?",
+      "options": [
+        "$scheme",
+        "$host",
+        "$remote_addr",
+        "$uri"
+      ],
+      "correct": 0,
+      "explanation": "Source không tự chứng minh backend đã cấu hình tin proxy đúng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Explicit proxy HTTP",
+      "question": "Location / đặt proxy_http_version bằng gì?",
+      "options": [
+        "3",
+        "1.1",
+        "1.0",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "Đây là giá trị explicit trong source, không suy default mọi phiên bản."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Upgrade header",
+      "question": "Header Upgrade gửi upstream lấy từ đâu?",
+      "options": [
+        "$document_root",
+        "$proxy_host",
+        "$http_upgrade",
+        "$server_port"
+      ],
+      "correct": 2,
+      "explanation": "Hop-by-hop upgrade cần xử lý rõ khi proxy WebSocket."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Connection value",
+      "question": "Location / đặt header Connection thành chuỗi nào?",
+      "options": [
+        "close",
+        "keep-alive mặc định đã viết",
+        "websocket-only",
+        "upgrade"
+      ],
+      "correct": 3,
+      "explanation": "Source gán cố định, chưa dùng map theo request."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "API location",
+      "question": "Location riêng cho API có prefix nào?",
+      "options": [
+        "/api/",
+        "/static/",
+        "/users",
+        "/metrics"
+      ],
+      "correct": 0,
+      "explanation": "Nó là sibling của location /."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "API upstream mapping",
+      "question": "proxy_pass trong /api/ có giá trị gì?",
+      "options": [
+        "/var/www/api",
+        "http://localhost:3000/api/",
+        "http://localhost:3000/",
+        "https://backend/api"
+      ],
+      "correct": 1,
+      "explanation": "Phần URI /api/ được cấu hình rõ trên proxy_pass này."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "API read timeout",
+      "question": "proxy_read_timeout trong /api/ là bao nhiêu?",
+      "options": [
+        "30d",
+        "1y",
+        "60s",
+        "5s"
+      ],
+      "correct": 2,
+      "explanation": "Không hiểu đó là deadline tổng tuyệt đối của mọi request."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Static location",
+      "question": "Prefix nào phục vụ file trực tiếp theo source?",
+      "options": [
+        "/api/",
+        "/admin/",
+        "/login/",
+        "/static/"
+      ],
+      "correct": 3,
+      "explanation": "Location này có root và cache response headers."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Static root",
+      "question": "root trong location /static/ là gì?",
+      "options": [
+        "/var/www",
+        "/var/www/html",
+        "/static",
+        "/app/public"
+      ],
+      "correct": 0,
+      "explanation": "Theo root mapping, phần URI static vẫn góp vào filesystem path."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Browser expiry",
+      "question": "expires ở static được đặt bao lâu?",
+      "options": [
+        "Không có",
+        "30d",
+        "60s",
+        "1y"
+      ],
+      "correct": 1,
+      "explanation": "Đây là browser/client cache header policy theo cấu hình."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Additional cache header",
+      "question": "add_header Cache-Control ghi thêm giá trị nào?",
+      "options": [
+        "max-age=0 duy nhất",
+        "no-cache bắt buộc",
+        "public, immutable",
+        "private, no-store"
+      ],
+      "correct": 2,
+      "explanation": "Cần phối hợp với expires và chiến lược version asset."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Exercise backend",
+      "question": "Bài tập yêu cầu reverse proxy cho loại app nào?",
+      "options": [
+        "Chỉ file SQLite",
+        "Một CSS compiler",
+        "Một browser extension",
+        "Node.js app"
+      ],
+      "correct": 3,
+      "explanation": "Nguyên tắc proxy cũng có thể dùng với backend HTTP khác."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "API prefix precedence",
+      "question": "URI /api/users khớp các prefix / và /api/; trong cấu hình không regex này chọn location nào?",
+      "options": [
+        "/api/ vì prefix cụ thể hơn",
+        "Luôn / vì viết trước",
+        "Cả hai chạy nối tiếp như middleware",
+        "/static/"
+      ],
+      "correct": 0,
+      "explanation": "Không coi sibling / là cha thực thi của /api/."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Static prefix precedence",
+      "question": "URI /static/app.css đi theo nhánh nào theo source?",
+      "options": [
+        "WebSocket tunnel luôn",
+        "Static root serving",
+        "Proxy /api/",
+        "Proxy / trước rồi static sau bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi request location được chọn theo routing configuration."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "API URI example",
+      "question": "/api/users qua location /api/ với proxy_pass có URI /api/ sẽ tới path nào theo trường hợp thông thường?",
+      "options": [
+        "/api/api/users",
+        "/static/users",
+        "/api/users",
+        "/users"
+      ],
+      "correct": 2,
+      "explanation": "Prefix được thay bằng cùng /api/ nên không nhân đôi trong ví dụ này."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Stripping prefix alternative",
+      "question": "Nếu đổi proxy_pass trong /api/ thành http://localhost:3000/, path /api/users thường thành gì?",
+      "options": [
+        "/api/users bất biến",
+        "/api/api/users",
+        "/localhost/users",
+        "/users"
+      ],
+      "correct": 3,
+      "explanation": "Khi chỉ định URI, phần normalized URI khớp location được thay bằng URI đó."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "No URI alternative",
+      "question": "Nếu /api/ dùng proxy_pass http://localhost:3000 không URI riêng, path gốc thông thường được xử lý thế nào?",
+      "options": [
+        "Được chuyển theo semantics không URI replacement trong trường hợp không rewrite",
+        "Luôn bỏ /api/",
+        "Luôn thêm /api/ lần nữa",
+        "Luôn thành /"
+      ],
+      "correct": 0,
+      "explanation": "Rewrite/variables là các trường hợp cần xem riêng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Static path example",
+      "question": "URI /static/css/app.css với root /var/www dự kiến đọc path nào?",
+      "options": [
+        "/app/css/app.css",
+        "/var/www/static/css/app.css",
+        "/var/www/css/app.css",
+        "/static/var/www/app.css"
+      ],
+      "correct": 1,
+      "explanation": "root và alias có semantics khác nhau."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Static alias intention",
+      "question": "Muốn bỏ prefix /static/ khi map vào thư mục asset riêng, nên xem gì?",
+      "options": [
+        "Chỉ đổi Host header",
+        "Chỉ tăng timeout",
+        "alias/root mapping đúng theo location và path mong muốn",
+        "Chỉ đổi Cache-Control"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm bằng ví dụ URI và filesystem path cụ thể."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Sibling header inheritance",
+      "question": "Header proxy_set_header trong location / có tự truyền cấu hình sang sibling /api/ không?",
+      "options": [
+        "Có, / luôn là cha cấu hình của mọi prefix",
+        "Có, chỉ cần cùng server_name",
+        "Có, proxy_pass cùng port là đủ",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Inheritance theo context cấu hình, không theo việc prefix / ngắn hơn."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Server level headers",
+      "question": "Muốn dùng header forwarding chung cho các location, có thể làm gì?",
+      "options": [
+        "Đặt ở context chung phù hợp hoặc include rõ, xét quy tắc inheritance/override",
+        "Chỉ thêm comment chung",
+        "Đặt trong location / rồi coi mọi sibling kế thừa",
+        "Chỉ đổi tên server"
+      ],
+      "correct": 0,
+      "explanation": "Directive presence tại từng mức có thể ảnh hưởng kế thừa cả nhóm."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Override header group",
+      "question": "Nếu server có nhiều proxy_set_header nhưng location đặt một proxy_set_header riêng, cần lưu ý gì theo mặc định module?",
+      "options": [
+        "Chỉ Host bị xóa khỏi source file",
+        "Nhóm header ở mức trên không được kế thừa như merge từng dòng tự động",
+        "Mọi header luôn merge sâu bất kể version/config",
+        "Location tự lấy header từ sibling gần nhất"
+      ],
+      "correct": 1,
+      "explanation": "Cần lặp/include các giá trị cần giữ theo contract."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Read timeout semantics",
+      "question": "proxy_read_timeout 60s áp thời gian vào điều gì?",
+      "options": [
+        "Thời gian DNS cache duy nhất",
+        "Thời gian browser giữ CSS",
+        "Khoảng giữa các lần đọc response từ upstream",
+        "Deadline tổng mọi response đúng60s"
+      ],
+      "correct": 2,
+      "explanation": "Response có dữ liệu định kỳ có thể tồn tại lâu hơn 60s tổng."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Long stream qualification",
+      "question": "Stream gửi dữ liệu đều trong khoảng timeout có nhất thiết bị đóng đúng60s kể từ đầu không?",
+      "options": [
+        "Có, luôn deadline tổng",
+        "Có, server_name quyết định60s",
+        "Có, public cache ép close",
+        "Không chỉ vì proxy_read_timeout 60s"
+      ],
+      "correct": 3,
+      "explanation": "Cần xem cả timeout khác và semantics stream/backend."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "WebSocket route gap",
+      "question": "WebSocket nằm /api/socket có tự nhận upgrade headers từ location / trong source không?",
+      "options": [
+        "Không",
+        "Có, mọi websocket bỏ location selection",
+        "Có, proxy_pass tự đọc sibling config",
+        "Có, Cache-Control sửa handshake"
+      ],
+      "correct": 0,
+      "explanation": "Phải cấu hình đúng nhánh thực nhận request."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Protocol switching response",
+      "question": "WebSocket tunnel theo HTTP upgrade cần upstream đáp ứng trạng thái nào trong flow phù hợp?",
+      "options": [
+        "500 Internal Server Error",
+        "101 Switching Protocols",
+        "404 Not Found",
+        "301 luôn"
+      ],
+      "correct": 1,
+      "explanation": "Request upgrade và khả năng backend cũng là điều kiện."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Hop by hop fields",
+      "question": "Vì sao Upgrade/Connection không nên được coi như mọi header end-to-end thông thường?",
+      "options": [
+        "Vì luôn chứa password",
+        "Vì chỉ có trong HTTP response",
+        "Chúng có semantics hop-by-hop cần xử lý tại proxy",
+        "Vì chỉ là CSS"
+      ],
+      "correct": 2,
+      "explanation": "Proxying cần chuyển các tín hiệu cần thiết rõ ràng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Fixed upgrade limitation",
+      "question": "Connection=\"upgrade\" cố định có diễn tả đúng sự khác nhau giữa request thường và request upgrade chưa?",
+      "options": [
+        "Rồi, mọi request HTTP đều là WebSocket",
+        "Rồi, Connection tự xác định không cần config",
+        "Rồi, header này là auth",
+        "Chưa, có thể dùng map theo Upgrade cho contract phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế header theo loại kết nối thực."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Localhost deployment scope",
+      "question": "localhost:3000 được hiểu theo mạng của nơi nào?",
+      "options": [
+        "Nơi process/network namespace của Nginx chạy",
+        "Luôn máy browser của user",
+        "Luôn một node cluster tùy ý",
+        "Luôn Internet public"
+      ],
+      "correct": 0,
+      "explanation": "Container/host topology khác nhau có thể cần địa chỉ khác."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Backend availability",
+      "question": "proxy_pass có tự khởi động Node server nếu chưa chạy không?",
+      "options": [
+        "Có, server_name chứa source",
+        "Không",
+        "Có, Nginx tự gọi npm start",
+        "Có, port 3000 tự tạo app"
+      ],
+      "correct": 1,
+      "explanation": "Service lifecycle của backend cần được quản lý riêng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Forwarded IP trust",
+      "question": "Backend có nên tin mọi phần X-Forwarded-For do client gửi sẵn không?",
+      "options": [
+        "Có, mọi IP trong header đã xác minh",
+        "Có, chỉ dùng HTTP là đủ",
+        "Không, cần trust proxy policy và parsing đúng",
+        "Có, header luôn là chữ ký Nginx"
+      ],
+      "correct": 2,
+      "explanation": "Client có thể cung cấp header; trust phải gắn với hạ tầng có thẩm quyền."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Scheme forwarding versus backend config",
+      "question": "Gửi X-Forwarded-Proto có tự làm backend nhận secure request đúng trong mọi framework không?",
+      "options": [
+        "Có, mọi framework tin mọi header",
+        "Có, header tự cấp TLS certificate",
+        "Có, Cache-Control kiểm scheme",
+        "Không, backend cần proxy trust/config phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Frontend proxy và backend interpretation cần được phối hợp."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Client TLS absent",
+      "question": "Server block hiện tại có mã hóa TLS cho kết nối client tới Nginx chưa?",
+      "options": [
+        "Chưa, chỉ listen 80 không ssl",
+        "Rồi, proxy_http_version 1.1 là TLS",
+        "Rồi, X-Forwarded-Proto tự mã hóa",
+        "Rồi, immutable là security header"
+      ],
+      "correct": 0,
+      "explanation": "Protocol version/header không thay TLS listener và certificate."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Upstream transport",
+      "question": "proxy_pass http://localhost:3000 dùng transport scheme nào theo source?",
+      "options": [
+        "Một database connection",
+        "HTTP tới upstream",
+        "HTTPS tới upstream",
+        "Một filesystem alias"
+      ],
+      "correct": 1,
+      "explanation": "Không gọi đó là mã hóa đầu-cuối chỉ vì client có thể dùng HTTPS ở nơi khác."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Static expires scope",
+      "question": "expires 30d áp vào mọi response API trong sibling /api/ chưa?",
+      "options": [
+        "Có, prefix api đọc static config",
+        "Có, proxy_pass tự kế thừa từ sibling",
+        "Không, nó nằm ở /static/",
+        "Có, mọi location trong cùng server luôn chungexpires"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt context/path áp directive."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Public cache suitability",
+      "question": "Cache-Control public có nên dùng tùy tiện cho nội dung riêng theo user không?",
+      "options": [
+        "Có, public tự kiểm session",
+        "Có, immutable mã hóa response",
+        "Có, expires tự tách mọi user",
+        "Không, phải theo privacy và cache-key/Vary policy"
+      ],
+      "correct": 3,
+      "explanation": "Cache policy có thể ảnh hưởng nơi dữ liệu được lưu/phục vụ lại."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Immutable asset update",
+      "question": "Nếu ghi đè app.css cùng URL trong thời gian cache dài, client có thể thấy gì?",
+      "options": [
+        "Nội dung cũ theo cache policy",
+        "Luôn lấy mới vì filename giống nhau",
+        "Nginx tự xóa mọi browser cache",
+        "Node tự đổi URL trong browser"
+      ],
+      "correct": 0,
+      "explanation": "Nên phối hợp URL version/hash và retention theo pipeline asset."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Header append not replacement",
+      "question": "expires có thể tạo Cache-Control và add_header bổ sung Cache-Control; cần hiểu gì?",
+      "options": [
+        "expires không bao giờ tạo cache header",
+        "Có thể có nhiều giá trị/header được kết hợp theo semantics, không mặc định add_header xóa giá trị cũ",
+        "Luôn chỉ còn header cuối",
+        "Mọi header trùng tự gây 500"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm response header thực nếu quyết định cache quan trọng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Static permissions",
+      "question": "File /var/www/static/app.css có nhưng Nginx không đọc được; proxy_pass Node có tự sửa quyền không?",
+      "options": [
+        "Có, cache 30d bỏ qua quyền",
+        "Có, header Host cấp root",
+        "Không",
+        "Có, backend cấp quyền filesystem cho Nginx"
+      ],
+      "correct": 2,
+      "explanation": "Static location phục vụ file theo quyền/path của process Nginx."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Backend refusal diagnosis",
+      "question": "Backend ở 3000 không lắng nghe, request proxy lỗi; nên xem gì?",
+      "options": [
+        "Chỉ CSS expiry",
+        "Chỉ file index",
+        "Chỉ browser font",
+        "Upstream address, service/network và error logs"
+      ],
+      "correct": 3,
+      "explanation": "Proxy configuration không tự vận hành backend."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Host variable representation",
+      "question": "Host=$host có nên được coi là sao chép byte-for-byte mọi Host header gồm port không?",
+      "options": [
+        "Không, biến có semantics chuẩn hóa/fallback riêng",
+        "Có, luôn chính xác mọi byte",
+        "Có, mọi Host đều không có port",
+        "Có, nó là alias của $http_upgrade"
+      ],
+      "correct": 0,
+      "explanation": "Nếu hợp đồng cần host/port cụ thể phải chọn và kiểm biến đúng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Forward chain original client",
+      "question": "X-Real-IP=$remote_addr có luôn là IP người dùng cuối khi còn proxy/CDN phía trước không?",
+      "options": [
+        "Có, server_name xác minh IP",
+        "Không, cần real-IP/trust topology phù hợp",
+        "Có, header tự đi ngược mọi proxy",
+        "Có, localhost biết mọi IP"
+      ],
+      "correct": 1,
+      "explanation": "Địa chỉ peer trực tiếp và địa chỉ client gốc có thể khác nhau."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "WebSocket backend requirement",
+      "question": "Chỉ cấu hình Upgrade ở Nginx có tự biến mọi Node endpoint thành WebSocket server không?",
+      "options": [
+        "Có, Connection upgrade đủ mọi protocol",
+        "Có, listen 80 bật mọi WebSocket",
+        "Không",
+        "Có, Nginx tự sinh handler"
+      ],
+      "correct": 2,
+      "explanation": "Backend cần thực thi handshake/protocol phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "WebSocket idle lifecycle",
+      "question": "WebSocket cần giữ lâu nhưng upstream im lặng quá read timeout; cần xem gì?",
+      "options": [
+        "Chỉ số file CSS",
+        "Chỉ static cache",
+        "Chỉ tên server",
+        "Ping/traffic và timeout policy của đúng location /backend"
+      ],
+      "correct": 3,
+      "explanation": "Giữ kết nối cần hợp đồng liveness, không chỉ header Upgrade."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "API headers separate",
+      "question": "Vì /api/ không đặt forwarding headers explicit, có thể khẳng định backend nhận đúng Host/scheme/IP như root location không?",
+      "options": [
+        "Không",
+        "Có, cùng port backend là đủ",
+        "Có, mọi API đều kế thừa root location",
+        "Có, source comment API routes đảm bảo"
+      ],
+      "correct": 0,
+      "explanation": "Phải kiểm cấu hình effective của nhánh API."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Static prefix inside API",
+      "question": "URI /api/static/a.css theo các prefix trong source thường đi đâu?",
+      "options": [
+        "Luôn location /",
+        "Location /api/",
+        "Location /static/ vì có chữ static ở giữa",
+        "Cả hai nối tiếp"
+      ],
+      "correct": 1,
+      "explanation": "Prefix matching xét từ đầu URI, không tìm chuỗi tùy ý."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "No proxy cache config",
+      "question": "Nguồn đã có proxy_cache/cache_path để cache response backend chưa?",
+      "options": [
+        "Rồi, public header tự tạo upstream cache",
+        "Rồi, Node 3000 luôn cache",
+        "Chưa",
+        "Rồi, expires static là proxy cache"
+      ],
+      "correct": 2,
+      "explanation": "Browser cache headers cho static khác cache response upstream tại Nginx."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Read timeout versus connect",
+      "question": "Timeout đọc response có thay mọi thiết lập timeout kết nối upstream không?",
+      "options": [
+        "Có, chỉ cần một con số cho mọi giai đoạn",
+        "Có, read timeout là DNS TTL",
+        "Có, 60s là deadline toàn hệ thống",
+        "Không, là các giai đoạn/semantics khác nhau"
+      ],
+      "correct": 3,
+      "explanation": "Cần chính sách timeout phù hợp đường request."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Authentication absence",
+      "question": "Forward Host/IP/Proto có tự xác thực user của API không?",
+      "options": [
+        "Không",
+        "Có, IP header là account",
+        "Có, Host đúng nghĩa admin",
+        "Có, WebSocket upgrade xác nhận quyền"
+      ],
+      "correct": 0,
+      "explanation": "Backend/proxy auth phải được triển khai theo policy riêng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Static file not found",
+      "question": "Node trả API đúng nhưng /static/a.css404; nhóm cấu hình nào cần kiểm trước?",
+      "options": [
+        "Chỉ header Upgrade",
+        "Static location /root/path/artifact và quyền",
+        "Chỉ Node API serializer",
+        "Chỉ proxy read timeout"
+      ],
+      "correct": 1,
+      "explanation": "Hai path dùng hai cơ chế phục vụ khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Testing route coverage",
+      "question": "Kiểm một request / thành công đã xác minh /api/ và /static/ đúng chưa?",
+      "options": [
+        "Rồi, cùng server_name",
+        "Rồi, proxy_pass cùng port",
+        "Chưa",
+        "Rồi, root location chạy trước mọi sibling"
+      ],
+      "correct": 2,
+      "explanation": "Các nhánh location cần kiểm hợp đồng tương ứng."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Incomplete infrastructure",
+      "question": "Source proxy này đã chứng minh DNS, TLS, backend lifecycle và monitoring production đầy đủ chưa?",
+      "options": [
+        "Rồi, server block tự tạo mọi dịch vụ",
+        "Rồi, expires 30d đủ vận hành",
+        "Rồi, Connection upgrade chống mọi lỗi",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Không suy tính năng chưa triển khai từ comment hoặc tên directive."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Sibling config causal fix",
+      "question": "Root proxy nhận đúng scheme nhưng /api/ bị backend redirect sai scheme; source gợi ý nguyên nhân/sửa nào?",
+      "options": [
+        "Header forwarding chỉ ở sibling /; cấu hình chung/riêng đúng context và backend trust cho API",
+        "Chỉ tăng timeout API",
+        "Chỉ đổi static root",
+        "Chỉ thêm immutable"
+      ],
+      "correct": 0,
+      "explanation": "Cần sửa effective config của path và cách backend đọc forwarded metadata."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "API WebSocket failure",
+      "question": "WebSocket /socket chạy nhưng /api/socket lỗi handshake; hướng sửa phù hợp?",
+      "options": [
+        "Chỉ thêm public header",
+        "Kiểm location thực và cấu hình upgrade/protocol/backend ở nhánh API",
+        "Chỉ tăng cache expiry",
+        "Chỉ đổi tên DNS"
+      ],
+      "correct": 1,
+      "explanation": "Các sibling location không tự chia sẻ WebSocket directives."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Container localhost error",
+      "question": "Nginx và Node ở hai container khác nhau nhưng proxy tới localhost:3000; điều gì cần sửa?",
+      "options": [
+        "Chỉ tăng read timeout",
+        "Chỉ chmodfile CSS",
+        "Địa chỉ/service discovery/network theo namespace thực, cùng kiểm listener backend",
+        "Chỉ đổi header Host thành localhost"
+      ],
+      "correct": 2,
+      "explanation": "Localhost của Nginx không tự là container Node khác."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Prefix duplication diagnosis",
+      "question": "Backend nhận path sai sau đổi proxy_pass từ không URI sang URI; cần kiểm gì?",
+      "options": [
+        "Chỉ cookie expiry",
+        "Chỉ User role",
+        "Chỉ worker CPU",
+        "Normalized location prefix, rewrite và URI replacement cụ thể bằng request ví dụ"
+      ],
+      "correct": 3,
+      "explanation": "Dấu slash/URI có thể đổi contract routing upstream."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Static alias mismatch",
+      "question": "Muốn /static/a.css đọc /srv/assets/a.css nhưng root /srv/assets tạo path /srv/assets/static/a.css; cần làm gì?",
+      "options": [
+        "Chọn root/alias/mapping đúng và kiểm đường dẫn cụ thể",
+        "Chỉ đổi Cache-Control",
+        "Chỉ đặt proxy_read_timeout lớn hơn",
+        "Chỉ đổi Host"
+      ],
+      "correct": 0,
+      "explanation": "Filesystem mapping khác transport proxy và cache policy."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Forwarded IP spoof risk",
+      "question": "Client tự gửi X-Forwarded-For rồi Nginx append; backend lấy IP đầu tiên mù quáng để cấp quyền. Vấn đề gì?",
+      "options": [
+        "IP đầu luôn đúng mọi topology",
+        "Trust/parsing chain sai có thể tin dữ liệu client; cần policy proxy có thẩm quyền",
+        "Nginx append là chữ ký mọi IP trước đó",
+        "HTTPS xác nhận mọi header là thật"
+      ],
+      "correct": 1,
+      "explanation": "Chuỗi forwarding không tự là thông tin danh tính đã được xác minh."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Scheme spoof boundary",
+      "question": "Backend tin mọi X-Forwarded-Proto nhưng có đường truy cập bỏ qua proxy; cần thiết kế gì?",
+      "options": [
+        "Chỉ đổi domain label",
+        "Chỉ đặt cache public",
+        "Giới hạn trusted proxy/đường truy cập và xử lý header theo hạ tầng",
+        "Chỉ thêm header ở Nginx"
+      ],
+      "correct": 2,
+      "explanation": "Trust contract phải đúng với mọi đường request có thể tới backend."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Timeout misconception",
+      "question": "Download stream kéo dài 5 phút và có dữ liệu mỗi 10 giây dù read timeout 60s; có phải config chắc chắn bị bỏ qua không?",
+      "options": [
+        "Có, mọi response hơn 60s đều là bug",
+        "Có, static expires override HTTP",
+        "Có, nginx không hỗ trợ stream",
+        "Không, timeout này xét khoảng giữa các lần đọc chứ không deadline tổng"
+      ],
+      "correct": 3,
+      "explanation": "Cần đọc đúng semantics trước chẩn đoán thời gian request."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Idle WebSocket policy",
+      "question": "WebSocket rớt sau thời gian im lặng nhưng request ngắn vẫn ổn; cần kiểm nhóm nào?",
+      "options": [
+        "Timeout/heartbeat của location và backend, đúng nhánh upgrade",
+        "Chỉ static file hash",
+        "Chỉ tên service Linux",
+        "Chỉ số Post"
+      ],
+      "correct": 0,
+      "explanation": "Handshake thành công chưa bảo đảm liveness kết nối dài hạn."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Fixed Connection refinement",
+      "question": "Không muốn gửi Connection:upgrade cho mọi HTTP request thường; mẫu thay thế phù hợp là gì?",
+      "options": [
+        "Bỏ mọi header kể cả header WebSocket cần",
+        "Map theo presence của Upgrade và set Connection tương ứng trong context hợp lệ",
+        "Đặt public immutable cho mọi API",
+        "Đổi header Host thành upgrade"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế header theo semantics từng loại request."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Static cache release",
+      "question": "App release mới ghi đè app.js cùng URL nhưng client giữ bản cũ theo cache dài; cần policy nào?",
+      "options": [
+        "Chỉ tăng expires",
+        "Chỉ đổi tên location",
+        "URL/hash versioning và retention/publish order của asset tương thích HTML",
+        "Chỉ reload backend"
+      ],
+      "correct": 2,
+      "explanation": "Cache ở browser/CDN có lifecycle riêng với process Nginx."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Private content public cache",
+      "question": "Đổi /static/ thành nơi trả file user riêng nhưng giữ public immutable; cần đánh giá gì?",
+      "options": [
+        "Chỉ extension file",
+        "Chỉ port 3000",
+        "Chỉ header Connection",
+        "Authorization và cache isolation/content lifecycle, không mặc định static policy phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi dữ liệu thay đổi kéo theo trust/cache contract khác."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Header inheritance override",
+      "question": "Server có Host/IP/Proto chung nhưng /api/ thêm một proxy_set_header riêng; backend mất vài header. Nguyên nhân có thể là gì?",
+      "options": [
+        "Quy tắc kế thừa nhóm proxy_set_header, không merge từng dòng tự động theo mặc định",
+        "URI replacement luôn xóa mọi header",
+        "File CSS không tồn tại",
+        "Node chưa có WebSocket"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm effective config và include/khai lại các giá trị cần giữ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Host allowlist policy",
+      "question": "Backend dùng Host để tạo link/reset URL; chỉ forwarding $host có đủ chống mọi host spoof không?",
+      "options": [
+        "Rồi, Cache-Control public xác nhận origin",
+        "Chưa, cần host validation/trusted forwarding và contract URL an toàn",
+        "Rồi, vì$host là chữ ký domain",
+        "Rồi, localhost upstream chặn header giả"
+      ],
+      "correct": 1,
+      "explanation": "Forwarding và xác thực giá trị là hai bước khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "TLS termination scope",
+      "question": "TLS ở load balancer bên ngoài rồi Nginx proxy HTTP tới Node có chứng minh mọi hop được mã hóa không?",
+      "options": [
+        "Có, X-Forwarded-Proto chứa https",
+        "Có, HTTP 1.1 là TLS",
+        "Không, phải xem transport từng hop và trust boundary",
+        "Có, một hop TLS mã hóa mọi kết nối"
+      ],
+      "correct": 2,
+      "explanation": "Header mô tả scheme không tự mã hóa kênh truyền."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Config version qualification",
+      "question": "Docs mới đổi default proxy HTTP từ 1.29.7; đọc /api/ không đặt directive có nên áp default 1.0 cho mọi version không?",
+      "options": [
+        "Có, mọi Nginx vĩnh viễn 1.0",
+        "Có, source comment quyết định binary version",
+        "Có, server_name ghim version",
+        "Không, cần xác định version/effective config;root location đã explicit 1.1"
+      ],
+      "correct": 3,
+      "explanation": "Không dùng default theo trí nhớ làm chân lý qua mọi phiên bản."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Readiness beyond proxy status",
+      "question": "Nginx active và /static/ trả 200 nhưng /api/ trả 502; điều tra đúng tầng nào?",
+      "options": [
+        "Upstream lifecycle/network/listener và location /proxy config",
+        "Chỉ frontend CSS",
+        "Chỉ static expiry",
+        "Chỉ server_name index"
+      ],
+      "correct": 0,
+      "explanation": "Một nhánh phục vụ file đúng không chứng minh backend proxy sẵn sàng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Error response policy",
+      "question": "Backend 500 cần JSONnhưng proxy error fallback trả HTML 200; cần sửa hợp đồng nào?",
+      "options": [
+        "Chỉ tăng timeout",
+        "Status/body/content-type và error routing của API",
+        "Cho JSON parser bỏ mọi HTML",
+        "Đổi /static/ thành /api/"
+      ],
+      "correct": 1,
+      "explanation": "Không che lỗi tác vụ thành response thành công khác định dạng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Route specific integration test",
+      "question": "Muốn bắt lỗi proxy headers/API upgrade/static path trong mẫu, nhóm kiểm nào phù hợp?",
+      "options": [
+        "Chỉ một request root 200",
+        "Chỉ đếm số location",
+        "Request từng nhánh với path/header/response contract và backend test phù hợp",
+        "Chỉ nginx -t"
+      ],
+      "correct": 2,
+      "explanation": "Syntax check không thay hành vi tích hợp theo location."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Complete proxy deployment",
+      "question": "Để proxy Node vận hành đúng yêu cầu, cần ghép nhóm nào?",
+      "options": [
+        "Chỉ server_name",
+        "Chỉ Connection upgrade",
+        "Chỉ expires 30d",
+        "Backend/network/DNS, location /headers/TLS, timeouts/cache policy và checks đúng scope"
+      ],
+      "correct": 3,
+      "explanation": "Snippet minh họa các cơ chế chưa chứa toàn bộ hệ thống."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "zig",
+  "level": "master",
+  "lesson": "os",
+  "language": "vi",
+  "sourceHash": "612d2e16dfd91e4a72e1ec09443dc6406fb3585928343e2577ecc157ff0cc133",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Zig 0.13.0: std.os alias và std.debug.print, main !void; source chưa đọc CPU/RAM hoặc triển khai syscall/MMIO. Đối chiếu language reference volatile/pointers và std/debug.zig, std/os.zig 0.13.0. Tình huống OS phân biệt target, user/kernel, virtual/physical mapping, privilege, lifetime, error/partial I/O và semantics số liệu. Không chạy compiler, syscall, MMIO, process hoặc lệnh OS.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Std import",
+      "question": "const std = @import(\"std\") cung cấp gì trong source?",
+      "options": [
+        "Namespace thư viện chuẩn Zig",
+        "Một process kernel đã khởi động",
+        "Quyền quản trị hệ điều hành",
+        "Một vùng MMIO đã map"
+      ],
+      "correct": 0,
+      "explanation": "Import namespace không tự cấp tài nguyên hoặc quyền runtime."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Alias os",
+      "question": "const os = std.os trong bài làm gì trực tiếp?",
+      "options": [
+        "Chuyển main sang kernel mode",
+        "Đặt alias cho namespace std.os",
+        "Đọc RAM máy hiện tại",
+        "Gọi một raw syscall cụ thể"
+      ],
+      "correct": 1,
+      "explanation": "Alias chưa phải lời gọi hàm hệ thống."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Lời gọi thực",
+      "question": "Hàm nào được main gọi trong source?",
+      "options": [
+        "os.mapPhysicalMemory",
+        "os.getRam",
+        "std.debug.print",
+        "os.readCpu"
+      ],
+      "correct": 2,
+      "explanation": "Không có các lời gọi CPU/RAM trong đoạn code nguồn."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Print output",
+      "question": "Chuỗi debug.print của bài có ý nghĩa gì?",
+      "options": [
+        "Dữ liệu CPU/RAM được đo tự động",
+        "Bằng chứng đang chạy trong kernel",
+        "Kết quả đọc thanh ghi phần cứng",
+        "Thông điệp text do chương trình yêu cầu in"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung câu chữ không tạo ra hành vi hệ điều hành được mô tả."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Format args",
+      "question": "Đối số .{} trong debug.print của source biểu diễn gì?",
+      "options": [
+        "Tuple đối số format rỗng",
+        "Một memory mapping rỗng đã được cấp",
+        "Một error set chứa mọi lỗi",
+        "Một target OS mặc định"
+      ],
+      "correct": 0,
+      "explanation": "Format không có placeholder nên không cần giá trị format bổ sung."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Main return",
+      "question": "!void trong chữ ký main thuộc dạng gì?",
+      "options": [
+        "Một hàm chỉ có thể ném lỗi",
+        "Error union có payload thành công void",
+        "Một pointer tới void",
+        "Một c_int trạng thái syscall bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Nó cho phép luồng lỗi theo hệ thống kiểu Zig, không tự tạo syscall."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Comment",
+      "question": "Comment nói gọi trực tiếp hàm hệ thống có tự làm dòng sau thành raw syscall không?",
+      "options": [
+        "Có, std.os alias tự đổi mọi call",
+        "Chỉ khi main trả !void",
+        "Không, phải xem API thực được gọi",
+        "Có, comment quyết định calling convention"
+      ],
+      "correct": 2,
+      "explanation": "Mô tả và implementation có thể khác nhau."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Debug destination",
+      "question": "Theo implementation std.debug.print 0.13 được đối chiếu, đầu ra hướng tới đâu?",
+      "options": [
+        "stdout bắt buộc",
+        "Một file CPU info cố định",
+        "Một socket kernel bắt buộc",
+        "stderr"
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất debug output với giao thức stdout của chương trình."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Debug errors",
+      "question": "std.debug.print 0.13 có trả error union để caller try lỗi ghi không?",
+      "options": [
+        "Không, hàm trả void và im lặng khi ghi thất bại theo implementation",
+        "Có, mọi call print bắt buộc try",
+        "Có, lỗi ghi tự thành giá trị CPU",
+        "Không, vì stderr không thể lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Chọn API trả lỗi phù hợp nếu output là hợp đồng quan trọng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Syscall",
+      "question": "Syscall thường là ranh giới nào?",
+      "options": [
+        "Mọi dòng comment chứa chữ OS",
+        "Yêu cầu dịch vụ kernel từ ngữ cảnh theo ABI hệ điều hành",
+        "Mọi lời gọi hàm trong cùng module",
+        "Mọi phép gán const"
+      ],
+      "correct": 1,
+      "explanation": "Thư viện có thể bọc syscall, nhưng không phải mọi API đều là raw syscall trực tiếp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "User vs kernel",
+      "question": "Một executable hosted thông thường có tự là kernel chỉ vì dùng Zig không?",
+      "options": [
+        "Có, import std.os tự cấp ring 0",
+        "Chỉ cần message chứa kernel",
+        "Không, quyền/ngữ cảnh thực thi vẫn do môi trường quyết định",
+        "Có, Zig luôn chạy privileged"
+      ],
+      "correct": 2,
+      "explanation": "Ngôn ngữ hỗ trợ low-level không tự thay cấp đặc quyền."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "MMIO",
+      "question": "Memory-mapped I/O đề cập điều gì?",
+      "options": [
+        "Một String được in ra console",
+        "Mọi heap allocation bình thường",
+        "Một tên khác của file text CPU",
+        "Truy cập thiết bị qua vùng địa chỉ/thanh ghi được ánh xạ theo platform"
+      ],
+      "correct": 3,
+      "explanation": "Thiết bị có semantics truy cập riêng cần tuân thủ."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Volatile purpose",
+      "question": "volatile trong Zig thường cần khi nào theo bài mở rộng?",
+      "options": [
+        "Load/store có tác dụng phụ như MMIO theo contract",
+        "Muốn mọi biến dùng chung tự thread-safe",
+        "Muốn pointer tự được cấp phát",
+        "Muốn chuyển physical address thành virtual mapping"
+      ],
+      "correct": 0,
+      "explanation": "volatile không thay cơ chế mapping, ownership hay đồng bộ."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Physical vs virtual",
+      "question": "Địa chỉ vật lý và địa chỉ trong process có luôn cùng nghĩa không?",
+      "options": [
+        "Không, vì user process không có địa chỉ",
+        "Không, phải theo memory model/mapping của môi trường",
+        "Có, mọi integer address là RAM hợp lệ",
+        "Có, trên mọi target ARM luôn đồng nhất"
+      ],
+      "correct": 1,
+      "explanation": "Không dereference địa chỉ chỉ từ giá trị số nhìn hợp lý."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Target APIs",
+      "question": "API riêng Linux có nên dùng nguyên như API Windows cho mọi target không?",
+      "options": [
+        "Có, mọi OS cùng error convention",
+        "Chỉ cần đổi tên executable",
+        "Không, cần chọn API/ABI theo target và abstraction phù hợp",
+        "Có, namespace std.os tự thống nhất mọi syscall number"
+      ],
+      "correct": 2,
+      "explanation": "Có thể có lớp trừu tượng, nhưng raw ABI không phổ quát."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "CPU/RAM exercise",
+      "question": "Bài tập yêu cầu thêm phần nào chưa được main hiện tại thực hiện?",
+      "options": [
+        "Chỉ đổi literal message",
+        "Chỉ tạo alias os lần nữa",
+        "Chỉ bỏ dấu ! khỏi main",
+        "Đọc thông tin CPU và bộ nhớ qua cơ chế hệ thống phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần implementation và contract cụ thể cho target được chọn."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "ARM/RISC-V",
+      "question": "Nhắc ARM và RISC-V trong keypoints nói về nhóm gì?",
+      "options": [
+        "Các kiến trúc target có thể xét cho công việc low-level",
+        "Hai mode debug.print",
+        "Hai loại cookie session",
+        "Hai định dạng String của Zig"
+      ],
+      "correct": 0,
+      "explanation": "Kiến trúc không tự cung cấp toàn bộ startup/driver/runtime."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Freestanding",
+      "question": "Môi trường freestanding thường đòi hỏi điều gì?",
+      "options": [
+        "Chỉ thay filename thành kernel.zig",
+        "Thiết kế startup/runtime và dịch vụ cần thiết theo platform",
+        "Mọi dịch vụ file/process của host luôn có sẵn",
+        "Mọi std.debug.print tự có console"
+      ],
+      "correct": 1,
+      "explanation": "Không có OS hosted thì nhiều giả định thư viện phải được xem lại."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Resource release",
+      "question": "Nếu đọc thông tin cần mở một tài nguyên OS, cần làm gì?",
+      "options": [
+        "Luôn free mọi handle bằng allocator Zig",
+        "Chỉ in thông báo xong là tài nguyên tự đóng ở mọi scope",
+        "Quản lý ownership và đóng/release đúng vòng đời",
+        "Chỉ để pointer const rồi không cần đóng"
+      ],
+      "correct": 2,
+      "explanation": "Handle OS và vùng nhớ có cơ chế giải phóng khác nhau."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Measurement meaning",
+      "question": "Trước khi báo một con số RAM, cần xác định gì?",
+      "options": [
+        "Chỉ số chữ số muốn in",
+        "Chỉ tên biến ram",
+        "Chỉ nội dung message cố định",
+        "Metric, đơn vị và phạm vi hệ thống/process/container được đo"
+      ],
+      "correct": 3,
+      "explanation": "Cùng nhãn RAM có thể đang chỉ những số liệu rất khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Unused alias",
+      "question": "Alias os có trong file nhưng main chỉ gọi std.debug.print. Điều gì chưa được chứng minh bởi alias?",
+      "options": [
+        "Có raw syscall CPU/RAM được thực thi",
+        "Source có tên namespace os",
+        "Có import std",
+        "Có một declaration const"
+      ],
+      "correct": 0,
+      "explanation": "Sự hiện diện của tên API không bằng một luồng sử dụng dịch vụ đó."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Debug vs syscall",
+      "question": "std.debug.print có thể dùng I/O hệ thống bên trong, nhưng có tự là code đọc CPU/RAM theo bài tập không?",
+      "options": [
+        "Không, vì thư viện không thể dùng OS I/O",
+        "Không, cần thao tác/nguồn số liệu CPU/RAM cụ thể",
+        "Có, mọi I/O tự thu CPU info",
+        "Có, stderr luôn chứa số RAM"
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt cơ chế output với việc thu thập dữ liệu cần in."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Print fail visibility",
+      "question": "Nếu cần caller biết báo cáo ghi thất bại, dùng debug.print void có hạn chế gì?",
+      "options": [
+        "Nó tự retry đến khi ghi được toàn bộ ở mọi môi trường",
+        "Nó trả số byte qua .{}",
+        "Không truyền lỗi ghi về caller theo API đó",
+        "Nó luôn panic mọi lần ghi thiếu"
+      ],
+      "correct": 2,
+      "explanation": "Cần chọn cơ chế output có contract lỗi đáp ứng yêu cầu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "OS namespace version",
+      "question": "Trong 0.13, dùng std.os.linux chỉ ra điều gì?",
+      "options": [
+        "Một API chung cho mọi kernel không phân biệt OS",
+        "Một module tự cấp root",
+        "Một bản sao của main được chạy ở kernel",
+        "Đường API đặc thù Linux cần target/ABI thích hợp"
+      ],
+      "correct": 3,
+      "explanation": "Scope API không nên bị suy thành khả năng portable tuyệt đối."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Raw ABI",
+      "question": "Gọi raw syscall cần khớp nhóm điều kiện nào?",
+      "options": [
+        "Syscall ABI, kiểu/đối số/return/error conventions của target",
+        "Chỉ function name giống nhau ở mọi OS",
+        "Chỉ length của message output",
+        "Chỉ optimize mode Debug"
+      ],
+      "correct": 0,
+      "explanation": "Compiler không tự biến một số syscall tùy ý thành đúng ngữ nghĩa ở mọi target."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Error union mapping",
+      "question": "C/OS API trả mã lỗi có tự thành Zig error union chỉ vì main là !void không?",
+      "options": [
+        "Chỉ cần import std.os",
+        "Không, phải theo wrapper hoặc ánh xạ lỗi rõ",
+        "Có, !void tự kiểm mọi integer return",
+        "Có, mọi giá trị âm tự return error ở mọi function"
+      ],
+      "correct": 1,
+      "explanation": "Error handling phụ thuộc API và logic caller thực tế."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Partial I/O",
+      "question": "API đọc có thể trả ít byte hơn buffer capacity. Parser nên dùng gì?",
+      "options": [
+        "Luôn đúng một record mỗi read",
+        "Tên file để suy byte còn lại",
+        "Số byte thực đọc và contract tiếp tục/EOF",
+        "Toàn bộ capacity như dữ liệu đã init"
+      ],
+      "correct": 2,
+      "explanation": "Dung lượng buffer khác lượng dữ liệu hợp lệ nhận được."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "EOF",
+      "question": "Với API stream có contract đọc 0 byte là EOF, caller cần phân biệt gì?",
+      "options": [
+        "0 luôn là lỗi permission",
+        "EOF luôn nghĩa parse thành công một record đủ",
+        "Mọi read tiếp theo chắc chắn có dữ liệu",
+        "EOF, lỗi và số byte dữ liệu đọc được"
+      ],
+      "correct": 3,
+      "explanation": "Kết thúc nguồn không tự chứng minh cấu trúc dữ liệu đã hoàn chỉnh."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Permission failure",
+      "question": "Đọc thông tin hệ thống bị permission denied nên báo thế nào theo hợp đồng?",
+      "options": [
+        "Phản ánh lỗi/khả năng không có dữ liệu, không thay bằng số 0 hợp lệ ngầm",
+        "Tự báo RAM bằng 0 và coi máy không có RAM",
+        "Đổi message thành root để có quyền",
+        "Chỉ bỏ const của handle"
+      ],
+      "correct": 0,
+      "explanation": "Không có quyền quan sát khác với metric thực bằng 0."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Units",
+      "question": "Một API báo pages cùng page_size thì số byte tổng thường cần gì?",
+      "options": [
+        "Dùng pointer cast để đổi đơn vị",
+        "Nhân theo kiểu số đủ rộng và contract đơn vị",
+        "Chỉ in pages dưới nhãn byte",
+        "Coi page luôn bằng 1 KiB mọi target"
+      ],
+      "correct": 1,
+      "explanation": "Đơn vị và overflow đều ảnh hưởng tính đúng số liệu."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Usable memory",
+      "question": "Tổng RAM, RAM khả dụng và RSS process có đồng nghĩa không?",
+      "options": [
+        "Có, chỉ khác format text",
+        "Không, vì RSS luôn là CPU percentage",
+        "Không, cần tên metric và phạm vi đúng",
+        "Có, mọi API RAM đều trả cùng đại lượng"
+      ],
+      "correct": 2,
+      "explanation": "Không gộp các thước đo có nghĩa khác nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Container scope",
+      "question": "Một process trong container đọc memory info cần kiểm phạm vi nào?",
+      "options": [
+        "Luôn toàn host không có giới hạn",
+        "Luôn đúng limit container của mọi API",
+        "Chỉ tên image",
+        "Host view, namespace và giới hạn/container accounting theo nguồn API"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn dữ liệu quyết định điều đang được đo; label container không tự sửa phạm vi."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "CPU count",
+      "question": "Số logical CPUs có tự bằng số physical cores không?",
+      "options": [
+        "Không, metric/topology và affinity có thể khác",
+        "Có, luôn một logical CPU bằng một socket",
+        "Có, chỉ cần cùng architecture",
+        "Không, vì core count là RAM"
+      ],
+      "correct": 0,
+      "explanation": "Cần xác định count vật lý/logical/khả dụng theo yêu cầu."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "CPU usage",
+      "question": "Tính phần trăm CPU từ counters thường cần gì?",
+      "options": [
+        "Chỉ nội dung dòng debug.print",
+        "Hai mẫu/độ chênh theo khoảng thời gian và công thức đúng metric",
+        "Chỉ một counter tích lũy rồi gắn dấu %",
+        "Chỉ số CPU cores nhân 100"
+      ],
+      "correct": 1,
+      "explanation": "Counter tổng không tự là tỷ lệ sử dụng hiện tại."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Sampling time",
+      "question": "Đọc CPU ở một thời điểm và RAM ở thời điểm khác có điều gì cần nêu?",
+      "options": [
+        "Mọi metric bất biến trong process lifetime",
+        "Chỉ cần cùng tên biến",
+        "Timestamp/window và ý nghĩa snapshot nếu cần liên hệ chúng",
+        "Mọi đọc OS đều là snapshot toàn cục atomic"
+      ],
+      "correct": 2,
+      "explanation": "Tính nhất quán của báo cáo phụ thuộc cách thu thập."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Buffer parsing",
+      "question": "Dữ liệu OS dạng text không có NUL cuối nhưng có length; nên parse thế nào?",
+      "options": [
+        "Giả định buffer.ptr là C string vô hạn",
+        "Đọc hết capacity để tìm thông tin",
+        "Chỉ cast sang struct tương ứng tên field",
+        "Dùng phạm vi byte hợp lệ theo length và parser đúng định dạng"
+      ],
+      "correct": 3,
+      "explanation": "Representation text khác layout struct và cần bounds rõ."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Integer address",
+      "question": "@ptrFromInt tạo pointer có tự map RAM/MMIO và cấp quyền truy cập không?",
+      "options": [
+        "Không, mapping/quyền/alignment vẫn phải hợp lệ",
+        "Có, compiler tự xin kernel map địa chỉ",
+        "Có, nếu pointer có volatile",
+        "Chỉ cần số địa chỉ khác 0"
+      ],
+      "correct": 0,
+      "explanation": "Cast representation không tạo tài nguyên hay permission."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Alignment",
+      "question": "Truy cập register bằng pointer kiểu u32 cần xem gì?",
+      "options": [
+        "Chỉ tính const của pointer",
+        "Alignment, access width và địa chỉ hợp lệ theo device/platform",
+        "Chỉ tên biến reg",
+        "Mọi thiết bị cho unaligned access như nhau"
+      ],
+      "correct": 1,
+      "explanation": "Độ rộng/địa chỉ truy cập là phần contract phần cứng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Volatile not atomic",
+      "question": "volatile có tự làm phép tăng counter dùng chung giữa threads thành atomic không?",
+      "options": [
+        "Có, chỉ cần pointer const",
+        "Không, vì Zig không có atomics",
+        "Không, cần atomics hoặc đồng bộ phù hợp",
+        "Có, mọi volatile load/store khóa mọi core"
+      ],
+      "correct": 2,
+      "explanation": "MMIO side effects và concurrency synchronization là hai yêu cầu khác nhau."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "CPU barrier",
+      "question": "Có volatile pointer có đủ suy mọi yêu cầu cache/device barrier đã đúng không?",
+      "options": [
+        "Có, volatile thay toàn bộ memory barriers",
+        "Có, import std.os tự cấu hình cache",
+        "Chỉ cần dùng u8 thay u32",
+        "Không, cần quy tắc ordering/coherence của platform/device"
+      ],
+      "correct": 3,
+      "explanation": "Compiler-visible accesses không thay toàn contract phần cứng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Read side effects",
+      "question": "Nếu device spec nói đọc register sẽ clear status, polling cần chú ý gì?",
+      "options": [
+        "Mỗi lần đọc có tác dụng phụ, tránh đọc thừa hoặc dùng giả định RAM thường",
+        "Đọc bao nhiêu lần cũng giữ nguyên như const",
+        "Chỉ write mới có side effect ở mọi device",
+        "volatile tự giữ lại status cũ"
+      ],
+      "correct": 0,
+      "explanation": "Semantics register phải theo datasheet, không theo giá trị đọc một lần."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Write-one-to-clear",
+      "question": "Register có bit write-one-to-clear cần thao tác theo gì?",
+      "options": [
+        "Chỉ cần pointer nullable",
+        "Đặc tả từng bit và access width, tránh giả định ghi lại giá trị đọc luôn vô hại",
+        "Mọi bit luôn được clear khi ghi 0",
+        "Mọi read-modify-write đều an toàn như RAM"
+      ],
+      "correct": 1,
+      "explanation": "Cơ chế ghi có thể khác assignment vào biến RAM."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Endianness",
+      "question": "Truyền cấu trúc byte hệ thống/thiết bị giữa target khác endian cần gì?",
+      "options": [
+        "Cùng field name làm byte order giống nhau",
+        "Chỉ dùng const để giữ thứ tự byte",
+        "Định dạng byte rõ và chuyển đổi/parse đúng contract",
+        "Chỉ cast pointer và tin layout host"
+      ],
+      "correct": 2,
+      "explanation": "Representation bên ngoài không tự theo native endian của caller."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Memory map lifetime",
+      "question": "Pointer vào vùng mapped có còn hợp lệ sau unmap không?",
+      "options": [
+        "Có, pointer const giữ mapping sống",
+        "Có, nếu số địa chỉ không đổi",
+        "Chỉ còn hợp lệ với volatile",
+        "Không theo mapping đã giải phóng đó"
+      ],
+      "correct": 3,
+      "explanation": "Lifetime mapping là trách nhiệm riêng với giá trị địa chỉ pointer."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Cleanup paths",
+      "question": "Nếu acquire một handle thành công rồi parse lỗi, cần gì?",
+      "options": [
+        "Release handle trên cả nhánh lỗi lẫn thành công theo ownership",
+        "Chỉ release ở nhánh parse thành công",
+        "Luôn free handle bằng heap allocator",
+        "Chỉ in lỗi là kernel tự đóng ngay"
+      ],
+      "correct": 0,
+      "explanation": "Tài nguyên OS cần cleanup dù xử lý dữ liệu thất bại."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Freestanding console",
+      "question": "std.debug.print có tự tạo serial driver/console cho bare metal không?",
+      "options": [
+        "Chỉ cần đổi message thành firmware",
+        "Không, cần output/runtime support phù hợp môi trường",
+        "Có, stderr luôn tồn tại trên mọi MCU",
+        "Có, alias std.os tự tạo UART"
+      ],
+      "correct": 1,
+      "explanation": "API hosted assumptions không được mặc định có ở target không OS."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Main entry environments",
+      "question": "Kernel/firmware có nhất thiết dùng nguyên startup/main hosted của snippet không?",
+      "options": [
+        "Có, !void tự dựng page tables",
+        "Không, vì Zig chỉ chạy user-space",
+        "Không, cần entry/startup/link contract theo môi trường",
+        "Có, pub fn main luôn thay mọi boot protocol"
+      ],
+      "correct": 2,
+      "explanation": "Khả năng ngôn ngữ không tự cung cấp thiết kế boot."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Privilege",
+      "question": "Một app user-space muốn đọc địa chỉ vật lý tùy ý chỉ bằng cast có đủ không?",
+      "options": [
+        "Có, low-level language bỏ MMU",
+        "Có, chọn ReleaseFast tự có root",
+        "Chỉ cần dùng *volatile u8",
+        "Không, OS mapping/permission và policy tài nguyên quyết định"
+      ],
+      "correct": 3,
+      "explanation": "Không có runtime safety check không làm tăng đặc quyền CPU/OS."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "API abstraction",
+      "question": "Một wrapper OS trả metric chuẩn hóa cho nhiều target cần làm gì?",
+      "options": [
+        "Tách backend/semantics và ánh xạ kết quả/lỗi/đơn vị theo contract chung",
+        "Chỉ gọi cùng syscall number ở mọi target",
+        "Chỉ đổi tên namespace",
+        "Dùng debug.print để tự chuyển metric"
+      ],
+      "correct": 0,
+      "explanation": "Portability có thể cần các implementation khác nhau dưới cùng interface."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Resource kind",
+      "question": "OS file descriptor/handle có nên giải phóng như mọi slice heap không?",
+      "options": [
+        "Có, defer tự chọn allocator đúng",
+        "Không, dùng API close/release tương ứng quyền sở hữu",
+        "Có, mọi tài nguyên là pointer heap",
+        "Chỉ cần cast handle thành usize rồi free"
+      ],
+      "correct": 1,
+      "explanation": "Đại diện số/pointer không quyết định cách giải phóng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Thread safety info",
+      "question": "Một API trả pointer vào buffer nội bộ mutable cần chú ý gì khi dùng từ nhiều thread?",
+      "options": [
+        "Mọi OS namespace tự serial hóa toàn app",
+        "Chỉ cần thread name khác nhau",
+        "Lifetime/ownership và contract đồng thời của API",
+        "Mọi pointer const tự là snapshot độc lập"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn thông tin hệ thống vẫn có thể có ranh giới dữ liệu và concurrency."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Narrow conversion",
+      "question": "Chuyển tổng RAM u64 sang usize target 32-bit cần gì?",
+      "options": [
+        "Mọi u64 tự vừa usize trên mọi target",
+        "Chỉ đổi label byte thành KiB mà không đổi giá trị",
+        "Dùng volatile để tránh overflow",
+        "Kiểm miền/representation phù hợp trước khi dùng như kích thước địa chỉ"
+      ],
+      "correct": 3,
+      "explanation": "Metric tổng có thể lớn hơn không gian địa chỉ của một process."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Zero denominator",
+      "question": "Tính tỷ lệ CPU từ hai mẫu có chênh tổng bằng 0 nên làm gì?",
+      "options": [
+        "Có trạng thái không đủ dữ liệu hoặc policy rõ thay vì chia tùy ý",
+        "Luôn báo 100%",
+        "Luôn báo 0% như giá trị đo chắc chắn",
+        "Tăng số core giả để có mẫu số"
+      ],
+      "correct": 0,
+      "explanation": "Thiếu khoảng đo hợp lệ khác số liệu utilization bằng 0."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Counter reset",
+      "question": "Counter giảm giữa hai mẫu có thể cần xử lý gì?",
+      "options": [
+        "Chỉ đổi stdout sang stderr",
+        "Reset/wrap/đổi scope theo contract, tránh trừ unsigned mù quáng",
+        "Luôn nghĩa CPU sử dụng âm hợp lệ",
+        "Cứ coi chênh unsigned lớn là tải thật"
+      ],
+      "correct": 1,
+      "explanation": "Mô hình counter phải được xác định trước phép tính delta."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Memory read write",
+      "question": "Read-only mapping có tự cho phép code ghi qua pointer bỏ const không?",
+      "options": [
+        "Có, nếu dùng u32 thay u8",
+        "Chỉ cần Debug",
+        "Không, cast không thay permission của mapping",
+        "Có, pointer type cao hơn page permissions"
+      ],
+      "correct": 2,
+      "explanation": "Quyền ngôn ngữ và quyền MMU/OS đều phải đúng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Mapping vs ownership",
+      "question": "Có pointer vào vùng device có nghĩa caller được allocator.free nó không?",
+      "options": [
+        "Có, mọi pointer cùng có địa chỉ nên free giống nhau",
+        "Chỉ nếu pointer volatile",
+        "Có, sau debug.print mọi pointer được giải phóng",
+        "Không, cần release/unmap theo tài nguyên, không phải heap family tùy ý"
+      ],
+      "correct": 3,
+      "explanation": "Giải phóng phải theo nguồn acquire và ownership."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Poll loop",
+      "question": "Polling register có cần deadline/error policy không?",
+      "options": [
+        "Có nếu yêu cầu tránh chờ vô hạn hoặc thiết bị có thể không phản hồi",
+        "Không, volatile bảo đảm device luôn sẵn sàng",
+        "Không, import std.os tự timeout",
+        "Chỉ có network mới cần deadline"
+      ],
+      "correct": 0,
+      "explanation": "Quan sát đúng accesses chưa bảo đảm thiết bị sẽ đổi trạng thái."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Device state",
+      "question": "Register có địa chỉ cố định và kiểu đúng đã đủ mọi lần truy cập hợp lệ chưa?",
+      "options": [
+        "Chỉ thiếu newline khi debug",
+        "Chưa, còn mapping/quyền, device state, access rules và ordering theo platform",
+        "Rồi, địa chỉ là toàn hợp đồng",
+        "Rồi, const pointer luôn làm hardware ready"
+      ],
+      "correct": 1,
+      "explanation": "Phần cứng có tiền điều kiện khác với một vùng RAM đơn giản."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Formatting metric",
+      "question": "Muốn in metric đã đo bằng format placeholder, args tuple cần thế nào?",
+      "options": [
+        "Truyền tuple tùy ý vì format tự suy dữ liệu OS",
+        "Chỉ đổi literal message để có giá trị mới",
+        "Khớp format và kiểu/giá trị cần hiển thị theo API Zig",
+        "Luôn dùng .{} dù có placeholder"
+      ],
+      "correct": 2,
+      "explanation": "Formatting không tự thu thập dữ liệu nguồn."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Raw vs wrapper",
+      "question": "Chọn wrapper chuẩn thay raw syscall có lợi ích gì có thể có?",
+      "options": [
+        "Tự bảo đảm mọi OS có cùng capability",
+        "Tự bỏ permission denied",
+        "Tự tạo kernel runtime trong process",
+        "Chuẩn hóa một phần kiểu/lỗi/platform theo contract của wrapper"
+      ],
+      "correct": 3,
+      "explanation": "Phải xem wrapper thực cung cấp gì, không suy mọi bảo đảm từ tên std."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "CPU/RAM implementation",
+      "question": "Helper gán alias std.os rồi in thông điệp cố định nhưng caller cần CPU usage và RAM khả dụng của container. Cần thiết kế gì?",
+      "options": [
+        "Chọn nguồn API/backend theo target và phạm vi container, định nghĩa sampling/đơn vị/lỗi rồi format dữ liệu thực",
+        "Chỉ đổi chuỗi in thành CPU 50% RAM 1GB để đáp ứng kiểu String",
+        "Gọi debug.print hai lần để runtime tự đọc hai metric",
+        "Đổi main thành void để syscall trả dữ liệu trực tiếp qua message"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn số liệu, phạm vi và phép tính phải có trước phần hiển thị."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Physical address cast",
+      "question": "App hosted cast một số physical address thành *volatile u32 rồi ghi; trang chưa map và quyền không rõ. Sửa hướng nào?",
+      "options": [
+        "Chỉ căn địa chỉ về 4 byte là đủ mọi điều kiện",
+        "Thiết lập đường truy cập/mapping/quyền hợp lệ và access contract trước; volatile/cast không tạo các điều kiện đó",
+        "Chỉ bật volatile để bypass MMU",
+        "Chỉ chọn ReleaseFast để truy cập có quyền hơn"
+      ],
+      "correct": 1,
+      "explanation": "Alignment là một điều kiện; mapping, policy và semantics thiết bị vẫn riêng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "MMIO shared state",
+      "question": "Driver dùng volatile cho register và cũng dùng volatile cho counter giữa hai threads, mong cả hai an toàn. Đánh giá nào đúng?",
+      "options": [
+        "Chỉ cần dùng cùng kiểu u32 cho register/counter để chung bảo đảm",
+        "Bỏ volatile ở register và dùng cho counter mới đúng mọi trường hợp",
+        "Volatile phù hợp side-effect accesses theo device contract; counter vẫn cần atomics/synchronization và ownership riêng",
+        "Volatile tự atomic cho mọi read-modify-write giữa threads"
+      ],
+      "correct": 2,
+      "explanation": "Không đổi công cụ dành cho compiler-visible I/O thành giao thức đồng bộ threads."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Counter sampling",
+      "question": "CPU counters hai mẫu là (idle=100,total=200) và (idle=130,total=300), cùng scope không reset. Theo công thức busy=1-deltaIdle/deltaTotal, kết quả nào đúng?",
+      "options": [
+        "Khoảng 56,67%, vì dùng 1-130/300 từ counter tích lũy của mẫu sau",
+        "50%, vì chỉ dùng mẫu đầu 100/200",
+        "30%, vì lấy delta idle chia delta total làm tỷ lệ busy",
+        "70%, vì delta idle 30 và delta total 100"
+      ],
+      "correct": 3,
+      "explanation": "Cần lấy chênh hai mẫu tương ứng: 1 - 30/100 = 0.7. Cùng scope và không reset là các tiền điều kiện quan trọng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "CPU reset và zero",
+      "question": "Collector tính delta counters unsigned; sau restart counter thấp hơn trước, và một cặp mẫu khác có delta total=0. Chính sách nào đúng?",
+      "options": [
+        "Nhận diện reset/không đủ khoảng đo, lấy lại baseline hoặc báo trạng thái thiếu dữ liệu theo contract thay vì underflow/chia 0",
+        "Coi underflow rất lớn là tải cao và delta 0 là 100%",
+        "Clamp mọi trường hợp thành 0% rồi ghi là đo hợp lệ",
+        "Chỉ đổi integer sang float để mọi trường hợp tự đúng nghĩa"
+      ],
+      "correct": 0,
+      "explanation": "Biểu diễn số khác không sửa semantics của reset hoặc thiếu quan sát."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "RAM width units",
+      "question": "Target 32-bit nhận total_pages kiểu u64 và page_size; tổng RAM có thể vượt 4 GiB. Muốn báo bytes và dùng một phần làm buffer size cần gì?",
+      "options": [
+        "Dùng volatile u32 cho total để compiler giữ đủ 64 bit",
+        "Tính bằng representation đủ rộng, kiểm overflow/đơn vị và kiểm miền riêng trước chuyển sang kích thước địa chỉ",
+        "Cast pages sang usize trước để phù hợp target rồi nhân, coi overflow là RAM thực",
+        "Đổi label sang GiB mà giữ nguyên giá trị pages"
+      ],
+      "correct": 1,
+      "explanation": "Tổng metric của hệ thống không nhất thiết vừa không gian địa chỉ/process buffer."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Partial data parse",
+      "question": "API đọc file hệ thống trả text theo nhiều chunk, record cuối bị cắt giữa hai lần đọc; buffer còn bytes cũ. Parser nên làm gì?",
+      "options": [
+        "Coi một read là một record đầy đủ bất kể count",
+        "Tìm NUL trong vùng chưa init để suy chiều dài record",
+        "Chỉ dùng bytes thực đọc, giữ state/đoạn chưa đủ và xử lý EOF/lỗi theo format",
+        "Parse toàn capacity mỗi read vì buffer đã được cấp"
+      ],
+      "correct": 2,
+      "explanation": "Ranh giới đọc I/O không tự trùng ranh giới dữ liệu có nghĩa."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Map lifetime callback",
+      "question": "Một mapped region được callback nền giữ pointer, caller defer unmap khi hàm trả. Thiết kế nào giữ an toàn?",
+      "options": [
+        "Đổi pointer thành const để mapping tự sống tới callback cuối",
+        "Giữ defer vì nó tự chờ mọi callback đã đăng ký",
+        "Dùng volatile để pointer cũ vẫn hợp lệ sau unmap",
+        "Phối hợp lifetime/ownership để callback dừng hoặc trả quyền trước unmap, kèm sync cần thiết"
+      ],
+      "correct": 3,
+      "explanation": "Lifetime mapping và coordination thực thi không được thay bằng annotation pointer."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Write-one-clear RMW",
+      "question": "Spec register nói ghi 1 sẽ clear bit tương ứng. Code đọc cả status rồi ghi lại cùng value để chỉ clear một bit chọn. Rủi ro và cách xử lý?",
+      "options": [
+        "Có thể clear cả các bit đang là 1 ngoài ý định; ghi mask/width theo đúng spec thay vì RMW như RAM",
+        "Ghi lại value không đổi luôn không có tác dụng",
+        "Chỉ cần volatile làm mọi bit không chọn tự thành 0",
+        "Tăng alignment sẽ sửa semantics ghi 1 clear"
+      ],
+      "correct": 0,
+      "explanation": "Access side effects và bit semantics quan trọng hơn hình thức assignment."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Read-clears polling",
+      "question": "Status register clear khi đọc, nhưng logger đọc thêm trước bước xử lý. Vì sao cần đổi thiết kế?",
+      "options": [
+        "Đọc hai lần luôn chính xác hơn một lần bất kể device spec",
+        "Lần đọc log có thể tiêu thụ trạng thái; thu một giá trị theo protocol rồi phân phối snapshot khi phù hợp thay vì đọc thừa",
+        "Mọi volatile read tự phục hồi status sau log",
+        "Chỉ đổi label logger"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi access MMIO có thể là hành động, không chỉ quan sát RAM."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Container metric mismatch",
+      "question": "Dashboard ghi RAM khả dụng của container nhưng API trả host free memory, còn process bị giới hạn thấp hơn. Sửa gì?",
+      "options": [
+        "Cứ coi host free là số memory process luôn cấp được",
+        "Tăng optimize để giới hạn container thành host total",
+        "Chọn/chuẩn hóa metric theo scope/limit thực và label rõ, không dùng host free thay quyền cấp phát của container",
+        "Chỉ đổi format từ byte sang MiB"
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi accounting khác với tổng tài nguyên phần cứng nhìn thấy."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Permission vs zero",
+      "question": "Đọc CPU metric bị từ chối quyền; dashboard thay bằng 0% và báo trạng thái khỏe. Cách thiết kế đúng hơn?",
+      "options": [
+        "Giữ 0% vì mọi lỗi OS đều nghĩa không hoạt động",
+        "Bỏ error union để luôn có một số",
+        "Chỉ ghi message root vào stderr để lấy quyền",
+        "Tách unavailable/error khỏi giá trị hợp lệ, có policy quyền/quan sát phù hợp và không che lỗi bằng số 0"
+      ],
+      "correct": 3,
+      "explanation": "Missing observation không chứng minh utilization bằng 0 hoặc hệ thống khỏe."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Cross OS ABI",
+      "question": "Helper dùng Linux syscall number/return convention nhưng target Windows, rồi cast result vào cùng struct. Cần gì?",
+      "options": [
+        "Backend/ABI và parser phù hợp từng target với interface metric chung được định nghĩa rõ",
+        "Giữ syscall number vì architecture x86_64 giống nhau",
+        "Chỉ đổi std.os alias tên windows mà giữ mọi contract Linux",
+        "Dùng packed struct để mọi return OS thành cùng layout"
+      ],
+      "correct": 0,
+      "explanation": "Architecture giống không làm OS ABI hay representation dữ liệu giống nhau."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Error cleanup",
+      "question": "Hàm mở tài nguyên hệ thống, map region rồi parse thất bại; caller chỉ đóng handle ở nhánh thành công. Cần phối hợp gì?",
+      "options": [
+        "Chỉ in parse error rồi bỏ qua resource lifecycle",
+        "Ownership/cleanup đúng thứ tự trên cả lỗi và thành công, bảo đảm pointer không dùng sau unmap/close",
+        "Chỉ đổi return type sang !void để mọi tài nguyên tự đóng",
+        "Free cả handle và mapping bằng allocator bất kỳ"
+      ],
+      "correct": 1,
+      "explanation": "Error union biểu diễn lỗi nhưng không tự quản lý mọi tài nguyên OS."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Memory ordering",
+      "question": "Device yêu cầu ghi descriptor vào RAM, đồng bộ cache/barrier rồi viết doorbell MMIO. Chỉ thêm volatile cho doorbell đã đủ chưa?",
+      "options": [
+        "Đủ, thứ tự dòng source chứng minh DMA thấy mọi bytes RAM",
+        "Chưa, nhưng đổi pointer RAM thành const tự thay barrier",
+        "Chưa, cần toàn protocol coherence/ordering của platform/device ngoài volatile access",
+        "Đủ, volatile luôn flush mọi cache và fence mọi CPU"
+      ],
+      "correct": 2,
+      "explanation": "Thiết bị/DMA và CPU có các ranh giới visibility cần contract rõ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Hosted print bare metal",
+      "question": "Ứng dụng chỉ std.debug.print được đổi target thành freestanding ARM và được gọi là firmware có console. Điều gì cần thiết kế thật?",
+      "options": [
+        "Chỉ đổi literal thành UART ready",
+        "Chỉ thêm alias std.os để stderr xuất hiện",
+        "Main !void tự khởi tạo mọi peripheral",
+        "Startup/link/runtime và đường output/device phù hợp đích, không chỉ target label và message"
+      ],
+      "correct": 3,
+      "explanation": "Hàm thư viện và môi trường đích phải có hỗ trợ thực để output hoạt động."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Readonly map cast",
+      "question": "Region OS read-only được cast sang mutable pointer để API ghi; target CPU hỗ trợ aligned access. Điều gì vẫn sai?",
+      "options": [
+        "Cast không cấp quyền ghi hay thay mapping policy; cần acquire đúng quyền và giữ contract của region",
+        "Alignment đúng tự cho phép ghi bất kể mapping",
+        "ReleaseFast tự làm read-only thành writable",
+        "Dùng volatile sẽ vượt page protection đúng chuẩn"
+      ],
+      "correct": 0,
+      "explanation": "Language type, CPU alignment và OS permission là các lớp điều kiện khác nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Endianness and layout",
+      "question": "Binary record hệ thống có field little-endian cố định, consumer target big-endian cast bytes vào native struct và dùng pointer có alignment chưa rõ. Hướng đúng?",
+      "options": [
+        "Cùng field name bảo đảm layout và endian đúng",
+        "Parse representation theo endian/offset/length contract, xử lý alignment/lifetime phù hợp thay vì cast mù",
+        "Chỉ dùng extern struct để mọi endian tự đổi",
+        "Chỉ thêm volatile vào pointer"
+      ],
+      "correct": 1,
+      "explanation": "External format không tự là native representation của mọi target."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "CPU affinity scope",
+      "question": "Máy có 16 logical CPUs nhưng process chỉ được chạy trên 2 theo policy; báo “CPU khả dụng=16” từ host topology có đủ đúng yêu cầu không?",
+      "options": [
+        "Chỉ đổi label từ core sang socket để đúng",
+        "Tăng polling frequency sẽ tự sửa scope",
+        "Không nếu yêu cầu là khả dụng cho process; cần chọn metric/scope và policy affinity/quota đúng",
+        "Có, host logical count luôn là năng lực process được dùng"
+      ],
+      "correct": 2,
+      "explanation": "Cấu trúc phần cứng và tài nguyên process được phép sử dụng là hai đại lượng khác nhau."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Metric snapshot and contract",
+      "question": "Báo cáo cần CPU trung bình cửa sổ 1 giây và RAM khả dụng tại cuối cửa sổ, có trạng thái lỗi rõ. Thiết kế nào phù hợp?",
+      "options": [
+        "Đọc một counter CPU và một host total RAM bất kỳ rồi gắn timestamp cuối",
+        "Dùng debug.print cố định và coi main !void tự thu thập dữ liệu",
+        "Đọc toàn buffer capacity như một struct native để giảm bước parse",
+        "Định nghĩa backend/scope, lấy counters đúng window và memory sample đúng mốc, kiểm đơn vị/miền/lỗi rồi format giá trị"
+      ],
+      "correct": 3,
+      "explanation": "Sampling, semantics nguồn, representation và lỗi phải cùng đáp ứng hợp đồng báo cáo."
+    }
+  ]
+}

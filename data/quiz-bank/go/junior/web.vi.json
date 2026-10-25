@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "junior",
+  "lesson": "web",
+  "language": "vi",
+  "sourceHash": "3eb916cf6dcabaf37bf4a77f513b104441f998bc96721938bb4ba02ce69d4297",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và local Go1.26.1 net/http,encoding/json,httptest docs. Source unused strconv không compile nguyên trạng. Selected HTTP fixtures gọi ServeHTTP/handlers với ResponseRecorder trong bộ nhớ, không listen/network. Phân biệt recorder với wire HEAD behavior; không chạy shared-slice race. Source thiếu validation/body limit/single-document check/auth/persistence và concurrency control.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Standard HTTP",
+      "question": "Package chuẩn nào cung cấp HTTP server/handler trong bài?",
+      "options": [
+        "net/http.",
+        "database/sql.",
+        "runtime/unsafe.",
+        "encoding/csv."
+      ],
+      "correct": 0,
+      "explanation": "Source dùng http.NewServeMux và các handler."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Handler inputs",
+      "question": "HandlerFunc thông thường nhận hai đối số nào?",
+      "options": [
+        "Một SQL connection và một error.",
+        "http.ResponseWriter và *http.Request.",
+        "*testing.T và *testing.B.",
+        "Hai string bất kỳ."
+      ],
+      "correct": 1,
+      "explanation": "ResponseWriter ghi response, Request mô tả request."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Request method",
+      "question": "r.Method cho biết gì?",
+      "options": [
+        "ID tự tăng trong database.",
+        "Content-Type của response.",
+        "HTTP method của request.",
+        "Tên package handler."
+      ],
+      "correct": 2,
+      "explanation": "Ví dụ GET và POST."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Request path",
+      "question": "r.URL.Path thường biểu diễn gì?",
+      "options": [
+        "Toàn bộ body JSON.",
+        "Giá trị header Authorization.",
+        "Port listen bắt buộc.",
+        "Đường dẫn URL đã parse."
+      ],
+      "correct": 3,
+      "explanation": "Query string được truy cập riêng qua URL.Query."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Multiplexer",
+      "question": "http.NewServeMux() tạo gì?",
+      "options": [
+        "Bộ định tuyến request tới handler theo patterns.",
+        "Một server đã mở port ngay.",
+        "Một database transaction.",
+        "Một client tự tải website."
+      ],
+      "correct": 0,
+      "explanation": "Tạo mux không tự bắt đầu listen."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "GET route",
+      "question": "Pattern GET /api/todos trong ServeMux hiện đại chủ yếu chọn gì?",
+      "options": [
+        "Mọi method trừ GET.",
+        "GET và HEAD phù hợp đường dẫn đó.",
+        "Mọi POST ở mọi đường dẫn.",
+        "Chỉ request có body JSON."
+      ],
+      "correct": 1,
+      "explanation": "Go từ1.22 có method patterns; GET còn match HEAD."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "POST route",
+      "question": "Pattern POST /api/todos nhằm xử lý gì?",
+      "options": [
+        "GET tới mọi đường dẫn.",
+        "Tự tạo mọi route CRUD.",
+        "POST tới đường dẫn /api/todos.",
+        "Mọi request chứa chữ todos ở body."
+      ],
+      "correct": 2,
+      "explanation": "Source chỉ đăng ký hai patterns, chưa có PATCH/DELETE chi tiết."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "JSON tag",
+      "question": "json:\"title\" trên field Title nhằm gì?",
+      "options": [
+        "Tự kiểm tra title không rỗng.",
+        "Tự tạo index database.",
+        "Tự xác thực quyền user.",
+        "Chỉ định tên JSON key cho field đó."
+      ],
+      "correct": 3,
+      "explanation": "Struct tags điều khiển encoding/decoding, không thay nghiệp vụ."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Decode destination",
+      "question": "Vì sao source gọi Decode(&todo)?",
+      "options": [
+        "Decoder cần con trỏ tới nơi lưu dữ liệu được decode.",
+        "Để tự gửi HTTP response.",
+        "Để luôn deep clone mọi object.",
+        "Để mở connection mới."
+      ],
+      "correct": 0,
+      "explanation": "&todo cho phép decoder cập nhật struct."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Encode response",
+      "question": "json.NewEncoder(w).Encode(todos) làm gì?",
+      "options": [
+        "Tự khóa mọi goroutine.",
+        "Encode todos thành JSON và ghi qua w.",
+        "Lưu todos xuống DB.",
+        "Tự xác thực người gửi request."
+      ],
+      "correct": 1,
+      "explanation": "Encode có thể trả error; source chưa xử lý error đó."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Content type",
+      "question": "getTodos đặt Content-Type nào?",
+      "options": [
+        "application/sql.",
+        "image/png.",
+        "application/json.",
+        "text/html."
+      ],
+      "correct": 2,
+      "explanation": "Header mô tả representation response."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Created status",
+      "question": "http.StatusCreated có mã số nào?",
+      "options": [
+        "200.",
+        "400.",
+        "500.",
+        "201."
+      ],
+      "correct": 3,
+      "explanation": "Source dùng201 sau khi append todo thành công."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Bad request status",
+      "question": "http.StatusBadRequest là mã nào?",
+      "options": [
+        "400.",
+        "201.",
+        "404.",
+        "503."
+      ],
+      "correct": 0,
+      "explanation": "Source trả400 khi Decode báo lỗi."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Response header order",
+      "question": "Muốn đặt header response thông thường nên làm khi nào?",
+      "options": [
+        "Không thể đặt header trong handler.",
+        "Trước khi final headers được gửi bởi WriteHeader hoặc Write.",
+        "Luôn sau Encode là hiệu lực như cũ.",
+        "Chỉ sau khi handler return."
+      ],
+      "correct": 1,
+      "explanation": "Sửa header map sau lúc commit thường không đổi headers đã gửi."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Body ownership",
+      "question": "r.Body chứa gì trong POST JSON điển hình?",
+      "options": [
+        "Một slice todos tự persist.",
+        "Tên hàm handler.",
+        "Luồng body request để đọc.",
+        "Danh sách header response."
+      ],
+      "correct": 2,
+      "explanation": "Decoder đọc từ io.Reader này."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Global data",
+      "question": "var todos ở package scope nguồn lưu ở đâu theo thiết kế hiện tại?",
+      "options": [
+        "Tự lưu durable trên cloud.",
+        "Trong go.mod.",
+        "Trong trình duyệt mỗi user theo auth.",
+        "Bộ nhớ process, chưa có persistence DB."
+      ],
+      "correct": 3,
+      "explanation": "Restart process không có cơ chế khôi phục dữ liệu được thể hiện trong source."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Generated ID",
+      "question": "Source tính ID mới bằng công thức nào?",
+      "options": [
+        "len(todos)+1.",
+        "UUID được tạo mật mã.",
+        "Sequence database atomic.",
+        "ID lấy từ token user."
+      ],
+      "correct": 0,
+      "explanation": "Công thức này có giới hạn khi xóa/sửa/concurrency."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Listener",
+      "question": "http.ListenAndServe(\":8080\",mux) nhằm gì?",
+      "options": [
+        "Tự deploy lên internet.",
+        "Mở HTTP listener ở địa chỉ đó và phục vụ qua mux.",
+        "Chỉ tạo object request trong RAM.",
+        "Chỉ in JSON vào stdout."
+      ],
+      "correct": 1,
+      "explanation": "Các quiz fixtures không gọi listener này."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Unused source import",
+      "question": "Source HTTP hiện có lỗi compiler nào rõ ràng?",
+      "options": [
+        "Struct không được có bool.",
+        "Go không hỗ trợ JSON tags.",
+        "Import strconv nhưng chưa dùng.",
+        "net/http không tồn tại trong thư viện chuẩn."
+      ],
+      "correct": 2,
+      "explanation": "Cần sửa unused import trước khi chạy source nguyên trạng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Test recorder",
+      "question": "httptest.NewRecorder giúp kiểm tra gì?",
+      "options": [
+        "Tự tạo database production.",
+        "Tự mở HTTP server thật bắt buộc.",
+        "Đo sức chịu tải triệu users.",
+        "Ghi nhận response của handler trong bộ nhớ."
+      ],
+      "correct": 3,
+      "explanation": "ResponseRecorder khác httptest.NewServer; các fixture không mở port."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "GET status",
+      "question": "Gọi handler trong bộ nhớ, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();getTodos(w,httptest.NewRequest(\"GET\",\"/api/todos\",nil));fmt.Println(w.Code,w.Result().Header.Get(\"Content-Type\"))}\n",
+      "options": [
+        "200 application/json.",
+        "201 text/html.",
+        "400 application/json.",
+        "Không compile vì getTodos cần listener."
+      ],
+      "correct": 0,
+      "explanation": "Handler đặt header trước khi encoder ghi body; Write ngầm gửi200."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "GET JSON fields",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();getTodos(w,httptest.NewRequest(\"GET\",\"/api/todos\",nil));var out []Todo;if e:=json.Unmarshal(w.Body.Bytes(),&out);e!=nil{panic(e)};fmt.Println(len(out),out[0].ID,out[0].Title,out[0].Done)}\n",
+      "options": [
+        "Decode response luôn báo lỗi.",
+        "1 1 Learn Go false.",
+        "0 0 false.",
+        "1 2 Learn Go true."
+      ],
+      "correct": 1,
+      "explanation": "Response JSON chứa một todo khởi tạo trong fixture."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "POST success",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{\"title\":\"New\"}`)));fmt.Println(w.Code,len(todos),todos[1].ID,todos[1].Title)}\n",
+      "options": [
+        "400 1 0 New.",
+        "500 0 0.",
+        "201 2 2 New.",
+        "200 1 1 Learn Go."
+      ],
+      "correct": 2,
+      "explanation": "Decode thành công, ID mới2 và append tăng số todos."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Malformed JSON",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{`)));fmt.Println(w.Code,len(todos))}\n",
+      "options": [
+        "201 2.",
+        "200 1.",
+        "Panic chưa bắt được.",
+        "400 1."
+      ],
+      "correct": 3,
+      "explanation": "Decode trả lỗi trước append."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Empty object validation",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{}`)));fmt.Println(w.Code,len(todos),todos[1].Title==\"\")}\n",
+      "options": [
+        "201 2 true.",
+        "400 1 true.",
+        "201 2 false.",
+        "Compiler tự yêu cầu Title."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa validate title nên {} được chấp nhận với title rỗng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Unknown property",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{\"title\":\"X\",\"admin\":true}`)));fmt.Println(w.Code,len(todos))}\n",
+      "options": [
+        "Decoder tự thêm admin field vào struct.",
+        "201 2.",
+        "400 1.",
+        "500 1."
+      ],
+      "correct": 1,
+      "explanation": "Decoder mặc định bỏ qua unknown struct keys; source chưa bật DisallowUnknownFields."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Trailing document",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{\"title\":\"First\"} {\"title\":\"Second\"}`)));fmt.Println(w.Code,len(todos),todos[1].Title)}\n",
+      "options": [
+        "201 3 Second.",
+        "Decoder tự nối hai object thành một.",
+        "201 2 First.",
+        "400 1 First."
+      ],
+      "correct": 2,
+      "explanation": "Một Decode đọc một JSON value; source chưa kiểm tra EOF sau value đầu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Null input",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`null`)));fmt.Println(w.Code,len(todos),todos[1].Title==\"\")}\n",
+      "options": [
+        "400 1 true.",
+        "Panic do Decode null vào struct.",
+        "201 2 false.",
+        "201 2 true."
+      ],
+      "correct": 3,
+      "explanation": "JSON null vào struct không pointer field giữ zero value mà không báo lỗi; source chưa validate."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Wrong field type",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{\"title\":42}`)));fmt.Println(w.Code,len(todos))}\n",
+      "options": [
+        "400 1.",
+        "201 2.",
+        "200 2.",
+        "Title tự chuyển42 thành string."
+      ],
+      "correct": 0,
+      "explanation": "Number không tự decode thành string field thông thường."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Client ID overwrite",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{\"id\":999,\"title\":\"X\"}`)));fmt.Println(w.Code,todos[1].ID)}\n",
+      "options": [
+        "200 1.",
+        "201 2.",
+        "201 999.",
+        "400 999."
+      ],
+      "correct": 1,
+      "explanation": "Source gán lại ID=len(todos)+1 sau Decode."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Client done accepted",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`{\"title\":\"X\",\"done\":true}`)));fmt.Println(w.Code,todos[1].Done)}\n",
+      "options": [
+        "201 false.",
+        "Không compile vì bool không decode được.",
+        "201 true.",
+        "400 false."
+      ],
+      "correct": 2,
+      "explanation": "Done từ input được giữ vì source không cấm client đặt trường này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Modern mux GET",
+      "question": "Chương trình in gì với ServeMux hiện đại?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /api/todos\",func(w http.ResponseWriter,r *http.Request){fmt.Fprint(w,\"ok\")});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"GET\",\"/api/todos\",nil));fmt.Println(w.Code,w.Body.String())}\n",
+      "options": [
+        "404 page not found.",
+        "405 Method Not Allowed.",
+        "Không thể gọi ServeHTTP khi chưa listen.",
+        "200 ok."
+      ],
+      "correct": 3,
+      "explanation": "Mux có thể được gọi trực tiếp bằng recorder và request."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Modern mux HEAD matching",
+      "question": "Chương trình in gì với ServeMux hiện đại?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /api/todos\",func(w http.ResponseWriter,r *http.Request){w.Header().Set(\"X-Matched\",\"yes\")});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"HEAD\",\"/api/todos\",nil));fmt.Println(w.Code,w.Result().Header.Get(\"X-Matched\"))}\n",
+      "options": [
+        "200 yes.",
+        "404 với header rỗng.",
+        "405 với header rỗng.",
+        "HEAD không tồn tại trong HTTP."
+      ],
+      "correct": 0,
+      "explanation": "GET pattern match HEAD; fixture kiểm tra routing/header, không giả đo wire body."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Method not allowed",
+      "question": "Chương trình in mã nào?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /api/todos\",func(w http.ResponseWriter,r *http.Request){});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"PUT\",\"/api/todos\",nil));fmt.Println(w.Code)}\n",
+      "options": [
+        "200.",
+        "405.",
+        "404.",
+        "201."
+      ],
+      "correct": 1,
+      "explanation": "Đường dẫn khớp pattern nhưng PUT không có handler phù hợp."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "No route",
+      "question": "Chương trình in mã nào?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /api/todos\",func(w http.ResponseWriter,r *http.Request){});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"GET\",\"/missing\",nil));fmt.Println(w.Code)}\n",
+      "options": [
+        "201.",
+        "200.",
+        "404.",
+        "405."
+      ],
+      "correct": 2,
+      "explanation": "Đường dẫn khác không được route này xử lý."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Query is separate",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /api/todos\",func(w http.ResponseWriter,r *http.Request){fmt.Fprint(w,r.URL.Query().Get(\"page\"))});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"GET\",\"/api/todos?page=2\",nil));fmt.Println(w.Code,w.Body.String())}\n",
+      "options": [
+        "404 với query rỗng.",
+        "405 2.",
+        "Query biến method thành POST.",
+        "200 2."
+      ],
+      "correct": 3,
+      "explanation": "Query string không làm path pattern mất match; parse qua URL.Query."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Late final status",
+      "question": "Chương trình in mã gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http/httptest\")\n\nfunc main(){w:=httptest.NewRecorder();fmt.Fprint(w,\"ok\");w.WriteHeader(201);fmt.Println(w.Code)}\n",
+      "options": [
+        "200.",
+        "201.",
+        "500.",
+        "0."
+      ],
+      "correct": 0,
+      "explanation": "Write body trước đã commit200; WriteHeader201 sau đó không thay status đã gửi."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Explicit JSON response",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http/httptest\")\n\nfunc main(){w:=httptest.NewRecorder();w.Header().Set(\"Content-Type\",\"application/json\");w.WriteHeader(201);fmt.Fprint(w,`{\"ok\":true}`);fmt.Println(w.Code,w.Result().Header.Get(\"Content-Type\"))}\n",
+      "options": [
+        "201 với header rỗng.",
+        "201 application/json.",
+        "200 text/plain.",
+        "400 application/json."
+      ],
+      "correct": 1,
+      "explanation": "Header cần được đặt trước WriteHeader."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Unknown field strict option",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\";\"strings\")\n\nfunc main(){var v struct{Title string};d:=json.NewDecoder(strings.NewReader(`{\"Title\":\"X\",\"extra\":1}`));d.DisallowUnknownFields();fmt.Println(d.Decode(&v)!=nil)}\n",
+      "options": [
+        "Panic vô điều kiện.",
+        "Compiler từ chối Decoder.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "DisallowUnknownFields làm unknown key trả lỗi khi đích là struct phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Array wrong destination",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\";\"strings\")\ntype Todo struct { ID int `json:\"id\"`; Title string `json:\"title\"`; Done bool `json:\"done\"` }\nvar todos=[]Todo{{ID:1,Title:\"Learn Go\",Done:false}}\nfunc getTodos(w http.ResponseWriter,r *http.Request){w.Header().Set(\"Content-Type\",\"application/json\");json.NewEncoder(w).Encode(todos)}\nfunc createTodo(w http.ResponseWriter,r *http.Request){var t Todo;if err:=json.NewDecoder(r.Body).Decode(&t);err!=nil{http.Error(w,err.Error(),400);return};t.ID=len(todos)+1;todos=append(todos,t);w.WriteHeader(201);json.NewEncoder(w).Encode(t)}\n\nfunc main(){w:=httptest.NewRecorder();createTodo(w,httptest.NewRequest(\"POST\",\"/api/todos\",strings.NewReader(`[]`)));fmt.Println(w.Code,len(todos))}\n",
+      "options": [
+        "201 2.",
+        "200 0.",
+        "Decoder tự lấy phần tử đầu array.",
+        "400 1."
+      ],
+      "correct": 3,
+      "explanation": "JSON array không tự decode vào Todo struct."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Concurrent global slice",
+      "question": "net/http phục vụ nhiều request đồng thời thì global todos nguồn có rủi ro gì?",
+      "options": [
+        "Append/read không đồng bộ có thể tạo data race và sai dữ liệu.",
+        "Mọi handler tự chạy tuần tự toàn process.",
+        "Slice tự có mutex.",
+        "JSON tag tự khóa object."
+      ],
+      "correct": 0,
+      "explanation": "Cần thiết kế synchronization/storage phù hợp; fixture sequential không chứng minh race freedom."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Len ID collision",
+      "question": "Vì sao len(todos)+1 không là chiến lược ID bền vững?",
+      "options": [
+        "ID luôn tự thành UUID.",
+        "Xóa phần tử, nhiều writers hoặc nhiều process có thể gây trùng ID.",
+        "len luôn trả số ngẫu nhiên.",
+        "int không lưu được2."
+      ],
+      "correct": 1,
+      "explanation": "Cần invariant ID phù hợp storage và concurrency."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "JSON newline",
+      "question": "Encoder.Encode thường thêm gì sau JSON value?",
+      "options": [
+        "Một JWT.",
+        "Một HTTP redirect.",
+        "Newline.",
+        "Một database commit."
+      ],
+      "correct": 2,
+      "explanation": "Không so sánh raw body mà bỏ qua format nếu mục tiêu là dữ liệu JSON."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Body size limit",
+      "question": "Source có giới hạn kích thước body rõ ràng trước Decode không?",
+      "options": [
+        "Có, mọi JSON body mặc định tối đa1KB theo Decoder.",
+        "Có, Title string giới hạn100 ký tự tự động.",
+        "Có, StatusCreated giới hạn body.",
+        "Chưa; cần cơ chế như http.MaxBytesReader với limit phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn body và validation field là hai lớp khác nhau."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Single JSON document",
+      "question": "Để từ chối JSON thứ hai sau object hợp lệ, cần kiểm tra gì?",
+      "options": [
+        "Đọc tiếp và xác nhận EOF sau JSON value duy nhất theo contract.",
+        "Chỉ Decode lần đầu là đủ mọi trường hợp.",
+        "Chỉ xem Content-Type.",
+        "Chỉ kiểm tra ID>0."
+      ],
+      "correct": 0,
+      "explanation": "Whitespace cuối có thể hợp lệ; trailing document khác whitespace."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Content type request",
+      "question": "Source có kiểm tra Content-Type request trước Decode không?",
+      "options": [
+        "Có, method POST đồng nghĩa application/json.",
+        "Không.",
+        "Có, JSON tag tự kiểm tra header.",
+        "Có, NewDecoder luôn từ chối text/plain theo HTTP header."
+      ],
+      "correct": 1,
+      "explanation": "Decoder chỉ nhận Reader, không tự đọc HTTP headers."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Empty title rule",
+      "question": "Title string trong struct có tự bắt buộc non-empty không?",
+      "options": [
+        "Có, tag json:title là required validator.",
+        "Chỉ tự validate khi viết hoa.",
+        "Không; cần validation riêng.",
+        "Có, string cấm rỗng."
+      ],
+      "correct": 2,
+      "explanation": "Kiểu dữ liệu và tên JSON không biểu diễn toàn bộ nghiệp vụ."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Persistent storage",
+      "question": "Dùng global slice có lưu dữ liệu qua restart theo source không?",
+      "options": [
+        "Có, Go tự lưu mọi global vào ổ đĩa.",
+        "Có, JSON Encoder tự ghi DB.",
+        "Có, port8080 lưu mọi request.",
+        "Không có cơ chế persistence được thể hiện."
+      ],
+      "correct": 3,
+      "explanation": "Muốn persistence cần storage và xử lý lỗi/vòng đời phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Response encode error",
+      "question": "Encode trả error nhưng source bỏ qua, điều gì cần cân nhắc?",
+      "options": [
+        "Response có thể lỗi ghi/encode; cần xử lý/log phù hợp và biết headers có thể đã commit.",
+        "Mọi Encode chắc chắn thành công.",
+        "Error tự được trả vào request body.",
+        "Compiler luôn cấm bỏ error này."
+      ],
+      "correct": 0,
+      "explanation": "Không thể luôn đổi status an toàn sau khi response đã bắt đầu gửi."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Not found vs method",
+      "question": "404 và405 khác nhau cơ bản thế nào trong routing?",
+      "options": [
+        "404 luôn nghĩa user đăng nhập thành công.",
+        "Không tìm thấy resource/route phù hợp và method không được hỗ trợ trên route phù hợp.",
+        "Cả hai luôn là201.",
+        "405 luôn nghĩa JSON sai syntax."
+      ],
+      "correct": 1,
+      "explanation": "Mã trạng thái cần phản ánh trường hợp cụ thể."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Authentication missing",
+      "question": "Source hiện có xác thực quyền tạo todo theo user không?",
+      "options": [
+        "Có, Title chính là password.",
+        "Có, ServeMux tự cấp role.",
+        "Chưa có logic authentication/authorization.",
+        "Có, mọi POST tự đăng nhập."
+      ],
+      "correct": 2,
+      "explanation": "Routing và JSON parsing không là xác thực hay phân quyền."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Error exposure",
+      "question": "Trả err.Error trực tiếp cho client luôn là thiết kế tốt cho mọi lỗi không?",
+      "options": [
+        "Có, mọi error đều an toàn công khai.",
+        "Chỉ cần đổi status thành200.",
+        "Nên gửi cả secrets để debug nhanh.",
+        "Không; cần thông báo phù hợp và tránh lộ chi tiết nội bộ không cần thiết."
+      ],
+      "correct": 3,
+      "explanation": "Với parse errors cũng cần contract phản hồi rõ ràng; không blanket expose mọi lỗi."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Main fatal behavior",
+      "question": "log.Fatal khi ListenAndServe trả error có tác dụng vòng đời nào?",
+      "options": [
+        "Ghi log rồi gọi os.Exit, các defer hiện tại không chạy theo return thông thường.",
+        "Chỉ log rồi luôn chạy tiếp.",
+        "Tự restart server mãi.",
+        "Tự graceful shutdown mọi job."
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất Fatal với trả error lên caller."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Method wildcard scope",
+      "question": "Pattern chỉ có /api/todos mà không method thường khác GET /api/todos thế nào?",
+      "options": [
+        "Không bao giờ match.",
+        "Pattern không method có thể match mọi method phù hợp path.",
+        "Chỉ match POST.",
+        "Chỉ match HEAD."
+      ],
+      "correct": 1,
+      "explanation": "Đang nói ServeMux hiện đại theo docs/version đã ghi."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Modern mux version scope",
+      "question": "Cần biết gì khi dùng method patterns từ Go1.22?",
+      "options": [
+        "Mọi compiler Go từ1.0 đều hiểu cùng patterns.",
+        "Chỉ cần thêm comment Go1.22.",
+        "Toolchain/module compatibility settings và có bật hành vi mux cũ hay không.",
+        "Chỉ tên file main.go."
+      ],
+      "correct": 2,
+      "explanation": "GODEBUG httpmuxgo121=1 có thể khôi phục routing cũ; fixture sẽ ghi scope hiện đại."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Request context",
+      "question": "r.Context có thể dùng cho gì?",
+      "options": [
+        "Tự kill mọi goroutine nền.",
+        "Tự tạo database schema.",
+        "Tự validate Title.",
+        "Truyền cancellation/deadline qua công việc của request khi các hàm quan sát context."
+      ],
+      "correct": 3,
+      "explanation": "Context cancellation mang tính hợp tác."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Test surface",
+      "question": "ResponseRecorder kiểm tra handler pass có chứng minh TLS/socket/load thật không?",
+      "options": [
+        "Không; đây là kiểm tra handler/routing trong bộ nhớ.",
+        "Có, recorder tự mở HTTPS toàn internet.",
+        "Có, mọi lỗi network đều được mô phỏng hoàn hảo.",
+        "Chỉ cần in status200."
+      ],
+      "correct": 0,
+      "explanation": "Giữ đúng giới hạn bằng chứng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Decoder pointer error",
+      "question": "Decode(todo) thay Decode(&todo) thường gây gì?",
+      "options": [
+        "Compiler luôn phát hiện vì parameter không nhận any.",
+        "Trả InvalidUnmarshalError vì đích không phải con trỏ phù hợp.",
+        "Tự sửa todo như bình thường.",
+        "Tự gửi201."
+      ],
+      "correct": 1,
+      "explanation": "Decoder nhận any, nhiều lỗi đích được báo lúc runtime."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Handler direct method",
+      "question": "Gọi thẳng createTodo với request GET có tự được handler nguồn từ chối do method không?",
+      "options": [
+        "Có, Decode luôn từ chối GET.",
+        "Chỉ khi Title rỗng.",
+        "Không; source dựa vào mux, body handler không kiểm tra method.",
+        "Có, tên create tự buộc POST."
+      ],
+      "correct": 2,
+      "explanation": "Direct handler call và đi qua router là hai ngữ cảnh khác nhau."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Complete CRUD scope",
+      "question": "Source đã có đủ CRUD theo yêu cầu bài tập chưa?",
+      "options": [
+        "Có, ServeMux tự sinh update/delete.",
+        "Có, slice hỗ trợ append nên mọi endpoint tự có.",
+        "Chỉ cần chạy port8080 là đủ CRUD.",
+        "Chưa; mới có GET list và POST create, chưa thể hiện update/delete/auth."
+      ],
+      "correct": 3,
+      "explanation": "Bài tập nêu mục tiêu mở rộng, không phải mọi phần đã có trong ví dụ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Missing title null type",
+      "question": "JSON {\"title\":null} trong source có chắc bị Decode từ chối không?",
+      "options": [
+        "Không; null vào string không đổi zero value và không tự báo lỗi, cần validation.",
+        "Có, mọi null đều là syntax error.",
+        "Có, JSON không có null.",
+        "Chỉ nếu method HEAD."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt syntax, type decoding và yêu cầu non-empty."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "HEAD recorder boundary",
+      "question": "Vì sao body ghi vào ResponseRecorder cho HEAD không là bằng chứng wire response HEAD thực gửi body?",
+      "options": [
+        "Body của HEAD bị cấm xuất hiện trong object handler mọi lúc.",
+        "Recorder gọi handler trực tiếp, không mô phỏng toàn bộ phần server gửi response trên kết nối.",
+        "HEAD luôn giống POST ở protocol.",
+        "Recorder luôn tự mở TLS."
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt handler writes với net/http server transport behavior."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Nil slice JSON",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\")\n\nfunc main(){var a []int;b:=[]int{};x,_:=json.Marshal(a);y,_:=json.Marshal(b);fmt.Println(string(x));fmt.Println(string(y))}\n",
+      "options": [
+        "{} và {} trên hai dòng.",
+        "Panic khi marshal nil slice.",
+        "null và [] trên hai dòng.",
+        "[] và [] trên hai dòng."
+      ],
+      "correct": 2,
+      "explanation": "encoding/json phân biệt nil slice và non-nil empty slice."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Late header commit",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http/httptest\")\n\nfunc main(){w:=httptest.NewRecorder();w.Header().Set(\"X-State\",\"before\");w.WriteHeader(201);w.Header().Set(\"X-State\",\"after\");fmt.Println(w.Result().Header.Get(\"X-State\"),w.Header().Get(\"X-State\"))}\n",
+      "options": [
+        "after after.",
+        "before before.",
+        "Header đổi tự gây panic.",
+        "before after."
+      ],
+      "correct": 3,
+      "explanation": "Result đọc snapshot headers được commit; Header map live có thể đã đổi về sau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Duplicate JSON key",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\")\n\nfunc main(){var v struct{Title string};e:=json.Unmarshal([]byte(`{\"Title\":\"A\",\"Title\":\"B\"}`),&v);fmt.Println(v.Title,e==nil)}\n",
+      "options": [
+        "B true.",
+        "A true.",
+        "B false.",
+        "Decoder luôn từ chối duplicate keys mặc định."
+      ],
+      "correct": 0,
+      "explanation": "encoding/json xử lý keys theo thứ tự, giá trị string sau thay giá trị trước."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "EOF second decode",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\";\"strings\";\"io\")\n\nfunc main(){d:=json.NewDecoder(strings.NewReader(`{} `));var a,b any;e1:=d.Decode(&a);e2:=d.Decode(&b);fmt.Println(e1==nil,e2==io.EOF)}\n",
+      "options": [
+        "Panic vì gọi Decode hai lần.",
+        "true true.",
+        "true false.",
+        "false true."
+      ],
+      "correct": 1,
+      "explanation": "Sau một object và whitespace, lần Decode tiếp trả io.EOF."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Trailing valid value detection",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\";\"strings\")\n\nfunc main(){d:=json.NewDecoder(strings.NewReader(`{} {}`));var a,b any;e1:=d.Decode(&a);e2:=d.Decode(&b);fmt.Println(e1==nil,e2==nil)}\n",
+      "options": [
+        "false true.",
+        "Lần Decode thứ hai tự trả EOF dù còn object.",
+        "true true.",
+        "true false."
+      ],
+      "correct": 2,
+      "explanation": "Hai JSON values hợp lệ có thể được đọc lần lượt; API một document phải tự từ chối trường hợp này."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "MaxBytesReader limits",
+      "question": "Giới hạn body có thay thế kiểm tra Title/Done/ID và quyền user không?",
+      "options": [
+        "Có, body nhỏ luôn đúng nghiệp vụ.",
+        "Có, dưới1KB luôn được phân quyền.",
+        "Chỉ cần trả201.",
+        "Không; đó là các invariant khác cần xử lý riêng."
+      ],
+      "correct": 3,
+      "explanation": "Defense nên phù hợp từng ranh giới, không biến một kiểm tra thành bảo đảm toàn bộ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Concurrent ID allocation",
+      "question": "Chỉ mutex quanh append nhưng tính len+1 ở ngoài mutex đã đủ uniqueness cho writers đồng thời chưa?",
+      "options": [
+        "Chưa; kiểm tra/cấp ID và mutation phải tuân theo invariant chung, hoặc dùng storage allocator phù hợp.",
+        "Đủ, append mutex tự sửa ID đã tính.",
+        "Đủ, int assignment luôn có semantic transaction.",
+        "Chỉ cần ID>0."
+      ],
+      "correct": 0,
+      "explanation": "Atomicity của từng thao tác không bảo đảm tính đúng của chuỗi thao tác."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Multi process storage",
+      "question": "Mutex trong một process có bảo đảm global uniqueness giữa nhiều replicas không?",
+      "options": [
+        "Chỉ cần cùng module path.",
+        "Không; replicas có memory/mutex riêng, cần cơ chế storage/distributed phù hợp.",
+        "Có, sync.Mutex là khóa toàn internet.",
+        "Có, cùng port tự chia sẻ slice."
+      ],
+      "correct": 1,
+      "explanation": "Không suy thiết kế in-memory một process thành kiến trúc scale-out."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Error after headers",
+      "question": "Nếu201 đã commit rồi Encode gặp lỗi, có luôn đổi response thành500 hoàn chỉnh được không?",
+      "options": [
+        "Có, Encoder tự rollback bytes đã gửi.",
+        "Chỉ cần gọi log.Fatal trong mọi handler.",
+        "Không; phải xét response đã bắt đầu và xử lý/log/contract phù hợp.",
+        "Có, WriteHeader sau luôn ghi đè status trước."
+      ],
+      "correct": 2,
+      "explanation": "HTTP output không là transaction có thể rollback tùy ý."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Write body implicit headers",
+      "question": "Nếu handler Encode JSON mà chưa set Content-Type hoặc WriteHeader, net/http có luôn mặc định application/json không?",
+      "options": [
+        "Có, mọi body chứa { tự được đặt JSON chắc chắn.",
+        "Có, JSON tag đổi HTTP headers.",
+        "Chỉ cần tên handler createTodo.",
+        "Không; không nên dựa vào content sniffing để đặt đúng JSON media type."
+      ],
+      "correct": 3,
+      "explanation": "Nên set application/json trước khi ghi response."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Unknown fields compatibility",
+      "question": "Bật DisallowUnknownFields có phải quyết định không có tradeoff về API evolution không?",
+      "options": [
+        "Không; cần cân nhắc contract strictness và khả năng client/server thêm field.",
+        "Có, tự tương thích mọi version.",
+        "Có, nó chỉ ảnh hưởng logging.",
+        "Không bao giờ được dùng với API."
+      ],
+      "correct": 0,
+      "explanation": "Chọn strictness theo contract, không xem nó là validator đầy đủ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Resource ownership",
+      "question": "Làm sao tránh giữ response writer để goroutine nền ghi sau handler return?",
+      "options": [
+        "Thêm Sleep tự kéo dài lifetime hợp lệ.",
+        "Hoàn tất response trong vòng đời handler hoặc thiết kế streaming/lifecycle đúng contract, không dùng writer tùy tiện sau return.",
+        "Writer luôn an toàn vô hạn sau return.",
+        "Chỉ cần copy interface writer là đủ."
+      ],
+      "correct": 1,
+      "explanation": "Vòng đời request/response và synchronization cần rõ ràng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Authentication versus routing",
+      "question": "Có GET /api/todos private theo user thì việc route đúng path có đủ không?",
+      "options": [
+        "Đủ, JSON luôn mã hóa có phân quyền.",
+        "Chỉ cần đổi tên Todo thành PrivateTodo.",
+        "Chưa; cần xác thực, kiểm tra quyền và lọc dữ liệu theo ownership phù hợp.",
+        "Đủ, /api tự là private."
+      ],
+      "correct": 2,
+      "explanation": "Không để naming/routing thay kiểm tra truy cập."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Payload array validation",
+      "question": "Decode vào struct thất bại có chứng minh không có thay đổi từng field trước khi lỗi không?",
+      "options": [
+        "Có, Decode luôn transaction rollback mọi field.",
+        "Có, chỉ Unmarshal mới có partial behavior.",
+        "Chỉ cần Error string ngắn.",
+        "Không cho mọi lỗi type; cần tránh dùng object partially decoded khi Decode trả error."
+      ],
+      "correct": 3,
+      "explanation": "Source return ngay khi err giúp không append object lỗi; đừng bỏ check."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "GET concurrent encode",
+      "question": "Chỉ khóa POST nhưng GET encode slice trong lúc writers thay đổi có chắc an toàn không?",
+      "options": [
+        "Không; reads và writes cần cùng một protocol snapshot/synchronization đúng.",
+        "Có, JSON Encoder tự khóa global slice.",
+        "Có, GET không bao giờ đọc memory.",
+        "Chỉ cần WriteHeader200."
+      ],
+      "correct": 0,
+      "explanation": "Có thể copy snapshot phù hợp dưới lock rồi encode ngoài lock theo thiết kế."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Sequential evidence limit",
+      "question": "25 ví dụ handler sequential pass có chứng minh hệ thống đủ triệu users không?",
+      "options": [
+        "Chỉ cần bỏ unused import là đủ.",
+        "Không; chưa đo workload, storage, concurrency, latency hay failure modes thực tế.",
+        "Có, status200 chứng minh capacity vô hạn.",
+        "Có, Go tự scale mọi code."
+      ],
+      "correct": 1,
+      "explanation": "Bằng chứng content/API semantics không là capacity planning."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Modern mux conflict",
+      "question": "Đăng ký hai ServeMux patterns xung đột có thể gây gì?",
+      "options": [
+        "Tự merge hai handlers.",
+        "Tự resolve bằng thứ tự alphabet.",
+        "Panic tại đăng ký theo quy tắc xung đột của mux.",
+        "Luôn chọn cái cuối âm thầm."
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm tra routing rules/version, không dựa vào thứ tự đăng ký tùy ý."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Original runnable source",
+      "question": "Muốn đánh giá source HTTP thực chạy cần làm gì trước?",
+      "options": [
+        "Chỉ đọc comment Server on8080 và coi đã deploy.",
+        "Chỉ mở browser một file JSON.",
+        "Bỏ mọi lỗi compiler khỏi báo cáo.",
+        "Sửa unused strconv, xác định cấu hình/môi trường rồi kiểm tra đúng scope; không gọi source hiện tại là đã chạy nguyên trạng."
+      ],
+      "correct": 3,
+      "explanation": "Các fixtures đã tách/sửa scaffold phải được phân biệt với source gốc."
+    }
+  ]
+}

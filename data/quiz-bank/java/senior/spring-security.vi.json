@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "java",
+  "level": "senior",
+  "lesson": "spring-security",
+  "language": "vi",
+  "sourceHash": "d3458a3a4f730285c1589accec7ee34bf4336affa72ee17871b3347f5963a6c8",
+  "status": "approved",
+  "review": "Tự viết không API tạo nội dung. Review source SecurityFilterChain/JWT; đối chiếu Spring Security và JJWT chính thức. Nêu lỗi secret placeholder, thiếu triển khai jwtFilter/authority converter, không suy stateless là miễn CSRF. JJWT nguồn dùng API đời cũ, không khẳng định compile trên phiên bản mới. Không sinh token thật, gọi IdP hoặc chạy security integration.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Authentication",
+      "question": "Authentication xác định điều gì?",
+      "options": [
+        "Danh tính đã được xác thực theo cơ chế hệ thống.",
+        "Mọi quyền trên mọi tài nguyên.",
+        "Độ nhanh của SQL.",
+        "Thứ tự field JSON."
+      ],
+      "correct": 0,
+      "explanation": "Xác thực danh tính khác quyết định có được thực hiện hành động."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Authorization",
+      "question": "Authorization trả lời câu hỏi nào?",
+      "options": [
+        "Class nào compile trước?",
+        "Chủ thể có được thực hiện thao tác trên tài nguyên này không?",
+        "Password được mã hóa bằng CSS nào?",
+        "JVM có bao nhiêu CPU?"
+      ],
+      "correct": 1,
+      "explanation": "Quyền có thể phụ thuộc vai trò, ownership, tenant và ngữ cảnh."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Filter chain",
+      "question": "SecurityFilterChain mô tả gì?",
+      "options": [
+        "Danh sách unit test.",
+        "Mọi task Java background.",
+        "Chuỗi filter bảo mật áp dụng cho request được chọn.",
+        "Danh sách bảng SQL."
+      ],
+      "correct": 2,
+      "explanation": "Servlet security hoạt động trước và quanh xử lý request ứng dụng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Public route",
+      "question": "permitAll trong authorization rule diễn đạt gì?",
+      "options": [
+        "Tắt mọi filter trong hệ thống.",
+        "Tắt CORS và CSRF toàn bộ.",
+        "Tự tạo user admin.",
+        "Không yêu cầu quyền/xác thực tại rule đó."
+      ],
+      "correct": 3,
+      "explanation": "Các filter khác vẫn có thể xử lý hoặc từ chối request."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Authenticated rule",
+      "question": "anyRequest().authenticated() yêu cầu gì?",
+      "options": [
+        "Request còn lại phải có authentication được chấp nhận.",
+        "Mọi request phải có role ADMIN.",
+        "Mọi người đều anonymous.",
+        "Chỉ request POST được đi qua."
+      ],
+      "correct": 0,
+      "explanation": "Đây là yêu cầu xác thực, không tự bổ sung quyền cấp đối tượng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Admin role",
+      "question": "Theo prefix mặc định, hasRole(\"ADMIN\") kiểm tra authority nào?",
+      "options": [
+        "ROLE_USER.",
+        "ROLE_ADMIN.",
+        "ADMINISTRATOR luôn.",
+        "SCOPE_ADMIN luôn."
+      ],
+      "correct": 1,
+      "explanation": "Role là cách rút gọn có prefix; có thể tùy chỉnh ở cấu hình phù hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "JWT format",
+      "question": "JWT dạng JWS compact thông thường có mấy phần ngăn bằng dấu chấm?",
+      "options": [
+        "2.",
+        "5 luôn.",
+        "3.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Header, payload và signature; JWE compact là định dạng khác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "JWT payload",
+      "question": "Payload của signed JWT thông thường có mặc định được giữ bí mật không?",
+      "options": [
+        "Có vì Base64URL là mã hóa bí mật.",
+        "Có vì có chữ ký.",
+        "Chỉ khi có exp.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Encoding và ký không tương đương encryption."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Signature purpose",
+      "question": "Chữ ký/MAC JWT chủ yếu giúp kiểm tra gì?",
+      "options": [
+        "Tính toàn vẹn và nguồn phát hành theo khóa tin cậy.",
+        "Mọi claim đều đúng nghiệp vụ hiện tại.",
+        "Payload không ai đọc được.",
+        "User không bao giờ bị khóa."
+      ],
+      "correct": 0,
+      "explanation": "Token hợp lệ về mật mã vẫn cần validation và authorization."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Subject",
+      "question": "setSubject(user.getEmail()) trong bài đặt claim nào?",
+      "options": [
+        "aud.",
+        "sub.",
+        "exp.",
+        "iss."
+      ],
+      "correct": 1,
+      "explanation": "Subject định danh chủ thể theo quy ước issuer."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Issued at",
+      "question": "setIssuedAt(...) khai báo thời điểm gì?",
+      "options": [
+        "Đổi mật khẩu cuối cùng luôn.",
+        "Thời điểm client đóng tab.",
+        "Phát hành token.",
+        "Bắt buộc bắt đầu transaction DB."
+      ],
+      "correct": 2,
+      "explanation": "iat không tự thay thế exp hoặc nbf."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Expiration",
+      "question": "exp biểu diễn gì?",
+      "options": [
+        "Quyền admin.",
+        "Thuật toán password hashing.",
+        "ID database connection.",
+        "Mốc token hết hạn theo validation thời gian."
+      ],
+      "correct": 3,
+      "explanation": "Verifier cần kiểm tra thời gian theo policy tin cậy."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Bearer transport",
+      "question": "Bearer access token thường được gửi bằng header nào?",
+      "options": [
+        "Authorization: Bearer <token>.",
+        "Content-Length: <token>.",
+        "Host: <token>.",
+        "Accept-Language: <token>."
+      ],
+      "correct": 0,
+      "explanation": "Bearer có nghĩa ai nắm token có thể dùng nó trong phạm vi cho phép."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "HTTPS",
+      "question": "Vì sao cần TLS khi truyền token?",
+      "options": [
+        "Thay authorization.",
+        "Giảm nguy cơ lộ/sửa dữ liệu trên đường truyền.",
+        "Làm payload JWT không thể đọc bởi người giữ token.",
+        "Thay kiểm tra signature."
+      ],
+      "correct": 1,
+      "explanation": "TLS và validation token bảo vệ các lớp khác nhau."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Secret placeholder",
+      "question": "SECRET=\"your-secret-key\" trong bài có nên dùng production không?",
+      "options": [
+        "Có vì tên SECRET viết hoa.",
+        "Có vì dùng HS256.",
+        "Không.",
+        "Có vì field private."
+      ],
+      "correct": 2,
+      "explanation": "Placeholder hard-code không là quản lý khóa an toàn."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Password storage",
+      "question": "Mật khẩu tài khoản nên lưu theo cách nào?",
+      "options": [
+        "Plain text trong JWT.",
+        "Base64 trong database để gọi là hash.",
+        "SHA-256 một lần cho mọi trường hợp.",
+        "Password hash thích ứng có salt qua cơ chế phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Dùng password hashing có cost phù hợp, không mã hóa đơn giản để thay hash."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "JWT issuer",
+      "question": "Claim iss dùng để biểu đạt gì?",
+      "options": [
+        "Bên phát hành token.",
+        "IP client bắt buộc.",
+        "Số request còn lại.",
+        "Tên cột SQL."
+      ],
+      "correct": 0,
+      "explanation": "Verifier cần đối chiếu issuer tin cậy khi contract yêu cầu."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "JWT audience",
+      "question": "Claim aud thường giới hạn điều gì?",
+      "options": [
+        "Loại constructor.",
+        "Đối tượng/dịch vụ dự định nhận token.",
+        "Thời gian GC.",
+        "Số byte RAM."
+      ],
+      "correct": 1,
+      "explanation": "Token cho dịch vụ khác không nên được chấp nhận chỉ vì signature đúng."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Stateless policy",
+      "question": "STATELESS hướng Spring Security về cách dùng session nào?",
+      "options": [
+        "JWT tự bị thu hồi tức thì.",
+        "Không cần CSRF trong mọi kiểu client.",
+        "Không tạo/dùng HttpSession để lấy SecurityContext theo policy này.",
+        "Mọi dữ liệu ứng dụng không được lưu database."
+      ],
+      "correct": 2,
+      "explanation": "Policy session không tự quyết định toàn bộ mô hình bảo mật."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Method guard",
+      "question": "@PreAuthorize dùng nhằm gì khi method security đã bật đúng?",
+      "options": [
+        "Tạo database schema.",
+        "Đổi password thành token.",
+        "Chạy test coverage.",
+        "Kiểm tra biểu thức quyền trước method."
+      ],
+      "correct": 3,
+      "explanation": "Annotation cần hạ tầng và đường gọi phù hợp để được áp dụng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Rule ordering",
+      "question": "Với /api/auth/** permitAll trước /api/admin/** hasRole ADMIN, /api/auth/login khớp rule nào?",
+      "options": [
+        "Rule auth public theo thứ tự đã khai báo.",
+        "ADMIN vì mọi URL có api.",
+        "anyRequest luôn trước.",
+        "Không rule nào vì có dấu sao."
+      ],
+      "correct": 0,
+      "explanation": "Authorization xét matcher theo thứ tự; pattern cụ thể cần được kiểm tra với request thực tế."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Catch all ordering",
+      "question": "Đặt matcher /** permitAll trước matcher /api/admin/** có nguy cơ gì?",
+      "options": [
+        "Tự bật method security.",
+        "Rule rộng che rule admin phía sau.",
+        "Admin tự ưu tiên vì tên.",
+        "Tự từ chối mọi auth route."
+      ],
+      "correct": 1,
+      "explanation": "First matching rule quyết định authorization trong danh sách phù hợp."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Source admin access",
+      "question": "User authenticated chỉ có ROLE_USER gọi /api/admin/report; authorization nguồn dự định thế nào?",
+      "options": [
+        "Tự nâng thành ADMIN.",
+        "Đổi URL thành auth/login.",
+        "Từ chối vì thiếu ROLE_ADMIN.",
+        "Cho phép chỉ vì authenticated."
+      ],
+      "correct": 2,
+      "explanation": "Rule admin áp dụng trước anyRequest."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Roles claim mapping",
+      "question": "Token có claim roles:[\"ADMIN\"] có tự bảo đảm hasRole(\"ADMIN\") thành công không?",
+      "options": [
+        "Có với mọi JWT library.",
+        "Có vì JSON array.",
+        "Có vì setSubject.",
+        "Không; cần map claim thành authorities thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Claim thô không tự trở thành Authentication authorities trong mọi cấu hình."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Scope prefix",
+      "question": "Resource server JWT mặc định map scope thành prefix nào?",
+      "options": [
+        "SCOPE_.",
+        "ROLE_ luôn.",
+        "USER_ luôn.",
+        "Không có authority nào bao giờ."
+      ],
+      "correct": 0,
+      "explanation": "Roles claim riêng cần converter theo contract; đừng nhầm scope với role."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Filter position",
+      "question": "addFilterBefore(jwtFilter,UsernamePasswordAuthenticationFilter.class) chứng minh điều gì?",
+      "options": [
+        "Mọi request đã có ROLE_ADMIN.",
+        "Vị trí tương đối của filter, không chứng minh nó validate JWT đúng.",
+        "Mọi token đã an toàn.",
+        "Mọi exception tự thành401."
+      ],
+      "correct": 1,
+      "explanation": "Triển khai filter và error path vẫn phải được review/test."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Missing implementation",
+      "question": "Nguồn gọi jwtFilter() nhưng không đưa implementation; có thể kết luận authentication đã hoạt động đầy đủ chưa?",
+      "options": [
+        "Có vì @Bean ở method khác.",
+        "Có vì build trả SecurityFilterChain.",
+        "Chưa.",
+        "Có vì tên method đúng."
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình minh họa chưa cung cấp các phần cần kiểm chứng."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Public endpoint token",
+      "question": "Public route nhận token hỏng; custom JWT filter có thể vẫn từ chối trước authorization không?",
+      "options": [
+        "Không vì permitAll bỏ qua mọi filter.",
+        "Không vì public route không có headers.",
+        "Luôn trả201.",
+        "Có, tùy thiết kế filter."
+      ],
+      "correct": 3,
+      "explanation": "Cần định nghĩa policy invalid credentials trên public endpoints."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Default deny",
+      "question": "Muốn chỉ mở vài endpoint và chặn mọi endpoint chưa khai báo, rule cuối phù hợp là gì?",
+      "options": [
+        "anyRequest().denyAll().",
+        "anyRequest().permitAll().",
+        "Chỉ xóa auth rules.",
+        "hasRole(\"*\") để cho tất cả."
+      ],
+      "correct": 0,
+      "explanation": "Deny by default giảm vô tình mở endpoint mới; phải khớp nhu cầu ứng dụng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Expired signed token",
+      "question": "Token đúng signature nhưng đã hết hạn có nên chấp nhận chỉ vì parse được JSON không?",
+      "options": [
+        "Có nếu user nhớ password.",
+        "Không.",
+        "Có vì signature đủ.",
+        "Có nếu email tồn tại."
+      ],
+      "correct": 1,
+      "explanation": "Parsing khác validation về thời gian và policy."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Future validity",
+      "question": "Token có nbf trong tương lai ngoài clock skew cho phép nên thế nào?",
+      "options": [
+        "Tự sửa nbf ở client.",
+        "Tự nâng quyền.",
+        "Bị từ chối vì chưa có hiệu lực.",
+        "Luôn chấp nhận trước cho tiện."
+      ],
+      "correct": 2,
+      "explanation": "Validation thời gian dựa đồng hồ và tolerance đã quy định."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Wrong audience",
+      "question": "Token cho API A được ký bởi issuer tin cậy, gửi đến API B; cần kiểm tra gì?",
+      "options": [
+        "Chỉ số phần JWT.",
+        "Chỉ có chữ ADMIN trong payload.",
+        "Chỉ HTTP200 từ issuer lần trước.",
+        "Audience phù hợp B ngoài signature/issuer/time."
+      ],
+      "correct": 3,
+      "explanation": "Tin issuer không có nghĩa mọi token của issuer dùng được cho mọi resource."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Wrong issuer",
+      "question": "Có JWT signed hợp lệ với một khóa nhưng iss không thuộc policy nhận; nên xử lý thế nào?",
+      "options": [
+        "Từ chối theo validation issuer.",
+        "Bỏ qua vì JSON hợp lệ.",
+        "Tin mọi issuer ghi trong token.",
+        "Tự đổi issuer thành app mình."
+      ],
+      "correct": 0,
+      "explanation": "Đối chiếu expected issuer, không lấy claim tự khai làm nguồn tin tuyệt đối."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Decode vs verify",
+      "question": "Chỉ Base64URL decode payload rồi đọc email có đủ xác thực không?",
+      "options": [
+        "Có nếu dùng HTTPS tới app.",
+        "Không.",
+        "Có nếu đủ3 phần.",
+        "Có nếu email có @."
+      ],
+      "correct": 1,
+      "explanation": "Client có thể tạo payload tùy ý nếu server không xác minh token."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "HS256 key",
+      "question": "HS256 cần khóa đối xứng có yêu cầu cơ bản nào?",
+      "options": [
+        "Mật khẩu user làm khóa chung.",
+        "Khóa public của mọi người đều giống nhau.",
+        "Khóa ngẫu nhiên đủ mạnh, tối thiểu256 bit theo yêu cầu thuật toán.",
+        "Chuỗi tên app luôn đủ."
+      ],
+      "correct": 2,
+      "explanation": "Độ dài chuỗi không thay entropy và API key handling đúng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Symmetric trust",
+      "question": "Với HS256, bên giữ signing secret có khả năng nào?",
+      "options": [
+        "Chỉ đọc public key và không thể ký.",
+        "Tự động thu hồi mọi token.",
+        "Tự đổi password tất cả user.",
+        "Tạo MAC/token được tin nếu policy dùng khóa đó."
+      ],
+      "correct": 3,
+      "explanation": "Phân phối shared secret mở rộng phạm vi chủ thể có thể phát hành."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Algorithm selection",
+      "question": "Verifier nên chọn thuật toán thế nào?",
+      "options": [
+        "Giới hạn thuật toán/khóa được tin theo cấu hình.",
+        "Tin mọi alg do token tự khai.",
+        "Chấp nhận none khi thiếu signature.",
+        "Thử mọi secret đến khi qua."
+      ],
+      "correct": 0,
+      "explanation": "Header là input không tin cậy; library/config phải ngăn algorithm confusion."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Token lifetime math",
+      "question": "Nguồn cộng86400000 vào milliseconds hiện tại để đặt exp, xấp xỉ bao lâu?",
+      "options": [
+        "365 ngày.",
+        "24 giờ.",
+        "24 phút.",
+        "1 giây."
+      ],
+      "correct": 1,
+      "explanation": "86400000ms =86400s; không có nghĩa đây là lifetime phù hợp mọi hệ thống."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Claim minimization",
+      "question": "Đưa passwordHash vào JWT signed có hợp lý không?",
+      "options": [
+        "Có nếu token dài.",
+        "Có nếu có exp.",
+        "Không; payload thường đọc được và không cần dữ liệu đó.",
+        "Có vì signature mã hóa nội dung."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ đưa claims cần thiết và xem xét dữ liệu định danh nhạy cảm."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Authority source",
+      "question": "Client gửi role ADMIN trong JSON login; server nên dựa vào đâu để cấp quyền?",
+      "options": [
+        "Tin role client luôn.",
+        "Tin User-Agent.",
+        "Tin màu avatar.",
+        "Danh tính đã xác thực và dữ liệu quyền tin cậy phía server."
+      ],
+      "correct": 3,
+      "explanation": "Không để người gọi tự cấp quyền qua input."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Browser token storage",
+      "question": "Token trong localStorage có rủi ro nào khi có XSS?",
+      "options": [
+        "Script độc hại cùng origin có thể đọc và lấy token.",
+        "HttpOnly tự bảo vệ localStorage.",
+        "Token tự mã hóa mọi script.",
+        "Không có rủi ro vì stateless."
+      ],
+      "correct": 0,
+      "explanation": "XSS mitigation và lựa chọn lưu trữ cần xem threat model cụ thể."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "HttpOnly scope",
+      "question": "Cookie HttpOnly giúp ngăn điều gì trực tiếp?",
+      "options": [
+        "Mọi truy cập server.",
+        "JavaScript đọc cookie qua API thông thường.",
+        "Mọi request CSRF.",
+        "Mọi XSS gây tác động."
+      ],
+      "correct": 1,
+      "explanation": "Browser vẫn có thể gửi cookie trong request; HttpOnly không thay CSRF defenses."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "CSRF bearer cookie",
+      "question": "JWT đặt trong cookie tự gửi có miễn CSRF chỉ vì token stateless không?",
+      "options": [
+        "Có vì JWT có chữ ký.",
+        "Chỉ cần tắt session.",
+        "Không.",
+        "Có với mọi cookie."
+      ],
+      "correct": 2,
+      "explanation": "CSRF liên quan credential được browser tự đính kèm, không phụ thuộc chỉ loại token."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "CSRF disable source",
+      "question": "csrf.disable() trong bài có nên sao chép vô điều kiện cho mọi website dùng login không?",
+      "options": [
+        "Có vì Spring luôn khuyên tắt.",
+        "Có vì @EnableWebSecurity.",
+        "Có vì API có JSON.",
+        "Không; phải đánh giá cách credential được gửi và client."
+      ],
+      "correct": 3,
+      "explanation": "Cần quyết định theo mô hình authentication, không theo nhãn REST đơn thuần."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "CORS scope",
+      "question": "CORS có phải thay thế kiểm tra authorization phía server không?",
+      "options": [
+        "Không.",
+        "Có vì origin là danh tính user.",
+        "Có vì mọi client là browser.",
+        "Chỉ cần Access-Control-Allow-Origin:*."
+      ],
+      "correct": 0,
+      "explanation": "CORS điều chỉnh khả năng browser đọc cross-origin; client khác vẫn gửi request."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Missing authentication status",
+      "question": "API bearer chưa có credential hợp lệ thường nên trả status nào theo contract chuẩn?",
+      "options": [
+        "304.",
+        "401 kèm challenge phù hợp.",
+        "201.",
+        "204 luôn."
+      ],
+      "correct": 1,
+      "explanation": "Custom entry point có thể đổi response; đừng dùng redirect login HTML ngoài ý muốn cho API."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Insufficient permission",
+      "question": "User đã xác thực nhưng thiếu quyền trên endpoint thường nhận gì?",
+      "options": [
+        "100.",
+        "301 bắt buộc.",
+        "403.",
+        "201."
+      ],
+      "correct": 2,
+      "explanation": "401 và403 diễn đạt vấn đề khác; policy che giấu tài nguyên có thể chọn404 có chủ đích."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Logout token",
+      "question": "Xóa access token ở browser có tự làm mọi bản sao token phía khác vô hiệu không?",
+      "options": [
+        "Có vì logout button.",
+        "Có vì stateless.",
+        "Có vì sub là email.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Token còn hợp lệ tới exp trừ khi server có revocation/state policy phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Method activation",
+      "question": "Thêm @PreAuthorize trên service mà chưa bật method security có đủ bảo vệ không?",
+      "options": [
+        "Chưa.",
+        "Đủ vì annotation tự chạy trong JVM.",
+        "Đủ nếu method public.",
+        "Đủ nếu JWT có roles."
+      ],
+      "correct": 0,
+      "explanation": "Cần hạ tầng method security và invocation được intercept."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Version API",
+      "question": "Nguồn dùng Jwts.parser().setSigningKey(...).parseClaimsJws(...); khi nâng JJWT cần làm gì?",
+      "options": [
+        "Thay secret bằng email.",
+        "Đối chiếu API/version và migration, không giả định đoạn cũ compile nguyên.",
+        "Chỉ đổi version number không kiểm tra.",
+        "Bỏ verify signature khi lỗi compile."
+      ],
+      "correct": 1,
+      "explanation": "API parsing/key handling thay đổi giữa các thế hệ thư viện."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Exact authority",
+      "question": "hasAuthority(\"ADMIN\") theo mặc định kiểm tra chuỗi nào?",
+      "options": [
+        "SCOPE_ADMIN tự thêm luôn.",
+        "Mọi authority chứa chữ AD.",
+        "ADMIN chính xác.",
+        "ROLE_ADMIN tự thêm luôn."
+      ],
+      "correct": 2,
+      "explanation": "Khác hasRole với prefix mặc định, hasAuthority kiểm tra authority được chỉ định."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Password verification",
+      "question": "Khi kiểm tra password với hash có salt qua PasswordEncoder phù hợp, nên dùng gì?",
+      "options": [
+        "Encode lại rồi so String vì mọi salt luôn giống nhau.",
+        "Giải mã hash lấy password gốc.",
+        "So rawPassword với storedHash trực tiếp.",
+        "matches(rawPassword,storedHash)."
+      ],
+      "correct": 3,
+      "explanation": "Password hashing có salt thường cho hash khác khi encode lại; verifier đọc thông số của hash."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Login abuse",
+      "question": "Endpoint login bị thử password liên tục cần cơ chế nào?",
+      "options": [
+        "Giới hạn/risk controls và theo dõi theo policy, không chỉ JWT sau login.",
+        "Chỉ tăng thời hạn token.",
+        "Chỉ đổi response sang JSON.",
+        "Chỉ thêm role USER."
+      ],
+      "correct": 0,
+      "explanation": "Token authentication không tự chống credential stuffing ở bước cấp token."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Enumeration response",
+      "question": "Trả thông báo khác biệt rõ giữa email không tồn tại và sai mật khẩu có rủi ro gì?",
+      "options": [
+        "Tự mã hóa email.",
+        "Lộ thông tin tài khoản để dò danh sách.",
+        "Tự tăng entropy password.",
+        "Tự chặn brute force."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế thông báo và timing theo threat model, vẫn giữ chẩn đoán nội bộ phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Registration privilege",
+      "question": "DTO đăng ký public có field roles do client tự gửi; server nên làm gì?",
+      "options": [
+        "Tin role nếu email hợp lệ.",
+        "Tin role nếu password dài.",
+        "Chỉ cho phép quyền mặc định/được phép theo policy phía server.",
+        "Chấp nhận ADMIN để giảm query."
+      ],
+      "correct": 2,
+      "explanation": "Validation chuỗi role không đồng nghĩa caller có quyền cấp role đó."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Mutable subject",
+      "question": "Dùng email làm sub khi email có thể đổi cần cân nhắc gì?",
+      "options": [
+        "Email tự cập nhật trong token đã ký.",
+        "Không thể đổi email trong database.",
+        "Chữ ký tự sửa subject.",
+        "Identity ổn định và cách xử lý token cũ sau khi đổi email."
+      ],
+      "correct": 3,
+      "explanation": "Subject nên có semantics định danh rõ; token cũ là snapshot đã phát hành."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Access versus refresh",
+      "question": "Refresh token nên được chấp nhận như bearer access token cho mọi API không?",
+      "options": [
+        "Không; tách mục đích và validation policy.",
+        "Có vì cả hai là credential.",
+        "Có nếu token dài hơn.",
+        "Có nếu client nói token hợp lệ."
+      ],
+      "correct": 0,
+      "explanation": "Token dùng để xin access token không mặc nhiên có quyền gọi resource endpoints."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Public registration validation",
+      "question": "permitAll cho register có bỏ nhu cầu validate input/rate limit không?",
+      "options": [
+        "Chỉ cần @Configuration.",
+        "Không.",
+        "Có vì anonymous không gây hại.",
+        "Có vì endpoint không đọc database."
+      ],
+      "correct": 1,
+      "explanation": "Public endpoint vẫn là bề mặt nhận dữ liệu không tin cậy và tiêu thụ tài nguyên."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Token in URL",
+      "question": "Đặt access token trong query string có rủi ro nào so với vị trí bearer header dự định?",
+      "options": [
+        "Tự ngăn replay.",
+        "Tự bật HttpOnly.",
+        "Dễ bị lưu trong URL logs/history và lộ qua cơ chế URL liên quan.",
+        "Tự được mã hóa mạnh hơn."
+      ],
+      "correct": 2,
+      "explanation": "Không đưa credential vào URL tùy tiện; vẫn phải redact log headers."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Refresh expiration",
+      "question": "Refresh token có cần thời hạn và policy thu hồi không?",
+      "options": [
+        "Không vì chỉ dùng khi access token hết hạn.",
+        "Không nếu JWT signed.",
+        "Chỉ cần tên field refresh.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "Credential sống dài vẫn cần lifecycle, lưu trữ và validation riêng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Refresh token replay",
+      "question": "Refresh token dùng rotation; hai request cùng dùng token cũ cần xử lý điều gì?",
+      "options": [
+        "Consume/rotate atomic và policy phát hiện replay rõ.",
+        "Cấp vô hạn token mới cho cả hai không lưu trạng thái.",
+        "Chỉ kéo dài access token mãi.",
+        "Chỉ đổi màu nút login."
+      ],
+      "correct": 0,
+      "explanation": "Concurrency có thể phá rotation nếu kiểm tra rồi cập nhật không atomic."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Revocation requirement",
+      "question": "Cần khóa tài khoản có hiệu lực gần tức thì nhưng access JWT sống24h; thiết kế cần gì?",
+      "options": [
+        "Chỉ đổi tên claim roles.",
+        "Cơ chế thu hồi/kiểm tra trạng thái hoặc lifetime ngắn phù hợp SLA.",
+        "Chỉ xóa localStorage của admin.",
+        "Chỉ tin signature mãi."
+      ],
+      "correct": 1,
+      "explanation": "Self-contained token không tự phản ánh thay đổi server sau phát hành."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Role downgrade",
+      "question": "User bị gỡ ADMIN nhưng token cũ vẫn chứa role; rủi ro nào còn?",
+      "options": [
+        "Claim tự sửa trên browser an toàn.",
+        "Signature tự hết hiệu lực khi DB đổi.",
+        "Quyền cũ có thể còn hiệu lực đến khi policy xác minh/thu hồi cập nhật.",
+        "JWT tự đồng bộ database từng field."
+      ],
+      "correct": 2,
+      "explanation": "Quyền trong token là snapshot trừ khi có kiểm tra bổ sung."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Key rotation",
+      "question": "Đổi signing key cần tránh gì để không tạo khoảng mất kiểm soát?",
+      "options": [
+        "Gắn kid theo quy ước tin cậy.",
+        "Có thời hạn chuyển tiếp được kiểm soát.",
+        "Kiểm thử token trước/sau rotation.",
+        "Chấp nhận khóa cũ vô hạn không policy hoặc cắt khóa cũ ngoài kế hoạch."
+      ],
+      "correct": 3,
+      "explanation": "Cần danh mục khóa tin cậy, vòng đời và thời hạn token khớp nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Untrusted kid",
+      "question": "Token gửi kid là URL tùy ý; verifier có nên fetch trực tiếp URL đó không?",
+      "options": [
+        "Không; chọn khóa qua nguồn/allowlist tin cậy.",
+        "Có vì header được client ký tự khai.",
+        "Có vì HTTPS luôn là issuer hợp lệ.",
+        "Chỉ cần URL ngắn."
+      ],
+      "correct": 0,
+      "explanation": "Không để dữ liệu chưa xác minh điều khiển truy cập mạng hoặc chọn khóa tùy ý."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Tenant isolation",
+      "question": "Token hợp lệ tenant A gọi /tenants/B/orders; server còn cần gì?",
+      "options": [
+        "Tin tenantId trong body.",
+        "Kiểm tra quyền và phạm vi tenant với tài nguyên mục tiêu.",
+        "Chỉ kiểm tra token có3 phần.",
+        "Chỉ hasRole USER cho mọi tenant."
+      ],
+      "correct": 1,
+      "explanation": "Authentication không ngăn truy cập chéo tenant nếu thiếu kiểm tra đối tượng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Object permissions",
+      "question": "User có ROLE_USER đoán được order ID người khác; cơ chế nào phải ngăn?",
+      "options": [
+        "Chỉ đổi GET sang POST.",
+        "Chỉ hide button trên UI.",
+        "Authorization ownership/permission trên order.",
+        "Chỉ dùng ID dài."
+      ],
+      "correct": 2,
+      "explanation": "Không dựa vào độ khó đoán ID hay giao diện để kiểm soát quyền."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Filter exception path",
+      "question": "Custom JWT filter ném lỗi trước MVC; @ExceptionHandler trong controller có chắc xử lý không?",
+      "options": [
+        "Có vì mọi exception đi qua controller.",
+        "Có nếu handler public.",
+        "Có nếu token expired.",
+        "Không; cần xử lý theo security/filter exception path thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Vị trí phát sinh quyết định cơ chế translation; kiểm thử response và context cleanup."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Context leakage",
+      "question": "Tự giữ Authentication trong static field thay cho SecurityContext đúng lifecycle có nguy cơ gì?",
+      "options": [
+        "Danh tính lẫn giữa request/thread.",
+        "Tự tạo per-user isolation.",
+        "Tự ngăn race vì object immutable.",
+        "Tự hỗ trợ mọi async propagation."
+      ],
+      "correct": 0,
+      "explanation": "Security context cần scope, propagation và cleanup được quản lý."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Async propagation",
+      "question": "Tự submit task sang thread pool có bảo đảm SecurityContext caller tự truyền đúng không?",
+      "options": [
+        "Có vì singleton service.",
+        "Không; dùng cơ chế propagation phù hợp và giới hạn quyền.",
+        "Có với mọi ThreadLocal.",
+        "Có vì JWT là String."
+      ],
+      "correct": 1,
+      "explanation": "ThreadLocal không tự theo mọi executor; worker reuse làm cleanup quan trọng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Proxy self call",
+      "question": "Service tự gọi method @PreAuthorize qua this trong proxy mode thường có vấn đề gì?",
+      "options": [
+        "Tự kiểm tra hai lần.",
+        "Chỉ ảnh hưởng log.",
+        "Có thể bỏ qua interceptor method security.",
+        "Luôn tạo proxy mới."
+      ],
+      "correct": 2,
+      "explanation": "Đặt boundary được intercept; đừng suy có annotation là mọi đường gọi đều bảo vệ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Logout at scale",
+      "question": "Dùng denylist trong RAM một instance cho hệ nhiều instance có giới hạn gì?",
+      "options": [
+        "Load balancer luôn replicate denylist.",
+        "JWT tự chứa trạng thái logout tương lai.",
+        "Không bao giờ cần cleanup.",
+        "Instance khác có thể vẫn nhận token nếu không chia sẻ policy/state."
+      ],
+      "correct": 3,
+      "explanation": "Revocation storage cần scope, TTL và availability theo SLA."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Expiry clocks",
+      "question": "Đồng hồ lệch lớn giữa issuer và verifier có thể gây gì?",
+      "options": [
+        "Từ chối token hợp lệ về nghiệp vụ hoặc chấp nhận lệch cửa sổ mong muốn.",
+        "Không ảnh hưởng exp/nbf.",
+        "Tự sửa bằng signature.",
+        "Chỉ đổi thứ tự claim."
+      ],
+      "correct": 0,
+      "explanation": "Đồng bộ thời gian và clock skew bounded; không bỏ validation để tránh lỗi."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Sensitive logs",
+      "question": "Log nguyên Authorization header để debug có rủi ro nào?",
+      "options": [
+        "Chỉ lộ tên class.",
+        "Người đọc log có thể lấy bearer credential còn hiệu lực.",
+        "Không vì token đã signed.",
+        "Không vì HTTPS."
+      ],
+      "correct": 1,
+      "explanation": "Redact token và kiểm soát truy cập/retention log."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Refresh storage",
+      "question": "Lưu refresh token phía server để revoke cần cân nhắc gì?",
+      "options": [
+        "Chỉ đặt field final trong controller.",
+        "Không cần transaction vì JWT.",
+        "Hash/token identifier, expiration, rotation và atomic consumption theo thiết kế.",
+        "Luôn lưu plaintext public."
+      ],
+      "correct": 2,
+      "explanation": "Refresh token là credential giá trị cao; state lifecycle cần được thiết kế."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Password reset",
+      "question": "Sau reset password, có thể giả định mọi JWT cũ tự vô hiệu do password hash đổi không?",
+      "options": [
+        "Có vì JWT tự đọc DB.",
+        "Có vì secret giống password luôn.",
+        "Có vì email không đổi.",
+        "Không; cần cơ chế/token version/revocation phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Signature chỉ phụ thuộc khóa ký và nội dung token; policy trạng thái là phần bổ sung."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Signature trust split",
+      "question": "Nhiều resource server chỉ cần verify, issuer độc quyền ký; mô hình khóa nào có thể giảm việc chia sẻ khả năng ký?",
+      "options": [
+        "Thuật toán bất đối xứng với private key ở issuer và public verification keys.",
+        "Shared HS256 secret ở mọi client browser.",
+        "Không dùng signature.",
+        "Dùng email làm private key."
+      ],
+      "correct": 0,
+      "explanation": "Còn cần phân phối khóa tin cậy và kiểm soát thuật toán đúng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Denial of service limits",
+      "question": "Token rất lớn hoặc malformed gửi dồn dập cần phòng vệ nào?",
+      "options": [
+        "Tắt signature check.",
+        "Giới hạn header/request, rate/concurrency và xử lý parse lỗi hữu hạn.",
+        "Luôn cấp thêm thread vô hạn.",
+        "Log toàn bộ body/token không giới hạn."
+      ],
+      "correct": 1,
+      "explanation": "Bảo mật còn gồm giới hạn tài nguyên; đo và cấu hình theo hạ tầng thật."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Multiple chains",
+      "question": "Có nhiều SecurityFilterChain, vì sao cần test matcher/order giữa các chain?",
+      "options": [
+        "Tên bean tự chọn chain an toàn nhất.",
+        "Chain không ảnh hưởng endpoint.",
+        "Request có thể đi vào chain khác với policy dự định.",
+        "Mọi chain luôn cộng tất cả rule thành một."
+      ],
+      "correct": 2,
+      "explanation": "Chain selection và authorization matcher trong chain là các tầng cần phân biệt."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Negative security cases",
+      "question": "Test chỉ gửi JWT hợp lệ với ROLE_ADMIN có đủ chứng minh endpoint chặn user thiếu quyền chưa?",
+      "options": [
+        "Đủ vì admin pass.",
+        "Đủ vì hasRole xuất hiện trong source.",
+        "Đủ vì endpoint trả JSON.",
+        "Chưa; cần các ca anonymous, invalid/expired token và thiếu quyền thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Security tests phải xác minh cả đường cho phép và đường từ chối tại boundary thực tế."
+    }
+  ]
+}

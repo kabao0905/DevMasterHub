@@ -1,0 +1,1158 @@
+{
+  "version": 1,
+  "tech": "cpp",
+  "level": "master",
+  "lesson": "metaprog",
+  "language": "vi",
+  "sourceHash": "651dcbb2b83e39fdf775afb2207bd02abc49cd62057e77fc932f194cab3d05f8",
+  "status": "approved",
+  "review": "Tự biên soạn trực tiếp, không API. Ví dụ Concepts dùng C++20; if constexpr/fold có từ C++17. TMP, traits, SFINAE, constraints, CRTP và yêu cầu Sortable. Numeric=is_arithmetic không tự loại bool hoặc kiểm tra miền giá trị/chia tràn.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "TMP purpose",
+      "question": "Template metaprogramming thường đưa loại công việc nào sang compile-time?",
+      "options": [
+        "Tính toán/lựa chọn cấu trúc chương trình dựa trên kiểu và hằng phù hợp.",
+        "Mọi truy vấn mạng runtime.",
+        "Mọi dữ liệu từ cin tự biết trước.",
+        "Mọi file I/O bất kể nội dung."
+      ],
+      "correct": 0,
+      "explanation": "TMP xử lý thông tin khả dụng khi biên dịch, không dự đoán dữ liệu runtime tùy ý."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Concept version",
+      "question": "Ngôn ngữ Concepts dùng keyword concept thuộc C++ phiên bản nào trong bài?",
+      "options": [
+        "C++14.",
+        "C++20.",
+        "C++98.",
+        "C++11."
+      ],
+      "correct": 1,
+      "explanation": "Cần chế độ ngôn ngữ thích hợp để biên dịch các ví dụ concept."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "If constexpr version",
+      "question": "if constexpr có từ phiên bản nào?",
+      "options": [
+        "C++03.",
+        "Chỉ C++23.",
+        "C++17.",
+        "C++98."
+      ],
+      "correct": 2,
+      "explanation": "if constexpr hỗ trợ lựa chọn nhánh compile-time theo điều kiện hằng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Concept intent",
+      "question": "Concept chủ yếu diễn đạt gì?",
+      "options": [
+        "Một mutex runtime.",
+        "Một object luôn singleton.",
+        "Một exception handler.",
+        "Ràng buộc trên đối số template theo yêu cầu khai báo."
+      ],
+      "correct": 3,
+      "explanation": "Ràng buộc giúp lựa chọn ứng viên hợp lệ và diễn đạt yêu cầu interface."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Numeric trait",
+      "question": "std::is_arithmetic_v<T> kiểm tra nhóm kiểu nào?",
+      "options": [
+        "Các kiểu số nguyên và số thực built-in theo trait chuẩn.",
+        "Mọi class có method tính tiền.",
+        "Mọi kiểu có tên Numeric.",
+        "Mọi pointer tới số."
+      ],
+      "correct": 0,
+      "explanation": "Trait không tự suy nghĩa số học từ tên hoặc operator của user-defined type."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Trait header",
+      "question": "Header trực tiếp cho std::is_arithmetic_v là gì?",
+      "options": [
+        "<memory>",
+        "<type_traits>",
+        "<concepts> luôn định nghĩa mọi type trait thay thế",
+        "<fstream>"
+      ],
+      "correct": 1,
+      "explanation": "Include API được dùng rõ ràng, không dựa vào header bắc cầu."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Requires clause",
+      "question": "requires sau template/function declaration thường bổ sung gì?",
+      "options": [
+        "Một thao tác cấp phát.",
+        "Một destructor.",
+        "Điều kiện constraint cho specialization/overload phù hợp.",
+        "Một vòng while runtime."
+      ],
+      "correct": 2,
+      "explanation": "Constraint kiểm tra khả năng dùng template trước các bước instantiation liên quan."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Requires expression",
+      "question": "requires(T x){ x.size(); } thường dùng để kiểm tra gì?",
+      "options": [
+        "size của mọi x luôn lớn hơn0.",
+        "size() chạy ngay ở runtime.",
+        "x được cấp phát trên heap.",
+        "Biểu thức x.size() có hợp lệ theo requirement đó không."
+      ],
+      "correct": 3,
+      "explanation": "Well-formedness của biểu thức khác với kiểm tra giá trị trả lúc chạy."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Static assert",
+      "question": "static_assert dùng để làm gì?",
+      "options": [
+        "Kiểm tra điều kiện hằng khi biên dịch.",
+        "Luôn gọi assert runtime.",
+        "Tự sửa điều kiện sai thành true.",
+        "Ghi log hiệu năng."
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện sai ở ngữ cảnh cần kiểm tra khiến chương trình không hợp lệ."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Constexpr meaning",
+      "question": "Hàm constexpr có bắt buộc mọi lần gọi compile-time không?",
+      "options": [
+        "Không; constexpr không bao giờ hỗ trợ compile-time.",
+        "Không; phụ thuộc ngữ cảnh và đối số.",
+        "Có; runtime call luôn cấm.",
+        "Có; mọi giá trị runtime tự thành hằng."
+      ],
+      "correct": 1,
+      "explanation": "Định nghĩa cho phép constant evaluation khi đáp ứng điều kiện, không thay dữ liệu runtime bằng hằng tùy ý."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "SFINAE phrase",
+      "question": "SFINAE viết tắt diễn đạt ý chính nào?",
+      "options": [
+        "Runtime exception được nuốt.",
+        "Mọi type checking bị tắt.",
+        "Substitution Failure Is Not An Error trong ngữ cảnh áp dụng.",
+        "Mọi lỗi trong template đều bị bỏ qua."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ một số lỗi substitution trong immediate context loại ứng viên, không phải cơ chế che mọi lỗi."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Enable if",
+      "question": "std::enable_if_t thường phục vụ điều gì?",
+      "options": [
+        "Khóa thread nếu true.",
+        "Tự chuyển kiểu sai thành int.",
+        "Tạo object dù constructor bị xóa.",
+        "Cho phép kiểu tồn tại theo điều kiện hằng để hỗ trợ ràng buộc/SFINAE."
+      ],
+      "correct": 3,
+      "explanation": "Concepts thường diễn đạt ràng buộc rõ hơn, nhưng enable_if vẫn quan trọng ở code cũ."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "CRTP shape",
+      "question": "CRTP thường có cấu trúc nào?",
+      "options": [
+        "Derived kế thừa Base<Derived>.",
+        "Base luôn là Singleton.",
+        "Derived chỉ chứa vector<Base*>.",
+        "Mọi hàm đều virtual pure."
+      ],
+      "correct": 0,
+      "explanation": "Base template dùng kiểu Derived để cung cấp static polymorphism theo hợp đồng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Static polymorphism",
+      "question": "CRTP thường khác virtual dispatch ở điểm nào?",
+      "options": [
+        "Luôn cần RTTI ở runtime.",
+        "Lựa chọn kiểu/hành vi qua template thay vì virtual dispatch thông thường.",
+        "Tự tạo thread cho từng lời gọi.",
+        "Bỏ mọi khả năng inline."
+      ],
+      "correct": 1,
+      "explanation": "Chi phí thực tế và tối ưu vẫn phụ thuộc code/compiler/workload."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Variadic template",
+      "question": "template<class... Ts> biểu đạt gì?",
+      "options": [
+        "Một pointer ba cấp.",
+        "Một hàm luôn nhận đúng3 đối số.",
+        "Một parameter pack gồm các tham số kiểu.",
+        "Một mảng runtime có độ dài bí mật."
+      ],
+      "correct": 2,
+      "explanation": "Pack có thể có số phần tử khác nhau theo lời gọi/instantiation."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Pack length",
+      "question": "sizeof...(Ts) cho biết gì?",
+      "options": [
+        "Tổng số byte của mọi kiểu Ts.",
+        "Số byte con trỏ đầu tiên.",
+        "Số lần hàm đã chạy.",
+        "Số phần tử trong parameter pack Ts."
+      ],
+      "correct": 3,
+      "explanation": "sizeof... đếm pack, khác sizeof trên một kiểu/object."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Fold expression",
+      "question": "Fold expression thường giúp gì?",
+      "options": [
+        "Kết hợp parameter pack bằng một toán tử theo hình thức xác định.",
+        "Tự chạy mọi thao tác song song.",
+        "Bỏ qua tất cả phần tử pack.",
+        "Tự sort tuple."
+      ],
+      "correct": 0,
+      "explanation": "Fold có từ C++17 và có quy tắc về hướng/identity."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Factorial base case",
+      "question": "Template factorial đệ quy thường cần specialization cơ sở để làm gì?",
+      "options": [
+        "Tắt compiler error mọi nơi.",
+        "Dừng đệ quy ở trường hợp như n=0.",
+        "Tự cho phép mọi n âm.",
+        "Tăng giới hạn runtime stack."
+      ],
+      "correct": 1,
+      "explanation": "Không có điểm dừng đúng có thể gây instantiation vượt giới hạn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Constraint failure",
+      "question": "Lời gọi template không thỏa concept thường được xử lý ở đâu?",
+      "options": [
+        "Luôn trả nullptr.",
+        "Tự đổi mọi đối số sang string.",
+        "Trong quá trình kiểm tra/lựa chọn chương trình khi biên dịch.",
+        "Luôn ném exception runtime."
+      ],
+      "correct": 2,
+      "explanation": "Type constraints không phải nhánh if runtime."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Sortable requirement",
+      "question": "Concept Sortable cho thuật toán cần phản ánh gì?",
+      "options": [
+        "Chỉ tên container có chữ sort.",
+        "Chỉ container có size()>0.",
+        "Mọi pointer đều tự hợp lệ.",
+        "Các khả năng iterator/phép toán mà thuật toán thực sự dùng."
+      ],
+      "correct": 3,
+      "explanation": "Tính đúng của constraint phụ thuộc thuật toán mục tiêu, không chỉ tên concept."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Arithmetic int string",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>concept Numeric=std::is_arithmetic_v<T>;\nint main(){\nstd::cout<<Numeric<int><<Numeric<std::string>;\n}\n",
+      "options": [
+        "10",
+        "11",
+        "00",
+        "01"
+      ],
+      "correct": 0,
+      "explanation": "int là arithmetic, std::string không phải."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Bool included",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nstd::cout<<std::is_arithmetic_v<bool>;\n}\n",
+      "options": [
+        "Trait chỉ chạy runtime.",
+        "1",
+        "0",
+        "Không thể dùng bool làm template argument."
+      ],
+      "correct": 1,
+      "explanation": "bool thuộc integral types nên is_arithmetic_v<bool> true."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Pointer excluded",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nstd::cout<<std::is_arithmetic_v<int*>;\n}\n",
+      "options": [
+        "Địa chỉ int*.",
+        "Type trait tạo một int mới.",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Pointer tới int không phải arithmetic type."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Safe div int behavior",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>concept Numeric=std::is_arithmetic_v<T>;template<Numeric T>T div2(T a,T b){if(b==0)throw std::runtime_error(\"zero\");return a/b;}\nint main(){\nstd::cout<<div2(10,3);\n}\n",
+      "options": [
+        "3.33333",
+        "0",
+        "Không biên dịch vì int không Numeric.",
+        "3"
+      ],
+      "correct": 3,
+      "explanation": "Template với T=int dùng chia nguyên, không tự chuyển sang double."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Safe div double exact",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>concept Numeric=std::is_arithmetic_v<T>;template<Numeric T>T div2(T a,T b){if(b==0)throw std::runtime_error(\"zero\");return a/b;}\nint main(){\nstd::cout<<div2(5.0,2.0);\n}\n",
+      "options": [
+        "2.5",
+        "2",
+        "0",
+        "Không có output."
+      ],
+      "correct": 0,
+      "explanation": "T=double nên phép chia ở ví dụ5/2 cho2.5."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Safe div zero",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>concept Numeric=std::is_arithmetic_v<T>;template<Numeric T>T div2(T a,T b){if(b==0)throw std::runtime_error(\"zero\");return a/b;}\nint main(){\ntry{std::cout<<div2(5,0);}catch(const std::runtime_error&){std::cout<<\"zero\";}\n}\n",
+      "options": [
+        "Concept tự loại mọi giá trị0 lúc compile.",
+        "zero",
+        "0",
+        "inf vì không kiểm tra."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm tra b==0 là validation runtime bổ sung cho constraint kiểu."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Constrained string rejection",
+      "question": "Vì sao code không biên dịch?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>concept Numeric=std::is_arithmetic_v<T>;template<Numeric T>T div2(T a,T b){return a/b;}\nint main(){\nstd::cout<<div2(std::string(\"a\"),std::string(\"b\"));\n}\n",
+      "options": [
+        "Mọi template trả T đều bị cấm.",
+        "Concepts chỉ áp dụng pointer.",
+        "std::string không thỏa Numeric đã định nghĩa bằng is_arithmetic.",
+        "String không tạo object được."
+      ],
+      "correct": 2,
+      "explanation": "Constraint loại lời gọi không thuộc miền kiểu API."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Mixed T deduction constraint",
+      "question": "div2(T,T) có Numeric T, gọi div2(1,2.0) có tự suy T=double không?",
+      "options": [
+        "Có; concept tự chọn kiểu rộng nhất.",
+        "Có; T runtime thay đổi theo đối số.",
+        "Chỉ cần biến nhận double để suy ngược.",
+        "Không; deduction từ hai tham số T mâu thuẫn trong dạng này."
+      ],
+      "correct": 3,
+      "explanation": "Constraint không thay quy tắc deduction; chọn hai type parameters hoặc explicit type theo hợp đồng nếu muốn."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Integral branch",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>auto f(T x){if constexpr(std::is_integral_v<T>)return x+1;else return std::string(\"s\");}\nint main(){\nstd::cout<<f(3);\n}\n",
+      "options": [
+        "4",
+        "s",
+        "3",
+        "Hai return khác kiểu luôn làm mọi specialization lỗi."
+      ],
+      "correct": 0,
+      "explanation": "Với int, discarded branch không tham gia deduced return type của specialization này."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Non integral branch",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>auto f(T x){if constexpr(std::is_integral_v<T>)return x+1;else return std::string(\"s\");}\nint main(){\nstd::cout<<f(3.5);\n}\n",
+      "options": [
+        "Lỗi vì string khác double.",
+        "s",
+        "4.5",
+        "3.5"
+      ],
+      "correct": 1,
+      "explanation": "Với double, nhánh else được giữ và trả string."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Size requirement",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>concept HasSize=requires(const T& x){x.size();};\nint main(){\nstd::cout<<HasSize<std::vector<int>><<HasSize<int>;\n}\n",
+      "options": [
+        "11",
+        "00",
+        "10",
+        "01"
+      ],
+      "correct": 2,
+      "explanation": "vector<int> có size(), int không có member size."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Size not nonempty",
+      "question": "HasSize<T> chỉ yêu cầu x.size() hợp lệ có chứng minh object không rỗng không?",
+      "options": [
+        "Có; size() chỉ có khi ít nhất1 phần tử.",
+        "Có nếu x const.",
+        "Không và vì thế concept luôn vô dụng.",
+        "Không; đó là khả năng kiểu, không kiểm tra giá trị size runtime."
+      ],
+      "correct": 3,
+      "explanation": "Constraint kiểu và precondition dữ liệu runtime bổ sung cho nhau."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Arithmetic excludes user numeric",
+      "question": "Class BigInt có +,-,*,/ có tự thỏa is_arithmetic_v<BigInt> chỉ nhờ các operator đó không?",
+      "options": [
+        "Không; trait chuẩn này phân loại built-in arithmetic.",
+        "Có; compiler tự đọc mọi operator để đổi trait.",
+        "Có nếu class có tên BigInt.",
+        "Chỉ cần constructor int."
+      ],
+      "correct": 0,
+      "explanation": "Muốn API hỗ trợ user-defined numeric, thiết kế requirements theo phép toán/ngữ nghĩa phù hợp."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Factorial type recursion",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<unsigned N>struct F{static constexpr unsigned long long value=N*F<N-1>::value;};template<>struct F<0>{static constexpr unsigned long long value=1;};\nint main(){\nstd::cout<<F<5>::value;\n}\n",
+      "options": [
+        "Không có specialization cơ sở.",
+        "120",
+        "5",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "F<0>::value=1 dừng chuỗi F<5>..."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Constexpr loop",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\nconstexpr int sum(int n){int s=0;for(int i=1;i<=n;++i)s+=i;return s;}\nint main(){\nconstexpr int n=sum(5);std::cout<<n;\n}\n",
+      "options": [
+        "0",
+        "C++20 constexpr không cho vòng lặp.",
+        "15",
+        "5"
+      ],
+      "correct": 2,
+      "explanation": "Vòng lặp hợp lệ có thể được constant-evaluate với đối số hằng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Static assert valid",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nstatic_assert(std::is_integral_v<int>);std::cout<<\"ok\";\n}\n",
+      "options": [
+        "false",
+        "10",
+        "Không compile vì static_assert không dùng bool.",
+        "ok"
+      ],
+      "correct": 3,
+      "explanation": "Điều kiện constant expression true cho int integral."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Static assert rejects",
+      "question": "Đoạn code có hợp lệ không?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nstatic_assert(std::is_integral_v<std::string>);\n}\n",
+      "options": [
+        "Không; điều kiện static_assert sai.",
+        "Có; static_assert chỉ log warning.",
+        "Có; string tự thành integral.",
+        "Có nếu Release tắt assert runtime."
+      ],
+      "correct": 0,
+      "explanation": "static_assert không phụ thuộc NDEBUG như assert runtime."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Pack count",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class... Ts>constexpr std::size_t count(Ts...){return sizeof...(Ts);}\nint main(){\nstd::cout<<count(1,2.0,'a');\n}\n",
+      "options": [
+        "Số byte của một tuple.",
+        "3",
+        "12",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Pack suy gồm ba đối số kiểu int,double,char."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Binary fold sum",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class... Ts>auto sum(Ts...xs){return (0+...+xs);}\nint main(){\nstd::cout<<sum(1,2,3)<<\" \"<<sum();\n}\n",
+      "options": [
+        "3 0",
+        "0 0",
+        "6 0",
+        "6 rồi lỗi cho pack rỗng."
+      ],
+      "correct": 2,
+      "explanation": "Fold có initial0 nên sum() rỗng hợp lệ và trả0."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "And fold identity",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class... Ts>bool all(Ts...xs){return (...&&xs);}\nint main(){\nstd::cout<<all()<<\" \"<<all(true,false);\n}\n",
+      "options": [
+        "0 0",
+        "1 1",
+        "Pack rỗng với && luôn lỗi.",
+        "1 0"
+      ],
+      "correct": 3,
+      "explanation": "Unary && fold trên pack rỗng có identity true; true&&false false."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "CRTP dispatch",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class D>struct Base{void run(){static_cast<D*>(this)->impl();}};struct D:Base<D>{void impl(){std::cout<<\"D\";}};\nint main(){\nD d;d.run();\n}\n",
+      "options": [
+        "D",
+        "B",
+        "BD",
+        "Cần virtual mới gọi impl được."
+      ],
+      "correct": 0,
+      "explanation": "Base gọi implementation của D qua static_cast theo CRTP contract."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "CRTP missing impl",
+      "question": "D kế thừa Base<D>, Base::run dùng D::impl nhưng D không có impl. Khi run được instantiate/gọi sẽ thế nào?",
+      "options": [
+        "Luôn ném bad_cast runtime.",
+        "Lỗi biên dịch vì requirement implementation không được đáp ứng.",
+        "Tự có impl rỗng.",
+        "Tự chuyển sang dynamic_cast."
+      ],
+      "correct": 1,
+      "explanation": "CRTP không tự tạo hành vi derived; errors phụ thuộc cách template được dùng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Enable if selected",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>std::enable_if_t<std::is_integral_v<T>,T> inc(T x){return x+1;}\nint main(){\nstd::cout<<inc(3);\n}\n",
+      "options": [
+        "0",
+        "Enable_if cấm mọi int.",
+        "4",
+        "3"
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện integral true nên kiểu trả enable_if_t tồn tại."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Enable if excludes",
+      "question": "Vì sao code không hợp lệ?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>std::enable_if_t<std::is_integral_v<T>,T> inc(T x){return x+1;}\nint main(){\nstd::cout<<inc(3.5);\n}\n",
+      "options": [
+        "Double không thể khởi tạo3.5.",
+        "Enable_if tự chuyển double thành string.",
+        "Return x+1 luôn là runtime exception.",
+        "Không có overload inc phù hợp sau substitution loại T=double."
+      ],
+      "correct": 3,
+      "explanation": "Substitution failure loại ứng viên; không có ứng viên khác thì lời gọi không hợp lệ."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Concept syntax shorthand",
+      "question": "template<std::integral T> tương ứng ý định nào?",
+      "options": [
+        "Ràng buộc T thỏa concept integral.",
+        "Bắt T luôn là int chính xác.",
+        "Chỉ tạo biến integral runtime.",
+        "Cấm bool nhưng nhận mọi pointer."
+      ],
+      "correct": 0,
+      "explanation": "std::integral dựa trên phân loại integral; không đồng nghĩa riêng int."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Integral bool refinement",
+      "question": "Muốn loại bool khỏi kiểu integral được nhận, cần gì?",
+      "options": [
+        "Thêm constexpr vào body.",
+        "Thêm constraint loại bool rõ ràng, với xử lý cv/ref phù hợp API.",
+        "Chỉ đổi tên concept thành RealInteger.",
+        "Chỉ dùng is_arithmetic_v thay is_integral_v."
+      ],
+      "correct": 1,
+      "explanation": "Tên concept không thay tập kiểu thỏa; diễn đạt đúng miền kiểu API."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Compound requirement",
+      "question": "{ x.size() } -> std::convertible_to<std::size_t>; bổ sung gì?",
+      "options": [
+        "Bảo đảm size không tràn ở runtime.",
+        "Bảo đảm x không rỗng.",
+        "Yêu cầu biểu thức hợp lệ và kiểu kết quả chuyển đổi được theo concept đó.",
+        "Gọi x.size và ghi kết quả vào file."
+      ],
+      "correct": 2,
+      "explanation": "Compound requirement kiểm tra interface, không tự xác minh mọi tính chất giá trị."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Requires does not run",
+      "question": "Một expression requirement kiểm tra x.compute() có tự thực thi compute để đo thời gian không?",
+      "options": [
+        "Có; compiler benchmark mọi object runtime.",
+        "Có nếu compute trả int.",
+        "Chỉ nếu tên concept chứa Fast.",
+        "Không; nó kiểm tra trong ngữ cảnh yêu cầu kiểu/biểu thức."
+      ],
+      "correct": 3,
+      "explanation": "Requires không cung cấp số liệu performance runtime."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Constraint multiple conditions",
+      "question": "Constraint C1<T> && C2<T> biểu đạt gì?",
+      "options": [
+        "T cần thỏa cả hai ràng buộc theo quy tắc constraints.",
+        "Chỉ cần thỏa một.",
+        "C2 luôn chạy thread riêng.",
+        "T tự được copy hai lần."
+      ],
+      "correct": 0,
+      "explanation": "Các constraint có quy tắc normalization/subsumption, không chỉ là comment."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Requires alternative",
+      "question": "Constraint C1<T> || C2<T> thường cho phép gì?",
+      "options": [
+        "Tự cast T thành C1.",
+        "Ít nhất một ràng buộc được thỏa theo semantics constraints.",
+        "Bắt cả hai luôn false.",
+        "Chỉ kiểm tra C2 lúc runtime."
+      ],
+      "correct": 1,
+      "explanation": "Chọn kết hợp ràng buộc phù hợp API, không làm rộng miền kiểu vô ý."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Ranges sort vector",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nstd::vector<int>v={3,1,2};std::ranges::sort(v);for(int x:v)std::cout<<x;\n}\n",
+      "options": [
+        "321",
+        "C++20 ranges sort luôn trả vector mới.",
+        "123",
+        "312"
+      ],
+      "correct": 2,
+      "explanation": "ranges::sort sửa trực tiếp vector có iterator/capability phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Range concept classification",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nstd::cout<<std::ranges::random_access_range<std::vector<int>><<std::ranges::random_access_range<std::list<int>>;\n}\n",
+      "options": [
+        "11",
+        "00",
+        "01",
+        "10"
+      ],
+      "correct": 3,
+      "explanation": "Vector có random-access range, list không có random-access iterators."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Const vector sortable",
+      "question": "const vector<int> có thỏa yêu cầu ghi/hoán đổi để sort in-place qua iterator const không?",
+      "options": [
+        "Không.",
+        "Có vì iterator vẫn random-access là đủ.",
+        "Có nếu vector không rỗng.",
+        "Chỉ cần concept tên Sortable."
+      ],
+      "correct": 0,
+      "explanation": "Random access chưa đủ; thuật toán sort còn cần khả năng permutable/comparison phù hợp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Constrained overload",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>void f(T){std::cout<<\"G\";}template<std::integral T>void f(T){std::cout<<\"I\";}\nint main(){\nf(3);\n}\n",
+      "options": [
+        "Mơ hồ dù một overload constrained và một generic cùng kiểu tham số.",
+        "I",
+        "G",
+        "IG"
+      ],
+      "correct": 1,
+      "explanation": "Overload constrained integral được ưu tiên khi các điều kiện ordering phù hợp trường hợp đơn giản này."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Generic fallback overload",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class T>void f(T){std::cout<<\"G\";}template<std::integral T>void f(T){std::cout<<\"I\";}\nint main(){\nf(3.5);\n}\n",
+      "options": [
+        "IG",
+        "Không thể có fallback template.",
+        "G",
+        "I"
+      ],
+      "correct": 2,
+      "explanation": "Double không integral, nên generic fallback được chọn."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Static polymorphism no heap",
+      "question": "CRTP có bắt buộc phải cấp phát derived trên heap không?",
+      "options": [
+        "Có vì Base<Derived> luôn là pointer.",
+        "Có nếu run có return.",
+        "Chỉ dùng được với shared_ptr.",
+        "Không; object local còn sống dùng được."
+      ],
+      "correct": 3,
+      "explanation": "Allocation strategy và hình thức polymorphism là lựa chọn khác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Template recursion cost",
+      "question": "TMP tính compile-time có nghĩa là không có chi phí nào cho dự án không?",
+      "options": [
+        "Không; có thể tăng thời gian compile, diagnostics và code size.",
+        "Có; compiler time không tồn tại.",
+        "Có; mọi specialization dùng cùng một byte.",
+        "Không; vì mọi TMP bắt buộc chạy runtime."
+      ],
+      "correct": 0,
+      "explanation": "Đánh giá cả build cost, maintainability và runtime theo mục tiêu."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Variadic forwarding intent",
+      "question": "Trong forwarding wrapper với Ts&&... xs, std::forward<Ts>(xs)... thường dùng để làm gì?",
+      "options": [
+        "Tự kiểm tra lifetime reference.",
+        "Bảo toàn value category được deduction theo hợp đồng forwarding.",
+        "Luôn move mọi lvalue caller bất kể ý định.",
+        "Tự copy sâu mọi đối số."
+      ],
+      "correct": 1,
+      "explanation": "Forwarding cần đúng dạng tham số/deduction; không dùng forward máy móc cho mọi biến."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Concept diagnostic boundary",
+      "question": "Lợi ích thường có của constraint rõ so với lỗi sâu trong body template là gì?",
+      "options": [
+        "Tự sửa code caller.",
+        "Loại bỏ mọi cần thiết cho runtime validation.",
+        "Báo không đáp ứng requirement gần boundary lời gọi hơn.",
+        "Bảo đảm mọi compiler đưa cùng câu lỗi từng ký tự."
+      ],
+      "correct": 2,
+      "explanation": "Diagnostics tốt hơn là mục tiêu, không phải bảo đảm định dạng lỗi hay proof toàn bộ semantics."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Type value separation",
+      "question": "Numeric<T> có chứng minh b!=0 cho mọi object b kiểu T không?",
+      "options": [
+        "Có; kiểu Numeric không chứa0.",
+        "Có nếu function constexpr.",
+        "Chỉ với T=int.",
+        "Không; đó là điều kiện giá trị cần xử lý riêng."
+      ],
+      "correct": 3,
+      "explanation": "Ràng buộc kiểu không thay điều kiện dữ liệu input của safeDiv."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Safe division signed edge",
+      "question": "safeDiv cho signed int chỉ kiểm tra b==0. Với a=INT_MIN,b=-1 trên kiểu int có miền không biểu diễn được thương đó, còn nguy cơ gì?",
+      "options": [
+        "Signed division overflow; kiểm tra khác0 chưa đủ cho miền giá trị.",
+        "Không nguy cơ vì Numeric tự mở rộng kiểu kết quả.",
+        "Luôn trả INT_MIN theo modulo của unsigned.",
+        "Constexpr tự clamp kết quả."
+      ],
+      "correct": 0,
+      "explanation": "Xác định miền phép chia và kiểm tra trường hợp tràn thích hợp; không chạy undefined behavior để đoán output."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Numeric bool semantic mismatch",
+      "question": "Numeric=is_arithmetic_v<T> nhận bool. Nếu API chỉ muốn chia số nguyên/số thực ngoại trừ bool, sửa gì?",
+      "options": [
+        "Cho bool đi qua rồi luôn trả false.",
+        "Refine constraint loại bool và xác định semantics các kiểu còn lại.",
+        "Đổi tên concept thành SafeNumeric là đủ.",
+        "Chỉ thêm noexcept cho hàm."
+      ],
+      "correct": 1,
+      "explanation": "Trait arithmetic rộng hơn nhiều hợp đồng nghiệp vụ; constraints phải khớp miền kiểu mong muốn."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "NaN type versus value",
+      "question": "Constraint arithmetic và b!=0 có tự loại NaN/infinity khỏi đối số floating-point không?",
+      "options": [
+        "Có; NaN==0 luôn true.",
+        "Chỉ cần concept tên Numeric.",
+        "Không; nếu API cần số hữu hạn phải kiểm tra/chính sách giá trị riêng.",
+        "Có; mọi arithmetic đều hữu hạn."
+      ],
+      "correct": 2,
+      "explanation": "Hệ kiểu và type traits không chứng minh mọi giá trị float có ngữ nghĩa API mong muốn."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "If ordinary versus constexpr",
+      "question": "Vì sao if constexpr trong function template có thể tránh instantiate nhánh không phù hợp T, còn if thường không đủ?",
+      "options": [
+        "If thường luôn là runtime exception.",
+        "If constexpr không parse nhánh kia nên syntax tùy ý được phép.",
+        "If constexpr tự bỏ mọi error kể cả ngoài template.",
+        "if constexpr bỏ nhánh theo điều kiện hằng phù hợp; if thường vẫn cần các nhánh hợp lệ theo quy tắc kiểm tra chương trình."
+      ],
+      "correct": 3,
+      "explanation": "Nhánh bị loại không là nơi chứa syntax sai tùy ý; vẫn có các quy tắc kiểm tra và dependency."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Discarded outside template",
+      "question": "if constexpr(false){ int x=\"wrong\"; } đặt trong một hàm non-template có tự làm phép khởi tạo sai kiểu này hợp lệ không?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\n\nint main(){\nif constexpr(false){int x=\"wrong\";(void)x;}\n}\n",
+      "options": [
+        "Không; discarded statement ngoài template vẫn phải đáp ứng các kiểm tra liên quan.",
+        "Có; false xóa mọi lỗi như tiền xử lý.",
+        "Có nếu thêm const vào x.",
+        "Chỉ nếu compiler tối ưu Release."
+      ],
+      "correct": 0,
+      "explanation": "if constexpr không thay #if cho code bất kỳ không hợp lệ về ngôn ngữ."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "SFINAE body error",
+      "question": "Substitution chữ ký thành công nhưng body được instantiate dùng x.noSuchMethod() không hợp lệ. Có tự bị SFINAE bỏ qua như lỗi chữ ký immediate context không?",
+      "options": [
+        "Chỉ cần return auto để bỏ mọi lỗi.",
+        "Không; lỗi trong body không mặc định được SFINAE che.",
+        "Có; mọi lỗi dưới keyword template đều bị bỏ.",
+        "Có nếu có overload khác tên giống."
+      ],
+      "correct": 1,
+      "explanation": "Đặt yêu cầu ở boundary constraints/detection phù hợp thay vì dựa vào lỗi body để lọc overload."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Empty unary fold plus",
+      "question": "template<class... Ts> auto sum(Ts...xs){return (...+xs);} gọi sum() có identity0 mặc định không?",
+      "options": [
+        "Có; vì auto luôn suy int0.",
+        "Chỉ cần thêm constexpr.",
+        "Không; unary + fold trên pack rỗng không có identity được cho như &&/||/comma.",
+        "Có; mọi toán tử tự có0."
+      ],
+      "correct": 2,
+      "explanation": "Dùng binary fold có initial value phù hợp để xác định trường hợp rỗng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Fold nonassociativity",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <concepts>\n#include <cstddef>\n#include <type_traits>\n#include <stdexcept>\n#include <vector>\n#include <list>\n#include <algorithm>\n#include <iterator>\n#include <ranges>\n#include <string>\n#include <utility>\ntemplate<class...Ts>auto left(Ts...xs){return (...-xs);}template<class...Ts>auto right(Ts...xs){return (xs-...);}\nint main(){\nstd::cout<<left(10,3,1)<<\" \"<<right(10,3,1);\n}\n",
+      "options": [
+        "6 6",
+        "-10 -10",
+        "10 -6",
+        "6 8"
+      ],
+      "correct": 3,
+      "explanation": "Left fold ((10-3)-1)=6; right fold (10-(3-1))=8, nên phải đọc hướng chính xác."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Arithmetic concept semantics",
+      "question": "Concept yêu cầu a+b và a*b hợp lệ có chứng minh cộng nhân giao hoán hoặc không overflow không?",
+      "options": [
+        "Không; khả năng cú pháp không tự chứng minh các luật ngữ nghĩa hay miền giá trị.",
+        "Có; compiler tự chứng minh mọi đại số.",
+        "Có nếu return convertible_to<T>.",
+        "Chỉ cần tên concept Ring."
+      ],
+      "correct": 0,
+      "explanation": "Document/test requirements ngữ nghĩa và kiểm tra miền khi cần; đừng coi requires expression là proof đại số."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Sortable too weak",
+      "question": "Concept chỉ yêu cầu c.begin();c.end(); có đủ bảo đảm std::sort(c.begin(),c.end()) hợp lệ không?",
+      "options": [
+        "Chỉ cần c.size().",
+        "Không; còn random-access, khả năng đổi chỗ/gán và quan hệ so sánh phù hợp.",
+        "Có; mọi iterator giống raw pointer.",
+        "Có nếu c không rỗng."
+      ],
+      "correct": 1,
+      "explanation": "Constraints phải phản ánh requirement thực của thuật toán, không chỉ tồn tại tên method."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Sortable stronger form",
+      "question": "Cho API sort in-place dùng ranges::sort, ràng buộc nào phù hợp hơn chỉ có begin/end?",
+      "options": [
+        "Chỉ is_class_v<C>.",
+        "Chỉ sizeof(C)>0.",
+        "random_access_range<C> kết hợp sortable<iterator_t<C>> theo comparator/projection cần dùng.",
+        "Chỉ HasSize<C>."
+      ],
+      "correct": 2,
+      "explanation": "Cần xét cả iterator capabilities và requirements của phần tử/comparator, không phải tên container."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Projection constraints",
+      "question": "Sortable được kiểm tra với comparator mặc định, nhưng hàm thực sự nhận comparator/projection khác. Điều gì cần điều chỉnh?",
+      "options": [
+        "Không cần; mọi comparator có cùng behavior.",
+        "Chỉ đổi tên tham số.",
+        "Dùng void* để tránh kiểm tra.",
+        "Constraint phải áp dụng comparator/projection thực của API."
+      ],
+      "correct": 3,
+      "explanation": "Một constraint cho cấu hình mặc định không chứng minh mọi cấu hình caller truyền đều hợp lệ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "CRTP incorrect derived parameter",
+      "question": "struct D:Base<Other> nhưng Base::run static_cast this sang Other*. Có an toàn chỉ vì template compile được không?",
+      "options": [
+        "Không; object thực phải phù hợp downcast và hợp đồng CRTP.",
+        "Có; static_cast luôn runtime-check kiểu object.",
+        "Có vì không có virtual.",
+        "Chỉ cần Other có method impl."
+      ],
+      "correct": 0,
+      "explanation": "Static polymorphism không bỏ yêu cầu lifetime/type correctness của cast."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "CRTP polymorphic delete",
+      "question": "Base<Derived> có destructor public non-virtual. Có được mặc định delete Derived qua Base<Derived>* chỉ vì CRTP là static polymorphism không?",
+      "options": [
+        "Chỉ cần noexcept trên run.",
+        "Không; ownership/destruction vẫn phải đúng theo quy tắc base delete.",
+        "Có; template tự thêm virtual destructor.",
+        "Có nếu impl không virtual."
+      ],
+      "correct": 1,
+      "explanation": "Có thể thiết kế protected destructor để không cho xóa qua base nếu đó là giao diện không sở hữu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Perfect forwarding misuse",
+      "question": "Trong wrapper nhận T&& với T deduced, dùng std::move(x) cho mọi x thay std::forward<T>(x) có thể làm gì?",
+      "options": [
+        "Tự loại const cho mọi kiểu.",
+        "Chỉ ảnh hưởng tên biến.",
+        "Move cả đối số lvalue caller khi không mong muốn, thay vì giữ value category được deduce.",
+        "Luôn giữ nguyên category giống forward."
+      ],
+      "correct": 2,
+      "explanation": "Forwarding wrapper cần phân biệt lvalue/rvalue; không biến mọi đối số thành nguồn tiêu thụ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Compile time recursion limits",
+      "question": "Template recursion tính factorial với n rất lớn có thể gặp gì trước khi có ứng dụng chạy?",
+      "options": [
+        "Chỉ runtime stack overflow vì template luôn runtime.",
+        "Compiler tự dùng số nguyên vô hạn với thời gian0.",
+        "Không bao giờ lỗi vì unsigned.",
+        "Giới hạn instantiation/thời gian build và tràn kiểu tính toán."
+      ],
+      "correct": 3,
+      "explanation": "Chọn thuật toán, kiểu và giới hạn input compile-time rõ ràng; unsigned có modulo vẫn có thể cho sai giá trị toán học."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Constexpr resource claim",
+      "question": "Dời một bảng lớn sang compile-time có tự bảo đảm binary nhỏ hơn và build nhanh hơn không?",
+      "options": [
+        "Không; có tradeoff thời gian compile, dung lượng dữ liệu/code và runtime.",
+        "Có; compile-time xóa mọi byte kết quả cần dùng.",
+        "Có nếu dùng auto.",
+        "Chỉ cần constexpr trước mọi biến."
+      ],
+      "correct": 0,
+      "explanation": "Đo đúng các mục tiêu của dự án thay vì coi compile-time là miễn phí toàn hệ thống."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Constraint normalization",
+      "question": "Hai constraint có vẻ tương đương toán học có luôn được compiler xem như cùng atomic constraints để overload subsumption không?",
+      "options": [
+        "Chỉ cần đặt cùng tên biến T.",
+        "Không; cần hiểu normalization/identity theo quy tắc constraints, không chỉ phép biến đổi đại số tùy ý.",
+        "Có; compiler chứng minh mọi công thức tương đương.",
+        "Có nếu đều trả bool."
+      ],
+      "correct": 1,
+      "explanation": "Tái dùng named concepts hợp lý giúp diễn đạt quan hệ refinement rõ, tránh dựa vào suy luận tương đương không được ngôn ngữ bảo đảm."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Diagnostics not runtime safety",
+      "question": "Một generic sort thỏa concept có tự chứng minh iterator range thực tế không dangling và đúng cận không?",
+      "options": [
+        "Có nếu compiler không warning.",
+        "Chỉ cần std::move iterators.",
+        "Không; constraints kiểu không tự bảo đảm lifetime/range của từng giá trị runtime.",
+        "Có; random_access_iterator luôn sống mãi."
+      ],
+      "correct": 2,
+      "explanation": "Hợp đồng runtime, ownership và kiểm tra dữ liệu vẫn cần thiết."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "TMP verification cases",
+      "question": "Bộ kiểm chứng nào tốt nhất cho Sortable/constrained sort?",
+      "options": [
+        "Chỉ một vector<int> đã sort.",
+        "Chỉ xem keyword concept.",
+        "Chỉ đo thời gian build một lần.",
+        "Compile thành công cho kiểu hỗ trợ; compile-fail cho list/const/non-sortable theo API; kiểm tra rỗng, trùng và thứ tự runtime."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra cả miền kiểu chấp nhận/từ chối và semantics dữ liệu, với compiler language mode đúng."
+    }
+  ]
+}

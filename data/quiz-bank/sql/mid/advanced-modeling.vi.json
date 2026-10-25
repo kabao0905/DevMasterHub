@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "mid",
+  "lesson": "advanced-modeling",
+  "language": "vi",
+  "sourceHash": "10d4d37ea17e08c6270f53bb7430444ea63d8356537d391c3eb6284894f406ce",
+  "status": "approved",
+  "review": "Tự soạn không API. Source/spec review PostgreSQL17 constraints và full-text search; không chạy PG integration. Nhận diện soft-delete view không enforce mọi reads, audit table chưa có writer/immutability, polymorphic target chưa có FK/type CHECK, search_vector chưa backfill/generated/trigger. Normalization questions có assumptions về keys/dependencies; không coi denormalization luôn nhanh hoặc audit table tự chứng nhận compliance.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Normalization purpose",
+      "question": "Normalization thường nhằm mục tiêu gì?",
+      "options": [
+        "Giảm redundancy và các anomalies do dependencies không phù hợp.",
+        "Bảo đảm mọi query luôn nhanh nhất.",
+        "Tự mã hóa mọi fields.",
+        "Tự tạo distributed replicas."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế quan hệ cần theo keys và functional dependencies thực."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Denormalization purpose",
+      "question": "Denormalization thường là lựa chọn gì?",
+      "options": [
+        "Một bảo đảm không cần cập nhật dữ liệu.",
+        "Chủ động lưu dữ liệu lặp/tổng hợp theo nhu cầu truy cập, với consistency policy.",
+        "Xóa mọi constraints bắt buộc.",
+        "Tự bỏ mọi JOIN trong toàn hệ thống."
+      ],
+      "correct": 1,
+      "explanation": "Lợi ích đọc đi cùng chi phí duy trì đúng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Soft delete meaning",
+      "question": "Soft delete trong source được thực hiện bằng gì?",
+      "options": [
+        "Xóa primary key của user.",
+        "Xóa CSS profile.",
+        "Gán deleted_at thay vì xóa row vật lý.",
+        "DROP TABLE users."
+      ],
+      "correct": 2,
+      "explanation": "Row vẫn tồn tại trong bảng gốc."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Active condition",
+      "question": "View active_users nguồn lọc điều kiện nào?",
+      "options": [
+        "deleted_at=NULL.",
+        "deleted_at>NOW() luôn.",
+        "id=1.",
+        "deleted_at IS NULL."
+      ],
+      "correct": 3,
+      "explanation": "IS NULL khác phép so sánh bằng NULL."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Delete assignment",
+      "question": "Lệnh soft-delete minh họa đặt deleted_at bằng gì?",
+      "options": [
+        "NOW().",
+        "0.",
+        "NULL.",
+        "user_id."
+      ],
+      "correct": 0,
+      "explanation": "Source chọn row cóid1."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "View role",
+      "question": "active_users trong source là gì?",
+      "options": [
+        "Một transaction log.",
+        "Một view định nghĩa query cho users đang active.",
+        "Một bản sao vật lý tự đồng bộ độc lập theo khai báo đó.",
+        "Một auth service."
+      ],
+      "correct": 1,
+      "explanation": "CREATE VIEW thông thường khác materialized view."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Audit purpose",
+      "question": "Audit log thường dùng để làm gì?",
+      "options": [
+        "Tự thay mọi permissions.",
+        "Chỉ sắp xếp rows.",
+        "Ghi nhận thay đổi và ngữ cảnh để phục vụ truy vết theo yêu cầu.",
+        "Tự bảo đảm không bao giờ có sai dữ liệu."
+      ],
+      "correct": 2,
+      "explanation": "Cần tính đầy đủ, tin cậy và bảo vệ logs, không chỉ tạo bảng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Audit table name",
+      "question": "Bảng lịch sử users trong source tên gì?",
+      "options": [
+        "active_changes.",
+        "orders_audit.",
+        "user_roles.",
+        "user_changes."
+      ],
+      "correct": 3,
+      "explanation": "Tên bảng không tự tạo trigger ghi lịch sử."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Audit field name",
+      "question": "field_name TEXT NOT NULL nhằm lưu gì?",
+      "options": [
+        "Tên thuộc tính được ghi nhận thay đổi.",
+        "Mật khẩu DB bắt buộc.",
+        "ID của index.",
+        "Một SQL function phải chạy."
+      ],
+      "correct": 0,
+      "explanation": "Có thể cần contract/mapping để tên field hợp lệ và versioned."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Audit old new",
+      "question": "old_value và new_value nguồn được khai báo kiểu nào?",
+      "options": [
+        "BOOLEAN NOT NULL.",
+        "TEXT.",
+        "INTEGER PRIMARY KEY.",
+        "tsvector."
+      ],
+      "correct": 1,
+      "explanation": "Lưu mọi giá trị thànhtext có tradeoffs về types/serialization."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Audit actor",
+      "question": "changed_by trong source nhằm biểu thị gì theo tên field?",
+      "options": [
+        "Một sequence ghi mọi sessions.",
+        "Một email đã xác minh.",
+        "Actor thực hiện thay đổi, nhưng source chưa khai báo FK cho nó.",
+        "Một cơ chế auth đã hoàn chỉnh."
+      ],
+      "correct": 2,
+      "explanation": "Cần xác định actor identity và cách ghi tin cậy."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Polymorphic fields",
+      "question": "Comments nguồn dùng cặp nào để tham chiếu nhiều loại target?",
+      "options": [
+        "name, email.",
+        "old_value, new_value.",
+        "quantity, price.",
+        "commentable_type, commentable_id."
+      ],
+      "correct": 3,
+      "explanation": "Một ID riêng không đủ phân biệt entity types khác nhau."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Target examples",
+      "question": "Theo comment source, target type ví dụ gồm gì?",
+      "options": [
+        "post, product, video.",
+        "user, role, permission duy nhất.",
+        "order, payment, refund duy nhất.",
+        "HTML, CSS, JS."
+      ],
+      "correct": 0,
+      "explanation": "Các ví dụ trongcomment chưa thành CHECK constraint."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Target index",
+      "question": "idx_comments_target nguồn đặt trên gì?",
+      "options": [
+        "field_name, changed_by.",
+        "commentable_type, commentable_id.",
+        "body, user_id.",
+        "id, created_at."
+      ],
+      "correct": 1,
+      "explanation": "Index hỗ trợ truy cập theo target, không tự tạo FK đa hình."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Comment author",
+      "question": "comments.user_id source tham chiếu gì?",
+      "options": [
+        "comments(body).",
+        "user_changes(field_name).",
+        "users(id).",
+        "products(id)."
+      ],
+      "correct": 2,
+      "explanation": "Quan hệ author khác quan hệ target đa hình."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Search vector type",
+      "question": "search_vector của products nguồn có kiểu nào?",
+      "options": [
+        "TEXT ARRAY bắt buộc.",
+        "INTEGER.",
+        "SERIAL.",
+        "tsvector."
+      ],
+      "correct": 3,
+      "explanation": "tsvector lưu biểu diễn lexemes phục vụ full-text search."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Search index method",
+      "question": "Source tạo search index bằng phương thức nào?",
+      "options": [
+        "GIN.",
+        "B-tree được ghi rõ bằngUSINGbtree.",
+        "HASH duy nhất.",
+        "Một HTTP cache."
+      ],
+      "correct": 0,
+      "explanation": "Không suy mọi index dùng cùng access method."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Search match operator",
+      "question": "Toán tử@@ trong query nguồn dùng để làm gì?",
+      "options": [
+        "Tự xác thực người dùng.",
+        "Kiểm tra vector khớp text-search query theo semanticsPostgreSQL.",
+        "Cộng hai số tiền.",
+        "Gán dữ liệu vào bảng."
+      ],
+      "correct": 1,
+      "explanation": "Nó không tự tạo/populate search_vector."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Query conjunction",
+      "question": "phone & samsung trong to_tsquery thể hiện gì?",
+      "options": [
+        "OR giữa hai terms.",
+        "Một SQL JOIN.",
+        "Kết hợp các terms bằng AND sau quá trình phân tích phù hợp.",
+        "Một phrase exact bắt buộc có dấu& trong text."
+      ],
+      "correct": 2,
+      "explanation": "Full-text search dùnglexemes/configuration, khácsubstring search."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Modeling invariants",
+      "question": "Data model tốt cần diễn đạt điều gì ngoài tên tables?",
+      "options": [
+        "Chỉ màu dashboard.",
+        "Chỉ số thứ tự migrations.",
+        "Chỉ fileextension.sql.",
+        "Identity, relationships, invariants, lifecycle và access/update patterns."
+      ],
+      "correct": 3,
+      "explanation": "Schema syntax là một phần của thiết kế dữ liệu."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Soft row presence",
+      "question": "Sau UPDATEdeleted_at của user 1 thành công, row đó còn trongusers không?",
+      "options": [
+        "Có.",
+        "Không như DELETE vật lý.",
+        "Chỉ còn nếu cóindex.",
+        "Tự chuyển sanguser_changes."
+      ],
+      "correct": 0,
+      "explanation": "Soft delete thay trạng thái, không di chuyển row theo source."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Direct table read",
+      "question": "SELECT*FROMusers có tự áp filterdeleted_atISNULL vì đã tạoactive_users view không?",
+      "options": [
+        "Chỉ nếu user_changes cóFK.",
+        "Không.",
+        "Có cho mọi query.",
+        "Chỉ nếu tên user làAn."
+      ],
+      "correct": 1,
+      "explanation": "View không tự rewrite mọi directtable access của ứng dụng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Restore basic operation",
+      "question": "Trong model này, thao tác nào thường biểu đạt restore nếu các rules khác cho phép?",
+      "options": [
+        "DROPview.",
+        "Xóa mọiindexes.",
+        "Đặt deleted_at vềNULL.",
+        "Luôninsert thêmuser trùngid."
+      ],
+      "correct": 2,
+      "explanation": "Restore còn cần kiểm tra uniqueness/relationships và quyền."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Soft fk existence",
+      "question": "FK đếnusers(id) có tự coi userdeleted_atkhácNULL là nonexistent không?",
+      "options": [
+        "Có vì chữdeleted.",
+        "Có nếu userscóPK.",
+        "Chỉ nếu queryLEFT JOIN.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "FK kiểm tra row/key tồn tại, không tự enforce active-state policy."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Soft cascade",
+      "question": "UPDATEdeleted_at có tự kích hoạtON DELETE CASCADE nhưphysical DELETE không?",
+      "options": [
+        "Không.",
+        "Có trong mọi DB.",
+        "Chỉ nếu updated_at cũng đổi.",
+        "Chỉ nếu đặtNOW()."
+      ],
+      "correct": 0,
+      "explanation": "UPDATE trạng thái khác eventDELETE của constraint."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Soft unique email",
+      "question": "User đã soft delete vẫn giữemail trong UNIQUE thường; có thể ảnh hưởng gì?",
+      "options": [
+        "Mọirows được sửa thànhNULLemail.",
+        "Email đó vẫn có thể chặn insert trùng theo constraint.",
+        "Email tự biến mất khỏi index.",
+        "UNIQUE tự chỉ xétactive_users view."
+      ],
+      "correct": 1,
+      "explanation": "Nếu domain cho reuse email cần thiết kế uniqueness/lifecycle rõ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Active unique policy",
+      "question": "PostgreSQL muốn email unique chỉ giữaactive users có thể dùng hướng nào?",
+      "options": [
+        "Chỉ đổi tênfieldemail.",
+        "Chỉ bỏ mọi constraints.",
+        "Partialunique index với predicateactive phù hợp, cùngpolicyrestore/normalization.",
+        "Chỉ thêmviewactive_users."
+      ],
+      "correct": 2,
+      "explanation": "Index thường vàview không tự tạo active-only business uniqueness."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Restore collision",
+      "question": "Email đượcreuse trong khiuser cũsoft deleted. Restoreuser cũ cần xét gì?",
+      "options": [
+        "Luônxóa user mới.",
+        "LuônđổiID ngẫu nhiên rồi coi xong.",
+        "Không có rủi ro vìdeleted_atnullable.",
+        "Xung đột unique/domain policy và cách giải quyết có chủ đích."
+      ],
+      "correct": 3,
+      "explanation": "Restore không chỉ mộtUPDATE bỏ qua businessinvariants."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Audit writer absence",
+      "question": "Tạo bảng user_changes có tự ghi mọi UPDATEusers chưa?",
+      "options": [
+        "Chưa; cần writer/trigger/event path phù hợp.",
+        "Rồi vì tênbảng cóchanges.",
+        "Rồi vì cóNOWdefault.",
+        "Chỉ nếu user_id FK."
+      ],
+      "correct": 0,
+      "explanation": "DDL không tự tạo logic ghi lịch sử."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Audit atomicity",
+      "question": "Muốnuser update vàaudit record khônglệch nhau trong cùngDB nên xét gì?",
+      "options": [
+        "Chỉ thêmINDEX.",
+        "Ghi chúng trong unittransaction phù hợp và xử lý lỗi.",
+        "Ghi audit ở browserlocalStorage bất kỳ.",
+        "Luôn ghi sauresponse mà khôngretry/deliverypolicy."
+      ],
+      "correct": 1,
+      "explanation": "Cần thiết kế đầy đủ cảwritepaths và failurepaths."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Audit actor integrity",
+      "question": "changed_byINTEGER khôngFK có tự bảo đảm actor tồn tại trongusers không?",
+      "options": [
+        "Có vì user_id khác đãFK.",
+        "Chỉ nếu field_name NOT NULL.",
+        "Không.",
+        "Có vì tênchanged_by."
+      ],
+      "correct": 2,
+      "explanation": "Constraints không tự áp dụng từ một cột sang cột khác."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Audit optional user",
+      "question": "user_changes.user_id source cóNOT NULL không?",
+      "options": [
+        "Có vìREFERENCES tự bắtbuộc.",
+        "Có vìidSERIAL.",
+        "Chỉ nếu old_valueNULL.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "FK nullable cósemantics riêng, cầndomainpolicy cho events không cóuser."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Audit empty field",
+      "question": "field_name NOT NULL cóngăn chuỗi rỗng không?",
+      "options": [
+        "Không.",
+        "Có vìTEXT tự trim.",
+        "Có vì tênfield.",
+        "Chỉ nếu changed_atNOW."
+      ],
+      "correct": 0,
+      "explanation": "Cầnvalidation/check riêng nếu yêu cầu tênfield hợp lệ khôngrỗng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Audit type fidelity",
+      "question": "Lưu numeric/date/object thànhTEXT có thể làm mất điều gì nếuserializationkhôngrõ?",
+      "options": [
+        "MọiTEXTluônkhônglưuđượcUnicode.",
+        "Type/format/precision/context cần để hiểu và phục hồi giá trị.",
+        "Mọiprimarykeys tự biến mất.",
+        "Indexes không thể tồn tại."
+      ],
+      "correct": 1,
+      "explanation": "Auditrepresentation cần contract/versioning, không chỉ toString tùy tiện."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Audit timestamp defaults",
+      "question": "changed_atDEFAULT NOW có nghĩa timestamps làunique thứ tự tuyệt đối mọievents không?",
+      "options": [
+        "Có vì SERIALtự sorttimestamps.",
+        "Chỉ nếu changed_byINTEGER.",
+        "Không; cùngtransaction có thể dùngcùng time và ties vẫn cần giải quyết.",
+        "Có vìNOW luôn tăng chomỗi row."
+      ],
+      "correct": 2,
+      "explanation": "Timeordering vàeventidentity là các yêu cầu khác nhau."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Audit immutability",
+      "question": "Schema source có ngăn người có quyềnUPDATE sửaold_value/new_value lịch sử chưa?",
+      "options": [
+        "Rồi vì có chữaudit trongcomment.",
+        "Rồi vìTIMESTAMP.",
+        "Chỉ nếu user_id cóFK.",
+        "Chưa; cầnpermissions và cơ chế bảo vệ theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Một bảng log bình thường không tự bất biến/tamper-evident."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Polymorphic type validation",
+      "question": "commentable_typeTEXT NOT NULL có tự giớihạnpost/product/video nhưcomment không?",
+      "options": [
+        "Không; cầnCHECK/typecontract phù hợp.",
+        "Có vìcomment được DBthực thi.",
+        "Có vìINDEXhai cột.",
+        "Chỉ nếu bodyNOT NULL."
+      ],
+      "correct": 0,
+      "explanation": "Comment sourcekhôngthayconstraint."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Polymorphic id validation",
+      "question": "commentable_id999 khôngtarget thật có bịindexsource tự chặn không?",
+      "options": [
+        "Chỉ nếu targetlàvideo.",
+        "Không; index thường không phảiFK.",
+        "Có vìid làINTEGER.",
+        "Có vìcommentable_typeNOT NULL."
+      ],
+      "correct": 1,
+      "explanation": "Referentialintegrity của polymorphic association cần thiết kế riêng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Target identity tuple",
+      "question": "Cùngcommentable_id7 cho post7 vàproduct 7 cần được phân biệt thế nào?",
+      "options": [
+        "Chỉbodylength.",
+        "Chỉcreated_at.",
+        "Bằng type+id cùng nhau.",
+        "Chỉ ID7 luôn đủ vì mọi tables chia sẻspaceID."
+      ],
+      "correct": 2,
+      "explanation": "DomainIDspaces không tự globallyunique giữa mọi entitytypes."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Target index not unique",
+      "question": "idx_comments_target có giới hạn mỗitarget chỉmộtcomment không?",
+      "options": [
+        "Có vì cóhai cột.",
+        "Có nếu tênindex cótarget.",
+        "Chỉ nếu user_idNULL.",
+        "Không; source làindex thường."
+      ],
+      "correct": 3,
+      "explanation": "Nhiềucomments trên mộtpost thường làrelationship hợp lệ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Comment body validity",
+      "question": "body TEXT NOT NULL cótựchặn body chỉspaces không?",
+      "options": [
+        "Không.",
+        "Có vìcomment luôn phải cóchữ.",
+        "Có vì SERIAL.",
+        "Chỉ nếu typepost."
+      ],
+      "correct": 0,
+      "explanation": "Contentvalidation cần rules riêng; DBconstraint hiện tại chỉnullability."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Deleted author relationship",
+      "question": "Mộtuser soft deleted có làmcomments.user_id FK thất bại ngay không?",
+      "options": [
+        "Chỉ nếu commentable_id7.",
+        "Không; row user vẫn tồn tại.",
+        "Có vìviewactive_users bỏrow.",
+        "Có vìbodyNOT NULL."
+      ],
+      "correct": 1,
+      "explanation": "Active-statebusinessrule khác existenceFK."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Search population gap",
+      "question": "ADD search_vector tsvector có tự đưaproduct name vào vector chưa?",
+      "options": [
+        "Rồi vìGIN tự đọc mọiTEXTcolumns.",
+        "Chỉ nếu to_tsquery cóphone.",
+        "Chưa.",
+        "Rồi vì têncộtsearch_vector."
+      ],
+      "correct": 2,
+      "explanation": "Source chưa backfill hoặc định nghĩaexpression/generated/trigger."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Search maintenance gap",
+      "question": "Product text đượcUPDATE. Searchvector riêng có tự đổi theo source không?",
+      "options": [
+        "Có vì cùng table.",
+        "Có vìindexGIN.",
+        "Chỉ nếu created_atđổi.",
+        "Không nếu chưa có cơ chếduy trì được khai báo/thực hiện."
+      ],
+      "correct": 3,
+      "explanation": "Cần generatedcolumn, trigger hoặc apppath phù hợp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Generated option",
+      "question": "PostgreSQL17 cóhướng nào để vector tự được duy trì theo text columns?",
+      "options": [
+        "Storedgeneratedcolumn với expression hợp lệ vàconfig explicit phù hợp.",
+        "Chỉ đổi tênindex.",
+        "ChỉSELECT*.",
+        "ChỉNOT NULLcho productid."
+      ],
+      "correct": 0,
+      "explanation": "Đây là phương án bổ sung, source hiện tại chưa có."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Null text handling",
+      "question": "Ghép title/body để tạo vector cầnxétNULL vì sao?",
+      "options": [
+        "Chỉđểsortname.",
+        "NULL propagation có thể làm expression khôngnhưý; COALESCE theo policy có thểcần.",
+        "VìmọiTEXTNULLtựthànhphone.",
+        "VìGINcấmtablecóNULLởmọicột."
+      ],
+      "correct": 1,
+      "explanation": "Missingtext policy phải rõ khi viết expression."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Search config consistency",
+      "question": "Vector được tạo theoenglish, query theo mộtconfigkhác córủi ro gì?",
+      "options": [
+        "Tựđổi toàncolumn sangTEXT.",
+        "Chỉảnh hưởngINDEXname.",
+        "Normalization/lexemes khác làm matchingkhôngnhưmongđợi.",
+        "Khôngbaogiờảnh hưởng."
+      ],
+      "correct": 2,
+      "explanation": "Dùngconfigurationnhấtquán vàtestlanguagecontent phù hợp."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Term versus substring",
+      "question": "Full-textmatchphone cótương đương LIKE%phone% trongmọi trường hợp không?",
+      "options": [
+        "Có, theođịnh nghĩaGIN.",
+        "Có, nếu cùng field.",
+        "Chỉ nếuqueryngắn.",
+        "Không; lexemes, tokenization, stemming/config khácsubstringmatching."
+      ],
+      "correct": 3,
+      "explanation": "Chọnsearchsemantics theo yêu cầu sảnphẩm."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Free text parser",
+      "question": "Người dùng nhập plain sentence; to_tsquery trực tiếp có thểkhó vì sao?",
+      "options": [
+        "Nó kỳ vọngquerysyntax/operators; cần parserphù hợp nhưplainto/websearch khi đúngcontract.",
+        "VìmọistringlàSQLinjectionngay.",
+        "VìPostgreSQLkhông hỗ trợsearch.",
+        "Chỉ cầnUPPERquery."
+      ],
+      "correct": 0,
+      "explanation": "Parameterbinding vàsearch query parsing giải quyết cácvấnđềkhác nhau."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Query parameter scope",
+      "question": "Bindparameter cho to_tsquery cótựbiếnmọi input thànhvalid tsquery syntax không?",
+      "options": [
+        "Chỉ nếuinputcóspace.",
+        "Không; bindinggiữSQLsyntaxan toàn nhưngqueryparser vẫn cócontractriêng.",
+        "Có, mọioperator tựescape.",
+        "Có, vìGINlàmvalidation."
+      ],
+      "correct": 1,
+      "explanation": "Cầnvalidation/parser/errorhandling phù hợp với searchUX."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Normalization update anomaly",
+      "question": "Lưu department_name lặp trongmọiemployeerows có thểgâyupdateanomaly khi nào?",
+      "options": [
+        "Khi không cóCSS.",
+        "LuônlàSQLsyntaxerror.",
+        "Đổi tên department nhưng chỉ sửa một phần cácrows liên quan.",
+        "Khi dùngINTEGER PK."
+      ],
+      "correct": 2,
+      "explanation": "Dependencies vàownership giúp xácđịnhnên tách quan hệhaychủđộngdenormalize."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Insertion anomaly",
+      "question": "Nếu chỉlưudepartmenttrongemployeerows, muốnlưu mộtdepartmentchưa cóemployee có thểkhó vì sao?",
+      "options": [
+        "Vìmọi DBcấmtablesrỗng.",
+        "VìFOREIGN KEYluôntạoemployee.",
+        "Chỉvìtêncolumn.",
+        "Schema có thểbuộc tạoemployeefake đểbiểudiễn entitydepartment."
+      ],
+      "correct": 3,
+      "explanation": "Model entities theo lifecycle thực tránh phụ thuộc sai."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Deletion anomaly",
+      "question": "Xóaemployeecuối của department trongschema gộpthôngtin có thểlàmmất gì?",
+      "options": [
+        "Thôngtindepartment nếu nóchỉđược lưu trong cácrowsemployee.",
+        "Mọidatabaseusers.",
+        "Toàn bộindexes ởmọitables.",
+        "ChỉCSSstyle."
+      ],
+      "correct": 0,
+      "explanation": "Đây là mộtanomaly do modelidentity/dependency khôngphù hợp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Denormalized cache consistency",
+      "question": "Cócounterlikes trênpost vàbảnglikes riêng, cần thiết kế gì?",
+      "options": [
+        "Cứcoi counterluônđúng.",
+        "Nguồntruth vàcách update/rebuild/reconcile counter khi cófailures.",
+        "Chỉđặt tênlike_count.",
+        "Khôngcầntransactionhayreconciliationbaogiờ."
+      ],
+      "correct": 1,
+      "explanation": "Lưu dữ liệudẫn xuất đòi hỏiconsistencystrategy."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Like uniqueness",
+      "question": "Muốn mỗiuser chỉlike mộtpostmột lần, constraintnào đúng hướng?",
+      "options": [
+        "Chỉindexthường trêncreated_at.",
+        "Chỉđếm ởfrontend.",
+        "UNIQUE(user_id, post_id) cùngnullability/domainrules phù hợp.",
+        "UNIQUE(post_id) riêng bắtbuộc."
+      ],
+      "correct": 2,
+      "explanation": "Businesskey theo cặpkhác uniquevới từngentity."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Follow self rule",
+      "question": "Muốncấm userself-follow, cầnđiều kiện gì ngoàiFKs?",
+      "options": [
+        "ChỉFKđếnusers.",
+        "Chỉindexfollower.",
+        "Chỉcreated_atDEFAULT.",
+        "Rule nhưfollower_id<>followed_id cùngNOT NULL/domaincontract."
+      ],
+      "correct": 3,
+      "explanation": "FKexistence không tựcấm hairolestrỏcùngentity."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "History two times",
+      "question": "Thôngtinhiệulực từhômqua nhưngDBmớighi hômnay cầnphânbiệt gì?",
+      "options": [
+        "Thờigianhiệulựcnghiệp vụ vàthời gianghi nhận/hệthống.",
+        "ChỉmộtIDstring.",
+        "Chỉđộdàinotes.",
+        "Chỉtênindex."
+      ],
+      "correct": 0,
+      "explanation": "Mộtcreated_at duy nhấtcó thểkhông đủ diễnđạt temporalrequirements."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Modeling read patterns",
+      "question": "Indexcomments(type, id) có thểhỗtrợ readcommentschotarget nhưngcó đủmọi querybyauthor/time không?",
+      "options": [
+        "ChỉthêmSELECT*.",
+        "Không; cầnworkload vàindexdesignriêng phù hợp.",
+        "Có, vì mọi querycùng table.",
+        "Có, vìcóID."
+      ],
+      "correct": 1,
+      "explanation": "Mộtnhómkeys không tựcovermọitrục truycập."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Soft delete counts",
+      "question": "ReportCOUNTusers từbảng gốckhôngfiltercó thểđếm thêm gì?",
+      "options": [
+        "Tựđếmdeletedrowsâm.",
+        "KhôngthểCOUNTnữa.",
+        "Usersđã soft delete.",
+        "Chỉactive users."
+      ],
+      "correct": 2,
+      "explanation": "Mọiread/report/exportpaths cầnpolicy trạngtháinhấtquán."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Audit coverage evidence",
+      "question": "Test mộtUIpathghi logcó đủchứng minh mọi writesđượcauditkhông?",
+      "options": [
+        "Có, nếuUIđẹp.",
+        "Có, vìbảng user_changesđãtồntại.",
+        "Chỉ cầnsố lượngloglớn.",
+        "Không; cầnbao phủ các write pathsthật vàfailurecases theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "DirectSQL, jobs, imports vàserviceskhác có thểcần cơ chếchung."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Partial dependency example",
+      "question": "Relation cócandidate keyduy nhất(student_id, course_id), student_name chỉ phụ thuộcstudent_id, gradephụ thuộccảcặp. Cóvấnđề2NFgì?",
+      "options": [
+        "Nonprime student_name phụ thuộcmột phần củacandidate key; nênxét táchstudentinfo.",
+        "Khôngvì mọirelationcóPK đều2NF.",
+        "Gradephảiđượcxóa.",
+        "Chỉ cầnsorttheoname."
+      ],
+      "correct": 0,
+      "explanation": "Các assumptions vềkey/FD được ghi rõ, khôngchỉnhìn têncolumns."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Transitive dependency example",
+      "question": "Chỉ employee_idlàcandidate key; employee_id→department_id vàdepartment_id→department_name. Vì sao relation gộpcó thểvi phạm 3NF?",
+      "options": [
+        "Vìdepartment_namephảiunique.",
+        "department_idkhônglàsuperkey nhưngxácđịnhnon-prime department_name.",
+        "Vìmọiforeignkeyđềuvi phạm 3NF.",
+        "VìTEXTkhông hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Cóthểtáchdepartmentrelation với keyphù hợp theo dependencies đó."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Normalization not magic",
+      "question": "Schemađạt3NF có đủchứng minh mọiAPIquery nhanhvàhệthốngsẵnsàngscale không?",
+      "options": [
+        "Có, vì3NFkhôngcầnindex.",
+        "Chỉ nếutablesdưới10.",
+        "Không; correctnessdependencies vàperformance/operations làcáckhíacạnhkhác.",
+        "Có, vì3NFngănmọiJOIN."
+      ],
+      "correct": 2,
+      "explanation": "Cầnworkload, data sizes vàsystemverification thực."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Restore uniqueness policy",
+      "question": "Active-onlyuniqueemail vàsoft deletecho phép reuse. Restoreuser cũ cầnđược thực hiện ra sao?",
+      "options": [
+        "LuônbỏconstrainttrướcUPDATE.",
+        "Luônrenameemailngẫunhiên khôngbáo.",
+        "Coi restoreluônthành công.",
+        "Theo businesspolicy với conflict handling vàconstraint bảo vệ concurrentwrites."
+      ],
+      "correct": 3,
+      "explanation": "Lifecyclemigration vàuniqueness cần được thiết kếcùngnhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Polymorphic integrity alternatives",
+      "question": "NếuDB-level targetintegrity rấtquantrọng, phươngánnào đángxét thaytype/id không FK?",
+      "options": [
+        "Associationtables riêng hoặcschema cóFKs/CHECKs phù hợp, theo tradeoffs domain.",
+        "Chỉ đổiindexthànhGIN.",
+        "ChỉNOT NULLcommentable_id làđủ.",
+        "Chỉđặttênidgiốngparent."
+      ],
+      "correct": 0,
+      "explanation": "KhôngmộtFKthôngthườngđơn giảntham chiếutùyýnhiềutablesdotheotype value."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Target authorization",
+      "question": "Commenttargettồntại có đủcho phépusercommentlênprivatepost không?",
+      "options": [
+        "Chỉ cần parameterbinding.",
+        "Không; cần kiểm traquyền/phạmvitarget theo servercontract.",
+        "Có, vìtargetIDlàsố.",
+        "Có, vìcóFKauthor."
+      ],
+      "correct": 1,
+      "explanation": "Existence, integrity vàauthorization làcácđiều kiệnkhác nhau."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Audit trust boundary",
+      "question": "Cho clientsửitùyýchanged_by, old_value, new_value rồicoiđólàaudit proof còrủi rogì?",
+      "options": [
+        "Auditluônđángtin bấtkểnguồn.",
+        "Chỉ cầntăngtimestamp precision.",
+        "Clientcó thểgiả mạongữ cảnh; logtin cậycầnđược ghi từstate/identity đãxác thực phù hợp.",
+        "Khôngrủi ro vìcột TEXT."
+      ],
+      "correct": 2,
+      "explanation": "Tin cậycủalog khôngđến từDDLđơnlẻ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Audit sensitive values",
+      "question": "Ghilại old/new valuecủamọifields không phân loại có thểgây rủi rogì?",
+      "options": [
+        "Luôntựencrypt vìTEXT.",
+        "Luônantoànvìaudit.",
+        "Chỉảnh hưởngperformance.",
+        "Logs có thểsaochépsecrets/sensitivedata; cầnminimization, redaction vàaccesspolicy."
+      ],
+      "correct": 3,
+      "explanation": "Auditrequirements cầncânđối dataexposure vàretention thật."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Audit compliance claim",
+      "question": "Cóbảng user_changes có đủtuyênbốđạtmọicompliancerequirements không?",
+      "options": [
+        "Không; phụ thuộcquyđịnh/yêucầu, coverage, integrity, access vàretention thật.",
+        "Có, vìsourcekeypointnói compliance.",
+        "Có, nếu cóSERIAL.",
+        "Chỉ cầnNOW()."
+      ],
+      "correct": 0,
+      "explanation": "Bảngminh họakhông tựchứngnhậnpháplý hayvậnhành."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Temporal correction",
+      "question": "Mộtgiá trịnghiệp vụsaitừtháng trướcmớipháthiệnhômnay. Vì saooverwritehistorycó thểkhông đủ?",
+      "options": [
+        "Chỉ cầnđổi created_at.",
+        "Cóthểcầnlưucảthời giangiá trịcóhiệulựcvàthời gianbiết/sửa đểtáihiệnquákhứ.",
+        "Vìmọi UPDATEcấmlưuTEXT.",
+        "VìSERIALkhôngchohistory."
+      ],
+      "correct": 1,
+      "explanation": "Historymodel phảiđápứngcâuhỏitravấnthực, tùytemporalrequirements."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Vector backfill rollout",
+      "question": "Thêmvector column vàGIN indextrênproductsđã códữ liệu, cầnlàm gì trướcclaimsearchđủ?",
+      "options": [
+        "Chỉ đổiquery thànhSELECT*.",
+        "ChỉthêmNOT NULLtrước khichuẩnbịdữ liệu.",
+        "Populate/backfill, duytrìupdates, configalignment vàvalidatecoverage theo rolloutplan.",
+        "ChỉCREATEINDEXlàđủ."
+      ],
+      "correct": 2,
+      "explanation": "IndextrênNULL/stalevectors không tựsearchtextnguồn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Vector stale read",
+      "question": "Product nameđổi, vector vẫngiữlexemes cũ. Cóthểxảyra gì?",
+      "options": [
+        "GIN tựđọclạinameđểsửa ngaymọi query.",
+        "Chỉ đổithứ tựcolumns.",
+        "Khôngbaogiờảnh hưởng.",
+        "Searchtrảnhầmmatcheshoặcbỏsótmatches so vớitextcurrent."
+      ],
+      "correct": 3,
+      "explanation": "Derivedsearchstate cầnconsistencycontract rõ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Search config migration",
+      "question": "Đổitextsearchconfig nhưnggiữvectorscũ cóvấnđềgì?",
+      "options": [
+        "Stored lexemes có thểkhông khớpquery normalization mới; cầnrebuild/backfillstrategy.",
+        "Khôngảnh hưởngvìtsvectorluôn làraw text.",
+        "TựđổiPK.",
+        "Chỉ đổifont."
+      ],
+      "correct": 0,
+      "explanation": "Config làpartofderiveddata contract, khôngchỉmộtUIsetting."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Index versus relevance",
+      "question": "CóGIN indexcó đủtrảsearch results theo relevancebestfirst chưa?",
+      "options": [
+        "Chỉ cầnLIMIT10.",
+        "Không; cầnranking/order vàUX/metricdefinition phù hợp.",
+        "Có, indexluôn sorttheo relevance.",
+        "Có, vì@@trảranknumeric."
+      ],
+      "correct": 1,
+      "explanation": "Matching, accesspath vàranking làcácviệckhác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "User query parser boundaries",
+      "question": "Chọnwebsearch_to_tsquery thayto_tsquery có đủbỏSQLbinding/accesscontrol không?",
+      "options": [
+        "Có, vìnótựanonymousmọiproducts.",
+        "Chỉ cầnescapeHTML.",
+        "Không; searchsyntaxhandlingkhôngthaySQLparameterization/authorization.",
+        "Có vìwebsearchtựbảovệmọilayer."
+      ],
+      "correct": 2,
+      "explanation": "Mỗiboundarycầnhợpđồngvàbảovệriêng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Denormalization failure repair",
+      "question": "Counterlikes lệchbảnglikes saufailures, cần cơ chếgì hữu dụng?",
+      "options": [
+        "Luôntăngcounterthêm1.",
+        "Bỏmọilikesconstraints.",
+        "Chỉrefreshbrowser.",
+        "Reconciliation/rebuild từnguồn truth vàsửawritepathgây lệch."
+      ],
+      "correct": 3,
+      "explanation": "Repairderivedstate phảiđi cùng rootcausefix."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Hard delete history fk",
+      "question": "Muốnxóauser vật lýnhưnggiữ audit record lâu, cần thiết kế gì?",
+      "options": [
+        "FKaction, actoridentitysnapshot, retention/privacy vàaccesspolicy phù hợp.",
+        "CoiFKdefaultluônautoarchive.",
+        "Chỉ đổi tênbảng user_changes.",
+        "Bỏkhôngxétrelationships."
+      ],
+      "correct": 0,
+      "explanation": "Soft delete/audit/retention phảiđượcthiết kếcùnglifecycle, yêucầucụthể."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Multiple identity spaces",
+      "question": "Polymorphic target chỉ giữid màbỏtype có thểsaivì sao?",
+      "options": [
+        "Chỉ nếu có hơn 10comments.",
+        "IDsởnhiềutablescó thểtrùngvàkhông cònbiếtentityđích.",
+        "VìINTEGERkhông thểlàPK.",
+        "Vìmọi IDđềugloballyunique."
+      ],
+      "correct": 1,
+      "explanation": "Cầntargetidentity đủngữ cảnhvàintegrityrules."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Global active filter limits",
+      "question": "ORMdefaultscope bỏsoft deleted có đủchứng minhexports/jobs/directSQLđềuactive-only chưa?",
+      "options": [
+        "Có, nếuviewactive_userscũngtồntại.",
+        "Chỉ cầnfrontendfilter.",
+        "Không; cần kiểm tracácpaths vàsecurity/datarequirements thực.",
+        "Có, defaultscopeápdụngmọidatabaseclientsvĩnhviễn."
+      ],
+      "correct": 2,
+      "explanation": "Mộtabstraction không tựbảophủmọiaccesspath."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Source modeling assessment",
+      "question": "Nhậnđịnhnàođúngvềđoạnsourceadvancedmodeling?",
+      "options": [
+        "Đãtựauditmọi UPDATEvàpopulate vector.",
+        "ĐãenforceFK đa hình vớimọitarget.",
+        "Đãchứng minhscalecho10triệuconcurrentusers.",
+        "Minh họacác patterns, cần hoàn thiệnintegrity, writers, search maintenance vàlifecycle trướcproductionclaims."
+      ],
+      "correct": 3,
+      "explanation": "Đọcđúngphầncóvàthiếu quantrọnghơnlấytênpatternlàmbảo đảm."
+    }
+  ]
+}

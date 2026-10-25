@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "master",
+  "lesson": "event-loop",
+  "language": "vi",
+  "sourceHash": "cde63709ec37aac207c894b6df751650e6fd149979ab707989975239ee893b80",
+  "status": "approved",
+  "review": "Tự soạn không API. Node24 event-loop/process docs; rõ entry CJS hoặc ESM cho mỗi snippet. Không giữ thứ tự tuyệt đối nextTick/Promise/timer/immediate của nguồn: ESM module evaluation khác CJS và timer0/immediate ngoài I/O không được hứa thứ tự cố định. Chỉ chạy queue hữu hạn,clear timers,đọc chính file snippet trong scratch; không interval lâu,heap dump thật hay V8 native flags.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Event loop role",
+      "question": "Event loop chủ yếu giúp Node làm gì?",
+      "options": [
+        "Điều phối xử lý callbacks và I/O theo runtime.",
+        "Tự chạy mọi JS loop trên nhiều cores.",
+        "Tự tạo database.",
+        "Tự loại mọi race."
+      ],
+      "correct": 0,
+      "explanation": "Concurrency I/O không đồng nghĩa mọi JavaScript được chạy song song."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Synchronous phase",
+      "question": "Code đồng bộ của call stack hiện tại thường được xử lý thế nào?",
+      "options": [
+        "Không dùng CPU.",
+        "Chạy tới khi trả quyền trước các callbacks được xếp chờ tương ứng.",
+        "Tự bị mọi timer chen vào từng instruction.",
+        "Chỉ chạy sau toàn bộ network requests."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm async scheduling với preemption của cùng JS stack."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Promise reaction",
+      "question": "Callback của Promise.then được lập lịch theo loại cơ chế nào?",
+      "options": [
+        "Một SQL transaction.",
+        "Một HTTP route.",
+        "Microtask queue của JavaScript runtime.",
+        "Một OS process mới bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Thời điểm so với các Node queues cần xét context,không chỉ nhãn priority."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Microtask API",
+      "question": "queueMicrotask dùng để gì?",
+      "options": [
+        "Tạo Worker Thread.",
+        "Tạo timer30s.",
+        "Khóa toàn event loop vĩnh viễn.",
+        "Xếp một callback vào microtask queue."
+      ],
+      "correct": 3,
+      "explanation": "Microtask vẫn chạy JavaScript trên execution thread tương ứng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Next tick",
+      "question": "process.nextTick có phải tên một phase I/O thông thường như poll không?",
+      "options": [
+        "Không;nó có queue/cơ chế xử lý riêng theo Node.",
+        "Có và luôn nghĩa vòng loop kế tiếp hoàn chỉnh.",
+        "Có vì tên tick.",
+        "Chỉ là alias setTimeout."
+      ],
+      "correct": 0,
+      "explanation": "Tên API không được hiểu máy móc thành thứ tự phase."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Immediate phase",
+      "question": "setImmediate callback gắn chủ yếu với phase nào?",
+      "options": [
+        "Only browser animation.",
+        "Check.",
+        "JVM old generation.",
+        "SQL commit."
+      ],
+      "correct": 1,
+      "explanation": "Vẫn cần chờ loop tới thời điểm thực thi phù hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Timer threshold",
+      "question": "setTimeout(fn,0) có hứa fn chạy ngay trong call stack hiện tại không?",
+      "options": [
+        "Có nếu không có body.",
+        "Chỉ khi ESM.",
+        "Không.",
+        "Có luôn."
+      ],
+      "correct": 2,
+      "explanation": "Delay là scheduling threshold theo runtime,không deadline chính xác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Poll phase",
+      "question": "Poll phase liên quan chủ yếu gì?",
+      "options": [
+        "Chỉ JSON.parse.",
+        "Chỉ GC mọi object.",
+        "Chỉ user login.",
+        "Nhận/xử lý các I/O callbacks thích hợp và chờ I/O theo điều kiện loop."
+      ],
+      "correct": 3,
+      "explanation": "Loop phases và microtask/nextTick processing là các cơ chế liên quan nhưng khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Module context",
+      "question": "Khi hỏi thứ tự Promise và nextTick ở top level nên nêu gì?",
+      "options": [
+        "Module format và execution context,như CJS entry hay ESM entry.",
+        "Chỉ tên biến.",
+        "Chỉ màu terminal.",
+        "Chỉ số CPU."
+      ],
+      "correct": 0,
+      "explanation": "ESM evaluation qua cơ chế async/module jobs có thể khác ví dụ CJS."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Interval lifecycle",
+      "question": "setInterval thông thường dùng để gì?",
+      "options": [
+        "Tự dừng khi không còn user.",
+        "Lập lịch callback lặp theo khoảng thời gian và lifecycle runtime.",
+        "Tạo finite loop đúng một lần.",
+        "Tự đo memory không overhead."
+      ],
+      "correct": 1,
+      "explanation": "Cần clear/unref hoặc shutdown policy theo nhu cầu."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Clear timer",
+      "question": "clearTimeout dùng nhằm gì?",
+      "options": [
+        "Xóa mọi microtasks.",
+        "Tắt mọi Workers.",
+        "Hủy timeout handle chưa thực thi phù hợp.",
+        "Rollback DB."
+      ],
+      "correct": 2,
+      "explanation": "Cancellation scope là timer đó,không mọi công việc liên quan."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "V8 role",
+      "question": "V8 trong Node là gì?",
+      "options": [
+        "Redis server.",
+        "Browser DOM bắt buộc.",
+        "Express router.",
+        "JavaScript engine."
+      ],
+      "correct": 3,
+      "explanation": "Node runtime còn gồm I/O và APIs ngoài engine."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "JIT",
+      "question": "JIT chủ yếu làm gì?",
+      "options": [
+        "Biên dịch/tối ưu code runtime theo implementation/profile.",
+        "Tự hiểu mọi nghiệp vụ.",
+        "Tự bảo đảm4x throughput.",
+        "Tự sanitize HTML."
+      ],
+      "correct": 0,
+      "explanation": "Optimization heuristics không là JavaScript language guarantee."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Hidden classes",
+      "question": "Hidden classes/object shapes trong V8 chủ yếu liên quan gì?",
+      "options": [
+        "SQL foreign keys.",
+        "Cách engine biểu diễn/tối ưu properties của objects.",
+        "Java sealed classes.",
+        "Quyền đọc field qua HTTP."
+      ],
+      "correct": 1,
+      "explanation": "Đây là implementation detail cần đo khi tối ưu,không quy tắc đúng sai của domain."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Heap used",
+      "question": "process.memoryUsage().heapUsed mô tả gì?",
+      "options": [
+        "Mọi disk files.",
+        "Số async tasks chính xác.",
+        "JS heap đang dùng theo scope runtime/API.",
+        "Tổng RAM vật lý máy."
+      ],
+      "correct": 2,
+      "explanation": "Không thay process RSS hoặc container memory budget."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "RSS",
+      "question": "RSS process liên quan gì?",
+      "options": [
+        "Chỉ số object live chính xác.",
+        "Chỉ network throughput.",
+        "Số dòng source.",
+        "Bộ nhớ resident của process theo OS/API."
+      ],
+      "correct": 3,
+      "explanation": "RSS và heapUsed có scope khác nhau."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "External memory",
+      "question": "External memory metric giúp quan sát loại nào?",
+      "options": [
+        "Memory gắn với các thành phần ngoài JS heap được runtime theo dõi.",
+        "Mọi RAM toàn Internet.",
+        "Chỉ JS String.length.",
+        "Chỉ count files."
+      ],
+      "correct": 0,
+      "explanation": "Metric categories không tự là các phần disjoint để cộng mù."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "GC purpose",
+      "question": "Garbage collection chủ yếu thu hồi gì?",
+      "options": [
+        "Mọi rows SQL không được đọc.",
+        "Memory objects không còn reachable theo semantics/implementation.",
+        "Mọi object không còn hữu ích dù vẫn bị giữ mạnh.",
+        "Mọi socket đúng thời điểm nghiệp vụ."
+      ],
+      "correct": 1,
+      "explanation": "Reachable-but-unused retention vẫn có thể là leak."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Heap snapshot",
+      "question": "Heap snapshot thường hỗ trợ phân tích gì?",
+      "options": [
+        "Tự sửa mọi memory leak.",
+        "Tự load test production.",
+        "Object graph/retention để chẩn đoán memory.",
+        "Mọi network packet tương lai."
+      ],
+      "correct": 2,
+      "explanation": "Tạo snapshot có chi phí và có thể chứa dữ liệu nhạy cảm."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Typed arrays",
+      "question": "TypedArray hữu ích khi cần gì?",
+      "options": [
+        "Mọi generic object tự nhanh hơn.",
+        "Mọi JSON field đều encrypted.",
+        "Thay mọi validation.",
+        "Biểu diễn dữ liệu số với element type/layout cụ thể."
+      ],
+      "correct": 3,
+      "explanation": "Conversions/ranges của kiểu phần tử cần được hiểu rõ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "CJS tick promise order",
+      "question": "Chạy entry quiz.cjs trên Node24, các dòng in theo thứ tự nào?",
+      "code": "console.log(\"A\");Promise.resolve().then(()=>console.log(\"P\"));process.nextTick(()=>console.log(\"T\"));",
+      "options": [
+        "A,T,P.",
+        "A,P,T.",
+        "T,A,P.",
+        "P,A,T."
+      ],
+      "correct": 0,
+      "explanation": "Trong context CJS entry này,nextTick được xử lý trước Promise reaction sau sync."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "ESM tick promise order",
+      "question": "Chạy entry quiz.mjs trên Node24, các dòng in theo thứ tự nào?",
+      "code": "console.log(\"A\");Promise.resolve().then(()=>console.log(\"P\"));process.nextTick(()=>console.log(\"T\"));",
+      "options": [
+        "P,T,A.",
+        "A,P,T.",
+        "A,T,P.",
+        "T,A,P."
+      ],
+      "correct": 1,
+      "explanation": "ESM entry evaluation đã nằm trong module job context; không áp thứ tự CJS vô điều kiện."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Source subset ESM",
+      "question": "Chạy quiz.mjs, thứ tự dòng là gì?",
+      "code": "console.log(\"1\");Promise.resolve().then(()=>{console.log(\"4\");process.nextTick(()=>console.log(\"5\"));});process.nextTick(()=>console.log(\"6\"));",
+      "options": [
+        "1,4,5,6.",
+        "6,1,4,5.",
+        "1,4,6,5.",
+        "1,6,4,5."
+      ],
+      "correct": 2,
+      "explanation": "Promise module-context reaction chạy trước drain nextTick; hai ticks6 rồi5 theo thời điểm được xếp."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Source subset CJS",
+      "question": "Chạy quiz.cjs, thứ tự dòng là gì?",
+      "code": "console.log(\"1\");Promise.resolve().then(()=>{console.log(\"4\");process.nextTick(()=>console.log(\"5\"));});process.nextTick(()=>console.log(\"6\"));",
+      "options": [
+        "1,4,6,5.",
+        "1,5,4,6.",
+        "6,1,4,5.",
+        "1,6,4,5."
+      ],
+      "correct": 3,
+      "explanation": "CJS entry drain nextTick6 trước Promise4,callback đó xếp tick5."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Promise before queued microtask",
+      "question": "Chạy quiz.mjs, thứ tự là gì?",
+      "code": "Promise.resolve().then(()=>console.log(\"P\"));queueMicrotask(()=>console.log(\"Q\"));",
+      "options": [
+        "P,Q.",
+        "Q,P.",
+        "ChỉP.",
+        "ChỉQ."
+      ],
+      "correct": 0,
+      "explanation": "Cùng microtask queue,callbacks ở đây được xếp theo thứ tự P rồiQ."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Queued microtask before Promise",
+      "question": "Chạy quiz.mjs, thứ tự là gì?",
+      "code": "queueMicrotask(()=>console.log(\"Q\"));Promise.resolve().then(()=>console.log(\"P\"));",
+      "options": [
+        "ChỉQ.",
+        "Q,P.",
+        "P,Q.",
+        "ChỉP."
+      ],
+      "correct": 1,
+      "explanation": "Đảo thứ tự enqueue trong cùng queue thì Q trướcP."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "CJS finite tick FIFO",
+      "question": "Chạy quiz.cjs, thứ tự là gì?",
+      "code": "process.nextTick(()=>{console.log(\"T1\");process.nextTick(()=>console.log(\"T3\"));});process.nextTick(()=>console.log(\"T2\"));",
+      "options": [
+        "T2,T1,T3.",
+        "T3,T2,T1.",
+        "T1,T2,T3.",
+        "T1,T3,T2."
+      ],
+      "correct": 2,
+      "explanation": "T3 được enqueue khi T1 chạy,sau T2 đã có trong queue."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Promise from tick",
+      "question": "Chạy quiz.cjs, thứ tự là gì?",
+      "code": "console.log(\"A\");process.nextTick(()=>{console.log(\"T\");Promise.resolve().then(()=>console.log(\"P\"));});",
+      "options": [
+        "A,P,T.",
+        "T,P,A.",
+        "P,T,A.",
+        "A,T,P."
+      ],
+      "correct": 3,
+      "explanation": "Sync A xong,tick T tạo Promise reaction P."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Tick from Promise",
+      "question": "Chạy quiz.mjs, thứ tự là gì?",
+      "code": "Promise.resolve().then(()=>{console.log(\"P\");process.nextTick(()=>console.log(\"T\"));queueMicrotask(()=>console.log(\"Q\"));});",
+      "options": [
+        "P,Q,T.",
+        "P,T,Q.",
+        "T,P,Q.",
+        "Q,T,P."
+      ],
+      "correct": 0,
+      "explanation": "Tick mới không chen vào giữa microtask callbacks đang được drain ở context này."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Promise executor sync",
+      "question": "Thứ tự dòng là gì?",
+      "code": "console.log(\"A\");new Promise(r=>{console.log(\"E\");r();}).then(()=>console.log(\"P\"));console.log(\"B\");",
+      "options": [
+        "A,P,E,B.",
+        "A,E,B,P.",
+        "A,B,E,P.",
+        "E,A,P,B."
+      ],
+      "correct": 1,
+      "explanation": "Promise executor chạy đồng bộ;then callback được xếp microtask."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Async await yield",
+      "question": "Thứ tự dòng là gì?",
+      "code": "async function f(){console.log(\"F\");await Promise.resolve();console.log(\"C\");}console.log(\"A\");f();console.log(\"B\");",
+      "options": [
+        "A,F,C,B.",
+        "F,A,B,C.",
+        "A,F,B,C.",
+        "A,B,F,C."
+      ],
+      "correct": 2,
+      "explanation": "Async function chạy sync đến await rồi phần tiếp theo được lập lịch."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Promise chain value",
+      "question": "Output là gì?",
+      "code": "Promise.resolve(1).then(x=>x+1).then(x=>console.log(x));",
+      "options": [
+        "1",
+        "undefined",
+        "Promise string.",
+        "2"
+      ],
+      "correct": 3,
+      "explanation": "Then chuyển giá trị vào Promise tiếp theo."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Immediate queue",
+      "question": "Hai immediate được enqueue cùng thứ tự dưới đây, output là gì?",
+      "code": "setImmediate(()=>console.log(\"I1\"));setImmediate(()=>console.log(\"I2\"));",
+      "options": [
+        "I1 rồiI2.",
+        "I2 rồiI1.",
+        "ChỉI1.",
+        "ChỉI2."
+      ],
+      "correct": 0,
+      "explanation": "Callbacks immediate này giữ thứ tự tạo trong queue tương ứng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Timer completion count",
+      "question": "Output là gì,không phụ thuộc timer nào chạy trước?",
+      "code": "let n=0;function done(){n++;if(n===2)console.log(n);}setTimeout(done,0);setTimeout(done,0);",
+      "options": [
+        "undefined",
+        "2",
+        "1",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Hai callbacks mỗi cái tăng count,log chỉ khi cả hai đã chạy."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Cancelled timeout",
+      "question": "Output là gì?",
+      "code": "let ran=false;const t=setTimeout(()=>{ran=true;},10000);clearTimeout(t);setImmediate(()=>console.log(ran));",
+      "options": [
+        "undefined",
+        "10000",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Timeout đã clear trước thực thi,không chờ10s hoặc chạy callback đó."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Cancelled immediate",
+      "question": "Output là gì?",
+      "code": "let ran=false;const h=setImmediate(()=>{ran=true;});clearImmediate(h);setTimeout(()=>console.log(ran),0);",
+      "options": [
+        "true",
+        "undefined",
+        "0",
+        "false"
+      ],
+      "correct": 3,
+      "explanation": "Immediate handle bị hủy trước callback thực thi."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "I O callback scheduling",
+      "question": "Trong callback readFile này, thứ tự output là gì trên Node24?",
+      "code": "import{readFile}from\"node:fs\";readFile(new URL(import.meta.url),err=>{if(err)throw err;setTimeout(()=>console.log(\"T\"),0);setImmediate(()=>console.log(\"I\"));});",
+      "options": [
+        "I rồiT.",
+        "T rồiI làbấtbiến.",
+        "ChỉI.",
+        "ChỉT."
+      ],
+      "correct": 0,
+      "explanation": "Trong I/O cycle,setImmediate đi check trước timer mới đó; file được đọc chính snippet local."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Unref observation",
+      "question": "Output là gì?",
+      "code": "const t=setInterval(()=>{},10000);t.unref();console.log(t.hasRef());clearInterval(t);",
+      "options": [
+        "10000",
+        "false",
+        "true",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Unref làm interval không tự giữ process sống,clear bảo đảm cleanup trong ví dụ."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Delete language semantics",
+      "question": "Output là gì,mà không suy ra mức tăng/giảm tốc độ V8?",
+      "code": "const o={a:1,b:2};delete o.a;console.log(Object.keys(o).join(\",\"));",
+      "options": [
+        "a",
+        "undefined",
+        "b",
+        "a,b"
+      ],
+      "correct": 2,
+      "explanation": "Delete bỏ property a; correctness output khác với nhận định performance cần đo."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Typed numeric conversion",
+      "question": "Output là gì?",
+      "code": "console.log([...new Uint8Array([256,-1,1.9])].join(\",\"));",
+      "options": [
+        "256,-1,1.9",
+        "0,-1,2",
+        "TypeError.",
+        "0,255,1"
+      ],
+      "correct": 3,
+      "explanation": "Uint8Array chuyển về unsigned8-bit integers theo semantics tương ứng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Source priority caveat",
+      "question": "Dòng nextTick > Promises > setTimeout > setImmediate có phải luật tổng quát cho mọi context Node24 không?",
+      "options": [
+        "Không;module format,phase và cách enqueue có ý nghĩa.",
+        "Có cho mọi ESM/CJS và I/O callback.",
+        "Có vì comment trong source.",
+        "Có nếu console.log."
+      ],
+      "correct": 0,
+      "explanation": "Source comment phải được đọc như ví dụ cần điều kiện,không thứ tự tuyệt đối."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Timer immediate top level",
+      "question": "Từ main module ngoài I/O callback, có nên hứa setTimeout0 luôn trước setImmediate không?",
+      "options": [
+        "Có nếu file chỉ10 dòng.",
+        "Không.",
+        "Có mọi lần chạy.",
+        "Có vì0 nhỏ hơnimmediate."
+      ],
+      "correct": 1,
+      "explanation": "Node docs nêu thứ tự phụ thuộc context/timing; test không gán đáp án cố định cho race này."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Tick starvation",
+      "question": "Recursive nextTick vô hạn có thể gây gì?",
+      "options": [
+        "Tự tạo Worker mới.",
+        "Không thể vì không có recursion stack.",
+        "Starve I/O vì runtime tiếp tục drain queue đó.",
+        "Tự yield một vòng poll sau mỗi call."
+      ],
+      "correct": 2,
+      "explanation": "Không chạy ví dụ vô hạn để đoán output."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Microtask starvation",
+      "question": "Loop CPU liên tục await Promise.resolve có bảo đảm thường xuyên cho I/O chạy không?",
+      "options": [
+        "Có vì mọi await đều là I/O yield.",
+        "Có vì Promise có thread riêng.",
+        "Có nếu async function.",
+        "Không;microtask chain có thể tiếp tục chiếm tiến độ."
+      ],
+      "correct": 3,
+      "explanation": "Yield trong microtask queue khác trả quyền để loop tiến qua I/O phases."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Async JSON CPU",
+      "question": "Đặt JSON.parse file lớn sau await readFile có tự offload parsing khỏi event-loop thread không?",
+      "options": [
+        "Không.",
+        "Có vì function async.",
+        "Có vì fs/promises.",
+        "Có vì file JSON."
+      ],
+      "correct": 0,
+      "explanation": "Phần JavaScript synchronous vẫn có thể block loop."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Interval in source",
+      "question": "setInterval(monitorMemory,5000) nguồn có thể giữ process chạy mãi khi không còn việc khác không?",
+      "options": [
+        "Chỉ nếu có browser.",
+        "Có nếu handle vẫn ref và chưa clear.",
+        "Không vì callback chỉ log.",
+        "Không vì5000ms tự finite."
+      ],
+      "correct": 1,
+      "explanation": "Dùng lifecycle/clear/unref phù hợp,không chạy source interval vô hạn trong kiểm tra ví dụ."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Heap versus RSS",
+      "question": "RSS tăng nhưng heapUsed ổn định có thể cần xem gì?",
+      "options": [
+        "Kết luận metric sai ngay.",
+        "Chỉ thêm Promise.",
+        "External/native buffers,stacks và memory regions khác.",
+        "Chỉ xóa mọi JS object."
+      ],
+      "correct": 2,
+      "explanation": "Không quy mọi memory issue về JS heap."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Worker memory scope",
+      "question": "Trong Worker Thread, memoryUsage.rss và các heap fields có scope nào cần phân biệt?",
+      "options": [
+        "Mọi field luôn toàn OS.",
+        "Mọi field chỉ main thread.",
+        "Mọi field là số user.",
+        "RSS toàn process,các fields khác theo thread hiện tại theo API."
+      ],
+      "correct": 3,
+      "explanation": "Đừng cộng RSS của từng Worker như các processes độc lập."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Shape consistency",
+      "question": "Tạo object properties theo thứ tự nhất quán có thể giúp gì trong V8?",
+      "options": [
+        "Giảm đa dạng shapes ở call sites phù hợp,nhưng phải đo hiệu năng thật.",
+        "Bảo đảm mọi code nhanh1000x.",
+        "Tự validate field types.",
+        "Tự đóng băng object."
+      ],
+      "correct": 0,
+      "explanation": "Optimization insight không là cam kết language/performance mọi version."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Try catch advice scope",
+      "question": "Lời khuyên tránh mọi try/catch trong hot loops có nên hiểu thành mọi V8 hiện đại không tối ưu được code có try/catch không?",
+      "options": [
+        "Chỉ cần xóa error handling để an toàn.",
+        "Không;phụ thuộc engine/version/workload và profile.",
+        "Có vì JavaScript spec cấm JIT.",
+        "Có vì catch luôn tạo OS process."
+      ],
+      "correct": 1,
+      "explanation": "Không bỏ xử lý lỗi đúng để theo quy tắc hiệu năng tuyệt đối không có bằng chứng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "TypedArray choice",
+      "question": "Thay mọi array/object bằng TypedArray có chắc nhanh hơn và giữ nguyên mọi semantics không?",
+      "options": [
+        "Có vì tên typed.",
+        "Có vì V8.",
+        "Không;type conversions,layout và workload có thể đổi.",
+        "Có mọi dữ liệu JSON."
+      ],
+      "correct": 2,
+      "explanation": "Chọn representation theo miền dữ liệu và đo tradeoffs."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Reachable leak",
+      "question": "Global Map giữ request objects không còn cần dùng có thể leak dù GC chạy không?",
+      "options": [
+        "Không vì mọi objects tự hết scope.",
+        "Không vì Map nằm trong heap.",
+        "Chỉ khi có manual malloc.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "GC không biết object reachable đã hết giá trị nghiệp vụ."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Heap snapshot cost",
+      "question": "Tạo heap snapshot production có nên xem là thao tác luôn miễn phí và vô hại không?",
+      "options": [
+        "Không;có CPU/memory/pause và dữ liệu nhạy cảm.",
+        "Có vì chỉ đọc.",
+        "Có vì file binary.",
+        "Có nếu app async."
+      ],
+      "correct": 0,
+      "explanation": "Chọn thời điểm,quyền và capacity phù hợp trước thu thập."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Inspector access",
+      "question": "Node inspector nên được mở public không auth chỉ để xem memory không?",
+      "options": [
+        "Có nếu port khó đoán.",
+        "Không;debug interface có quyền mạnh và cần giới hạn truy cập.",
+        "Có vì chỉ xem chart.",
+        "Có vì HTTP app cóJWT."
+      ],
+      "correct": 1,
+      "explanation": "Bảo vệ diagnostic/control plane riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Heap growth observation",
+      "question": "Heap tăng khi tải rồi giảm/ổn định sau GC có đủ kết luận leak không?",
+      "options": [
+        "Đủ nếu vượt1MB.",
+        "Đủ nếu interval in raMB.",
+        "Chưa;cần retention trend và workload phù hợp.",
+        "Đủ vì mọi tăng heap là leak."
+      ],
+      "correct": 2,
+      "explanation": "Allocation churn khác unbounded retention."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Callback versus module",
+      "question": "Cùng đoạn scheduling ở top-level CJS và trong Promise callback có nhất thiết cùng relative order không?",
+      "options": [
+        "Có vì thứ tự source luôn duy nhất.",
+        "Có vì cùng process.",
+        "Có vì nextTick luôn chen vào mọi instruction.",
+        "Không;context đang drain queues có thể khác."
+      ],
+      "correct": 3,
+      "explanation": "Nêu context cụ thể khi hỏi output."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Libuv version scope",
+      "question": "Node20 trở đi có thay đổi timer processing so với một số phiên bản trước; bài giải nên làm gì?",
+      "options": [
+        "Chỉ rõ runtime/context và đối chiếu docs phù hợp.",
+        "Coi mọi Node lịch sử giống nhau tuyệt đối.",
+        "Chỉ dựa comment source.",
+        "Chỉ đổi tên script."
+      ],
+      "correct": 0,
+      "explanation": "Không suy performance/scheduling theo một phiên bản thành luật toàn bộ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Property deletion meaning",
+      "question": "Delete bỏ field khỏi object có tự chứng minh mọi hot path sẽ chậm theo cùng tỷ lệ không?",
+      "options": [
+        "Chỉ dùng const là đủ.",
+        "Không;profile/engine behavior và cách dùng thực tế quyết định.",
+        "Có vì source khuyên tránh.",
+        "Có vì field bị xóa không bao giờ hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Semantics JS và optimization heuristics cần phân biệt."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Measurement context",
+      "question": "Thấy timer trước immediate trong một lần chạy có chứng minh lần sau cũng vậy ở mọi load không?",
+      "options": [
+        "Có vì máy có4 cores.",
+        "Có vì file .js.",
+        "Không.",
+        "Có vì Node deterministic toàn hệ."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ quan sát một execution không đủ biến unspecified order thành guarantee."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Round unit conversion",
+      "question": "Nguồn Math.round(bytes/1024/1024)+MB có giới hạn thông tin nào?",
+      "options": [
+        "Luôn đúng số live objects.",
+        "Luôn là RAM vật lý trống.",
+        "Tự tách hết external memory.",
+        "Làm tròn và dùng đơn vị theo2^20 bytes,không là số bytes chính xác."
+      ],
+      "correct": 3,
+      "explanation": "Ghi rõ metric và units khi so sánh/report."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "I O fairness choice",
+      "question": "Muốn chia CPU work thành batches cho loop có cơ hội phục vụ I/O, chỉ thêm await Promise.resolve mỗi batch có đủ không?",
+      "options": [
+        "Không;chọn cơ chế yield sang loop hoặc offload phù hợp và đo fairness.",
+        "Có vì mọi await là một poll cycle.",
+        "Có vì Promise luôn thread mới.",
+        "Không cần giới hạn batch cost."
+      ],
+      "correct": 0,
+      "explanation": "Microtask scheduling có thể vẫn starve I/O;fairness cần execution budget."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Timer deadlines",
+      "question": "setTimeout100ms có bảo đảm callback bắt đầu không muộn hơn100ms khi loop đang bận không?",
+      "options": [
+        "Có nếu heap nhỏ.",
+        "Không;threshold không là real-time deadline.",
+        "Có vì numeric delay.",
+        "Có nếu Promise không reject."
+      ],
+      "correct": 1,
+      "explanation": "CPU callbacks,OS scheduling và queues có thể làm timer chạy muộn."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Queue nesting",
+      "question": "nextTick được enqueue trong Promise callback có luôn ngắt ngay các Promise microtasks đã xếp còn lại không?",
+      "options": [
+        "Có vì tênnextTick.",
+        "Chỉ cần file ngắn.",
+        "Không;phải xét thời điểm drain queues theo Node/context.",
+        "Có vì dấu lớn hơn trong priority list."
+      ],
+      "correct": 2,
+      "explanation": "Không áp một total priority order cho mọi enqueue context."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Benchmark async completion",
+      "question": "Đo thời gian chỉ quanh lời gọi async function mà không await completion có thể đo gì sai?",
+      "options": [
+        "Luôn đo đầy đủ operation.",
+        "Tự bao gồm mọi callbacks tương lai.",
+        "Tự đo request end-to-end.",
+        "Chủ yếu scheduling/Promise creation thay vì toàn công việc."
+      ],
+      "correct": 3,
+      "explanation": "Boundary bắt đầu/kết thúc đo phải khớp công việc cần đánh giá."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Monotonic durations",
+      "question": "Đo duration bằng Date.now có thể bị ảnh hưởng bởi điều gì?",
+      "options": [
+        "Điều chỉnh wall clock;chọn nguồn monotonic phù hợp cho elapsed time.",
+        "Tên biến local.",
+        "JSON field order.",
+        "Số room members."
+      ],
+      "correct": 0,
+      "explanation": "Wall-clock timestamp và elapsed-time measurement có mục đích khác nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "JIT benchmark validity",
+      "question": "Microbenchmark không dùng kết quả và input hằng có rủi ro gì?",
+      "options": [
+        "Chỉ thiếu semicolon.",
+        "Optimizer loại/fold công việc làm số đo không đại diện.",
+        "Luôn là benchmark tốt nhất.",
+        "Không thể tối ưu JavaScript."
+      ],
+      "correct": 1,
+      "explanation": "Giữ observable work và thiết kế benchmark độc lập,không ép kết luận theo tên engine."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Warmup distinction",
+      "question": "Warm steady-state benchmark có đủ kết luận cold start của CLI/service tốt không?",
+      "options": [
+        "Có vì runtime version giống.",
+        "Có nếu cócache.",
+        "Không.",
+        "Có vì JIT đã tối ưu mọi lần chạy sau."
+      ],
+      "correct": 2,
+      "explanation": "Startup,module loading và runtime warmup là các giai đoạn khác nhau."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Deoptimization interpretation",
+      "question": "Một deoptimization event có tự nghĩa chương trình sai nghiệp vụ không?",
+      "options": [
+        "Có vì engine cấm input khác.",
+        "Có vì hidden class thay đổi.",
+        "Chỉ cần restartmọirequest.",
+        "Không;nó liên quan strategy thực thi,correctness vẫn theo semantics."
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu có thể đổi theo type/profile mà kết quả vẫn đúng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Shape polymorphism",
+      "question": "Một call site nhận nhiều shapes khác nhau cần đánh giá performance thế nào?",
+      "options": [
+        "Profile workload/engine trước tối ưu;không áp một số speedup cố định.",
+        "Mọi đa dạng shape luôn khiến app crash.",
+        "Chỉ đổi property names cho giống.",
+        "Bỏ validation để shape ít hơn bất kể dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "Optimization phải giữ semantics và có bằng chứng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Delete versus undefined",
+      "question": "Gán obj.x=undefined có luôn cùng semantics với delete obj.x không?",
+      "options": [
+        "Có nếu obj làconst.",
+        "Không;property existence/enumeration có thể khác.",
+        "Có trong mọi program.",
+        "Có vì JSON stringify bỏundefined."
+      ],
+      "correct": 1,
+      "explanation": "Không thay semantics chỉ vì một lời khuyên performance."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Array holes",
+      "question": "delete arr[i] có tự làm array.length giảm và dồn phần tử như splice không?",
+      "options": [
+        "Có nếu array số.",
+        "Có nếu dùngV8.",
+        "Không.",
+        "Có mọi arrays."
+      ],
+      "correct": 2,
+      "explanation": "Delete tạo missing element theo semantics,ảnh hưởng algorithms/enumeration khác splice."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Typed range correctness",
+      "question": "Chuyển số tiền có phần lẻ sang Uint8Array có phải tối ưu giữ nguyên dữ liệu tự động không?",
+      "options": [
+        "Có vì typed array luôn chính xác hơn Number.",
+        "Có nếu mọi giá trị dương.",
+        "Có vì V8 JIT.",
+        "Không;range/wrapping/truncation có thể phá dữ liệu."
+      ],
+      "correct": 3,
+      "explanation": "Representation phải khớp domain/precision trước khi đo tốc độ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "RSS accounting threads",
+      "question": "Cộng memoryUsage.rss từ nhiều Workers trong cùng process có thể sai vì sao?",
+      "options": [
+        "Đếm lặp RSS toàn process thay vì heap riêng từng thread.",
+        "Mọi Workers có PID khác nhau.",
+        "RSS luôn chỉ heap thread.",
+        "Không có shared memory."
+      ],
+      "correct": 0,
+      "explanation": "Giữ đúng scope và tránh double counting metrics."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Heap dump privacy",
+      "question": "Heap snapshot có thể chứa tokens/personal data;quản lý thế nào?",
+      "options": [
+        "Đổi extension là đủ an toàn.",
+        "Thu tối thiểu,bảo vệ file và quyền/retention theo nhu cầu.",
+        "Public file binary vì không ai đọc được.",
+        "Upload mọi dump không xét dữ liệu."
+      ],
+      "correct": 1,
+      "explanation": "Artifact chẩn đoán cũng thuộc ranh giới dữ liệu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Leak root paths",
+      "question": "Listener sống lâu giữ closure chứa request payload cần sửa gì nếu không còn cần dùng?",
+      "options": [
+        "Chỉ tăng heap vô hạn.",
+        "Chỉ đổi tên closure.",
+        "Gỡ listener/giải phóng references theo lifecycle phù hợp.",
+        "Chỉ gọi JSON.stringify."
+      ],
+      "correct": 2,
+      "explanation": "Sửa retention cause,không chỉ giảm triệu chứng bằng memory budget."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "GC versus external resources",
+      "question": "Dựa GC để đóng sockets/files theo deadline có giới hạn gì?",
+      "options": [
+        "Mọi reachable object tự đóng ngay.",
+        "GC là transaction manager.",
+        "Chỉ cần setInterval monitor.",
+        "GC timing không bảo đảm lifecycle resource đúng hạn."
+      ],
+      "correct": 3,
+      "explanation": "Explicit close/dispose và cancellation/cleanup vẫn cần."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Monitoring overhead",
+      "question": "setInterval log memory mỗi5s có tự bảo đảm không ảnh hưởng latency hoặc không lộ dữ liệu không?",
+      "options": [
+        "Không;đo logging/collection overhead và review nội dung.",
+        "Có vì5s dài.",
+        "Có vì console.log alwaysfree.",
+        "Có vì chỉ statistics."
+      ],
+      "correct": 0,
+      "explanation": "Observability cần budget,scope và retention."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Tail latency causality",
+      "question": "Event loop lag tăng cùng p99 có đủ kết luận GC là nguyên nhân duy nhất không?",
+      "options": [
+        "Có vì Promisepriority.",
+        "Không;cần timeline/profile và loại các CPU/I O/queue causes khác.",
+        "Có vì Node cóGC.",
+        "Có vì heapUsed tăng."
+      ],
+      "correct": 1,
+      "explanation": "Correlation là tín hiệu chẩn đoán,không tự causal proof."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Unspecified order test",
+      "question": "Test khẳng định timeout0 luôn trước immediate ngoài I/O callback nên sửa theo hướng nào?",
+      "options": [
+        "Chạy lại đến khi pass rồi bỏ failures.",
+        "Chỉ đổi CPU count.",
+        "Assert guarantees/partial order thật hoặc tạo context được bảo đảm.",
+        "Tăng timeout test để ép thứ tự luôn đúng."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng flaky timing expectation làm oracle."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Runtime scope",
+      "question": "Output scheduling đã kiểm tra trên Node24 CJS có thể áp nguyên cho browser hoặc ESM không?",
+      "options": [
+        "Có vì cùngJavaScript.",
+        "Có vì cùngthen.",
+        "Có vì console.loggiống.",
+        "Không;runtime và execution context có semantics khác cần kiểm tra."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt ECMAScript semantics với host-specific queues."
+    }
+  ]
+}

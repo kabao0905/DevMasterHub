@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "solidity",
+  "level": "senior",
+  "lesson": "advanced",
+  "language": "vi",
+  "sourceHash": "0c9b9058e2e565cd9b3f92752539dfdd06ebb4ac5290e76b0ac7b53b4955b798",
+  "status": "approved",
+  "review": "Tự soạn theo MyVaultV1, Solidity 0.8.20, ERC-1967/1822, OZ upgradeable v5.0.2 và OwnableUpgradeable v4.9.6 khi so sánh. Khóa version cho initializer/upgrade API; phân biệt proxy/implementation storage, layout, invariant và quyền. Không compile/deploy/RPC/upgrade transaction.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Proxy",
+      "question": "Người dùng trong mô hình nguồn tương tác chủ yếu với đâu?",
+      "options": [
+        "Địa chỉ proxy",
+        "Source file trên máy developer",
+        "Constructor implementation mỗi lần",
+        "Địa chỉ owner thay cho contract"
+      ],
+      "correct": 0,
+      "explanation": "Proxy giữ điểm tiếp cận trong mô hình nâng cấp được mô tả."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Implementation",
+      "question": "Implementation chủ yếu cung cấp gì?",
+      "options": [
+        "Một bản sao frontend bắt buộc",
+        "Logic được proxy ủy quyền thực thi",
+        "Toàn state của mọi proxy được chuyển vào nó",
+        "Private key của owner"
+      ],
+      "correct": 1,
+      "explanation": "Logic và ngữ cảnh storage cần được phân biệt."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Delegatecall",
+      "question": "delegatecall dùng code của target trong ngữ cảnh nào?",
+      "options": [
+        "Luôn storage của EOA gốc",
+        "Một storage rỗng không thuộc ai",
+        "Contract gọi delegatecall",
+        "Luôn storage của target code"
+      ],
+      "correct": 2,
+      "explanation": "Trong mô hình nguồn, state được đọc/ghi ở proxy."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "State nguồn",
+      "question": "Biến state ứng dụng khai báo trong MyVaultV1 là gì?",
+      "options": [
+        "stakingToken",
+        "nextProposalId",
+        "greeting",
+        "totalVaultValue"
+      ],
+      "correct": 3,
+      "explanation": "Đây là dữ liệu cần giữ semantics khi nâng cấp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Khởi tạo",
+      "question": "Hàm thiết lập owner trong mẫu là gì?",
+      "options": [
+        "initialize",
+        "_authorizeUpgrade",
+        "proxiableUUID",
+        "totalVaultValue getter"
+      ],
+      "correct": 0,
+      "explanation": "Initializer thiết lập state theo ngữ cảnh thực thi."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Modifier init",
+      "question": "initialize nguồn dùng modifier nào?",
+      "options": [
+        "payable",
+        "initializer",
+        "onlyOwner trực tiếp",
+        "noReentrant"
+      ],
+      "correct": 1,
+      "explanation": "Lifecycle guard không tự chọn owner đáng tin."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Owner v5",
+      "question": "Trong OZ OwnableUpgradeable v5.0.2, __Ownable_init nhận gì?",
+      "options": [
+        "Một lượng token uint256",
+        "Một ABI JSON",
+        "initialOwner kiểu address",
+        "Không tham số như v4.9.6"
+      ],
+      "correct": 2,
+      "explanation": "Cần khớp major version thư viện."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "UUPS init",
+      "question": "__UUPSUpgradeable_init() trong v5.0.2 có body state setup phức tạp không?",
+      "options": [
+        "Có, tự chọn owner theo tx.origin",
+        "Có, tự nạp toàn dữ liệu V1",
+        "Có, tự deploy proxy mới",
+        "Không, hook đó có body rỗng trong version này"
+      ],
+      "correct": 3,
+      "explanation": "Hook rỗng không có nghĩa các bước setup khác không cần."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Upgrade hook",
+      "question": "Hàm override nào của nguồn kiểm quyền nâng cấp?",
+      "options": [
+        "_authorizeUpgrade",
+        "initialize getter tự sinh",
+        "totalVaultValue",
+        "constructor không có trong mẫu"
+      ],
+      "correct": 0,
+      "explanation": "UUPS base gọi hook này trong đường upgrade."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Only owner",
+      "question": "_authorizeUpgrade được bọc bằng gì?",
+      "options": [
+        "unchecked",
+        "onlyOwner",
+        "view",
+        "indexed"
+      ],
+      "correct": 1,
+      "explanation": "Modifier vẫn kiểm quyền dù body hook rỗng."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Visibility hook",
+      "question": "_authorizeUpgrade là loại hàm nào?",
+      "options": [
+        "external view getter",
+        "constructor",
+        "internal override",
+        "public payable entry point"
+      ],
+      "correct": 2,
+      "explanation": "Không gọi hook trực tiếp qua ABI như lệnh upgrade."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Logic upgrade",
+      "question": "Trong UUPS, logic thực hiện nâng cấp nằm chủ yếu ở đâu?",
+      "options": [
+        "Mọi ví user tự đổi bytecode proxy",
+        "Constructor được gọi lại mỗi lần",
+        "Event Upgraded tự thay storage",
+        "Implementation có cơ chế UUPS"
+      ],
+      "correct": 3,
+      "explanation": "Proxy ERC1967 cần implementation hỗ trợ nâng cấp theo mô hình này."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "ERC1967",
+      "question": "ERC-1967 chuẩn hóa điều gì?",
+      "options": [
+        "Storage slots thông tin proxy như implementation",
+        "Mọi layout biến ứng dụng V1/V2",
+        "Mọi chính sách owner của DAO",
+        "Giá gas cố định của proxy"
+      ],
+      "correct": 0,
+      "explanation": "Slot quản trị không chứng minh layout nghiệp vụ tương thích."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Stable address",
+      "question": "Mục tiêu thường có của nâng cấp proxy là gì?",
+      "options": [
+        "Tự giữ mọi invariant dù code mới tùy ý",
+        "Đổi logic giữ địa chỉ proxy/state theo thiết kế tương thích",
+        "Đổi toàn bộ địa chỉ user",
+        "Tự xóa mọi lịch sử giao dịch"
+      ],
+      "correct": 1,
+      "explanation": "Giữ địa chỉ không tự bảo đảm behavior đúng."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Transparent",
+      "question": "Khác biệt khái quát của Transparent với UUPS là gì?",
+      "options": [
+        "UUPS luôn không cần quyền nâng cấp",
+        "Transparent dùng storage của EOA",
+        "Transparent có admin/upgrade ở proxy, UUPS dựa logic implementation",
+        "Transparent không thể giữ storage"
+      ],
+      "correct": 2,
+      "explanation": "Cần xét mô hình và version cụ thể."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Default state",
+      "question": "totalVaultValue chưa được gán có giá trị nào ở proxy mới có storage sạch?",
+      "options": [
+        "1",
+        "initialOwner chuyển thành số",
+        "Giá trị implementation tự copy",
+        "0"
+      ],
+      "correct": 3,
+      "explanation": "State có default theo kiểu, không tự copy từ implementation."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Caller preserved",
+      "question": "Qua delegatecall của proxy, msg.sender của logic thường là ai?",
+      "options": [
+        "Caller của proxy được giữ theo semantics delegatecall",
+        "Implementation tự động",
+        "Proxy luôn luôn",
+        "Địa chỉ zero"
+      ],
+      "correct": 0,
+      "explanation": "Khác external call thông thường sang target."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Address this",
+      "question": "address(this) khi logic chạy qua delegatecall proxy là gì?",
+      "options": [
+        "Địa chỉ compiler",
+        "Địa chỉ proxy",
+        "Địa chỉ implementation",
+        "EOA gốc"
+      ],
+      "correct": 1,
+      "explanation": "Địa chỉ execution context thuộc proxy."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Initializer cha",
+      "question": "Vì sao cần gọi initializer các base phù hợp?",
+      "options": [
+        "Mọi base initializer tự chạy qua import",
+        "Chỉ để giảm ABI size",
+        "Constructor implementation không tự thiết lập state base cho proxy",
+        "Compiler tự bỏ mọi base state"
+      ],
+      "correct": 2,
+      "explanation": "Inheritance setup cần wiring đúng version."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Implementation lock",
+      "question": "_disableInitializers trong constructor implementation nhằm gì?",
+      "options": [
+        "Khóa mọi proxy vĩnh viễn bất kể storage",
+        "Tự chuyển owner proxy cho deployer",
+        "Tự thực hiện upgrade V2",
+        "Khóa khởi tạo trực tiếp instance implementation"
+      ],
+      "correct": 3,
+      "explanation": "Implementation và proxy có state initialization riêng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Ownable v4",
+      "question": "Dùng __Ownable_init(initialOwner) của nguồn với OZ v4.9.6 có khớp signature không?",
+      "options": [
+        "Không, v4.9.6 dùng initializer không tham số",
+        "Có, v4/v5 cùng signature",
+        "Có, Solidity tự bỏ tham số dư",
+        "Chỉ cần compiler 0.8.20"
+      ],
+      "correct": 0,
+      "explanation": "Source dùng kiểu API v5, cần dependency phù hợp."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Owner zero v5",
+      "question": "__Ownable_init(address(0)) ở v5.0.2 xử lý thế nào?",
+      "options": [
+        "Lưu zero không lỗi theo hàm đó",
+        "Revert vì owner khởi tạo không hợp lệ",
+        "Tự đặt msg.sender",
+        "Tự cho mọi caller quyền owner"
+      ],
+      "correct": 1,
+      "explanation": "Đây là guard trong version được đối chiếu."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Caller initialize",
+      "question": "initialize public nhận initialOwner có tự kiểm caller là deployer không?",
+      "options": [
+        "Có, public chỉ gọi từ constructor",
+        "Chỉ owner tương lai mới biết ABI",
+        "Không, nguồn không kiểm caller đó",
+        "Có, initializer tự là onlyDeployer"
+      ],
+      "correct": 2,
+      "explanation": "Cần khởi tạo trong luồng tin cậy."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "First init",
+      "question": "Proxy đã tạo nhưng chưa initialize có nguy cơ gì từ source?",
+      "options": [
+        "Mọi caller bị onlyOwner chặn trước khởi tạo",
+        "Owner luôn tự bằng deployer",
+        "Import UUPS tự gọi initialize",
+        "Caller khác có thể gọi initialize chọn owner trước nếu đường gọi mở"
+      ],
+      "correct": 3,
+      "explanation": "Một lần không có nghĩa đúng người làm lần đầu."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Initialize lại",
+      "question": "Proxy bình thường sau deploy đã initialize thành công; gọi lại initialize thường ra sao?",
+      "options": [
+        "Revert vì version khởi tạo đã dùng",
+        "Đổi owner mỗi lần",
+        "Chỉ đổi totalVaultValue",
+        "Tự tạo implementation mới"
+      ],
+      "correct": 0,
+      "explanation": "Đang xét deployed instance, không constructor context đặc biệt."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Constructor state",
+      "question": "Gán state trong constructor implementation có tự thiết lập state tương ứng ở proxy không?",
+      "options": [
+        "Chỉ cần biến public",
+        "Không",
+        "Có, delegatecall tự copy toàn storage target",
+        "Có, nếu cùng compiler"
+      ],
+      "correct": 1,
+      "explanation": "Constructor chạy trong ngữ cảnh implementation lúc tạo nó."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Field initializer",
+      "question": "Viết uint256 x = 42 ở implementation có tự làm x của proxy mới là 42 không?",
+      "options": [
+        "Có, getter copy giá trị khi đọc",
+        "Chỉ khi x private",
+        "Không, cần setup state proxy qua initializer phù hợp",
+        "Có, declaration tự chạy mỗi delegatecall"
+      ],
+      "correct": 2,
+      "explanation": "Field initializer không tự chạy lại ở proxy."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Owner implementation",
+      "question": "Initialize trực tiếp implementation có tự đặt owner của proxy không?",
+      "options": [
+        "Có, mọi proxy dùng chung owner",
+        "Có, vì initialOwner là address",
+        "Chỉ nếu function public",
+        "Không, đó là storage khác"
+      ],
+      "correct": 3,
+      "explanation": "Cần gọi đúng execution context."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Hai proxy",
+      "question": "Hai proxy cùng implementation có bắt buộc cùng totalVaultValue không?",
+      "options": [
+        "Không, mỗi proxy có state riêng",
+        "Có, code chung nghĩa cùng storage",
+        "Có, vì biến public",
+        "Chỉ khác nếu compiler khác"
+      ],
+      "correct": 0,
+      "explanation": "Logic dùng chung không đồng nghĩa dữ liệu dùng chung."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Body rỗng",
+      "question": "_authorizeUpgrade(...) internal override onlyOwner {} có bỏ kiểm quyền vì body rỗng không?",
+      "options": [
+        "Chỉ newImplementation tự kiểm owner",
+        "Không, modifier onlyOwner thực hiện kiểm",
+        "Có, body rỗng bỏ mọi modifier",
+        "Có, internal tự cho mọi EOA quyền"
+      ],
+      "correct": 1,
+      "explanation": "Cần đọc cả modifier và body."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Tham số hook",
+      "question": "Hook nguồn không dùng newImplementation. Điều nào đúng?",
+      "options": [
+        "Biến không dùng tự cho mọi caller quyền",
+        "initialOwner tự trở thành implementation",
+        "Hook kiểm quyền, UUPS base còn kiểm tương thích kỹ thuật riêng",
+        "Không có bất kỳ kiểm nào trong đường upgrade"
+      ],
+      "correct": 2,
+      "explanation": "Access control và compatibility check có trách nhiệm khác nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "UUID scope",
+      "question": "proxiableUUID check của UUPS v5.0.2 có chứng minh mọi layout/business logic tương thích không?",
+      "options": [
+        "Có, UUID là audit toàn code",
+        "Có, cùng UUID giữ mọi số dư đúng nghĩa",
+        "Chỉ còn thiếu kiểm symbol",
+        "Không, phạm vi kiểm UUPS slot có giới hạn"
+      ],
+      "correct": 3,
+      "explanation": "Vẫn cần kiểm layout và invariant ứng dụng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "OnlyProxy",
+      "question": "Gọi upgradeToAndCall trực tiếp implementation UUPS v5.0.2 có hợp context onlyProxy không?",
+      "options": [
+        "Không",
+        "Có, owner implementation luôn nâng mọi proxy",
+        "Có, public bỏ qua context",
+        "Chỉ cần calldata rỗng"
+      ],
+      "correct": 0,
+      "explanation": "Entry point yêu cầu ngữ cảnh proxy phù hợp."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Not delegated",
+      "question": "Gọi proxiableUUID qua proxy với v5.0.2 thường thế nào?",
+      "options": [
+        "Tự xóa implementation slot",
+        "Revert do notDelegated",
+        "Tự trả owner proxy",
+        "Tự nâng cấp tới chính proxy"
+      ],
+      "correct": 1,
+      "explanation": "Guard tránh coi proxy là proxiable implementation theo đường đó."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Upgrade API",
+      "question": "UUPSUpgradeable v5.0.2 cung cấp entry point nâng cấp nào?",
+      "options": [
+        "_authorizeUpgrade gọi ngoài ABI",
+        "initialize(address) đổi implementation",
+        "upgradeToAndCall(address,bytes)",
+        "upgradeTo(address) duy nhất như mọi version"
+      ],
+      "correct": 2,
+      "explanation": "Version này dùng upgrade interface 5.0.0."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Empty data",
+      "question": "Với upgradeToAndCall v5.0.2 không cần setup sau upgrade, data nên là gì?",
+      "options": [
+        "String tên owner thay ABI",
+        "Địa chỉ proxy raw thay bytes",
+        "Lời gọi initialize V1 bắt buộc",
+        "bytes rỗng theo API đó"
+      ],
+      "correct": 3,
+      "explanation": "Dữ liệu phải khớp mục tiêu setup và version API."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Reorder storage",
+      "question": "V2 đổi thứ tự hai biến state cũ không migration có thể gây gì?",
+      "options": [
+        "Đọc dữ liệu cũ với nghĩa/kiểu khác do layout đổi",
+        "EVM sắp lại theo tên",
+        "Compiler copy state theo ABI",
+        "Chỉ event order đổi"
+      ],
+      "correct": 0,
+      "explanation": "Storage gắn layout, không chỉ tên biến."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Append fields",
+      "question": "Với layout tuyến tính thông thường, thêm biến mới thường cần đặt ở đâu?",
+      "options": [
+        "Thay biến cũ bằng kiểu mới cùng tên",
+        "Sau layout cũ, đồng thời kiểm inheritance/packing",
+        "Chèn trước mọi biến cũ",
+        "Sắp theo độ dài tên"
+      ],
+      "correct": 1,
+      "explanation": "Append là nguyên tắc cơ bản, không thay full layout validation."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Type change",
+      "question": "Đổi totalVaultValue uint256 sang string ở cùng vị trí có phải migration tự động an toàn không?",
+      "options": [
+        "Có, compiler biết tên giống nhau",
+        "Chỉ cần getter public",
+        "Không",
+        "Có, ABI tự chuyển dữ liệu"
+      ],
+      "correct": 2,
+      "explanation": "Representation thay đổi cần thiết kế riêng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Rename",
+      "question": "Chỉ đổi tên biến, giữ layout/kiểu có tự xóa số cũ không?",
+      "options": [
+        "Có, storage định danh theo tên",
+        "Có, rename tự đặt default",
+        "Chỉ biến public được giữ",
+        "Không, dữ liệu còn ở vị trí cũ"
+      ],
+      "correct": 3,
+      "explanation": "Tên source khác với nội dung slot."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Remove field",
+      "question": "Bỏ biến cuối rồi version sau dùng lại slot cho nghĩa khác có hạn chế gì?",
+      "options": [
+        "Dữ liệu cũ không tự xóa, có thể bị đọc theo nghĩa mới",
+        "EVM zero slot không còn trong source",
+        "Compiler tạo fresh storage cho V2",
+        "Tên mới tự bảo đảm zero"
+      ],
+      "correct": 0,
+      "explanation": "Bỏ khai báo không làm slot sạch."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Parent layout",
+      "question": "Đổi thứ tự base hoặc layout base có thể ảnh hưởng state con không?",
+      "options": [
+        "ERC1967 xử lý mọi slot ứng dụng",
+        "Có, cần xét toàn layout kế thừa",
+        "Không, mỗi base có database riêng",
+        "Chỉ khi không có public state"
+      ],
+      "correct": 1,
+      "explanation": "Chuẩn slot implementation không bảo vệ mọi thay đổi ứng dụng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Namespace OZ5",
+      "question": "OZ Contracts Upgradeable từ v5 dùng convention nào cho nhiều state base?",
+      "options": [
+        "Chỉ lưu state ở EOA",
+        "Mapping khóa theo function selector",
+        "ERC-7201 namespaced storage",
+        "Chuyển toàn bộ state thành calldata"
+      ],
+      "correct": 2,
+      "explanation": "Namespace giảm một số collision, không cho đổi schema tùy ý."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Namespace schema",
+      "question": "Namespaced storage cho phép đổi type/order bất kỳ trong cùng namespace không?",
+      "options": [
+        "Có, annotation tự migrate bytes",
+        "Có, chỉ cần giữ ID",
+        "Chỉ cần compiler 0.8.20",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần giữ compatibility bên trong namespace."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "V2 setup",
+      "question": "V2 cần setup state mới sau khi V1 đã initialize. Lifecycle phù hợp thường là gì?",
+      "options": [
+        "Reinitializer version mới cùng policy gọi phù hợp",
+        "Gọi lại initialize V1 không đổi guard",
+        "Xóa initialized flag tùy ý",
+        "Constructor V2 sửa state proxy"
+      ],
+      "correct": 0,
+      "explanation": "Setup mới khác reset khởi tạo cũ."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Reinit access",
+      "question": "reinitializer(2) public tự chỉ cho owner gọi không?",
+      "options": [
+        "Chỉ khi có field mới",
+        "Không, lifecycle guard không tự là authorization",
+        "Có, version 2 tự onlyOwner",
+        "UUPS áp owner lên mọi hàm public"
+      ],
+      "correct": 1,
+      "explanation": "Cần quyền gọi và atomic setup theo thiết kế."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Atomic rollback",
+      "question": "UpgradeToAndCall đổi implementation rồi setup mới revert trong cùng thao tác atomic; kết quả là gì?",
+      "options": [
+        "Chỉ owner bị xóa",
+        "Proxy tự tạo bản thứ hai",
+        "Các thay đổi của thao tác bị revert, không commit nửa upgrade/setup",
+        "Implementation mới luôn giữ"
+      ],
+      "correct": 2,
+      "explanation": "Đang xét luồng upgrade và setup cùng bị rollback."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Renounce",
+      "question": "Nguồn dùng onlyOwner cho upgrade; renounce ownership có thể gây gì?",
+      "options": [
+        "Chuyển quyền cho mọi holder",
+        "Đặt deployer lại làm owner",
+        "Tự chuyển sang Transparent",
+        "Mất khả năng upgrade qua policy owner thông thường"
+      ],
+      "correct": 3,
+      "explanation": "Lifecycle quản trị ảnh hưởng khả năng nâng cấp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Gas comparison",
+      "question": "Có thể nói UUPS rẻ hơn Transparent ở mọi thao tác/config không?",
+      "options": [
+        "Không, phải phân biệt deployment/runtime và version/config",
+        "Có, UUPS bảo đảm mọi call ít gas hơn",
+        "Có, đều delegatecall nên không cần đo",
+        "Chỉ cần state bằng 0"
+      ],
+      "correct": 0,
+      "explanation": "Không tổng quát khác biệt deployment thành mọi phép đo."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "ABI changes",
+      "question": "Giữ địa chỉ proxy có làm ABI ứng dụng không thể thay đổi không?",
+      "options": [
+        "Chỉ getter public mới đổi được",
+        "Không, implementation mới có thể đổi giao diện",
+        "Có, address khóa ABI vĩnh viễn",
+        "Initializer giữ mọi function cũ"
+      ],
+      "correct": 1,
+      "explanation": "Ổn định địa chỉ không bằng ổn định API."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Ordinary call",
+      "question": "Nếu proxy dùng call thường thay delegatecall để gọi logic, storage ghi mặc định ở đâu?",
+      "options": [
+        "EOA gốc",
+        "Cả hai luôn đồng bộ",
+        "Target implementation theo call đó",
+        "Proxy như delegatecall không khác"
+      ],
+      "correct": 2,
+      "explanation": "Cơ chế call quyết định execution context."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "ERC1967 scope",
+      "question": "Dùng ERC1967 slot có tự tránh mọi collision giữa V1/V2 ứng dụng không?",
+      "options": [
+        "Có, mọi biến được compiler migrate",
+        "Có, chỉ cần tên contract giữ nguyên",
+        "Chỉ collision trong string còn tồn tại",
+        "Không, nó chuẩn hóa thông tin proxy, vẫn phải giữ layout ứng dụng"
+      ],
+      "correct": 3,
+      "explanation": "Metadata proxy và storage schema ứng dụng khác nhau."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Owner change",
+      "question": "Trong v5.0.2, transferOwnership tới một owner hợp lệ thay đổi policy _authorizeUpgrade nguồn thế nào?",
+      "options": [
+        "Caller owner mới được kiểm theo state mới",
+        "Deployer cũ luôn có quyền ngầm",
+        "Mọi holder được nâng cấp",
+        "Implementation tự thay ngay khi owner đổi"
+      ],
+      "correct": 0,
+      "explanation": "Chuyển quyền không tự là nâng cấp logic."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Guard hook",
+      "question": "onlyOwner trên hook có tự bảo đảm implementation mới không chứa logic độc hại không?",
+      "options": [
+        "Chỉ cần initialOwner khác zero",
+        "Không",
+        "Có, owner luôn chọn đúng code theo EVM",
+        "UUID tự kiểm mọi tác động kinh tế"
+      ],
+      "correct": 1,
+      "explanation": "Quyền hành động không chứng minh chất lượng hành động."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "ABI setup data",
+      "question": "Bytes setup trong upgradeToAndCall cần được tạo theo gì?",
+      "options": [
+        "Địa chỉ owner nối tùy ý",
+        "Hash transaction cũ",
+        "Signature/ABI và tham số của setup đúng version",
+        "Tên file implementation dưới dạng text"
+      ],
+      "correct": 2,
+      "explanation": "Dữ liệu gọi phải được mã hóa theo giao diện thực."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "State semantics",
+      "question": "Giữ slot/uint256 nhưng đổi đơn vị totalVaultValue có tự bảo đảm tương thích nghiệp vụ không?",
+      "options": [
+        "Có, cùng kiểu luôn cùng đơn vị",
+        "Getter tự quy đổi mọi token",
+        "Chỉ tên biến quyết định đơn vị",
+        "Không, representation giống nhưng nghĩa dữ liệu có thể khác"
+      ],
+      "correct": 3,
+      "explanation": "Layout compatibility không đủ cho semantic compatibility."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Upgrade removal",
+      "question": "Implementation mới loại đường upgrade có thể ảnh hưởng gì trong UUPS?",
+      "options": [
+        "Khả năng nâng cấp tiếp có thể mất theo thiết kế/guards thực",
+        "Proxy luôn có admin upgrade độc lập như Transparent",
+        "Constructor tự khôi phục upgrade functions",
+        "Giữ address tự giữ mọi function cũ"
+      ],
+      "correct": 0,
+      "explanation": "Cần xem cơ chế tương thích và policy code mới."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Implementation pointer",
+      "question": "Upgrade ERC1967 proxy riêng A có tự đổi pointer của proxy riêng B cùng implementation cũ không?",
+      "options": [
+        "Chỉ B có owner khác thì không đổi",
+        "Không",
+        "Có, pointer nằm global trong code cũ",
+        "Có, nếu A và B cùng compiler"
+      ],
+      "correct": 1,
+      "explanation": "Đang xét proxy riêng, không shared beacon."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Inherited state",
+      "question": "Chỉ so layout biến khai báo trực tiếp trong MyVault có đủ không?",
+      "options": [
+        "Có, onlyOwner không có state",
+        "Chỉ totalVaultValue public được lưu",
+        "Không, base contracts/namespaces cũng cần được xét",
+        "Có, inherited state không dùng storage"
+      ],
+      "correct": 2,
+      "explanation": "Layout và initialization bao cả dependency kế thừa."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "New implementation address",
+      "question": "Một địa chỉ mới bất kỳ có phải implementation UUPS hợp lệ chỉ vì kiểu address không?",
+      "options": [
+        "Có, address type xác minh code",
+        "Có, owner gọi là không cần check kỹ thuật",
+        "Chỉ cần địa chỉ khác zero",
+        "Không, đường UUPS còn kiểm compatibility/code theo cơ chế thư viện"
+      ],
+      "correct": 3,
+      "explanation": "Type address không là chứng nhận code đúng giao diện."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Initialization race",
+      "question": "Proxy được tạo rồi chờ giao dịch riêng initialize; người khác gọi trước chọn owner của họ. Thiết kế phù hợp?",
+      "options": [
+        "Khởi tạo trong luồng tạo tin cậy/atomic và ràng buộc tham số quyền",
+        "Thêm initializer lần nữa vì nó biết deployer",
+        "Đổi public thành external để chặn người lạ",
+        "Chỉ khóa implementation là proxy tự có owner"
+      ],
+      "correct": 0,
+      "explanation": "Lifecycle một lần cần đúng chủ thể và thời điểm setup."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Lock nhầm ngữ cảnh",
+      "question": "Thêm _disableInitializers trong constructor implementation rồi nghĩ proxy không cần initialize. Sai ở đâu?",
+      "options": [
+        "Import upgradeable tự setup mọi proxy",
+        "Khóa áp storage implementation; proxy vẫn cần setup riêng đúng owner/state",
+        "Constructor copy flag sang mọi proxy",
+        "OnlyOwner tự chọn deployer khi owner zero"
+      ],
+      "correct": 1,
+      "explanation": "Phải phân biệt state của implementation và proxy."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Initialize sai địa chỉ",
+      "question": "Operator initialize implementation thấy owner A, nhưng proxy owner vẫn zero. Cần sửa gì?",
+      "options": [
+        "Upgrade trực tiếp implementation để đồng bộ",
+        "Đổi state thành private để copy owner",
+        "Setup đúng ngữ cảnh proxy theo policy và khóa implementation phù hợp",
+        "Dùng owner implementation thay mọi state proxy"
+      ],
+      "correct": 2,
+      "explanation": "Cùng code không làm hai địa chỉ chia sẻ storage."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "V2 chèn đầu",
+      "question": "V1 có totalVaultValue ở layout cũ, V2 chèn field trước nó; giá trị đọc sai. Nguyên nhân/sửa đúng?",
+      "options": [
+        "Đổi tên getter là đủ xóa cache",
+        "ERC1967 tự di chuyển state sau vài block",
+        "Owner đọc getter một lần để refresh",
+        "Layout đổi làm đọc sai slot; giữ compatibility hoặc migration được thiết kế"
+      ],
+      "correct": 3,
+      "explanation": "Upgrade không migrate tự động theo tên biến."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Major migration",
+      "question": "V1 dùng OZ upgradeable v4.9.6, V2 đổi sang v5.0.2 và signature Ownable mới. Có đủ coi drop-in tương thích không?",
+      "options": [
+        "Không, cần đánh giá migration/layout/quyền do major version đổi storage/API",
+        "Có, cùng từ Ownable nghĩa cùng slots",
+        "Pragma caret tự migrate namespace",
+        "Chỉ thêm initialOwner là mọi state đúng"
+      ],
+      "correct": 0,
+      "explanation": "API compile được và state upgrade đúng là hai điều kiện khác nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Bỏ modifier hook",
+      "question": "Developer xóa onlyOwner khỏi hook rỗng vì nghĩ initialize kiểm quyền đủ. Hệ quả?",
+      "options": [
+        "Internal hook không bao giờ đi tới từ public upgrade",
+        "Đường upgrade có thể mất authorization của hook; cần kiểm mỗi upgrade",
+        "Initializer đã chạy nên mọi upgrade tự chỉ owner",
+        "UUID tự xác minh owner"
+      ],
+      "correct": 1,
+      "explanation": "Initialization không thay authorization lifecycle."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "UUID không audit",
+      "question": "Owner chọn code có UUID đúng nhưng logic chuyển tài sản trái policy. Check UUPS có chặn mọi lỗi đó không?",
+      "options": [
+        "OnlyOwner chứng minh quyết định an toàn",
+        "Getter public ngăn mọi thao tác tài sản",
+        "Không, cần governance/review và invariant business logic ngoài UUID",
+        "Có, cùng slot ngăn mọi chuyển sai"
+      ],
+      "correct": 2,
+      "explanation": "Compatibility kỹ thuật không là chứng nhận hành vi đúng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Setup V2",
+      "question": "V2 cần state mới nhưng initialize V1 đã dùng. Developer gọi lại và bị revert. Cách phù hợp?",
+      "options": [
+        "Xóa initialized flag qua hàm public",
+        "Gọi constructor V2 qua proxy",
+        "Bỏ guard V1 để mọi lần reset được",
+        "Setup version mới có lifecycle/access đúng, có thể ghép atomic với upgrade"
+      ],
+      "correct": 3,
+      "explanation": "Không phá guard cũ để bổ sung setup."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Reinitializer chiếm quyền",
+      "question": "V2 có initializeV2(treasury) public reinitializer(2), setup riêng sau upgrade. Cần giải quyết gì?",
+      "options": [
+        "Caller khác có thể chọn treasury trước nếu thiếu quyền; dùng access/atomic setup phù hợp",
+        "Version guard tự chỉ owner",
+        "UUID khóa mọi field treasury",
+        "Public getter làm treasury bất biến"
+      ],
+      "correct": 0,
+      "explanation": "Lifecycle guard không là xác thực caller."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Hai proxy",
+      "question": "A và B dùng V1, owner chỉ nâng A lên V2. B có tự đổi logic/state không?",
+      "options": [
+        "State tự chia đều",
+        "Không với ERC1967 proxies riêng, pointer/state khác nhau",
+        "Có, nâng A sửa source toàn cầu",
+        "Owner A tự trở thành owner B"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất proxy riêng với mô hình chung beacon."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Field default V2",
+      "question": "V2 thêm x = 42 rồi upgrade, proxy không nhận 42. Cần làm gì?",
+      "options": [
+        "Gọi getter để copy 42 từ implementation",
+        "Đổi x public để tự setup",
+        "Setup state mới qua reinitializer phù hợp và giữ layout",
+        "Chờ constructor chạy lại ở proxy"
+      ],
+      "correct": 2,
+      "explanation": "Initializer declaration của implementation không chạy lại ở proxy."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Renounce rồi vá",
+      "question": "Owner định renounce trong MyVaultV1, sau này có thể cần vá qua onlyOwner. Phải xét gì?",
+      "options": [
+        "UUPS luôn có backdoor deployer",
+        "UUID tự chọn owner mới khi cần",
+        "Renounce chỉ ẩn getter không đổi quyền",
+        "Có thể mất đường upgrade hiện tại; cần lifecycle quyền/cơ chế thay thế có chủ đích"
+      ],
+      "correct": 3,
+      "explanation": "Không giả định có đường phục hồi ngoài code."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Atomic setup lỗi",
+      "question": "Upgrade kèm setup mới thất bại vì owner zero bị chặn; operator lo đã nâng nửa chừng. Cách hiểu đúng?",
+      "options": [
+        "Nếu toàn thao tác revert, slot/setup rollback; cần sửa nguyên nhân tham số",
+        "Implementation mới luôn giữ vì slot ghi trước",
+        "Event Upgraded ưu tiên hơn revert",
+        "OZ bỏ qua init lỗi và trả true"
+      ],
+      "correct": 0,
+      "explanation": "Thứ tự code không vượt semantics rollback."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Ghép Transparent UUPS",
+      "question": "Dùng Transparent proxy và implementation expose UUPS upgrade. Vì sao cần review cả hai đường quyền?",
+      "options": [
+        "Chỉ getter có thể selector clash",
+        "Hai cơ chế có thể mở đường upgrade ngoài kỳ vọng admin, cần hiểu context/policy theo version",
+        "Transparent xóa mọi hàm UUPS",
+        "Cùng slot tự làm quyền giống nhau"
+      ],
+      "correct": 1,
+      "explanation": "Dùng chung slot không đồng nhất access control."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Direct upgrade",
+      "question": "Owner gọi upgradeToAndCall ở implementation, bị onlyProxy chặn dù owner trực tiếp đúng. Cần phân biệt gì?",
+      "options": [
+        "Initialize lại implementation nâng mọi proxy",
+        "Đổi tên ABI bỏ được context guard",
+        "Quyền và execution context đều cần đúng, phải gọi qua proxy phù hợp",
+        "Owner tự bỏ onlyProxy nên chỉ lỗi gas"
+      ],
+      "correct": 2,
+      "explanation": "Authorization không thay context guard."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Namespace schema",
+      "question": "V2 giữ namespace ID nhưng đổi uint256 cũ sang string, nghĩ ERC-7201 tự migrate. Sai ở đâu?",
+      "options": [
+        "Giữ ID tự bảo đảm mọi kiểu",
+        "Annotation làm storage thành JSON",
+        "Compiler gọi constructor chuyển bytes",
+        "Namespace không chuyển representation; schema vẫn cần tương thích/migration"
+      ],
+      "correct": 3,
+      "explanation": "Chống collision không thay migration dữ liệu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Đổi đơn vị",
+      "question": "Giữ slot uint256 nhưng đổi totalVaultValue từ wei sang token units mà không migration. Có thể sai vì gì?",
+      "options": [
+        "Nghĩa đơn vị đổi dù layout giống; cần invariant/migration và consumer phù hợp",
+        "Cùng uint256 tự cùng đơn vị",
+        "Getter tự đổi decimals",
+        "Tên biến quyết định tài sản"
+      ],
+      "correct": 0,
+      "explanation": "Compatibility cơ học chưa đủ cho semantics nghiệp vụ."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Emitter qua proxy",
+      "question": "Logic V2 emit qua delegatecall, indexer chỉ theo địa chỉ implementation nên không thấy. Cách sửa?",
+      "options": [
+        "Gọi constructor để indexer nhận",
+        "Theo proxy emitter và ABI/version phù hợp",
+        "Chờ confirmations để đổi emitter",
+        "Đổi owner thành implementation"
+      ],
+      "correct": 1,
+      "explanation": "Execution context/emitter vẫn là proxy."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Multisig owner",
+      "question": "Owner proxy là multisig M; EOA thành viên gọi upgrade trực tiếp bị từ chối. Cách đúng theo policy?",
+      "options": [
+        "Gọi implementation để bỏ owner proxy",
+        "Đổi ABI onlyOwner thành public ở client",
+        "Qua luồng M để caller là M, đồng thời kiểm code/setup mới",
+        "Dùng tx.origin để bypass multisig"
+      ],
+      "correct": 2,
+      "explanation": "Địa chỉ role và người điều khiển role khác nhau."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "API cùng state",
+      "question": "V2 giữ layout nhưng hàm read trả đơn vị khác; frontend giữ quy ước cũ ở cùng proxy address. Cần phối hợp gì?",
+      "options": [
+        "Giữ address là mọi consumer tự đúng",
+        "UUID đúng làm frontend hiểu đơn vị mới",
+        "Chỉ đổi symbol để mọi số tự scale",
+        "Tương thích API/semantics client cùng layout/state và rollout version"
+      ],
+      "correct": 3,
+      "explanation": "Upgrade tác động cả state và hợp đồng dữ liệu của consumer."
+    }
+  ]
+}

@@ -1,0 +1,1162 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "newbie",
+  "lesson": "http-basics",
+  "language": "vi",
+  "sourceHash": "36a42a432a092ac782101afce4d2f47af0596aa97e0d47938aff9cb4e3a46edd",
+  "status": "approved",
+  "review": "Tự viết không API. Node24 HTTP và RFC9110 đối chiếu semantics. Review đúng router nguồn so req.url thô nên query không khớp; echo thiếu giới hạn body, decode UTF8 và catch JSON errors. Snippet chỉ parse dữ liệu/URL hoặc ServerResponse trong RAM, không listen port hay gọi server/API ngoài. Không dùng kết quả mock/in-memory như load test hoặc HTTP integration thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Core HTTP",
+      "question": "Module Node nào tạo HTTP server cơ bản không cần Express?",
+      "options": [
+        "node:http.",
+        "node:path.",
+        "node:os.",
+        "node:assert."
+      ],
+      "correct": 0,
+      "explanation": "Built-in HTTP cung cấp primitives, không tự thêm toàn bộ framework policies."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Server callback",
+      "question": "http.createServer request listener thường nhận hai object nào?",
+      "options": [
+        "JWT và private key bắt buộc.",
+        "req và res.",
+        "entity và repository.",
+        "argv và cwd."
+      ],
+      "correct": 1,
+      "explanation": "IncomingMessage và ServerResponse phục vụ request/response."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Request method",
+      "question": "req.method thường cho biết gì?",
+      "options": [
+        "Kiểu constructor.",
+        "Response status.",
+        "HTTP method của request.",
+        "Tên database."
+      ],
+      "correct": 2,
+      "explanation": "Handler nguồn dùng method để chọn GET/POST route."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Request target",
+      "question": "req.url trong HTTP server nguồn thường chứa gì?",
+      "options": [
+        "Chỉ pathname luôn.",
+        "Luôn full URL có scheme.",
+        "Mọi header và body.",
+        "Request target path và query khi có."
+      ],
+      "correct": 3,
+      "explanation": "Không so raw req.url với pathname rồi bỏ qua query semantics."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Response status",
+      "question": "res.writeHead(404) đặt điều gì?",
+      "options": [
+        "HTTP status404 cho response.",
+        "Số byte file.",
+        "Số CPU.",
+        "Port404 luôn."
+      ],
+      "correct": 0,
+      "explanation": "Status khác server listening port và body content."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "End response",
+      "question": "res.end(body) chủ yếu làm gì?",
+      "options": [
+        "Tự parse body nhận vào.",
+        "Kết thúc response, có thể kèm dữ liệu cuối.",
+        "Đóng toàn bộ process Node.",
+        "Xóa mọi request."
+      ],
+      "correct": 1,
+      "explanation": "Kết thúc response không đồng nghĩa tắt server."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "JSON response header",
+      "question": "Header thường dùng để mô tả JSON response là gì?",
+      "options": [
+        "Host: json.",
+        "Content-Length: application/json.",
+        "Content-Type: application/json.",
+        "Authorization: json."
+      ],
+      "correct": 2,
+      "explanation": "Nên serialize đúng JSON; header không tự chuyển object thành JSON."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "HTML response",
+      "question": "Nguồn GET / trả body loại nào?",
+      "options": [
+        "Một User entity JPA.",
+        "Một SQL query result luôn.",
+        "Một JWT luôn.",
+        "Một đoạn HTML Home Page."
+      ],
+      "correct": 3,
+      "explanation": "Handler đặt text/html và end chuỗi HTML."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Status route",
+      "question": "GET /api/status nguồn cung cấp thông tin nào?",
+      "options": [
+        "status,uptime,memory heapUsed.",
+        "Mật khẩu database.",
+        "Danh sách mọi user.",
+        "Mọi file disk."
+      ],
+      "correct": 0,
+      "explanation": "Thông tin vận hành cũng cần review mức public exposure theo hệ thống."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Uptime units",
+      "question": "process.uptime() thường đo theo đơn vị nào?",
+      "options": [
+        "CPU cores.",
+        "Seconds.",
+        "Milliseconds luôn.",
+        "Bytes."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm với Date.now() tính milliseconds từ epoch."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Heap metric",
+      "question": "process.memoryUsage().heapUsed đo gì?",
+      "options": [
+        "Dung lượng disk.",
+        "Số request.",
+        "Bytes JavaScript heap đang dùng theo metric runtime.",
+        "Toàn bộ RAM OS."
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất heapUsed và RSS process."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Body chunks",
+      "question": "req.on(\"data\",...) nhận gì theo stream consumption?",
+      "options": [
+        "Một JSON object đã validate luôn.",
+        "Mọi response của user khác.",
+        "Tên package dependency.",
+        "Các chunks của request body."
+      ],
+      "correct": 3,
+      "explanation": "Chunk boundaries không là ranh giới JSON messages."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Body completion",
+      "question": "Event end của readable request biểu đạt gì trong đường đọc bình thường?",
+      "options": [
+        "Không còn dữ liệu body để đọc từ stream.",
+        "Business transaction đã commit.",
+        "Client đã đọc response.",
+        "Server phải shutdown."
+      ],
+      "correct": 0,
+      "explanation": "Stream lifecycle và xử lý nghiệp vụ là các bước khác nhau."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Echo semantics",
+      "question": "POST /api/echo trong nguồn dự định trả gì?",
+      "options": [
+        "Một redirect bắt buộc.",
+        "Object có echo chứa JSON đã parse từ body.",
+        "Mọi file hệ thống.",
+        "Token admin mới."
+      ],
+      "correct": 1,
+      "explanation": "Echo không đồng nghĩa lưu tài nguyên mới."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Not found status",
+      "question": "HTTP404 thường biểu đạt gì?",
+      "options": [
+        "Chỉ thiếu CPU.",
+        "Client luôn authenticated.",
+        "Không tìm thấy representation/tài nguyên theo request và policy server.",
+        "Tạo mới thành công."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng404 để che mọi lỗi hạ tầng một cách vô tình."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Created status",
+      "question": "HTTP201 thường gắn với điều gì?",
+      "options": [
+        "Mọi POST bất kể xử lý.",
+        "Mọi JSON parse error.",
+        "Mọi delete không nội dung.",
+        "Tạo tài nguyên thành công theo semantics HTTP."
+      ],
+      "correct": 3,
+      "explanation": "POST echo có thể dùng200 theo contract, không bắt buộc201."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "No content",
+      "question": "HTTP204 có đặc tính nào?",
+      "options": [
+        "Response không có content.",
+        "Luôn có JSON body.",
+        "Luôn redirect.",
+        "Luôn báo lỗi server."
+      ],
+      "correct": 0,
+      "explanation": "Chọn status khớp contract và body."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Client error",
+      "question": "HTTP400 thường phù hợp trường hợp nào?",
+      "options": [
+        "Mọi file lớn luôn được tải xong.",
+        "Request malformed hoặc lỗi input theo contract.",
+        "Mọi server crash.",
+        "Mọi thành công create."
+      ],
+      "correct": 1,
+      "explanation": "Cần phân loại lỗi request khác lỗi nội bộ."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Port",
+      "question": "server.listen(3000,...) trong nguồn yêu cầu điều gì?",
+      "options": [
+        "Luôn tự có TLS certificate.",
+        "Luôn chỉ bind localhost.",
+        "Lắng nghe trên port3000 theo cấu hình bind mặc định.",
+        "Chỉ gửi một request tới Google."
+      ],
+      "correct": 2,
+      "explanation": "Host/interface và môi trường quyết định exposure; không suy localhost khi chưa chỉ định."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "HTTP body encoding",
+      "question": "JSON.stringify(...) khi gửi object nhằm gì?",
+      "options": [
+        "Tự cấp quyền đọc object.",
+        "Mã hóa dữ liệu bí mật.",
+        "Tự tính timeout.",
+        "Tạo JSON text để ghi response."
+      ],
+      "correct": 3,
+      "explanation": "Serialization không thay authorization hoặc TLS."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Raw query route",
+      "question": "Output là gì?",
+      "code": "const url=\"/api/status?x=1\";console.log(url===\"/api/status\");",
+      "options": [
+        "false",
+        "true",
+        "/api/status",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Raw URL có query khác chuỗi path cố định."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Parsed pathname",
+      "question": "Output là gì?",
+      "code": "console.log(new URL(\"/api/status?x=1\",\"http://example.invalid\").pathname);",
+      "options": [
+        "undefined",
+        "/api/status",
+        "/api/status?x=1",
+        "x=1"
+      ],
+      "correct": 1,
+      "explanation": "URL parser tách pathname và search bằng base cố định, không truy cập mạng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Query value",
+      "question": "Output là gì?",
+      "code": "const u=new URL(\"/users?page=2\",\"http://example.invalid\");const p=u.searchParams.get(\"page\");console.log(typeof p,p);",
+      "options": [
+        "string 0",
+        "undefined 2",
+        "string 2",
+        "number 2"
+      ],
+      "correct": 2,
+      "explanation": "URLSearchParams.get trả String hoặc null, chưa convert number."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Repeated parameters",
+      "question": "Output là gì?",
+      "code": "const u=new URL(\"/x?tag=a&tag=b\",\"http://example.invalid\");console.log(u.searchParams.getAll(\"tag\").join(\",\"));",
+      "options": [
+        "b,a",
+        "a",
+        "undefined",
+        "a,b"
+      ],
+      "correct": 3,
+      "explanation": "getAll giữ các giá trị lặp theo thứ tự query."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Encoded pathname",
+      "question": "Output là gì?",
+      "code": "console.log(new URL(\"/a%20b\",\"http://example.invalid\").pathname);",
+      "options": [
+        "/a%20b",
+        "/a b",
+        "a+b",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "URL.pathname ở đây giữ percent encoding."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Decode segment",
+      "question": "Output là gì?",
+      "code": "console.log(decodeURIComponent(\"An%20Nguyen\"));",
+      "options": [
+        "undefined",
+        "An Nguyen",
+        "An%20Nguyen",
+        "An+Nguyen"
+      ],
+      "correct": 1,
+      "explanation": "Decode percent escape theo URI component semantics."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Malformed encoding",
+      "question": "Output là gì?",
+      "code": "try{decodeURIComponent(\"%ZZ\");}catch(e){if(e instanceof URIError)console.log(\"bad\");else throw e;}",
+      "options": [
+        "undefined",
+        "null",
+        "bad",
+        "%ZZ"
+      ],
+      "correct": 2,
+      "explanation": "Invalid escape gây URIError, cần xử lý input thay vì để lỗi rơi tự do."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Echo JSON value",
+      "question": "Output là gì?",
+      "code": "const body=JSON.stringify({x:1});console.log(JSON.stringify({echo:JSON.parse(body)}));",
+      "options": [
+        "{\"x\":1}",
+        "[1]",
+        "undefined",
+        "{\"echo\":{\"x\":1}}"
+      ],
+      "correct": 3,
+      "explanation": "Parse body thành object rồi wrap echo trước serialize."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Empty body JSON",
+      "question": "Output là gì?",
+      "code": "try{JSON.parse(\"\");}catch(e){if(e instanceof SyntaxError)console.log(\"bad\");else throw e;}",
+      "options": [
+        "bad",
+        "null",
+        "{}",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Empty text không phải JSON document hợp lệ."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Join body bytes",
+      "question": "Output là gì?",
+      "code": "const parts=[Buffer.from(\"he\"),Buffer.from(\"llo\")];console.log(Buffer.concat(parts).toString(\"utf8\"));",
+      "options": [
+        "5",
+        "hello",
+        "he,llo",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Buffer.concat ghép bytes đúng thứ tự đã nhận."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Content length units",
+      "question": "Output là gì?",
+      "code": "const s=\"é\";console.log(Buffer.byteLength(s,\"utf8\"),s.length);",
+      "options": [
+        "2 2",
+        "1 2",
+        "2 1",
+        "1 1"
+      ],
+      "correct": 2,
+      "explanation": "Content-Length dùng bytes, không String.length UTF-16."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Split UTF8 preserved",
+      "question": "Output là gì?",
+      "code": "console.log(Buffer.concat([Buffer.from([0xc3]),Buffer.from([0xa9])]).toString(\"utf8\"));",
+      "options": [
+        "��",
+        "undefined",
+        "null",
+        "é"
+      ],
+      "correct": 3,
+      "explanation": "Ghép bytes trước decode giữ ký tự chia giữa hai chunks."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Decode each chunk trap",
+      "question": "Output là gì?",
+      "code": "const s=Buffer.from([0xc3]).toString(\"utf8\")+Buffer.from([0xa9]).toString(\"utf8\");console.log(s===\"é\");",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "Decode từng mảnh UTF-8 thiếu bytes tạo replacement characters."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "StringDecoder",
+      "question": "Output là gì?",
+      "code": "import{StringDecoder}from\"node:string_decoder\";const d=new StringDecoder(\"utf8\");const s=d.write(Buffer.from([0xc3]))+d.write(Buffer.from([0xa9]))+d.end();console.log(s);",
+      "options": [
+        "��",
+        "é",
+        "undefined",
+        "null"
+      ],
+      "correct": 1,
+      "explanation": "StringDecoder giữ phần byte chưa đủ giữa các lần write."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Header case",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});r.setHeader(\"Content-Type\",\"text/plain\");console.log(r.getHeader(\"content-type\"));",
+      "options": [
+        "TEXT/PLAIN",
+        "null",
+        "text/plain",
+        "undefined"
+      ],
+      "correct": 2,
+      "explanation": "Header name lookup trong ServerResponse không phân biệt hoa thường."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Replace header",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});r.setHeader(\"X-Test\",\"a\");r.setHeader(\"X-Test\",\"b\");console.log(r.getHeader(\"x-test\"));",
+      "options": [
+        "a",
+        "a,b",
+        "undefined",
+        "b"
+      ],
+      "correct": 3,
+      "explanation": "setHeader cùng tên thay giá trị trước khi headers gửi."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Status property",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});r.statusCode=404;console.log(r.statusCode);",
+      "options": [
+        "404",
+        "200",
+        "0",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Đặt statusCode trước commit headers chọn status response."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Write head status",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});r.writeHead(201);console.log(r.statusCode);",
+      "options": [
+        "undefined",
+        "201",
+        "200",
+        "404"
+      ],
+      "correct": 1,
+      "explanation": "writeHead cấu hình status theo giá trị đã cho."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Ended property",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});r.end(\"ok\");console.log(r.writableEnded);",
+      "options": [
+        "undefined",
+        "204",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "writableEnded phản ánh đã gọi end; không chứng minh client nhận dữ liệu."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Late header mutation",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});r.writeHead(200);try{r.setHeader(\"X-Test\",\"b\");}catch(e){if(e.code===\"ERR_HTTP_HEADERS_SENT\")console.log(\"sent\");else throw e;}",
+      "options": [
+        "b",
+        "undefined",
+        "404",
+        "sent"
+      ],
+      "correct": 3,
+      "explanation": "Sau writeHead, setHeader không còn hợp lệ theo trạng thái headers."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Default status",
+      "question": "Output là gì trước khi đổi status?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});console.log(r.statusCode);",
+      "options": [
+        "200",
+        "0",
+        "404",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "ServerResponse mặc định statusCode200."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Header value validation",
+      "question": "Output là gì?",
+      "code": "import{ServerResponse}from\"node:http\";const r=new ServerResponse({method:\"GET\"});try{r.setHeader(\"X-Test\",\"a\"+String.fromCharCode(10)+\"b\");}catch(e){if(e.code===\"ERR_INVALID_CHAR\")console.log(\"invalid\");else throw e;}",
+      "options": [
+        "200",
+        "invalid",
+        "ok",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Newline trong header value bị Node từ chối; không ghép input thô vào headers."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Strict method comparison",
+      "question": "Output là gì?",
+      "code": "const method=\"get\";console.log(method===\"GET\");",
+      "options": [
+        "GET",
+        "undefined",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "String comparison phân biệt hoa thường; code không tự normalize biến tùy ý."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Router fallback",
+      "question": "Output là gì?",
+      "code": "function route(method,url){if(url===\"/\"&&method===\"GET\")return 200;return 404;}console.log(route(\"POST\",\"/\"));",
+      "options": [
+        "200",
+        "201",
+        "204",
+        "404"
+      ],
+      "correct": 3,
+      "explanation": "Router tối giản chỉ chấp nhận GET / trong ví dụ này."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Heap metric type",
+      "question": "Output là gì theo Node API?",
+      "code": "console.log(typeof process.memoryUsage().heapUsed);",
+      "options": [
+        "number",
+        "string",
+        "bigint",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ kiểm tra type; giá trị thật thay theo workload."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Uptime sign",
+      "question": "Output là gì?",
+      "code": "console.log(process.uptime()>=0);",
+      "options": [
+        "Một số seconds cố định.",
+        "true",
+        "false",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Uptime không âm theo định nghĩa thời gian process đã chạy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Byte length for header",
+      "question": "Output là gì?",
+      "code": "console.log(Buffer.byteLength(\"é\"));",
+      "options": [
+        "0",
+        "undefined",
+        "2",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Bytes UTF-8 cho body é là2."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Falsy JSON body",
+      "question": "Output là gì?",
+      "code": "console.log(JSON.stringify({echo:JSON.parse(\"0\")}));",
+      "options": [
+        "{}",
+        "{\"echo\":null}",
+        "undefined",
+        "{\"echo\":0}"
+      ],
+      "correct": 3,
+      "explanation": "JSON số0 hợp lệ và được giữ, không nên coi mọi falsy là thiếu body."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Null JSON shape",
+      "question": "Output là gì?",
+      "code": "const x=JSON.parse(\"null\");console.log(typeof x,x===null);",
+      "options": [
+        "object true",
+        "null true",
+        "object false",
+        "undefined false"
+      ],
+      "correct": 0,
+      "explanation": "typeof null là object; validation object cần loại null tường minh."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Array JSON shape",
+      "question": "Output là gì?",
+      "code": "const x=JSON.parse(\"[]\");console.log(typeof x,Array.isArray(x));",
+      "options": [
+        "undefined false",
+        "object true",
+        "array true",
+        "object false"
+      ],
+      "correct": 1,
+      "explanation": "Array cũng có typeof object, nên kiểm tra shape riêng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Header no parser",
+      "question": "Client gửi Content-Type application/json; node:http có tự gán req.body parsed object không?",
+      "options": [
+        "Có nếu method POST.",
+        "Có nếu URL /api.",
+        "Không.",
+        "Có mọi version."
+      ],
+      "correct": 2,
+      "explanation": "Core HTTP cho stream bytes; app/framework phải parse và validate."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Method mismatch source",
+      "question": "Nguồn nhận PUT /api/status thì fallback trả gì?",
+      "options": [
+        "405 tự động chắc chắn.",
+        "200 vì path hợp lệ.",
+        "201 vì PUT.",
+        "404 theo router đã cho."
+      ],
+      "correct": 3,
+      "explanation": "Muốn405 + Allow đúng semantics phải triển khai policy riêng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Post not always create",
+      "question": "Vì sao POST echo trả200 có thể phù hợp?",
+      "options": [
+        "Nó xử lý và trả kết quả, không nhất thiết tạo resource mới.",
+        "Mọi POST bắt buộc201.",
+        "Mọi POST bắt buộc204.",
+        "POST không được có response."
+      ],
+      "correct": 0,
+      "explanation": "Chọn status theo kết quả nghiệp vụ và semantics."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Trailing slash source",
+      "question": "GET /api/status/ có khớp chính xác string /api/status trong nguồn không?",
+      "options": [
+        "Có vì JSON response.",
+        "Không.",
+        "Có vì Node tự bỏ slash cuối.",
+        "Có vì GET."
+      ],
+      "correct": 1,
+      "explanation": "Normalization/trailing-slash routing là policy chưa có trong đoạn code."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Query mismatch source",
+      "question": "GET /api/status?verbose=1 trong router nguồn đi nhánh nào?",
+      "options": [
+        "Echo POST.",
+        "Home HTML.",
+        "Fallback404.",
+        "Status200 tự bỏ query."
+      ],
+      "correct": 2,
+      "explanation": "Cần parse pathname để route độc lập query nếu contract mong muốn."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Parse exception callback",
+      "question": "JSON.parse(body) nằm trong callback end không có try/catch; body malformed có rủi ro gì?",
+      "options": [
+        "Tự trả400 JSON luôn.",
+        "Tự đổi thành object rỗng.",
+        "Tự retry parse vô hạn.",
+        "Ngoại lệ không được xử lý đúng và có thể làm hỏng request/process theo môi trường."
+      ],
+      "correct": 3,
+      "explanation": "Phải bắt lỗi ở đúng async callback/error boundary."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Body limit gap",
+      "question": "Nguồn body += chunk không có giới hạn; thiếu kiểm soát gì?",
+      "options": [
+        "Maximum body bytes và thời gian nhận phù hợp.",
+        "Chỉ tên biến body.",
+        "Chỉ status200.",
+        "Chỉ import path."
+      ],
+      "correct": 0,
+      "explanation": "Không để caller làm tăng bộ nhớ/tài nguyên không giới hạn."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Request stream errors",
+      "question": "Chỉ lắng data/end đã xử lý đầy đủ stream error/abort chưa?",
+      "options": [
+        "Đủ vì req.method.",
+        "Chưa.",
+        "Đủ vì end luôn xảy ra.",
+        "Đủ vì async listener."
+      ],
+      "correct": 1,
+      "explanation": "Cần error/aborted/close semantics theo Node version và lifecycle."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Bind scope",
+      "question": "Không truyền host trong listen có nên quảng bá server chỉ mở cho localhost không?",
+      "options": [
+        "Có vì import http.",
+        "Có vì chạy từ laptop.",
+        "Không.",
+        "Có vì port3000."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ định loopback khi cần local-only và kiểm tra binding/firewall thực tế."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "TLS gap",
+      "question": "http.createServer tự cung cấp HTTPS chưa?",
+      "options": [
+        "Có vì response JSON.",
+        "Có vì port3000.",
+        "Có vì async handler.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "TLS có thể do https server hoặc reverse proxy được cấu hình đúng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Early headers error",
+      "question": "Nguồn writeHead200 rồi JSON.parse body fail; vì sao khó trả400 sạch sau đó?",
+      "options": [
+        "Headers/status có thể đã được commit; nên validate trước khi gửi thành công.",
+        "Node luôn rollback headers tự động.",
+        "Chỉ cần gọi writeHead400 lần nữa mọi lúc.",
+        "Không cần error response."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế đường success/error để tránh gửi response thành công trước khi xử lý có thể fail."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Chunk boundaries",
+      "question": "Có thể giả định mỗi data event chứa đúng một JSON document hoàn chỉnh không?",
+      "options": [
+        "Có vì body là String.",
+        "Không.",
+        "Có vì HTTP packet bằng JSON object.",
+        "Có vì Content-Type."
+      ],
+      "correct": 1,
+      "explanation": "Transport/stream chunks có thể chia hoặc gộp tùy timing/buffering."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "UTF8 source bug",
+      "question": "body += chunk khi chunk là Buffer có nhược điểm với ký tự UTF-8 qua nhiều chunks nào?",
+      "options": [
+        "Chỉ ảnh hưởng ASCII.",
+        "Tự parse JSON đúng bất kể bytes.",
+        "Mỗi coercion có thể decode thiếu bytes và làm hỏng text.",
+        "Luôn giữ decoder state giữa các phép +."
+      ],
+      "correct": 2,
+      "explanation": "Dùng encoding stream/StringDecoder hoặc ghép bytes trong giới hạn rồi decode."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Body memory",
+      "question": "Giới hạn dựa body.length sau decode có tương đương giới hạn bytes nhận không?",
+      "options": [
+        "Có mọi UTF-8.",
+        "Có vì JS string là byte array.",
+        "Có nếu request POST.",
+        "Không với text nhiều byte và cách biểu diễn String."
+      ],
+      "correct": 3,
+      "explanation": "Đếm bytes ở boundary phù hợp và quản lý buffer/decoded data memory."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Slow clients",
+      "question": "Có body size cap nhưng client gửi cực chậm vẫn cần gì?",
+      "options": [
+        "Timeouts/deadlines và giới hạn connection phù hợp.",
+        "Chỉ JSON.stringify nhanh hơn.",
+        "Chỉ dùng tên route ngắn.",
+        "Không còn nguy cơ chiếm tài nguyên."
+      ],
+      "correct": 0,
+      "explanation": "Size và thời gian/concurrency là các chiều giới hạn khác nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Async listener rejection",
+      "question": "http.createServer(async(req,res)=>{throw Error(...)}) có tự thành framework HTTP500 đúng JSON luôn không?",
+      "options": [
+        "Có vì res tồn tại.",
+        "Không.",
+        "Có như Express middleware ở mọi version.",
+        "Có vì async keyword."
+      ],
+      "correct": 1,
+      "explanation": "Core HTTP không thay toàn bộ error handling application; xử lý rejection có chủ đích."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Double response",
+      "question": "Sau res.end rồi tiếp tục code rơi vào fallback res.end lần nữa có vấn đề gì?",
+      "options": [
+        "Không bao giờ ảnh hưởng.",
+        "Tự reset headers.",
+        "Có thể gây write-after-end/error; return hoặc quản lý control flow rõ.",
+        "Tự ghép hai HTTP response hợp lệ."
+      ],
+      "correct": 2,
+      "explanation": "Response lifecycle cần một đường hoàn thành có kiểm soát."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Client receipt claim",
+      "question": "writableEnded=true có đủ chứng minh client đã nhận và xử lý response chưa?",
+      "options": [
+        "Có với mọi network.",
+        "Có vì res.end đã gọi.",
+        "Có nếu body nhỏ.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Local state, flush và application acknowledgment là các mức bằng chứng khác nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Aborted work",
+      "question": "Client đóng connection có tự hủy mọi DB/downstream task do handler đã khởi động không?",
+      "options": [
+        "Không.",
+        "Có vì req object bị GC.",
+        "Có vì Node async.",
+        "Có vì status chưa200."
+      ],
+      "correct": 0,
+      "explanation": "Propagate cancellation/deadline theo API và bảo đảm cleanup."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Path authorization",
+      "question": "Router parse được /users/7 có chứng minh caller được đọc user7 chưa?",
+      "options": [
+        "Có vì URL parser chuẩn.",
+        "Không.",
+        "Có vì path có ID.",
+        "Có vì GET."
+      ],
+      "correct": 1,
+      "explanation": "Routing, validation và authorization là các tầng trách nhiệm khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Raw URL logging",
+      "question": "Log toàn req.url có thể lộ gì nếu client đặt token trong query?",
+      "options": [
+        "Chỉ số CPU.",
+        "Chỉ Node version.",
+        "Credential/dữ liệu nhạy cảm trong log.",
+        "Không gì vì chỉ path."
+      ],
+      "correct": 2,
+      "explanation": "Redact query phù hợp và tránh credential trong URL."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Trusted proxy metadata",
+      "question": "Tin trực tiếp mọi X-Forwarded-For từ Internet để rate limit có rủi ro gì?",
+      "options": [
+        "Luôn là IP đã xác minh.",
+        "Header tự có chữ ký Node.",
+        "Chỉ ảnh hưởng CSS.",
+        "Caller có thể spoof nếu không giới hạn proxy tin cậy và parsing policy."
+      ],
+      "correct": 3,
+      "explanation": "Xác định trust boundary của reverse proxy trước dùng forwarded headers."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Host input",
+      "question": "Dùng Host header client làm nguồn URL tuyệt đối cho link nhạy cảm cần xét gì?",
+      "options": [
+        "Validation/canonical origin và proxy trust để tránh host poisoning.",
+        "Tin mọi Host vì HTTP yêu cầu có.",
+        "Chỉ lower-case là đủ mọi tình huống.",
+        "Bỏ TLS validation."
+      ],
+      "correct": 0,
+      "explanation": "Để route pathname có thể dùng base cố định; public link cần origin được kiểm soát."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Content length mismatch",
+      "question": "Tự đặt Content-Length theo String.length thay bytes UTF-8 có thể gây gì?",
+      "options": [
+        "Không ảnh hưởng HTTP.",
+        "Framing/response truncation hoặc protocol errors theo tình huống.",
+        "Luôn tự sửa bởi client.",
+        "Chỉ thay font."
+      ],
+      "correct": 1,
+      "explanation": "Dùng byte length/cơ chế framing đúng; không ghép các header framing mâu thuẫn."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Proxy parsing consistency",
+      "question": "Proxy và backend diễn giải request framing khác nhau là loại vấn đề nào cần tránh?",
+      "options": [
+        "Tự tăng caching hit rate an toàn.",
+        "Không ảnh hưởng vì cùng HTTP.",
+        "Request smuggling/desynchronization risk.",
+        "Chỉ mất tên biến."
+      ],
+      "correct": 2,
+      "explanation": "Dùng stack cập nhật/cấu hình nhất quán và reject ambiguous requests; quiz không tạo payload tấn công."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Status privacy",
+      "question": "Public /api/status trả memory/uptime có cần cân nhắc gì?",
+      "options": [
+        "Luôn public mọi env để debug.",
+        "Luôn thêm database password.",
+        "Không thể có rủi ro nếu status200.",
+        "Chỉ công bố dữ liệu vận hành cần thiết và quyền theo hệ thống."
+      ],
+      "correct": 3,
+      "explanation": "Health checks và detailed diagnostics có thể cần phạm vi truy cập khác nhau."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Cache isolation",
+      "question": "Cache User response chỉ theo path mà bỏ tenant/auth context có nguy cơ gì?",
+      "options": [
+        "Lộ dữ liệu chéo chủ thể.",
+        "Tự authorization.",
+        "Chỉ tăng độ đẹp UI.",
+        "Không vì HTTP stateless."
+      ],
+      "correct": 0,
+      "explanation": "Cache key và cache headers phải khớp phạm vi dữ liệu/quyền."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Graceful lifecycle",
+      "question": "Khi dừng server có request đang xử lý, policy phù hợp là gì?",
+      "options": [
+        "Chỉ đổi port.",
+        "Ngừng nhận việc mới, drain có deadline và đóng tài nguyên theo lifecycle.",
+        "Kill ngay và coi mọi response đã nhận.",
+        "Chờ vô hạn mọi connection."
+      ],
+      "correct": 1,
+      "explanation": "Cần phối hợp load balancer và downstream; không suy từ server.close một contract toàn hệ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Todo persistence",
+      "question": "CRUD todo chỉ lưu array RAM mất gì khi process restart?",
+      "options": [
+        "Mọi npm dependencies luôn.",
+        "Mọi request đã gửi trong browser luôn còn server.",
+        "Dữ liệu chưa persist ra nơi bền vững.",
+        "Chỉ tên endpoint."
+      ],
+      "correct": 2,
+      "explanation": "In-memory demo không tự là hệ lưu trữ production nhiều instance."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Readiness semantics",
+      "question": "Health endpoint luôn trả200 có đủ biểu đạt API sẵn sàng phục vụ khi DB bắt buộc đang mất kết nối không?",
+      "options": [
+        "Có vì process vẫn sống.",
+        "Có vì Node có event loop.",
+        "Có vì port đang listen.",
+        "Không; readiness policy cần xét dependency thiết yếu và timeout bounded."
+      ],
+      "correct": 3,
+      "explanation": "Liveness và readiness trả lời nhu cầu khác nhau; kiểm tra không nên treo vô hạn hoặc lộ secrets."
+    }
+  ]
+}

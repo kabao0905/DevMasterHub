@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "docker",
+  "level": "senior",
+  "lesson": "kubernetes-intro",
+  "language": "vi",
+  "sourceHash": "93047dae01f9f1fa61e49dfd2a71f198a4ba57bb3e1eb1f824aefb4227cd5b7a",
+  "status": "approved",
+  "review": "Tự soạn trực tiếp 80 câu theo Deployment/Service trong bài Docker và Kubernetes docs. Phân biệt replicas với autoscaling, liveness với readiness/startup, requests với limits và LoadBalancer với hạ tầng thực. Không chạy kubectl, Docker, cluster, network hoặc triển khai.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Vai trò Kubernetes",
+      "question": "Kubernetes chủ yếu hỗ trợ việc gì trong bài?",
+      "options": [
+        "Điều phối workload container theo trạng thái mong muốn",
+        "Thay thế mọi logic nghiệp vụ",
+        "Chỉ lưu Git commits",
+        "Chỉ build frontend assets"
+      ],
+      "correct": 0,
+      "explanation": "Điều phối bao gồm quản lý vòng đời, số bản sao và dịch vụ."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Pod",
+      "question": "Pod là gì trong mô hình Kubernetes?",
+      "options": [
+        "Một database backup",
+        "Đơn vị triển khai chứa một hoặc nhiều container liên quan",
+        "Một Dockerfile luôn chạy độc lập",
+        "Một Git remote"
+      ],
+      "correct": 1,
+      "explanation": "Các container trong Pod chia sẻ một số tài nguyên/ngữ cảnh mạng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Deployment",
+      "question": "Deployment nguồn mô tả workload với tên nào?",
+      "options": [
+        "production",
+        "backend",
+        "myapp",
+        "myapp-service"
+      ],
+      "correct": 2,
+      "explanation": "metadata.name của Deployment khác tên Service."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "API Deployment",
+      "question": "Deployment trong ví dụ dùng apiVersion nào?",
+      "options": [
+        "v1",
+        "argoproj.io/v1alpha1",
+        "networking.k8s.io/v1",
+        "apps/v1"
+      ],
+      "correct": 3,
+      "explanation": "Core Service dùng v1, còn Deployment thuộc apps/v1."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Replicas nguồn",
+      "question": "Số replicas mong muốn trong nguồn là bao nhiêu?",
+      "options": [
+        "3",
+        "1",
+        "2",
+        "10"
+      ],
+      "correct": 0,
+      "explanation": "Đây là số bản sao cấu hình tĩnh trong spec."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Selector Deployment",
+      "question": "Deployment chọn Pod template theo label nào?",
+      "options": [
+        "version: latest",
+        "app: myapp",
+        "service: myapp-service",
+        "tier: database"
+      ],
+      "correct": 1,
+      "explanation": "Selector phải phù hợp labels của Pod template."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Pod labels",
+      "question": "Label app: myapp được đặt cho Pod ở đâu?",
+      "options": [
+        "resources.requests",
+        "containers.image",
+        "spec.template.metadata.labels",
+        "metadata.name của Service"
+      ],
+      "correct": 2,
+      "explanation": "Template metadata áp cho các Pod được tạo."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Container name",
+      "question": "Container trong template có tên gì?",
+      "options": [
+        "node",
+        "appuser",
+        "myapp-service",
+        "myapp"
+      ],
+      "correct": 3,
+      "explanation": "Container name và image reference là hai trường khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Image nguồn",
+      "question": "Image reference trong Pod template là gì?",
+      "options": [
+        "myapp:latest",
+        "node:20-alpine",
+        "postgres:16-alpine",
+        "myapp@sha256:abc"
+      ],
+      "correct": 0,
+      "explanation": "Đây là tag mutable, không phải digest artifact cố định."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Container port",
+      "question": "containerPort khai trong nguồn là gì?",
+      "options": [
+        "9113",
+        "3000",
+        "80",
+        "443"
+      ],
+      "correct": 1,
+      "explanation": "Khai báo port không tự làm process app lắng nghe."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "CPU request",
+      "question": "CPU request mỗi container trong nguồn là bao nhiêu?",
+      "options": [
+        "128Mi",
+        "256Mi",
+        "250m",
+        "500m"
+      ],
+      "correct": 2,
+      "explanation": "m biểu thị milliCPU, không phải megabyte."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "CPU limit",
+      "question": "CPU limit mỗi container là gì?",
+      "options": [
+        "250m",
+        "256Mi",
+        "3",
+        "500m"
+      ],
+      "correct": 3,
+      "explanation": "Request và limit là các giá trị có vai trò khác nhau."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Memory request",
+      "question": "Memory request mỗi container là gì?",
+      "options": [
+        "128Mi",
+        "256Mi",
+        "250m",
+        "500m"
+      ],
+      "correct": 0,
+      "explanation": "Mi là đơn vị bộ nhớ, không phải CPU."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Memory limit",
+      "question": "Memory limit mỗi container là gì?",
+      "options": [
+        "3000",
+        "256Mi",
+        "128Mi",
+        "250m"
+      ],
+      "correct": 1,
+      "explanation": "Giới hạn bộ nhớ không giống ngưỡng readiness."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Probe nguồn",
+      "question": "Nguồn khai loại probe nào?",
+      "options": [
+        "startupProbe",
+        "execProbe riêng tên API",
+        "livenessProbe",
+        "readinessProbe"
+      ],
+      "correct": 2,
+      "explanation": "Cần nhìn config thực, không suy từ theory self-healing."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Probe path",
+      "question": "HTTP liveness probe gọi path nào?",
+      "options": [
+        "/ready",
+        "/metrics",
+        "/login",
+        "/health"
+      ],
+      "correct": 3,
+      "explanation": "Ứng dụng cần cung cấp endpoint phù hợp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Probe port",
+      "question": "Liveness probe nhắm port nào?",
+      "options": [
+        "3000",
+        "80",
+        "443",
+        "8080"
+      ],
+      "correct": 0,
+      "explanation": "Port probe cần khớp listener ứng dụng trong Pod."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Probe period",
+      "question": "periodSeconds trong nguồn là bao nhiêu?",
+      "options": [
+        "60",
+        "10",
+        "3",
+        "30"
+      ],
+      "correct": 1,
+      "explanation": "Đây không phải cấu hình số replicas hay giới hạn request rate."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Service type",
+      "question": "Service nguồn có type gì?",
+      "options": [
+        "ExternalName",
+        "Headless",
+        "LoadBalancer",
+        "ClusterIP khai rõ"
+      ],
+      "correct": 2,
+      "explanation": "External load balancer còn phụ thuộc môi trường và controller."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Service mapping",
+      "question": "Service nhận port nào rồi nhắm targetPort nào?",
+      "options": [
+        "3000 tới 80",
+        "443 tới 80",
+        "80 tới 443",
+        "80 tới 3000"
+      ],
+      "correct": 3,
+      "explanation": "Port Service và port ứng dụng có thể khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Replicas không HPA",
+      "question": "replicas: 3 có tự tạo HorizontalPodAutoscaler không?",
+      "options": [
+        "Không",
+        "Có, mọi replicas lớn hơn 1 tự bật HPA",
+        "Có, CPU request là HPA",
+        "Có, LoadBalancer tạo HPA"
+      ],
+      "correct": 0,
+      "explanation": "Autoscaling cần cấu hình/controller và điều kiện phù hợp."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Exercise gap",
+      "question": "Bài tập yêu cầu auto-scaling nhưng snippet đã có HPA resource chưa?",
+      "options": [
+        "Có, type LoadBalancer tạo HPA",
+        "Chưa",
+        "Có, livenessProbe chính là HPA",
+        "Có, limits tự tăng replicas"
+      ],
+      "correct": 1,
+      "explanation": "Không coi yêu cầu trong bài tập là cấu hình đã hiện thực."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Selector mismatch",
+      "question": "Nếu template label đổi thành app: other nhưng selector vẫn app: myapp, vấn đề gì?",
+      "options": [
+        "Service tự đổi template label",
+        "Chỉ ảnh hưởng màu dashboard",
+        "Selector không phù hợp template, cần sửa config hợp lệ",
+        "Kubernetes tự đổi selector theo image"
+      ],
+      "correct": 2,
+      "explanation": "Deployment apps/v1 cần selector khớp template."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Selector immutable",
+      "question": "Đổi .spec.selector của Deployment apps/v1 đã tạo có phải update thông thường được phép không?",
+      "options": [
+        "Có, mọi field đều đổi tự do",
+        "Chỉ cần đổi tên image",
+        "Chỉ cần tăng replicas",
+        "Không, selector immutable sau khi tạo"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế label/selector và migration phù hợp, không chạy mutation trong câu hỏi."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Service selector",
+      "question": "Service tìm Pod theo yếu tố nào trong source?",
+      "options": [
+        "Label app: myapp theo scope namespace",
+        "Tên container bằng myapp",
+        "Tên image có tag latest",
+        "UID appuser trong Dockerfile"
+      ],
+      "correct": 0,
+      "explanation": "Không có phép liên kết tự động chỉ từ tên trùng nhau."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Service wrong label",
+      "question": "Service selector app: api nhưng Pod app: myapp có thể gây gì?",
+      "options": [
+        "Chỉ đổi địa chỉ registry",
+        "Không chọn được các Pod mong muốn",
+        "Tự scale Deployment lên 3",
+        "Tự sửa label Pod"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm endpoints/selection thực tế."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Service namespace",
+      "question": "Service có selector thường chọn Pod ở phạm vi nào?",
+      "options": [
+        "Chỉ namespace tên production bất kể vị trí Service",
+        "Mọi container trên host Docker",
+        "Cùng namespace theo cơ chế Service",
+        "Tự chọn mọi namespace trong cluster"
+      ],
+      "correct": 2,
+      "explanation": "Namespace là một phần quan trọng của scope tài nguyên."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Port declaration",
+      "question": "containerPort: 3000 có tự mở listener trong ứng dụng không?",
+      "options": [
+        "Có, kubelet tự chạy HTTP server",
+        "Có, nó thay CMD image",
+        "Có, Service tự sinh endpoint /health",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Ứng dụng vẫn phải thực sự lắng nghe đúng interface/port."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Target port mismatch",
+      "question": "App nghe 3000 nhưng Service targetPort đổi thành 8080. Điều gì có thể xảy ra?",
+      "options": [
+        "Traffic không tới listener mong muốn",
+        "Kubernetes tự đổi port app",
+        "CPU request tự tăng",
+        "Image tự được build lại"
+      ],
+      "correct": 0,
+      "explanation": "Routing config phải khớp hợp đồng runtime."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Requests scheduling",
+      "question": "CPU/memory requests hỗ trợ quyết định nào?",
+      "options": [
+        "Service chọn domain name",
+        "Scheduler cân nhắc tài nguyên khi đặt Pod",
+        "Registry chọn image tag",
+        "Git chọn commit"
+      ],
+      "correct": 1,
+      "explanation": "Requests không chỉ là nhãn tài liệu."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Request không throughput",
+      "question": "CPU request 250m có chứng minh đủ tải cho một lượng user cố định không?",
+      "options": [
+        "Có, Kubernetes suy từ tên app",
+        "Có, memory request xác định users",
+        "Không, cần workload và bằng chứng đo",
+        "Có, 250m nghĩa 250 triệu users"
+      ],
+      "correct": 2,
+      "explanation": "Đơn vị tài nguyên không trực tiếp suy ra capacity nghiệp vụ."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "CPU unit",
+      "question": "250m tương đương phần nào của một CPU unit?",
+      "options": [
+        "250 CPU",
+        "2,5 CPU",
+        "250 MB",
+        "0,25 CPU"
+      ],
+      "correct": 3,
+      "explanation": "Một CPU unit bằng 1000 milliCPU."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "CPU throttling",
+      "question": "Khi container chạm CPU limit, cơ chế thường liên quan điều gì?",
+      "options": [
+        "Throttling CPU theo môi trường/cấu hình",
+        "Luôn OOM kill vì CPU",
+        "Tự nhân đôi replicas",
+        "Tự tăng memory request"
+      ],
+      "correct": 0,
+      "explanation": "CPU và memory limits có cơ chế khác nhau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Memory limit vượt",
+      "question": "Container dùng bộ nhớ quá limit có thể gặp gì?",
+      "options": [
+        "Tự sửa memory leak",
+        "OOM termination theo cơ chế kernel/runtime",
+        "Tự được cấp vô hạn RAM",
+        "Chỉ bị CPU throttle"
+      ],
+      "correct": 1,
+      "explanation": "Limit không thay việc đo và xử lý nhu cầu bộ nhớ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Requests không ceiling",
+      "question": "Memory request 128Mi có phải luôn là trần không thể vượt không?",
+      "options": [
+        "Có, scheduler khóa đúng 128Mi",
+        "Chỉ khi có Service",
+        "Không, limit là trường riêng trong mẫu",
+        "Có, request và limit luôn cùng nghĩa"
+      ],
+      "correct": 2,
+      "explanation": "Request và limit không đồng nghĩa."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "CPU total request",
+      "question": "Ba replicas, mỗi container request 250m CPU. Tổng request của ba container là gì?",
+      "options": [
+        "250m CPU",
+        "1500m CPU",
+        "3 CPU luôn",
+        "750m CPU"
+      ],
+      "correct": 3,
+      "explanation": "Đây là tổng request danh nghĩa của các container app, chưa gồm overhead hay workload khác."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Memory total limit",
+      "question": "Ba replicas mỗi container limit 256Mi. Tổng các limit app này là gì?",
+      "options": [
+        "768Mi",
+        "256Mi",
+        "384Mi",
+        "768m CPU"
+      ],
+      "correct": 0,
+      "explanation": "Tổng limit không chứng minh host đang dùng đúng mức đó."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Scheduling failure",
+      "question": "Cluster không có node đáp ứng requests có thể khiến Pod thế nào?",
+      "options": [
+        "Tự sửa image tag",
+        "Pending hoặc không được schedule theo điều kiện",
+        "Luôn chạy bất chấp tài nguyên",
+        "Tự giảm requests về 0"
+      ],
+      "correct": 1,
+      "explanation": "Cần xem nguyên nhân scheduling, không chỉ số replicas mong muốn."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Actual versus desired",
+      "question": "replicas: 3 có bảo đảm tại mọi thời điểm đều có ba Pod khỏe không?",
+      "options": [
+        "Có, kubelet không thể lỗi",
+        "Có, Service luôn tạo Pod khỏe",
+        "Không, đó là trạng thái mong muốn cần được controller hướng tới",
+        "Có, spec là bằng chứng runtime tuyệt đối"
+      ],
+      "correct": 2,
+      "explanation": "Thực trạng có thể khác khi scheduling, rollout hoặc sự cố."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Missing readiness",
+      "question": "Nguồn có readinessProbe riêng chưa?",
+      "options": [
+        "Có, liveness tự biến thành readiness cấu hình riêng",
+        "Có, resources là readiness",
+        "Có, containerPort là probe",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Cần tránh đồng nhất kiểm sống với khả năng nhận traffic."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Missing startup",
+      "question": "Nguồn có startupProbe riêng chưa?",
+      "options": [
+        "Chưa",
+        "Có, periodSeconds là startupProbe",
+        "Có, latest tag bật startup probe",
+        "Có, replicas tạo startup probe"
+      ],
+      "correct": 0,
+      "explanation": "Ứng dụng startup chậm cần probe policy thích hợp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Liveness action",
+      "question": "Liveness probe lỗi đủ điều kiện cấu hình có thể dẫn tới gì?",
+      "options": [
+        "Secret tự đổi password",
+        "Container được restart theo cơ chế kubelet/restart policy",
+        "Service tự rollback database",
+        "Image được vá tự động"
+      ],
+      "correct": 1,
+      "explanation": "Restart không tự giải quyết mọi nguyên nhân bên ngoài."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Readiness effect",
+      "question": "Readiness probe không đạt thường phục vụ quyết định gì?",
+      "options": [
+        "Luôn tắt node vật lý",
+        "Tự tăng CPU limit",
+        "Loại Pod khỏi endpoints sẵn sàng phục vụ theo cơ chế routing",
+        "Luôn xóa Deployment"
+      ],
+      "correct": 2,
+      "explanation": "Readiness không mặc nhiên là lệnh restart container."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Probe endpoint hợp đồng",
+      "question": "App trả 200 tại /health nhưng DB logic hỏng có thể xảy ra không?",
+      "options": [
+        "Không, HTTP 200 bao mọi nghiệp vụ",
+        "Không, probe tự gọi mọi API",
+        "Chỉ khi replicas bằng 1",
+        "Có, tùy endpoint thực sự kiểm gì"
+      ],
+      "correct": 3,
+      "explanation": "Cần hiểu ý nghĩa cụ thể của probe."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Probe missing server",
+      "question": "YAML khai /health nhưng app không cung cấp endpoint đó có thể gây gì?",
+      "options": [
+        "Probe fail dù process có thể đang chạy",
+        "Kubelet tự tạo endpoint trong app",
+        "Service tự viết route Node",
+        "Kubernetes tự bỏ probe vĩnh viễn"
+      ],
+      "correct": 0,
+      "explanation": "Config phải khớp code ứng dụng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Probe auth",
+      "question": "/health yêu cầu token nhưng probe không được cấu hình phù hợp có thể dẫn tới gì?",
+      "options": [
+        "CPU limit luôn tăng",
+        "Báo lỗi probe do hợp đồng kiểm tra không khớp",
+        "Mọi user tự được cấp token",
+        "Kubernetes bỏ qua auth của app"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế endpoint/probe cần an toàn và có thể hoạt động đúng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "LoadBalancer support",
+      "question": "type: LoadBalancer có bảo đảm mọi local cluster đều cấp external IP ngay không?",
+      "options": [
+        "Có, replica thứ ba là load balancer",
+        "Có, containerPort mở internet",
+        "Không, cần implementation/controller/hạ tầng hỗ trợ",
+        "Có, API tự tạo cloud provider bất kỳ"
+      ],
+      "correct": 2,
+      "explanation": "Khả năng công bố dịch vụ phụ thuộc môi trường."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Service không build",
+      "question": "Service có tự build image myapp từ Dockerfile không?",
+      "options": [
+        "Có, selector tìm Dockerfile",
+        "Có, targetPort là build context",
+        "Có, metadata.name chọn source repo",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần image có thể truy cập và workflow build/publish riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Registry access",
+      "question": "Image private nhưng cluster không có quyền pull có thể dẫn tới gì?",
+      "options": [
+        "Pod không lấy được image như mong muốn",
+        "Kubernetes tự đăng nhập bằng user Git local",
+        "Service cấp mọi registry token",
+        "Liveness tải image bù"
+      ],
+      "correct": 0,
+      "explanation": "Image availability/auth là điều kiện triển khai riêng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Latest pull default",
+      "question": "Khi tạo Pod mới với :latest và bỏ imagePullPolicy, mặc định theo Kubernetes thường là gì?",
+      "options": [
+        "Chỉ pull khi liveness fail",
+        "Always",
+        "Never",
+        "IfNotPresent trong mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị được gán lúc tạo object, không phải tag bất biến."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Pull policy không live deploy",
+      "question": "Always có tự làm process đang chạy đổi image mỗi khi registry tag đổi không?",
+      "options": [
+        "Có, Service định kỳ build image",
+        "Có, label app theo dõi tag live",
+        "Không, cần lifecycle tạo/khởi chạy container và rollout phù hợp",
+        "Có, registry push thay PID ngay"
+      ],
+      "correct": 2,
+      "explanation": "Pull policy không phải cơ chế phát hiện và rollout mọi thay đổi tag."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Image mutable rollback",
+      "question": "latest có thể làm rollback khó xác định vì sao?",
+      "options": [
+        "Tag luôn giữ mọi bản cũ tự động",
+        "Kubernetes tự viết version immutable vào Git",
+        "Service giữ toàn lịch sử registry",
+        "Tên tag có thể trỏ bytes khác với bản từng chạy"
+      ],
+      "correct": 3,
+      "explanation": "Artifact identity cần rõ ràng qua digest/version policy."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Rolling update giới hạn",
+      "question": "Deployment hỗ trợ rolling update có đồng nghĩa 100% uptime không điều kiện không?",
+      "options": [
+        "Không, còn readiness, strategy, capacity và hành vi app",
+        "Có, mọi Deployment không thể gián đoạn",
+        "Có, replicas lớn hơn 1 loại mọi lỗi",
+        "Có, Service kiểm transaction nghiệp vụ"
+      ],
+      "correct": 0,
+      "explanation": "Tính năng điều phối cần thiết kế và kiểm chứng phù hợp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Ingress source",
+      "question": "Snippet đã có Ingress resource hoặc TLS routing chưa?",
+      "options": [
+        "Có, livenessProbe cấu hình domain",
+        "Chưa",
+        "Có, LoadBalancer tự là Ingress YAML",
+        "Có, port 80 tự cấp TLS"
+      ],
+      "correct": 1,
+      "explanation": "Theory nhắc Ingress nhưng không hiện thực ở ví dụ này."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Persistent data",
+      "question": "Pod template có volume lưu bền cho dữ liệu app chưa?",
+      "options": [
+        "Có, resources giữ mọi file qua recreate",
+        "Có, Service là persistent volume",
+        "Chưa",
+        "Có, replicas tự backup filesystem"
+      ],
+      "correct": 2,
+      "explanation": "Không dựa writable layer container để đảm bảo dữ liệu bền."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Session replicas",
+      "question": "Ba Pod app có tự chia sẻ session trong bộ nhớ process không?",
+      "options": [
+        "Có, cùng label đồng nghĩa cùng RAM",
+        "Có, Service sao chép memory",
+        "Có, replicas tự bật distributed session",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Stateful behavior cần thiết kế chia sẻ hoặc routing phù hợp."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "HA placement",
+      "question": "replicas: 3 có bảo đảm ba Pod nằm trên ba node hoặc ba vùng khác nhau không?",
+      "options": [
+        "Không, cần scheduling/placement policy và capacity phù hợp",
+        "Có, replicas luôn đồng nghĩa số vùng",
+        "Có, Service tự tạo ba node",
+        "Có, limit memory tách vùng"
+      ],
+      "correct": 0,
+      "explanation": "Nhiều bản sao không tự chứng minh độc lập failure domain."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Config secrets source",
+      "question": "Nguồn đã có ConfigMap/Secret delivery cho app chưa?",
+      "options": [
+        "Có, Service inject password",
+        "Chưa",
+        "Có, image latest chứa mọi secret an toàn",
+        "Có, request CPU là secret store"
+      ],
+      "correct": 1,
+      "explanation": "Các điều kiện app cần vẫn phải được cấu hình riêng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Memory leak restart",
+      "question": "Liveness restart có chữa nguyên nhân memory leak trong code không?",
+      "options": [
+        "Có, Kubernetes viết code mới",
+        "Chỉ cần giữ latest",
+        "Không, có thể phục hồi tạm nhưng cần chẩn đoán nguyên nhân",
+        "Có, restart sửa binary"
+      ],
+      "correct": 2,
+      "explanation": "Phục hồi process khác với sửa lỗi ứng dụng."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Capacity evidence",
+      "question": "Có Deployment và Service hợp lệ có chứng minh app chịu một triệu users chưa?",
+      "options": [
+        "Rồi, ba replicas luôn đủ",
+        "Rồi, LoadBalancer có capacity vô hạn",
+        "Rồi, CPU request tự quy đổi ra users",
+        "Chưa, cần workload, đo tải và đánh giá bottleneck toàn tuyến"
+      ],
+      "correct": 3,
+      "explanation": "Schema hợp lệ không phải bằng chứng năng lực hệ thống."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Readiness rollout",
+      "question": "App khởi động process trước khi warmup xong, chưa có readinessProbe. Cần bổ sung gì theo hợp đồng phục vụ?",
+      "options": [
+        "Readiness thể hiện lúc app nhận traffic an toàn và rollout policy phù hợp",
+        "Chỉ tăng containerPort",
+        "Chỉ đổi tên Service",
+        "Chỉ thêm một label bất kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Process tồn tại chưa đồng nghĩa khả năng phục vụ request."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Startup loop",
+      "question": "App startup chậm bị liveness restart liên tục. Hướng phân tích nào phù hợp?",
+      "options": [
+        "Coi CPU request là thời gian chờ",
+        "Probe startup/grace và thời gian khởi tạo, không chỉ tăng replicas",
+        "Tăng quyền registry token",
+        "Đổi namespace để bỏ mọi probe"
+      ],
+      "correct": 1,
+      "explanation": "Probe quá sớm có thể làm app không bao giờ hoàn tất startup."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Resource balance",
+      "question": "Requests quá thấp so với nhu cầu và limits chặt có thể gây gì?",
+      "options": [
+        "Kubernetes tự học sửa mọi request ngay",
+        "Service tự cung cấp RAM không giới hạn",
+        "Placement/competition không phù hợp và throttling/OOM tùy tài nguyên",
+        "Tự động luôn tăng performance"
+      ],
+      "correct": 2,
+      "explanation": "Cần đo workload và điều chỉnh resource budget có cơ sở."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Scale but DB bound",
+      "question": "Tăng Pod nhưng DB đã bão hòa có thể dẫn tới gì?",
+      "options": [
+        "Mỗi Pod tự tạo DB shard an toàn",
+        "HPA tự sửa query chậm",
+        "LoadBalancer tự tăng transaction capacity DB",
+        "Tăng kết nối/cạnh tranh và không cải thiện latency như kỳ vọng"
+      ],
+      "correct": 3,
+      "explanation": "Autoscaling app không tự giải quyết bottleneck dependency."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "HPA nền tảng",
+      "question": "Muốn autoscale theo CPU utilization thay replicas cố định cần quan tâm gì?",
+      "options": [
+        "HPA config, metrics và requests/behavior phù hợp",
+        "Chỉ đổi type Service",
+        "Chỉ thêm EXPOSE trong Dockerfile",
+        "Chỉ tăng periodSeconds"
+      ],
+      "correct": 0,
+      "explanation": "Snippet chưa cung cấp các điều kiện autoscaling này."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Mutable tag evidence",
+      "question": "Hai Pod cùng image myapp:latest nhưng được tạo ở hai thời điểm có chắc cùng artifact không?",
+      "options": [
+        "Có, liveness đảm bảo version giống nhau",
+        "Không, cần đối chiếu digest thực vì tag có thể đổi",
+        "Có, tag name là checksum",
+        "Có, cùng label khóa bytes"
+      ],
+      "correct": 1,
+      "explanation": "Identity artifact cần xác định theo nội dung thực, không chỉ tên mutable."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Rollback dữ liệu",
+      "question": "Rollback Deployment về image cũ có tự đảo mọi migration DB không?",
+      "options": [
+        "Có, Service lưu transaction cũ",
+        "Chỉ khi replicas bằng 3",
+        "Không, cần code/config/data compatibility và recovery plan",
+        "Có, Kubernetes rollback mọi hệ thống liên quan"
+      ],
+      "correct": 2,
+      "explanation": "Lịch sử rollout không bao trùm mọi trạng thái ngoài cluster."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Failure domains",
+      "question": "Ba replicas cùng nằm trên một node có giới hạn HA nào?",
+      "options": [
+        "Ba Pod tự tạo ba node dự phòng",
+        "Service bảo đảm không thể mất node",
+        "CPU limit chống mọi node outage",
+        "Một sự cố node có thể ảnh hưởng đồng thời cả ba"
+      ],
+      "correct": 3,
+      "explanation": "Placement và phụ thuộc hạ tầng là một phần thiết kế độ sẵn sàng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Probe dependency storm",
+      "question": "Liveness gắn trực tiếp với DB đang quá tải làm mọi Pod restart. Cần cân nhắc gì?",
+      "options": [
+        "Tách mục tiêu liveness/readiness và tránh phục hồi gây thêm tải",
+        "Tăng số retries DB vô hạn không giới hạn",
+        "Đổi port Service để DB khỏe lại",
+        "Coi restart luôn là cách chữa DB"
+      ],
+      "correct": 0,
+      "explanation": "Probe cần phản ánh failure mode và tác động phục hồi."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Service routing diagnosis",
+      "question": "Pods chạy nhưng Service không có endpoints mong muốn. Cần đối chiếu gì trước?",
+      "options": [
+        "Chỉ số user trong app",
+        "Namespace, selector, Pod labels và readiness/endpoint state",
+        "Chỉ kích thước image",
+        "Chỉ commit message"
+      ],
+      "correct": 1,
+      "explanation": "Chẩn đoán theo liên kết routing thực thay giả thiếu CPU."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "External IP pending",
+      "question": "Service LoadBalancer pending external IP trên local cluster. Kết luận hợp lý?",
+      "options": [
+        "Mọi image phải đổi sang Alpine",
+        "LivenessProbe luôn sai port",
+        "Kiểm implementation/controller và hạ tầng hỗ trợ thay coi YAML tự đủ",
+        "Ứng dụng Node chắc chắn có bug logic"
+      ],
+      "correct": 2,
+      "explanation": "External provisioning là điều kiện ngoài manifest Service đơn thuần."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "App listener mismatch",
+      "question": "Process Node đang chạy nhưng HTTP probe và traffic Service đều lỗi khi app chỉ bind loopback. Cần xét gì?",
+      "options": [
+        "Chỉ đổi memory limit",
+        "Chỉ tăng replicas",
+        "Chỉ xóa CPU request",
+        "Interface listener và đường mạng Pod so với probe/Service thực tế"
+      ],
+      "correct": 3,
+      "explanation": "HTTP probe mặc định từ kubelet nhắm Pod IP; process tồn tại không chứng minh listener nhận kết nối trên interface phù hợp."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Zero downtime claim",
+      "question": "Muốn đánh giá rollout ít gián đoạn cần xem gì ngoài replicas?",
+      "options": [
+        "Readiness, update strategy, spare capacity, draining và app compatibility",
+        "Chỉ container name",
+        "Chỉ namespace",
+        "Chỉ image tag có latest"
+      ],
+      "correct": 0,
+      "explanation": "Độ sẵn sàng là kết quả nhiều lớp phối hợp."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Session loss",
+      "question": "Người dùng mất session khi request sang Pod khác. Nên phân tích gì?",
+      "options": [
+        "Chỉ dùng cùng container name",
+        "State/session architecture và routing thay giả replicas chia sẻ RAM",
+        "Chỉ tăng CPU request",
+        "Chỉ đổi liveness path"
+      ],
+      "correct": 1,
+      "explanation": "Service phân phối traffic không sao chép state process."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Desired state không proof",
+      "question": "API chấp nhận replicas 3 nhưng mới có một Pod Ready. Báo cáo đúng là gì?",
+      "options": [
+        "Báo autoscale đã hoàn tất",
+        "Báo cluster chịu tải gấp ba",
+        "Nêu desired/actual khác nhau và tìm nguyên nhân còn thiếu",
+        "Báo ba replicas khỏe vì spec ghi 3"
+      ],
+      "correct": 2,
+      "explanation": "Trạng thái thực phải được quan sát thay suy từ khai báo."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Limit OOM gây gián đoạn",
+      "question": "App thường vượt 256Mi và restart. Chỉ tăng replicas có chắc chữa không?",
+      "options": [
+        "Có, replicas tự nâng memory limit mỗi Pod",
+        "Có, Service chuyển memory sang Pod khác",
+        "Có, liveness sửa heap",
+        "Không, cần đo per-instance memory và sửa leak/config hoặc budget phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Số bản sao không sửa giới hạn và hành vi từng instance."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Artifact pull security",
+      "question": "Deployment dùng image private và thiếu pull credentials. Nên xử lý theo gì?",
+      "options": [
+        "Cấp quyền pull tối thiểu đúng registry/namespace và kiểm artifact",
+        "Chia sẻ mọi cloud admin credentials cho app",
+        "Bỏ kiểm chứng registry và dùng image ngẫu nhiên",
+        "Đổi tag thành latest để bỏ authentication"
+      ],
+      "correct": 0,
+      "explanation": "Registry access cần đúng phạm vi và giữ ranh giới quyền."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Resource total reality",
+      "question": "Tổng CPU requests app là 750m có đồng nghĩa cluster 750m chắc chắn chạy đủ mọi thứ không?",
+      "options": [
+        "Có, limits không ảnh hưởng thiết kế",
+        "Không, còn overhead, workload khác, placement và điều kiện vận hành",
+        "Có, request tổng là capacity toàn cluster chính xác",
+        "Có, kube-system không dùng tài nguyên"
+      ],
+      "correct": 1,
+      "explanation": "Sizing cần toàn cảnh thay một phép cộng đơn lẻ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Version exact rollback",
+      "question": "Muốn biết ba replicas thật sự chạy đúng release nào cần gì?",
+      "options": [
+        "Chỉ Service port 80",
+        "Chỉ số replicas mong muốn",
+        "Deployment revision/config cùng image digest và trạng thái Pod thực",
+        "Chỉ tên myapp:latest trong Git"
+      ],
+      "correct": 2,
+      "explanation": "Bằng chứng release phải nối config với artifact và runtime."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Replicas, traffic và autoscale",
+      "question": "Ops cần app chỉ nhận traffic khi warmup xong và tự tăng Pod khi tải cao. Snippet chỉ có replicas 3 cùng livenessProbe. Còn thiếu gì?",
+      "options": [
+        "Chỉ tăng replicas tĩnh thành 4 là đủ hai yêu cầu",
+        "Chỉ đổi Service port thành 443",
+        "Chỉ đổi liveness path thành chữ autoscale",
+        "Readiness phù hợp hợp đồng phục vụ và autoscaling config/metrics cùng requests phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Liveness không thay readiness, còn replicas cố định không tự tạo HPA hoặc nguồn metrics."
+    }
+  ]
+}

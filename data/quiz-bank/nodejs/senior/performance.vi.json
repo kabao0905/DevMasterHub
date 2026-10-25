@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "senior",
+  "lesson": "performance",
+  "language": "vi",
+  "sourceHash": "b3dbb39b567b4cbad76b681ed271b324e6ff6c780292b0781247074198136874",
+  "status": "approved",
+  "review": "Tự soạn không API. Review Node24 worker_threads/cluster/os docs. Snippet Worker hữu hạn với code tự viết, tối đa2 threads và1000 increments/thread, không fork cluster, listen HTTP hoặc benchmark production. Nêu thiếu express import/worker script trong source, per-request Worker không bounded, exit không message có thể treo request, auto-restart thiếu shutdown/backoff. Mục tiêu4x không là kết quả đo.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "CPU work",
+      "question": "Worker Threads thường phù hợp nhất với loại công việc nào?",
+      "options": [
+        "CPU-intensive JavaScript có thể offload phù hợp.",
+        "Mọi I/O async đều cần thêm Worker.",
+        "Chỉ CSS layout.",
+        "Chỉ lưu cookies."
+      ],
+      "correct": 0,
+      "explanation": "Async I/O tích hợp Node thường không cần một Worker riêng cho mỗi thao tác."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Event loop blocking",
+      "question": "CPU loop dài chạy trên event-loop thread có thể gây gì?",
+      "options": [
+        "Không ảnh hưởng latency.",
+        "Tăng thời gian chờ callbacks/requests khác trên loop đó.",
+        "Tự chuyển sang worker vì tên async.",
+        "Tự thêm CPU cores."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm async function với execution ngoài thread."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Cluster model",
+      "question": "Cluster workers trong Node chủ yếu là gì?",
+      "options": [
+        "Các database rows.",
+        "Các browser tabs.",
+        "Các processes riêng.",
+        "Chỉ các closures cùng heap."
+      ],
+      "correct": 2,
+      "explanation": "Cluster và worker_threads có isolation/memory models khác nhau."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Primary test",
+      "question": "cluster.isPrimary dùng để phân biệt gì?",
+      "options": [
+        "User admin.",
+        "Transaction leader DB luôn.",
+        "Worker Thread có threadId lớn nhất.",
+        "Process primary trong cluster model."
+      ],
+      "correct": 3,
+      "explanation": "Primary điều phối worker processes theo app logic."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Cluster fork",
+      "question": "cluster.fork() tạo gì theo API?",
+      "options": [
+        "Một cluster worker process.",
+        "Một virtual thread JVM.",
+        "Một SQL replica tự động.",
+        "Một user session."
+      ],
+      "correct": 0,
+      "explanation": "Lifecycle và resource budget cần do ứng dụng/vận hành quản lý."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Worker thread factory",
+      "question": "new Worker(...) của node:worker_threads tạo gì?",
+      "options": [
+        "Luôn database connection.",
+        "Worker Thread với JS execution context riêng.",
+        "Luôn process OS riêng.",
+        "Luôn HTTP server."
+      ],
+      "correct": 1,
+      "explanation": "Threads có thể trao đổi messages và chia sẻ memory qua API phù hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Worker data",
+      "question": "workerData thường dùng để gì?",
+      "options": [
+        "Tự auth user.",
+        "Tự log secret.",
+        "Truyền dữ liệu khởi tạo cho Worker qua clone/transfer semantics phù hợp.",
+        "Tự parse mọi query string thành Number."
+      ],
+      "correct": 2,
+      "explanation": "Cần validate input trước offload."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Parent port",
+      "question": "parentPort trong Worker hỗ trợ gì?",
+      "options": [
+        "Một TCP port public mặc định.",
+        "Một HTTP route.",
+        "Một SQL table.",
+        "Giao tiếp message với parent thread."
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm MessagePort với listening network port."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Result event",
+      "question": "Worker event message thường mang gì?",
+      "options": [
+        "Dữ liệu Worker gửi qua postMessage.",
+        "Mọi stdout tự thành kết quả domain.",
+        "Mọi exception mặc định luôn.",
+        "Mọi DB commit acknowledgment."
+      ],
+      "correct": 0,
+      "explanation": "App định nghĩa message schema và completion policy."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Error event",
+      "question": "Worker error event thường phục vụ gì?",
+      "options": [
+        "Tự trả JSON đúng contract.",
+        "Quan sát uncaught exception của Worker theo lifecycle.",
+        "Tự retry mọi request an toàn.",
+        "Tự rollback mọi external effect."
+      ],
+      "correct": 1,
+      "explanation": "Parent phải xử lý response/resources đúng một lần theo trạng thái."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Exit event",
+      "question": "Worker exit event cho biết gì?",
+      "options": [
+        "Mọi HTTP client đã đọc.",
+        "Mọi sibling Workers đã xong.",
+        "Worker đã kết thúc với exit code theo API.",
+        "Mọi business result đã được gửi chắc chắn."
+      ],
+      "correct": 2,
+      "explanation": "Exit không đồng nghĩa luôn có message kết quả."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Process memory",
+      "question": "Cluster workers có tự chia sẻ một todos array trong JS heap không?",
+      "options": [
+        "Có vì cùng script.",
+        "Có vì cùng port.",
+        "Có vì cùng primary.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Shared state cần storage/IPC/coordination phù hợp."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Thread memory sharing",
+      "question": "Worker Threads có thể chia sẻ bytes có chủ đích qua gì?",
+      "options": [
+        "SharedArrayBuffer.",
+        "Mọi object JavaScript tự shared.",
+        "Mọi closure của parent tự truyền.",
+        "Mọi app.locals global qua process."
+      ],
+      "correct": 0,
+      "explanation": "Shared memory cần synchronization khi có truy cập cạnh tranh."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Transfer semantics",
+      "question": "Transfer ArrayBuffer thường có tác động nào với buffer gốc?",
+      "options": [
+        "Tự mã hóa.",
+        "Bị detach ở bên gửi khi transfer thành công.",
+        "Tự clone vô hạn.",
+        "Luôn giữ nguyên mọi reference dùng được."
+      ],
+      "correct": 1,
+      "explanation": "SharedArrayBuffer khác ArrayBuffer transfer ownership."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Pool purpose",
+      "question": "Worker pool thường giúp gì?",
+      "options": [
+        "Loại mọi deadline.",
+        "Tự làm mọi task đúng.",
+        "Tái dùng workers và giới hạn concurrency/queue phù hợp.",
+        "Tự tăng số core vật lý."
+      ],
+      "correct": 2,
+      "explanation": "Pool cần admission/cancellation/error policies."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Available parallelism",
+      "question": "os.availableParallelism() cung cấp gì theo API?",
+      "options": [
+        "Mọi request capacity chính xác.",
+        "Số DB connections chắc chắn.",
+        "Tốc độ tăng luôn4x.",
+        "Ước lượng parallelism mặc định chương trình nên dùng."
+      ],
+      "correct": 3,
+      "explanation": "Vẫn cần workload và resource limits khác."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Benchmark goal",
+      "question": "Yêu cầu throughput tăng4x trong exercise là gì?",
+      "options": [
+        "Mục tiêu cần đo/đánh giá, không kết quả được bảo đảm.",
+        "Định luật mọi cluster.",
+        "Kết quả đã chạy sẵn.",
+        "Số Workers bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Bottlenecks và overhead ảnh hưởng speedup."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Process manager",
+      "question": "Process manager như PM2 thường hỗ trợ gì?",
+      "options": [
+        "Tự mở DB capacity vô hạn.",
+        "Quản lý lifecycle/processes theo cấu hình.",
+        "Thay mọi authorization.",
+        "Tự sửa race trong shared data."
+      ],
+      "correct": 1,
+      "explanation": "Vận hành process khác correctness của use case."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Metrics",
+      "question": "Performance nên được đánh giá bằng gì?",
+      "options": [
+        "Chỉ tên framework.",
+        "Chỉ số workers.",
+        "Latency,throughput,error rate và resource saturation theo workload.",
+        "Chỉ số file source."
+      ],
+      "correct": 2,
+      "explanation": "Các metric phải có điều kiện đo rõ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Graceful shutdown",
+      "question": "Graceful shutdown thường nhằm gì?",
+      "options": [
+        "Tự undo mọi commit.",
+        "Chờ vô hạn mọi socket.",
+        "Luôn restart ngay worker đang drain.",
+        "Dừng nhận việc mới và hoàn tất/hủy việc đang chạy có deadline/cleanup."
+      ],
+      "correct": 3,
+      "explanation": "Lifecycle cần phối hợp app và infrastructure."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Main thread metadata",
+      "question": "Chạy entry file Node thông thường, output là gì?",
+      "code": "import{isMainThread}from\"node:worker_threads\";console.log(isMainThread);",
+      "options": [
+        "true",
+        "false",
+        "undefined",
+        "Một threadId cố định khác0."
+      ],
+      "correct": 0,
+      "explanation": "Entry script đang ở main thread của process."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Main parent port",
+      "question": "Output là gì trong main thread?",
+      "code": "import{parentPort}from\"node:worker_threads\";console.log(parentPort===null);",
+      "options": [
+        "Một socket HTTP.",
+        "true",
+        "false",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "parentPort lànull ở main thread."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Main worker data",
+      "question": "Output là gì trong entry main thread này?",
+      "code": "import{workerData}from\"node:worker_threads\";console.log(workerData===null);",
+      "options": [
+        "undefined",
+        "Một body request.",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "workerData lànull khi không đang chạy trong Worker."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Primary without forking",
+      "question": "Chạy entry process bình thường, đoạn chỉ đọc metadata này in gì?",
+      "code": "import cluster from\"node:cluster\";console.log(cluster.isPrimary);",
+      "options": [
+        "false",
+        "undefined",
+        "Một process được fork mới.",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Import và đọc isPrimary không tự fork."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Worker computed result",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\n\nconst w=new Worker(\"const{parentPort,workerData}=require(\\\"node:worker_threads\\\");parentPort.postMessage(workerData.n*2);\",{eval:true,workerData:{n:5},resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0],e[0]);",
+      "options": [
+        "10 0",
+        "5 0",
+        "10 1",
+        "undefined 0"
+      ],
+      "correct": 0,
+      "explanation": "Worker nhân5 với2 rồi tự kết thúc bình thường; cả message và exit được quan sát."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Worker data type",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\n\nconst w=new Worker(\"const{parentPort,workerData}=require(\\\"node:worker_threads\\\");parentPort.postMessage(typeof workerData.n);\",{eval:true,workerData:{n:\"5\"},resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0]);",
+      "options": [
+        "Promise",
+        "string",
+        "number",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "WorkerData giữ type String đã truyền, không tự parse query input."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Worker context flag",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\n\nconst w=new Worker(\"const{parentPort,isMainThread}=require(\\\"node:worker_threads\\\");parentPort.postMessage(isMainThread);\",{eval:true,workerData:{},resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0]);",
+      "options": [
+        "undefined",
+        "0",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Code trong Worker không ở main thread."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Worker identifier sign",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\n\nconst w=new Worker(\"const{parentPort,threadId}=require(\\\"node:worker_threads\\\");parentPort.postMessage(threadId>0);\",{eval:true,workerData:{},resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0]);",
+      "options": [
+        "false",
+        "undefined",
+        "null",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Worker threadId dương, khác main threadId0 theo API."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cloned worker object",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\nconst input={name:\"A\"};\nconst w=new Worker(\"const{parentPort,workerData}=require(\\\"node:worker_threads\\\");workerData.name=\\\"B\\\";parentPort.postMessage(workerData.name);\",{eval:true,workerData:input,resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0],input.name);",
+      "options": [
+        "B A",
+        "B B",
+        "A A",
+        "undefined A"
+      ],
+      "correct": 0,
+      "explanation": "Worker nhận clone object data, mutation không sửa object parent."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Finite worker sum",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\n\nconst w=new Worker(\"const{parentPort,workerData}=require(\\\"node:worker_threads\\\");parentPort.postMessage(workerData.values.reduce((s,n)=>s+n,0));\",{eval:true,workerData:{values:[1,2,3]},resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0]);",
+      "options": [
+        "undefined",
+        "6",
+        "3",
+        "123"
+      ],
+      "correct": 1,
+      "explanation": "Worker tính tổng3 phần tử hữu hạn."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Worker uncaught error",
+      "question": "Output là gì khi parent đã đăng ký error và exit listeners?",
+      "code": "import{Worker}from\"node:worker_threads\";const w=new Worker('throw new Error(\"bad\");',{eval:true,resourceLimits:{maxOldGenerationSizeMb:16}});const error=new Promise(r=>w.once(\"error\",r));const exit=new Promise(r=>w.once(\"exit\",r));const[e,c]=await Promise.all([error,exit]);console.log(e.message,c);",
+      "options": [
+        "undefined 0",
+        "7 0",
+        "bad 1",
+        "bad 0"
+      ],
+      "correct": 2,
+      "explanation": "Uncaught exception kết thúc Worker với code1 theo lifecycle; parent quan sát lỗi."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Transferred buffer",
+      "question": "Output là gì?",
+      "code": "import{MessageChannel}from\"node:worker_threads\";import{once}from\"node:events\";const{port1,port2}=new MessageChannel();const b=new ArrayBuffer(4);const p=once(port2,\"message\");port1.postMessage(b,[b]);const[r]=await p;console.log(b.byteLength,r.byteLength);port1.close();port2.close();",
+      "options": [
+        "4 4",
+        "0 0",
+        "4 0",
+        "0 4"
+      ],
+      "correct": 3,
+      "explanation": "Transfer detach buffer gốc và nhận buffer4 bytes bên kia."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Cloned buffer",
+      "question": "Output là gì?",
+      "code": "import{MessageChannel}from\"node:worker_threads\";import{once}from\"node:events\";const{port1,port2}=new MessageChannel();const b=new ArrayBuffer(4);const p=once(port2,\"message\");port1.postMessage(b);const[r]=await p;console.log(b.byteLength,r.byteLength,r===b);port1.close();port2.close();",
+      "options": [
+        "4 4 false",
+        "0 4 false",
+        "4 4 true",
+        "0 0 true"
+      ],
+      "correct": 0,
+      "explanation": "Không transferList thì buffer được clone, buffer gốc chưa detach."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Shared atomic update",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\nconst buffer=new SharedArrayBuffer(4);const view=new Int32Array(buffer);\nconst w=new Worker(\"const{parentPort,workerData}=require(\\\"node:worker_threads\\\");const v=new Int32Array(workerData);Atomics.add(v,0,1);parentPort.postMessage(1);\",{eval:true,workerData:buffer,resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(Atomics.load(view,0));",
+      "options": [
+        "2",
+        "1",
+        "0",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Worker và parent cùng nhìn bytes của SharedArrayBuffer, update bằng Atomics."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Two finite atomic workers",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";const b=new SharedArrayBuffer(4),v=new Int32Array(b);const code='const{workerData}=require(\"node:worker_threads\");const v=new Int32Array(workerData);for(let i=0;i<1000;i++)Atomics.add(v,0,1);';const a=new Worker(code,{eval:true,workerData:b,resourceLimits:{maxOldGenerationSizeMb:16}});const c=new Worker(code,{eval:true,workerData:b,resourceLimits:{maxOldGenerationSizeMb:16}});await Promise.all([once(a,\"exit\"),once(c,\"exit\")]);console.log(Atomics.load(v,0));",
+      "options": [
+        "0",
+        "Một số race tùy ý.",
+        "2000",
+        "1000"
+      ],
+      "correct": 2,
+      "explanation": "Hai workers mỗi bên atomic increment1000 lần rồi được chờ kết thúc."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Uncloneable function",
+      "question": "Output là gì?",
+      "code": "import{MessageChannel}from\"node:worker_threads\";const{port1,port2}=new MessageChannel();try{port1.postMessage(()=>1);}catch(e){console.log(e.name);}finally{port1.close();port2.close();}",
+      "options": [
+        "undefined",
+        "function",
+        "0",
+        "DataCloneError"
+      ],
+      "correct": 3,
+      "explanation": "Functions không được structured clone qua MessagePort theo contract."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Parallelism estimate shape",
+      "question": "Output là gì theo Node24 API?",
+      "code": "import os from\"node:os\";const n=os.availableParallelism();console.log(Number.isInteger(n)&&n>0);",
+      "options": [
+        "true",
+        "false",
+        "undefined",
+        "Một số core cố định."
+      ],
+      "correct": 0,
+      "explanation": "availableParallelism luôn trả positive integer estimate, không đoán máy có bao nhiêu."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Bounded numeric task input",
+      "question": "Output là gì?",
+      "code": "function valid(n){return Number.isInteger(n)&&n>=0&&n<=10;}console.log(valid(1.5),valid(5),valid(Infinity));",
+      "options": [
+        "true false true",
+        "false true false",
+        "true true true",
+        "false false false"
+      ],
+      "correct": 1,
+      "explanation": "Model này chỉ cho integer0..10 hữu hạn trước khi gửi CPU task."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Thread same process",
+      "question": "Output là gì?",
+      "code": "import{Worker}from\"node:worker_threads\";import{once}from\"node:events\";\n\nconst w=new Worker(\"const{parentPort}=require(\\\"node:worker_threads\\\");parentPort.postMessage(process.pid);\",{eval:true,workerData:{},resourceLimits:{maxOldGenerationSizeMb:16}});const[m,e]=await Promise.all([once(w,\"message\"),once(w,\"exit\")]);console.log(m[0]===process.pid);",
+      "options": [
+        "undefined",
+        "Một PID cố định.",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "Worker Thread cùng process PID với parent, khác cluster process."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Module relative worker URL",
+      "question": "Output là gì khi chạy file .mjs local?",
+      "code": "console.log(new URL(\"./heavy-task.js\",import.meta.url).protocol);",
+      "options": [
+        "http:",
+        "undefined",
+        "Một request được gửi đi.",
+        "file:"
+      ],
+      "correct": 3,
+      "explanation": "URL này trỏ tương đối module, chỉ dựng URL chưa chạy Worker hay đọc file."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Per request worker cost",
+      "question": "Tạo Worker mới cho mọi /api/heavy request có nhược điểm gì?",
+      "options": [
+        "Startup/message overhead và concurrency không giới hạn nếu thiếu admission policy.",
+        "Luôn miễn phí như function call.",
+        "Tự là bounded pool.",
+        "Tự giữ DB pool vừa đủ."
+      ],
+      "correct": 0,
+      "explanation": "Dùng pool/budget khi workload yêu cầu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Cluster shared state",
+      "question": "Todos/session lưu array RAM trong một cluster worker có tự xuất hiện ở worker khác không?",
+      "options": [
+        "Có vì isPrimary.",
+        "Không.",
+        "Có vì cùng source file.",
+        "Có vì dùng chung port."
+      ],
+      "correct": 1,
+      "explanation": "Shared app state cần storage/IPC/session strategy."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Source missing import",
+      "question": "Nhánh worker trong nguồn gọi express() nhưng imports chỉ cluster,os,Worker; còn thiếu gì để đoạn standalone chạy?",
+      "options": [
+        "Chỉ đổi CPU count.",
+        "Không thiếu vì cluster tự import Express.",
+        "Import/dependency Express cùng phần app cấu hình.",
+        "Chỉ thêm semicolon."
+      ],
+      "correct": 2,
+      "explanation": "Snippet chưa là app hoàn chỉnh."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Query input type",
+      "question": "req.query.n trong nguồn có tự là Number hữu hạn hợp lệ cho heavy task không?",
+      "options": [
+        "Có vì tên n.",
+        "Có vì workerData.",
+        "Có vì GET.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Validate shape,type,range và cost trước offload."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Exit without result",
+      "question": "Worker kết thúc code0 nhưng không gửi message, handler nguồn chỉ response trong message/error có thể ra sao?",
+      "options": [
+        "Request không được hoàn tất đúng nếu thiếu exit/completion policy.",
+        "Tự trả200 JSON null.",
+        "Tự chạy message handler.",
+        "Tự retry an toàn."
+      ],
+      "correct": 0,
+      "explanation": "Success process exit không đồng nghĩa có business result."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Multiple worker messages",
+      "question": "Worker gửi progress và result nhưng mọi message đều res.json trong nguồn có nguy cơ gì?",
+      "options": [
+        "Không thể Worker gửi nhiều message.",
+        "Response nhiều lần/write-after-end.",
+        "HTTP tự tạo nhiều JSON response độc lập.",
+        "Tự chọn message cuối."
+      ],
+      "correct": 1,
+      "explanation": "Định nghĩa message types và response-once completion."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Error message disclosure",
+      "question": "Trả err.message Worker thô cho mọi client cần review gì?",
+      "options": [
+        "Chỉ cần status500 là đủ.",
+        "Chỉ tên field error.",
+        "Nội dung nhạy cảm/chi tiết nội bộ và public error policy.",
+        "Mọi message tự được sanitize."
+      ],
+      "correct": 2,
+      "explanation": "Log và response có mức chi tiết khác nhau."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Planned cluster exit",
+      "question": "cluster.on(exit)=>fork lại vô điều kiện có thể cản gì?",
+      "options": [
+        "Mọi CPU computation.",
+        "Mọi JSON serialization.",
+        "Mọi import module.",
+        "Graceful shutdown hoặc scale down có chủ đích."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt crash với planned lifecycle bằng state/policy phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Crash restart loop",
+      "question": "Worker luôn crash vì config lỗi mà restart tức thì liên tục có nguy cơ gì?",
+      "options": [
+        "Crash loop,CPU/log/resource pressure; cần backoff/limits và diagnostic.",
+        "Tự sửa config sau số lần bất kỳ chắc chắn.",
+        "Không có cost.",
+        "Chỉ đổi PID vô hại."
+      ],
+      "correct": 0,
+      "explanation": "Restart không là giải pháp mọi nguyên nhân gốc."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "CPU count versus budget",
+      "question": "os.cpus().length có đủ quyết định worker count tối ưu cho mọi container/workload không?",
+      "options": [
+        "Đủ nếu app Express.",
+        "Chưa; xét available parallelism,quota và đo resource limits.",
+        "Đủ vì hardware info là throughput.",
+        "Đủ vì mọi task CPU giống nhau."
+      ],
+      "correct": 1,
+      "explanation": "Estimate là điểm bắt đầu, không kết quả benchmark."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Pool multiplication",
+      "question": "Mỗi cluster worker có DB pool riêng; tăng processes cần xem gì?",
+      "options": [
+        "Mọi pool tự chỉ dùng1 connection.",
+        "Không ảnh hưởng vì process isolate.",
+        "Tổng DB connections và downstream capacity.",
+        "DB tự nhân capacity tương ứng."
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn hạ tầng chia sẻ có thể trở thành bottleneck."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Fourfold claim",
+      "question": "Exercise yêu cầu4x throughput; nếu đo chỉ1.5x có được báo4x theo số workers không?",
+      "options": [
+        "Có vì có4 workers.",
+        "Có vì dùng Node24.",
+        "Có vì queue async.",
+        "Không; báo số đo và điều kiện thật."
+      ],
+      "correct": 3,
+      "explanation": "Không thay bằng chứng bằng target hoặc tên pattern."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Benchmark comparison",
+      "question": "Đo trước/sau cluster cần giữ gì đại diện và so sánh được?",
+      "options": [
+        "Workload,data,concurrency,hardware và tiêu chí latency/errors.",
+        "Chỉ tên script giống.",
+        "Chỉ màu log.",
+        "Chỉ số CPU quảng cáo."
+      ],
+      "correct": 0,
+      "explanation": "Tách thay đổi workload khỏi hiệu quả tối ưu."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "I/O offload choice",
+      "question": "Đọc file qua fs/promises có nên mặc định tạo Worker riêng cho mỗi read không?",
+      "options": [
+        "Có để bỏ lỗi I/O.",
+        "Không; đánh giá I/O API có sẵn và overhead thực tế.",
+        "Có vì mọi async cần Worker.",
+        "Có để mọi file luôn ở RAM."
+      ],
+      "correct": 1,
+      "explanation": "Worker hữu ích với CPU work,không tự cải thiện mọi I/O."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Resource limit scope",
+      "question": "Worker resourceLimits có giới hạn mọi native/ArrayBuffer memory của cả process không?",
+      "options": [
+        "Có nếu maxOldGenerationSizeMb16.",
+        "Có vì Worker kháccontext.",
+        "Không.",
+        "Có tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn JS engine không là full process sandbox/memory ceiling."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Main response bottleneck",
+      "question": "CPU task đã offload nhưng main serialize JSON kết quả rất lớn; còn bottleneck nào?",
+      "options": [
+        "Không còn CPU main.",
+        "Worker tự serialize mọi HTTP response.",
+        "Cluster tự chia một response qua mọi cores.",
+        "Main event-loop CPU/memory/network work."
+      ],
+      "correct": 3,
+      "explanation": "End-to-end latency gồm nhiều stages."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Message copy overhead",
+      "question": "Gửi dataset lớn qua structured clone cho mỗi task có thể gây gì?",
+      "options": [
+        "Copy/serialization overhead và memory pressure.",
+        "Luôn zero-copy.",
+        "Tự dùng SharedArrayBuffer.",
+        "Tự tăng cache hit rate."
+      ],
+      "correct": 0,
+      "explanation": "Transfer/shared representation cần ownership và synchronization phù hợp."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Shared synchronization",
+      "question": "Hai Workers sửa cùng SharedArrayBuffer cần xét điều gì?",
+      "options": [
+        "Mọi data tự clone dù shared.",
+        "Race và memory ordering, dùng Atomics/protocol phù hợp.",
+        "Mọi ++ tự atomic.",
+        "JSON.stringify tự khóa buffer."
+      ],
+      "correct": 1,
+      "explanation": "Shared bytes không tự logic transaction."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Isolation boundary",
+      "question": "Worker Thread có phải process security sandbox để chạy code tùy ý không tin cậy không?",
+      "options": [
+        "Có vì có resourceLimits.",
+        "Có vì dùng eval.",
+        "Không.",
+        "Có vì threadId khác0."
+      ],
+      "correct": 2,
+      "explanation": "Cần isolation/permissions threat model riêng; ví dụ chỉ chạy code tự biên soạn hữu hạn."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Admission policy",
+      "question": "Pool có8 workers nhưng queue vô hạn vẫn thiếu gì?",
+      "options": [
+        "Chỉ thêm core count log.",
+        "Chỉ đổi route name.",
+        "Không thiếu vì workers bounded.",
+        "Queue bounds,deadline/cancel và overload response/degradation."
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn active tasks không tự chặn pending-memory growth."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Parallel fraction limit",
+      "question": "Theo mô hình Amdahl lý tưởng,50% công việc song song và4 processors có speedup tối đa xấp xỉ nào?",
+      "options": [
+        "1.6x.",
+        "4x.",
+        "8x.",
+        "0.5x."
+      ],
+      "correct": 0,
+      "explanation": "1/(0.5+0.5/4)=1.6; đây là model lý tưởng chưa tính overhead,không là benchmark ứng dụng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Overload cascade",
+      "question": "Tăng worker count khi DB pool đã bão hòa có thể gây gì?",
+      "options": [
+        "Tự thêm DB capacity.",
+        "Thêm queue/contention/latency thay vì tăng throughput tương ứng.",
+        "Luôn throughput tuyến tính.",
+        "Tự giảm mọi latency."
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu bottleneck toàn tuyến,không chỉ app CPU."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Request cancellation",
+      "question": "Client disconnect trong heavy task có tự terminate Worker theo handler nguồn không?",
+      "options": [
+        "Có vì WorkerData bị GC.",
+        "Có vì event loop.",
+        "Không; cần cancellation/deadline/lifecycle policy.",
+        "Có vì res đã close."
+      ],
+      "correct": 2,
+      "explanation": "Task có thể tiếp tục tốn CPU hoặc tạo effects nếu không quản lý."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Worker terminate effects",
+      "question": "Terminate Worker có bảo đảm undo mọi external effects đã xảy ra không?",
+      "options": [
+        "Có vì memory bị dọn.",
+        "Có vì code1.",
+        "Có vì Promise reject.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Cancellation không là transaction rollback tổng quát."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Shared buffer race",
+      "question": "Thay Atomics.add bằng view[0]++ trên shared bytes có bảo đảm tổng đúng dưới concurrency không?",
+      "options": [
+        "Không.",
+        "Có vì cả hai đều JavaScript.",
+        "Có vì same PID.",
+        "Có vì Int32Array."
+      ],
+      "correct": 0,
+      "explanation": "Read-modify-write cần atomicity/protocol; không chạy race để đoán output cố định."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Transfer ownership",
+      "question": "Sau transfer ArrayBuffer, code parent còn dùng view cũ như dữ liệu nguyên vẹn có rủi ro gì?",
+      "options": [
+        "Tự mã hóa view.",
+        "Buffer đã detach nên truy cập/semantics thay đổi theo API view.",
+        "Luôn giữ bản copy gốc.",
+        "Tự đọc Worker memory mới."
+      ],
+      "correct": 1,
+      "explanation": "Ownership contract cần rõ để tránh use-after-transfer logic bugs."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Shared memory limits",
+      "question": "resourceLimits nhỏ nhưng task cấp nhiều ArrayBuffers có bị chặn hoàn toàn bởi old-generation limit không?",
+      "options": [
+        "Có vì buffers là JS syntax.",
+        "Có vì worker làthread.",
+        "Không; giới hạn engine không bao trùm mọi external buffers/process OOM.",
+        "Có tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Memory budget phải xét external/native và mức process/container."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Tail latency",
+      "question": "Average latency giảm nhưng p99 tăng mạnh sau pool change nên làm gì?",
+      "options": [
+        "Báo thành công mọi mặt.",
+        "Bỏ p99 vì ít request.",
+        "Chỉ tăng timeout vô hạn.",
+        "Đánh giá phân bố,queue wait,load và SLO; không chỉ average."
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu phải giữ tiêu chí người dùng và tỷ lệ lỗi."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "CPU measurement",
+      "question": "CPU100% trên một core trong process có chứng minh toàn máy hết CPU chưa?",
+      "options": [
+        "Chưa; cần scope metric,core/quota và workload.",
+        "Có vì mọi CPU metric cùng ý nghĩa.",
+        "Có vì Node single loop.",
+        "Có vì cócluster."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt utilization scope và actual available resources."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Pool fairness",
+      "question": "Một tenant gửi task cực dài chiếm mọi workers; cần gì để bảo vệ tenant khác?",
+      "options": [
+        "Chỉ tăng max queue vô hạn.",
+        "Admission/fair scheduling/quotas và cost limits phù hợp.",
+        "FIFO vô hạn luôn đủ mọi SLO.",
+        "Chỉ đổi ID tenant."
+      ],
+      "correct": 1,
+      "explanation": "Multi-tenant fairness là policy resource,không tự có nhờ pool."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Task result protocol",
+      "question": "Worker có progress,multiple chunks,error và completion cần contract nào?",
+      "options": [
+        "Chỉ dùng timestamp làm mọi loại message.",
+        "Không cần distinguish lỗi.",
+        "Task IDs,message types và state machine hoàn tất đúng một lần.",
+        "Mọi message đều res.json ngay."
+      ],
+      "correct": 2,
+      "explanation": "Định nghĩa protocol giúp handle cancellation,duplicates và late events."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Restart budget",
+      "question": "Cluster worker lỗi liên tục do migration schema sai; restart vô hạn có thay sửa nguyên nhân không?",
+      "options": [
+        "Có vì PID mới tự đúngschema.",
+        "Có vì process manager.",
+        "Có nếu sốworkers bằngcore.",
+        "Không;cần diagnostic,backoff/circuit và rollout recovery."
+      ],
+      "correct": 3,
+      "explanation": "Supervision phục hồi transient failure,không tự chữa persistent config/data bug."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Load test validity",
+      "question": "Benchmark chỉ dùng endpoint trả text nhỏ có đủ đại diện /api/heavy+DB production không?",
+      "options": [
+        "Không.",
+        "Có vì cùng server port.",
+        "Có vì HTTP200.",
+        "Có vì autocannon đã chạy."
+      ],
+      "correct": 0,
+      "explanation": "Đại diện payload,mix endpoints,think time và dependencies là điều kiện kết luận capacity."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Thread pool versus worker",
+      "question": "Worker Threads có đồng nghĩa cùng cơ chế libuv thread pool của một số I/O APIs không?",
+      "options": [
+        "Chỉ khác tên biến.",
+        "Không; hai cơ chế khác nhau với mục đích/API khác.",
+        "Có vì đều có chữthread.",
+        "Có vì mọi async task làWorker."
+      ],
+      "correct": 1,
+      "explanation": "Không điều chỉnh một cấu hình rồi suy nó tăng mọi loại concurrency."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Error response once",
+      "question": "Worker error rồi exit cả hai cùng gọi response callback có nguy cơ gì?",
+      "options": [
+        "Tự rollback response đầu.",
+        "Không vì events luôn loại nhau.",
+        "Double completion; cần guard/state cleanup và listener policy.",
+        "Tự tạo hai request."
+      ],
+      "correct": 2,
+      "explanation": "Events lifecycle có thể cùng xảy ra,không coi mỗi listener là đường độc lập."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Graceful pool drain",
+      "question": "Dừng pool khi deploy cần xác định gì?",
+      "options": [
+        "Giữ mọi task mới vô hạn.",
+        "Tự restart mỗi Worker vừa stop.",
+        "Chỉ xóa queue reference rồi gọi done.",
+        "Không nhận task mới,drain/cancel tasks và deadline đóng resources."
+      ],
+      "correct": 3,
+      "explanation": "Lifecycle phải xử lý cả active,pending và callback/result ownership."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Data locality",
+      "question": "Offload task rất nhỏ nhưng clone payload rất lớn có thể chậm hơn main không?",
+      "options": [
+        "Có; overhead/copy có thể lớn hơn công việc tiết kiệm.",
+        "Không vì Workers luôn nhanh hơn.",
+        "Không nếu async.",
+        "Chỉ khi port3000."
+      ],
+      "correct": 0,
+      "explanation": "Đo grain size,data transfer và startup/pool reuse."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cluster sessions",
+      "question": "Server sessions trong RAM từng worker sau load balancing có vấn đề gì?",
+      "options": [
+        "JWT luôn có trong source này.",
+        "Request có thể gặp state khác; cần session/state strategy thích hợp.",
+        "Mọi workers tự share session.",
+        "Cùng port tạo shared heap."
+      ],
+      "correct": 1,
+      "explanation": "Stateful sessions và stateless credential có tradeoff riêng,không suy giải pháp chưa triển khai."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Inspector exposure",
+      "question": "Mở Node inspector public để profile production có rủi ro gì?",
+      "options": [
+        "Tự bị auth bảo vệ mọi lúc.",
+        "Không thể ảnh hưởng app.",
+        "Quyền debug có thể rất mạnh; giới hạn truy cập và dữ liệu chẩn đoán.",
+        "Chỉ cho xem CPU chart vô hại."
+      ],
+      "correct": 2,
+      "explanation": "Profiling không được mở thêm control surface ngoài trust boundary."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Capacity target honesty",
+      "question": "Đo được4x ở một workload có thể hứa4x cho mọi dataset,CPU và downstream khác không?",
+      "options": [
+        "Có vì cluster pattern.",
+        "Có vì Worker count.",
+        "Có vì Node24.",
+        "Không; báo điều kiện và giới hạn số đo."
+      ],
+      "correct": 3,
+      "explanation": "Speedup không là hằng số của công nghệ."
+    }
+  ]
+}

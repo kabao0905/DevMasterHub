@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "solidity",
+  "level": "mid",
+  "lesson": "defi",
+  "language": "vi",
+  "sourceHash": "343e51a553c17aaa261b872d70357185a688470aa32f07389c48b47d94ea912b",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo SimpleStaking và bài tập thưởng theo block; EIP-20, SafeERC20 v5.0.2, Solidity 0.8.20, Uniswap docs. Phân biệt stake custody/reward/AMM; xử lý false/no-return, actual received và checkpoint. Công thức tình huống ghi đủ giả định. Không deploy/RPC/token approval/transaction hay mô phỏng tiền thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "DeFi",
+      "question": "DeFi trong bài mô tả gì?",
+      "options": [
+        "Dịch vụ tài chính bằng smart contracts và các thành phần liên quan",
+        "Một token bắt buộc có giá cố định",
+        "Một cơ chế mọi giao dịch không có phí",
+        "Một bảo đảm không có rủi ro bên trung gian nào"
+      ],
+      "correct": 0,
+      "explanation": "Giảm một số trung gian không loại mọi dependency/rủi ro."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "AMM",
+      "question": "AMM thường dùng cơ chế nào?",
+      "options": [
+        "Chỉ cấp allowance cho ví",
+        "Giao dịch với thanh khoản và quy tắc định giá của pool",
+        "Bắt buộc khớp lệnh qua sổ lệnh truyền thống",
+        "Chỉ trả thưởng stake theo block"
+      ],
+      "correct": 1,
+      "explanation": "AMM và staking không là cùng chức năng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Liquidity pool",
+      "question": "Liquidity pool chủ yếu chứa gì?",
+      "options": [
+        "Chỉ số dư gas của frontend",
+        "Chỉ các proposal DAO",
+        "Tài sản theo thiết kế để phục vụ các hoạt động như swap",
+        "Chỉ danh sách private key của LP"
+      ],
+      "correct": 2,
+      "explanation": "Tài sản và cơ chế share phụ thuộc giao thức."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Staking bài",
+      "question": "SimpleStaking đang minh họa thao tác nào?",
+      "options": [
+        "Tự trở thành validator Ethereum",
+        "Tự swap token theo giá AMM",
+        "Tự cho vay dựa trên tài sản ký quỹ",
+        "Chuyển token vào contract và ghi lượng stake của caller"
+      ],
+      "correct": 3,
+      "explanation": "Staking ứng dụng này khác consensus staking của Ethereum."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Lending",
+      "question": "Lending được nguồn nhắc đến như mô hình gì?",
+      "options": [
+        "Cho vay với cơ chế tài sản bảo đảm theo thiết kế",
+        "Chỉ tạo event Transfer",
+        "Chỉ đổi decimals của token",
+        "Chỉ cấp role owner"
+      ],
+      "correct": 0,
+      "explanation": "Chưa có code lending trong SimpleStaking."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Interface",
+      "question": "stakingToken có kiểu Solidity nào?",
+      "options": [
+        "mapping",
+        "IERC20",
+        "ERC721",
+        "address payable thuần"
+      ],
+      "correct": 1,
+      "explanation": "Biến được dùng để gọi interface token."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Constructor",
+      "question": "Constructor SimpleStaking nhận gì?",
+      "options": [
+        "Reward rate theo USD",
+        "Danh sách mọi LP của Uniswap",
+        "Địa chỉ token được chọn để stake",
+        "Một private key của người nạp"
+      ],
+      "correct": 2,
+      "explanation": "Source chưa nhận các cấu hình reward khác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Ép interface",
+      "question": "IERC20(_tokenAddress) tạo điều gì?",
+      "options": [
+        "Một token contract mới",
+        "Một lần chuyển token ngay",
+        "Một chứng nhận địa chỉ đó đáng tin",
+        "Tham chiếu kiểu interface tới địa chỉ đã cho"
+      ],
+      "correct": 3,
+      "explanation": "Ép kiểu không kiểm toàn bộ hành vi token."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Sổ stake",
+      "question": "stakedAmount ánh xạ gì?",
+      "options": [
+        "address sang uint256",
+        "uint256 sang bool",
+        "address sang string",
+        "string sang address"
+      ],
+      "correct": 0,
+      "explanation": "Sổ ghi lượng stake theo caller."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Entry point",
+      "question": "stake trong nguồn có visibility nào?",
+      "options": [
+        "Chỉ constructor",
+        "external",
+        "private",
+        "internal"
+      ],
+      "correct": 1,
+      "explanation": "Đây là hàm được gọi từ bên ngoài contract."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Điều kiện amount",
+      "question": "stake kiểm gì trước khi gọi token?",
+      "options": [
+        "Token phải có đúng 18 decimals",
+        "Pool phải có hai tài sản",
+        "amount > 0",
+        "Caller phải là owner"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn không có các kiểm kia."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Chuyển từ đâu",
+      "question": "transferFrom nguồn yêu cầu chuyển token từ ai?",
+      "options": [
+        "Deployer luôn luôn",
+        "address(0)",
+        "stakingToken contract tự động",
+        "msg.sender"
+      ],
+      "correct": 3,
+      "explanation": "Caller của staking là nguồn tài sản theo code."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Chuyển tới đâu",
+      "question": "Địa chỉ nhận trong transferFrom là gì?",
+      "options": [
+        "address(this) của SimpleStaking",
+        "msg.sender",
+        "address(0)",
+        "Owner ngầm định"
+      ],
+      "correct": 0,
+      "explanation": "Token được yêu cầu đưa vào custody của staking contract."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Cộng stake",
+      "question": "Sau transferFrom không revert, nguồn thực hiện gì?",
+      "options": [
+        "Tự mint LP token ERC-20",
+        "stakedAmount[msg.sender] += amount",
+        "Tự tính reward mọi block",
+        "Tự trả lại token ngay"
+      ],
+      "correct": 1,
+      "explanation": "Đoạn mẫu chỉ ghi lượng nạp theo amount yêu cầu."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Allowance spender",
+      "question": "Đối với token thông thường, user cần cấp allowance cho ai để nguồn pull token?",
+      "options": [
+        "Bất kỳ router cùng symbol",
+        "Địa chỉ zero",
+        "Địa chỉ SimpleStaking",
+        "Địa chỉ user tự động"
+      ],
+      "correct": 2,
+      "explanation": "Caller tới token là staking contract."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Reward code",
+      "question": "Nguồn hiện có công thức reward theo block chưa?",
+      "options": [
+        "Có, mapping tự sinh reward",
+        "Có, transferFrom tự trả lãi",
+        "Có, external tự chạy mỗi block",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Đó là phần bài tập cần mở rộng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Withdraw code",
+      "question": "Nguồn có hàm unstake/withdraw không?",
+      "options": [
+        "Không",
+        "Có, getter stakedAmount tự chuyển tiền",
+        "Có, IERC20 tự tạo đường rút",
+        "Có, require amount dương tự mở quyền rút"
+      ],
+      "correct": 0,
+      "explanation": "Ghi lượng stake không tự cung cấp đường ra."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Đơn vị",
+      "question": "amount của stake dùng đơn vị gì theo token interface?",
+      "options": [
+        "USD theo giá thời gian thực",
+        "Base units của token",
+        "Token hiển thị tự động bất kể decimals",
+        "Wei gas của staking contract"
+      ],
+      "correct": 1,
+      "explanation": "Source không scale hoặc quy đổi giá."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Block reward",
+      "question": "Thưởng theo block khác thưởng theo giây ở điểm nào?",
+      "options": [
+        "Block reward tự tạo token không cần funding",
+        "Thưởng theo giây không dùng số nguyên",
+        "Đơn vị khoảng tăng của công thức khác nhau",
+        "Mọi block luôn dài chính xác một giây"
+      ],
+      "correct": 2,
+      "explanation": "Cần định nghĩa clock và đơn vị rate."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Safe wrapper",
+      "question": "SafeERC20 v5.0.2 chủ yếu hỗ trợ gì khi gọi token?",
+      "options": [
+        "Bảo đảm mọi token có giá tăng",
+        "Tự tạo reward reserve",
+        "Tự loại mọi callback/reentrancy",
+        "Xử lý các convention return/error được hỗ trợ"
+      ],
+      "correct": 3,
+      "explanation": "Wrapper không thay toàn bộ policy tài sản."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "False bỏ qua",
+      "question": "Token trả false từ transferFrom nhưng không revert. Nguồn có kiểm bool đó không?",
+      "options": [
+        "Không, nó bỏ qua return value",
+        "Có, Solidity luôn tự require bool true",
+        "Có, amount > 0 kiểm kết quả",
+        "Chỉ caller EOA mới có kiểm"
+      ],
+      "correct": 0,
+      "explanation": "Sổ có thể tăng dù token không chuyển theo kỳ vọng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Revert token",
+      "question": "Nếu transferFrom revert và lỗi propagate bình thường, dòng cộng stakedAmount có chạy không?",
+      "options": [
+        "Chỉ chạy khi amount dương",
+        "Không",
+        "Có, external luôn bỏ lỗi token",
+        "Có, nhưng chỉ cộng một nửa"
+      ],
+      "correct": 1,
+      "explanation": "Call thất bại chặn luồng tiếp theo."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Allowance đúng người",
+      "question": "User approve router R nhưng gọi stake trực tiếp S. Có tự đủ allowance cho S không?",
+      "options": [
+        "Có, IERC20 tự đổi spender",
+        "Chỉ cần amount nhỏ hơn balance",
+        "Không, allowance gắn owner/spender/token",
+        "Có, mọi spender cùng frontend chia sẻ hạn mức"
+      ],
+      "correct": 2,
+      "explanation": "Định danh spender quan trọng trong luồng pull."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Balance token",
+      "question": "Allowance đủ nhưng user thiếu token có tự stake thành công với plain OZ ERC20 không?",
+      "options": [
+        "Có, allowance tự là tài sản ký quỹ",
+        "Có, staking mint phần thiếu",
+        "Chỉ nếu amount lớn hơn 0",
+        "Không, token còn kiểm balance"
+      ],
+      "correct": 3,
+      "explanation": "Quyền chi khác với tài sản sẵn có."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Fee on transfer",
+      "question": "Yêu cầu chuyển 100 nhưng token thu phí, contract thực nhận 98. Nguồn ghi stake bao nhiêu nếu call không revert?",
+      "options": [
+        "100",
+        "98",
+        "2",
+        "0 tự động"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn cộng amount yêu cầu, chưa đo lượng thực nhận."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Actual received",
+      "question": "Để hỗ trợ fee-on-transfer theo policy dựa lượng nhận, thường cần xét gì?",
+      "options": [
+        "Chỉ symbol token",
+        "Chênh balance trước/sau cùng semantics token và callback/invariant liên quan",
+        "Chỉ return bool để suy đúng 100 luôn",
+        "Chỉ decimals để suy phí"
+      ],
+      "correct": 1,
+      "explanation": "Đo balance phải nằm trong thiết kế tài sản được hỗ trợ, không là giải pháp cho mọi token tùy ý."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "No return token",
+      "question": "Một token cũ không trả bool như ABI IERC20 kỳ vọng có thể gây vấn đề gì khi gọi high-level?",
+      "options": [
+        "Tự mint đúng amount cho staking",
+        "Chỉ tăng gas là mọi ABI tương thích",
+        "Không tương thích return decoding; cần wrapper/policy phù hợp",
+        "Tự được IERC20 sửa ABI trên chain"
+      ],
+      "correct": 2,
+      "explanation": "SafeERC20 hỗ trợ một số convention no-return, không mọi hành vi token."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "SafeERC20 và phí",
+      "question": "safeTransferFrom thành công có tự bảo đảm contract thực nhận bằng amount đối với token có fee không?",
+      "options": [
+        "Có, safe luôn bỏ mọi phí",
+        "Có, wrapper tự đổi economics token",
+        "Chỉ nếu user đủ allowance",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Return handling không thay cơ chế số lượng thực nhận."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Token tùy ý",
+      "question": "Constructor nhận địa chỉ không zero có đủ chứng minh token đáng tin/chuẩn không?",
+      "options": [
+        "Không, cần policy và validation phù hợp với tài sản hỗ trợ",
+        "Có, mọi address không zero có IERC20",
+        "Có, type cast kiểm mọi chức năng",
+        "Chỉ cần import từ OpenZeppelin"
+      ],
+      "correct": 0,
+      "explanation": "Source type không chứng nhận behavior tại địa chỉ."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "External interaction",
+      "question": "transferFrom tới token là loại thao tác nào đối với staking?",
+      "options": [
+        "Một thao tác luôn không có callback",
+        "External call có thể chuyển control cho code khác",
+        "Phép cộng storage nội bộ thuần",
+        "Một event không thực thi code"
+      ],
+      "correct": 1,
+      "explanation": "Cần xem dependency/call graph theo token hỗ trợ."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Thứ tự effects",
+      "question": "Source cập nhật stakedAmount trước hay sau transferFrom?",
+      "options": [
+        "Chỉ trong constructor",
+        "Không bao giờ cập nhật",
+        "Sau",
+        "Trước"
+      ],
+      "correct": 2,
+      "explanation": "Với mở rộng cần review callback và accounting ở boundary này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Không khẳng định exploit",
+      "question": "Chỉ thấy external call trước cộng stake có đủ chứng minh một exploit rút tiền cụ thể trong nguồn chưa có withdraw không?",
+      "options": [
+        "Có, mọi external call trước phép cộng tự mất toàn tiền",
+        "Có, tên stake tự tạo withdraw ẩn",
+        "Chỉ cần amount lớn hơn 0",
+        "Không, cần phân tích code/token/callback/invariant thực"
+      ],
+      "correct": 3,
+      "explanation": "Phải chỉ ra đường tác động cụ thể thay vì nhãn chung."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Nhiều lần stake",
+      "question": "User có stake 5 rồi stake thêm 3 token base units thành công, không thay đổi khác. Sổ là gì?",
+      "options": [
+        "8",
+        "3",
+        "5",
+        "15"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn cộng dồn."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Không gửi ETH",
+      "question": "Stake ERC-20 của mẫu có payable để nhận Ether kèm không?",
+      "options": [
+        "Chỉ khi decimals bằng 18",
+        "Không",
+        "Có, transferFrom tự làm payable",
+        "Có, mọi external đều payable"
+      ],
+      "correct": 1,
+      "explanation": "Token call khác chuyển value Ether."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Direct transfer",
+      "question": "User transfer token thẳng vào S thay vì gọi stake. stakedAmount của user tự tăng không?",
+      "options": [
+        "Có, khi user đọc getter",
+        "Chỉ nếu amount lớn hơn 0",
+        "Không, source không nhận diện/ghi call transfer đó",
+        "Có, mapping tự đồng bộ token balance"
+      ],
+      "correct": 2,
+      "explanation": "Custody token balance và per-user accounting không tự gắn nhau."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Reward formula",
+      "question": "Giả sử reward = stake * rate * elapsedBlocks, stake 2, rate 3 đơn vị thưởng/stake/block, 4 block. Reward là gì?",
+      "options": [
+        "9",
+        "6",
+        "12",
+        "24"
+      ],
+      "correct": 3,
+      "explanation": "Công thức tình huống có đơn vị rõ; đây không phải công thức sẵn trong nguồn."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Không tự chạy",
+      "question": "Thêm công thức reward trong hàm có làm EVM tự gọi hàm mỗi block không?",
+      "options": [
+        "Không, cần trigger hoặc tính tích lũy khi tương tác",
+        "Có, block.number tự lên lịch transaction",
+        "Có, mapping tự cập nhật theo thời gian",
+        "Chỉ cần external thay public"
+      ],
+      "correct": 0,
+      "explanation": "Clock tăng không đồng nghĩa code tự thực thi."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Checkpoint",
+      "question": "lastRewardBlock thường giúp quản lý điều gì trong bài tập thưởng theo block?",
+      "options": [
+        "Compiler patch version",
+        "Mốc đã tính thưởng để không đếm lại cùng khoảng",
+        "Địa chỉ spender đã approve",
+        "Tỷ giá USD của token"
+      ],
+      "correct": 1,
+      "explanation": "Cần cập nhật mốc theo semantics reward được thiết kế."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Double claim",
+      "question": "Tính thưởng từ cùng lastRewardBlock rồi trả mà không cập nhật mốc có thể dẫn tới gì?",
+      "options": [
+        "Tự tăng staking amount đúng lượng reward",
+        "Chỉ thay đổi hiển thị decimals",
+        "Claim lại cùng khoảng tích lũy",
+        "Tự giảm reward về 0 theo EIP-20"
+      ],
+      "correct": 2,
+      "explanation": "Reward debt/checkpoint là phần accounting cần thiết."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Stake mới và thưởng cũ",
+      "question": "Nếu tăng stake trước khi settle phần thưởng của khoảng trước, có thể tạo sai lệch gì?",
+      "options": [
+        "Rate tự về 0 vì amount tăng",
+        "Allowance của user tự giảm bằng reward",
+        "Không bao giờ lệch vì uint256 checked",
+        "Stake mới có thể được tính hồi tố nếu công thức dùng số dư mới cho cả khoảng"
+      ],
+      "correct": 3,
+      "explanation": "Cần chia khoảng theo thay đổi số dư."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Unstake và reward",
+      "question": "Nếu giảm stake về 0 trước khi tính reward cũ bằng số dư hiện tại có thể làm gì?",
+      "options": [
+        "Mất phần thưởng đã tích lũy nếu không lưu/settle trước",
+        "Tự trả thưởng gấp đôi",
+        "Tự tăng allowance",
+        "Chỉ token decimals khác 18 mới lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Thứ tự cập nhật phải giữ entitlement theo thời gian."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Funding reward",
+      "question": "Công thức ghi reward dương có tự tạo token để trả không?",
+      "options": [
+        "Chỉ cần event RewardPaid",
+        "Không, cần nguồn tài sản/quyền mint hoặc reserve theo thiết kế",
+        "Có, uint256 reward tự là token",
+        "Có, IERC20 tự mint cho mọi staking"
+      ],
+      "correct": 1,
+      "explanation": "Entitlement số học và khả năng thanh toán khác nhau."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Tài sản khác decimals",
+      "question": "Stake token 6 decimals, reward token 18 decimals. Có thể dùng raw amounts như cùng đơn vị mà không định nghĩa scale không?",
+      "options": [
+        "Có, phép nhân Solidity tự hiểu decimals",
+        "Chỉ cần symbol khác nhau",
+        "Không",
+        "Có, mọi IERC20 tự chuyển scale"
+      ],
+      "correct": 2,
+      "explanation": "Cần định nghĩa rate và precision thống nhất."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Integer rounding",
+      "question": "Trong tính reward uint256, chia 1 cho 3 trước khi nhân 100 cho kết quả gì?",
+      "options": [
+        "33",
+        "34",
+        "100",
+        "0"
+      ],
+      "correct": 3,
+      "explanation": "Chia số nguyên mất phần lẻ trước phép nhân sau đó."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Mul trước div",
+      "question": "Với số không overflow, (1 * 100) / 3 theo uint256 là gì?",
+      "options": [
+        "33",
+        "0",
+        "34",
+        "100"
+      ],
+      "correct": 0,
+      "explanation": "Đổi thứ tự có thể giữ precision hơn nhưng phải xét overflow và đơn vị."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Overflow checked",
+      "question": "Reward multiplication vượt uint256 ở 0.8.20 mặc định làm gì?",
+      "options": [
+        "Tự mint nhiều hơn phần vượt",
+        "Revert",
+        "Tự cho số thực lớn hơn",
+        "Tự cắt reward xuống cap sản phẩm"
+      ],
+      "correct": 1,
+      "explanation": "Checked math không tự sửa thiết kế công thức."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Rate thay đổi",
+      "question": "Nếu reward rate đổi ở giữa kỳ, dùng rate mới cho cả kỳ có luôn đúng không?",
+      "options": [
+        "Có, block.number lưu mọi rate trong một số",
+        "Chỉ khi token decimals 18",
+        "Không, cần policy và checkpoint cho từng khoảng rate",
+        "Có, rate mới tự sửa lịch sử"
+      ],
+      "correct": 2,
+      "explanation": "Cần xác định quyền hưởng theo từng khoảng thời gian."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Pool share",
+      "question": "Pool thưởng chia theo tỉ lệ stake: A 25, tổng 100, kỳ thưởng 40, không rounding. A nhận bao nhiêu?",
+      "options": [
+        "25",
+        "40",
+        "15",
+        "10"
+      ],
+      "correct": 3,
+      "explanation": "25/100 của 40 là 10 theo giả định tình huống."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Total zero",
+      "question": "Công thức rewardPerShare chia totalStaked cần xử lý gì khi tổng bằng 0?",
+      "options": [
+        "Policy cho khoảng không có stake và tránh chia zero",
+        "Tự dùng tx.origin làm mẫu số",
+        "Chỉ tăng gas để chia được",
+        "Uint256 tự trả 0 không lỗi khi chia zero"
+      ],
+      "correct": 0,
+      "explanation": "Chia zero vẫn lỗi cả trong unchecked."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Mỗi block không mỗi giây",
+      "question": "Rate 10 đơn vị/block có tự cam kết đúng 10 đơn vị/giây không?",
+      "options": [
+        "Chỉ cần dùng block.timestamp để đọc block number",
+        "Không, hai đơn vị thời gian khác nhau",
+        "Có, mọi block một giây cố định",
+        "Có, chỉ khác tên biến"
+      ],
+      "correct": 1,
+      "explanation": "Không suy lịch theo giây từ một rate theo block."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "LP và stake",
+      "question": "Ghi stakedAmount đơn lẻ trong SimpleStaking có tự tạo liquidity pool swap hai tài sản không?",
+      "options": [
+        "Có, IERC20 tự có reserve thứ hai",
+        "Chỉ cần approve nhiều hơn",
+        "Không",
+        "Có, mọi staking contract là AMM"
+      ],
+      "correct": 2,
+      "explanation": "Chức năng pool cần cấu trúc và invariant riêng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Constant product",
+      "question": "Với AMM mô hình đơn giản bỏ phí, x * y = k mô tả gì?",
+      "options": [
+        "Mọi LP nhận lợi nhuận cố định",
+        "Giá token không thể đổi",
+        "Mọi giao thức DeFi đều cùng công thức",
+        "Quan hệ reserve trước/sau swap theo giả định"
+      ],
+      "correct": 3,
+      "explanation": "Phải giữ phạm vi mô hình, không áp cho mọi AMM tùy ý."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Price impact",
+      "question": "Trong mô hình AMM thích hợp, giao dịch lớn so với độ sâu pool thường gây gì?",
+      "options": [
+        "Tác động giá lớn hơn theo đường cong",
+        "Luôn cùng giá spot cho mọi kích thước",
+        "Không bao giờ thay reserve",
+        "Tự phát sinh thêm token miễn phí"
+      ],
+      "correct": 0,
+      "explanation": "Kích thước giao dịch so với thanh khoản ảnh hưởng giá thực thi."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "LP share v2",
+      "question": "LP token trong Uniswap v2 chủ yếu biểu diễn gì?",
+      "options": [
+        "Một NFT bắt buộc duy nhất",
+        "Phần sở hữu tương ứng trong pool theo accounting giao thức",
+        "Một bảo đảm hoàn lại USD cố định",
+        "Quyền sở hữu mọi token contract trong chain"
+      ],
+      "correct": 1,
+      "explanation": "Các version khác có thể dùng kiểu position khác."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "LP returns",
+      "question": "Có phí giao dịch đồng nghĩa LP chắc chắn lời hơn giữ tài sản không?",
+      "options": [
+        "Có, constant product khóa giá trị USD",
+        "Chỉ cần pool có nhiều holder",
+        "Không, cần xét biến động tương đối và các rủi ro/chi phí",
+        "Có, fee luôn bù mọi chênh lệch"
+      ],
+      "correct": 2,
+      "explanation": "Doanh thu phí không bảo đảm tổng lợi nhuận."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Oracle đơn giản",
+      "question": "Giá spot của một pool có nên được coi là nguồn giá không thể tác động cho lending không?",
+      "options": [
+        "Có, pool là contract nên giá luôn đúng ngoài thị trường",
+        "Có, reserve public nghĩa không thể đổi",
+        "Chỉ cần token có decimals 18",
+        "Không, cần thiết kế oracle/risk model phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Giá quan sát và nguồn định giá đáng tin có yêu cầu khác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "APR cố định",
+      "question": "Source chỉ ghi stake có tự bảo đảm một APR cố định không?",
+      "options": [
+        "Không, chưa có reward schedule/funding/công thức đó",
+        "Có, mọi ERC-20 staking có cùng APR",
+        "Có, block.number tự đặt lãi suất",
+        "Chỉ cần contract gọi SimpleStaking"
+      ],
+      "correct": 0,
+      "explanation": "Tên chức năng không là cam kết economics."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Reward token chuyển lỗi",
+      "question": "Một claim mở rộng bỏ qua bool false từ reward transfer nhưng reset entitlement có rủi ro gì?",
+      "options": [
+        "Chỉ event bị thiếu",
+        "Mất quyền thưởng dù tài sản chưa chuyển theo kỳ vọng",
+        "Reward tự trả lần sau theo EIP-20",
+        "Staked principal tự tăng bù"
+      ],
+      "correct": 1,
+      "explanation": "Return handling và accounting phải nhất quán."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Withdraw quyền",
+      "question": "Unstake mở rộng nhận address user tùy ý nhưng không kiểm caller có quyền. Cần gì?",
+      "options": [
+        "Chỉ dùng IERC20 là đủ",
+        "Chỉ thêm event Unstaked",
+        "Ràng buộc chủ thể/phạm vi ủy quyền và recipient đúng",
+        "Chỉ amount > 0"
+      ],
+      "correct": 2,
+      "explanation": "Accounting per-user cần authorization ở đường chi tài sản."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Rebase token",
+      "question": "Token rebase có thể làm balance tài sản staking đổi mà không có stake call mới không?",
+      "options": [
+        "Không, IERC20 cấm mọi balance thay đổi ngoài transfer",
+        "Chỉ khi stakedAmount public",
+        "Chỉ nếu staking approve chính nó",
+        "Có theo semantics token đó"
+      ],
+      "correct": 3,
+      "explanation": "Hỗ trợ token kiểu này cần accounting policy riêng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "False và sổ giả",
+      "question": "Token trả false, không chuyển 100 nhưng nguồn vẫn cộng stakedAmount 100; sau đó thêm withdraw dựa sổ. Cách sửa đúng phạm vi?",
+      "options": [
+        "Xử lý kết quả token và định nghĩa lượng được ghi/nhận thực, giữ invariant tài sản ở cả nạp/rút",
+        "Chỉ guard withdraw vì false luôn là reentrancy",
+        "Chỉ emit StakeSucceeded trước transfer",
+        "Đổi amount sang uint8 để token bắt buộc true"
+      ],
+      "correct": 0,
+      "explanation": "Sổ không được ghi entitlement từ một chuyển không xảy ra như mong đợi."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Fee token hụt dự trữ",
+      "question": "Hai user mỗi người stake yêu cầu 100, pool thực nhận mỗi lần 98 nhưng ghi 200 và hứa trả đủ 200. Vấn đề và hướng thiết kế?",
+      "options": [
+        "Chỉ tăng allowance lên 200 là đủ thanh toán",
+        "Nợ sổ vượt tài sản 4; cần policy loại token phí hoặc ghi/chi theo semantics lượng thực phù hợp",
+        "SafeERC20 tự tạo 4 token bù thiếu",
+        "Decimals 18 làm 196 bằng 200 khi hiển thị"
+      ],
+      "correct": 1,
+      "explanation": "Compatibility và solvency phải được thiết kế cùng accounting."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Stake hồi tố",
+      "question": "A stake 10 ở block 100; block 110 thêm 90. Công thức dùng stake hiện tại 100 nhân toàn 10 block chưa settle. Sai ở đâu?",
+      "options": [
+        "Chỉ lỗi nếu token có fee",
+        "Đổi uint256 thành uint128 tự chia đúng hai khoảng",
+        "90 mới được tính thưởng hồi tố; settle khoảng cũ với số dư cũ trước thay đổi",
+        "Block.number tự biết phần stake cũ nên công thức vẫn đúng"
+      ],
+      "correct": 2,
+      "explanation": "Thay số dư cần checkpoint theo các khoảng entitlement."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Unstake mất thưởng",
+      "question": "Hàm unstake zero stake rồi tính reward bằng stake hiện tại từ checkpoint cũ. User mất thưởng đã kiếm. Cách sửa?",
+      "options": [
+        "Chỉ gửi thêm event để ví tự tạo reward",
+        "Không cần sửa vì stake zero luôn nghĩa chưa từng stake",
+        "Dùng tx.origin làm số dư trước đó",
+        "Settle/lưu reward tích lũy trước đổi principal và cập nhật checkpoint nhất quán"
+      ],
+      "correct": 3,
+      "explanation": "Cần giữ quyền thưởng trước khi thay dữ liệu đầu vào công thức."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Rate update hồi tố",
+      "question": "Admin đổi rate ở block 200 nhưng không checkpoint, lần claim ở 250 áp rate mới từ block 100. Thiết kế đúng hơn?",
+      "options": [
+        "Tách các khoảng rate/settle trước thay đổi để chính sách không hồi tố ngoài ý định",
+        "Áp rate mới toàn lịch sử vì uint256 không lưu số âm",
+        "Chỉ đổi tên rate thành APR",
+        "Bỏ lastRewardBlock để không có khoảng sai"
+      ],
+      "correct": 0,
+      "explanation": "Lifecycle cấu hình tác động accounting của nhiều user."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Same token principal reward",
+      "question": "Pool dùng cùng token cho principal và reward, admin xem toàn balance là reward reserve. Điều cần bảo toàn?",
+      "options": [
+        "Chỉ cấp unlimited allowance cho admin",
+        "Tách nghĩa vụ principal/reward và phần được phép chi, tránh dùng tiền gốc trả thưởng ngoài policy",
+        "Balance on-chain luôn toàn lợi nhuận",
+        "Chỉ totalStaked getter là đủ không cần invariant"
+      ],
+      "correct": 1,
+      "explanation": "Cùng địa chỉ token không làm mọi tài sản tự do phân phối."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "APR và funding",
+      "question": "UI hiển thị thưởng công thức rất cao nhưng contract không có reserve hoặc quyền mint reward. Hướng đánh giá đúng?",
+      "options": [
+        "IERC20 cho mọi contract quyền _mint",
+        "Chỉ cần thêm event RewardPaid để có nguồn tiền",
+        "Phân biệt entitlement tính toán với khả năng chi và policy funding; thiết kế giới hạn/schedule nhất quán",
+        "Công thức dương tự tạo token khi claim"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả số học không bảo đảm thanh toán."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Precision nhiều token",
+      "question": "Stake token 6 decimals, reward token 18, rate nhập dạng token hiển thị rồi nhân raw stake. Cần gì?",
+      "options": [
+        "Cùng IERC20 nghĩa raw units tương đương",
+        "Chỉ đổi symbol để UI tự tính đúng",
+        "Dùng float trong Solidity uint256 để giữ phần lẻ",
+        "Quy định đơn vị/precision rate và quy đổi rõ trong mọi công thức, kiểm rounding/overflow"
+      ],
+      "correct": 3,
+      "explanation": "Đơn vị phải theo cả tài sản lẫn clock."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Claim lặp cùng khoảng",
+      "question": "Claim trả reward rồi không cập nhật checkpoint/debt; caller claim tiếp trong cùng block. Cần sửa gì?",
+      "options": [
+        "Ghi nhận đã settle/chi trước interaction theo policy để cùng khoảng không được lĩnh lại",
+        "Mỗi block tự cho phép đúng một call nên không cần state",
+        "Chỉ thêm require amount > 0",
+        "Dùng safeTransferFrom thay transfer mà bỏ accounting"
+      ],
+      "correct": 0,
+      "explanation": "Timing và external calls không thay state tracking quyền thưởng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Callback token",
+      "question": "Stake gọi token tùy cấu hình trước effects, extension khác sửa tổng stake/reward có thể gọi qua callback. Review cần bao gì?",
+      "options": [
+        "Mọi external call đều chứng minh exploit thành công ngay",
+        "Call graph token/các entry points và invariant principal/reward, guard/thứ tự phù hợp tài sản hỗ trợ",
+        "Chỉ import IERC20 là callback bị cấm",
+        "Chỉ kiểm amount dương để mọi token an toàn"
+      ],
+      "correct": 1,
+      "explanation": "Phải phân tích đường tác động thật và boundary chung."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Direct transfer attribution",
+      "question": "User gửi thẳng 100 token vào S rồi gọi getter và yêu cầu stake của mình tăng 100. Vì sao không suy được attribution đó từ total balance?",
+      "options": [
+        "Transfer event tự sửa stakedAmount của source",
+        "Chỉ cần user approve sau khi chuyển",
+        "Total balance không tự ghi ai có entitlement; cần luồng nạp/credit được thiết kế và xác minh",
+        "Mọi token vào S tự thuộc caller getter đầu tiên"
+      ],
+      "correct": 2,
+      "explanation": "Custody tổng không thay per-user accounting."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Total zero interval",
+      "question": "Reward phân phối theo pool share, totalStaked bằng 0 trong 50 block rồi user mới stake. Cần quyết định nào?",
+      "options": [
+        "Gán toàn phần quá khứ cho user mới mặc định của ERC-20",
+        "Dùng 0 làm mẫu số trong unchecked",
+        "Chỉ gọi balanceOf để thời gian ngừng tăng",
+        "Policy cho reward khoảng trống và checkpoint để không chia zero hoặc phát thưởng hồi tố ngoài ý định"
+      ],
+      "correct": 3,
+      "explanation": "Khoảng không có người stake cần semantics rõ ràng."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Pool share thay đổi",
+      "question": "A stake 50, tổng 100 trong một kỳ; B mới thêm 900 cuối kỳ. Dùng tổng hiện tại 1000 cho toàn reward kỳ cũ gây gì?",
+      "options": [
+        "Pha loãng quyền của kỳ trước; cần checkpoint/index theo thay đổi stake",
+        "Không sai vì tổng hiện tại luôn đại diện toàn quá khứ",
+        "Chỉ amount của A cần đổi decimals",
+        "Allowance của B tự bù cho A"
+      ],
+      "correct": 0,
+      "explanation": "Tỷ lệ tham gia có chiều thời gian, không chỉ snapshot cuối."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Rounding exploit pattern",
+      "question": "Reward tính bằng phép chia nguyên và user chia stake thành nhiều tài khoản nhỏ. Khi chọn rounding policy cần xét gì?",
+      "options": [
+        "Dùng cùng symbol loại được phân mảnh tài khoản",
+        "Khả năng phụ thuộc cách chia/gộp, bảo toàn tổng và dust theo công thức cụ thể",
+        "Uint256 tự bảo đảm mọi cách chia đều cùng kết quả",
+        "Chỉ tổng token supply quyết định rounding"
+      ],
+      "correct": 1,
+      "explanation": "Không chỉ kiểm một trường hợp số tròn cho accounting."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Rebase solvency",
+      "question": "StakedAmount cố định nhưng token rebase giảm balance pool mà không qua hàm staking. Cách thiết kế phù hợp?",
+      "options": [
+        "Public mapping tự giảm theo token balance",
+        "Chỉ increaseAllowance bù được tài sản hụt",
+        "Xác định policy không hỗ trợ hoặc mô hình shares/accounting phản ánh semantics rebase",
+        "SafeERC20 ngăn mọi rebase ngoài transfer"
+      ],
+      "correct": 2,
+      "explanation": "Return wrapper không quản lý mọi thay đổi tài sản ngoài call."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Unstake và claim ordering",
+      "question": "User giảm principal đồng thời claim; code chuyển tài sản ra trước khi cập nhật stake/debt. Cần phối hợp gì?",
+      "options": [
+        "Chỉ kiểm amount > 0 rồi chuyển là đủ",
+        "Chỉ event indexed giúp ngăn callback",
+        "Chỉ số block hiện tại thay mọi tracking",
+        "Authorization, settlement/checkpoint và effects trước external interactions phù hợp với invariant"
+      ],
+      "correct": 3,
+      "explanation": "Principal và reward dùng chung state cần thứ tự nhất quán."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "AMM nhầm staking",
+      "question": "Nhóm thêm hai token vào SimpleStaking và gọi nó AMM nhưng không có swap/reserve invariant. Điều còn thiếu về chức năng?",
+      "options": [
+        "Cơ chế định giá, swap, liquidity accounting và invariant theo mô hình pool được chọn",
+        "Chỉ đổi tên stakedAmount thành liquidity",
+        "Chỉ cần allowance vô hạn của hai token",
+        "Hai IERC20 tự tạo x * y = k"
+      ],
+      "correct": 0,
+      "explanation": "Số tài sản không tự tạo một giao thức AMM."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "LP lợi nhuận cam kết",
+      "question": "Sản phẩm nói LP luôn lời vì có phí, dù giá tương đối hai tài sản thay đổi mạnh. Cách giải thích đúng?",
+      "options": [
+        "Chỉ tăng số lượng LP là loại hết biến động",
+        "Phí chỉ một thành phần; LP có thể kém giữ tài sản và còn rủi ro thị trường/giao thức",
+        "Constant product giữ giá trị USD không đổi",
+        "LP token luôn đổi được đúng lượng ban đầu của từng tài sản"
+      ],
+      "correct": 1,
+      "explanation": "Không biến cơ chế phí thành bảo đảm lợi nhuận."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Clock sai đơn vị",
+      "question": "Rate được cấu hình theo block nhưng developer dùng block.timestamp delta như số block. Hệ quả và sửa?",
+      "options": [
+        "Chỉ token decimals cần đổi",
+        "Thưởng sẽ luôn bằng 0 nên không thể trả sai",
+        "Sai đơn vị tích lũy; đồng nhất clock/rate/checkpoint và migration dữ liệu nếu cần",
+        "Timestamp tự được compiler đổi sang block count"
+      ],
+      "correct": 2,
+      "explanation": "Clock và rate là cặp đơn vị phải khớp."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Rút thay user",
+      "question": "Unstake nhận user và amount, giảm sổ user nhưng trả token cho msg.sender không kiểm ủy quyền. Cách sửa?",
+      "options": [
+        "Chỉ dùng SafeERC20 để tự xác định owner",
+        "Chỉ require amount <= tổng pool balance",
+        "Chỉ thêm event từ user tới caller",
+        "Ràng buộc quyền caller và beneficiary, giữ accounting/recipient theo policy rõ"
+      ],
+      "correct": 3,
+      "explanation": "Chuyển token thành công không chứng minh người nhận được quyền nhận."
+    }
+  ]
+}

@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "junior",
+  "lesson": "goroutines",
+  "language": "vi",
+  "sourceHash": "11a206c1d059353cab5c44d0fd491b0536af9869ffb43923f1422ef550905419",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và Go specification. fetchURL chỉ sleep mô phỏng; source chưa drain results nhưng buffer10 đủ5 jobs. Receive đúng là <-ch. Selected fixtures hữu hạn, join/drain; không chạy deadlock, data race hay vòng vô hạn. Không ép thứ tự workers/select; không suy runtime stack2KB là chi phí cố định hoặc tuyên bố chịu tải production.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Start goroutine",
+      "question": "go f() làm gì?",
+      "options": [
+        "Khởi chạy lời gọi f như một goroutine.",
+        "Chờ f xong rồi mới chạy tiếp.",
+        "Tự tạo một process OS riêng.",
+        "Tự retry f vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "Caller không tự chờ goroutine kết thúc."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Create channel",
+      "question": "make(chan int) tạo gì?",
+      "options": [
+        "Một worker đã chạy.",
+        "Channel int không buffer.",
+        "Slice int dài1.",
+        "Map tự thread-safe."
+      ],
+      "correct": 1,
+      "explanation": "Tạo channel không tự tạo producer hay consumer."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Send syntax",
+      "question": "Cú pháp gửi v vào ch là gì?",
+      "options": [
+        "v <- ch để gửi.",
+        "send ch(v) bắt buộc.",
+        "ch <- v.",
+        "ch -> v."
+      ],
+      "correct": 2,
+      "explanation": "Send statement đặt channel ở bên trái toán tử <-."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Receive syntax",
+      "question": "Cú pháp nhận từ ch là gì?",
+      "options": [
+        "v := ->ch.",
+        "ch -> v.",
+        "recv(ch) là built-in duy nhất.",
+        "v := <-ch."
+      ],
+      "correct": 3,
+      "explanation": "Key point receive -> trong source là sai cú pháp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Buffer capacity",
+      "question": "make(chan int,3) cho biết gì?",
+      "options": [
+        "Buffer chứa tối đa3 giá trị đang chờ nhận.",
+        "Luôn tạo3 goroutine.",
+        "Chỉ được gửi tổng cộng3 lần suốt đời.",
+        "Mọi send luôn không block."
+      ],
+      "correct": 0,
+      "explanation": "Buffer đầy mà chưa có receiver thì send có thể block."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Send-only type",
+      "question": "chan<- string cho phép gì qua tham số đó?",
+      "options": [
+        "Chỉ dùng len, không gửi được.",
+        "Gửi string, không nhận qua tên send-only này.",
+        "Chỉ nhận string.",
+        "Đổi channel thành map."
+      ],
+      "correct": 1,
+      "explanation": "Direction là ràng buộc được compiler kiểm tra."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Receive-only type",
+      "question": "jobs <-chan int cho phép gì?",
+      "options": [
+        "Đổi phần tử thành string.",
+        "Tăng capacity khi nhận.",
+        "Nhận int từ jobs.",
+        "Gửi thêm job qua tham số đó."
+      ],
+      "correct": 2,
+      "explanation": "Worker nhận job qua tham số receive-only."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Close meaning",
+      "question": "close(jobs) chủ yếu thông báo gì?",
+      "options": [
+        "Xóa ngay mọi giá trị trong buffer.",
+        "Giết worker bằng OS signal.",
+        "Tự close mọi channel khác.",
+        "Không còn giá trị mới được gửi vào jobs."
+      ],
+      "correct": 3,
+      "explanation": "Receiver vẫn có thể nhận phần buffer còn lại."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Channel range",
+      "question": "for job := range jobs kết thúc khi nào?",
+      "options": [
+        "Khi jobs đóng và đã nhận hết các giá trị được gửi trước đó.",
+        "Ngay khi buffer tạm rỗng dù chưa close.",
+        "Sau một lần nhận.",
+        "Khi worker id bằng3."
+      ],
+      "correct": 0,
+      "explanation": "Channel còn mở nhưng chưa có giá trị khiến receiver chờ."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "WaitGroup purpose",
+      "question": "WaitGroup trong source dùng để làm gì?",
+      "options": [
+        "Bắt mọi panic của workers.",
+        "Chờ worker gọi Done đủ số đã Add.",
+        "Tự khóa mọi biến shared.",
+        "Lưu kết quả từng job."
+      ],
+      "correct": 1,
+      "explanation": "Đây là cơ chế phối hợp vòng đời, không thay mutex hay error propagation."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Add purpose",
+      "question": "wg.Add(1) trước go worker nhằm gì?",
+      "options": [
+        "Tăng buffer results.",
+        "Tự khởi worker bằng Add.",
+        "Đăng ký thêm một tác vụ cần chờ.",
+        "Gửi job có giá trị1."
+      ],
+      "correct": 2,
+      "explanation": "go worker mới là câu lệnh tạo goroutine."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Deferred Done",
+      "question": "defer wg.Done() giúp gì?",
+      "options": [
+        "Tự recover mọi panic để process không chết.",
+        "Làm xong mọi job chưa nhận.",
+        "Close results ngay khi bắt đầu.",
+        "Gọi Done khi worker trả về hoặc unwind trong goroutine đó."
+      ],
+      "correct": 3,
+      "explanation": "Defer không tự phục hồi panic."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Wait purpose",
+      "question": "wg.Wait() làm gì?",
+      "options": [
+        "Chờ counter về0.",
+        "Tự drain results.",
+        "Giết worker đang block.",
+        "Luôn chỉ sleep100ms."
+      ],
+      "correct": 0,
+      "explanation": "Worker còn block trước Done có thể khiến Wait chưa trả về."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Worker output",
+      "question": "Worker nguồn gửi kết quả gì cho mỗi job?",
+      "options": [
+        "HTTP response thật.",
+        "job*2.",
+        "job+id.",
+        "job/2."
+      ],
+      "correct": 1,
+      "explanation": "Kết quả gửi vào results, khác log mô tả job."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Fetch simulation",
+      "question": "fetchURL nguồn thực sự làm gì?",
+      "options": [
+        "Gửi email tới URL.",
+        "Kiểm tra TLS của website.",
+        "Sleep100ms rồi gửi chuỗi, không gọi HTTP.",
+        "Tải HTML từ website thật."
+      ],
+      "correct": 2,
+      "explanation": "Tên hàm không chứng minh có hoạt động network."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Pool size",
+      "question": "Source khởi chạy bao nhiêu worker trong pool?",
+      "options": [
+        "5.",
+        "10.",
+        "Một worker cho mọi int có thể tồn tại.",
+        "3."
+      ],
+      "correct": 3,
+      "explanation": "Loop w từ1 đến3 tạo ba goroutine worker."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Job count",
+      "question": "Source gửi bao nhiêu job vào jobs?",
+      "options": [
+        "5.",
+        "3.",
+        "10.",
+        "100."
+      ],
+      "correct": 0,
+      "explanation": "Loop j từ1 đến5 gửi năm giá trị."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Select purpose",
+      "question": "select thường dùng để làm gì?",
+      "options": [
+        "Chọn worker có id nhỏ nhất.",
+        "Chọn một thao tác channel có thể tiến hành.",
+        "Sắp xếp map.",
+        "Bắt buộc chạy mọi case đồng thời."
+      ],
+      "correct": 1,
+      "explanation": "Nhiều case ready không có ưu tiên source order mặc định."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Channel zero",
+      "question": "Zero value của channel là gì?",
+      "options": [
+        "Một channel đã đóng.",
+        "Một slice rỗng.",
+        "nil.",
+        "Một channel mở capacity1."
+      ],
+      "correct": 2,
+      "explanation": "Nil channel khác channel đã đóng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Shared memory",
+      "question": "Goroutine cùng process có chia sẻ bộ nhớ được không?",
+      "options": [
+        "Không; mỗi goroutine là address space riêng.",
+        "Chỉ chia sẻ string, không chia sẻ int.",
+        "Chỉ khi bật network.",
+        "Có; shared mutable state cần đồng bộ phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Goroutine không tự bảo đảm tránh data race."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "FIFO buffer",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,2);ch<-1;ch<-2;fmt.Println(<-ch,<-ch)}\n",
+      "options": [
+        "1 2.",
+        "2 1.",
+        "0 0.",
+        "Không biên dịch vì nhận hai lần."
+      ],
+      "correct": 0,
+      "explanation": "Hai send tuần tự được nhận theo thứ tự đó."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Closed empty receive",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int);close(ch);v,ok:=<-ch;fmt.Println(v,ok)}\n",
+      "options": [
+        "Block mãi.",
+        "0 false.",
+        "0 true.",
+        "nil false."
+      ],
+      "correct": 1,
+      "explanation": "Channel đóng và rỗng trả zero value kèm ok=false."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Closed buffered receive",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,1);ch<-7;close(ch);a,ok1:=<-ch;b,ok2:=<-ch;fmt.Println(a,ok1,b,ok2)}\n",
+      "options": [
+        "7 false 0 false.",
+        "Panic ở receive thứ hai.",
+        "7 true 0 false.",
+        "0 false 7 true."
+      ],
+      "correct": 2,
+      "explanation": "Close không xóa giá trị còn trong buffer."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Drain range",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,3);ch<-1;ch<-2;ch<-3;close(ch);sum:=0;for v:=range ch{sum+=v};fmt.Println(sum)}\n",
+      "options": [
+        "3.",
+        "0.",
+        "Panic vì channel đóng.",
+        "6."
+      ],
+      "correct": 3,
+      "explanation": "Range nhận1,2,3 rồi dừng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Unbuffered rendezvous",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int);done:=make(chan struct{});go func(){ch<-9;close(done)}();fmt.Println(<-ch);<-done}\n",
+      "options": [
+        "9.",
+        "0.",
+        "Panic vì channel không buffer không gửi được.",
+        "Không biên dịch vì closure."
+      ],
+      "correct": 0,
+      "explanation": "Main nhận để sender tiến hành; done được chờ để join."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Default empty",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int);select{case v:=<-ch:fmt.Println(v);default:fmt.Println(\"empty\")}}\n",
+      "options": [
+        "Lỗi compiler vì default.",
+        "empty.",
+        "0.",
+        "Block vĩnh viễn."
+      ],
+      "correct": 1,
+      "explanation": "Default được chọn khi không communication nào ready."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Nil select",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){var ch chan int;select{case <-ch:fmt.Println(\"value\");default:fmt.Println(\"disabled\")}}\n",
+      "options": [
+        "Panic khi đọc nil channel.",
+        "Block dù có default.",
+        "disabled.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "Nil channel case không tiến hành được."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Send-only restriction",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nfunc main(){ch:=make(chan int,1);var send chan<- int=ch;_ = <-send}\n",
+      "options": [
+        "Có, direction chỉ là comment.",
+        "Có, compiler tự tạo channel khác.",
+        "Chỉ lỗi nếu channel đóng.",
+        "Không, không thể receive qua send-only channel."
+      ],
+      "correct": 3,
+      "explanation": "Channel direction được typechecker kiểm tra."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Receive-only restriction",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nfunc main(){ch:=make(chan int,1);var recv <-chan int=ch;recv<-1}\n",
+      "options": [
+        "Không, không thể send qua receive-only channel.",
+        "Có, gửi và nhận luôn như nhau.",
+        "Có, nếu int nhỏ hơn10.",
+        "Chỉ panic nếu channel nil."
+      ],
+      "correct": 0,
+      "explanation": "Type của recv không cho phép send."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Directional views",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,1);var send chan<- int=ch;var recv <-chan int=ch;send<-5;fmt.Println(<-recv)}\n",
+      "options": [
+        "Block mãi.",
+        "5.",
+        "0.",
+        "Lỗi vì hai biến direction tạo hai channel độc lập."
+      ],
+      "correct": 1,
+      "explanation": "Hai biến cùng tham chiếu một channel."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Join workers",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\nfunc main(){ch:=make(chan int,2);var wg sync.WaitGroup;for i:=0;i<2;i++{wg.Add(1);go func(){defer wg.Done();ch<-1}()};wg.Wait();close(ch);n:=0;for v:=range ch{n+=v};fmt.Println(n)}\n",
+      "options": [
+        "1 bắt buộc.",
+        "Giá trị luôn ngẫu nhiên do race.",
+        "2.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "Buffer đủ hai send và main chỉ đọc sau Wait."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Explicit arguments",
+      "question": "Chương trình in tổng gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\nfunc main(){ch:=make(chan int,3);var wg sync.WaitGroup;for _,v:=range []int{1,2,3}{wg.Add(1);go func(n int){defer wg.Done();ch<-n}(v)};wg.Wait();close(ch);sum:=0;for n:=range ch{sum+=n};fmt.Println(sum)}\n",
+      "options": [
+        "9.",
+        "3.",
+        "Không biên dịch vì truyền loop variable.",
+        "6."
+      ],
+      "correct": 3,
+      "explanation": "Đối số v được đánh giá phía caller; tổng không phụ thuộc thứ tự gửi."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Length capacity",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,3);ch<-8;fmt.Println(len(ch),cap(ch))}\n",
+      "options": [
+        "1 3.",
+        "3 1.",
+        "0 3.",
+        "1 1."
+      ],
+      "correct": 0,
+      "explanation": "Trong fixture không có sender khác, len là số giá trị đang đệm."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Nil metadata",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){var ch chan int;fmt.Println(ch==nil,len(ch),cap(ch))}\n",
+      "options": [
+        "Panic ở len(nil).",
+        "true 0 0.",
+        "false 0 0.",
+        "true 1 1."
+      ],
+      "correct": 1,
+      "explanation": "len/cap nil channel bằng0."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Producer close",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int);done:=make(chan struct{});go func(){ch<-4;close(ch);close(done)}();sum:=0;for v:=range ch{sum+=v};<-done;fmt.Println(sum)}\n",
+      "options": [
+        "Compiler cấm sender close.",
+        "Block mãi.",
+        "4.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "Producer gửi rồi close; main drain và chờ done."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Sorted results",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\";\"sort\")\nfunc main(){ch:=make(chan int,3);var wg sync.WaitGroup;for _,n:=range []int{1,2,3}{wg.Add(1);go func(v int){defer wg.Done();ch<-v*2}(n)};wg.Wait();close(ch);var out []int;for v:=range ch{out=append(out,v)};sort.Ints(out);fmt.Println(out)}\n",
+      "options": [
+        "Luôn [6 4 2].",
+        "Một thứ tự bất định dù đã sort.",
+        "Không biên dịch vì sort không nhận slice.",
+        "[2 4 6]."
+      ],
+      "correct": 3,
+      "explanation": "Main sort sau khi thu hết kết quả."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Sent zero",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,1);ch<-0;v,ok:=<-ch;fmt.Println(v,ok)}\n",
+      "options": [
+        "0 true.",
+        "0 false.",
+        "nil true.",
+        "Panic vì zero không gửi được."
+      ],
+      "correct": 0,
+      "explanation": "ok=true báo giá trị đến từ send thực."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Full default",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int,1);ch<-1;select{case ch<-2:fmt.Println(\"sent\");default:fmt.Print(\"full \")};fmt.Println(<-ch)}\n",
+      "options": [
+        "Panic vì channel đầy.",
+        "full 1.",
+        "sent 2.",
+        "Block mãi."
+      ],
+      "correct": 1,
+      "explanation": "Send case không ready khi buffer đầy và không có receiver."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Closed select",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){ch:=make(chan int);close(ch);select{case v,ok:=<-ch:fmt.Println(v,ok);default:fmt.Println(\"default\")}}\n",
+      "options": [
+        "Panic vì closed channel trong select.",
+        "Block mãi.",
+        "0 false.",
+        "default."
+      ],
+      "correct": 2,
+      "explanation": "Receive closed empty channel luôn ready."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Mutex counter",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\nfunc main(){var mu sync.Mutex;var wg sync.WaitGroup;n:=0;for i:=0;i<2;i++{wg.Add(1);go func(){defer wg.Done();mu.Lock();n++;mu.Unlock()}()};wg.Wait();fmt.Println(n)}\n",
+      "options": [
+        "0.",
+        "1 bắt buộc.",
+        "Compiler cấm mutex ngoài server.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "Mutex bảo vệ update; Wait join trước khi đọc."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Source arrow correction",
+      "question": "Receive (->) trong key point cần sửa thành gì?",
+      "options": [
+        "<-ch để nhận; ch <- v để gửi.",
+        "->ch và ch -> v đều chuẩn.",
+        "Chỉ recv ch hợp lệ.",
+        "Go không có receive operator."
+      ],
+      "correct": 0,
+      "explanation": "Vị trí/grammar xác định thao tác dùng <-."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Source fetch ordering",
+      "question": "Ba dòng Fetched có luôn cùng thứ tự urls không?",
+      "options": [
+        "Luôn github.com đầu tiên.",
+        "Không; scheduling/completion có thể khác thứ tự khởi chạy.",
+        "Có, vì urls là slice.",
+        "Có, vì cùng sleep100ms."
+      ],
+      "correct": 1,
+      "explanation": "Sleep bằng nhau không tạo quan hệ thứ tự giữa goroutines."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Source result printing",
+      "question": "Source có in năm giá trị results 2,4,6,8,10 không?",
+      "options": [
+        "Có, Wait tự print.",
+        "Log worker tự đồng nghĩa với print result.",
+        "Không; main chưa đọc/in channel results.",
+        "Có, close tự in buffer."
+      ],
+      "correct": 2,
+      "explanation": "Log worker mô tả job, không drain kết quả."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Source finite buffer",
+      "question": "Vì sao5 jobs nguồn vẫn hoàn tất dù main chưa đọc results?",
+      "options": [
+        "Vì send channel luôn nonblocking.",
+        "Vì Wait tự drain.",
+        "Vì close tăng capacity.",
+        "Buffer10 đủ chứa cả5 kết quả."
+      ],
+      "correct": 3,
+      "explanation": "Điều này không áp dụng tự động cho nhiều jobs hơn hoặc buffer nhỏ hơn."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Worker assignment",
+      "question": "Worker1 có luôn xử lý job1 không?",
+      "options": [
+        "Không, workers cạnh tranh nhận jobs.",
+        "Có, id worker luôn khớp job.",
+        "Có, vì worker1 được tạo trước.",
+        "Chỉ khi có3 workers."
+      ],
+      "correct": 0,
+      "explanation": "FIFO giá trị không tạo ánh xạ cố định job-worker."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Close ownership",
+      "question": "Trong một producer gửi jobs, ai thường close jobs?",
+      "options": [
+        "Bất kỳ ai thấy buffer tạm rỗng.",
+        "Producer sau khi gửi xong.",
+        "Mọi worker sau job đầu.",
+        "Receiver có id lớn nhất."
+      ],
+      "correct": 1,
+      "explanation": "Close khi sender còn gửi có thể dẫn đến panic."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Multiple senders close",
+      "question": "Nhiều workers gửi results nên close thế nào?",
+      "options": [
+        "Receiver close mỗi lần nhận.",
+        "Không bao giờ được close channel nhiều sender.",
+        "Một coordinator đợi mọi sender xong rồi close.",
+        "Mỗi sender tự close khi xong."
+      ],
+      "correct": 2,
+      "explanation": "Cần một trách nhiệm đóng sau khi không còn send."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Rendezvous contract",
+      "question": "Send unbuffered channel hoàn tất khi nào?",
+      "options": [
+        "Chỉ khi channel đóng.",
+        "Luôn ngay lập tức.",
+        "Khi GC chạy.",
+        "Có receive tương ứng tham gia giao tiếp."
+      ],
+      "correct": 3,
+      "explanation": "Channel không buffer không là queue vô hạn."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "WaitGroup not mutex",
+      "question": "WaitGroup có tự làm n++ ở nhiều worker an toàn không?",
+      "options": [
+        "Không; các updates cạnh tranh vẫn cần mutex/atomic/ownership.",
+        "Có, mọi biến tự atomic.",
+        "Có, chỉ cần Done.",
+        "Có vì n là int."
+      ],
+      "correct": 0,
+      "explanation": "Join vòng đời không thay bảo vệ cập nhật shared state."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Sleep not join",
+      "question": "Có nên dùng Sleep để chứng minh worker đã hoàn tất không?",
+      "options": [
+        "Chỉ cần thêm Println.",
+        "Không; dùng synchronization phù hợp.",
+        "Có, luôn đủ1ms.",
+        "Có, goroutine luôn xong trong2ms."
+      ],
+      "correct": 1,
+      "explanation": "Sleep không là join contract."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Send after close",
+      "question": "Send vào channel đã đóng gây gì?",
+      "options": [
+        "Luôn bỏ giá trị an toàn.",
+        "Compiler luôn phát hiện trước runtime.",
+        "Panic.",
+        "Tự mở lại channel."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế protocol cần tránh send-after-close."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Double close",
+      "question": "Close channel đã đóng gây gì?",
+      "options": [
+        "Luôn no-op.",
+        "Reset buffer.",
+        "Tạo channel mới.",
+        "Panic."
+      ],
+      "correct": 3,
+      "explanation": "Cần điều phối trách nhiệm đóng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Close nil",
+      "question": "close(nil channel) gây gì?",
+      "options": [
+        "Panic.",
+        "Tạo channel đóng.",
+        "Block chờ receiver.",
+        "Luôn syntax error."
+      ],
+      "correct": 0,
+      "explanation": "Nil khác channel mở hay đóng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Nil receive block",
+      "question": "Receive trực tiếp từ nil channel gây gì?",
+      "options": [
+        "Tự close channel.",
+        "Block không thể hoàn tất communication đó.",
+        "Trả0,false ngay.",
+        "Panic theo receive rule."
+      ],
+      "correct": 1,
+      "explanation": "Không chạy ví dụ block vô hạn trong proof pipeline."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Many ready select",
+      "question": "Hai receive cases đều ready thì case đầu có luôn thắng không?",
+      "options": [
+        "Tên channel ngắn hơn luôn thắng.",
+        "Default luôn thắng.",
+        "Không, chọn pseudo-random đều giữa communication có thể tiến hành.",
+        "Có, source order luôn là priority."
+      ],
+      "correct": 2,
+      "explanation": "Đừng thiết kế priority dựa vào vị trí case."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Default timing",
+      "question": "Default trong select có tự chờ timeout không?",
+      "options": [
+        "Có, mặc định5s.",
+        "Có, mặc định100ms.",
+        "Chỉ chờ khi channel không buffer.",
+        "Không; được chọn khi không communication nào ready."
+      ],
+      "correct": 3,
+      "explanation": "Timeout cần timer/context hay cơ chế khác."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Main return",
+      "question": "Main trả về có tự chờ mọi goroutine còn lại không?",
+      "options": [
+        "Không.",
+        "Có, runtime luôn join tất cả.",
+        "Chỉ chờ goroutine có Println.",
+        "Chỉ chờ worker1."
+      ],
+      "correct": 0,
+      "explanation": "Cần điều phối vòng đời trước khi main kết thúc."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Stack size scope",
+      "question": "Có nên xem2KB là tổng chi phí cố định mọi goroutine?",
+      "options": [
+        "Chỉ phụ thuộc tên hàm.",
+        "Không; stack có thể tăng và còn chi phí/runtime/data giữ sống khác.",
+        "Có, luôn đúng2048byte suốt đời.",
+        "Có, kể cả closure giữ dữ liệu lớn."
+      ],
+      "correct": 1,
+      "explanation": "Shorthand implementation không là mô hình capacity đầy đủ."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Pointer payload aliases",
+      "question": "Gửi *Item qua channel có tự cấm sender tiếp tục sửa Item không?",
+      "options": [
+        "Có, channel deep clone object.",
+        "Chỉ khi buffered.",
+        "Không; cần protocol ownership hoặc synchronization.",
+        "Có, type system xóa pointer của sender."
+      ],
+      "correct": 2,
+      "explanation": "Communication không loại mọi alias và data race sau send."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Send-only close",
+      "question": "Biến chan<- int có close được nếu ownership phù hợp không?",
+      "options": [
+        "Không, chỉ bidirectional close được.",
+        "Mọi receive-only đều close được.",
+        "Direction chỉ để comment.",
+        "Có; send-only cho phép close, receive-only thì không."
+      ],
+      "correct": 3,
+      "explanation": "Type cho phép không đồng nghĩa thời điểm close đã đúng protocol."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Wait before drain",
+      "question": "Results không buffer, worker send trước Done, main Wait trước receive: rủi ro gì?",
+      "options": [
+        "Worker chờ receiver, main chờ Done, tạo deadlock.",
+        "Wait tự receive nên an toàn.",
+        "Channel tự cấp buffer vô hạn.",
+        "Compiler sửa thứ tự."
+      ],
+      "correct": 0,
+      "explanation": "Cần drain đồng thời hoặc protocol khác; không thực thi deadlock để đoán."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Insufficient buffer",
+      "question": "Tăng source lên100 jobs nhưng giữ buffer10 và không drain đã đủ chưa?",
+      "options": [
+        "Tăng workers lên1000 luôn giải quyết.",
+        "Chưa; có thể block ở sends/jobs/Wait, cần consumer và backpressure đúng.",
+        "Đủ, buffer10 chứa mọi số job.",
+        "Đủ, close jobs làm results send tự bỏ qua."
+      ],
+      "correct": 1,
+      "explanation": "Thêm workers không thay thế đường thu kết quả."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Coordinator protocol",
+      "question": "Cấu trúc nào giúp main range results kết thúc đúng?",
+      "options": [
+        "Mỗi worker close results độc lập.",
+        "Close results trước khi worker bắt đầu gửi.",
+        "Coordinator Wait mọi worker rồi close results, main drain đồng thời.",
+        "Main range nhưng không ai close."
+      ],
+      "correct": 2,
+      "explanation": "Đóng sau mọi sender cho biết không còn kết quả."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Closed select spin",
+      "question": "Loop đọc closed channel mà không thoát/vô hiệu hóa case có rủi ro gì?",
+      "options": [
+        "Channel tự thành nil.",
+        "Loop tự sleep.",
+        "Compiler luôn cấm.",
+        "Case luôn ready có thể gây vòng lặp bận."
+      ],
+      "correct": 3,
+      "explanation": "Có thể return hoặc đặt biến channel=nil theo thiết kế; không chạy loop vô hạn."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Len then send",
+      "question": "if len(ch)<cap(ch) rồi send có bảo đảm không block khi nhiều sender không?",
+      "options": [
+        "Không; trạng thái có thể đổi giữa check và send.",
+        "Có, hai thao tác tự thành một transaction.",
+        "Có nếu phần tử int.",
+        "Thêm Println làm an toàn."
+      ],
+      "correct": 0,
+      "explanation": "select send/default diễn đạt thao tác nonblocking phù hợp hơn."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Register before go",
+      "question": "Vì sao Add nên xảy ra trước khi goroutine chạy và trước Wait liên quan khi counter0?",
+      "options": [
+        "Mọi Add phải gọi sau Wait.",
+        "Tránh Wait thấy0 rồi trả quá sớm hoặc Add/Wait misuse.",
+        "Add tạo goroutine nhanh hơn go.",
+        "Done không dùng được trong defer."
+      ],
+      "correct": 1,
+      "explanation": "Đăng ký công việc trước khi chờ vòng đời đó."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "WaitGroup copy",
+      "question": "Có nên copy WaitGroup đã dùng rồi chờ bản copy không?",
+      "options": [
+        "Có, copy tạo global join.",
+        "Chỉ cần đổi tên biến.",
+        "Không; WaitGroup không được copy sau lần dùng đầu tiên.",
+        "Có, mọi bản copy luôn đồng bộ counter."
+      ],
+      "correct": 2,
+      "explanation": "Source truyền *sync.WaitGroup tránh copy giá trị sync."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Worker errors",
+      "question": "Chỉ WaitGroup có đủ để biết job nào lỗi không?",
+      "options": [
+        "Đủ, Wait trả mọi error.",
+        "Done tự lưu stacktrace.",
+        "Close jobs làm mọi lỗi biến mất.",
+        "Chưa; cần kết quả/error channel hoặc cấu trúc xử lý khác."
+      ],
+      "correct": 3,
+      "explanation": "WaitGroup.Wait không trả error."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Cancellation priority",
+      "question": "ctx.Done đã đóng và result có sẵn: cancellation luôn thắng select không?",
+      "options": [
+        "Không; cả hai ready không có priority mặc định.",
+        "Có, case đầu luôn thắng.",
+        "Có, Done là channel đặc quyền.",
+        "Chỉ với buffer1."
+      ],
+      "correct": 0,
+      "explanation": "Muốn semantics ưu tiên cần thiết kế rõ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Select RHS evaluation",
+      "question": "case ch <- sideEffect() có thể gọi sideEffect dù chọn default không?",
+      "options": [
+        "Compiler luôn bỏ expression chưa chọn.",
+        "Có; send RHS được đánh giá khi vào select.",
+        "Không, chỉ chạy sau send thành công.",
+        "Chỉ khi channel đóng."
+      ],
+      "correct": 1,
+      "explanation": "Đánh giá operands/RHS xảy ra trước lựa chọn communication."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Drained finite pool",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\nfunc main(){jobs:=make(chan int,5);results:=make(chan int);var wg sync.WaitGroup;for i:=0;i<2;i++{wg.Add(1);go func(){defer wg.Done();for n:=range jobs{results<-n*2}}()};for n:=1;n<=5;n++{jobs<-n};close(jobs);done:=make(chan struct{});go func(){wg.Wait();close(results);close(done)}();sum:=0;for n:=range results{sum+=n};<-done;fmt.Println(sum)}\n",
+      "options": [
+        "0.",
+        "Tổng bất định vì scheduling.",
+        "30.",
+        "15."
+      ],
+      "correct": 2,
+      "explanation": "Năm jobs nhân2, tất cả kết quả drain và coordinator được join."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Select RHS proof",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){var ch chan int;n:=0;value:=func()int{n++;return 1};select{case ch<-value():default:};fmt.Println(n)}\n",
+      "options": [
+        "0.",
+        "Panic vì nil channel.",
+        "Block dù có default.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "RHS chạy trước; nil case không ready nên chọn default."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Close receive-only",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nfunc main(){ch:=make(chan int);var recv <-chan int=ch;close(recv)}\n",
+      "options": [
+        "Không, close receive-only channel bị từ chối.",
+        "Có, mọi direction close được.",
+        "Có, close đổi direction.",
+        "Chỉ lỗi khi có dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "Quyền thao tác xét theo type."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Per iteration variables",
+      "question": "Module go1.26.0, chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){var ps []*int;for _,v:=range []int{1,2,3}{ps=append(ps,&v)};fmt.Println([]int{*ps[0],*ps[1],*ps[2]})}\n",
+      "options": [
+        "Compiler cấm pointer loop.",
+        "[1 2 3].",
+        "[3 3 3].",
+        "[0 0 0]."
+      ],
+      "correct": 1,
+      "explanation": "v khai báo := có biến riêng mỗi iteration từ semantics Go1.22."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Preexisting iteration variable",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc main(){var ps []*int;var v int;for _,v=range []int{1,2,3}{ps=append(ps,&v)};fmt.Println([]int{*ps[0],*ps[1],*ps[2]})}\n",
+      "options": [
+        "[0 0 0].",
+        "Panic vì loop pointers hết hạn.",
+        "[3 3 3].",
+        "[1 2 3]."
+      ],
+      "correct": 2,
+      "explanation": "Dùng = với cùng v có sẵn, mọi pointer trỏ tới biến đó."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Blocked send cancellation",
+      "question": "Producer đang chờ ch<-v có tự thoát khi caller cancel context không?",
+      "options": [
+        "Có, channel gắn context global.",
+        "Có, runtime tự kill goroutine.",
+        "Chỉ cần tên hàm fetch.",
+        "Không; producer phải quan sát ctx, ví dụ select send/Done."
+      ],
+      "correct": 3,
+      "explanation": "Cancellation là hợp tác, cần xử lý cả send/receive và cleanup."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Results ordering",
+      "question": "Thu đủ5 kết quả có chứng minh nhận theo thứ tự jobs không?",
+      "options": [
+        "Không; completion giữa workers có thể đảo thứ tự.",
+        "Có, channel FIFO tự reorder nhiều producers về job order.",
+        "Có, vì worker id tăng dần.",
+        "Chỉ cần cùng phép nhân2."
+      ],
+      "correct": 0,
+      "explanation": "Muốn ordered output cần mang sequence/id và reorder khi phù hợp."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Close not cancel",
+      "question": "Close results để ép sender dừng nhẹ nhàng có đúng không?",
+      "options": [
+        "Chỉ với channel int.",
+        "Không; sender còn send có thể panic, cần protocol cancellation/join.",
+        "Có, sends sau close thành no-op.",
+        "Có, send trả error để bắt."
+      ],
+      "correct": 1,
+      "explanation": "Send không có error result như queue shutdown API."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Buffer and throughput",
+      "question": "Tăng buffer10 lên100000 có chắc tăng throughput và an toàn memory không?",
+      "options": [
+        "Có, buffered channel không dùng memory.",
+        "Nhiều worker loại mọi giới hạn.",
+        "Không; có thể tăng dữ liệu giữ sống/độ trễ và che backpressure, cần đo workload.",
+        "Có, throughput tỉ lệ capacity."
+      ],
+      "correct": 2,
+      "explanation": "Capacity là lựa chọn thiết kế, không bảo đảm sức chịu tải."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Race proof boundary",
+      "question": "Fixture hữu hạn pass qua build/runtime đã chứng minh không có data race chưa?",
+      "options": [
+        "Có, compiler thường tự chứng minh mọi race.",
+        "Có nếu output đúng một lần.",
+        "Chỉ cần xuất hiện một channel.",
+        "Chưa; không gọi đó là lượt race detector hoặc chứng minh mọi scheduling."
+      ],
+      "correct": 3,
+      "explanation": "Báo cáo chỉ nêu các kiểm tra thật sự được thực hiện."
+    }
+  ]
+}

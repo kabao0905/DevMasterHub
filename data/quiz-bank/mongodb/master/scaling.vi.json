@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "mongodb",
+  "level": "master",
+  "lesson": "scaling",
+  "language": "vi",
+  "sourceHash": "d755985446e5db73cbd57ceb168a5e7663803cea945e497e48f8fd525cd17ec8",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo hashed shard key, connection pool, change stream và Search compound. Đối chiếu MongoDB manual/Node driver docs và Search docs; phân biệt pool mỗi client/server, fullDocument update semantics, quyền broadcast và shard-key workload. Không shard/connect/watch/search hay chạy dịch vụ.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Sharding",
+      "question": "Sharding trong bài chủ yếu là gì?",
+      "options": [
+        "Phân vùng dữ liệu theo thiết kế qua nhiều shard",
+        "Tạo nhiều bản sao giống hệt của toàn bộ dữ liệu như một định nghĩa duy nhất",
+        "Mã hóa mọi document bằng password",
+        "Đổi collection thành một file JSON"
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất sharding với replication hoặc backup."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Collection",
+      "question": "Lệnh shardCollection trong source nhắm namespace nào?",
+      "options": [
+        "accounts.transfer",
+        "mydb.orders",
+        "mydb.users",
+        "posts.default"
+      ],
+      "correct": 1,
+      "explanation": "Namespace gồm database mydb và collection orders."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Shard key",
+      "question": "Field được chọn làm shard key trong mẫu là gì?",
+      "options": [
+        "price",
+        "_id của mọi change event",
+        "customerId",
+        "createdAt"
+      ],
+      "correct": 2,
+      "explanation": "Chọn key cần theo dữ liệu và access pattern thực tế."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Hashed",
+      "question": "Giá trị hashed trong key source biểu thị ý định gì?",
+      "options": [
+        "Mã hóa customerId để thay authorization",
+        "Tự tạo password hash cho mọi user",
+        "Xóa key khỏi document gốc",
+        "Phân phối theo giá trị băm của shard-key field"
+      ],
+      "correct": 3,
+      "explanation": "Hash sharding không là cơ chế che dữ liệu hay quyền truy cập."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Connection URI",
+      "question": "Mongoose lấy connection string từ đâu trong source?",
+      "options": [
+        "process.env.MONGODB_URI",
+        "github.sha",
+        "req.params.id",
+        "Một literal URI đã được cung cấp"
+      ],
+      "correct": 0,
+      "explanation": "Biến môi trường được tham chiếu, chưa chứng minh giá trị/kết nối hợp lệ."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Max pool",
+      "question": "maxPoolSize nguồn được đặt bao nhiêu?",
+      "options": [
+        "5000",
+        "10",
+        "2",
+        "30000"
+      ],
+      "correct": 1,
+      "explanation": "Đây là giới hạn pool theo driver/topology, không số user toàn hệ thống."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Min pool",
+      "question": "minPoolSize nguồn được đặt bao nhiêu?",
+      "options": [
+        "30",
+        "5",
+        "2",
+        "10"
+      ],
+      "correct": 2,
+      "explanation": "Min và max pool khác mục tiêu cấu hình."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Socket timeout",
+      "question": "socketTimeoutMS trong source có giá trị nào?",
+      "options": [
+        "5000",
+        "10",
+        "2",
+        "30000"
+      ],
+      "correct": 3,
+      "explanation": "Đơn vị cấu hình là milliseconds; không tự là tổng deadline mọi request HTTP."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Selection timeout",
+      "question": "serverSelectionTimeoutMS trong source là bao nhiêu?",
+      "options": [
+        "5000",
+        "30000",
+        "2",
+        "10000"
+      ],
+      "correct": 0,
+      "explanation": "Nó giới hạn giai đoạn chọn server theo driver semantics."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Retry writes",
+      "question": "retryWrites:true có ý định gì?",
+      "options": [
+        "Tự rollback mọi HTTP side effect",
+        "Bật retry cho các thao tác ghi đủ điều kiện theo driver/deployment",
+        "Tự retry mọi nghiệp vụ vô hạn không lặp tác động",
+        "Tự sửa mọi lỗi validation"
+      ],
+      "correct": 1,
+      "explanation": "Retry kỹ thuật không thay idempotency nghiệp vụ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Write concern",
+      "question": "w:majority liên quan tới gì?",
+      "options": [
+        "Số field trong JSON response",
+        "Một shard key có tên majority",
+        "Mức xác nhận ghi theo majority và cấu hình deployment",
+        "Mọi user phải duyệt mỗi write"
+      ],
+      "correct": 2,
+      "explanation": "Không gán write concern chức năng xác thực hay quyền nghiệp vụ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Change stream",
+      "question": "Change stream phục vụ mục tiêu nào?",
+      "options": [
+        "Tự tạo index mọi field",
+        "Tự phát hành schema trên Internet",
+        "Tự sao lưu dữ liệu vô hạn",
+        "Theo dõi thay đổi dữ liệu qua luồng sự kiện theo API hỗ trợ"
+      ],
+      "correct": 3,
+      "explanation": "Cần topology/driver, lifecycle và chính sách consumer phù hợp."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Watch model",
+      "question": "Source mở change stream qua model nào?",
+      "options": [
+        "Post",
+        "Account",
+        "User",
+        "Session"
+      ],
+      "correct": 0,
+      "explanation": "Model và connection Post chưa được định nghĩa đầy đủ trong snippet."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Filter events",
+      "question": "Pipeline change stream nguồn giữ operationType nào?",
+      "options": [
+        "Mọi operation không lọc",
+        "insert và update",
+        "Chỉ delete",
+        "insert và drop"
+      ],
+      "correct": 1,
+      "explanation": "$match dùng $in với hai giá trị được nêu."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Change handler",
+      "question": "Handler .on(\"change\",...) nhận gì?",
+      "options": [
+        "Một image Docker",
+        "Một PR GitHub",
+        "Một change event theo API",
+        "Một HTTP request của mọi client"
+      ],
+      "correct": 2,
+      "explanation": "Event metadata khác với document nghiệp vụ được theo dõi."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Broadcast",
+      "question": "io.emit trong source có ý định làm gì?",
+      "options": [
+        "Tự tạo MongoDB replica set",
+        "Tự giới hạn mọi message đúng tenant",
+        "Tự tạo index Search default",
+        "Phát sự kiện data-change theo cơ chế io đã được thiết lập"
+      ],
+      "correct": 3,
+      "explanation": "io chưa được wiring trong snippet; broadcast cần quyền/phạm vi rõ."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Payload",
+      "question": "Payload mà source đưa vào io.emit là gì?",
+      "options": [
+        "change.fullDocument",
+        "change.operationType duy nhất",
+        "process.env.MONGODB_URI",
+        "Toàn bộ pool sockets"
+      ],
+      "correct": 0,
+      "explanation": "Không phải mọi loại event/option đều cung cấp fullDocument như mong muốn."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Search index",
+      "question": "Source Search chọn index tên gì?",
+      "options": [
+        "createdAt_ttl",
+        "default",
+        "customerId_hashed",
+        "email_unique"
+      ],
+      "correct": 1,
+      "explanation": "Search index phải được provision phù hợp, không tự có từ tên default."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Must field",
+      "question": "Trong Search compound, must text query mongodb nhắm field nào?",
+      "options": [
+        "customerId",
+        "operationType",
+        "title",
+        "content"
+      ],
+      "correct": 2,
+      "explanation": "Đây là điều kiện bắt buộc theo Search operator và index/analyzer được cấu hình."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Should field",
+      "question": "Trong Search compound, should text query tutorial nhắm field nào?",
+      "options": [
+        "title",
+        "balance",
+        "createdAt",
+        "content"
+      ],
+      "correct": 3,
+      "explanation": "Should ở source có vai trò ưu tiên/điểm khi must hiện diện và không đặt yêu cầu match thêm."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Một command chưa topology",
+      "question": "Chỉ có sh.shardCollection trong tài liệu đã chứng minh sharded cluster được tạo/chạy chưa?",
+      "options": [
+        "Chưa; còn topology/quyền/index/điều kiện deployment tương ứng",
+        "Rồi, shell line tự cài mọi server",
+        "Rồi, mydb tự là cluster ba node",
+        "Chưa, vì MongoDB không hỗ trợ sharding"
+      ],
+      "correct": 0,
+      "explanation": "Cấu hình mong muốn không thay hạ tầng thực tế."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Hash cùng key",
+      "question": "Nhiều order có cùng customerId. Hash có tự phân tán mọi document đó sang các shard khác nhau chỉ vì số order lớn không?",
+      "options": [
+        "Không, vì hashed key chỉ hỗ trợ một document",
+        "Không; cùng giá trị key có cùng giá trị băm theo cơ chế đó",
+        "Có, hash mỗi document ngẫu nhiên riêng bất kể key",
+        "Có, order tự được chia theo price"
+      ],
+      "correct": 1,
+      "explanation": "Phân phối còn bị ảnh hưởng bởi frequency của key."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Cardinality",
+      "question": "Vì sao shard key chỉ có rất ít giá trị phân biệt có thể hạn chế phân phối?",
+      "options": [
+        "Vì MongoDB tự cấm mọi key dạng String",
+        "Vì maxPoolSize sẽ tự thành0",
+        "Không có đủ miền giá trị để chia workload/dữ liệu như mong muốn",
+        "Vì mọi shard phải có đúng một user"
+      ],
+      "correct": 2,
+      "explanation": "Cardinality là một yếu tố, không phải chỉ số duy nhất."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Hot customer",
+      "question": "Một customerId chiếm phần lớn ghi. Đã hashed customerId có tự loại hotspot của chính giá trị đó không?",
+      "options": [
+        "Có, hashed luôn bảo đảm chia đều mọi write",
+        "Có, chỉ cần tăng số log",
+        "Không, vì sharding không thể mở rộng",
+        "Không; cần phân tích frequency/workload và thiết kế key phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Hash không biến một key nóng thành nhiều key độc lập."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Query routing",
+      "question": "Query chứa shard-key equality phù hợp có lợi thế tiềm năng gì?",
+      "options": [
+        "Router có thể nhắm shard liên quan thay vì broadcast mọi nơi",
+        "Tự xác thực caller là customer đó",
+        "Tự bỏ mọi index trong shard",
+        "Tự tạo snapshot xuyên mọi client"
+      ],
+      "correct": 0,
+      "explanation": "Routing và authorization là các trách nhiệm riêng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Thiếu shard key",
+      "question": "Query thường không có shard key có thể gây gì?",
+      "options": [
+        "Không thể query bất kỳ field nào khác shard key",
+        "Scatter-gather qua nhiều shard, cần đánh giá workload/kế hoạch",
+        "Luôn chỉ đọc đúng một shard ngẫu nhiên rồi trả kết quả đầy đủ",
+        "Mọi query tự được thêm customerId từ tên collection"
+      ],
+      "correct": 1,
+      "explanation": "Không nên claim scale tuyến tính chỉ từ tăng số shard."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Range query hashed",
+      "question": "Workload chủ yếu range theo customerId. Chọn hashed có cần xét đánh đổi không?",
+      "options": [
+        "Không, mọi hash tự đảo thành range index tốt nhất",
+        "Chỉ cần đổi minPoolSize",
+        "Có, khả năng routing/range locality khác với thiết kế range-key",
+        "Không, hashed giữ nguyên thứ tự số học của key"
+      ],
+      "correct": 2,
+      "explanation": "Shard key cần theo cả phân phối và query pattern."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Pool không user cap",
+      "question": "maxPoolSize: 10 có nghĩa chỉ 10 người dùng được dùng cả website không?",
+      "options": [
+        "Có, user thứ11 luôn bị đăng xuất",
+        "Có, DB tự giới hạn số tài khoản trong collection bằng 10",
+        "Không, vì option này chỉ đặt số shard",
+        "Không; nó là giới hạn connection pool theo phạm vi client/server phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi request có thể dùng connection trong một thời gian rồi trả pool."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Nhiều process",
+      "question": "Năm app process tạo client riêng cùng maxPoolSize: 10. Có thể coi giới hạn toàn hệ thống vẫn chỉ 10 sockets không?",
+      "options": [
+        "Không; mỗi client có pool theo topology và còn monitoring connections theo driver",
+        "Có, MongoDB đọc cùng tên option rồi gộp mọi process",
+        "Có, minPoolSize: 2 làm mọi process dùng chung socket",
+        "Không, vì Node không thể có nhiều process"
+      ],
+      "correct": 0,
+      "explanation": "Cần tính theo số instances/clients/servers và actual deployment."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Pool chờ",
+      "question": "Pool đạt số connection đang dùng tối đa, request DB mới theo driver có thể làm gì?",
+      "options": [
+        "Tự xóa connection của client khác",
+        "Chờ connection sẵn theo queue/timeout policy",
+        "Tự giảm dữ liệu query để không dùng socket",
+        "Tự tạo một user MongoDB mới"
+      ],
+      "correct": 1,
+      "explanation": "Pool limit không tự là kiểm soát queue/backpressure hoàn chỉnh của ứng dụng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Pool lớn không vô hạn",
+      "question": "Tăng maxPoolSize rất lớn có tự làm mọi query nhanh hơn không?",
+      "options": [
+        "Có, mỗi connection tự tạo CPU server mới",
+        "Không, vì pool không liên quan concurrency",
+        "Không; server capacity/query contention và tổng connection budget cần xem",
+        "Có, tốc độ luôn tỷ lệ thuận số sockets"
+      ],
+      "correct": 2,
+      "explanation": "Cần đo, giữ ngân sách hệ thống và sửa query phù hợp."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Reuse client",
+      "question": "Tạo MongoClient/Mongoose connection mới cho mỗi HTTP request có thường là cách tận dụng pool tốt không?",
+      "options": [
+        "Có, mỗi request cần replica set riêng",
+        "Có, pool chỉ hoạt động nếu đóng ngay sau mỗi query",
+        "Không, vì mọi request phải cùng transaction",
+        "Không; thường cần tái sử dụng client/connection theo vòng đời ứng dụng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Client lifetime và session/transaction lifetime khác nhau."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Timeout giai đoạn",
+      "question": "serverSelectionTimeoutMS: 5000 có chứng minh mọi HTTP response hoàn tất trong 5 giây không?",
+      "options": [
+        "Không; nó không bao gồm toàn bộ ứng dụng/query/queue/network response như một deadline chung",
+        "Có, driver tự cắt toàn bộ request HTTP",
+        "Có, mọi lần chọn server bằng tổng thời gian nghiệp vụ",
+        "Chỉ nếu title có mongodb"
+      ],
+      "correct": 0,
+      "explanation": "Cần deadline/budget theo các tầng thực."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Socket timeout giai đoạn",
+      "question": "socketTimeoutMS: 30000 có phải bảo đảm mọi nghiệp vụ 30 giây sẽ rollback tất cả side effects không?",
+      "options": [
+        "Không, vì option không có đơn vị thời gian",
+        "Không; timeout kết nối/socket khác ranh giới outcome và rollback nghiệp vụ",
+        "Có, timeout tự undo mọi server đã ghi",
+        "Có, mọi email đã gửi tự bị thu hồi"
+      ],
+      "correct": 1,
+      "explanation": "Đừng đồng nhất thời hạn chờ với bằng chứng chưa có tác động."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Retry đủ điều kiện",
+      "question": "Một HTTP POST retry hai lần có tự được dedup chỉ nhờ retryWrites:true không?",
+      "options": [
+        "Có, amount bằng nhau luôn là cùng request",
+        "Không, vì driver không retry thao tác nào",
+        "Không; cần idempotency ở đúng ranh giới nghiệp vụ",
+        "Có, mọi request HTTP có một retry ID MongoDB tự suy ra"
+      ],
+      "correct": 2,
+      "explanation": "Retry ghi kỹ thuật và retry cả luồng ứng dụng không cùng phạm vi."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Majority không quyền",
+      "question": "Ghi được majority xác nhận có chứng minh caller được phép sửa document không?",
+      "options": [
+        "Có, đa số replica bỏ phiếu về ownership HTTP",
+        "Có, majority thay JWT",
+        "Không, vì write concern không dùng cho ghi",
+        "Không; quyền/entity scope cần được enforce riêng"
+      ],
+      "correct": 3,
+      "explanation": "Xác nhận ghi không thay chính sách truy cập."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Update payload",
+      "question": "Post.watch(pipeline) không đặt fullDocument updateLookup. Có nên mặc định mọi update event có toàn bộ document mới không?",
+      "options": [
+        "Không; update thường có delta/updateDescription và cần options đúng nếu muốn lookup",
+        "Có, mọi update event mặc định có tất cả field",
+        "Có, io.emit tự tải document",
+        "Không, vì change stream không hỗ trợ updates"
+      ],
+      "correct": 0,
+      "explanation": "Đây là thiếu sót quan trọng của source khi luôn phát change.fullDocument."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Insert payload",
+      "question": "Change stream insert event có thể chứa fullDocument của document được chèn không?",
+      "options": [
+        "Chỉ nếu gọi aggregate $search",
+        "Có theo event/API tương ứng",
+        "Không, insert chỉ có updateDescription",
+        "Chỉ nếu bật schema virtuals"
+      ],
+      "correct": 1,
+      "explanation": "Không áp cùng giả định payload cho insert và update."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Delete bị lọc",
+      "question": "Post bị xóa nhưng filter chỉ insert/update. Handler nguồn có mặc định nhận delete event đó không?",
+      "options": [
+        "Có, io.emit nhận mọi delete từ database khác",
+        "Không, vì MongoDB không có delete events",
+        "Không",
+        "Có, delete luôn tự đổi thành update"
+      ],
+      "correct": 2,
+      "explanation": "Filter nguồn làm bỏ tín hiệu cần cho client nếu UI phải xóa dữ liệu tương ứng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Update lookup",
+      "question": "Muốn lấy toàn document cho update event cần xem option nào?",
+      "options": [
+        "retryWrites:false là đủ",
+        "minPoolSize:10 là đủ",
+        "w:\"majority\" ở connect tự là updateLookup",
+        "fullDocument:\"updateLookup\" theo API/driver phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần hiểu lookup có thời điểm và khả năng document thiếu riêng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Lookup không snapshot event",
+      "question": "Update A rồi update B được majority commit trước lookup của event A. fullDocument updateLookup của A có thể là gì?",
+      "options": [
+        "Bản hiện tại khi lookup, có thể khác post-image tại thời điểm A",
+        "Luôn chính xác snapshot ngay sau A trong mọi trường hợp",
+        "Luôn bản trước A",
+        "Tự gộp cả hai thành transaction record"
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần pre/post image theo thời điểm cần thiết kế/tính năng tương ứng, không suy từ updateLookup."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Document biến mất",
+      "question": "Document bị xóa giữa update và lookup. Consumer cần chấp nhận khả năng nào?",
+      "options": [
+        "Event tự được xóa khỏi mọi consumer đã nhận",
+        "fullDocument không có/null theo API/tình huống, phải có policy xử lý",
+        "Document chắc chắn được tự phục hồi để phục vụ stream",
+        "Lookup luôn tạo document rỗng thay thế"
+      ],
+      "correct": 1,
+      "explanation": "Không dereference payload như thể luôn đầy đủ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Resume token",
+      "question": "Resume token dùng chủ yếu để làm gì?",
+      "options": [
+        "Thay mọi primary key trong collection",
+        "Mã hóa mọi dữ liệu tenant",
+        "Xác định vị trí tiếp tục stream theo contract/API",
+        "Xác thực mọi user Socket.IO"
+      ],
+      "correct": 2,
+      "explanation": "Token tiến độ và credential truy cập có mục đích khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Lịch sử resume",
+      "question": "Lưu token có đủ để bảo đảm resume từ bất kỳ thời điểm xa xưa không?",
+      "options": [
+        "Có, token chứa mọi document đã thay đổi",
+        "Có, mỗi token là backup toàn database",
+        "Không, vì stream không hỗ trợ resume",
+        "Không; cần lịch sử còn đủ và điều kiện stream/options hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Retention và cơ chế phục hồi khi mất cửa sổ cần được thiết kế."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Event id",
+      "question": "_id của change event có thể là gì?",
+      "options": [
+        "Resume token, khác _id document nghiệp vụ trong documentKey/fullDocument",
+        "Luôn là customerId trong shard key",
+        "Luôn là title bài viết",
+        "Một JWT của người đăng nhập"
+      ],
+      "correct": 0,
+      "explanation": "Không dùng nhầm event identifier với entity identifier."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Broadcast quyền",
+      "question": "io.emit toàn bộ fullDocument có tự giới hạn người nhận đúng tenant/field không?",
+      "options": [
+        "Không, vì không thể truyền JSON qua socket",
+        "Không; cần auth/rooms/phạm vi dữ liệu theo thiết kế",
+        "Có, MongoDB tự biết Socket.IO rooms",
+        "Có, field tên Post tự là public"
+      ],
+      "correct": 1,
+      "explanation": "Event nguồn dữ liệu không tự là response schema được phép công khai."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "IO chưa có",
+      "question": "Source gọi io nhưng không khai báo server/auth/socket wiring. Kết luận nào đúng?",
+      "options": [
+        "Post.watch tự mở socket cho browser",
+        "Chỉ cần maxPoolSize đúng là io tồn tại",
+        "Chưa đủ ngữ cảnh để chứng minh broadcast hoạt động",
+        "Mongoose.connect tự tạo io global"
+      ],
+      "correct": 2,
+      "explanation": "Các hệ thống có prerequisites riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Connect không await",
+      "question": "Source gọi mongoose.connect nhưng chưa thể hiện await/readiness error flow. Điều gì cần kiểm?",
+      "options": [
+        "Tên URI tự chặn mọi thao tác cho tới ready",
+        "Mọi model tự đồng bộ đúng mọi thời điểm tuyệt đối",
+        "Chỉ tiêu đề Scaling",
+        "Vòng đời kết nối/model/stream và lỗi theo ứng dụng thực"
+      ],
+      "correct": 3,
+      "explanation": "Không suy readiness từ lời gọi chưa quan sát kết quả."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Stream resource",
+      "question": "Mỗi user mở một change stream riêng có cần đánh giá tài nguyên không?",
+      "options": [
+        "Có; connection/cursor/server workload và fan-out cần được thiết kế",
+        "Không, stream không dùng bất kỳ tài nguyên nào",
+        "Không, maxPoolSize: 10 nghĩa có vô hạn stream miễn phí",
+        "Chỉ số ký tự event name bị ảnh hưởng"
+      ],
+      "correct": 0,
+      "explanation": "Không hứa năng lực chỉ từ từ khóa real-time."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Consumer chậm",
+      "question": "Consumer xử lý sự kiện chậm hơn tốc độ phát sinh cần gì?",
+      "options": [
+        "Coi mọi event tự được giữ vô hạn trong RAM",
+        "Backpressure/queue/budget và policy phục hồi phù hợp",
+        "Chỉ io.emit nhiều lần để tăng tốc DB",
+        "Chỉ đổi tên operationType"
+      ],
+      "correct": 1,
+      "explanation": "Luồng sự kiện cần quản lý tốc độ, memory và tính đúng khi backlog."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Search prerequisites",
+      "question": "Khai báo $search index default có tự provision Search index không?",
+      "options": [
+        "Có, text index cũ tự thành Search index",
+        "Chỉ nếu collection tên posts",
+        "Không; cần index/mapping/analyzer và deployment hỗ trợ",
+        "Có, tên default tự tạo mọi field mapping"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất text index truyền thống với Search index."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Must semantics",
+      "question": "Với compound source, title không match điều kiện must nhưng content match should. Có thể qua chỉ nhờ should không?",
+      "options": [
+        "Có, should luôn ghi đè mọi must",
+        "Có, content có ưu tiên tuyệt đối",
+        "Chỉ nếu retryWrites true",
+        "Không; vẫn phải đáp ứng must theo Search semantics"
+      ],
+      "correct": 3,
+      "explanation": "Must và should không phải hai nhánh OR đơn giản thay thế nhau trong query này."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Should tùy chọn",
+      "question": "Document đáp ứng must title, không match should content; source không đặt minimumShouldMatch. Có thể vẫn được trả không?",
+      "options": [
+        "Có, should ở cấu hình này có thể chỉ bổ sung ưu tiên/điểm",
+        "Không, cả hai field luôn bắt buộc",
+        "Chỉ nếu maxPoolSize là 2",
+        "Không, vì should nghĩa bắt buộc tuyệt đối"
+      ],
+      "correct": 0,
+      "explanation": "Câu hỏi giới hạn ở cấu hình có must và không yêu cầu match should bổ sung."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Yêu cầu should",
+      "question": "Muốn bắt buộc có ít nhất một should khi có các nhánh tương ứng, cần xem option nào?",
+      "options": [
+        "expireAfterSeconds",
+        "minimumShouldMatch theo Search operator",
+        "serverSelectionTimeoutMS",
+        "minPoolSize"
+      ],
+      "correct": 1,
+      "explanation": "Phải đặt đúng phạm vi và giá trị hợp lệ theo số clauses."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Search và auth",
+      "question": "Search query đúng keyword có tự giới hạn dữ liệu tổ chức được phép xem không?",
+      "options": [
+        "Có, title có mongodb nên luôn public",
+        "Không, vì Search không thể dùng trong ứng dụng đa tenant",
+        "Không; cần tenant/entity/field authorization trong luồng query/response",
+        "Có, index default tự đọc JWT"
+      ],
+      "correct": 2,
+      "explanation": "Tính liên quan nội dung và quyền truy cập là hai hợp đồng riêng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Search score",
+      "question": "Should match trong source chủ yếu có thể ảnh hưởng gì khi must đã đạt?",
+      "options": [
+        "Số tiền trong tài khoản",
+        "Role của caller",
+        "Số shard vật lý ngay lập tức",
+        "Điểm/ưu tiên theo cơ chế Search và cấu hình scoring"
+      ],
+      "correct": 3,
+      "explanation": "Không coi score là mức độ đáng tin hoặc quyền của document."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Kiểu trường Search",
+      "question": "Mapping/analyzer của title/content không phù hợp query. Cần làm gì?",
+      "options": [
+        "Kiểm index/schema/analyzer theo contract tìm kiếm",
+        "Chỉ tăng socket timeout để tự đúng tokenization",
+        "Chỉ đổi maxPoolSize",
+        "Chỉ hash customerId lần nữa"
+      ],
+      "correct": 0,
+      "explanation": "Search behavior phụ thuộc index và dữ liệu, không chỉ query text."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Sharding không sửa index",
+      "question": "Thêm shard có tự sửa mọi query/index kém hiệu quả trong từng shard không?",
+      "options": [
+        "Không, vì sharding cấm secondary index",
+        "Không; cần access pattern, index và phân phối phù hợp",
+        "Có, mỗi shard tự biết index tối ưu mọi request",
+        "Có, query thiếu key tự thành targeted"
+      ],
+      "correct": 1,
+      "explanation": "Phân phối không thay mọi tối ưu truy cập dữ liệu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Giới hạn đời stream",
+      "question": "Khi app shutdown hoặc consumer không còn cần, cần quản lý gì?",
+      "options": [
+        "Chỉ xóa listener UI mà không xét server",
+        "Chỉ đổi MongoDB URI trong log",
+        "Đóng stream và vòng đời tài nguyên, xử lý lỗi/reconnect theo yêu cầu",
+        "Giữ mọi cursor vô hạn để không mất logo real-time"
+      ],
+      "correct": 2,
+      "explanation": "Cleanup là phần của thiết kế consumer, không chỉ xử lý happy-path change."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Không bằng chứng tải",
+      "question": "Source có shard/pool/watch/Search có chứng minh phục vụ hàng triệu user chưa?",
+      "options": [
+        "Rồi, đủ bốn tính năng là chuẩn capacity",
+        "Rồi, pool 10 tự là 10 triệu user",
+        "Chưa, vì MongoDB không thể scale ngang",
+        "Chưa; cần workload, phân phối, quyền, hạ tầng và số liệu thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Phải giữ tuyên bố tương xứng bằng chứng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Hot key sau hash",
+      "question": "Orders của một customer chiếm 80% ghi, query lại thường lấy theo khoảng thời gian không có customerId. Hashed customerId đã giải quyết đủ chưa?",
+      "options": [
+        "Chưa; cần xem hotspot cùng giá trị và scatter-gather/query pattern, rồi chọn key/index theo workload",
+        "Rồi, hash tự chia mọi order của cùng customer ngẫu nhiên",
+        "Chỉ cần tăng minPoolSize là sửa routing",
+        "Chỉ cần thêm title text index"
+      ],
+      "correct": 0,
+      "explanation": "Phân phối và khả năng định tuyến phải cùng được đánh giá."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Pool toàn fleet",
+      "question": "App autoscale từ 2 lên 50 instances, mỗi instance tạo client với maxPoolSize: 10. Đội tính DB chỉ chịu 10 connections. Cần sửa gì?",
+      "options": [
+        "Chỉ w: majority làm pool tự chia sẻ",
+        "Tính tổng theo instances/clients/server pools và monitoring/budget thực, quản lý queue và capacity",
+        "Giữ tính 10 vì cùng option name sẽ gộp pool toàn fleet",
+        "Chỉ minPoolSize quyết định mọi socket toàn hệ thống"
+      ],
+      "correct": 1,
+      "explanation": "Pool local không là quota toàn kiến trúc."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Timeout không outcome",
+      "question": "HTTP timeout trong lúc ghi và driver có retryWrites. Nhóm retry cả POST với payload mới rồi nói chắc không duplicate. Đánh giá đúng?",
+      "options": [
+        "Timeout luôn chứng minh DB chưa ghi",
+        "Chỉ đổi maxPoolSize để dedup",
+        "Cần idempotency/outcome contract nghiệp vụ; timeout/retry driver không bao phủ mọi luồng HTTP",
+        "RetryWrites tự hiểu mọi POST của app là cùng ý định"
+      ],
+      "correct": 2,
+      "explanation": "Ranh giới request ứng dụng khác một thao tác ghi đủ điều kiện của driver."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Update fullDocument thiếu",
+      "question": "Insert cập nhật UI được nhưng update gửi undefined qua io.emit. Cách chẩn đoán/sửa phù hợp?",
+      "options": [
+        "Chỉ đổi event name để fullDocument tự xuất hiện",
+        "Chỉ bật w: majority vì nó tự là fullDocument option",
+        "Tăng số shard để update biến thành insert",
+        "Xem semantics payload update, chọn delta/lookup/image đúng contract và xử lý thiếu dữ liệu trước fan-out"
+      ],
+      "correct": 3,
+      "explanation": "Phải nối đúng event payload với schema consumer."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Lookup khác thời điểm",
+      "question": "Hai update A/B xảy ra nhanh, consumer dùng updateLookup của A rồi gán toàn document cho UI như snapshot A. Rủi ro nào?",
+      "options": [
+        "Lookup có thể phản ánh bản mới hơn A; cần version/order và contract sự kiện/state phù hợp",
+        "UpdateLookup luôn là post-image chính xác của A nên không rủi ro",
+        "MongoDB tự đảo B để consumer thấy A",
+        "Chỉ title bị ảnh hưởng, các field khác luôn đúng snapshot"
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất trạng thái lookup hiện tại với ảnh chụp chính xác từng event."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Mất cửa sổ resume",
+      "question": "Consumer ngừng lâu hơn lịch sử cần cho token, rồi resume thất bại. Thiết kế phục hồi cần gì?",
+      "options": [
+        "Chỉ tăng minPoolSize để tái tạo oplog cũ",
+        "Phân loại lỗi, resync/snapshot và mốc tiếp tục theo yêu cầu, không hứa token thay backup",
+        "Retry token vô hạn luôn lấy được mọi lịch sử",
+        "Tự coi backlog không tồn tại và báo đã đủ dữ liệu"
+      ],
+      "correct": 1,
+      "explanation": "Resume có điều kiện lịch sử; phục hồi cần giữ tính nhất quán của consumer."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Broadcast đa tenant",
+      "question": "Post thuộc tenantA thay đổi, io.emit raw fullDocument cho mọi socket đang nối. Cần sửa toàn tuyến gì?",
+      "options": [
+        "Chỉ hash customerId vì hash tự bảo vệ socket",
+        "Chỉ giảm maxPoolSize để ít người thấy",
+        "Auth/tenant-room subscription, allowlist fields và kiểm quyền/lifecycle khi fan-out theo context",
+        "Chỉ ẩn email ở UI nhưng gửi nguyên payload"
+      ],
+      "correct": 2,
+      "explanation": "DB event không tự có phạm vi response được phép cho từng người nhận."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Stream lỗi không được xử lý",
+      "question": "Có handler change nhưng không có error/reconnect/resume/backpressure policy. App claim real-time không mất dữ liệu. Đánh giá đúng?",
+      "options": [
+        "Đúng, .on change tự bảo đảm mọi event đúng một lần vô hạn",
+        "Chỉ thiếu console.log khi startup",
+        "Chỉ w: majority đảm bảo consumer luôn theo kịp",
+        "Chưa có căn cứ; cần vòng đời/lưu tiến độ/phục hồi và kiểm delivery theo yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Delivery consumer cần bằng chứng ngoài cấu hình ghi dữ liệu."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Filter bỏ delete",
+      "question": "UI cần phản ánh xóa bài nhưng stream chỉ insert/update, snapshot ban đầu cũng có thể race với stream. Cần gì?",
+      "options": [
+        "Thiết kế tập event, snapshot–stream handoff, version/dedup và quyền theo contract",
+        "Chỉ đổi tên operationType thành all",
+        "Chỉ giảm socket timeout",
+        "Coi delete không quan trọng vì payload không có fullDocument"
+      ],
+      "correct": 0,
+      "explanation": "Đồng bộ UI không chỉ là nghe một callback happy-path."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Connection per request",
+      "question": "Một app tạo mongoose connection mới cho mỗi HTTP request, maxPoolSize: 10 và autoscale nhiều instances. Hướng tối ưu có căn cứ?",
+      "options": [
+        "Chỉ thêm shard key hashed",
+        "Quản lý vòng đời/reuse client phù hợp, tổng connection budget/queue và đo workload, không chỉ tăng pool",
+        "Tăng pool mỗi request lên 10000 để chắc nhanh",
+        "Đóng kết nối trước khi query để tránh mọi socket"
+      ],
+      "correct": 1,
+      "explanation": "Connection management phải theo vòng đời ứng dụng và năng lực server."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Must should contract",
+      "question": "Business yêu cầu title có mongodb và content có tutorial, nhưng source có must title và should content không minimum. Cần sửa nghĩa query thế nào?",
+      "options": [
+        "Chỉ đổi tên index default thành required",
+        "Chỉ tăng search score để biến optional thành điều kiện quyền",
+        "Biểu đạt bắt buộc cả hai qua must hoặc minimumShouldMatch phù hợp, kiểm analyzer/index và kết quả",
+        "Giữ nguyên vì should luôn bắt buộc khi có must"
+      ],
+      "correct": 2,
+      "explanation": "Tìm kiếm phải phản ánh đúng điều kiện bắt buộc, không chỉ ưu tiên."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Chỉ should khác cấu hình",
+      "question": "Đội bỏ must và giữ một nhóm chỉ should nhưng tiếp tục giả mọi should đều optional như source cũ. Cần hiểu gì?",
+      "options": [
+        "Mọi query chỉ should luôn trả toàn collection",
+        "Must và should luôn là cùng một operator",
+        "Không thể có compound chỉ should",
+        "Semantics chỉ-should có yêu cầu ít nhất một match theo docs; phải kiểm query shape/minimum chứ không suy quy tắc cũ"
+      ],
+      "correct": 3,
+      "explanation": "Nghĩa phụ thuộc cấu trúc compound được viết thực tế."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Search index chưa provision",
+      "question": "Đã tạo MongoDB text index truyền thống rồi chạy aggregate $search default và coi mọi phụ thuộc có sẵn. Vấn đề?",
+      "options": [
+        "Search index/tính năng có contract riêng, cần provision/mapping/deployment đúng",
+        "Text index luôn tự thành Search default",
+        "Chỉ cần đổi event name socket",
+        "Chỉ cần retryWrites: false"
+      ],
+      "correct": 0,
+      "explanation": "Tên gần nhau không làm hai cơ chế tìm kiếm tự tương đương."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Majority quá rộng",
+      "question": "Nhóm dùng w: majority rồi tuyên bố không cần backup, authorization hay idempotency. Cách đánh giá đúng?",
+      "options": [
+        "Chỉ authorization còn cần, dữ liệu luôn khôi phục vô hạn",
+        "Write concern xác nhận ghi không thay ba hợp đồng đó; cần thiết kế từng lớp theo yêu cầu",
+        "Đúng, majority có nghĩa đa số hệ thống đã duyệt mọi nghiệp vụ",
+        "Chỉ backup còn cần, quyền và idempotency tự có"
+      ],
+      "correct": 1,
+      "explanation": "Không gán tính năng một lớp thành bảo đảm toàn hệ thống."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Đổi stream options khi resume",
+      "question": "Token được lưu từ pipelineA, app đổi sang pipelineB/options khác rồi resume và claim mọi kết quả tương thích. Cần gì?",
+      "options": [
+        "Chỉ maxPoolSize đúng là resume hợp lệ",
+        "Chỉ tên collection giống nhau là đủ",
+        "Quản lý contract/version tiến độ và dùng pipeline/options tương thích theo docs hoặc resync phù hợp",
+        "Token luôn tự dịch mọi schema/pipeline"
+      ],
+      "correct": 2,
+      "explanation": "Thay semantics consumer cần kế hoạch chuyển đổi, không chỉ token cũ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Event ID bị đổi",
+      "question": "Pipeline sửa _id của change event để đưa entity ID vào đó. Rủi ro cụ thể theo docs là gì?",
+      "options": [
+        "Tự tối ưu mọi resume vì entity ID dễ đọc",
+        "Chỉ ảnh hưởng màu log",
+        "MongoDB tự khôi phục _id dù pipeline sửa",
+        "Có thể làm stream lỗi và phá resume contract; giữ resume token đúng và dùng field khác cho entity"
+      ],
+      "correct": 3,
+      "explanation": "Event resume identity và document identity không nên bị trộn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Snapshot thay quyền",
+      "question": "Một user mất quyền tenant nhưng socket/room cũ vẫn nhận events. Cần xử lý gì?",
+      "options": [
+        "Lifecycle auth/permission và subscription/fan-out khi quyền đổi, không chỉ check ở lần connect đầu",
+        "Chỉ hash documentId trước emit",
+        "Chỉ giảm minPoolSize",
+        "Coi connection tồn tại nghĩa quyền còn hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Kết nối dài hạn cần chính sách khi identity/quyền thay đổi."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Scale không tuyến tính mặc định",
+      "question": "Thêm shard nhưng query thiếu key, cùng hot customer, mỗi app mở nhiều streams. Muốn claim năng lực tăng cần gì?",
+      "options": [
+        "Chỉ đếm số dòng code trong sample",
+        "Phân tích routing/key skew, query/index, connection/consumer cost và số liệu theo workload mục tiêu",
+        "Chỉ đếm số shard mới",
+        "Chỉ kiểm YAML có hashed"
+      ],
+      "correct": 1,
+      "explanation": "Capacity là kết quả của các tầng phối hợp và đo kiểm phù hợp."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Backpressure và tính đúng",
+      "question": "Consumer bị backlog, đội bỏ ngẫu nhiên events để giữ latency thấp nhưng UI cần trạng thái nhất quán. Thiết kế nào phù hợp?",
+      "options": [
+        "Chỉ đổi should thành must",
+        "Tắt mọi log để backlog biến mất",
+        "Định nghĩa delivery/state contract, coalescing/resync/version hợp lệ và budget, không bỏ tùy tiện rồi claim đủ dữ liệu",
+        "Bỏ ngẫu nhiên luôn không ảnh hưởng vì fullDocument mọi event giống nhau"
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu latency không được che mất yêu cầu đúng trạng thái của consumer."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Checkpoint change stream và delivery",
+      "question": "Consumer dùng change stream để cập nhật read model. Nếu lưu resume token trước khi apply rồi crash sẽ mất update; nếu apply trước rồi crash có thể replay. Thiết kế nào giữ tính đúng?",
+      "options": [
+        "Luôn lưu token trước vì token đã lưu bảo đảm read model cập nhật xong",
+        "Luôn apply trước và bỏ mọi dedup vì change stream bảo đảm side effect exactly once qua crash",
+        "Xóa token sau mọi event để consumer chỉ đọc những event tương lai",
+        "Phối hợp checkpoint với apply hoặc dùng apply idempotent/dedup theo event identity, và có đường resync khi không resume được"
+      ],
+      "correct": 3,
+      "explanation": "Ranh giới crash giữa side effect và checkpoint tạo mất hoặc lặp. Cần thiết kế delivery/state rõ; token không còn khả dụng cũng cần khôi phục trạng thái thay vì giả định lịch sử vô hạn."
+    }
+  ]
+}

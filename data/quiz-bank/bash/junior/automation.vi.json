@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "bash",
+  "level": "junior",
+  "lesson": "automation",
+  "language": "vi",
+  "sourceHash": "0b608d46a9ee2038cf0bd9cfdc73ead12b29e075a8a1be726e6bb96bd1786c38",
+  "status": "approved",
+  "review": "Tự soạn theo deploy/rollback và cron comments, đối chiếu GNU Bash, Cronie crontab(5), npm ci và curl. ENV chỉ dùng cho log; đường dẫn/app hardcode. Health failure mới gọi rollback tường minh; strict mode không tự khôi phục mọi lỗi. Không fetch/install/PM2/curl/cron/tar restore thực.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Deployment stages",
+      "question": "Thứ tự các giai đoạn chính trong source là gì?",
+      "options": [
+        "Backup, lấy mã, cài/build, restart, health check",
+        "Restart trước backup rồi xóa source",
+        "Health check trước mọi thay đổi và bỏ build",
+        "Chỉ tạo lịch cron"
+      ],
+      "correct": 0,
+      "explanation": "Script có nhiều bước tác dụng phụ nên cần phân biệt từng giai đoạn."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Deployment default environment",
+      "question": "Tham số môi trường của deploy mặc định là gì?",
+      "options": [
+        "Không có mặc định",
+        "staging",
+        "production",
+        "development"
+      ],
+      "correct": 1,
+      "explanation": "Source dùng parameter expansion mặc định cho đối số1."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Deployment default branch",
+      "question": "Branch mặc định của deploy là gì?",
+      "options": [
+        "staging",
+        "HEAD~1",
+        "main",
+        "master bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Tham số2 có mặc định main khi chưa đặt hoặc rỗng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Deploy directory",
+      "question": "Đường dẫn triển khai được hardcode là gì?",
+      "options": [
+        "/tmp/myapp",
+        "/etc/cron.d",
+        "./node_modules",
+        "/var/www/app"
+      ],
+      "correct": 3,
+      "explanation": "Chọn ENV khác chưa làm đường dẫn này tự thay đổi."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Backup directory",
+      "question": "Các archive backup được đặt dưới đâu theo source?",
+      "options": [
+        "/var/backups/app",
+        "/var/www/app/node_modules",
+        "/tmp luôn luôn",
+        "Thư mục home của mọi user"
+      ],
+      "correct": 0,
+      "explanation": "Script chưa có bước tạo backup directory."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Timestamp filename",
+      "question": "TIMESTAMP được đưa vào tên archive để làm gì?",
+      "options": [
+        "Tự xác minh version mã nguồn",
+        "Phân biệt thời điểm tạo bản backup theo định dạng đã chọn",
+        "Tự mã hóa archive",
+        "Tự khóa mọi deploy đồng thời"
+      ],
+      "correct": 1,
+      "explanation": "Độ phân giải giây không tự bảo đảm tên duy nhất."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Directory guard",
+      "question": "[ -d \"$DEPLOY_DIR\" ] kiểm gì trước backup?",
+      "options": [
+        "Backup trước đó còn nguyên vẹn",
+        "Server đã sẵn sàng nhận traffic",
+        "Đường dẫn triển khai là thư mục",
+        "Mã trong đó build thành công"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm tồn tại/loại thư mục không kiểm sức khỏe ứng dụng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Archive create flag",
+      "question": "Trong tar -czf, c có ý định gì?",
+      "options": [
+        "Giải nén archive",
+        "Chỉ đếm entry",
+        "Chuyển branch Git",
+        "Tạo archive"
+      ],
+      "correct": 3,
+      "explanation": "Các tùy chọn z và f có vai trò riêng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Archive gzip flag",
+      "question": "Trong tar -czf, z biểu thị gì theo GNU tar?",
+      "options": [
+        "Dùng gzip cho dữ liệu archive",
+        "Dùng zip format bất kỳ",
+        "Xóa thư mục nguồn",
+        "Tạo cron job"
+      ],
+      "correct": 0,
+      "explanation": "Đuôi .tar.gz phù hợp với ý định nén gzip."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Archive filename flag",
+      "question": "Tùy chọn f của tar dùng để chỉ gì?",
+      "options": [
+        "Mức ưu tiên process",
+        "Tên archive đọc hoặc ghi",
+        "Một filter JSON",
+        "Số file tối đa"
+      ],
+      "correct": 1,
+      "explanation": "Argument theo f phải là archive được chọn đúng."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Fetch role",
+      "question": "git fetch origin có ý định chính nào?",
+      "options": [
+        "Tự restart PM2",
+        "Tự khôi phục archive",
+        "Cập nhật thông tin/ref từ remote theo cấu hình",
+        "Tự build ứng dụng"
+      ],
+      "correct": 2,
+      "explanation": "Fetch không tự hoàn thiện toàn bộ triển khai."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Checkout role",
+      "question": "git checkout \"$BRANCH\" trong mẫu nhằm gì?",
+      "options": [
+        "Tự tạo health endpoint",
+        "Tạo backup database",
+        "Chỉ in tên remote",
+        "Chuyển trạng thái làm việc sang branch/ref được chọn"
+      ],
+      "correct": 3,
+      "explanation": "Cần xét input và trạng thái working tree trước khi dùng."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Pull role",
+      "question": "git pull origin \"$BRANCH\" có ý định gì?",
+      "options": [
+        "Lấy và tích hợp thay đổi từ remote branch vào trạng thái hiện tại theo cấu hình Git",
+        "Luôn xóa toàn bộ thay đổi local an toàn",
+        "Tự cài dependencies",
+        "Tự xác minh API của ứng dụng"
+      ],
+      "correct": 0,
+      "explanation": "Hành vi merge/rebase và khả năng conflict phụ thuộc cấu hình/trạng thái."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Npm ci intent",
+      "question": "npm ci trong script thường được chọn nhằm gì?",
+      "options": [
+        "Chuyển branch không cần Git",
+        "Cài dependency theo lockfile cho môi trường tự động",
+        "Tự tạo lockfile mới từ mọi range mỗi lần",
+        "Chạy health endpoint"
+      ],
+      "correct": 1,
+      "explanation": "Lockfile và package manifest phải tương thích theo yêu cầu npm."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Build command",
+      "question": "Lệnh nào chạy build script của dự án trong source?",
+      "options": [
+        "pm2 restart build",
+        "tar -czf build",
+        "npm run build",
+        "npm ci luôn thay thế mọi build"
+      ],
+      "correct": 2,
+      "explanation": "Build script cụ thể do package.json định nghĩa."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Process restart",
+      "question": "pm2 restart app trong mẫu nhắm tới gì?",
+      "options": [
+        "Mọi service trên toàn máy bắt buộc",
+        "Cron daemon duy nhất",
+        "Mọi container Docker",
+        "Ứng dụng/tập process tên app mà PM2 quản lý"
+      ],
+      "correct": 3,
+      "explanation": "Tên app và cấu hình PM2 phải có trong môi trường thực tế."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Health endpoint",
+      "question": "URL được kiểm sau restart là gì?",
+      "options": [
+        "http://localhost:3000/health",
+        "https://api.github.com/health",
+        "http://localhost:5432/sql",
+        "Một URL lấy từ ENV trong source"
+      ],
+      "correct": 0,
+      "explanation": "Host và port hiện hardcode."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Rollback trigger",
+      "question": "Source gọi rollback tường minh trong tình huống nào?",
+      "options": [
+        "Sau mọi deploy thành công",
+        "Health check trong if thất bại",
+        "Mọi command bất kỳ báo lỗi theo một cơ chế tự động chung",
+        "Ngay khi script bắt đầu"
+      ],
+      "correct": 1,
+      "explanation": "Không có trap tổng quát để tự rollback tất cả giai đoạn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Cron field order",
+      "question": "Trong crontab người dùng dạng5 trường thời gian, thứ tự là gì?",
+      "options": [
+        "Giờ, phút, tháng, năm, CPU",
+        "Ngày trong tuần, giây, port, user, giờ",
+        "Phút, giờ, ngày trong tháng, tháng, ngày trong tuần",
+        "Giây, phút, giờ, timezone, PID"
+      ],
+      "correct": 2,
+      "explanation": "Phần còn lại của dòng là command theo định dạng crontab đó."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Daily cron meaning",
+      "question": "0 2 * * * biểu thị lịch nào theo đồng hồ cron?",
+      "options": [
+        "Mỗi2 phút",
+        "Mỗi2 giờ bắt đầu khi lưu file",
+        "Chỉ ngày2 của tháng",
+        "Phút0 của giờ2 mỗi ngày"
+      ],
+      "correct": 3,
+      "explanation": "Cần xét timezone và quy tắc lịch của daemon."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Cron five minute slots",
+      "question": "*/5 * * * * chọn các phút nào trong mỗi giờ?",
+      "options": [
+        "0,5,10,...,55",
+        "Chỉ phút5",
+        "5,10,...,60 gồm phút60",
+        "Chờ đúng300 giây từ khi file được lưu"
+      ],
+      "correct": 0,
+      "explanation": "Step được áp dụng trong trường phút của lịch."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Weekly sunday",
+      "question": "0 0 * * 0 trong Cronie biểu thị gì?",
+      "options": [
+        "Mỗi0 phút nên chạy vô hạn",
+        "Nửa đêm Chủ nhật theo timezone áp dụng",
+        "Mỗi ngày lúc00:00",
+        "Ngày0 của tháng"
+      ],
+      "correct": 1,
+      "explanation": "Cronie chấp nhận0 hoặc7 là Chủ nhật."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Comments not installed",
+      "question": "Ba dòng cron trong source bắt đầu bằng # có tự tạo lịch chạy không?",
+      "options": [
+        "Có, deploy tự đăng ký chúng",
+        "Chỉ dòng có */5 được tự đăng ký",
+        "Không, chúng chỉ là comment minh họa",
+        "Có, Bash tự gọi crontab khi đọc comment"
+      ],
+      "correct": 2,
+      "explanation": "Cần cấu hình scheduler riêng nếu thực sự muốn tạo lịch."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Deploy invocation forwarding",
+      "question": "deploy \"$@\" ở cuối source truyền gì theo ý định?",
+      "options": [
+        "Một chuỗi nối mọi đối số không giữ dấu cách",
+        "Chỉ tên script",
+        "Tự bỏ mọi argument rỗng",
+        "Mỗi đối số của script thành một argument giữ nguyên ranh giới"
+      ],
+      "correct": 3,
+      "explanation": "Quoted \"$@\" là cách chuyển tiếp positional arguments."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Empty branch default",
+      "question": "Đối số branch là chuỗi rỗng trong source dùng default :- khiến branch nhận gì?",
+      "options": [
+        "main",
+        "Chuỗi rỗng bắt buộc",
+        "origin",
+        "Một ref ngẫu nhiên"
+      ],
+      "correct": 0,
+      "explanation": "Default có colon áp dụng cả unset và rỗng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Environment only label",
+      "question": "ENV=production có tự làm deploy sang đường dẫn khác staging trong source không?",
+      "options": [
+        "Có, tar tự đổi đích theo log",
+        "Không, các đường dẫn và PM2 app vẫn hardcode",
+        "Có, Bash biết mọi môi trường deployment",
+        "Có, PM2 tự đọc local ENV để chọn cluster"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị hiện được dùng trong thông báo, chưa phải mapping tài nguyên."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Missing backup directory",
+      "question": "Nếu thư mục backup không có, script đã có lệnh mkdir -p để tạo trước tar chưa?",
+      "options": [
+        "Có, echo tự tạo mọi parent directory",
+        "Có, git fetch tạo backup directory",
+        "Chưa",
+        "Có, local BACKUP_DIR tự tạo thư mục"
+      ],
+      "correct": 2,
+      "explanation": "Cần chuẩn bị path/quyền theo hợp đồng triển khai."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Missing deploy directory",
+      "question": "Nếu DEPLOY_DIR không tồn tại, source có tự clone/tạo dự án mới trước cd không?",
+      "options": [
+        "Có, -d tự tạo thư mục",
+        "Có, git pull tự chạy trước cd",
+        "Có, local DEPLOY_DIR tự clone repository",
+        "Không, nó bỏ backup rồi vẫn cd vào đường dẫn đó"
+      ],
+      "correct": 3,
+      "explanation": "Nhánh bootstrap môi trường mới chưa được hiện thực."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Local timestamp status",
+      "question": "Vì sao local TIMESTAMP=$(date ...) cần cẩn thận nếu muốn phát hiện lỗi date?",
+      "options": [
+        "Status declaration local có thể che status của command substitution",
+        "Vì date luôn trả mã exit âm",
+        "Vì local tự cấm mọi command substitution",
+        "Vì timestamp không thể là string"
+      ],
+      "correct": 0,
+      "explanation": "Khai báo và gán tách giúp kiểm status của thao tác cần kiểm."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Early archive failure",
+      "question": "Backup tar thất bại trong đường gọi script thông thường với -e có tự gọi rollback không?",
+      "options": [
+        "Có, mọi lỗi đều vào else health check",
+        "Không có lời gọi rollback ở nhánh đó; script có thể dừng theo errexit",
+        "Có, -e tự biết function rollback",
+        "Có, gzip tự chạy PM2 rollback"
+      ],
+      "correct": 1,
+      "explanation": "Strict mode không định nghĩa quy trình phục hồi."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Build failure path",
+      "question": "npm run build thất bại trước health check có được source chuyển thẳng vào else của curl if không?",
+      "options": [
+        "Có, Bash tự nhảy đến rollback",
+        "Có, build luôn được curl gọi",
+        "Không, đó là hai vị trí điều khiển khác nhau",
+        "Có, mọi else nhận mọi lỗi trước nó"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ status của điều kiện if quyết định nhánh health check."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Dev dependency omission",
+      "question": "Build cần compiler trong devDependencies nhưng npm ci --production bỏ chúng thì có rủi ro gì?",
+      "options": [
+        "Build tự tải mọi devDependency dù bị omit",
+        "Không thể có compiler trong devDependencies",
+        "PM2 tự thay compiler",
+        "Build thiếu công cụ cần thiết"
+      ],
+      "correct": 3,
+      "explanation": "Nên tách môi trường build và runtime theo dependency thực tế."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Lockfile mismatch",
+      "question": "npm ci có hợp đồng gì khi lockfile không khớp package manifest?",
+      "options": [
+        "Báo lỗi thay vì âm thầm cập nhật lockfile như một lần install thông thường",
+        "Luôn tự sửa lockfile rồi tiếp tục",
+        "Luôn bỏ mọi dependency",
+        "Chỉ in warning nhưng chắc chắn thành công"
+      ],
+      "correct": 0,
+      "explanation": "Cần pin phiên bản npm/config và đầu vào phù hợp."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Updated environment restart",
+      "question": "--update-env trong lời gọi PM2 nhằm biểu đạt gì?",
+      "options": [
+        "Tự tạo file cấu hình production đầy đủ",
+        "Yêu cầu PM2 cập nhật môi trường theo cơ chế command của nó",
+        "Tự kiểm ENV thuộc allowlist",
+        "Tự đổi mọi đường dẫn hardcode"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nghĩa có đủ biến và mapping môi trường đúng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Sleep not readiness",
+      "question": "sleep 5 có bảo đảm ứng dụng luôn sẵn sàng sau đúng5 giây không?",
+      "options": [
+        "Có, PM2 và sleep tạo transaction",
+        "Có, sleep tự gọi database health check",
+        "Không, nó chỉ chờ một khoảng thời gian",
+        "Có, mọi server khởi động trong5 giây"
+      ],
+      "correct": 2,
+      "explanation": "Readiness cần kiểm theo contract, deadline và chính sách retry phù hợp."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Curl fail meaning",
+      "question": "Tùy chọn -f của curl trong health check chủ yếu giúp gì với HTTP4xx/5xx?",
+      "options": [
+        "Xác minh mọi dữ liệu nghiệp vụ",
+        "Tự restart server khi lỗi",
+        "Tự kiểm phiên bản build trong response",
+        "Đánh dấu lỗi theo cơ chế --fail thay vì chỉ chấp nhận body đã nhận"
+      ],
+      "correct": 3,
+      "explanation": "Cần xét tài liệu curl và thêm kiểm response theo yêu cầu."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Curl silent diagnostics",
+      "question": "curl -s có thể làm chẩn đoán khó hơn theo hướng nào?",
+      "options": [
+        "Ẩn progress và nhiều thông báo; có thể cần -S/log phù hợp",
+        "Tự xóa log PM2",
+        "Tự biến mọi lỗi thành HTTP200",
+        "Tự mã hóa stderr"
+      ],
+      "correct": 0,
+      "explanation": "Không nên làm mất thông tin cần xác định nguyên nhân."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "No request timeout",
+      "question": "Source health check đã đặt connect timeout hoặc max-time tường minh chưa?",
+      "options": [
+        "Có, localhost luôn trả lời tức thì",
+        "Chưa",
+        "Có, sleep5 tự là timeout của curl",
+        "Có, -s nghĩa5 giây"
+      ],
+      "correct": 1,
+      "explanation": "Thời gian chờ trước request khác deadline của request."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Health body discarded",
+      "question": "Redirection > /dev/null trong curl check bỏ phần nào?",
+      "options": [
+        "Chỉ gửi request body rỗng",
+        "Tự xác minh JSON rồi bỏ",
+        "Stdout/body, chưa kiểm nội dung response",
+        "Tự bỏ status của curl"
+      ],
+      "correct": 2,
+      "explanation": "If vẫn dùng status của curl nhưng không xác nhận nội dung body."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Redirect status gap",
+      "question": "Một HTTP redirect được curl nhận thành công có tự bị -f coi như HTTP error chỉ vì không phải200 không?",
+      "options": [
+        "Có, mọi3xx đều lỗi với -f",
+        "Có, -s luôn theo redirect rồi validate",
+        "Có, /dev/null tự từ chối redirect",
+        "Không, -f không là phép so status chính xác bằng200"
+      ],
+      "correct": 3,
+      "explanation": "Nếu cần status cụ thể phải kiểm đúng tiêu chí."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Old version health",
+      "question": "Endpoint trả healthy từ phiên bản cũ có đủ chứng minh phiên bản mới đã chạy chưa?",
+      "options": [
+        "Không, cần nhận diện version/instance theo yêu cầu deploy",
+        "Có, mọi localhost response đến từ mã mới",
+        "Có, sleep5 đảm bảo ref đã đổi",
+        "Có, PM2 tên app pin commit mới"
+      ],
+      "correct": 0,
+      "explanation": "Health chung và xác nhận release là hai mục tiêu khác nhau."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Rollback archive input",
+      "question": "rollback \"$TIMESTAMP\" dùng timestamp để chọn gì?",
+      "options": [
+        "Một URL backup ngoài mạng",
+        "Archive backup tương ứng dưới đường dẫn cố định",
+        "Branch Git mang tên timestamp bắt buộc",
+        "Mọi archive trong máy"
+      ],
+      "correct": 1,
+      "explanation": "Đường dẫn được dựng từ dữ liệu đầu vào nên cần bảo vệ hợp đồng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Extract destination",
+      "question": "Trong rollback mẫu, tar -xzf archive -C / yêu cầu giải nén tương đối với đâu?",
+      "options": [
+        "Thư mục chứa executable tar",
+        "Một thư mục tạm mới tự tạo",
+        "Thư mục gốc /",
+        "Thư mục hiện tại của repository luôn luôn"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm cấu trúc entry và quyền trước khi dùng cách restore này."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Rollback restart order",
+      "question": "Rollback trong source thực hiện bước nào sau tar thành công?",
+      "options": [
+        "npm ci bắt buộc",
+        "git push origin",
+        "crontab -e",
+        "pm2 restart app"
+      ],
+      "correct": 3,
+      "explanation": "Chưa có health check riêng xác nhận rollback khỏe."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "No rollback verification",
+      "question": "Sau rollback restart, source có kiểm endpoint lại không?",
+      "options": [
+        "Không",
+        "Có, echo Rolled back tự gọi endpoint",
+        "Có, tar luôn kiểm ứng dụng",
+        "Có, exit1 tự kiểm"
+      ],
+      "correct": 0,
+      "explanation": "Thông báo hoàn tất cần dựa trên các bước đã kiểm thật."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Failed deploy exit",
+      "question": "Nếu health thất bại và rollback thành công, deploy vẫn exit với status nào theo source?",
+      "options": [
+        "Status của date đầu script",
+        "1",
+        "0 vì đã rollback",
+        "Timestamp dạng số"
+      ],
+      "correct": 1,
+      "explanation": "Rollback thành công không biến deployment mới thành thành công."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Backup scope",
+      "question": "Archive thư mục ứng dụng có tự là backup đầy đủ database remote không?",
+      "options": [
+        "Có, PM2 tự nhúng database vào archive",
+        "Có, mọi dữ liệu nằm dưới DEPLOY_DIR mặc định",
+        "Không, chỉ những dữ liệu thực sự được đưa vào archive",
+        "Có, tar tự truy database theo package.json"
+      ],
+      "correct": 2,
+      "explanation": "Cần xác định tài nguyên và chiến lược dữ liệu riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Backup consistency",
+      "question": "Tạo tar khi ứng dụng vẫn ghi file có tự bảo đảm snapshot nhất quán không?",
+      "options": [
+        "Có, gzip khóa mọi writer",
+        "Có, -c là transaction toàn filesystem",
+        "Có, timestamp làm dữ liệu bất biến",
+        "Không, cần cơ chế snapshot/quiesce hoặc policy theo dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Archive tạo được không tự chứng minh tính nhất quán nghiệp vụ."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Cron working directory",
+      "question": "Job cron dùng đường dẫn tương đối có nên giả cwd giống terminal hiện tại của người soạn không?",
+      "options": [
+        "Không, nên đặt working directory/đường dẫn rõ ràng",
+        "Có, cron ghi nhớ terminal cuối cùng",
+        "Có, crontab lưu toàn bộ shell session",
+        "Có, mọi job bắt đầu ở repository"
+      ],
+      "correct": 0,
+      "explanation": "Môi trường scheduler khác phiên shell tương tác."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Cron executable lookup",
+      "question": "Lệnh chạy trong terminal nhưng không tìm thấy khi cron chạy thường cần kiểm gì?",
+      "options": [
+        "Chỉ số lần mở trình soạn thảo",
+        "PATH, interpreter, quyền và environment của job",
+        "Chỉ màu prompt",
+        "Chỉ tên biến NAME ở một terminal khác"
+      ],
+      "correct": 1,
+      "explanation": "Không mặc định shell startup file tương tác được nạp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Cron timezone",
+      "question": "Lịch2 giờ sáng cần nêu điều gì để người vận hành hiểu đúng?",
+      "options": [
+        "Chỉ hostname dài bao nhiêu ký tự",
+        "Mọi cron luôn dùng UTC bất kể cấu hình",
+        "Timezone và quy tắc lịch của scheduler",
+        "Chỉ UTC offset của tác giả lúc viết file"
+      ],
+      "correct": 2,
+      "explanation": "Múi giờ có thể được cấu hình theo implementation."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Cron overlap",
+      "question": "Job chạy mỗi5 phút nhưng một lần mất8 phút có thể gặp gì?",
+      "options": [
+        "Cron luôn đợi lần cũ kết thúc mới đếm5 phút",
+        "Cron tự hủy mọi process cũ an toàn",
+        "Mọi job tự có distributed lock",
+        "Các lần chạy chồng nhau nếu không có cơ chế ngăn phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Lịch khởi chạy không tự là điều phối chống overlap."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Cron percent syntax",
+      "question": "Trong Cronie, dấu % không escape ở phần command có ý nghĩa đặc biệt nào?",
+      "options": [
+        "Có thể bị đổi thành newline và phần sau gửi vào stdin",
+        "Luôn là literal trong mọi vị trí crontab",
+        "Tự biểu thị phần trăm CPU",
+        "Tự làm command chạy song song"
+      ],
+      "correct": 0,
+      "explanation": "Cần escape hoặc đưa logic vào script phù hợp khi dùng date format trực tiếp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "System crontab extra field",
+      "question": "File /etc/crontab hoặc /etc/cron.d trong Cronie thường có thêm gì so với crontab người dùng?",
+      "options": [
+        "Một trường số giây bắt buộc",
+        "Trường username trước command",
+        "Một trường CPU core bắt buộc",
+        "Một HTTP status"
+      ],
+      "correct": 1,
+      "explanation": "Không dán nguyên mọi dạng entry giữa hai loại file mà bỏ khác biệt định dạng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Cron shell default",
+      "question": "Theo Cronie, phần command mặc định được chạy bởi shell nào nếu không override SHELL?",
+      "options": [
+        "Luôn PowerShell",
+        "Shell của terminal đang mở bất kỳ",
+        "/bin/sh",
+        "Luôn /bin/bash"
+      ],
+      "correct": 2,
+      "explanation": "Nếu script cần Bash hãy gọi interpreter/shebang phù hợp theo cơ chế thực thi."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Cron DOM DOW rule",
+      "question": "Theo Cronie, khi cả ngày trong tháng và ngày trong tuần đều bị giới hạn, job khớp khi nào?",
+      "options": [
+        "Chỉ khi cả hai trường ngày cùng khớp",
+        "Không bao giờ khớp",
+        "Chỉ ngày trong tuần được xét",
+        "Khi một trong hai trường ngày khớp, cùng các điều kiện thời gian khác"
+      ],
+      "correct": 3,
+      "explanation": "Quy tắc OR cho hai trường ngày là điểm dễ nhầm trong cron truyền thống."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "No notification implementation",
+      "question": "Bài tập yêu cầu notifications nhưng source đã có gửi thông báo ngoài hệ thống chưa?",
+      "options": [
+        "Chưa, chỉ echo ra output",
+        "Có, emoji tự gửi Slack",
+        "Có, PM2 restart gửi email theo mẫu",
+        "Có, cron comments là webhook"
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế thông báo cần được bổ sung nếu nằm trong yêu cầu ứng dụng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Trap mention not implementation",
+      "question": "Key point nhắc trap cleanup, nhưng deploy source đã đăng ký trap nào chưa?",
+      "options": [
+        "Có, tar tự viết trap vào shell",
+        "Chưa",
+        "Có, set -e tự là EXIT trap",
+        "Có, function rollback tự đăng ký ERR trap"
+      ],
+      "correct": 1,
+      "explanation": "Mô tả lý thuyết không thay việc cài handler."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Retaining failure status",
+      "question": "Khi thêm cleanup/log sau một command lỗi, cần làm gì để vẫn báo lỗi ban đầu?",
+      "options": [
+        "Chỉ gọi true trước exit",
+        "Giả $? giữ status đầu tiên suốt script",
+        "Lưu status ngay rồi trả lại theo hợp đồng sau cleanup",
+        "Chỉ echo failed là shell tự trả status cũ"
+      ],
+      "correct": 2,
+      "explanation": "Command phụ có thể thay status gần nhất."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Timestamp collision",
+      "question": "Hai deploy bắt đầu trong cùng một giây có thể ảnh hưởng tên backup thế nào?",
+      "options": [
+        "Luôn có UUID tự thêm bởi date",
+        "Tar tự tăng version tên trong mọi trường hợp",
+        "Local variable tự tách namespace filesystem",
+        "Tên có thể trùng nếu chỉ dùng timestamp giây và cùng directory"
+      ],
+      "correct": 3,
+      "explanation": "Cần chiến lược tên và concurrency phù hợp."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Environment isolation design",
+      "question": "Muốn staging và production thật sự tách biệt, ngoài log cần bổ sung gì?",
+      "options": [
+        "Mapping đã kiểm cho tài nguyên/đường dẫn/process/config và quyền theo môi trường",
+        "Chỉ đổi emoji theo ENV",
+        "Chỉ đặt ENV local là đủ cách ly",
+        "Chỉ dùng cùng app PM2 rồi tin tên production"
+      ],
+      "correct": 0,
+      "explanation": "Phân tách môi trường phải có tác động thực lên đích triển khai."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Deploy lock requirement",
+      "question": "Vì sao hai deploy cùng thao tác checkout/build trên một working tree nguy hiểm?",
+      "options": [
+        "Bash local variables khóa filesystem",
+        "Chúng có thể xen kẽ mã, artifact và backup; cần điều phối/đích release tách biệt",
+        "Git tự khóa toàn quy trình npm và PM2",
+        "Timestamp tự serialize mọi process"
+      ],
+      "correct": 1,
+      "explanation": "Lock Git cho một lệnh không tự tạo transaction cho cả pipeline deploy."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Immutable release approach",
+      "question": "Tại sao build release ở thư mục riêng rồi chuyển đích chạy có thể dễ phục hồi hơn build ngay trên thư mục đang phục vụ?",
+      "options": [
+        "Tự làm mọi migration database đảo ngược được",
+        "Tự loại mọi yêu cầu lock/permission",
+        "Giảm trạng thái nửa cũ nửa mới và cho phép chọn lại release đã biết",
+        "Bảo đảm không cần health check nữa"
+      ],
+      "correct": 2,
+      "explanation": "Lợi ích phụ thuộc thiết kế activate/rollback và giới hạn dữ liệu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Rollback residual files",
+      "question": "Restore tar cũ chồng lên thư mục có file mới có tự xóa mọi file chỉ có trong release mới không?",
+      "options": [
+        "Có, tar luôn xóa mọi thứ không có trong archive",
+        "Có, gzip giữ đầy đủ lịch sử xóa",
+        "Có, PM2 restart dọn toàn filesystem",
+        "Không, overlay restore không mặc định đồng bộ xóa các entry ngoài archive"
+      ],
+      "correct": 3,
+      "explanation": "Rollback code cần xác định trạng thái đích mong muốn, không chỉ chép đè."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Backup precondition failure",
+      "question": "DEPLOY_DIR mới chưa tồn tại nên không có archive, nhưng rollback về sau vẫn dựng tên archive. Thiết kế cần gì?",
+      "options": [
+        "Theo dõi backup có hợp lệ/khả dụng và có chiến lược bootstrap/failure riêng",
+        "Giả mọi deploy đều có archive dù đã skip",
+        "Chỉ echo Backup created trước tar",
+        "Chỉ đổi timestamp thành rỗng"
+      ],
+      "correct": 0,
+      "explanation": "Đường phục hồi phải dựa trên tài nguyên thực đã tạo thành công."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Rollback failure preserves diagnosis",
+      "question": "Nếu health fail rồi rollback cũng fail, thông tin nào nên giữ?",
+      "options": [
+        "Luôn thay mọi lỗi bằng status0",
+        "Lỗi deploy ban đầu cùng kết quả/phạm vi lỗi rollback",
+        "Chỉ log thành công vì đã gọi rollback",
+        "Chỉ bỏ mọi stderr để tránh nhiễu"
+      ],
+      "correct": 1,
+      "explanation": "Phục hồi thất bại không được che nguyên nhân gốc hoặc tạo báo cáo thành công giả."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Build dependencies separation",
+      "question": "Build cần devDependencies nhưng runtime muốn gọn. Cách nào phù hợp về kiến trúc?",
+      "options": [
+        "Dùng --production để compiler tự cài lại",
+        "Bỏ build vì PM2 tự biên dịch mọi dự án",
+        "Build với dependency cần thiết, tạo artifact rồi chuẩn bị runtime theo contract",
+        "Bỏ mọi devDependency trước build và giả tool luôn còn"
+      ],
+      "correct": 2,
+      "explanation": "Tách giai đoạn build/run theo dependency thực tế giúp tránh thiếu công cụ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Readiness bounded retries",
+      "question": "Thay sleep5 bằng vòng health check cần thêm gì để tránh chờ vô hạn?",
+      "options": [
+        "while true không giới hạn vì cuối cùng chắc khỏe",
+        "Chỉ tăng sleep lên một giờ",
+        "Bỏ mọi status curl",
+        "Deadline, timeout từng request và retry/backoff theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Readiness có giới hạn thời gian và tiêu chí failure rõ ràng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Version aware readiness",
+      "question": "Endpoint trả200 nhưng commit cũ. Health check để activate release mới nên kiểm thêm gì?",
+      "options": [
+        "Định danh version/instance và điều kiện sẵn sàng phục vụ cần thiết",
+        "Chỉ body không rỗng",
+        "Chỉ timestamp hiện tại ở client",
+        "Chỉ port mở"
+      ],
+      "correct": 0,
+      "explanation": "Readiness chung không tự chứng minh release mong muốn đang phục vụ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Database rollback compatibility",
+      "question": "Rollback mã về bản cũ sau migration không tương thích có tự an toàn không?",
+      "options": [
+        "Có, git pull giữ mọi dữ liệu trước đó",
+        "Không, cần chiến lược schema/data tương thích và quy trình phục hồi riêng",
+        "Có, archive thư mục app tự rollback mọi DB remote",
+        "Có, PM2 lưu snapshot database"
+      ],
+      "correct": 1,
+      "explanation": "Triển khai mã và thay đổi dữ liệu có vòng đời khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Cron daylight changes",
+      "question": "Theo lịch cron truyền thống, một giờ địa phương bị bỏ hoặc lặp khi đổi DST có thể ảnh hưởng gì?",
+      "options": [
+        "Cron luôn đổi toàn bộ lịch thành UTC mà không cấu hình",
+        "DST chỉ đổi màu log",
+        "Một thời điểm có thể không khớp hoặc khớp hai lần theo quy tắc implementation",
+        "Mọi job luôn đúng một lần bất kể timezone"
+      ],
+      "correct": 2,
+      "explanation": "Cần chọn timezone/scheduler và tính idempotency theo yêu cầu."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Cron idempotent job",
+      "question": "Job backup có thể được retry hoặc chạy trùng nên thiết kế gì?",
+      "options": [
+        "Chỉ tin cron không bao giờ gọi hai lần",
+        "Ghi đè cùng archive vô điều kiện",
+        "Bỏ mọi error status để cron không retry",
+        "Định danh lần chạy, kiểm trạng thái và xử lý lặp an toàn theo tài nguyên"
+      ],
+      "correct": 3,
+      "explanation": "Lịch không tự bảo đảm exactly-once cho tác dụng phụ nghiệp vụ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Cron input environment",
+      "question": "Job cần secret và config khi chạy tự động nên dựa vào điều gì?",
+      "options": [
+        "Cơ chế cung cấp cấu hình/quyền phù hợp, không giả có session tương tác",
+        "Dán mọi secret vào output log",
+        "Chỉ dựa vào biến chưa export trong terminal khác",
+        "Đặt tên file có chữ secret rồi tự được bảo vệ"
+      ],
+      "correct": 0,
+      "explanation": "Cần giữ ranh giới truy cập và tránh lộ dữ liệu nhạy cảm."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Backup restoration test",
+      "question": "Muốn biết backup dùng được khi cần rollback, nên kiểm gì?",
+      "options": [
+        "Chỉ tar command được viết trong tài liệu",
+        "Khả năng đọc/restore vào môi trường kiểm soát và xác minh dữ liệu/quyền cần thiết",
+        "Chỉ file .tar.gz tồn tại là đủ mọi khía cạnh",
+        "Chỉ filename có timestamp"
+      ],
+      "correct": 1,
+      "explanation": "Sự tồn tại artifact chưa chứng minh khôi phục đáp ứng yêu cầu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Untrusted archive restore",
+      "question": "Vì sao không giải nén archive không tin cậy vào / theo mặc định?",
+      "options": [
+        "Vì mọi .gz được xác thực chữ ký tự động",
+        "Vì -C / tự giới hạn vào repository",
+        "Entry và metadata có thể tác động ngoài đích mong muốn; cần kiểm nguồn/phạm vi restore",
+        "Vì tar luôn là sandbox toàn filesystem"
+      ],
+      "correct": 2,
+      "explanation": "Đích rộng đòi hỏi kiểm nguồn và quyền phù hợp; không thực hiện restore để trả lời."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Branch input contract",
+      "question": "Quoting \"$BRANCH\" có tự kiểm branch được phép và ngăn mọi diễn giải option của Git không?",
+      "options": [
+        "Có, quote làm mọi ref đáng tin",
+        "Có, Git không có option bắt đầu dấu -",
+        "Có, local biến tự whitelist input",
+        "Không, quote giữ argument; còn cần validation và cách gọi Git đúng hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Quoting và authorization/option parsing là các lớp khác nhau."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "External notification policy",
+      "question": "Thêm thông báo deploy thất bại cần quyết định gì để không làm mất status gốc?",
+      "options": [
+        "Tách kết quả notification khỏi kết quả deploy và có giới hạn/lỗi rõ",
+        "Luôn exit0 nếu gửi thông báo thành công",
+        "Retry gửi vô hạn trước mọi cleanup",
+        "Đưa toàn bộ environment vào thông báo"
+      ],
+      "correct": 0,
+      "explanation": "Thông báo là một tác dụng phụ có failure mode riêng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Trap limitations",
+      "question": "Trap cleanup có bảo đảm chạy khi host mất điện hoặc process bị SIGKILL không?",
+      "options": [
+        "Có, trap tự khởi động lại hệ điều hành",
+        "Không, cần cơ chế phục hồi sau gián đoạn ngoài handler trong process",
+        "Có, EXIT trap luôn chạy sau mất điện",
+        "Có, Bash giữ process sống bất kể signal"
+      ],
+      "correct": 1,
+      "explanation": "Không biến cleanup thông thường thành bảo đảm tuyệt đối trước mọi failure."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Deploy test without side effects",
+      "question": "Muốn kiểm health-fail gọi rollback mà không triển khai thật, cách nào phù hợp?",
+      "options": [
+        "Chỉ đếm số chữ rollback trong source",
+        "Chỉ kiểm cú pháp rồi khẳng định đã phục hồi dữ liệu",
+        "Dùng stub cho thao tác ngoài và kiểm thứ tự/status trên fixture",
+        "Chạy script nguyên văn trên production để xem"
+      ],
+      "correct": 2,
+      "explanation": "Có thể kiểm logic điều phối trong phạm vi mô hình mà không thực hiện tác dụng phụ thật."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Automation acceptance",
+      "question": "Một deploy script hoàn chỉnh theo bài tập cần kiểm những đường đi nào?",
+      "options": [
+        "Chỉ nhánh echo Deployed",
+        "Chỉ lịch2 giờ sáng có đúng5 field",
+        "Chỉ command npm tồn tại",
+        "Thành công, backup/build/restart/health thất bại, rollback thất bại và chạy lặp/chồng"
+      ],
+      "correct": 3,
+      "explanation": "Tiêu chí hoàn tất phải bám các trạng thái và giới hạn vận hành của quy trình."
+    }
+  ]
+}

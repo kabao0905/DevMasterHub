@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cicd",
+  "level": "mid",
+  "lesson": "advanced",
+  "language": "vi",
+  "sourceHash": "f2d4514e1b3cd93ebad213e71f73b4dd887480c51f90792e6644f7c67db3f39e",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo path trigger/job outputs/condition của monorepo. Đối chiếu dorny/paths-filter v3 và GitHub Actions. Source thiếu checkout cho push, trigger bỏ backend-only, shared không có internal filter, build chỉ echo. Không chạy Git/action/build/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Monorepo",
+      "question": "Monorepo trong ngữ cảnh bài là gì?",
+      "options": [
+        "Một repository chứa nhiều package/thành phần có thể liên quan nhau",
+        "Một branch chỉ được có một file",
+        "Một registry lưu một image",
+        "Một workflow không có source"
+      ],
+      "correct": 0,
+      "explanation": "Cần quản lý quan hệ dependency giữa các package khi chọn kiểm tra."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Mục tiêu chọn build",
+      "question": "Conditional workflow trong bài nhằm gì?",
+      "options": [
+        "Tự chứng minh code không có lỗi",
+        "Chạy phần việc phù hợp với thay đổi, giữ các kiểm tra cần thiết",
+        "Bỏ mọi test để CI xanh",
+        "Tự merge mọi PR"
+      ],
+      "correct": 1,
+      "explanation": "Chọn lọc công việc cần bảo toàn coverage theo tác động thay đổi."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Bộ lọc cấp workflow",
+      "question": "on.push.paths quyết định điều gì?",
+      "options": [
+        "Tự tạo dependency package",
+        "Tự cấp secret cho đường dẫn file",
+        "Workflow có được trigger bởi push với đường dẫn phù hợp hay không",
+        "Chỉ chọn màu tên job"
+      ],
+      "correct": 2,
+      "explanation": "Workflow phải được trigger trước khi job bên trong có cơ hội xét điều kiện."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Đường dẫn trigger",
+      "question": "Hai nhóm đường dẫn trong trigger mẫu là gì?",
+      "options": [
+        "packages/backend/** và tests/**",
+        "Mọi file trong repository",
+        "Chỉ README.md",
+        "packages/frontend/** và packages/shared/**"
+      ],
+      "correct": 3,
+      "explanation": "Backend-only không nằm trong danh sách path trigger hiện tại."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Job phát hiện",
+      "question": "Job detect-changes có vai trò dự kiến gì?",
+      "options": [
+        "Tạo thông tin thay đổi cho các job phía sau",
+        "Thực hiện deploy production trực tiếp",
+        "Tạo mọi package còn thiếu",
+        "Đổi tên source branch"
+      ],
+      "correct": 0,
+      "explanation": "Trong mẫu nó dùng action paths-filter và xuất các output."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Action detector",
+      "question": "Mẫu dùng action nào để lọc thay đổi theo nhóm?",
+      "options": [
+        "codecov/codecov-action@v3",
+        "dorny/paths-filter@v3",
+        "actions/setup-node@v4",
+        "docker/login-action@v3"
+      ],
+      "correct": 1,
+      "explanation": "Đây là action bên thứ ba cần review version/quyền/đầu vào phù hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Step ID",
+      "question": "id: changes có vai trò gì?",
+      "options": [
+        "Tự tạo API token",
+        "Đặt tên runner",
+        "Định danh step để tham chiếu outputs",
+        "Đổi tên Git branch thành changes"
+      ],
+      "correct": 2,
+      "explanation": "Step ID khác tên hiển thị."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Filter frontend",
+      "question": "Filter frontend bên trong action mẫu khớp nhóm nào?",
+      "options": [
+        "packages/shared/** duy nhất",
+        "Mọi package bất kể đường dẫn",
+        "Chỉ packages/backend/**",
+        "packages/frontend/**"
+      ],
+      "correct": 3,
+      "explanation": "Filter trong action hiện chưa gồm shared dù trigger có shared."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Filter backend",
+      "question": "Filter backend bên trong action mẫu khớp nhóm nào?",
+      "options": [
+        "packages/backend/**",
+        "packages/frontend/**",
+        "Mọi file README",
+        "Chỉ .github/workflows/**"
+      ],
+      "correct": 0,
+      "explanation": "Trigger và filter action không cùng danh sách hiện tại."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Job output",
+      "question": "outputs.frontend của detect-changes lấy giá trị từ đâu?",
+      "options": [
+        "runs-on.frontend",
+        "steps.changes.outputs.frontend",
+        "matrix.os",
+        "secrets.frontend"
+      ],
+      "correct": 1,
+      "explanation": "Job output đưa dữ liệu step ra giao diện của job."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Dependency build",
+      "question": "build-frontend chờ job nào theo needs?",
+      "options": [
+        "deploy-production",
+        "Không job nào",
+        "detect-changes",
+        "build-backend"
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện dùng output của job detector sau dependency."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Điều kiện frontend",
+      "question": "build-frontend được cấu hình kiểm tra giá trị nào?",
+      "options": [
+        "github.sha == 'frontend'",
+        "matrix.os == 'true'",
+        "secrets.frontend == 'production'",
+        "needs.detect-changes.outputs.frontend == 'true'"
+      ],
+      "correct": 3,
+      "explanation": "Output được so với chuỗi true, không suy kiểu boolean tự động."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Chọn runner",
+      "question": "Các job được hiển thị trong mẫu dùng nhãn runner nào?",
+      "options": [
+        "ubuntu-latest",
+        "windows-latest",
+        "macos-latest",
+        "Không có runs-on ở mọi job"
+      ],
+      "correct": 0,
+      "explanation": "Runner label không tự cung cấp nội dung repository."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Build hiện có",
+      "question": "run: echo \"Building frontend...\" thực sự làm gì?",
+      "options": [
+        "Push image frontend",
+        "In thông báo",
+        "Build frontend production đầy đủ",
+        "Chạy mọi browser tests"
+      ],
+      "correct": 1,
+      "explanation": "Tên job và thông báo chưa là thao tác build thật."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Backend hiện có",
+      "question": "Step build-backend trong source đã gọi compiler hoặc test runner chưa?",
+      "options": [
+        "Rồi, needs tự chạy npm test",
+        "Rồi, output backend chứa binary",
+        "Chưa, chỉ echo thông báo",
+        "Rồi, paths-filter tự biên dịch backend"
+      ],
+      "correct": 2,
+      "explanation": "Phải thêm công việc thực tế và đầu vào phù hợp."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Checkout push",
+      "question": "Với luồng push mà paths-filter v3 dùng Git local, cần có đầu vào gì?",
+      "options": [
+        "Chỉ tên filter trong YAML",
+        "Chỉ một secret tùy ý",
+        "Chỉ một lệnh echo sau detector",
+        "Repository đã checkout phù hợp trước khi so thay đổi"
+      ],
+      "correct": 3,
+      "explanation": "README action phân biệt luồng Git local và luồng PR API."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Khái niệm shared",
+      "question": "Package shared thường có ý nghĩa nào cần xét?",
+      "options": [
+        "Có thể là dependency chung của nhiều package",
+        "Luôn là file không ảnh hưởng build",
+        "Luôn chứa mọi secret production",
+        "Bắt buộc là một branch riêng"
+      ],
+      "correct": 0,
+      "explanation": "Tác động phụ thuộc dùng thật, không suy chỉ từ tên."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Glob đệ quy",
+      "question": "Trong pattern packages/frontend/**, ** dùng để diễn tả gì?",
+      "options": [
+        "Một regex SQL chạy trên DB",
+        "Phạm vi đường dẫn con theo quy tắc glob của cơ chế đang dùng",
+        "Một phép nhân số job",
+        "Một yêu cầu cấp quyền admin"
+      ],
+      "correct": 1,
+      "explanation": "Không nên đồng nhất glob workflow và mọi regex tùy ý."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Hai tầng lọc",
+      "question": "Path trigger và job if có phải cùng một bước không?",
+      "options": [
+        "Có, job if có thể tạo workflow chưa trigger",
+        "Không, vì job if chỉ đổi màu log",
+        "Không, trigger quyết định tạo run còn job if quyết định chạy job trong run",
+        "Có, cả hai tự động hợp nhất mọi pattern"
+      ],
+      "correct": 2,
+      "explanation": "Hai tầng cần đồng bộ theo mục tiêu kiểm tra."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Chưa có test",
+      "question": "Source có bước kiểm thử package thực tế chưa?",
+      "options": [
+        "Có, mọi echo là một test assertion",
+        "Có, paths-filter tự viết tests",
+        "Có, output true chứng minh app đúng",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Detector chỉ phân loại thay đổi, không xác minh hành vi ứng dụng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Backend-only bị chặn",
+      "question": "Push chỉ sửa packages/backend/server.js. Chỉ xét on.push.paths của nguồn, workflow có được trigger không?",
+      "options": [
+        "Không, backend chưa nằm trong paths cấp workflow",
+        "Có, vì action bên trong có filter backend",
+        "Có, vì tên job build-backend",
+        "Có, vì mọi push luôn bỏ qua path filter"
+      ],
+      "correct": 0,
+      "explanation": "Job bên trong không chạy nếu workflow không được tạo bởi trigger."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Frontend-only lý thuyết",
+      "question": "Giả sử detector được chuẩn bị đúng và chỉ frontend thay đổi. Các output khớp filter nguồn là gì?",
+      "options": [
+        "Cả hai luôn false",
+        "frontend=true, backend=false",
+        "frontend=false, backend=true",
+        "Cả hai luôn true"
+      ],
+      "correct": 1,
+      "explanation": "Đây là kết quả phân loại theo pattern, không phải bằng chứng action đã thực chạy."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Shared-only lý thuyết",
+      "question": "Giả sử detector hợp lệ và chỉ packages/shared/utils.js đổi. Theo hai filter nội bộ hiện có, chuyện gì xảy ra?",
+      "options": [
+        "Cả hai output tự true nhờ tên shared",
+        "Frontend luôn build vì shared được nhắc ở trigger",
+        "Workflow khớp trigger nhưng hai filter frontend/backend không khớp shared",
+        "Workflow không khớp trigger vì shared bị bỏ khỏi on.paths"
+      ],
+      "correct": 2,
+      "explanation": "Trigger bao gồm shared không tự thêm shared vào filters của action."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Hai package cùng đổi",
+      "question": "Giả sử workflow được trigger và detector hoạt động đúng, frontend và backend đều có file thay đổi. Output nào phù hợp?",
+      "options": [
+        "Chỉ frontend vì đứng trước",
+        "Chỉ backend vì đứng sau",
+        "Cả hai false vì thay đổi nhiều package",
+        "Cả frontend và backend true"
+      ],
+      "correct": 3,
+      "explanation": "Các filter có thể cùng khớp, không phải cơ chế chọn duy nhất một nhóm."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "README không trigger",
+      "question": "Push chỉ sửa README.md, không có path nào khác khớp mẫu. Chỉ xét paths thì sao?",
+      "options": [
+        "Không tạo run theo trigger push này",
+        "Luôn chạy cả hai build",
+        "Chỉ chạy backend",
+        "Tự tạo một workflow mới để kiểm README"
+      ],
+      "correct": 0,
+      "explanation": "Nếu tài liệu hoặc cấu hình khác cần check thì phải đưa vào policy phù hợp."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Sửa trigger backend",
+      "question": "Muốn backend-only thay đổi có cơ hội chạy detector, sửa trực tiếp nào cần thiết?",
+      "options": [
+        "Chỉ đưa build-backend xuống cuối file",
+        "Thêm đường dẫn backend vào trigger hoặc thiết kế trigger đủ rộng theo mục tiêu",
+        "Chỉ đổi name của build-backend",
+        "Chỉ thêm output backend ở job vốn đã có"
+      ],
+      "correct": 1,
+      "explanation": "Nới điều kiện job không sửa tầng trigger đang chặn toàn run."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Shared tác động frontend",
+      "question": "Frontend phụ thuộc shared. Muốn shared-only chạy frontend theo filter action, cần gì?",
+      "options": [
+        "Chỉ đổi outputs.frontend thành tên dài hơn",
+        "Chỉ đổi runner OS",
+        "Thêm shared vào điều kiện tác động frontend hoặc dùng dependency graph phù hợp",
+        "Chỉ giữ shared trong on.paths là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Tác động transitive cần được mã hóa ở tầng chọn job."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Shared tác động hai bên",
+      "question": "Cả frontend/backend cùng phụ thuộc shared. Policy phù hợp khi shared đổi là gì?",
+      "options": [
+        "Luôn skip cả hai vì không có file trực tiếp",
+        "Chỉ chọn package có tên ngắn hơn",
+        "Chỉ chạy detector rồi coi sản phẩm pass",
+        "Cho các kiểm tra của cả hai thành phần bị ảnh hưởng chạy theo dependency thực"
+      ],
+      "correct": 3,
+      "explanation": "Không nên mất coverage vì chỉ xét thư mục trực tiếp."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Output chuỗi",
+      "question": "Vì sao nguồn so sánh output với chuỗi true thay vì chỉ dựa giá trị không rỗng?",
+      "options": [
+        "Output action là dữ liệu chuỗi; chuỗi false không nên bị hiểu như một điều kiện truthy thông thường",
+        "Vì true không thể có trong YAML",
+        "Vì mọi chuỗi false tự biến thành lỗi shell",
+        "Vì outputs luôn là số0/1"
+      ],
+      "correct": 0,
+      "explanation": "Cần chuyển/so kiểu có chủ đích theo expression syntax."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Mapping step/job",
+      "question": "Action có output frontend=true nhưng job output vô tình tham chiếu steps.change.outputs.frontend. Cần kiểm gì?",
+      "options": [
+        "Chỉ package.json version",
+        "ID changes thực tế và mapping output đúng tên",
+        "Chỉ trigger branches",
+        "Chỉ tên runner ubuntu-latest"
+      ],
+      "correct": 1,
+      "explanation": "Sai identifier có thể làm dữ liệu truyền ra không như mong muốn."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Mapping nhu cầu job",
+      "question": "build-backend if lại đọc outputs.frontend. Lỗi logic là gì?",
+      "options": [
+        "GitHub tự gộp hai output nên không ảnh hưởng",
+        "Backend luôn được kiểm đầy đủ",
+        "Backend bị quyết định bởi nhóm frontend thay vì output backend dự kiến",
+        "Action tự sửa tên output theo job name"
+      ],
+      "correct": 2,
+      "explanation": "Dữ liệu điều kiện cần gắn đúng mục tiêu job."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Thiếu checkout",
+      "question": "Source push có paths-filter nhưng chưa checkout. Nhận định nào đúng theo docs action v3?",
+      "options": [
+        "Mọi luồng paths-filter luôn không cần repository",
+        "Chỉ PR API mới cần checkout theo cùng quy tắc",
+        "Đổi name job tự tạo .git",
+        "Luồng Git local cần được chuẩn bị repository; mẫu chưa thể hiện điều kiện đó"
+      ],
+      "correct": 3,
+      "explanation": "Không áp yêu cầu của một luồng detection sang mọi event mà không phân biệt."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "PR detector",
+      "question": "Nếu chuyển sang PR API mode của paths-filter v3, điều gì cần xét theo README?",
+      "options": [
+        "Quyền pull-requests:read và ngữ cảnh PR phù hợp",
+        "Quyền admin mọi cloud project",
+        "Cache npm bắt buộc chứa Git history",
+        "Chỉ username Docker Hub"
+      ],
+      "correct": 0,
+      "explanation": "Action dùng nguồn thay đổi khác nhau theo event."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Base so sánh",
+      "question": "Tại sao phải hiểu base/ref mà detector so với?",
+      "options": [
+        "Không cần base nếu tên filter đúng",
+        "Tập file thay đổi phụ thuộc khoảng revision, không chỉ commit cuối nhìn trong editor",
+        "Base chỉ quyết định màu output",
+        "Mọi base cho cùng tập file trên mọi push"
+      ],
+      "correct": 1,
+      "explanation": "Chọn sai khoảng so có thể bỏ hoặc thêm công việc không mong muốn."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "PR và push khác",
+      "question": "Vì sao không nên cho rằng PR và push luôn phát hiện thay đổi cùng cách?",
+      "options": [
+        "PR không bao giờ có base branch",
+        "Push tự gọi Codecov để lấy file đổi",
+        "Action có thể dùng PR API hoặc Git/merge-base tùy ngữ cảnh và input",
+        "Mọi event luôn là cùng một Git diff duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Cần đối chiếu action/event contract cụ thể."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Trạng thái detector fail",
+      "question": "detect-changes fail, build jobs chỉ needs detector và không điều kiện ghi đè. Mặc định ra sao?",
+      "options": [
+        "Các output tự trở thành true và build luôn chạy",
+        "Mọi build được coi pass",
+        "Backend tự dùng file của run trước",
+        "Build jobs bị skip thay vì cung cấp kết quả build mới"
+      ],
+      "correct": 3,
+      "explanation": "Không được coi job không chạy là đã kiểm thành công."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Thực thi build thật",
+      "question": "Muốn build-frontend làm việc thật thay vì echo, cần gì?",
+      "options": [
+        "Chuẩn bị source/runtime/dependency đúng thư mục và gọi script build/test thật theo mục tiêu",
+        "Chỉ đổi name thành Real build",
+        "Chỉ dùng filter pattern dài hơn",
+        "Chỉ thêm output ready=true"
+      ],
+      "correct": 0,
+      "explanation": "Detector và nhãn không thay nội dung công việc."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Job filesystem",
+      "question": "detect-changes checkout source; job build GitHub-hosted mới có mặc định cùng source filesystem không?",
+      "options": [
+        "Có, outputs.frontend chứa source code",
+        "Không, cần checkout hoặc cơ chế đầu vào riêng phù hợp",
+        "Có, needs tự sao chép toàn bộ source",
+        "Có, vì cùng ubuntu-latest"
+      ],
+      "correct": 1,
+      "explanation": "Job outputs chứa dữ liệu nhỏ, không là filesystem snapshot."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Output không là artifact",
+      "question": "Có frontend=true có nghĩa đã có bundle frontend để deploy không?",
+      "options": [
+        "Có, tên job build tự tạo bundle",
+        "Có, khi github.sha tồn tại",
+        "Không, chỉ là kết quả detector/điều kiện; cần build và artifact thực",
+        "Có, output tự chứa dist"
+      ],
+      "correct": 2,
+      "explanation": "Phân loại tác động khác với sản phẩm build."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Lọc cấu hình gốc",
+      "question": "Root lockfile thay đổi có thể ảnh hưởng frontend/backend nhưng không thuộc trigger mẫu. Cần gì?",
+      "options": [
+        "Chỉ đổi tên lockfile thành shared trong comment",
+        "Chỉ thêm echo Lock changed",
+        "Tin lockfile không bao giờ ảnh hưởng app",
+        "Đưa các đầu vào chung có ảnh hưởng vào trigger và điều kiện kiểm tra theo dependency policy"
+      ],
+      "correct": 3,
+      "explanation": "Chọn lọc cần xét toàn đầu vào build, không chỉ source package."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Workflow thay đổi",
+      "question": "Muốn thay đổi file workflow cũng được kiểm mà paths chỉ package. Cần sửa gì?",
+      "options": [
+        "Bao gồm workflow/config path thích hợp hoặc có luồng kiểm riêng",
+        "Đổi job ID thành workflow",
+        "Chỉ đặt trigger push:true bên trong action",
+        "Chỉ thêm comment CI"
+      ],
+      "correct": 0,
+      "explanation": "Bộ lọc hẹp có thể bỏ chính cấu hình pipeline."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Tối ưu có đo",
+      "question": "Chọn lọc build có cho phép khẳng định giảm thời gian80% chỉ từ YAML không?",
+      "options": [
+        "Có, echo chạy nhanh nên build production cũng nhanh",
+        "Không, cần đo workload/run phù hợp và vẫn kiểm coverage cần thiết",
+        "Có, hai output luôn giảm80%",
+        "Có, dùng monorepo luôn nhanh hơn đa repo"
+      ],
+      "correct": 1,
+      "explanation": "Không suy số tiết kiệm từ ý định cấu hình."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Cả hai jobs độc lập",
+      "question": "Sau detector thành công, cả hai if đều true và không dependency giữa build jobs. Điều gì có thể xảy ra?",
+      "options": [
+        "Frontend luôn đợi backend do tên dài hơn",
+        "Hai job dùng chung một tiến trình npm",
+        "Hai build có thể chạy song song trong giới hạn runner/concurrency",
+        "Backend luôn đợi frontend do đứng dưới"
+      ],
+      "correct": 2,
+      "explanation": "needs chung không tạo dependency giữa hai job con."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Policy luôn chạy",
+      "question": "Một kiểm tra bảo mật phải chạy trên mọi thay đổi có liên quan rộng hơn package. Cách bố trí phù hợp là gì?",
+      "options": [
+        "Ẩn kiểm tra trong comment source",
+        "Bật if frontend=true rồi coi bao phủ mọi thứ",
+        "Bỏ cổng bảo mật để giữ CI nhanh",
+        "Dùng trigger/điều kiện riêng đủ rộng thay vì mặc định đi theo filter frontend hẹp"
+      ],
+      "correct": 3,
+      "explanation": "Không phải công việc nào cũng cùng tập ảnh hưởng với build package."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Một đường dẫn nhiều nhóm",
+      "question": "Một file shared có thể được thêm vào cả filter frontend và backend không?",
+      "options": [
+        "Có, nếu đó là policy tác động đúng; nhiều filters có thể cùng true",
+        "Không, mỗi file chỉ được thuộc một filter toàn workflow",
+        "Chỉ khi đổi đuôi file thành yaml",
+        "Chỉ khi bỏ mọi secrets"
+      ],
+      "correct": 0,
+      "explanation": "Nhóm ảnh hưởng không bắt buộc phân hoạch file thành các tập rời nhau."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Không có caller PR",
+      "question": "Source chỉ on.push. Có thể nói mọi pull request được kiểm bởi workflow này không?",
+      "options": [
+        "Có, nếu tên job có chữ changes",
+        "Không, chưa có trigger PR hoặc cơ chế tương đương được thể hiện",
+        "Có, mọi push trigger tự tạo PR check ở mọi nhánh",
+        "Có, paths-filter luôn thêm pull_request vào YAML"
+      ],
+      "correct": 1,
+      "explanation": "Chức năng action hỗ trợ PR không tự cấu hình trigger PR."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Input không đáng tin",
+      "question": "Một biến tên package từ output được dùng để tạo lệnh shell. Cần xem xét gì?",
+      "options": [
+        "Chỉ thêm name Safe shell",
+        "Chỉ chọn Ubuntu để mọi chuỗi an toàn",
+        "Validation và cách truyền dữ liệu/quoting, không coi output là mã lệnh đáng tin",
+        "Tên output tự loại mọi ký tự đặc biệt"
+      ],
+      "correct": 2,
+      "explanation": "Dữ liệu từ detector không mặc định an toàn khi biến thành cú pháp shell."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Debug không lộ bí mật",
+      "question": "Detector cho kết quả bất ngờ. Thông tin chẩn đoán nào phù hợp?",
+      "options": [
+        "Toàn bộ token repository",
+        "Credential cloud trong log detector",
+        "Toàn bộ env của mọi job",
+        "Event/ref/base và danh sách/path metadata phù hợp đã kiểm, không dump secrets"
+      ],
+      "correct": 3,
+      "explanation": "Điều tra phạm vi thay đổi không cần tiết lộ credential."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Glob theo cơ chế",
+      "question": "Vì sao cần đọc quy tắc pattern của GitHub trigger và action thay vì mặc định mọi glob giống hệt?",
+      "options": [
+        "Hai cơ chế có implementation/quy tắc riêng, cần kiểm pattern theo nơi dùng",
+        "Mọi glob đều là SQL regex",
+        "Tên folder tự quyết định engine",
+        "Dấu nháy đơn làm pattern chạy Bash"
+      ],
+      "correct": 0,
+      "explanation": "Pattern là dữ liệu của bộ lọc, không phải một ngôn ngữ chung mọi nơi."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Output true không test",
+      "question": "Detector frontend=true và job echo thành công. Kết quả nào có cơ sở?",
+      "options": [
+        "Đã deploy đúng bundle production",
+        "Đã phân loại theo detector và chạy thông báo, chưa build/test ứng dụng thật",
+        "Đã xác nhận frontend không lỗi",
+        "Đã xác nhận mọi browser tương thích"
+      ],
+      "correct": 1,
+      "explanation": "Cần mô tả đúng hành động thực và mức bằng chứng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Phụ thuộc không qua đường dẫn",
+      "question": "Frontend lấy schema API generated từ backend. Chỉ frontend path filter có đủ cho mọi thay đổi ảnh hưởng frontend không?",
+      "options": [
+        "Đủ, output backend không bao giờ ảnh hưởng frontend",
+        "Chỉ cần đổi màu badge",
+        "Chưa chắc, cần xét quan hệ build/codegen thật",
+        "Đủ, folder frontend tự chứa mọi dependency ngoài"
+      ],
+      "correct": 2,
+      "explanation": "Tác động có thể đi qua hợp đồng và code generation, không chỉ import source trực tiếp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Điều kiện tổ hợp",
+      "question": "Muốn frontend chạy khi frontend hoặc shared thay đổi, biểu thức/policy cần thể hiện quan hệ nào?",
+      "options": [
+        "AND bắt buộc cả hai luôn đổi cùng lúc",
+        "Chỉ phủ định frontend",
+        "Chỉ nhìn backend",
+        "OR giữa các tín hiệu ảnh hưởng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Đòi cả hai cùng thay đổi sẽ bỏ mất trường hợp shared-only hoặc frontend-only."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Kiểm tra policy",
+      "question": "Test nào hữu ích cho bộ chọn job?",
+      "options": [
+        "Các case frontend-only/backend-only/shared-only/config chung và tổ hợp, đối chiếu job cần chạy",
+        "Chỉ kiểm YAML có chữ frontend",
+        "Chỉ đo thời gian echo",
+        "Chỉ đảm bảo output luôn false"
+      ],
+      "correct": 0,
+      "explanation": "Policy chọn lọc cần được kiểm theo các tình huống ảnh hưởng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Không lấy mẫu làm graph",
+      "question": "Hai filters frontend/backend có tự là dependency graph đầy đủ không?",
+      "options": [
+        "Có, outputs là graph toàn hệ thống",
+        "Không, đó chỉ là các nhóm path hiện khai báo",
+        "Có, GitHub tự suy mọi quan hệ package từ tên",
+        "Có, action tự đọc mọi lockfile và schema contract"
+      ],
+      "correct": 1,
+      "explanation": "Dependency graph phải được xây/kiểm từ nguồn phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "No changes và lỗi detector",
+      "question": "Tại sao cần phân biệt no changes với detector không lấy được đầu vào?",
+      "options": [
+        "Cả hai đều chứng minh app không đổi",
+        "Lỗi detector tự có nghĩa frontend=false hợp lệ",
+        "Một bên là kết quả phân loại hợp lệ, một bên là thiếu bằng chứng/failed detection",
+        "Cả hai đều nên được gọi pass không cần log"
+      ],
+      "correct": 2,
+      "explanation": "Không biến thất bại thu thập dữ liệu thành kết luận không cần kiểm tra."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Branch và paths",
+      "question": "Nếu thêm branches filter cùng paths cho push, cần hiểu quan hệ mặc định thế nào?",
+      "options": [
+        "Chỉ cần branch hoặc path bất kỳ luôn đủ",
+        "Paths tự xóa branches",
+        "Branches chỉ đổi tên workflow",
+        "Sự kiện phải đáp ứng cả branch filter và path filter được cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Các bộ lọc cùng sự kiện cần được xét kết hợp theo docs."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Job output bị bỏ",
+      "question": "Action xuất backend nhưng detect-changes không map job outputs.backend. Job sau có đủ tham chiếu qua needs như mẫu không?",
+      "options": [
+        "Chưa, cần xuất đúng dữ liệu qua job output hoặc thiết kế cơ chế khác",
+        "Có, mọi step output tự public cho mọi job",
+        "Có, needs tự sao chép context steps toàn bộ",
+        "Có, cùng runner label là đủ"
+      ],
+      "correct": 0,
+      "explanation": "Ranh giới step→job→dependent job cần mapping rõ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Cổng cuối",
+      "question": "Muốn phát hành sau các build cần thiết đạt, cần gì thêm?",
+      "options": [
+        "Chỉ đặt name Release ready",
+        "Job/cổng tổng hợp dependency và status policy đúng cho các job chạy/skip/fail",
+        "Chỉ một output frontend=true",
+        "Chỉ job deploy nằm cuối file"
+      ],
+      "correct": 1,
+      "explanation": "Chọn job và điều kiện phát hành là các bước khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Workload không đều",
+      "question": "Backend build chậm hơn frontend. Chỉ thêm path filter có chắc làm mọi run nhanh hơn không?",
+      "options": [
+        "Có, hai jobs luôn chia đôi thời gian",
+        "Có, detector tự tối ưu compiler",
+        "Không, lợi ích phụ thuộc thay đổi và công việc thực chạy; cần đo",
+        "Có, monorepo luôn giảm thời gian mọi run"
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu theo workload, không hứa hiệu quả tuyệt đối."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Version action",
+      "question": "Dùng dorny/paths-filter@v3 có thay nhu cầu review code/quyền action không?",
+      "options": [
+        "Có, version tag tự chứng minh không có rủi ro",
+        "Có, tên action có paths là chỉ đọc tuyệt đối mọi cấu hình",
+        "Có, GitHub không chạy action bên thứ ba thật",
+        "Không, vẫn cần quản lý ref, quyền và đầu vào theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Tham chiếu action là một đầu vào thực thi cần được quản lý."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Hai tầng bỏ backend",
+      "question": "Workflow được cấu hình có build-backend nhưng push chỉ backend không tạo run. Đội định sửa if backend thành luôn true. Vì sao chưa đúng?",
+      "options": [
+        "Tầng trigger đã loại sự kiện; phải sửa trigger rồi mới xem detector/điều kiện job và công việc build thật",
+        "If luôn true tự tạo workflow trước trigger",
+        "Output backend sẽ tự bổ sung paths ở root",
+        "Chỉ needs đủ tạo mọi sự kiện"
+      ],
+      "correct": 0,
+      "explanation": "Chẩn đoán phải theo chuỗi trigger→detection→outputs→job→action thực."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Shared bị bỏ trống",
+      "question": "Cả frontend và backend phụ thuộc shared. Push shared-only khớp trigger, detector trả false cho hai filter. Cách sửa đầy đủ là gì?",
+      "options": [
+        "Coi workflow xanh khi cả hai skip là kiểm đủ dependency",
+        "Mã hóa shared vào các tập ảnh hưởng đúng và kiểm case shared-only cùng artifact/tests thật",
+        "Chỉ thêm shared vào trigger vốn đã có",
+        "Đổi tên job detector thành shared-aware"
+      ],
+      "correct": 1,
+      "explanation": "Một workflow được tạo không có nghĩa các phần chịu tác động đã được kiểm."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Root lockfile",
+      "question": "Một lockfile gốc thay đổi dependency của cả hai package nhưng paths chỉ hai thư mục frontend/shared. Thiết kế chọn lọc nào đáng tin?",
+      "options": [
+        "Chỉ dùng filter folder trực tiếp vì lockfile không là code",
+        "Chỉ thêm echo Lockfile checked",
+        "Bao gồm đầu vào chung ở trigger và dependency impact policy, kiểm cả các consumer bị ảnh hưởng",
+        "Bỏ lockfile khỏi source để CI khỏi thấy thay đổi"
+      ],
+      "correct": 2,
+      "explanation": "Input build chung có thể thay hành vi dù source package không đổi."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Fail closed detector",
+      "question": "Detector lỗi vì thiếu Git checkout. Đội muốn biến lỗi thành hai output false để CI nhanh và xanh. Đánh giá nào đúng?",
+      "options": [
+        "Đó là tối ưu đúng vì false luôn nghĩa không có thay đổi",
+        "Chỉ cần bỏ log lỗi để tránh gây nhầm",
+        "Có thể coi mọi build đã pass vì detector không chạy",
+        "Điều đó che thiếu bằng chứng; cần chuẩn bị detection đúng và phản ánh lỗi hoặc policy fallback kiểm đủ"
+      ],
+      "correct": 3,
+      "explanation": "Policy fallback phải bảo toàn mục tiêu kiểm tra, không biến lỗi detector thành no-op an toàn giả."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "PR khác push",
+      "question": "Đội chuyển action sang PR mode rồi bỏ checkout trên mọi event, nhưng vẫn giữ push. Cần thiết kế gì?",
+      "options": [
+        "Chuẩn bị đầu vào/quyền theo từng mode: PR API và Git local push, kiểm base/ref thực tế",
+        "Tin rằng PR API luôn thay mọi push detection",
+        "Thêm token cloud để Git local không cần repository",
+        "Chỉ đổi action name thành universal"
+      ],
+      "correct": 0,
+      "explanation": "Một action hỗ trợ nhiều mode không có nghĩa mọi mode cùng prerequisites."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Transitive impact",
+      "question": "Package shared đổi schema dùng để codegen frontend và backend, nhưng backend còn tác động integration tests chung. Cách chọn job phù hợp là gì?",
+      "options": [
+        "Chỉ chạy job nhanh nhất để tiết kiệm",
+        "Dựa trên dependency/contract graph và tập kiểm tra bị ảnh hưởng, không chỉ một glob của file trực tiếp",
+        "Chỉ build shared vì file nằm ở đó",
+        "Chỉ chạy frontend vì nó đứng đầu YAML"
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu đúng cần theo tác động xuyên các tầng build và kiểm thử."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cổng release với skips",
+      "question": "Chỉ một package đổi nên package kia skip hợp lệ. Release cần phân biệt skip hợp lệ với skip do detector fail. Cần gì?",
+      "options": [
+        "Coi mọi skip đều deploy thành công",
+        "Xóa needs để release tự chạy",
+        "Tín hiệu detection đáng tin và status policy tổng hợp rõ theo mục tiêu, không chỉ một nhãn xanh",
+        "Coi mọi skip đều pass bất kể nguyên nhân"
+      ],
+      "correct": 2,
+      "explanation": "Skip có nhiều nguyên nhân; phát hành phải dựa trên bằng chứng phù hợp."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Hai job không source",
+      "question": "Detector checkout hợp lệ, các build jobs chỉ thêm npm run build mà không checkout/cài deps. Vì sao vẫn chưa đủ?",
+      "options": [
+        "Detector tự chia sẻ mọi file qua output true",
+        "Runner cùng ubuntu-latest nghĩa cùng workspace",
+        "Tên package tự tải đúng source từ GitHub",
+        "Jobs riêng cần source/runtime/dependency/artifact contract của mình; needs không chuyển filesystem"
+      ],
+      "correct": 3,
+      "explanation": "Sửa detector không tự sửa các môi trường build độc lập."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Bộ lọc không authorization",
+      "question": "Một người nói path filter frontend cho phép cấp production secrets cho mọi PR vì chỉ frontend code chạy. Lập luận đúng là gì?",
+      "options": [
+        "Path filtering không xác thực độ tin cậy mã hoặc quyền; frontend/build scripts cũng có thể thực thi và cần ranh giới secrets",
+        "Đúng, file frontend không thể thực thi trên runner",
+        "Đúng, glob tự loại mọi mã nguy hiểm",
+        "Chỉ cần tên job có chữ safe"
+      ],
+      "correct": 0,
+      "explanation": "Phân loại ảnh hưởng và authorization là các hợp đồng khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Mất check workflow",
+      "question": "Sửa file workflow làm sai điều kiện nhưng trigger không gồm .github/workflows. Thiết kế nào giảm khoảng trống?",
+      "options": [
+        "Chỉ thêm comment Reviewed",
+        "Có luồng kiểm cấu hình pipeline đủ rộng và test các tình huống selection, không chỉ package changes",
+        "Chỉ đổi extension YAML để luôn trigger",
+        "Bỏ mọi path filter vĩnh viễn mà không xét mục tiêu"
+      ],
+      "correct": 1,
+      "explanation": "Bản thân logic chọn lọc cũng cần nằm trong phạm vi kiểm chứng phù hợp."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Base sai khoảng",
+      "question": "Push nhiều commits, detector chỉ so một commit không phản ánh khoảng thay đổi cần kiểm theo policy. Cần gì?",
+      "options": [
+        "Chỉ đổi output thành boolean thật",
+        "Chỉ tăng max-parallel",
+        "Chọn base/head theo event và mục tiêu, kiểm Git history/permissions cùng các case push nhiều commit",
+        "Coi mọi base cho cùng kết quả"
+      ],
+      "correct": 2,
+      "explanation": "Coverage thay đổi phụ thuộc đúng khoảng revision được đối chiếu."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Không hứa graph tự động",
+      "question": "Đội thêm shared path vào trigger rồi nói action đã tự hiểu dependency toàn monorepo. Cách đánh giá đúng?",
+      "options": [
+        "Đúng, tên shared là quy ước bắt buộc mọi tool hiểu",
+        "Đúng, trigger tự tạo edges trong graph",
+        "Chỉ cần output shared=true là mọi test tự sinh",
+        "Chưa; phải kiểm các filter/graph và consumers, trigger không suy quan hệ dependency"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình được viết phải tương ứng quan hệ thật, không suy từ tên thư mục."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Điều kiện string lỗi",
+      "question": "Một job dùng if dựa trực tiếp output chuỗi false và chạy khi không mong muốn. Cách sửa có cơ sở là gì?",
+      "options": [
+        "So sánh/chuyển kiểu rõ theo expression API và kiểm các case true/false/missing",
+        "Đổi giá trị false thành chữ dài hơn",
+        "Chỉ đổi tên output thành is_true",
+        "Thêm secret false để ép kiểu"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu chuỗi và điều kiện boolean cần được xử lý có chủ đích."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Thay detector bằng echo",
+      "question": "Detector được thay bằng output luôn true để tránh bỏ việc, nhưng báo cáo nói đã tối ưu chỉ build phần đổi. Mô tả nào đúng?",
+      "options": [
+        "Không cần đo vì fallback luôn nhanh hơn",
+        "Policy fallback chạy rộng có thể bảo toàn kiểm tra, nhưng không còn là bằng chứng chọn lọc chính xác hoặc tiết kiệm",
+        "Luôn true tự là thuật toán impact tối ưu",
+        "Mọi job chạy nghĩa mọi artifact đều đúng"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi correctness và tuyên bố tối ưu cần tách theo bằng chứng thực."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Dữ liệu thành lệnh",
+      "question": "Detector liệt kê package names từ thay đổi PR, một step nối trực tiếp vào shell command có quyền. Biện pháp nào phù hợp?",
+      "options": [
+        "Chỉ đặt output thành uppercase",
+        "Chỉ dùng branch main làm tên biến",
+        "Validate tập package và truyền dữ liệu an toàn, giữ quyền tối thiểu và không chạy mã PR với secrets không cần thiết",
+        "Tin mọi path từ Git là mã shell an toàn"
+      ],
+      "correct": 2,
+      "explanation": "Path metadata là dữ liệu không tự đáng tin khi chuyển thành lệnh."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Kiểm policy có ý nghĩa",
+      "question": "Để kiểm tối ưu monorepo, tập case nào bắt lỗi nguồn tốt nhất?",
+      "options": [
+        "Chỉ frontend-only vì đó là đường dẫn đầu tiên",
+        "Chỉ YAML parse và đếm số jobs",
+        "Chỉ đo thời gian echo của một run xanh",
+        "Backend-only, shared-only, root config/lockfile, nhiều package và detector failure, đối chiếu jobs/artifacts cần thiết"
+      ],
+      "correct": 3,
+      "explanation": "Case cần đánh vào các khoảng trống trigger và impact, không chỉ một happy path."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Bằng chứng theo revision",
+      "question": "Detector chạy cho revision A nhưng build job checkout một branch chuyển sang B. Cần ràng buộc gì?",
+      "options": [
+        "Source revision của detection/build/artifact thống nhất hoặc có hợp đồng rõ, ghi provenance đúng đầu vào",
+        "Chỉ tên branch giống nhau là đủ",
+        "Output true chứa toàn bộ source nên không cần checkout",
+        "Latest luôn đồng nhất mọi revision"
+      ],
+      "correct": 0,
+      "explanation": "Kết quả selection có ý nghĩa với đúng tập đầu vào được kiểm."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Trạng thái tổng hợp sai",
+      "question": "Dashboard hiển thị workflow xanh vì detector và echo pass trong khi compiler/test chưa hề chạy. Nên báo gì?",
+      "options": [
+        "Đã đo tiết kiệm tài nguyên thực tế",
+        "Đã kiểm/thi hành logic được cấu hình trong phạm vi đó, chưa chứng minh build/test ứng dụng",
+        "Đã kiểm toàn monorepo trên production",
+        "Đã chứng minh dependency graph đầy đủ"
+      ],
+      "correct": 1,
+      "explanation": "Tên build không mở rộng nội dung công việc thực."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Đổi cấu trúc package",
+      "question": "Package chuyển từ packages/frontend sang apps/web, bộ lọc giữ nguyên. Cần quản lý gì?",
+      "options": [
+        "Giữ pattern cũ vì GitHub biết rename mọi ý định",
+        "Chỉ thêm token mới",
+        "Cập nhật trigger, detector, scripts/paths và các case impact theo cấu trúc mới",
+        "Chỉ đổi name job để glob tự chuyển"
+      ],
+      "correct": 2,
+      "explanation": "Logic chọn lọc là cấu hình gắn với cấu trúc đầu vào và phải được bảo trì."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Tối ưu đúng mục tiêu",
+      "question": "Nhóm muốn CI nhanh hơn mà vẫn tin cậy. Hướng hoàn thiện source phù hợp là gì?",
+      "options": [
+        "Chỉ giữ echo vì nó chạy nhanh nhất",
+        "Cho mọi lỗi thành continue-on-error",
+        "Chỉ giảm mọi filters về một package",
+        "Sửa trigger/detection/impact và công việc build thật, kiểm policy bằng case rồi đo thời gian/tài nguyên đúng workload"
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu không được làm mất mục tiêu kiểm tra; tuyên bố tốc độ cần số đo thực."
+    }
+  ]
+}

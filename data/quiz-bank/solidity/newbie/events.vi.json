@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "solidity",
+  "level": "newbie",
+  "lesson": "events",
+  "language": "vi",
+  "sourceHash": "af566bf68cc5740d27691598828728308fc373a264566621e9ff0a36950a60e5",
+  "status": "approved",
+  "review": "Tự soạn theo TransferLogger/MemberJoined, Solidity 0.8.20 contracts và ABI docs, EIP-20. Phân biệt emit với chuyển tài sản, topic/data, ABI/emitter và log lifecycle/reorg. Không RPC, subscription, transaction hoặc deploy; chỉ phân tích dữ liệu/code.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Event",
+      "question": "Event trong Solidity cung cấp cơ chế gì?",
+      "options": [
+        "Ghi log từ quá trình thực thi hợp đồng",
+        "Tự lưu mọi field thành biến storage",
+        "Tự gửi token đến mọi subscriber",
+        "Tự gọi frontend mỗi block"
+      ],
+      "correct": 0,
+      "explanation": "Event là abstraction của cơ chế log EVM."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Khai báo",
+      "question": "Từ khóa khai báo sự kiện là gì?",
+      "options": [
+        "modifier",
+        "event",
+        "emit",
+        "returns"
+      ],
+      "correct": 1,
+      "explanation": "Khai báo và phát sự kiện dùng từ khóa khác nhau."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Phát sự kiện",
+      "question": "Từ khóa nào phát một event đã khai báo?",
+      "options": [
+        "view",
+        "indexed",
+        "emit",
+        "event"
+      ],
+      "correct": 2,
+      "explanation": "emit dùng event và các đối số tương ứng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Indexed",
+      "question": "indexed hỗ trợ mục đích nào?",
+      "options": [
+        "Cho frontend sửa storage qua event",
+        "Mã hóa mọi tham số khỏi người xem",
+        "Tự xác thực quyền người gọi",
+        "Đưa tham số vào topics để lọc log"
+      ],
+      "correct": 3,
+      "explanation": "Topics hỗ trợ truy vấn, không tự là authorization."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Nguồn from",
+      "question": "Trong emit Transfer của nguồn, from nhận gì?",
+      "options": [
+        "msg.sender",
+        "Địa chỉ zero luôn luôn",
+        "Địa chỉ owner ngầm định",
+        "Địa chỉ _to"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn truyền caller trực tiếp vào tham số from."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Nguồn to",
+      "question": "Đối số _to đi vào field nào?",
+      "options": [
+        "Địa chỉ emitter của log",
+        "to",
+        "from",
+        "message"
+      ],
+      "correct": 1,
+      "explanation": "Tham số event khác địa chỉ contract phát log."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Nguồn amount",
+      "question": "_amount trong sendToken được dùng làm gì?",
+      "options": [
+        "Allowance được tự cấp",
+        "Số gas cố định được hoàn lại",
+        "Giá trị field amount của event",
+        "Lượng Ether tự chuyển qua call"
+      ],
+      "correct": 2,
+      "explanation": "Không có logic token balance trong mẫu."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Hai event",
+      "question": "sendToken trong nguồn phát những sự kiện nào theo thứ tự?",
+      "options": [
+        "LogMessage rồi Transfer",
+        "Chỉ Transfer",
+        "Chỉ LogMessage",
+        "Transfer rồi LogMessage"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự emit theo phần thân hàm nếu lời gọi thành công."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Indexed fields",
+      "question": "Transfer nguồn đánh dấu indexed cho những field nào?",
+      "options": [
+        "from và to",
+        "amount và message",
+        "Chỉ amount",
+        "Cả ba field"
+      ],
+      "correct": 0,
+      "explanation": "amount không có indexed trong khai báo."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Amount location",
+      "question": "amount không indexed thường được ABI encode ở đâu trong log?",
+      "options": [
+        "Tên transaction",
+        "Phần data",
+        "Một storage mapping tự sinh",
+        "Topic chữ ký thay thế"
+      ],
+      "correct": 1,
+      "explanation": "Topic và data là các phần khác nhau."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "LogMessage",
+      "question": "LogMessage nguồn chứa tham số kiểu gì?",
+      "options": [
+        "uint256",
+        "bool",
+        "string",
+        "address"
+      ],
+      "correct": 2,
+      "explanation": "Chuỗi không được đánh dấu indexed trong mẫu."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Emitter",
+      "question": "Một log gắn với địa chỉ nào như emitter?",
+      "options": [
+        "Mọi địa chỉ được ghi trong from",
+        "Địa chỉ _to luôn luôn",
+        "Người đăng ký listener đầu tiên",
+        "Contract phát log trong ngữ cảnh thực thi"
+      ],
+      "correct": 3,
+      "explanation": "Emitter không tự là một field trong event payload."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Đọc on-chain",
+      "question": "Contract có thể đọc lại trực tiếp các log cũ của chính nó như một mapping không?",
+      "options": [
+        "Không theo cơ chế event thông thường",
+        "Có, mọi event tự là storage array",
+        "Có, chỉ cần event public",
+        "Chỉ khi caller là owner"
+      ],
+      "correct": 0,
+      "explanation": "Nếu logic on-chain cần dữ liệu, cần state hoặc cơ chế chứng minh riêng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Non-anonymous topics",
+      "question": "Event không anonymous có topic đặc biệt nào?",
+      "options": [
+        "Hash của tên tham số đầu tiên",
+        "Hash chữ ký canonical của event",
+        "Private key của emitter",
+        "Toàn bộ ABI JSON"
+      ],
+      "correct": 1,
+      "explanation": "Chữ ký gồm tên và các kiểu đối số."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Số indexed",
+      "question": "Event không anonymous trong Solidity cho tối đa bao nhiêu tham số indexed?",
+      "options": [
+        "1",
+        "Không giới hạn",
+        "3",
+        "4"
+      ],
+      "correct": 2,
+      "explanation": "Một trong bốn topic dành cho chữ ký của event không anonymous."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Anonymous",
+      "question": "Event anonymous khác ở điểm nào?",
+      "options": [
+        "Không ai đọc được data của log",
+        "Không dùng gas khi emit",
+        "Không gắn với emitter address",
+        "Không có topic chữ ký tự động của event"
+      ],
+      "correct": 3,
+      "explanation": "Anonymous không đồng nghĩa bí mật."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Lọc người nhận",
+      "question": "Field nào của Transfer nguồn thích hợp làm topic filter cho người nhận?",
+      "options": [
+        "to",
+        "amount",
+        "message",
+        "Tên hàm sendToken"
+      ],
+      "correct": 0,
+      "explanation": "to là address indexed."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Thư viện frontend",
+      "question": "Nguồn nhắc thư viện nào để tương tác/lắng nghe ở frontend?",
+      "options": [
+        "Chỉ constructor của contract",
+        "ethers.js hoặc viem",
+        "Chỉ compiler solc",
+        "Chỉ IERC20 Solidity"
+      ],
+      "correct": 1,
+      "explanation": "Thư viện client dùng giao diện node thích hợp."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Phí log",
+      "question": "Emit log trong giao dịch có dùng gas không?",
+      "options": [
+        "Chỉ khi có subscriber",
+        "Chỉ khi frontend đang mở",
+        "Có",
+        "Không, event luôn miễn phí EVM"
+      ],
+      "correct": 2,
+      "explanation": "Subscriber không quyết định công việc EVM đã thực thi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "MemberJoined",
+      "question": "Yêu cầu bài tập là phát event khi xảy ra việc gì?",
+      "options": [
+        "Mỗi lần đọc bất kỳ getter",
+        "Mỗi lần ví mở trang web",
+        "Mọi lần token đổi giá",
+        "Có người đăng ký mới"
+      ],
+      "correct": 3,
+      "explanation": "Logic đăng ký cần được thiết kế riêng cùng event."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Tên không chuyển tiền",
+      "question": "sendToken của nguồn có thực sự cập nhật token balance không?",
+      "options": [
+        "Không, chỉ emit hai log theo code được cho",
+        "Có, tên Transfer tự chuyển ERC-20",
+        "Có, indexed to tự nhận token",
+        "Chỉ khi amount lớn hơn 0"
+      ],
+      "correct": 0,
+      "explanation": "Tên hàm và event không thay logic tài sản."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Caller bất kỳ",
+      "question": "Mẫu có kiểm quyền người gọi sendToken không?",
+      "options": [
+        "Chỉ subscriber mới có quyền gọi",
+        "Không, public không có kiểm quyền trong thân hàm",
+        "Có, indexed from là access control",
+        "Có, event Transfer chỉ owner emit được"
+      ],
+      "correct": 1,
+      "explanation": "Không suy authorization từ cách khai báo log."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Zero amount",
+      "question": "sendToken với amount 0 có bị mẫu chặn không?",
+      "options": [
+        "Có, emit Transfer luôn revert với 0",
+        "Chỉ khi _to khác caller",
+        "Không, nguồn không có require amount dương",
+        "Có, uint256 không có giá trị 0"
+      ],
+      "correct": 2,
+      "explanation": "Field event nhận dữ liệu theo code, không tự validate nghiệp vụ."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Zero recipient",
+      "question": "_to bằng address(0) có bị require trong mẫu chặn không?",
+      "options": [
+        "Có, mọi address indexed cấm zero",
+        "Có, compiler tự dùng chuẩn ERC-20 để kiểm",
+        "Chỉ khi amount bằng 0",
+        "Không có require đó"
+      ],
+      "correct": 3,
+      "explanation": "TransferLogger không kế thừa ERC20 chỉ vì event cùng tên."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Event signature",
+      "question": "Chữ ký canonical của Transfer nguồn là gì?",
+      "options": [
+        "Transfer(address,address,uint256)",
+        "Transfer(address indexed,address indexed,uint256)",
+        "Transfer(from,to,amount)",
+        "sendToken(address,uint256)"
+      ],
+      "correct": 0,
+      "explanation": "Tên tham số và indexed không thuộc chữ ký canonical."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Đổi tên field",
+      "question": "Đổi tên from thành sender nhưng giữ type/order/indexed có đổi hash chữ ký event không?",
+      "options": [
+        "Chỉ thay đổi khi emitter là contract",
+        "Không, tên tham số không thuộc chữ ký canonical",
+        "Có, vì mọi tên field nằm trong signature hash",
+        "Có, vì address tự đổi thành string"
+      ],
+      "correct": 1,
+      "explanation": "Client vẫn cần metadata phù hợp để dùng tên field."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Đổi type",
+      "question": "Đổi amount từ uint256 sang bytes32 có thể đổi topic chữ ký không?",
+      "options": [
+        "Không, hai kiểu cùng 32 byte nên signature giống nhau",
+        "Chỉ khi đổi from",
+        "Có, kiểu tham số là thành phần chữ ký",
+        "Không, chỉ tên event mới ảnh hưởng"
+      ],
+      "correct": 2,
+      "explanation": "Kích thước mã hóa giống nhau không đồng nhất kiểu canonical."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Đổi indexed",
+      "question": "Đổi amount sang indexed mà giữ tên/type/order có đổi chữ ký hash không?",
+      "options": [
+        "Có, indexed được ghép vào chữ ký canonical",
+        "Không và mọi decoder cũ chắc chắn vẫn đúng",
+        "Chỉ đổi emitter address",
+        "Không, nhưng đổi cách chia topics/data nên ABI decoding phải phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Signature hash riêng lẻ chưa đủ mô tả layout event."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Uint alias",
+      "question": "Trong chữ ký canonical, uint được chuẩn hóa thành gì?",
+      "options": [
+        "uint256",
+        "uint8",
+        "int256",
+        "bytes32"
+      ],
+      "correct": 0,
+      "explanation": "Quy tắc ABI dùng tên kiểu canonical."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Topics đếm",
+      "question": "Transfer không anonymous có hai indexed address. Log thường có bao nhiêu topics?",
+      "options": [
+        "1",
+        "3",
+        "2",
+        "4"
+      ],
+      "correct": 1,
+      "explanation": "Gồm topic chữ ký và hai topic tham số indexed."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Nonindexed filter",
+      "question": "Muốn lọc amount của nguồn, có thể đặt amount vào topic slot thứ tư có sẵn không?",
+      "options": [
+        "Có, chỉ cần viết filter với tên amount",
+        "Chỉ cần subscriber là owner",
+        "Không, amount ở data; cần decode/lọc phía xử lý hoặc đổi schema có chủ đích",
+        "Có, mọi uint256 tự có topic riêng"
+      ],
+      "correct": 2,
+      "explanation": "Filter không tự tạo một topic mà contract chưa phát."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Emitter filter",
+      "question": "Vì sao nên lọc theo địa chỉ contract ngoài chữ ký Transfer?",
+      "options": [
+        "Vì topic chữ ký chứa địa chỉ mọi emitter",
+        "Vì amount tự đổi nếu không có emitter filter",
+        "Chỉ để giảm gas đã trả của giao dịch",
+        "Contract khác có thể phát event cùng chữ ký"
+      ],
+      "correct": 3,
+      "explanation": "Event name không xác định một tài sản hoặc hợp đồng duy nhất."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Chain filter",
+      "question": "Địa chỉ emitter giống nhau trên hai chain có đủ gộp thành cùng token không?",
+      "options": [
+        "Không, cần chain context",
+        "Có, address là định danh toàn cầu qua mọi chain",
+        "Có, nếu cùng chữ ký event",
+        "Chỉ cần cùng amount"
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi chain là một phần định danh dữ liệu."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Log không state",
+      "question": "Frontend nhận Transfer từ mẫu có đủ suy balances[_to] tăng không?",
+      "options": [
+        "Chỉ khi LogMessage báo thành công",
+        "Không, source không có bookkeeping đó",
+        "Có, mọi event tự cập nhật mapping ERC-20",
+        "Có, from indexed bảo đảm số dư hợp lệ"
+      ],
+      "correct": 1,
+      "explanation": "Nội dung log cần được diễn giải theo logic emitter."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Chuỗi thông báo",
+      "question": "LogMessage nói chuyển tiền thành công có tự chứng minh một chuyển tài sản không?",
+      "options": [
+        "Có, event chỉ phát sau token transfer mặc định",
+        "Chỉ khi chuỗi được public",
+        "Không, text do code chọn phát",
+        "Có, EVM kiểm ý nghĩa tiếng Việt trước khi emit"
+      ],
+      "correct": 2,
+      "explanation": "Thông điệp không là bằng chứng độc lập của điều không được thực thi."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Revert sau emit",
+      "question": "Nếu code emit rồi revert trong cùng lời gọi và lỗi không được xử lý để giữ frame đó, log của frame có tồn tại trong kết quả commit không?",
+      "options": [
+        "Có, emit không thể rollback",
+        "Chỉ Transfer tồn tại còn LogMessage bị xóa",
+        "Có, nếu có subscriber đang online",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Log của thực thi bị revert không được commit như log thành công."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Subscriber vắng",
+      "question": "Không có ai online khi transaction emit thành công. Log có vì thế bị bỏ khỏi chain không?",
+      "options": [
+        "Không, listener không quyết định việc ghi log",
+        "Có, event chỉ tồn tại khi có listener",
+        "Có, trừ event anonymous",
+        "Chỉ nếu event có string"
+      ],
+      "correct": 0,
+      "explanation": "Có thể truy vấn log lịch sử theo khả năng node/indexer."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Live listener",
+      "question": "Chỉ bắt đầu live subscription hôm nay có tự nhận đầy đủ log từ ngày deploy không?",
+      "options": [
+        "Chỉ cần đổi ethers.js sang Solidity",
+        "Không, cần lịch sử/backfill theo cấu hình và khả năng provider",
+        "Có, mọi subscription tự replay toàn chain",
+        "Có, nếu indexed hai field"
+      ],
+      "correct": 1,
+      "explanation": "Luồng live và truy vấn lịch sử cần được phối hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Reconnect duplicate",
+      "question": "Sau reconnect, cùng một log xuất hiện lại. Ứng dụng nên làm gì?",
+      "options": [
+        "Xóa toàn bộ log khác",
+        "Đổi tên event để tránh lặp",
+        "Xử lý idempotent với định danh log và chain/block phù hợp",
+        "Luôn cộng số dư lần nữa vì callback mới"
+      ],
+      "correct": 2,
+      "explanation": "Delivery lặp không có nghĩa có giao dịch mới."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Reorg",
+      "question": "Một log vừa thấy trong block có thể bị loại khi chain reorg không?",
+      "options": [
+        "Không, mọi block quan sát đầu tiên đều final tuyệt đối",
+        "Chỉ log anonymous mới bị loại",
+        "Chỉ nếu amount bằng 0",
+        "Có, cần xử lý canonicality/finality theo yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Log cần được gắn với block và trạng thái xác nhận phù hợp."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Pending không receipt",
+      "question": "Client có transaction hash nhưng chưa receipt thành công. Có nên suy hai log nguồn đã commit chưa?",
+      "options": [
+        "Chưa",
+        "Có, ký giao dịch là emit luôn",
+        "Có, public tự bảo đảm thành công",
+        "Chỉ cần input amount đúng kiểu"
+      ],
+      "correct": 0,
+      "explanation": "Receipt/kết quả thực thi khác việc phát yêu cầu giao dịch."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "ABI cần thiết",
+      "question": "Raw data của LogMessage có tự mô tả kiểu để decode hoàn toàn không?",
+      "options": [
+        "Chỉ cần tên transaction",
+        "Không, cần schema/ABI đúng",
+        "Có, ABI encoding tự chứa toàn kiểu Solidity",
+        "Có, vì mọi data là UTF-8 thuần"
+      ],
+      "correct": 1,
+      "explanation": "ABI encoding không tự mô tả mọi thông tin kiểu."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Indexed string",
+      "question": "Nếu string message được đổi sang indexed, topic thường chứa gì?",
+      "options": [
+        "Địa chỉ người phát thay chuỗi",
+        "Một con trỏ memory dùng được sau giao dịch",
+        "Hash của biểu diễn encoding theo quy tắc event cho kiểu động",
+        "Toàn chuỗi UTF-8 tùy dài nguyên vẹn trong một topic"
+      ],
+      "correct": 2,
+      "explanation": "Topic 32 byte không lưu tùy ý nguyên chuỗi động."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Khôi phục string",
+      "question": "Có thể giải mã ngược mọi indexed string tùy ý từ hash topic để lấy nguyên văn không?",
+      "options": [
+        "Có, dùng ABI là tự đảo mọi hash",
+        "Có, nếu string public",
+        "Chỉ cần amount lớn hơn 0",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Có thể so hash của giá trị biết trước, không phải phép giải mã tổng quát."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Hai bản string",
+      "question": "Nếu muốn vừa lọc hash vừa đọc nguyên chuỗi, thiết kế event nào có thể phù hợp?",
+      "options": [
+        "Ghi một field indexed phục vụ tìm kiếm và field non-indexed chứa nội dung cần đọc",
+        "Chỉ indexed string rồi coi topic là plaintext",
+        "Chỉ đổi tên event thành Searchable",
+        "Thêm view vào event declaration"
+      ],
+      "correct": 0,
+      "explanation": "Cần cân nhắc dữ liệu công khai và chi phí khi lưu hai biểu diễn."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Anonymous topics",
+      "question": "Một event anonymous có thể khai báo tối đa mấy indexed arguments theo Solidity?",
+      "options": [
+        "Không giới hạn",
+        "4",
+        "3",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "Không dành topic cho hash chữ ký nên có thêm một vị trí."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Ẩn dữ liệu",
+      "question": "Dùng anonymous có làm from/to không thể quan sát không?",
+      "options": [
+        "Có, trừ owner",
+        "Chỉ cần không công bố ABI",
+        "Không, topics/data và emitter vẫn là dữ liệu log công khai",
+        "Có, không có chữ ký nghĩa log được mã hóa"
+      ],
+      "correct": 2,
+      "explanation": "Khó nhận diện tên event khác bảo vệ bí mật."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Chi phí payload",
+      "question": "Tăng lượng data event trong transaction thường tác động gì?",
+      "options": [
+        "Tự giảm gas vì có nhiều thông tin",
+        "Không dùng gas trừ lúc truy vấn",
+        "Chỉ tăng phí của listener thay phí transaction",
+        "Tăng công việc/chi phí log theo dữ liệu, không miễn phí vì off-chain đọc"
+      ],
+      "correct": 3,
+      "explanation": "Không gắn một giá gas cố định cho mọi event."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Event versus storage",
+      "question": "Nếu hàm contract tương lai phải kiểm membership, chỉ emit MemberJoined có đủ thay state membership không?",
+      "options": [
+        "Không, contract không trực tiếp đọc log như mapping",
+        "Có, event tự tạo mapping member",
+        "Có, chỉ cần address indexed",
+        "Chỉ cần listener luôn online"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu cho logic on-chain cần cơ chế lưu/kiểm phù hợp."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Event sau mutation",
+      "question": "Vì sao thường emit event phản ánh kết quả sau khi cập nhật state thành công?",
+      "options": [
+        "Chỉ để listener trả phí thay contract",
+        "Giúp log mô tả thay đổi thực theo semantics hàm",
+        "Vì event tự cập nhật state thay hàm",
+        "Vì emit trước mọi require sẽ không rollback"
+      ],
+      "correct": 1,
+      "explanation": "Thứ tự và rollback cần được hiểu theo toàn luồng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "From không chữ ký",
+      "question": "Field from trong một event tùy contract có tự chứng minh người đó ký giao dịch không?",
+      "options": [
+        "Có, nếu field indexed",
+        "Chỉ trừ address zero",
+        "Không, payload do logic emitter quyết định; nguồn cụ thể dùng msg.sender",
+        "Có, EVM kiểm chữ ký của mọi address trong event"
+      ],
+      "correct": 2,
+      "explanation": "Phải xem source và ngữ cảnh, không tin tên field chung."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Caller contract",
+      "question": "Contract C gọi sendToken. from trong nguồn là ai?",
+      "options": [
+        "EOA gốc luôn luôn",
+        "TransferLogger tự động",
+        "Địa chỉ _to",
+        "C"
+      ],
+      "correct": 3,
+      "explanation": "msg.sender thay theo caller trực tiếp."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Hai logs một tx",
+      "question": "Một transaction gọi sendToken một lần thành công có thể có cả hai event trong cùng receipt không?",
+      "options": [
+        "Có",
+        "Không, mỗi transaction chỉ được một log",
+        "Chỉ khi có hai chữ ký user",
+        "Chỉ nếu LogMessage cũng indexed"
+      ],
+      "correct": 0,
+      "explanation": "Một giao dịch có thể ghi nhiều log."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Log order",
+      "question": "Muốn giữ thứ tự nhiều log trong cùng transaction, dữ liệu nào hữu ích?",
+      "options": [
+        "Chỉ địa chỉ người nhận",
+        "Vị trí log trong receipt/block cùng ngữ cảnh transaction",
+        "Chỉ tên event theo bảng chữ cái",
+        "Chỉ amount từ nhỏ đến lớn"
+      ],
+      "correct": 1,
+      "explanation": "Không tự sắp xếp nghiệp vụ theo giá trị payload."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Lọc hai địa chỉ",
+      "question": "Filter Transfer từ A tới B cần hiểu hai indexed fields theo cách nào?",
+      "options": [
+        "Chỉ lọc tên hàm sendToken",
+        "Đổi emitter address thành A",
+        "Ràng buộc đúng vị trí from và to trong topics",
+        "Gộp A và B vào amount data"
+      ],
+      "correct": 2,
+      "explanation": "Vị trí topic tương ứng thứ tự tham số indexed."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Transaction hash đơn độc",
+      "question": "Dùng chỉ transaction hash để deduplicate mọi log có mất dữ liệu không?",
+      "options": [
+        "Không, transaction chỉ có một log",
+        "Chỉ mất với event anonymous",
+        "Không, LogMessage và Transfer luôn là cùng log",
+        "Có, một giao dịch có thể có nhiều log khác nhau"
+      ],
+      "correct": 3,
+      "explanation": "Cần định danh phân biệt các log trong cùng giao dịch."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Receipt status",
+      "question": "Một receipt thất bại có thể được dùng để xác nhận chuyển token chỉ từ input sendToken không?",
+      "options": [
+        "Không, input không chứng minh hành vi đã commit",
+        "Có, ABI đúng là đủ thành công",
+        "Có, tên hàm sendToken là chứng nhận",
+        "Chỉ cần có transaction hash"
+      ],
+      "correct": 0,
+      "explanation": "Kết quả thực thi và source logic phải cùng được xét."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Event không hoàn trả",
+      "question": "Emit Transfer có tạo return value uint256 cho sendToken không?",
+      "options": [
+        "Chỉ khi caller là contract",
+        "Không, event và return data là hai cơ chế",
+        "Có, amount tự thành return",
+        "Có, topic đầu chính là return value"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn không khai báo returns cho sendToken."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Dữ liệu nhạy cảm",
+      "question": "Có nên đưa secret đăng ký vào LogMessage rồi dựa vào việc không có getter để giữ kín không?",
+      "options": [
+        "Có, nếu không indexed",
+        "Chỉ cần frontend không hiển thị",
+        "Không, log là dữ liệu công khai có thể truy vấn",
+        "Có, vì không lưu storage"
+      ],
+      "correct": 2,
+      "explanation": "Event data không phải vùng bí mật."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "MemberJoined mới",
+      "question": "Nếu register được gọi lại bởi cùng địa chỉ, muốn chỉ phát MemberJoined khi đăng ký mới cần gì?",
+      "options": [
+        "Chỉ đổi event thành indexed",
+        "Chỉ kiểm amount của Transfer",
+        "Mỗi lần callback frontend tự loại đăng ký trên chain",
+        "State/điều kiện nhận biết membership và luồng cập nhật đúng"
+      ],
+      "correct": 3,
+      "explanation": "Event declaration không tự enforce tính mới."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Giả chuyển tài sản",
+      "question": "Một explorer thấy Transfer từ TransferLogger và UI cộng token balance. Vì sao cách xử lý đó sai và cần gì?",
+      "options": [
+        "Nguồn chỉ ghi log; ràng buộc đúng token contract/chain và semantics balance thay vì tin tên event",
+        "Mọi Transfer tự tạo tài sản nhưng UI cần chờ LogMessage",
+        "Chỉ indexed amount mới làm token thật",
+        "Đổi tên source thành ERC20 là đủ chuẩn"
+      ],
+      "correct": 0,
+      "explanation": "Event có cùng chữ ký ERC-20 không biến emitter thành ERC-20."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Lọc thiếu emitter",
+      "question": "Indexer thu mọi Transfer cùng topic trên chain rồi ghi thành số dư DMT. Hướng sửa nào đúng?",
+      "options": [
+        "Chỉ tin chuỗi LogMessage đi kèm",
+        "Giới hạn emitter/chain và decode schema đúng; chỉ áp accounting theo semantics token được hỗ trợ",
+        "Chỉ lọc amount lớn hơn 0 để loại event giả",
+        "Chỉ giữ event có hai indexed fields"
+      ],
+      "correct": 1,
+      "explanation": "Định danh event phải bao phạm vi emitter và schema."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Mất mạng và lặp log",
+      "question": "Listener ngắt mạng rồi backfill có đoạn trùng với live stream. Cách tích hợp tránh thiếu và cộng trùng?",
+      "options": [
+        "Cộng mọi callback vì mỗi callback là giao dịch khác",
+        "Chỉ dedup theo amount và recipient",
+        "Dùng cursor/range phù hợp, dedup theo log identity và xử lý canonicality/idempotency",
+        "Tắt backfill để chỉ nhận phần live mới"
+      ],
+      "correct": 2,
+      "explanation": "Delivery và sự kiện nghiệp vụ cần tách để bảo toàn dữ liệu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Reorg sau UI success",
+      "question": "UI báo member đã vào sau một log rồi block bị reorg. Membership hiển thị nên quản lý thế nào?",
+      "options": [
+        "Giữ mãi vì event đầu tiên luôn final",
+        "Chỉ đổi timestamp trên UI",
+        "Phát lại callback cũ để tạo membership on-chain",
+        "Theo block/canonicality và mức xác nhận, hoàn tác hoặc đối chiếu state khi log bị loại"
+      ],
+      "correct": 3,
+      "explanation": "Reorg có thể thay tập log canonical."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "ABI đổi indexed",
+      "question": "V2 giữ Transfer(address,address,uint256) nhưng đổi indexed từ to sang amount; client giữ ABI cũ. Điều gì cần xử lý?",
+      "options": [
+        "Signature hash có thể giữ nguyên nhưng layout đổi; version ABI/schema theo deployment và decode đúng",
+        "Không cần đổi client vì hash topic giống nhau",
+        "Chỉ đổi tên field ở UI để topics tự dịch chuyển",
+        "Tăng gas limit sẽ sửa decoding"
+      ],
+      "correct": 0,
+      "explanation": "Cần biết cả kiểu và indexed layout, không chỉ tên/hash."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "String hash không plaintext",
+      "question": "MemberJoined dùng string indexed nickname; frontend muốn hiển thị mọi tên chỉ từ topic. Thiết kế nào phù hợp hơn?",
+      "options": [
+        "Chỉ yêu cầu nickname dài hơn 32 byte",
+        "Cung cấp nội dung non-indexed hoặc nguồn dữ liệu phù hợp ngoài hash, cùng policy dữ liệu công khai",
+        "Dùng ABI để giải mã ngược hash mọi chuỗi",
+        "Đổi anonymous để topic tự chứa nguyên chuỗi"
+      ],
+      "correct": 1,
+      "explanation": "Hash tìm kiếm không tự là dữ liệu đọc được."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Đăng ký lặp",
+      "question": "register chỉ emit MemberJoined mà không lưu trạng thái; gọi lặp làm UI đếm tăng. Sửa đúng invariant nào?",
+      "options": [
+        "Chỉ thêm indexed vào message",
+        "Chỉ đổi event thành anonymous",
+        "Theo dõi membership và chỉ chuyển trạng thái mới/phát event theo yêu cầu; indexer xử lý đúng identity",
+        "Chỉ dedup mọi transaction của cùng ví vĩnh viễn không xét semantics"
+      ],
+      "correct": 2,
+      "explanation": "Luồng on-chain và cách đếm off-chain cần có semantics nhất quán."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Hàm cần kiểm member",
+      "question": "Một hàm onlyMember đọc danh sách chỉ do frontend dựng từ logs. Có đủ enforce on-chain không?",
+      "options": [
+        "Có, frontend là nơi event được lưu nên tự là authority",
+        "Có, nếu event có chữ ký hash",
+        "Chỉ cần RPC của cùng provider",
+        "Không, cần state hoặc cơ chế chứng minh/xác minh phù hợp trong contract"
+      ],
+      "correct": 3,
+      "explanation": "Contract không đọc trực tiếp bộ nhớ ứng dụng ngoài chain."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Revert sau message",
+      "question": "Một phiên bản emit LogMessage thành công rồi require fail; client chỉ đọc input mô phỏng và báo đã đăng ký. Cần gì?",
+      "options": [
+        "Dựa vào kết quả commit/receipt và state theo mục tiêu; log trong frame revert không được giữ",
+        "Coi text thành công ưu tiên hơn require",
+        "Chỉ chọn event emit trước điểm lỗi",
+        "Gọi getter bất kỳ để khôi phục log cũ"
+      ],
+      "correct": 0,
+      "explanation": "Thông báo trong code không vượt semantics rollback."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Hai logs bị gộp",
+      "question": "Indexer dùng transaction hash làm khóa duy nhất; một call sendToken mất LogMessage hoặc Transfer. Cách sửa?",
+      "options": [
+        "Đổi hai event thành cùng tên",
+        "Thêm định danh vị trí log và chain/block thích hợp, giữ nhiều log một transaction",
+        "Chỉ giữ amount lớn nhất",
+        "Tạo transaction giả thứ hai cho LogMessage"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi transaction có thể chứa nhiều bản ghi độc lập."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Nhiều contract trong tx",
+      "question": "Một giao dịch gọi nhiều token contracts, cùng phát Transfer. Vì sao chỉ transaction hash và event name chưa đủ gán tài sản?",
+      "options": [
+        "Vì mỗi transaction tự có một token chuẩn",
+        "Chỉ amount khác nhau mới phân biệt được",
+        "Cần emitter address/chain và log position/schema để phân biệt từng nguồn",
+        "Vì chỉ caller EOA mới được emit"
+      ],
+      "correct": 2,
+      "explanation": "Tài sản liên quan logic và địa chỉ emitter, không chỉ giao dịch chung."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Giao diện thành công giả",
+      "question": "Mẫu LogMessage nói chuyển tiền thành công dù không có transfer. Muốn UI thể hiện đúng chức năng hiện tại nên làm gì?",
+      "options": [
+        "Đổi màu thông báo xanh để xác nhận token",
+        "Chỉ chờ thêm một block là transfer sẽ xảy ra",
+        "Đổi _amount sang payable để EVM tự chuyển",
+        "Mô tả đây là ghi nhận log minh họa và không suy chuyển tài sản từ thông báo"
+      ],
+      "correct": 3,
+      "explanation": "Cần nối lời mô tả với hành vi source thực."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Bỏ event để tiết kiệm",
+      "question": "Một membership contract cần kiểm on-chain và hiển thị lịch sử. Nhóm bỏ storage chỉ giữ log để giảm gas. Điều gì phải giữ?",
+      "options": [
+        "State/invariant phục vụ kiểm on-chain và logs phục vụ quan sát theo yêu cầu; không thay lẫn một cách tự động",
+        "Mọi log rẻ hơn luôn thay được mọi storage",
+        "Chỉ frontend cần membership nên contract tự biết qua ABI",
+        "Private log có thể dùng như mapping bên trong"
+      ],
+      "correct": 0,
+      "explanation": "Chi phí không loại yêu cầu dữ liệu của từng môi trường."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Zero transfer chuẩn",
+      "question": "Nhóm loại mọi Transfer amount 0 vì cho rằng ERC-20 không bao giờ phát chúng. Đối chiếu EIP-20 cần sửa gì?",
+      "options": [
+        "Chỉ approve mới được amount 0",
+        "Zero-value transfers được xem là bình thường và cần Transfer event theo chuẩn; chính sách indexer phải hiểu semantics",
+        "Chỉ chấp nhận zero nếu emitter là TransferLogger",
+        "Mọi zero Transfer đều là revert"
+      ],
+      "correct": 1,
+      "explanation": "Không suy một bộ lọc tùy ý thành quy tắc chuẩn token."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Nhầm caller gốc",
+      "question": "Factory/router C gọi sendToken thay user A; UI hiển thị from là A bằng tx.origin ngoài dữ liệu event. Cần sửa gì?",
+      "options": [
+        "Mọi router đều làm msg.sender thành EOA gốc",
+        "Chỉ đổi ABI address thành string",
+        "Nguồn emit msg.sender là C; cần mô hình attribution rõ nếu muốn biểu diễn user cuối",
+        "From indexed tự chứa A dù payload ghi C"
+      ],
+      "correct": 2,
+      "explanation": "Không ghi đè semantics dữ liệu bằng giả định caller."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Log data bí mật",
+      "question": "Ứng dụng ghi email/secret vào event non-indexed rồi cho rằng khó filter nên kín. Vấn đề gì?",
+      "options": [
+        "Data không nằm trong topics nên được mã hóa",
+        "Chỉ owner có ABI mới đọc được",
+        "Anonymous sẽ tự xóa mọi bản sao cũ",
+        "Non-indexed vẫn đọc/giải mã được; cần thiết kế tối thiểu dữ liệu công khai và bảo vệ secret ngoài log"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng lọc khác khả năng quan sát dữ liệu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Filter nhầm vị trí",
+      "question": "Client lọc recipient B nhưng đưa B vào topic của from, làm mất các log đúng. Cách chẩn đoán?",
+      "options": [
+        "Đối chiếu ABI/indexed order và raw topics, đặt điều kiện đúng vị trí to",
+        "Tăng timeout để topic đổi chỗ",
+        "Đổi msg.sender phía frontend",
+        "Chỉ lọc LogMessage thay thế mọi Transfer"
+      ],
+      "correct": 0,
+      "explanation": "Position của topic do schema event quyết định."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Metadata không đầy đủ",
+      "question": "Một file chỉ giữ topics và data, bỏ chain/emitter/block/log index. Hạn chế khi xây lịch sử gì?",
+      "options": [
+        "Amount có thể tự suy toàn metadata",
+        "Thiếu định danh/provenance để gán nguồn, thứ tự, dedup và xử lý reorg đúng",
+        "Không hạn chế vì chữ ký event xác định mọi thứ",
+        "Chỉ thiếu màu UI"
+      ],
+      "correct": 1,
+      "explanation": "Payload không tự chứa toàn ngữ cảnh log."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Tải lịch sử lớn",
+      "question": "Frontend yêu cầu toàn bộ logs từ genesis một lần và provider giới hạn range. Thiết kế phù hợp hơn?",
+      "options": [
+        "Chỉ tăng số event indexed để node bỏ mọi giới hạn",
+        "Tạo nhiều subscription không quản lý phạm vi",
+        "Truy vấn theo khoảng có cursor/checkpoint, giới hạn provider và hợp nhất idempotent",
+        "Bỏ lịch sử nhưng vẫn báo dữ liệu đầy đủ"
+      ],
+      "correct": 2,
+      "explanation": "Pagination/backfill là trách nhiệm xử lý dữ liệu, không do declaration tự đảm bảo."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Thay tên tham số và UI",
+      "question": "V2 đổi from thành sender nhưng giữ cùng types/indexed; UI truy cập decoded.from bị undefined. Cần phân biệt gì?",
+      "options": [
+        "Hash chữ ký phải đổi vì tên field luôn nằm trong hash",
+        "Indexed bảo đảm mọi SDK giữ tên cũ",
+        "Đổi chain sẽ tự map from sang sender",
+        "Chữ ký hash không đổi nhưng tên ABI/đối tượng decode có thể đổi; đồng bộ client metadata"
+      ],
+      "correct": 3,
+      "explanation": "Semantics canonical signature và API tên field của client khác nhau."
+    }
+  ]
+}

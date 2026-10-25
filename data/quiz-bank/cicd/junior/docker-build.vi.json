@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cicd",
+  "level": "junior",
+  "lesson": "docker-build",
+  "language": "vi",
+  "sourceHash": "167cb0d6a29862fa229cca34e63b838e9c083b3fe89c7a2c10371759d9173cf7",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo job build/push/Cloud Run, đối chiếu build-push-action v5, deploy-cloudrun v2 và Docker cache docs. Thiếu trigger, Google auth/project/IAM, builder/cache compatibility, platforms và cổng test. Không build/push/pull/deploy hay gọi registry/cloud.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Image CI",
+      "question": "Mục tiêu chính của job build-and-push là gì?",
+      "options": [
+        "Build image, push registry rồi yêu cầu triển khai image",
+        "Chỉ tạo một nhánh Git",
+        "Chỉ chạy lint JavaScript",
+        "Chỉ cấu hình database backup"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu có các step login, build/push và Cloud Run; kết quả thực thi chưa được chứng minh."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Runner",
+      "question": "Job mẫu chọn runner nào?",
+      "options": [
+        "Một cluster tự host đã định nghĩa",
+        "ubuntu-latest",
+        "windows-latest",
+        "macos-latest"
+      ],
+      "correct": 1,
+      "explanation": "runs-on chỉ định môi trường thực thi job."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Checkout",
+      "question": "Checkout phục vụ đầu vào nào cho context: . trong mẫu?",
+      "options": [
+        "Container production đang chạy",
+        "Report bảo mật do Trivy tạo",
+        "Source được lấy vào workspace",
+        "Credential Google Cloud tự động"
+      ],
+      "correct": 2,
+      "explanation": "Path context cần nội dung trên filesystem runner."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Registry login",
+      "question": "docker/login-action@v3 ở mẫu dùng để làm gì?",
+      "options": [
+        "Xác thực Google Cloud IAM thay mọi action khác",
+        "Build Dockerfile thay build-push-action",
+        "Đăng nhập website của người dùng cuối",
+        "Xác thực với registry theo cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Quyền registry và quyền triển khai cloud là các ranh giới khác nhau."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Username",
+      "question": "Mẫu lấy username đăng nhập Docker Hub từ đâu?",
+      "options": [
+        "secrets.DOCKER_USERNAME",
+        "github.sha",
+        "matrix.os",
+        "inputs.environment"
+      ],
+      "correct": 0,
+      "explanation": "Secret reference cần được cấu hình thực; tên không tự sinh credential."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Password/token",
+      "question": "Mẫu cấp đầu vào password cho login action bằng gì?",
+      "options": [
+        "Tên service myapp",
+        "secrets.DOCKER_TOKEN",
+        "github.sha",
+        "Chuỗi latest"
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng token theo quyền phù hợp thay vì ghi credential thật trong YAML."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Build action",
+      "question": "Action nào thực hiện build/push image trong mẫu?",
+      "options": [
+        "google-github-actions/deploy-cloudrun@v2",
+        "docker/login-action@v3",
+        "docker/build-push-action@v5",
+        "actions/checkout@v4"
+      ],
+      "correct": 2,
+      "explanation": "Các actions có nhiệm vụ khác nhau."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Build context",
+      "question": "context: . yêu cầu dùng context nào?",
+      "options": [
+        "Mọi file trên máy người dùng web",
+        "Database production",
+        "Toàn bộ lịch sử registry",
+        "Thư mục hiện tại của workspace theo cấu hình action"
+      ],
+      "correct": 3,
+      "explanation": "Path context không đồng nghĩa mọi dữ liệu máy chủ đích."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Push cờ",
+      "question": "push: true thể hiện ý định nào?",
+      "options": [
+        "Xuất/push image tới registry theo tag và quyền cấu hình",
+        "Chỉ build cục bộ không gửi image",
+        "Tự merge pull request",
+        "Tự tạo mọi registry account"
+      ],
+      "correct": 0,
+      "explanation": "Cờ yêu cầu push nhưng không chứng minh thao tác đã thành công."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Hai tag",
+      "question": "Mẫu khai báo các tag image nào?",
+      "options": [
+        "Không có tag image",
+        "myorg/myapp:${{ github.sha }} và myorg/myapp:latest",
+        "myapp:test và myapp:coverage",
+        "myorg/myapp:staging duy nhất"
+      ],
+      "correct": 1,
+      "explanation": "Một lần build có thể được gắn nhiều tag."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "SHA nguồn",
+      "question": "github.sha trong tag giúp gì?",
+      "options": [
+        "Tự chứng minh image không có lỗ hổng",
+        "Tự tạo digest bất biến cho mọi tag",
+        "Liên hệ tên phiên bản image với commit/ref của workflow theo ngữ cảnh sự kiện",
+        "Mã hóa mọi layer bằng khóa bí mật"
+      ],
+      "correct": 2,
+      "explanation": "Commit SHA dùng trong tag vẫn là tag; không đồng nhất với content digest."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Latest",
+      "question": "latest trong tên image là gì?",
+      "options": [
+        "Bảo đảm image có timestamp mới nhất toàn thế giới",
+        "Một digest luôn bất biến",
+        "Một lệnh tự kiểm tra health",
+        "Một tag có thể được cập nhật theo quy trình registry"
+      ],
+      "correct": 3,
+      "explanation": "Tên latest không tự xác nhận tính mới, chất lượng hoặc provenance."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Cache đọc",
+      "question": "cache-from: type=gha có ý định gì?",
+      "options": [
+        "Đọc cache build từ backend GitHub Actions tương thích",
+        "Tải source GitHub thay checkout trong mọi trường hợp",
+        "Chạy lại mọi test của commit trước",
+        "Lấy credential Google Cloud"
+      ],
+      "correct": 0,
+      "explanation": "Cache build và source/deploy/test là các luồng khác nhau."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Cache ghi",
+      "question": "cache-to: type=gha,mode=max có ý định gì?",
+      "options": [
+        "Tự tăng hạn mức registry",
+        "Xuất cache build với phạm vi layer của mode max",
+        "Xuất mọi secret ra artifact public",
+        "Ép CPU runner đạt tốc độ tối đa"
+      ],
+      "correct": 1,
+      "explanation": "mode max liên quan dữ liệu cache được xuất, không phải bảo đảm tốc độ."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Nền tảng đích",
+      "question": "deploy-cloudrun@v2 hướng tới dịch vụ nào?",
+      "options": [
+        "GitHub Pages",
+        "Một database MongoDB được tạo sẵn",
+        "Google Cloud Run",
+        "Docker Hub repository thay Cloud Run"
+      ],
+      "correct": 2,
+      "explanation": "Mẫu chọn action triển khai Cloud Run."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Tên service",
+      "question": "Service được khai báo cho Cloud Run là gì?",
+      "options": [
+        "myorg",
+        "latest",
+        "build-and-push",
+        "myapp"
+      ],
+      "correct": 3,
+      "explanation": "service và image là hai đầu vào khác nhau."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Image triển khai",
+      "question": "Step Cloud Run chọn image nào theo source?",
+      "options": [
+        "Tag myorg/myapp:${{ github.sha }}",
+        "Tag latest duy nhất",
+        "Source folder web chưa build",
+        "Mọi image có tên myapp trong registry"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu dùng tag gắn SHA ở deploy, không dùng latest ở dòng image."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Auth còn thiếu",
+      "question": "Đăng nhập Docker Hub có tự cung cấp Google Cloud credentials cho deploy-cloudrun không?",
+      "options": [
+        "Không, Cloud Run không hỗ trợ xác thực CI",
+        "Không, cần cấu hình xác thực/quyền Google phù hợp",
+        "Có, mọi registry token có quyền Google IAM",
+        "Có, tag SHA chứa Google credentials"
+      ],
+      "correct": 1,
+      "explanation": "Hai hệ credential không tự thay thế nhau."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Multi-platform",
+      "question": "Mẫu có input platforms tường minh để chọn nhiều kiến trúc chưa?",
+      "options": [
+        "Có, mode=max luôn build mọi CPU",
+        "Có, ubuntu-latest tự tạo image Windows và ARM",
+        "Chưa",
+        "Có, hai tag tự là hai kiến trúc"
+      ],
+      "correct": 2,
+      "explanation": "Tag, cache mode và platform là các cấu hình riêng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Giới hạn mẫu",
+      "question": "Source bắt đầu từ jobs, chưa có on. Nó đã mô tả trọn trigger workflow chưa?",
+      "options": [
+        "Rồi, tên build-and-push tự tạo push trigger",
+        "Rồi, push:true là trigger GitHub",
+        "Rồi, login action tự chạy workflow mỗi ngày",
+        "Chưa, đây là fragment cần đặt trong workflow hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "push:true của build action không phải on.push của GitHub."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Thứ tự xác thực",
+      "question": "Vì sao registry login được đặt trước build/push?",
+      "options": [
+        "Để thao tác push có credential registry khi cần",
+        "Để login tự tạo source commit",
+        "Để mọi tests được sinh tự động",
+        "Để tag latest trở thành immutable"
+      ],
+      "correct": 0,
+      "explanation": "Trình tự này phục vụ quyền registry, không chứng minh quyền cloud."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Tag và image",
+      "question": "Hai tag trong cùng lần build thường thể hiện điều gì?",
+      "options": [
+        "Bắt buộc hai lần deploy production",
+        "Hai tham chiếu tên cho kết quả build được xuất theo cấu hình",
+        "Bắt buộc hai image có source khác nhau",
+        "Bắt buộc hai hệ điều hành container khác nhau"
+      ],
+      "correct": 1,
+      "explanation": "Nhiều tag không tự nhân số platform hay chứng minh hai sản phẩm khác nhau."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Thiếu namespace permission",
+      "question": "Push bị denied vào myorg/myapp dù login thành công. Cần kiểm tra gì?",
+      "options": [
+        "Chỉ tên job có chữ push",
+        "Chỉ màu badge test",
+        "Quyền credential với namespace/repository đích và tên registry/image",
+        "Chỉ việc username có chữ hoa không"
+      ],
+      "correct": 2,
+      "explanation": "Đăng nhập thành công không có nghĩa được ghi mọi repository."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Không có test gate",
+      "question": "Mẫu có bảo đảm image chỉ được push sau tests pass không?",
+      "options": [
+        "Có, build-push-action luôn chạy mọi test của app",
+        "Có, login tự kiểm tra code",
+        "Có, tag github.sha có nghĩa đã pass",
+        "Không, source chưa có bước test hoặc dependency cổng test"
+      ],
+      "correct": 3,
+      "explanation": "Phải cấu hình kiểm tra thực và quan hệ dependency nếu đó là yêu cầu."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Context workspace",
+      "question": "Một step trước build sửa file trong workspace. Với context: . và path đúng, thay đổi đó có thể ảnh hưởng build không?",
+      "options": [
+        "Có, path context lấy nội dung filesystem phù hợp và còn chịu Dockerfile/.dockerignore",
+        "Không, context dấu chấm luôn lấy Git remote bỏ mọi thay đổi",
+        "Chỉ nếu đổi tag latest",
+        "Chỉ nếu token Google hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Phải phân biệt path context với Git context mặc định của action."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Dockerignore",
+      "question": "Vì sao nên review .dockerignore khi dùng context: .?",
+      "options": [
+        "Để latest tự trỏ đúng production",
+        "Để kiểm soát file gửi vào build, tránh dữ liệu thừa hoặc bí mật không cần thiết",
+        "Để tự cấp quyền push registry",
+        "Để thay mọi dependency tests"
+      ],
+      "correct": 1,
+      "explanation": "Build context là ranh giới dữ liệu cần quản lý."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Cache miss",
+      "question": "Cache không có ở run đầu tiên. Pipeline đúng nên được thiết kế ra sao?",
+      "options": [
+        "Bắt buộc lấy một image không rõ nguồn để thay",
+        "Bỏ qua Dockerfile",
+        "Vẫn build được với đầu vào/credential cần thiết, chỉ mất lợi ích cache",
+        "Tự coi build pass mà không chạy"
+      ],
+      "correct": 2,
+      "explanation": "Cache là tối ưu, không phải nguồn duy nhất của correctness."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Driver cache",
+      "question": "Dùng type=gha nhưng builder không hỗ trợ backend đó theo cấu hình hiện tại. Cần làm gì?",
+      "options": [
+        "Chỉ đổi mode=max thành một số lớn hơn",
+        "Chỉ đổi tag thành cache-ready",
+        "Chỉ thêm secret DOCKER_USERNAME thứ hai",
+        "Thiết lập builder/driver và phiên bản hỗ trợ, đối chiếu điều kiện containerd image store nếu dùng docker driver"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng backend phụ thuộc driver/toolchain; không khẳng định mọi cấu hình docker driver đều giống nhau."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Setup buildx",
+      "question": "README build-push-action v5 khuyến nghị setup-buildx cho các tính năng phù hợp. Cách hiểu nào đúng?",
+      "options": [
+        "Nó giúp thiết lập builder; không nên nói action này tuyệt đối bắt buộc cho mọi build đơn giản",
+        "Không có setup-buildx thì mọi Dockerfile đều không thể parse",
+        "setup-buildx tự cấp quyền Google IAM",
+        "setup-buildx tự biến một tag thành multi-platform"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm tính năng và builder thực tế, không áp một quy tắc tuyệt đối thiếu scope."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Giới hạn version nguồn",
+      "question": "Source dùng build-push-action@v5. Khi áp dụng hiện tại nên làm gì?",
+      "options": [
+        "Suy setup-node@v4 đã khóa cả Docker BuildKit",
+        "Kiểm tra version/runner/cache API compatibility và cập nhật có review theo yêu cầu",
+        "Coi v5 luôn là bản mới nhất mãi mãi",
+        "Đổi mọi action sang master mà không review"
+      ],
+      "correct": 1,
+      "explanation": "Version mẫu không tự là khuyến nghị mới nhất."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Google auth",
+      "question": "Trước step deploy-cloudrun, nguồn còn thiếu nhóm cấu hình nào quan trọng?",
+      "options": [
+        "Một lệnh echo myapp",
+        "Chỉ cache-from type=gha",
+        "Google authentication và quyền/project phù hợp",
+        "Thêm latest vào name của job"
+      ],
+      "correct": 2,
+      "explanation": "Action deploy không tự được cấp quyền bởi credential Docker Hub."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Hai quyền khác nhau",
+      "question": "Token có quyền push Docker Hub nhưng không có quyền Cloud Run. Hành vi nào có thể xảy ra?",
+      "options": [
+        "Deploy chắc chắn thành công vì push đã pass",
+        "Build bị GitHub tự coi là không tồn tại",
+        "Token tự chuyển thành Google service account",
+        "Push thành công nhưng deploy thất bại vì quyền cloud"
+      ],
+      "correct": 3,
+      "explanation": "Một bước thành công không cấp quyền cho bước khác."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Project/region",
+      "question": "Chỉ service: myapp có đủ xác định mọi ngữ cảnh Google Cloud không?",
+      "options": [
+        "Không, cần project/region/auth/config phù hợp và xác minh service đích",
+        "Có, tên myapp duy nhất trên toàn Internet",
+        "Có, namespace myorg tự là Google project",
+        "Có, latest chứa region"
+      ],
+      "correct": 0,
+      "explanation": "Không suy tài nguyên cloud toàn cục từ một tên service ngắn."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Digest",
+      "question": "Muốn ràng buộc đúng nội dung image thay vì chỉ một tag có thể đổi, nên dùng gì?",
+      "options": [
+        "Chỉ đặt job name Immutable",
+        "Digest được xác minh của image/artifact theo quy trình",
+        "Chỉ đổi latest thành stable",
+        "Chỉ thêm commit SHA vào comment"
+      ],
+      "correct": 1,
+      "explanation": "Digest và tag có tính chất tham chiếu khác nhau."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "SHA tag mutable",
+      "question": "Tag đặt bằng full commit SHA có tự bị registry cấm ghi đè không?",
+      "options": [
+        "Có, GitHub tự khóa mọi registry ngoài",
+        "Không, vì không thể dùng số trong tag",
+        "Không, cần policy registry/quy trình; tên tag không tự là content-addressed digest",
+        "Có, mọi registry tự hiểu tag SHA là immutable"
+      ],
+      "correct": 2,
+      "explanation": "Tên mang SHA giúp truy vết nhưng không tự enforce bất biến."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Đầu vào build",
+      "question": "Cùng commit nhưng Dockerfile dùng base image tag thay đổi có thể tạo image khác không?",
+      "options": [
+        "Không, github.sha tự khóa mọi base image",
+        "Không, cache mode max khóa mọi dependency vĩnh viễn",
+        "Chỉ khác nếu đổi tên service",
+        "Có, các đầu vào ngoài commit cần được xét khi muốn tái lập"
+      ],
+      "correct": 3,
+      "explanation": "Tái lập liên quan base image, dependency, toolchain và cấu hình."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Cache nhiều image",
+      "question": "Nhiều build dùng chung gha cache scope mặc định có thể gặp gì?",
+      "options": [
+        "Cache của các build có thể ghi đè/phân chia không như mong muốn; cần scope phù hợp",
+        "Mọi image tự được merge thành một container",
+        "Mọi tests tự bị bỏ qua vì cache hit",
+        "Token Google tự hết hạn khi scope trùng"
+      ],
+      "correct": 0,
+      "explanation": "Docker docs nêu scope cache, cần đặt theo mục tiêu build khi dùng nhiều image."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Cache không là runtime",
+      "question": "Lưu cache build lên GHA có tự chạy app trên Cloud Run không?",
+      "options": [
+        "Có, nếu tag latest tồn tại",
+        "Không, đó là dữ liệu hỗ trợ build, deploy là bước riêng",
+        "Có, cache-to luôn khởi chạy container production",
+        "Có, nếu mode=max"
+      ],
+      "correct": 1,
+      "explanation": "Cache, registry và runtime là các chức năng khác nhau."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Login secret scope",
+      "question": "Một PR fork không nhận token registry. Thiết kế phù hợp là gì?",
+      "options": [
+        "Commit DOCKER_TOKEN vào Dockerfile",
+        "In token từ run khác để fork dùng",
+        "Tách kiểm tra build an toàn khỏi push/deploy có quyền, theo chính sách nguồn mã tin cậy",
+        "Cấp credential production cho mọi mã PR"
+      ],
+      "correct": 2,
+      "explanation": "Không nên vượt ranh giới secrets chỉ để mọi PR có thể push."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Push không phải chạy",
+      "question": "Build/push đều thành công nhưng deploy bị skip. Có thể nói gì?",
+      "options": [
+        "Cloud Run chắc chắn đang chạy tag mới",
+        "Registry tự khởi chạy production sau mọi push",
+        "Job đã kiểm health của app",
+        "Image đã được tạo/gửi theo kết quả steps; chưa có bằng chứng runtime được cập nhật"
+      ],
+      "correct": 3,
+      "explanation": "Lưu artifact ở registry không đồng nghĩa phát hành thành công."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Cloud Run pull",
+      "question": "Image private ở registry cần được dịch vụ đích truy cập. Cần xét gì?",
+      "options": [
+        "Registry support và cơ chế/quyền pull của nền tảng đích theo cấu hình thực tế",
+        "Chỉ credential push trên runner, mặc định mọi runtime được kế thừa",
+        "Chỉ tên service myapp",
+        "Chỉ tag là latest"
+      ],
+      "correct": 0,
+      "explanation": "Credential runner không mặc định truyền thành quyền pull của runtime/service."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Multi-platform thật",
+      "question": "Muốn build cho amd64 và arm64 cần kiểm nhóm cấu hình nào?",
+      "options": [
+        "Chỉ action name Build and push",
+        "platforms, builder/native hoặc emulation support và base/dependency tương thích",
+        "Chỉ hai tag khác nhau",
+        "Chỉ cache-to mode=max"
+      ],
+      "correct": 1,
+      "explanation": "Nhiều kiến trúc cần cấu hình và hỗ trợ thực, không chỉ nhãn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Registry khác đích",
+      "question": "Đổi tags sang một registry khác nhưng giữ login Docker Hub. Vấn đề có thể là gì?",
+      "options": [
+        "Tag mới tự tạo token cloud",
+        "Source không còn cần Dockerfile",
+        "Credential/đăng nhập chưa phù hợp registry mới",
+        "Mọi registry tự chia sẻ session Docker Hub"
+      ],
+      "correct": 2,
+      "explanation": "Tên image và auth registry phải được căn chỉnh."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Thông tin nhạy cảm build",
+      "question": "Muốn build cần một credential private dependency. Cách xem xét phù hợp là gì?",
+      "options": [
+        "COPY token vào image rồi xóa ở layer sau là luôn đủ an toàn",
+        "Đưa token vào tag để dễ truy vết",
+        "Dùng username làm mật khẩu công khai",
+        "Dùng cơ chế build secret đúng cách, review Dockerfile/log/cache và tránh đưa credential vào layer"
+      ],
+      "correct": 3,
+      "explanation": "Xóa ở layer sau không mặc định loại credential khỏi lịch sử layer."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Policy action refs",
+      "question": "@v5 và @v2 trong source có đóng băng mã action theo full SHA không?",
+      "options": [
+        "Không, đó là refs/tag; cần quản lý pin/update theo policy",
+        "Có, mọi tag là SHA bất biến",
+        "Có, github.sha khóa source mọi action",
+        "Không, vì Actions không cho ghim SHA"
+      ],
+      "correct": 0,
+      "explanation": "Version action là một đầu vào chuỗi cung ứng cần quản lý."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Đầu ra build",
+      "question": "Muốn step deploy dùng digest đầu ra của step build, cần thêm gì?",
+      "options": [
+        "Chỉ đổi push:true thành digest:true",
+        "ID step và tham chiếu output digest đúng action/API, kèm tên image phù hợp",
+        "Chỉ đặt name Build and push vì name tự là output ID",
+        "Chỉ thêm digest vào comment"
+      ],
+      "correct": 1,
+      "explanation": "Output cần được định tuyến bằng cú pháp step đúng, không suy từ tên hiển thị."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Kiểm artifact",
+      "question": "Muốn scan đúng image chuẩn bị phát hành, nên ràng buộc scanner với gì?",
+      "options": [
+        "Chỉ tên repository không có version",
+        "Một Dockerfile khác để scan nhanh hơn",
+        "Image/digest chính xác của build định deploy",
+        "Bất kỳ myapp:latest đã cache từ tuần trước"
+      ],
+      "correct": 2,
+      "explanation": "Scan có ích khi kết quả gắn với đúng artifact."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Không có setup cloud",
+      "question": "Source chỉ có deploy-cloudrun, không có auth action. Cách diễn giải đúng là gì?",
+      "options": [
+        "Deploy-cloudrun tự tạo mọi IAM roles",
+        "Docker login luôn tạo service account Google",
+        "Mọi runner GitHub đều có quyền mọi Cloud project",
+        "Mẫu chưa thể hiện auth Google đầy đủ; cần hoàn thiện và xác minh, không mặc định nó chạy được"
+      ],
+      "correct": 3,
+      "explanation": "Thiếu wiring không thể được biến thành bằng chứng runtime thành công."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Test image",
+      "question": "Test source pass trước build có tự chứng minh image khởi động đúng entrypoint/port không?",
+      "options": [
+        "Không, còn cần kiểm artifact/container/runtime theo mục tiêu",
+        "Có, mọi Dockerfile đều giữ nguyên runtime local",
+        "Có, push:true tự test mọi port",
+        "Có, Cloud Run tự viết test nghiệp vụ"
+      ],
+      "correct": 0,
+      "explanation": "Artifact có thể lỗi packaging hoặc cấu hình dù source tests pass."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Địa chỉ registry",
+      "question": "Trong myorg/myapp:latest, myorg/myapp đại diện gì phù hợp?",
+      "options": [
+        "Nội dung digest image",
+        "Tên namespace/repository image theo cách phân giải registry",
+        "Tên Google region bắt buộc",
+        "ID của workflow test"
+      ],
+      "correct": 1,
+      "explanation": "Cần biết quy tắc registry khi dùng tên không có hostname tường minh."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Retry push",
+      "question": "Push gián đoạn rồi retry cùng tag có đủ chứng minh bản runtime đúng không?",
+      "options": [
+        "Có, token hợp lệ chứng minh app healthy",
+        "Có, latest tự chọn image thành công gần nhất",
+        "Không, cần kiểm kết quả push/artifact và deployment thực tế",
+        "Có, mọi retry tự deploy lại Cloud Run"
+      ],
+      "correct": 2,
+      "explanation": "Retry thao tác registry không thay kiểm tra phát hành."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Cache speed",
+      "question": "Chỉ khai báo cache-from/to có cho phép công bố build nhanh hơn50% không?",
+      "options": [
+        "Có, mode=max có nghĩa nhanh hơn tối thiểu50%",
+        "Có, GitHub bảo đảm mọi cache hit cùng tốc độ",
+        "Có, chỉ cần dùng runner Ubuntu",
+        "Không, cần đo trên đầu vào và điều kiện phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình tối ưu không thay bằng chứng hiệu năng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Thiếu Dockerfile",
+      "question": "Build lỗi không tìm thấy Dockerfile ở context dự kiến. Hướng kiểm tra đầu tiên là gì?",
+      "options": [
+        "Context, file input/đường dẫn và source đã checkout đúng revision",
+        "Đổi token Google để Dockerfile xuất hiện",
+        "Chỉ thêm tag latest lần nữa",
+        "Xóa mọi step checkout vì context luôn remote"
+      ],
+      "correct": 0,
+      "explanation": "Đầu vào build phải phù hợp filesystem thực."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Image chạy sai commit",
+      "question": "Cloud Run vẫn dùng image cũ dù log build mới. Cần đối chiếu gì?",
+      "options": [
+        "Chỉ cache mode=max",
+        "Image/digest được deploy, service/project/region và kết quả revision/traffic thực tế",
+        "Chỉ tên hiển thị job",
+        "Chỉ token registry có đủ ký tự"
+      ],
+      "correct": 1,
+      "explanation": "Build log không tự xác nhận runtime đang nhận đúng phiên bản."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Không phải artifact transfer",
+      "question": "Nếu tách build và deploy thành jobs mới, needs có tự chuyển image local Docker daemon không?",
+      "options": [
+        "Có, nếu names giống nhau",
+        "Có, environment staging tự copy daemon",
+        "Không, cần registry/artifact/output đúng cách và quyền truy cập tương ứng",
+        "Có, mọi jobs dùng cùng Docker daemon"
+      ],
+      "correct": 2,
+      "explanation": "Dependency không chia sẻ bộ nhớ/daemon/filesystem giữa các job riêng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Cloud auth ngắn hạn",
+      "question": "Khi dùng federated identity cho CI, điều gì vẫn cần thiết?",
+      "options": [
+        "Chỉ tên action auth",
+        "Chỉ image latest public",
+        "Bỏ mọi quyền vì federation luôn admin",
+        "Trust policy, quyền token workflow, identity/service account và IAM đúng phạm vi"
+      ],
+      "correct": 3,
+      "explanation": "Federation là cơ chế xác thực có cấu hình quyền, không phép cấp quyền vô hạn."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Tag theo sự kiện",
+      "question": "Vì sao nên xem ngữ cảnh github.sha khi chạy workflow trên PR?",
+      "options": [
+        "Nó có thể là merge-ref SHA theo sự kiện, khác head commit mà người đọc đang nghĩ tới",
+        "Nó luôn là Docker digest",
+        "Nó luôn là commit đầu repository",
+        "Nó là secret chỉ có ở production"
+      ],
+      "correct": 0,
+      "explanation": "Provenance phải phản ánh revision thật được checkout/build."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Release metadata",
+      "question": "Thông tin nào hữu ích để truy vết một image đã phát hành?",
+      "options": [
+        "Chỉ tên người viết README",
+        "Source revision, build run, image digest, đích deployment và kết quả kiểm tra",
+        "Chỉ tag latest",
+        "Chỉ tên action v5"
+      ],
+      "correct": 1,
+      "explanation": "Truy vết cần liên kết source, artifact và runtime."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Workflow fragment",
+      "question": "Để job này chạy sau test job khác, cần gì trong workflow hoàn chỉnh?",
+      "options": [
+        "Chỉ push:true",
+        "Chỉ gắn image SHA",
+        "Trigger/khai báo các job hợp lệ và dependency/điều kiện phù hợp",
+        "Chỉ giữ comment Docker build in CI"
+      ],
+      "correct": 2,
+      "explanation": "Cần cấu hình GitHub workflow, không đồng nhất action inputs với trigger/dependency."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Credential log",
+      "question": "Login lỗi, một người đề xuất in DOCKER_TOKEN vào output. Hướng phù hợp là gì?",
+      "options": [
+        "In token rồi xóa repository sau",
+        "Đưa token vào tên image để xem dễ hơn",
+        "Gửi token thành artifact công khai",
+        "Kiểm tra scope/quyền/tên secret và thông báo lỗi đã che giá trị nhạy cảm"
+      ],
+      "correct": 3,
+      "explanation": "Chẩn đoán không cần công khai credential."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Một nguồn hai quyền",
+      "question": "Build/push thành công, Cloud Run báo lỗi quyền. Nhóm muốn tăng DOCKER_TOKEN thành admin Docker Hub để sửa. Hướng đúng là gì?",
+      "options": [
+        "Điều tra Google auth/IAM/project và quyền deployment riêng, giữ quyền registry tối thiểu cần thiết",
+        "Tăng Docker Hub token luôn giải quyết mọi lỗi Google IAM",
+        "Đổi latest thành SHA là đủ cấp quyền",
+        "Xóa cache để cloud tự xác thực"
+      ],
+      "correct": 0,
+      "explanation": "Credential cho registry không thay Google identity/authorization."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Latest race",
+      "question": "Hai run A/B push latest; A deploy bằng SHA-tag của A, B push latest sau đó. Muốn biết A thực sự phát hành gì cần gì?",
+      "options": [
+        "Đổi tên job A thành stable",
+        "Đối chiếu tag/digest được step deploy dùng, tính bất biến policy và revision đích; không suy từ latest hiện tại",
+        "Chỉ đọc latest để biết mọi deployment cũ",
+        "Coi latest tự giữ snapshot riêng từng run"
+      ],
+      "correct": 1,
+      "explanation": "Mẫu deploy chọn SHA-tag, nhưng tag vẫn cần được ràng buộc và kiểm kết quả đúng artifact."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Tái lập toàn build",
+      "question": "Cùng commit SHA được rebuild nhưng base image/dependency/toolchain thay đổi. Vì sao cùng SHA-tag chưa chứng minh cùng nội dung?",
+      "options": [
+        "mode=max buộc mọi build cùng output vĩnh viễn",
+        "Hai image có cùng tag bắt buộc có cùng layer theo chuẩn registry",
+        "Tag là tên do quy trình gắn; cần digest/provenance và kiểm soát đầu vào build để so nội dung",
+        "Commit SHA tự mã hóa toàn bộ Internet dependencies"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất source identity, tag identity và content identity."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "GHA cache compatibility",
+      "question": "Pipeline từ mẫu dùng gha cache trên toolchain cũ. Làm sao sửa mà không hứa mọi version đều tương thích?",
+      "options": [
+        "Chỉ đổi mode=max thành max2",
+        "Chỉ thêm một tag cache",
+        "Chỉ dùng latest cho base image để mọi API tự đồng bộ",
+        "Kiểm version Buildx/BuildKit/action/cache API cùng driver/image-store, cập nhật có kiểm và xác nhận cache thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Backend cache có điều kiện hỗ trợ theo toolchain; source mẫu không khóa toàn bộ điều kiện đó."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Nhiều kiến trúc thật",
+      "question": "Đội cho rằng hai tag SHA/latest đã tạo cả amd64 và arm64. Cách sửa lập luận và cấu hình là gì?",
+      "options": [
+        "Tag là tên; cần chọn platforms, builder/emulation hoặc native runners và kiểm manifest/artifact theo mục tiêu",
+        "Hai tag luôn là hai kiến trúc nên không cần sửa",
+        "Chỉ đổi cache scope thành arm64",
+        "Chỉ chọn Cloud Run service myapp"
+      ],
+      "correct": 0,
+      "explanation": "Số tên tham chiếu và số kiến trúc image là hai khái niệm riêng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Secrets trong layer",
+      "question": "Dockerfile COPY credential rồi RUN xóa nó. Cache mode=max được xuất. Nhóm nói token chắc chắn không còn vì filesystem cuối sạch. Cần làm gì?",
+      "options": [
+        "Chỉ bỏ tag latest để token biến mất",
+        "Review các layer/cache/log và dùng build secret đúng cách; không coi xóa layer sau là chứng minh credential chưa bị lưu",
+        "Giữ nguyên vì mọi layer cũ tự bị xóa khỏi registry",
+        "Chỉ đổi tên file credential"
+      ],
+      "correct": 1,
+      "explanation": "Filesystem cuối không phản ánh mọi dữ liệu từng được đưa vào build artifact/cache."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Source sạch và artifact đúng",
+      "question": "Source tests pass nhưng image thiếu file runtime do .dockerignore/multi-stage COPY. Cổng nào còn thiếu?",
+      "options": [
+        "Đổi token registry",
+        "Bỏ .dockerignore hoàn toàn mà không review dữ liệu",
+        "Kiểm artifact/container phù hợp sau build và ràng buộc đúng image trước push/promotion theo policy",
+        "Chỉ lint source lần nữa vì artifact luôn giống workspace"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm source và kiểm packaging/runtime có phạm vi khác nhau."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Image private và runtime",
+      "question": "Runner push được image private rồi Cloud Run không lấy được. Cần phân biệt gì?",
+      "options": [
+        "Chỉ quyền push vì mọi runtime kế thừa token runner",
+        "Chỉ branch main vì private image không phụ thuộc auth",
+        "Chỉ image tag có SHA hay không",
+        "Quyền push của runner, hỗ trợ registry và quyền/cơ chế pull ở dịch vụ đích"
+      ],
+      "correct": 3,
+      "explanation": "Credential và đường truy cập phải được thiết kế cho từng tác nhân."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "PR không đáng tin",
+      "question": "Muốn kiểm Dockerfile PR từ fork nhưng không cho mã đó push/deploy có quyền. Bố trí nào phù hợp?",
+      "options": [
+        "Tách build/test không credential nhạy cảm và release trên nguồn đã được review với quyền/điều kiện phù hợp",
+        "Cấp token production vì Dockerfile chỉ là file text",
+        "Dùng cùng secret cho mọi PR rồi xóa log",
+        "Chỉ đặt push:false nhưng vẫn chạy mọi secret-bearing script PR"
+      ],
+      "correct": 0,
+      "explanation": "Cần xét toàn luồng thực thi mã không tin cậy, không chỉ một cờ action."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Tách jobs có provenance",
+      "question": "Đội tách build và deploy, truyền mỗi tag latest bằng output. Muốn giữ đúng bản đã kiểm, nên làm gì?",
+      "options": [
+        "Chỉ dùng chung action version",
+        "Truyền/ràng buộc digest và metadata source/run, kiểm quyền/đích deployment, không dựa vào tag có thể đổi",
+        "needs tự giữ mọi image daemon nên output không cần thiết",
+        "Đổi tên output thành immutable_latest"
+      ],
+      "correct": 1,
+      "explanation": "Provenance cần nối kết đúng sản phẩm, không chỉ quan hệ thứ tự job."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Scope cache đa image",
+      "question": "API và worker build song song dùng cùng gha cache scope mặc định. Cache hay bị mất tác dụng. Hướng kiểm tra có cơ sở là gì?",
+      "options": [
+        "Chỉ đổi tag image thành latest2",
+        "Cấp IAM admin cho cache",
+        "Xem scope/key/input và quy tắc ghi cache, phân tách theo image/cấu hình khi cần rồi đo hiệu quả",
+        "Coi mọi cache miss là lỗi source code"
+      ],
+      "correct": 2,
+      "explanation": "Cache là tối ưu có phạm vi riêng, cần chẩn đoán từ metadata và đo thực."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Cloud đích nhầm",
+      "question": "Auth Google hợp lệ nhưng deploy vào project/region khác với ý định. Điều gì cần bổ sung?",
+      "options": [
+        "Chỉ kiểm token có tồn tại",
+        "Chỉ đặt environment.url đúng tên miền",
+        "Chỉ dùng SHA-tag",
+        "Ràng buộc/xác minh project, region, service và deployment identity trong cấu hình/bằng chứng"
+      ],
+      "correct": 3,
+      "explanation": "Xác thực thành công không chứng minh đúng tài nguyên đích."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Tag ghi đè",
+      "question": "Registry cho phép overwrite tag SHA và một tác nhân thay nội dung tag sau scan. Cách bảo vệ liên kết scan–deploy là gì?",
+      "options": [
+        "Dùng digest đã được scan/xác minh và policy quyền/bất biến phù hợp",
+        "Chỉ scan tên tag một lần rồi tin mãi",
+        "Chỉ đổi tên tag dài hơn",
+        "Chỉ dùng latest vì nó mới hơn"
+      ],
+      "correct": 0,
+      "explanation": "Ràng buộc theo nội dung và quyền cập nhật giảm khoảng trống tham chiếu có thể đổi."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Rollback và retention",
+      "question": "Muốn rollback bản cũ nhưng registry đã dọn artifact theo policy. Điều gì cần thiết kế trước?",
+      "options": [
+        "Chỉ ghi commit vào tên job",
+        "Retention của image/digest được phát hành và metadata rollback, cùng khả năng truy cập/quyền khi phục hồi",
+        "Chỉ lưu tag latest hiện tại",
+        "Tin cache build giữ mọi release vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "Cache tối ưu build không phải kho phát hành/khôi phục được bảo đảm."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Output name và ID",
+      "question": "Đội tham chiếu steps.build.outputs.digest nhưng step build chỉ có name, chưa có id: build. Hướng sửa là gì?",
+      "options": [
+        "Đặt tag digest để output tự có",
+        "Dùng environment: build để tạo step ID",
+        "Đặt step ID đúng và dùng output contract của action, kiểm giá trị/nội dung trước deploy",
+        "Đổi name thành Build với chữ hoa"
+      ],
+      "correct": 2,
+      "explanation": "Tên hiển thị không tự trở thành identifier của steps context."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Scan đúng sản phẩm",
+      "question": "Scanner kiểm myapp:latest local từ cache, deploy dùng myorg/myapp:SHA mới push. Kết luận nào đúng?",
+      "options": [
+        "Cùng chữ myapp là đủ chứng minh cùng image",
+        "Mọi image cùng source name có cùng lỗ hổng",
+        "Chỉ cần scanner exit0 ở bất kỳ image nào",
+        "Chưa chứng minh scan bao phủ artifact deploy; cần cùng digest/nguồn và policy kết quả"
+      ],
+      "correct": 3,
+      "explanation": "Kết quả kiểm tra có ý nghĩa khi gắn với đúng đối tượng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Cache không thay quality gate",
+      "question": "Nhóm bỏ tests vì layer cache hit và Docker build pass. Nhận xét nào đúng?",
+      "options": [
+        "Cache/build success không thay tests thực và các cổng cần thiết; phải giữ bằng chứng theo mục tiêu phát hành",
+        "Cache hit nghĩa test suite đã pass trên mọi thay đổi hiện tại",
+        "Docker build luôn tự chạy mọi script test",
+        "Push thành công chứng minh logic app đúng"
+      ],
+      "correct": 0,
+      "explanation": "Không mở rộng phạm vi bằng chứng của một bước sang các hành vi chưa kiểm."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Supply-chain version",
+      "question": "Nhóm cập nhật mọi action tag và base image để giải cache lỗi rồi gọi build đã được kiểm như trước. Cần gì?",
+      "options": [
+        "Chỉ kiểm token chưa hết hạn",
+        "Review các đầu vào thay đổi và chạy kiểm phù hợp, giữ provenance version/digest; không kế thừa kết luận cũ tự động",
+        "Chỉ giữ job name cũ là đủ",
+        "Chỉ đổi tag source SHA"
+      ],
+      "correct": 1,
+      "explanation": "Đầu vào toolchain đổi có thể làm bằng chứng cũ không còn phản ánh bản hiện tại."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Đúng revision PR",
+      "question": "Workflow PR dùng github.sha merge-ref nhưng báo image được build từ head SHA thuần của contributor. Cách báo đúng là gì?",
+      "options": [
+        "Tag SHA tự chuyển merge commit thành head commit",
+        "Không cần provenance vì có latest",
+        "Ghi revision/ref thực được checkout/build và liên kết head/base khi cần, không đồng nhất các SHA khác nhau",
+        "Mọi SHA trong cùng PR đều là một commit"
+      ],
+      "correct": 2,
+      "explanation": "Truy vết source phải phản ánh ngữ cảnh sự kiện và đầu vào thực."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Bản mẫu chưa là hệ thống",
+      "question": "Để công bố quy trình build→push→Cloud Run đã hoạt động, nhóm cần bằng chứng gì ngoài YAML?",
+      "options": [
+        "Chỉ ba action uses có version",
+        "Chỉ một secret tham chiếu và hai tag",
+        "Chỉ mode=max và tên service",
+        "Đúng source/toolchain, artifact/digest và auth/target được ràng buộc, kết quả build/push/deploy/health phù hợp mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình là đầu vào; kết quả thực thi và phạm vi kiểm chứng cần được ghi riêng."
+    }
+  ]
+}

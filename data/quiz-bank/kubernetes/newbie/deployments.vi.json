@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "kubernetes",
+  "level": "newbie",
+  "lesson": "deployments",
+  "language": "vi",
+  "sourceHash": "cbeedfcd0145491f8119b3f3c28eec84bac0df0f623ddf2053954e426d5f4d11",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Deployment/Service manifest và Kubernetes official docs. Phân biệt desired replicas, selectors, endpoint readiness, Service port/targetPort, Secret dependency và LoadBalancer implementation; không khẳng định public Internet, uptime hay runtime đã hoạt động.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Deployment",
+      "question": "Deployment chủ yếu quản lý đối tượng cấp dưới nào?",
+      "options": [
+        "ReplicaSet và các Pod theo template",
+        "Mọi database transaction",
+        "File CSS của browser",
+        "Mọi Git repository"
+      ],
+      "correct": 0,
+      "explanation": "Deployment điều phối ReplicaSet để đạt desired state."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Replica",
+      "question": "Số replica mong muốn trong bài là bao nhiêu?",
+      "options": [
+        "10",
+        "3",
+        "1",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "spec.replicas ghi 3."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "API",
+      "question": "Deployment trong bài dùng apiVersion nào?",
+      "options": [
+        "autoscaling/v2",
+        "monitoring.coreos.com/v1",
+        "apps/v1",
+        "v1"
+      ],
+      "correct": 2,
+      "explanation": "Deployment thuộc API group apps."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Tên Deployment",
+      "question": "metadata.name của Deployment là gì?",
+      "options": [
+        "web-service",
+        "db-secret",
+        "production",
+        "web-app"
+      ],
+      "correct": 3,
+      "explanation": "Deployment có tên web-app."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Selector",
+      "question": "Deployment chọn Pod theo label nào?",
+      "options": [
+        "app: web",
+        "name: db-secret",
+        "env: testing",
+        "role: admin"
+      ],
+      "correct": 0,
+      "explanation": "selector.matchLabels dùng app=web."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Pod template",
+      "question": "Phần nào mô tả Pod mà Deployment tạo?",
+      "options": [
+        "stringData",
+        "spec.template",
+        "metadata.name của Service",
+        "spec.ports của Service"
+      ],
+      "correct": 1,
+      "explanation": "Pod template nằm trong spec của Deployment."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Template labels",
+      "question": "Pod template của bài có label nào?",
+      "options": [
+        "tier: database",
+        "release: canary",
+        "app: web",
+        "app: api"
+      ],
+      "correct": 2,
+      "explanation": "Label trùng điều kiện selector của Deployment."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Image",
+      "question": "Image ứng dụng trong Deployment là gì?",
+      "options": [
+        "nginx:alpine",
+        "redis:7",
+        "postgres:16",
+        "myapp:v1.0"
+      ],
+      "correct": 3,
+      "explanation": "Container web tham chiếu myapp:v1.0."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Port container",
+      "question": "containerPort của ứng dụng là bao nhiêu?",
+      "options": [
+        "3000",
+        "80",
+        "443",
+        "5432"
+      ],
+      "correct": 0,
+      "explanation": "Manifest khai báo cổng container 3000."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Môi trường",
+      "question": "NODE_ENV được gán giá trị nào?",
+      "options": [
+        "test",
+        "production",
+        "development",
+        "staging"
+      ],
+      "correct": 1,
+      "explanation": "Đây là environment variable được truyền trực tiếp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Biến kết nối",
+      "question": "Tên environment variable đọc từ Secret là gì?",
+      "options": [
+        "API_TOKEN",
+        "SECRET_NAME",
+        "DB_URL",
+        "DB_PASSWORD"
+      ],
+      "correct": 2,
+      "explanation": "Container nhận DB_URL thông qua valueFrom."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Tên Secret",
+      "question": "Secret được tham chiếu có tên gì?",
+      "options": [
+        "web-service",
+        "app-config",
+        "web-app",
+        "db-secret"
+      ],
+      "correct": 3,
+      "explanation": "secretKeyRef.name là db-secret."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Khóa Secret",
+      "question": "Key trong Secret được dùng cho DB_URL là gì?",
+      "options": [
+        "url",
+        "password",
+        "DB_URL",
+        "token"
+      ],
+      "correct": 0,
+      "explanation": "secretKeyRef.key ghi url."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Service",
+      "question": "Service chủ yếu cung cấp gì cho nhóm Pod?",
+      "options": [
+        "Một compiler",
+        "Abstraction truy cập mạng ổn định",
+        "Tự viết mã ứng dụng",
+        "Một schema SQL"
+      ],
+      "correct": 1,
+      "explanation": "Service tách địa chỉ truy cập khỏi từng Pod có vòng đời riêng."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Tên Service",
+      "question": "Tên Service của bài là gì?",
+      "options": [
+        "my-app",
+        "db-secret",
+        "web-service",
+        "web-app"
+      ],
+      "correct": 2,
+      "explanation": "metadata.name định danh Service là web-service."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Loại Service",
+      "question": "spec.type của Service là gì?",
+      "options": [
+        "ClusterIP",
+        "NodePort",
+        "ExternalName",
+        "LoadBalancer"
+      ],
+      "correct": 3,
+      "explanation": "Source chọn loại LoadBalancer."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Port Service",
+      "question": "Service nhận kết nối ở port nào trong cấu hình?",
+      "options": [
+        "80",
+        "3000",
+        "8080",
+        "5432"
+      ],
+      "correct": 0,
+      "explanation": "ports.port của Service là 80."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Đích Service",
+      "question": "targetPort được cấu hình là bao nhiêu?",
+      "options": [
+        "9090",
+        "3000",
+        "80",
+        "443"
+      ],
+      "correct": 1,
+      "explanation": "Service chuyển tới cổng 3000 của endpoint phù hợp."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Liên kết mềm",
+      "question": "Service chọn nhóm Pod qua cơ chế nào?",
+      "options": [
+        "Tên Deployment bắt buộc bằng tên Service",
+        "Thứ tự file YAML",
+        "Labels và selector",
+        "Tên image bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Selector app=web khớp labels của Pod."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Nhiều tài liệu",
+      "question": "Dấu --- trong snippet dùng để làm gì?",
+      "options": [
+        "Đặt CPU limit",
+        "Xóa object trước đó",
+        "Tạo namespace tự động",
+        "Ngăn cách các YAML document"
+      ],
+      "correct": 3,
+      "explanation": "Deployment và Service là hai tài liệu YAML riêng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Luồng cổng",
+      "question": "Theo manifest, đường cổng đúng là gì?",
+      "options": [
+        "Service 80 tới cổng endpoint 3000",
+        "Service 3000 tới container 80",
+        "Mọi cổng đều tự chuyển sang 443",
+        "Service 80 tự đổi process sang 80"
+      ],
+      "correct": 0,
+      "explanation": "port và targetPort có thể khác nhau."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Cùng selector",
+      "question": "Vì sao Service có thể chọn Pod do Deployment tạo?",
+      "options": [
+        "Secret tự nối network",
+        "Selector app=web khớp Pod-template label app=web",
+        "Hai object có cùng metadata.name",
+        "Cả hai cùng apiVersion apps/v1"
+      ],
+      "correct": 1,
+      "explanation": "Đối tượng có tên khác nhau vẫn được kết nối bằng labels."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Label sai",
+      "question": "Đổi template label thành app=api nhưng giữ Deployment selector app=web có vấn đề gì?",
+      "options": [
+        "Không ảnh hưởng vì image giống",
+        "Service tự sửa template",
+        "Selector không khớp template, cấu hình Deployment không hợp lệ",
+        "Tự đổi selector thành api"
+      ],
+      "correct": 2,
+      "explanation": "Deployment selector phải khớp labels trong template."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Service sai selector",
+      "question": "Pod app=web nhưng Service selector app=api thường gây gì?",
+      "options": [
+        "Deployment tự đổi tên Pod",
+        "Mọi Pod đều được chọn dù label",
+        "Secret tự nối các endpoint",
+        "Service không chọn các Pod web đó"
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm tập endpoints khi selector không khớp."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Nhãn không độc quyền",
+      "question": "Một Pod khác cùng namespace có app=web nhưng không thuộc Deployment này có thể được Service chọn không?",
+      "options": [
+        "Có, selector dựa trên labels chứ không owner Deployment",
+        "Không, Service chỉ biết tên Deployment",
+        "Không, mỗi label chỉ thuộc một Pod",
+        "Chỉ nếu image cũng myapp:v1.0"
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế labels cần đủ phân biệt các nhóm workload mong muốn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Namespace Service",
+      "question": "Service selector thông thường chọn Pod ở đâu?",
+      "options": [
+        "Chỉ namespace kube-system",
+        "Cùng namespace với Service",
+        "Mọi namespace không giới hạn",
+        "Chỉ control-plane Node"
+      ],
+      "correct": 1,
+      "explanation": "Pod selector của Service không tự là selector xuyên namespace."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Secret namespace",
+      "question": "db-secret phải có mặt trong scope nào để Pod tham chiếu trực tiếp theo cách này?",
+      "options": [
+        "Chỉ namespace argocd",
+        "Chỉ trong filesystem máy lập trình",
+        "Cùng namespace với Pod",
+        "Bất cứ cluster nào trên Internet"
+      ],
+      "correct": 2,
+      "explanation": "Secret reference của Pod có phạm vi namespace."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Thiếu Secret",
+      "question": "Nếu Secret hoặc key url bắt buộc chưa có, điều gì có thể xảy ra?",
+      "options": [
+        "DB_URL tự nhận URL quản trị mặc định",
+        "Ứng dụng chắc chắn bỏ qua lỗi",
+        "Service tự tạo mật khẩu mới",
+        "Container không khởi động được với cấu hình env đó"
+      ],
+      "correct": 3,
+      "explanation": "Source không đặt optional cho secretKeyRef."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Secret và kết nối",
+      "question": "Có DB_URL từ Secret đã bảo đảm kết nối database thành công chưa?",
+      "options": [
+        "Chưa, còn giá trị, mạng, server và quyền hợp lệ",
+        "Rồi, secretKeyRef là kiểm thử DB",
+        "Rồi, Base64 tự mở database",
+        "Rồi, Service web-service quản lý DB"
+      ],
+      "correct": 0,
+      "explanation": "Cấu hình đầu vào khác kiểm chứng dependency hoạt động."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Tham chiếu image",
+      "question": "myapp:v1.0 chưa có trên registry mà Node dùng thì có thể gặp gì?",
+      "options": [
+        "Tự tạo registry riêng",
+        "Lỗi kéo image",
+        "Tự build từ mã nguồn trong YAML",
+        "Tự thay bằng nginx"
+      ],
+      "correct": 1,
+      "explanation": "Cần image có thể truy cập và credentials nếu registry yêu cầu."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Desired và actual",
+      "question": "replicas: 3 có nghĩa gì?",
+      "options": [
+        "Ba Node bắt buộc đã được tạo",
+        "Ba public IP bắt buộc",
+        "Mục tiêu ba bản sao, trạng thái thực có thể tạm chưa đạt",
+        "Luôn có ba Pod khỏe mạnh ngay lập tức"
+      ],
+      "correct": 2,
+      "explanation": "Reconciliation cần thời gian và tài nguyên để đạt mục tiêu."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Pod bị xóa",
+      "question": "Nếu một Pod được quản lý bị xóa và desired state vẫn là 3, controller thường làm gì?",
+      "options": [
+        "Giữ vĩnh viễn hai replica",
+        "Xóa cả Deployment",
+        "Tự xóa database",
+        "Tạo Pod thay thế để tiến về số replica mong muốn"
+      ],
+      "correct": 3,
+      "explanation": "Controller quản lý desired replicas, không giữ nguyên định danh Pod đã mất."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "IP thay thế",
+      "question": "Khi Pod được thay thế, client nên tránh giả định gì?",
+      "options": [
+        "Pod mới giữ nguyên IP cũ",
+        "Service vẫn chọn theo labels",
+        "Pod có vòng đời riêng",
+        "ReplicaSet có thể tạo Pod mới"
+      ],
+      "correct": 0,
+      "explanation": "Client thường dùng Service thay vì pin một Pod IP."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "ClusterIP",
+      "question": "Loại Service thường dùng cho truy cập nội bộ là gì?",
+      "options": [
+        "ReplicaSet",
+        "ClusterIP",
+        "ExternalName để tự chạy app",
+        "DaemonSet"
+      ],
+      "correct": 1,
+      "explanation": "ClusterIP cung cấp IP Service nội bộ theo cơ chế mạng của cụm."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "LoadBalancer phụ thuộc",
+      "question": "LoadBalancer Service có cần hạ tầng/controller phù hợp để cấp load balancer không?",
+      "options": [
+        "Không, containerPort luôn cấp IP công khai",
+        "Chỉ cần một comment",
+        "Có",
+        "Không, API object tự là thiết bị mạng"
+      ],
+      "correct": 2,
+      "explanation": "Triển khai có thể do cloud provider hoặc giải pháp load-balancer khác cung cấp."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Public hay private",
+      "question": "type:LoadBalancer có luôn đồng nghĩa Internet công khai không?",
+      "options": [
+        "Có, Kubernetes cấm load balancer nội bộ",
+        "Có, app label quyết định DNS công khai",
+        "Có, mọi cluster có public IP",
+        "Không, phạm vi public/private phụ thuộc hạ tầng và cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Loại Service không thay toàn chính sách exposure của môi trường."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "External IP Pending",
+      "question": "LoadBalancer Service chưa có external IP có đủ kết luận ứng dụng container sai không?",
+      "options": [
+        "Không, cần kiểm provisioning/hạ tầng cùng trạng thái Service",
+        "Có, mọi nginx không có external IP đều hỏng",
+        "Có, Secret luôn là nguyên nhân duy nhất",
+        "Có, phải đổi port 3000 thành 80"
+      ],
+      "correct": 0,
+      "explanation": "Service provisioning và sức khỏe ứng dụng là các phần khác nhau."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Process port",
+      "question": "Service targetPort 3000 có tự buộc app lắng nghe 3000 không?",
+      "options": [
+        "Có, NODE_ENV luôn đặt port",
+        "Không",
+        "Có, Service viết lại code server",
+        "Có, label web tạo socket"
+      ],
+      "correct": 1,
+      "explanation": "Process cần tự cấu hình cổng và địa chỉ bind đúng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Readiness",
+      "question": "Manifest Deployment có readinessProbe rõ ràng chưa?",
+      "options": [
+        "Rồi, NODE_ENV production là probe",
+        "Rồi, secretKeyRef luôn kiểm HTTP",
+        "Chưa",
+        "Rồi, replicas 3 là probe"
+      ],
+      "correct": 2,
+      "explanation": "Không nên suy Pod đã sẵn nhận traffic chỉ từ source này."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Resource budget",
+      "question": "Deployment này đã khai báo container requests/limits chưa?",
+      "options": [
+        "Rồi, Service port 80 là limit CPU",
+        "Rồi, replicas 3 là memory request",
+        "Rồi, production tự cấp resources",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Cần bổ sung sizing phù hợp nếu triển khai thực."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Topology",
+      "question": "Ba replica trong source có buộc nằm trên ba Node khác nhau không?",
+      "options": [
+        "Không, chưa có ràng buộc phân tán topology",
+        "Có, mỗi replica tự là một Node",
+        "Có, label web nghĩa mỗi zone một Pod",
+        "Có, Service luôn dàn trên ba cloud"
+      ],
+      "correct": 0,
+      "explanation": "Scheduler quyết định placement theo tài nguyên và các ràng buộc đã cấu hình."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Template update",
+      "question": "Đổi image trong Pod template thường kích hoạt gì ở Deployment?",
+      "options": [
+        "Chỉ sửa image local trên máy lập trình",
+        "Một rollout dùng ReplicaSet theo chiến lược cập nhật",
+        "Tự đổi mọi database schema",
+        "Chỉ đổi Service port"
+      ],
+      "correct": 1,
+      "explanation": "Thay đổi Pod template là thay đổi workload được Deployment quản lý."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Scale update",
+      "question": "Chỉ đổi replicas từ 3 lên 5 có nhất thiết tạo một revision Pod-template mới không?",
+      "options": [
+        "Có, Service luôn tạo revision",
+        "Chỉ khi Secret có url",
+        "Không, scale không phải thay đổi Pod template",
+        "Có, mọi số replica là image mới"
+      ],
+      "correct": 2,
+      "explanation": "Scaling và rollout revision có khái niệm khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Immutable selector",
+      "question": "Selector của Deployment apps/v1 đã tạo có thể tùy ý sửa tại chỗ không?",
+      "options": [
+        "Có, mọi apply đều đổi được",
+        "Có, Helm luôn bỏ qua ràng buộc API",
+        "Có, chỉ cần đổi template_name",
+        "Không, selector là immutable"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế selector ổn định ngay từ đầu."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Metadata vs template",
+      "question": "Đặt label trên metadata của Deployment có tự đặt label đó lên Pod không?",
+      "options": [
+        "Không, Pod labels nằm trong spec.template.metadata.labels",
+        "Có, mọi metadata tự kế thừa sâu",
+        "Chỉ khi label app",
+        "Chỉ khi replicas bằng 3"
+      ],
+      "correct": 0,
+      "explanation": "Đó là metadata của hai loại object khác nhau."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Endpoint readiness",
+      "question": "Service thường gửi traffic tới những endpoint thế nào theo cơ chế mặc định?",
+      "options": [
+        "Chỉ Pod mới nhất dù chưa khởi động",
+        "Endpoint sẵn sàng, với các ngoại lệ cấu hình như publishNotReadyAddresses",
+        "Mọi Pod trên Internet",
+        "Chỉ Pod có tên giống Service"
+      ],
+      "correct": 1,
+      "explanation": "Readiness ảnh hưởng tập backend sẵn sàng nhận traffic; cần xét cấu hình cụ thể."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Protocol",
+      "question": "Không ghi protocol trong Service port thì mặc định thông thường là gì?",
+      "options": [
+        "SCTP trong mọi môi trường",
+        "HTTP/3",
+        "TCP",
+        "UDP"
+      ],
+      "correct": 2,
+      "explanation": "Service ports mặc định dùng TCP; điều này không tự tạo TLS hay HTTP routing."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "TLS",
+      "question": "Service port 80 có tự mã hóa HTTPS chưa?",
+      "options": [
+        "Rồi, LoadBalancer luôn cấp certificate",
+        "Rồi, production tự sinh TLS",
+        "Rồi, DB_URL mã hóa mọi đường mạng",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "TLS cần được thực hiện và cấu hình ở thành phần thích hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "DNS Service",
+      "question": "Tên Service giúp workload có thể dùng abstraction nào khi DNS cụm hoạt động?",
+      "options": [
+        "Tên DNS Service trong scope namespace phù hợp",
+        "Tên file Dockerfile",
+        "Một URL Git cố định",
+        "Tên secretKeyRef"
+      ],
+      "correct": 0,
+      "explanation": "Service discovery cần DNS/network của cluster được cấu hình đúng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Authentication",
+      "question": "LoadBalancer Service có tự xác thực user được đọc dữ liệu ứng dụng không?",
+      "options": [
+        "Có, mọi traffic cân bằng là trusted",
+        "Không",
+        "Có, TCP port 80 là quyền user",
+        "Có, selector tự kiểm session"
+      ],
+      "correct": 1,
+      "explanation": "Kết nối mạng và quyền nghiệp vụ là các lớp khác nhau."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Khả năng liên kết",
+      "question": "Đổi tên Deployment nhưng giữ Pod labels có nhất thiết buộc đổi Service selector không?",
+      "options": [
+        "Có, cả hai bắt buộc cùng tên",
+        "Chỉ khi có secret",
+        "Không, Service liên kết theo labels",
+        "Có, Service luôn tìm metadata.name của Deployment"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt tên object với label contract."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Secret trong Git",
+      "question": "Secret reference có đặt giá trị bí mật trực tiếp trong Deployment này không?",
+      "options": [
+        "Có, tên db-secret chính là password",
+        "Có, url luôn là credential đầy đủ",
+        "Có, NODE_ENV là mật khẩu DB",
+        "Không, nó chỉ nêu tên object và key"
+      ],
+      "correct": 3,
+      "explanation": "Giá trị Secret nằm ở resource được tham chiếu và vẫn cần chính sách bảo vệ."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "YAML documents",
+      "question": "Gộp Deployment và Service bằng --- có tự tạo phụ thuộc chờ app Ready trước không?",
+      "options": [
+        "Không, document order không là readiness dependency đầy đủ",
+        "Có, Service luôn chờ mọi probe pass",
+        "Có, YAML parser thử HTTP",
+        "Có, image tự đợi Service"
+      ],
+      "correct": 0,
+      "explanation": "Các controller reconcile độc lập; ứng dụng cần thiết kế dependency phù hợp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "ReplicaSet",
+      "question": "Vì sao thường sửa Deployment thay vì chỉnh tay ReplicaSet do nó quản lý?",
+      "options": [
+        "Service cấm mọi ReplicaSet",
+        "Deployment là desired-state owner cấp trên và có thể reconcile thay đổi thủ công",
+        "ReplicaSet không chứa Pod",
+        "Deployment chỉ là file text không có controller"
+      ],
+      "correct": 1,
+      "explanation": "Cần thay đổi tại đúng cấp quản lý để không bị controller ghi đè ý định."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Ứng dụng stateful",
+      "question": "Có ba replica có tự đồng bộ mọi state in-memory giữa chúng không?",
+      "options": [
+        "Có, replicas tự là database cluster",
+        "Có, TCP nhân mọi write",
+        "Không",
+        "Có, Service sao chép RAM"
+      ],
+      "correct": 2,
+      "explanation": "State cần được externalize hoặc đồng bộ theo kiến trúc ứng dụng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Phiên người dùng",
+      "question": "Session chỉ lưu trong memory một replica có thể gây vấn đề gì khi request đổi replica?",
+      "options": [
+        "Service tự copy session chính xác",
+        "Kubernetes tự biến session thành Secret",
+        "Không thể thay đổi backend",
+        "Trạng thái phiên không có ở replica khác"
+      ],
+      "correct": 3,
+      "explanation": "Cân bằng traffic không tự đồng bộ state ứng dụng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Scale down",
+      "question": "Khi giảm replicas, ứng dụng cần cân nhắc điều gì?",
+      "options": [
+        "Kết thúc request và shutdown đúng hợp đồng",
+        "Chỉ đổi màu log",
+        "Tự xóa mọi database row",
+        "Tắt mọi permission"
+      ],
+      "correct": 0,
+      "explanation": "Vòng đời Pod ảnh hưởng request và công việc đang chạy."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Service không controller",
+      "question": "Service có thay vai trò Deployment tạo Pod ứng dụng không?",
+      "options": [
+        "Chỉ khi port 80",
+        "Không",
+        "Có, selector tự sinh image",
+        "Có, LoadBalancer tạo mọi container"
+      ],
+      "correct": 1,
+      "explanation": "Service mô tả truy cập mạng; workload controller quản lý số lượng Pod."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Kết quả kỳ vọng",
+      "question": "Manifest hợp lệ có đủ chứng minh ba replica đều Ready chưa?",
+      "options": [
+        "Rồi, replicas 3 là kết quả runtime",
+        "Rồi, Service tự sửa code lỗi",
+        "Chưa",
+        "Rồi, YAML validation đo mọi health check"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt cấu hình khai báo và trạng thái thực tế."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Bài tập",
+      "question": "Bài tập ba replica và Service còn cần môi trường nào?",
+      "options": [
+        "Chỉ một file JSON",
+        "Chỉ trình duyệt không cluster",
+        "Chỉ tên ứng dụng",
+        "Cluster có runtime/network và image/Secret phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Khai báo phải được nối với các dependency thật khi triển khai."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Sai selector Service",
+      "question": "Ba Pod khỏe mạnh app=web nhưng Service chọn app=api. Hướng sửa nguyên nhân?",
+      "options": [
+        "Thống nhất label contract và kiểm tập backend của Service",
+        "Tăng replicas lên 100",
+        "Đổi DB_URL mà không xét mạng",
+        "Chỉ xóa log"
+      ],
+      "correct": 0,
+      "explanation": "Sức khỏe Pod không giúp Service chọn được chúng nếu selector sai."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Thiếu key Secret",
+      "question": "db-secret tồn tại nhưng chỉ có key password, Pod đòi url. Cần làm gì?",
+      "options": [
+        "Chỉ gắn label mới cho Secret",
+        "Thống nhất key/value và hợp đồng config của app, không coi tên Secret là đủ",
+        "Chỉ đổi Service port",
+        "Chỉ tăng số replica"
+      ],
+      "correct": 1,
+      "explanation": "Secret reference cần khớp cả object name và key trong namespace."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Phân tán failure domain",
+      "question": "Ba replica cùng một Node, Node hỏng gây gián đoạn. Cần bổ sung gì nếu yêu cầu chịu lỗi Node?",
+      "options": [
+        "Chỉ đổi metadata.name",
+        "Chỉ dùng public LoadBalancer",
+        "Placement/topology phù hợp, capacity dự phòng và recovery/readiness",
+        "Chỉ replicas 3 là đủ mọi điều kiện"
+      ],
+      "correct": 2,
+      "explanation": "Replica count không tự đảm bảo phân tán failure domain."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Public endpoint",
+      "question": "Service LoadBalancer hoạt động nhưng chỉ có IP private. Kết luận nào đúng?",
+      "options": [
+        "Kubernetes chắc chắn không hỗ trợ private LB",
+        "App phải chuyển port thành 443 để IP tự công khai",
+        "Secret phải có key public",
+        "Cần xem mục tiêu exposure và cấu hình provider, không suy type luôn public"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi truy cập là hợp đồng hạ tầng cụ thể."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Cổng app sai",
+      "question": "Service chọn đúng Pod nhưng app bind localhost:3000 trong Pod. Điều gì cần xem?",
+      "options": [
+        "Địa chỉ bind của process và đường kết nối từ Service tới Pod IP",
+        "Chỉ tên Deployment",
+        "Chỉ label của Secret",
+        "Chỉ replicas"
+      ],
+      "correct": 0,
+      "explanation": "Cùng số cổng chưa đủ; process cần lắng nghe địa chỉ mà traffic tới được."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Không có LB implementation",
+      "question": "Cluster local không cấp external LB và Service Pending. Hướng giải thích phù hợp?",
+      "options": [
+        "Ba replica tự là ba public router",
+        "Thiếu hoặc chưa sẵn implementation provisioning cho loại Service đó",
+        "Phải đổi mọi image thành nginx",
+        "Kubernetes API object luôn là public LB vật lý"
+      ],
+      "correct": 1,
+      "explanation": "Việc cấp load balancer nằm ngoài một bản YAML Service đơn lẻ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Update và client",
+      "question": "Rollout thay Pod liên tục, vì sao không nên client pin các Pod IP cũ?",
+      "options": [
+        "IP là giá trị Secret không được thay",
+        "Deployment không bao giờ thay Pod",
+        "Pod endpoints thay đổi; Service abstraction giữ điểm truy cập phù hợp hơn",
+        "Mọi Pod IP vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Discovery nên theo lifecycle workload thay vì giả định định danh cũ tồn tại mãi."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Rollout không uptime proof",
+      "question": "Deployment có nhiều replica và rolling strategy có tự loại mọi downtime không?",
+      "options": [
+        "Có, desired state là SLA tuyệt đối",
+        "Có, Service port 80 không thể gián đoạn",
+        "Có, Secret gán env bảo đảm DB",
+        "Không, còn readiness, capacity, app compatibility và dependency"
+      ],
+      "correct": 3,
+      "explanation": "Availability phụ thuộc toàn đường phục vụ chứ không chỉ số replica."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Lẫn workload",
+      "question": "Hai Deployment cùng app=web và Service chọn cả hai trái ý định. Nên thiết kế gì?",
+      "options": [
+        "Labels/selectors đủ phân biệt ứng dụng hoặc release theo mục tiêu routing",
+        "Chỉ đổi image tag",
+        "Chỉ tăng LoadBalancer timeout",
+        "Chỉ viết comment phân biệt"
+      ],
+      "correct": 0,
+      "explanation": "Selector là label contract; tên Deployment không tự giới hạn Service."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Immutable contract",
+      "question": "Đã tạo apps/v1 Deployment với selector cũ nhưng muốn thay selector. Vì sao apply thông thường không đủ?",
+      "options": [
+        "Vì Secret khóa YAML",
+        "API giữ selector immutable; cần kế hoạch thay resource/rollout có kiểm soát",
+        "Vì label chỉ sửa qua CSS",
+        "Vì mọi Deployment không có selector"
+      ],
+      "correct": 1,
+      "explanation": "Thay ownership selector cần xem lifecycle và availability, không ép sửa tùy tiện."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "State và replicas",
+      "question": "Tăng từ 1 lên 3 replica nhưng app lưu upload trên local container. Cần sửa kiến trúc gì?",
+      "options": [
+        "Chỉ đặt NODE_ENV production",
+        "Chỉ tăng targetPort",
+        "Storage/state phù hợp nhiều replica và lifecycle Pod",
+        "Chỉ đổi Service name"
+      ],
+      "correct": 2,
+      "explanation": "Nhiều replica không tự chia sẻ hoặc giữ bền dữ liệu cục bộ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Không auto rebuild",
+      "question": "Đổi source ứng dụng nhưng image tag trong YAML vẫn tham chiếu nội dung cũ; Kubernetes có tự build source không?",
+      "options": [
+        "Có, Deployment tải toàn bộ Git source",
+        "Có, Service tự biên dịch",
+        "Có, replicas quyết định image mới",
+        "Không, cần pipeline tạo artifact và cập nhật reference đúng"
+      ],
+      "correct": 3,
+      "explanation": "Container orchestration sử dụng image artifact chứ không tự định nghĩa build pipeline."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Bảo vệ DB",
+      "question": "Secret cấp DB_URL nhưng app user có quá nhiều quyền DB. Service có sửa được điều đó không?",
+      "options": [
+        "Không, cần credential/quyền database theo nhu cầu",
+        "Có, selector app tự hạ quyền",
+        "Có, LoadBalancer mã hóa và phân quyền mọi SQL",
+        "Có, targetPort 3000 là RBAC"
+      ],
+      "correct": 0,
+      "explanation": "Quyền database thuộc hợp đồng credential và server DB, không phải Service selector."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Thay env Secret",
+      "question": "Secret DB_URL được cập nhật; process cũ dùng env đã nhận lúc start. Nên tính lifecycle nào?",
+      "options": [
+        "Kubelet tự sửa mọi biến ngay",
+        "Cần refresh/recreate workload theo thiết kế để nhận env mới",
+        "Mọi process env tự đổi ngay",
+        "Service tự ghi vào memory process"
+      ],
+      "correct": 1,
+      "explanation": "Environment injection không là kênh live reload tự động cho process đang chạy."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Readiness thực",
+      "question": "App chấp nhận TCP nhưng chưa kết nối dependency cần cho request. Cần thiết kế gì?",
+      "options": [
+        "Chỉ thêm label healthy",
+        "Chỉ tăng replicas",
+        "Readiness phù hợp khả năng phục vụ và dependency contract",
+        "Chỉ nhìn Pod Running"
+      ],
+      "correct": 2,
+      "explanation": "Probe và startup/shutdown behavior cần khớp định nghĩa ready của ứng dụng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Quyền truy cập",
+      "question": "Service có public IP và app trả dữ liệu nhạy cảm không auth. Cần sửa lớp nào?",
+      "options": [
+        "Chỉ đổi name web-service",
+        "Chỉ tăng replica count",
+        "Chỉ đặt containerPort 0",
+        "Exposure theo mục tiêu và authentication/authorization ứng dụng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Network endpoint không thay quyền dữ liệu của user."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Resource conflict",
+      "question": "Pod mới không schedule do thiếu capacity nhưng Service vẫn có backend cũ. Desired replicas nói gì?",
+      "options": [
+        "Mục tiêu chưa đạt; cần xem constraints/capacity thay vì coi spec là actual",
+        "Mọi Pod đã Ready vì Service tồn tại",
+        "API tự cấp Node miễn phí",
+        "Service tự giảm request của mọi Pod"
+      ],
+      "correct": 0,
+      "explanation": "Trạng thái controller và điều kiện scheduling cần được quan sát riêng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Xóa đối tượng",
+      "question": "Xóa Service trong khi Deployment còn chạy có thể ảnh hưởng gì?",
+      "options": [
+        "Tự tạo Secret mới",
+        "Mất abstraction truy cập Service dù Pod có thể vẫn chạy",
+        "Chắc chắn xóa mọi Pod và DB",
+        "Tự rollback image về v0"
+      ],
+      "correct": 1,
+      "explanation": "Các object có trách nhiệm và quan hệ lifecycle khác nhau."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Cập nhật schema",
+      "question": "Rollout image mới cần schema DB mới không tương thích replica cũ. Cần xem gì?",
+      "options": [
+        "Chỉ đổi label production",
+        "Chỉ tăng replicas giữa lúc lỗi",
+        "Rollout schema/app tương thích trạng thái chuyển tiếp",
+        "Chỉ thêm Service port"
+      ],
+      "correct": 2,
+      "explanation": "Ứng dụng nhiều phiên bản cùng tồn tại cần hợp đồng dữ liệu tương thích."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Từ YAML tới dịch vụ",
+      "question": "Để bài ba replica thật sự phục vụ đúng, nhóm phụ thuộc nào cần hoàn thiện?",
+      "options": [
+        "Chỉ Deployment name",
+        "Chỉ một Service port",
+        "Chỉ comment desired state",
+        "Image, Secret, app listening/readiness, resource capacity và mạng/LB theo môi trường"
+      ],
+      "correct": 3,
+      "explanation": "Manifest mô tả một phần kiến trúc; không chứng minh mọi dependency đã sẵn."
+    }
+  ]
+}

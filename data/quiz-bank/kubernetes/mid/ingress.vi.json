@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "kubernetes",
+  "level": "mid",
+  "lesson": "ingress",
+  "language": "vi",
+  "sourceHash": "b3d9bdb005d386848ac8e99d69b6b7eaa7a0b80864248b109dc7c559faad9a79",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Ingress networking.k8s.io/v1 và api-policy trong bài, đối chiếu tài liệu Kubernetes về path, controller, TLS, NetworkPolicy. Sửa cách hiểu nhầm policy bảo vệ DB: source thực tế chọn app=api và cho frontend cùng namespace. Không chạy mạng/cluster; annotation và lifecycle controller được nêu có phạm vi.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Vai trò Ingress",
+      "question": "Ingress trong bài mô tả loại định tuyến nào?",
+      "options": [
+        "HTTP/HTTPS vào các Service theo host và path",
+        "Lập lịch Pod theo CPU",
+        "Lưu password được mã hóa",
+        "Biên dịch image container"
+      ],
+      "correct": 0,
+      "explanation": "Ingress là cấu hình định tuyến ứng dụng, cần controller thực hiện."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Phiên bản Ingress",
+      "question": "Ingress manifest trong bài dùng apiVersion nào?",
+      "options": [
+        "monitoring.coreos.com/v1",
+        "networking.k8s.io/v1",
+        "apps/v1",
+        "autoscaling/v2"
+      ],
+      "correct": 1,
+      "explanation": "Ingress và NetworkPolicy trong bài cùng thuộc API networking.k8s.io/v1."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Tên Ingress",
+      "question": "metadata.name của Ingress mẫu là gì?",
+      "options": [
+        "tls-secret",
+        "frontend",
+        "app-ingress",
+        "api-policy"
+      ],
+      "correct": 2,
+      "explanation": "Tên riêng phân biệt Ingress với policy và Service mà nó tham chiếu."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Host",
+      "question": "Host được cấu hình trong rules của Ingress là gì?",
+      "options": [
+        "kubernetes.default.svc",
+        "letsencrypt",
+        "backend",
+        "myapp.com"
+      ],
+      "correct": 3,
+      "explanation": "Host rule trong ví dụ là myapp.com; nó không tự tạo bản ghi DNS."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Tuyến gốc",
+      "question": "Path / trong bài trỏ đến Service nào?",
+      "options": [
+        "frontend",
+        "backend",
+        "api-policy",
+        "tls-secret"
+      ],
+      "correct": 0,
+      "explanation": "Rule gốc hướng đến Service frontend trên port 80."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Tuyến API",
+      "question": "Path /api trong bài trỏ đến Service nào?",
+      "options": [
+        "app-ingress",
+        "backend",
+        "frontend",
+        "letsencrypt"
+      ],
+      "correct": 1,
+      "explanation": "Đường API hướng đến Service backend trên port 3000."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "PathType",
+      "question": "Hai path trong bài dùng loại match nào?",
+      "options": [
+        "Regex trong API chuẩn",
+        "PodSelector",
+        "Prefix",
+        "Exact"
+      ],
+      "correct": 2,
+      "explanation": "Prefix của API chuẩn so khớp theo các thành phần đường dẫn."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Secret TLS",
+      "question": "Tên Secret được spec.tls tham chiếu là gì?",
+      "options": [
+        "db-secret",
+        "app-config",
+        "api-policy",
+        "tls-secret"
+      ],
+      "correct": 3,
+      "explanation": "secretName tham chiếu dữ liệu TLS phù hợp, không tự chứng minh Secret đã tồn tại."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Thực thi Ingress",
+      "question": "Chỉ tạo Ingress object có đủ để định tuyến traffic thực không?",
+      "options": [
+        "Không; cần controller và hạ tầng liên quan",
+        "Có; API server tự chuyển tiếp mọi request ứng dụng",
+        "Có; mọi node mặc định có cùng controller",
+        "Không; Ingress chỉ dùng để tăng replicas"
+      ],
+      "correct": 0,
+      "explanation": "Khai báo API object và thành phần xử lý data plane là các lớp khác nhau."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Annotation controller",
+      "question": "Annotation nginx.ingress.kubernetes.io/ssl-redirect thuộc phạm vi nào?",
+      "options": [
+        "Cú pháp cài chứng chỉ trong Secret chuẩn",
+        "Hành vi của controller hỗ trợ annotation đó",
+        "Quy tắc bắt buộc cho mọi Ingress controller",
+        "Trường chọn Pod của NetworkPolicy"
+      ],
+      "correct": 1,
+      "explanation": "Annotation theo controller không phải cam kết hành vi chung của API Ingress."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Issuer annotation",
+      "question": "cert-manager.io/cluster-issuer trong bài có giá trị gì?",
+      "options": [
+        "frontend",
+        "api",
+        "letsencrypt",
+        "tls-secret"
+      ],
+      "correct": 2,
+      "explanation": "Nó tham chiếu tên ClusterIssuer kỳ vọng; không tự tạo hoặc cấu hình issuer."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "NetworkPolicy",
+      "question": "NetworkPolicy dùng để mô tả điều gì trong bài?",
+      "options": [
+        "Tên miền được mua tự động",
+        "Cách build Docker image",
+        "Phiên bản ứng dụng cần rollback",
+        "Quy tắc cho phép lưu lượng đến nhóm Pod được chọn"
+      ],
+      "correct": 3,
+      "explanation": "NetworkPolicy kiểm soát kết nối theo phạm vi hỗ trợ của network implementation."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Tên policy",
+      "question": "Tên của NetworkPolicy trong bài là gì?",
+      "options": [
+        "api-policy",
+        "app-ingress",
+        "frontend",
+        "myapp.com"
+      ],
+      "correct": 0,
+      "explanation": "metadata.name của policy không phải tên Service hoặc label selector."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Pod đích",
+      "question": "spec.podSelector của api-policy chọn Pod có nhãn nào?",
+      "options": [
+        "app: backend",
+        "app: api",
+        "app: frontend",
+        "role: database"
+      ],
+      "correct": 1,
+      "explanation": "Đích policy thực tế là Pod app=api; không có selector DB trong source."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Nguồn được cho phép",
+      "question": "Rule from trong bài chọn nhãn nguồn nào?",
+      "options": [
+        "role: database",
+        "env: production",
+        "app: frontend",
+        "app: api"
+      ],
+      "correct": 2,
+      "explanation": "podSelector trong from cho phép các Pod nguồn frontend trong namespace tương ứng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Namespace nguồn",
+      "question": "Một from.podSelector không kèm namespaceSelector chọn nguồn ở đâu?",
+      "options": [
+        "Tất cả namespace vô điều kiện",
+        "Chỉ namespace kube-system",
+        "Chỉ node chạy Ingress",
+        "Cùng namespace với NetworkPolicy"
+      ],
+      "correct": 3,
+      "explanation": "Selector Pod đơn lẻ trong peer có phạm vi namespace của policy."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Cần implementation",
+      "question": "Để NetworkPolicy có hiệu lực cần điều gì?",
+      "options": [
+        "Mạng cụm hỗ trợ thực thi NetworkPolicy",
+        "Chỉ có file YAML trên laptop",
+        "Chỉ có DNS trỏ đúng",
+        "Chỉ cài trình soạn thảo YAML"
+      ],
+      "correct": 0,
+      "explanation": "API object cần một network implementation hỗ trợ áp dụng các quy tắc."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Không phải app auth",
+      "question": "NetworkPolicy có thay thế đăng nhập và phân quyền nghiệp vụ không?",
+      "options": [
+        "Không; vì NetworkPolicy chỉ chứa tên miền",
+        "Không; quyền ứng dụng cần cơ chế riêng",
+        "Có; nhãn frontend chính là mật khẩu",
+        "Có; policy tự hiểu quyền từng tài khoản"
+      ],
+      "correct": 1,
+      "explanation": "Cho phép kết nối mạng không đồng nghĩa cho phép mọi thao tác ứng dụng."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Chiều policy",
+      "question": "Snippet api-policy khai báo danh sách theo chiều nào?",
+      "options": [
+        "Cả hai bằng hai danh sách rõ ràng",
+        "Chỉ HTTP redirect",
+        "Ingress vào Pod đích",
+        "Egress ra khỏi Pod đích"
+      ],
+      "correct": 2,
+      "explanation": "Source có ingress, không có egress rules hoặc egress isolation được khai báo."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Phân biệt TLS và policy",
+      "question": "TLS và NetworkPolicy chủ yếu giải quyết hai vấn đề nào?",
+      "options": [
+        "Tăng replicas và đổi image",
+        "Tạo DNS và build Helm chart",
+        "Đổi namespace và tạo ServiceAccount",
+        "Bảo vệ kênh truyền và kiểm soát kết nối mạng"
+      ],
+      "correct": 3,
+      "explanation": "Chúng bổ trợ nhau nhưng không thay thế mục đích của nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Match API con",
+      "question": "Với host myapp.com và các Prefix /, /api trong bài, /api/users chọn backend nào theo API chuẩn?",
+      "options": [
+        "Service backend",
+        "Service frontend",
+        "Secret tls-secret",
+        "NetworkPolicy api-policy"
+      ],
+      "correct": 0,
+      "explanation": "Cả hai path có thể match nhưng path /api dài hơn được ưu tiên."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Match không phải chuỗi",
+      "question": "Theo Prefix chuẩn, request /apix với host đúng chọn rule nào trong bài?",
+      "options": [
+        "Tự chuyển sang namespace api",
+        "/ trỏ frontend",
+        "/api trỏ backend",
+        "Không path nào match vì / không phải prefix"
+      ],
+      "correct": 1,
+      "explanation": "Prefix so theo thành phần; api không bằng apix, còn / vẫn match."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Match gốc API",
+      "question": "Request /api với host myapp.com khớp rule nào dài nhất?",
+      "options": [
+        "tls.hosts",
+        "podSelector",
+        "/api",
+        "/"
+      ],
+      "correct": 2,
+      "explanation": "Prefix /api khớp chính đường /api và các đường con theo thành phần."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Slash cuối",
+      "question": "Với pathType Prefix, /api/ có khớp path /api trong bài không?",
+      "options": [
+        "Không; chỉ Exact mới cho phép slash cuối",
+        "Không; bắt buộc có regex",
+        "Có; vì mọi path trỏ cùng một Service",
+        "Có; dấu slash cuối không làm mất match prefix đó"
+      ],
+      "correct": 3,
+      "explanation": "Semantics Prefix xử lý từng thành phần và chấp nhận trailing slash theo quy tắc API."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Độ nhạy hoa thường",
+      "question": "Theo path matching chuẩn, /API/users có được xem là khớp /api chỉ vì khác chữ hoa không?",
+      "options": [
+        "Không; path matching phân biệt hoa thường",
+        "Có; mọi controller bắt buộc lowercase URL",
+        "Có; DNS tự lowercase path",
+        "Không; vì / chỉ match đúng trang chủ"
+      ],
+      "correct": 0,
+      "explanation": "Không nên mang quy tắc DNS sang phần path; route / vẫn có thể match đường này."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Host khác",
+      "question": "Request có Host other.com. Rule host myapp.com có tự khớp không?",
+      "options": [
+        "Không; vì Prefix không hỗ trợ host",
+        "Không; cần xem default backend hoặc rule khác của controller",
+        "Có; mọi request tới cùng IP đều khớp host đầu tiên",
+        "Có; vì tls-secret có thể đặt tên tùy ý"
+      ],
+      "correct": 1,
+      "explanation": "Không match rule cụ thể không quyết định một mã phản hồi chung cho mọi controller."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "DNS riêng",
+      "question": "Đã tạo Ingress nhưng myapp.com vẫn trỏ IP cũ. Thiếu lớp cấu hình nào có thể liên quan?",
+      "options": [
+        "ResourceQuota của etcd",
+        "Tên Pod trong Secret",
+        "DNS trỏ đến điểm vào đúng",
+        "CPU request của HPA"
+      ],
+      "correct": 2,
+      "explanation": "Ingress host rule không tự bảo đảm DNS công khai đã cập nhật."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Backend port",
+      "question": "Ingress backend.service.port.number: 3000 tham chiếu gì?",
+      "options": [
+        "Bắt buộc là containerPort của mọi Pod trong cụm",
+        "Port HTTPS công khai của client",
+        "Số thứ tự NetworkPolicy",
+        "Port của Service backend"
+      ],
+      "correct": 3,
+      "explanation": "Ingress tham chiếu Service port; Service có thể ánh xạ tiếp sang targetPort khác."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Service sai port",
+      "question": "Service backend chỉ khai báo port 80, targetPort 3000 nhưng Ingress tham chiếu Service port 3000. Cần sửa gì?",
+      "options": [
+        "Khớp tham chiếu Ingress với port thực của Service",
+        "Chỉ đổi containerPort thành 80 bất kể ứng dụng",
+        "Chỉ thêm Secret TLS",
+        "Tăng minReplicas lên 3000"
+      ],
+      "correct": 0,
+      "explanation": "Đường đi qua Service cần khớp tầng Service port, không nhầm với targetPort."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Endpoint trống",
+      "question": "Ingress chọn đúng Service nhưng Service không có endpoint sẵn sàng. Cần xem gì?",
+      "options": [
+        "Chỉ annotation cert-manager",
+        "Selector, nhãn Pod và readiness của backend",
+        "Chỉ Host header của frontend",
+        "Chỉ định dạng tên Secret"
+      ],
+      "correct": 1,
+      "explanation": "Routing đúng đến một Service không tạo ra backend khỏe mạnh."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "TLS host",
+      "question": "spec.tls.hosts có myapp.com nhưng certificate không có tên này trong SAN. Cần kiểm tra gì?",
+      "options": [
+        "Coi tls.hosts tự ký lại certificate",
+        "Chỉ tăng Service port lên 443",
+        "Certificate phù hợp hostname cùng đường TLS thực tế",
+        "Chỉ đổi tên Secret thành myapp.com"
+      ],
+      "correct": 2,
+      "explanation": "Danh sách host trong Ingress không tự thay nội dung certificate."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Secret thiếu",
+      "question": "Ingress tham chiếu tls-secret nhưng Secret chưa tồn tại. Điều gì đúng?",
+      "options": [
+        "Ingress tự tạo private key hợp lệ trong mọi controller",
+        "NetworkPolicy tự tải certificate công khai",
+        "Đổi pathType sang Exact sẽ tạo Secret",
+        "Cần cấp đúng dữ liệu TLS và kiểm tra controller/cert-manager liên quan"
+      ],
+      "correct": 3,
+      "explanation": "Tham chiếu và tài nguyên thật là hai điều riêng; phản ứng cụ thể tùy controller."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Issuer chưa tạo",
+      "question": "Annotation trỏ ClusterIssuer letsencrypt nhưng không có resource đó. Nên suy luận gì?",
+      "options": [
+        "Annotation đơn lẻ chưa hoàn thành chuỗi cấp certificate",
+        "Tên letsencrypt là keyword tự cài cert-manager",
+        "Ingress tự bỏ qua mọi kiểm tra domain để cấp cert",
+        "Chỉ cần app=frontend là đủ"
+      ],
+      "correct": 0,
+      "explanation": "Cần cert-manager, issuer hợp lệ và các điều kiện xác minh liên quan."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Redirect controller",
+      "question": "Đổi sang controller không hỗ trợ annotation nginx ssl-redirect. Điều gì cần làm?",
+      "options": [
+        "Đổi nhãn api thành nginx",
+        "Kiểm tra và chuyển chính sách redirect theo controller mới",
+        "Coi annotation áp dụng như chuẩn bắt buộc",
+        "Xóa TLS Secret để controller tự suy ra redirect"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi implementation có bề mặt cấu hình riêng ngoài các trường chuẩn."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Class thiếu",
+      "question": "Manifest không đặt ingressClassName. Có thể kết luận chắc controller nào xử lý không?",
+      "options": [
+        "Có; luôn là cert-manager",
+        "Không; vì mọi Ingress thiếu class đều bị API cấm vô điều kiện",
+        "Không; còn phụ thuộc class mặc định và cấu hình controller",
+        "Có; luôn là NGINX do tên annotation"
+      ],
+      "correct": 2,
+      "explanation": "Không nên suy controller thực tế chỉ từ một annotation hoặc snippet chưa có môi trường."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Policy đích không phải Service",
+      "question": "Service tên backend chọn Pod app=backend nhưng policy chỉ chọn app=api. Điều gì cần đối chiếu?",
+      "options": [
+        "Chỉ tên Service giống chữ API hay không",
+        "Chỉ host myapp.com",
+        "Chỉ port 80 của frontend",
+        "Nhãn thực của Pod đích và selector policy"
+      ],
+      "correct": 3,
+      "explanation": "Policy chọn Pod theo label, không tự áp theo ý nghĩa tên Service."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Frontend cùng namespace",
+      "question": "Giả sử policy đã được thực thi và không có policy khác mở rộng, Pod app=frontend cùng namespace được rule này cho phép theo ingress không?",
+      "options": [
+        "Có; nguồn khớp from.podSelector",
+        "Không; bắt buộc cùng node mới được phép",
+        "Không; policy chỉ cho backend",
+        "Có; vì frontend là tên Secret"
+      ],
+      "correct": 0,
+      "explanation": "Đây là sự cho phép theo chiều ingress của rule, chưa thay cho kiểm tra egress nguồn hay app auth."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Frontend khác namespace",
+      "question": "Pod app=frontend ở namespace khác có tự được chọn bởi from.podSelector đơn lẻ trong source không?",
+      "options": [
+        "Không; vì NetworkPolicy không hỗ trợ selector namespace",
+        "Không; cần selector namespace phù hợp nếu muốn mở rộng",
+        "Có; label giống là đủ trên toàn cluster",
+        "Có; vì Ingress host là công khai"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi namespace là điểm quan trọng khi đọc peer selector."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Nguồn label khác",
+      "question": "Giả sử không có policy ingress khác cho phép, Pod app=worker cùng namespace khởi tạo TCP mới đến Pod app=api. Rule source có cho phép nguồn này không?",
+      "options": [
+        "Có; tên api-policy tự cho worker",
+        "Không; vì TCP không nằm trong NetworkPolicy",
+        "Không; app=worker không khớp frontend",
+        "Có; mọi Pod cùng namespace luôn bỏ qua isolation"
+      ],
+      "correct": 2,
+      "explanation": "Cần nêu giả định các policy khác vì các rule có tính cộng gộp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Không hạn chế egress",
+      "question": "Source chỉ có ingress rules. Có thể nói nó cấm Pod api gọi DB ra ngoài không?",
+      "options": [
+        "Có; ingress mặc nhiên cấm toàn bộ egress",
+        "Có; mọi NetworkPolicy là tường lửa hai chiều deny-all",
+        "Không; vì app=api luôn được toàn quyền cluster",
+        "Không; nó không khai báo egress isolation đó"
+      ],
+      "correct": 3,
+      "explanation": "Hai chiều được xét riêng; không suy điều kiện egress từ rule ingress này."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Không có ports",
+      "question": "Trong ingress rule source không có ports. Ý nghĩa theo phạm vi rule là gì?",
+      "options": [
+        "Không giới hạn riêng một port trong rule cho phép này",
+        "Chỉ cho port 80 mặc định của HTTP",
+        "Chỉ cho port 3000 vì tên backend",
+        "Không cho port nào dù nguồn khớp"
+      ],
+      "correct": 0,
+      "explanation": "Omitting ports không tương đương một danh sách rỗng cấm tất cả."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Gộp policy",
+      "question": "Có thêm policy khác cho app=api cho phép app=worker. app=worker có bị api-policy đứng trước chặn không?",
+      "options": [
+        "Không; policy sau tự xóa mọi policy trước",
+        "Không; các quyền cho phép cùng chiều được hợp lại",
+        "Có; policy tạo trước luôn thắng",
+        "Có; tên policy theo alphabet quyết định"
+      ],
+      "correct": 1,
+      "explanation": "NetworkPolicy không được hiểu như danh sách firewall first-match có deny ưu tiên."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Hai chiều kết nối",
+      "question": "Ingress đích cho phép frontend nhưng egress của frontend chặn kết nối đó. Kết quả cần dựa trên gì?",
+      "options": [
+        "Chỉ tên Service quyết định",
+        "Policy gần Ingress controller nhất luôn thắng",
+        "Cả egress nguồn và ingress đích đều phải cho phép",
+        "Chỉ ingress đích là đủ trong mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "Khi cả hai phía có isolation liên quan, cần đáp ứng các điều kiện ở cả hai chiều."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Sai claim DB",
+      "question": "Keypoint nói chỉ backend được nối DB, nhưng code chọn app=api và from app=frontend. Mô tả nào đúng code?",
+      "options": [
+        "Lọc DB chỉ từ backend theo nhãn role=db",
+        "Tự mã hóa dữ liệu DB",
+        "Tự cấp mật khẩu cho backend",
+        "Lọc ingress tới API từ frontend cùng namespace"
+      ],
+      "correct": 3,
+      "explanation": "Nên dạy theo cấu hình thật và nêu chênh lệch, không lặp lại claim không được triển khai."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Namespace đích",
+      "question": "NetworkPolicy nằm trong namespace team-a. podSelector chọn app=api ở đâu?",
+      "options": [
+        "Namespace team-a",
+        "Mọi namespace có Pod app=api",
+        "Chỉ default dù policy ở đâu",
+        "Namespace có tên api"
+      ],
+      "correct": 0,
+      "explanation": "Selector đích của NetworkPolicy có phạm vi namespace chứa object đó."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Đổi label",
+      "question": "Pod bị đổi nhãn từ app=api sang app=other. Điều gì cần xem lại?",
+      "options": [
+        "TLS Secret tự cấm mọi traffic tới Pod",
+        "Policy nào còn chọn Pod sau thay đổi label",
+        "Coi tên policy vẫn khóa Pod theo tên cũ",
+        "Ingress tự đổi selector policy để bám Pod"
+      ],
+      "correct": 1,
+      "explanation": "Label là cơ chế chọn động; đổi nhãn có thể thay phạm vi policy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Không phải sửa URL",
+      "question": "Muốn chỉ cho frontend vào API trên TCP 3000, phần nào còn cần bổ sung vào rule cho phép?",
+      "options": [
+        "Chỉ đổi tên policy thành api-3000",
+        "Chỉ thêm host vào tls.hosts",
+        "Điều kiện ports với protocol/port phù hợp",
+        "Chỉ đổi Ingress path /api thành /3000"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn mạng theo port cần thể hiện ở NetworkPolicy, không suy từ tên route."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Không auth từ label",
+      "question": "Frontend Pod bị chiếm quyền nhưng label vẫn frontend. Policy có tự phân biệt request độc hại từ Pod đó không?",
+      "options": [
+        "Có; app=frontend là chữ ký mật mã",
+        "Có; policy tự đọc source frontend",
+        "Không; vì NetworkPolicy không thể chọn frontend",
+        "Không; label match không hiểu quyền hoặc ý định nghiệp vụ"
+      ],
+      "correct": 3,
+      "explanation": "Cần lớp xác thực/phân quyền và các biện pháp ứng dụng phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "TLS termination",
+      "question": "Ingress chấm dứt TLS rồi chuyển HTTP đến Service. Có thể gọi đây là TLS end-to-end tới ứng dụng không?",
+      "options": [
+        "Không; phải xác định riêng đoạn kết nối backend",
+        "Có; một certificate ở cổng vào mã hóa mọi đoạn mãi mãi",
+        "Có; Secret TLS tự cấu hình TLS cho mọi container",
+        "Không; vì Ingress không thể xử lý HTTPS"
+      ],
+      "correct": 0,
+      "explanation": "Bảo vệ kênh cần xác định từng chặng và implementation."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Policy và TLS",
+      "question": "NetworkPolicy cho phép TCP đến API. Nó có chứng minh certificate đúng hostname không?",
+      "options": [
+        "Không; vì TCP không thể mang TLS",
+        "Không; kiểm tra TLS là lớp khác",
+        "Có; Pod selector tự xác thực SAN",
+        "Có; port 443 tự tạo certificate"
+      ],
+      "correct": 1,
+      "explanation": "Cho phép kết nối không xác nhận danh tính đối tác hoặc cấu hình TLS."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Rewrite không có",
+      "question": "Backend mong /users nhưng client gửi /api/users. Code có cấu hình rewrite bỏ /api rõ ràng chưa?",
+      "options": [
+        "Rồi; mọi Service xóa segment đầu URL",
+        "Chưa; chỉ DNS mới rewrite được path",
+        "Chưa; cần kiểm tra khả năng và cấu hình controller",
+        "Rồi; Prefix luôn tự bỏ prefix trước khi chuyển tiếp"
+      ],
+      "correct": 2,
+      "explanation": "Path match không đồng nghĩa rewrite URL theo mong muốn ứng dụng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "DNS và NetworkPolicy",
+      "question": "Mua được myapp.com có làm policy app=api tự được thực thi không?",
+      "options": [
+        "Có; domain hợp lệ tự bật mọi CNI",
+        "Có; DNS resolver quản lý Pod selector",
+        "Không; vì NetworkPolicy chỉ hoạt động khi không có DNS",
+        "Không; DNS và thực thi policy là hai cơ chế khác nhau"
+      ],
+      "correct": 3,
+      "explanation": "Cần tách các lớp cấu hình để tìm lỗi đúng nơi."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Ingress status",
+      "question": "Ingress có địa chỉ trong status. Để nói API nghiệp vụ dùng được còn cần gì?",
+      "options": [
+        "Kiểm tra đường DNS/TLS/route/Service/ứng dụng tương ứng",
+        "Chỉ số ký tự trong địa chỉ",
+        "Chỉ nhãn metadata của Secret",
+        "Chỉ kind của NetworkPolicy"
+      ],
+      "correct": 0,
+      "explanation": "Status là một tín hiệu hạ tầng, không thay thế kiểm tra luồng request."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Namespace Secret TLS",
+      "question": "TLS Secret cần được tìm trong phạm vi nào theo cách tham chiếu Ingress chuẩn?",
+      "options": [
+        "Namespace của máy tính người viết YAML",
+        "Namespace của Ingress",
+        "Bất kỳ namespace nào có tên ngắn nhất",
+        "Luôn namespace kube-system"
+      ],
+      "correct": 1,
+      "explanation": "Tham chiếu secretName không có trường namespace tùy ý trong spec.tls."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Ingress API và controller",
+      "question": "Thông báo dự án Ingress NGINX kết thúc bảo trì có nghĩa API Ingress bị xóa ngay khỏi Kubernetes không?",
+      "options": [
+        "Có; mọi controller có tên NGINX đều là cùng một dự án",
+        "Không; vì controller đó chưa bao giờ dùng Ingress API",
+        "Không; lifecycle controller và API là hai việc riêng",
+        "Có; mọi Ingress object tự bị xóa"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt Ingress NGINX cộng đồng, các controller khác và API chuẩn."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Artifact cũ",
+      "question": "Theo thông báo chính thức về Ingress NGINX, artifact cũ còn tồn tại có chứng minh còn được vá bảo mật sau khi nghỉ bảo trì không?",
+      "options": [
+        "Có; artifact có thể tải nghĩa là được vá tự động",
+        "Có; image tag cũ tự nhận bản vá mã nguồn",
+        "Không; vì các artifact đều tự bị xóa ngay",
+        "Không; khả năng tải artifact khác với cam kết bảo trì"
+      ],
+      "correct": 3,
+      "explanation": "Thông báo nêu bảo trì kết thúc tháng 3/2026; đề bài phân biệt tồn tại và hỗ trợ."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Policy thực sự áp",
+      "question": "API nhận object NetworkPolicy thành công. Có thể kết luận plugin mạng đã lọc traffic đúng chưa?",
+      "options": [
+        "Chưa; cần xác định implementation hỗ trợ và kiểm chứng đường traffic",
+        "Rồi; API accept là kiểm thử data plane đầy đủ",
+        "Rồi; YAML không có cú pháp sai là đủ",
+        "Chưa; vì NetworkPolicy chỉ có thể viết bằng JSON"
+      ],
+      "correct": 0,
+      "explanation": "Validation object không là bằng chứng thực thi mạng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Port khác bị lộ",
+      "question": "API còn cổng quản trị riêng; source rule không có ports. Điều gì cần đánh giá?",
+      "options": [
+        "Chỉ thêm TLS host",
+        "Phạm vi port thực sự được cho phép và chính sách quản trị mong muốn",
+        "Coi Ingress chỉ dùng 3000 nên mọi port khác bị policy chặn",
+        "Chỉ đổi tên Service frontend"
+      ],
+      "correct": 1,
+      "explanation": "Ingress routing không giới hạn ngầm mọi kết nối trực tiếp giữa Pod."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Scope của test",
+      "question": "Kiểm tra một request HTTPS qua Ingress thành công có chứng minh traffic trực tiếp ngoài policy đều bị chặn không?",
+      "options": [
+        "Có; vì app=frontend là nguồn duy nhất tồn tại",
+        "Không; vì HTTPS không thể đi qua Service",
+        "Không; cần kiểm tra các đường và đối tượng thuộc mục tiêu policy",
+        "Có; HTTPS thành công tương đương test deny-all"
+      ],
+      "correct": 2,
+      "explanation": "Bằng chứng cần khớp phạm vi câu kết luận, gồm cả các đường không được phép."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Chẩn đoán theo tầng",
+      "question": "DNS đúng nhưng backend trả lỗi ứng dụng. Hướng điều tra hợp lý là gì?",
+      "options": [
+        "Luôn xóa NetworkPolicy đầu tiên",
+        "Luôn đổi host sang localhost",
+        "Tự suy lỗi do HPA mà không xem số liệu",
+        "Tách lỗi TLS/route/Service/endpoint/ứng dụng theo tín hiệu"
+      ],
+      "correct": 3,
+      "explanation": "Phân tích theo các tầng tránh thay đổi tùy tiện làm mất chính sách hoặc che nguyên nhân."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Thiếu controller và issuer",
+      "question": "Ingress YAML hợp lệ, có annotations nhưng cụm chưa có controller hay cert-manager. Kết luận nào đúng?",
+      "options": [
+        "Cần triển khai các thành phần phù hợp và wiring; object hợp lệ chưa tạo dịch vụ HTTPS",
+        "Annotations tự cài mọi controller cần thiết",
+        "API server tự cấp certificate công khai thay issuer",
+        "NetworkPolicy sẽ tạo load balancer thay Ingress controller"
+      ],
+      "correct": 0,
+      "explanation": "Cấu hình mô tả phụ thuộc không tự làm các phụ thuộc tồn tại."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Policy và controller nguồn",
+      "question": "Policy API chỉ cho frontend Pod; request /api đi qua Ingress controller Pod có label khác. Vì sao cần kiểm tra topology thực?",
+      "options": [
+        "Mọi controller luôn nằm trong cùng namespace frontend",
+        "Nguồn mà policy nhìn thấy có thể là controller hoặc phụ thuộc đường mạng thực tế",
+        "Ingress tự mang label frontend cho mọi request",
+        "Host myapp.com bỏ qua NetworkPolicy"
+      ],
+      "correct": 1,
+      "explanation": "Allowlist phải khớp nguồn kết nối ở tầng policy, không chỉ ý định người dùng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Namespace selector kết hợp",
+      "question": "Muốn chỉ cho app=frontend trong namespace có team=web. Hai selector cần nằm thế nào để diễn đạt AND trong cùng peer?",
+      "options": [
+        "Chỉ đổi tên policy thành team-web",
+        "Chỉ thêm team=web vào tls.hosts",
+        "namespaceSelector và podSelector trong cùng phần tử from",
+        "Hai phần tử from độc lập, mỗi phần tử một selector"
+      ],
+      "correct": 2,
+      "explanation": "Trong cùng peer là giao điều kiện; các peer tách riêng là những khả năng cho phép khác nhau."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Nhầm AND thành OR",
+      "question": "Hai phần tử from riêng: một namespaceSelector team=web, một podSelector app=frontend. So với yêu cầu chỉ frontend của team web, rủi ro là gì?",
+      "options": [
+        "Chỉ cho phép Pod đáp ứng đồng thời cả hai selector",
+        "Không cho phép Pod nào vì selector xung đột",
+        "Tự biến thành egress rule",
+        "Cho phép rộng hơn: mọi Pod trong namespace team web hoặc frontend cùng namespace policy"
+      ],
+      "correct": 3,
+      "explanation": "Cấu trúc danh sách quyết định quan hệ logic; thụt lề sai có thể mở rộng quyền kết nối."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Nguồn và đích đồng thời",
+      "question": "Đích API ingress cho phép frontend, nhưng frontend egress chỉ cho DNS. Cần thay đổi có chủ đích ở đâu để kết nối API được phép?",
+      "options": [
+        "Đánh giá và thêm quyền egress phù hợp cho nguồn cùng ingress đích",
+        "Chỉ tạo thêm Ingress host cho API",
+        "Chỉ tăng Service targetPort",
+        "Chỉ đổi thứ tự hai policy"
+      ],
+      "correct": 0,
+      "explanation": "Isolation ở hai phía đều có thể quyết định kết nối, không chỉ policy trên đích."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nhiều policy làm rộng",
+      "question": "Có policy định allow frontend và policy khác allow mọi nguồn tới cùng API. Muốn chỉ frontend được vào thì cần gì?",
+      "options": [
+        "Thêm một policy hẹp hơn vì policy cuối luôn thắng",
+        "Rà soát tập policy áp dụng và bỏ quyền mở rộng không mong muốn",
+        "Chỉ đặt deny trong comment của policy đầu",
+        "Đổi alphabet tên policy để nó chạy trước"
+      ],
+      "correct": 1,
+      "explanation": "Với tính cộng gộp, một policy hẹp không tự trừ quyền mà policy khác đã cho phép."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "TLS đường sau",
+      "question": "Client tới Ingress dùng HTTPS nhưng Ingress tới backend đi qua mạng không tin cậy bằng HTTP. Đánh giá nào đúng?",
+      "options": [
+        "NetworkPolicy tự mã hóa HTTP giữa các Pod",
+        "Chỉ đổi Secret name sẽ mã hóa toàn tuyến",
+        "Cần xem bảo vệ đoạn backend và mô hình đe dọa riêng",
+        "TLS đầu vào chứng minh mọi đoạn đã mã hóa"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm soát kết nối và mã hóa kênh là các lớp độc lập."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Tên DB gây hiểu nhầm",
+      "question": "Muốn bảo vệ database chỉ từ backend nhưng source đang chọn API từ frontend. Cần làm gì?",
+      "options": [
+        "Chỉ đổi metadata.name thành database-policy là đủ",
+        "Giữ selector app=api vì tên policy quyết định đích",
+        "Chỉ thêm annotation ssl-redirect vào NetworkPolicy",
+        "Xác định nhãn DB/backend, namespace, port và rule đúng mục tiêu thay vì chỉ đổi tên policy"
+      ],
+      "correct": 3,
+      "explanation": "Mục tiêu an ninh phải ánh xạ thành selector và chiều kết nối thực tế."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Label không là danh tính mạnh",
+      "question": "Người có quyền sửa Pod có thể gắn label frontend. Hệ thống chỉ dựa vào label allowlist còn cần xem gì?",
+      "options": [
+        "Quyền thay nhãn/tạo Pod và xác thực ứng dụng theo mô hình tin cậy",
+        "Label frontend là thông tin không ai có thể giả mạo",
+        "NetworkPolicy tự kiểm tra người tạo từng request HTTP",
+        "Chỉ tăng số lượng label sẽ thành chữ ký số"
+      ],
+      "correct": 0,
+      "explanation": "Quyền quản trị tài nguyên ảnh hưởng ai có thể tham gia nhóm được phép."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "API prefix và rewrite",
+      "question": "Sau khi thêm /api route, backend chỉ định nghĩa /users nên trả404 cho /api/users. Hướng sửa cần phân biệt gì?",
+      "options": [
+        "Chỉ đổi DNS A record để xóa path",
+        "Match route, rewrite được hỗ trợ và hợp đồng path backend",
+        "Prefix chuẩn luôn tự xóa /api nên chắc chắn do TLS",
+        "Đổi NetworkPolicy ingress thành egress sẽ bỏ prefix"
+      ],
+      "correct": 1,
+      "explanation": "Route chọn đích và transform URL là hành vi khác nhau, thường cần cấu hình controller có scope."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Chuyển controller",
+      "question": "Chuyển khỏi Ingress NGINX nhưng giữ nguyên mọi annotation cũ. Điều gì cần kiểm chứng?",
+      "options": [
+        "Mọi controller đều đọc cùng một kho annotation",
+        "Không cần kiểm tra route nếu image controller tải được",
+        "Mapping class, TLS, redirect, path/rewrite và quyền truy cập trên implementation mới",
+        "Chỉ object còn apiVersion v1 nên mọi hành vi ngoài chuẩn giữ nguyên"
+      ],
+      "correct": 2,
+      "explanation": "Chuyển implementation cần đánh giá các phần chuẩn và phần mở rộng phụ thuộc controller."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Lifecycle controller",
+      "question": "Trong bối cảnh tháng 10/2026, dùng Ingress NGINX cộng đồng cho thiết kế mới cần ghi nhận gì theo thông báo chính thức?",
+      "options": [
+        "API Ingress đã bị xóa khỏi mọi Kubernetes cluster",
+        "Mọi dự án có NGINX trong tên đều đã ngừng hoạt động",
+        "Artifact cũ tự được vá khi máy chủ khởi động lại",
+        "Dự án đã đặt mốc nghỉ bảo trì tháng 3/2026; cần đánh giá phương án còn được hỗ trợ"
+      ],
+      "correct": 3,
+      "explanation": "Câu hỏi nêu thời điểm và dự án cụ thể, không đánh đồng toàn bộ API hoặc sản phẩm NGINX."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Thay policy bất đồng bộ",
+      "question": "Vừa tạo policy qua API rồi kiểm tra traffic ngay. Vì sao cần quan sát thời điểm thực thi?",
+      "options": [
+        "Plugin mạng cần xử lý thay đổi; thời điểm API nhận và data plane áp dụng có thể khác",
+        "Policy luôn được thực thi trước khi người dùng gửi API",
+        "Label chỉ có hiệu lực sau đúng một giờ trong mọi cụm",
+        "NetworkPolicy không có controller nào liên quan đến thực thi"
+      ],
+      "correct": 0,
+      "explanation": "Không nên biến một lần quan sát quá sớm thành kết luận vĩnh viễn về hành vi."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Phạm vi L4",
+      "question": "NetworkPolicy cho TCP tới API nhưng muốn chỉ cho GET /public. Hạn chế nào cần hiểu?",
+      "options": [
+        "Ingress path /api tự hạn chế mọi kết nối trực tiếp còn lại",
+        "NetworkPolicy chuẩn không tự biểu diễn phân quyền HTTP method/path như yêu cầu đó",
+        "Selector app=api tự giải mã path và chặn POST",
+        "Chỉ thêm port80 sẽ cho phép riêng GET"
+      ],
+      "correct": 1,
+      "explanation": "Cần cơ chế ứng dụng hoặc giải pháp L7 phù hợp, không gán ngữ nghĩa L7 cho rule L4 chuẩn."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Nguồn IP và topology",
+      "question": "Muốn lọc theo IP client bên ngoài nhưng traffic qua LB/NAT. Cần kiểm chứng điều gì?",
+      "options": [
+        "Host header được coi là IP nguồn ở NetworkPolicy",
+        "TLS Secret luôn bảo toàn IP client cho mọi chặng",
+        "Địa chỉ nguồn tại điểm thực thi policy và hành vi network implementation",
+        "Mọi ipBlock luôn thấy IP gốc giống nhau trên mọi provider"
+      ],
+      "correct": 2,
+      "explanation": "NAT và đường đi có thể ảnh hưởng IP mà policy áp dụng; không nên suy xuyên mọi môi trường."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Certificate và Host",
+      "question": "Certificate hợp lệ cho myapp.com nhưng rule Service bị cấu hình sai port. TLS handshake thành công chứng minh gì?",
+      "options": [
+        "Toàn bộ API nghiệp vụ chắc chắn hoạt động",
+        "NetworkPolicy của DB chắc chắn đúng",
+        "HPA đã có metrics pipeline",
+        "Chỉ một phần của đường phục vụ; route/backend vẫn cần kiểm tra"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm chứng một tầng không đủ suy toàn bộ chuỗi request thành công."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Mất chứng chỉ khi rotate",
+      "question": "Certificate được gia hạn nhưng client vẫn thấy bản cũ. Cần điều tra gì thay vì chỉ đọc Secret object?",
+      "options": [
+        "Đường tới controller, cập nhật cấu hình/certificate và endpoint thực client gặp",
+        "Chỉ tên miền chứa bao nhiêu ký tự",
+        "Coi Secret mới chứng minh mọi tiến trình đang dùng nó",
+        "Đổi nhãn Pod api thành frontend"
+      ],
+      "correct": 0,
+      "explanation": "Trạng thái lưu trong API và trạng thái phục vụ thực tế có thể khác; cần theo dấu đường TLS."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Giới hạn bằng chứng source",
+      "question": "Chỉ review source Ingress và NetworkPolicy trên máy không có cluster. Có thể khẳng định điều gì?",
+      "options": [
+        "Đã kiểm thử failover mạng dưới tải",
+        "Đã phân tích ý định và thiếu sót cấu hình, chưa chứng minh routing/TLS/enforcement thực",
+        "Đã chứng minh cụm production chặn mọi nguồn sai",
+        "Đã cấp thành công certificate cho domain"
+      ],
+      "correct": 1,
+      "explanation": "Mức bằng chứng phải trung thực với việc không thực thi dịch vụ hoặc truy cập cụm."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Port quản trị và path",
+      "question": "Ingress chỉ expose /api nhưng API Pod còn cổng quản trị. Để đánh giá bảo vệ cổng quản trị cần xét gì?",
+      "options": [
+        "Coi port không được Ingress nêu là không thể truy cập từ bất kỳ Pod nào",
+        "Chỉ TLS SAN của myapp.com",
+        "Mọi đường kết nối, port rule, network policy và xác thực quản trị",
+        "Chỉ URL công khai có chữ admin hay không"
+      ],
+      "correct": 2,
+      "explanation": "Có thể tồn tại đường kết nối nội bộ trực tiếp không đi qua Ingress route."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Hợp đồng mạng đầy đủ",
+      "question": "Bộ kiểm tra nào phù hợp nhất với mục tiêu multi-service HTTPS và cô lập API?",
+      "options": [
+        "Chỉ YAML parse được và metadata có tên đẹp",
+        "Chỉ tạo tls-secret rồi bỏ mọi kiểm tra backend",
+        "Chỉ đặt app=frontend cho mọi Pod",
+        "DNS/controller/class, certificate, route/Service/endpoint, policy hai chiều và app auth theo phạm vi"
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế cần nối ý định qua các tầng thay vì coi một object thay thế toàn bộ hệ thống."
+    }
+  ]
+}

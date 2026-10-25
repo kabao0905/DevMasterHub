@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "bash",
+  "level": "master",
+  "lesson": "mastery",
+  "language": "vi",
+  "sourceHash": "89a61df9b01841b2f536e20bd16aaa3811897925e8028c27a186f47079e4afb9",
+  "status": "approved",
+  "review": "Tự soạn theo source mktemp/trap/atomic_write/flock/find/read/uname và GNU Bash/Coreutils/Findutils/util-linux. Ghi config xảy ra trước lock; file tạm của atomic_write dùng PID dễ đoán, khác TMPFILE mktemp. Rename không tự bảo đảm durability; shred không xóa mọi bản sao. Không ghi /etc,/var/lock hay chạy shred/flock/deployment.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Eval risk",
+      "question": "Vì sao source khuyên không eval input người dùng?",
+      "options": [
+        "Input có thể trở thành mã shell được diễn giải",
+        "Eval chỉ đọc JSON an toàn",
+        "Eval tự sandbox mọi command",
+        "Eval chỉ chấp nhận số"
+      ],
+      "correct": 0,
+      "explanation": "Giữ dữ liệu và mã lệnh tách biệt theo contract."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Controlled dispatch",
+      "question": "Cách nào được comment gợi ý thay eval để chọn hành động?",
+      "options": [
+        "Bỏ mọi validation",
+        "Case/if với các hành động được kiểm soát",
+        "Ghép thêm nhiều dấu chấm phẩy",
+        "Dùng input làm tên executable bất kỳ"
+      ],
+      "correct": 1,
+      "explanation": "Nhánh được phép cần được định nghĩa rõ."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Temporary file creation",
+      "question": "mktemp /tmp/myapp.XXXXXX có ý định gì?",
+      "options": [
+        "Tạo thư mục myapp bắt buộc",
+        "Mở port ngẫu nhiên",
+        "Tạo file tạm theo template an toàn của công cụ",
+        "Chỉ in tên dễ đoán mà không tạo file theo mặc định"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng chế độ chỉ sinh tên rồi mới tạo tách rời nếu cần tránh race."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Template random portion",
+      "question": "XXXXXX trong template mktemp phục vụ gì?",
+      "options": [
+        "Mật khẩu mặc định",
+        "Sáu permission bit",
+        "Tên PID chính xác",
+        "Phần tên được công cụ thay để tạo file"
+      ],
+      "correct": 3,
+      "explanation": "Cần dùng cú pháp template mà implementation hỗ trợ."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Exit cleanup intention",
+      "question": "Trap EXIT trong source có ý định cleanup tài nguyên nào?",
+      "options": [
+        "TMPFILE do mktemp tạo",
+        "Mọi file trong /tmp",
+        "Mọi lock của mọi process",
+        "Mọi source trong repository"
+      ],
+      "correct": 0,
+      "explanation": "Cleanup nên giới hạn tài nguyên do script sở hữu."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Shred option intention",
+      "question": "shred -u có ý định gì?",
+      "options": [
+        "Chỉ in tên file",
+        "Ghi đè rồi loại bỏ file theo cơ chế shred",
+        "Chỉ đổi username",
+        "Tự mã hóa backup"
+      ],
+      "correct": 1,
+      "explanation": "Hiệu quả phụ thuộc filesystem/hardware và các bản sao ngoài file đó."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Atomic function input",
+      "question": "atomic_write nhận target từ đâu?",
+      "options": [
+        "Mọi dòng stdin như tên file",
+        "PID của child",
+        "Argument đầu của function",
+        "Biến OS bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Nội dung được đưa vào qua stdin của cat."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Temporary sibling naming",
+      "question": "File tạm trong atomic_write được đặt theo nguyên tắc nào?",
+      "options": [
+        "Dùng lại đúng file do mktemp ở đầu tạo",
+        "UUID từ registry",
+        "Một file luôn nằm trên filesystem khác",
+        "Tên target thêm suffix .tmp. và PID shell"
+      ],
+      "correct": 3,
+      "explanation": "Đây là hai tài nguyên tạm khác nhau trong source."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Process ID expansion",
+      "question": "$$ trong Bash thường biểu thị gì?",
+      "options": [
+        "Process ID của shell theo quy tắc Bash",
+        "Status gần nhất",
+        "Số argument",
+        "Số core"
+      ],
+      "correct": 0,
+      "explanation": "PID không phải nguồn tên bí mật khó đoán."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Content writer",
+      "question": "cat > \"$tmpfile\" trong atomic_write làm gì?",
+      "options": [
+        "Tự nén thành archive",
+        "Ghi stdin vào file tạm được chọn",
+        "Tự kiểm schema nội dung",
+        "Chỉ in tên file"
+      ],
+      "correct": 1,
+      "explanation": "Ghi thành công chưa xác nhận config có ngữ nghĩa hợp lệ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Final replacement",
+      "question": "Sau khi ghi file tạm, source dùng command nào?",
+      "options": [
+        "tar -czf",
+        "git checkout",
+        "mv -f",
+        "cp -r rồi luôn giữ cả hai"
+      ],
+      "correct": 2,
+      "explanation": "Ý định là thay entry đích từ file đã chuẩn bị."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Same filesystem condition",
+      "question": "Comment của mẫu gắn tính nguyên tử của việc đổi tên với điều kiện nào?",
+      "options": [
+        "Mọi filesystem/network đều giống nhau",
+        "Chỉ tên có đuôi tmp",
+        "Chỉ set -u",
+        "Nguồn và đích trên cùng filesystem với semantics phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Move qua filesystem có thể không là một rename nguyên tử."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Configuration target",
+      "question": "Lời gọi atomic_write trong source nhắm tới đâu?",
+      "options": [
+        "/etc/myapp/config",
+        "/tmp/myapp.XXXXXX",
+        "/var/lock/myapp.lock",
+        "./access.log"
+      ],
+      "correct": 0,
+      "explanation": "Đây là đích hệ thống được phân tích, không được ghi để soạn quiz."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Lock file path",
+      "question": "LOCKFILE được gán đường dẫn nào?",
+      "options": [
+        "Docker socket",
+        "/var/lock/myapp.lock",
+        "/etc/myapp/config",
+        "/tmp/atomic.log"
+      ],
+      "correct": 1,
+      "explanation": "File path cần quyền và ownership phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Open descriptor",
+      "question": "exec 200>\"$LOCKFILE\" có ý định gì?",
+      "options": [
+        "Tự giữ lock mà chưa cần flock",
+        "Gửi200 HTTP requests",
+        "Mở file ở descriptor200 trong shell hiện tại",
+        "Chạy executable tên200"
+      ],
+      "correct": 2,
+      "explanation": "Mở descriptor và lấy lock là hai bước riêng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Flock nonblocking",
+      "question": "flock -n yêu cầu hành vi gì khi lock đang bị giữ?",
+      "options": [
+        "Chờ vô hạn",
+        "Xóa lock của process kia",
+        "Tự kill process kia",
+        "Thất bại ngay thay vì chờ lock"
+      ],
+      "correct": 3,
+      "explanation": "Status phải được xử lý theo hợp đồng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Lock failure branch",
+      "question": "Nhánh không lấy được lock trong source làm gì?",
+      "options": [
+        "In thông báo rồi exit1",
+        "Tự retry vô hạn",
+        "Bỏ qua và deploy tiếp",
+        "Tự xóa lockfile"
+      ],
+      "correct": 0,
+      "explanation": "Xóa pathname lock không là cách an toàn lấy quyền sở hữu."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Null delimited find",
+      "question": "find -print0 xuất ranh giới tên bằng gì?",
+      "options": [
+        "Một JSON object",
+        "Byte NUL",
+        "Dấu cách",
+        "Dấu phẩy"
+      ],
+      "correct": 1,
+      "explanation": "NUL không thể nằm trong filename Unix."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Read raw backslashes",
+      "question": "read -r giúp gì trong vòng đọc tên file?",
+      "options": [
+        "Tự bỏ mọi newline trong tên",
+        "Chỉ đọc thư mục",
+        "Không diễn giải backslash như escape của read",
+        "Tự sort mọi file"
+      ],
+      "correct": 2,
+      "explanation": "Giữ dữ liệu filename theo đúng input."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "OS detection source",
+      "question": "Source lấy tên hệ điều hành từ command nào?",
+      "options": [
+        "pwd",
+        "git describe",
+        "wc -l",
+        "uname -s"
+      ],
+      "correct": 3,
+      "explanation": "Nhãn OS không tự chứng minh mọi tool/option đều sẵn có."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Lock acquired too late",
+      "question": "Thao tác ghi /etc/myapp/config xảy ra trước hay sau flock trong source?",
+      "options": [
+        "Trước",
+        "Sau",
+        "Chỉ sau khi tất cả log đã được đọc",
+        "Không có ghi config"
+      ],
+      "correct": 0,
+      "explanation": "Lock hiện chưa bao phủ bước atomic_write phía trước."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Two temp files distinction",
+      "question": "TMPFILE do mktemp có được atomic_write dùng làm tmpfile của target không?",
+      "options": [
+        "Có, mv lấy TMPFILE mặc định",
+        "Không, function dựng một sibling path riêng",
+        "Có, cùng tên gần giống là cùng object",
+        "Có, trap tự thay mọi biến tmpfile"
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt biến/tài nguyên theo data flow thực."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Predictable temporary name",
+      "question": "Tên target.tmp.PID có tự khó đoán như mktemp tạo an toàn không?",
+      "options": [
+        "Có, readonly tự bảo vệ tên",
+        "Có, suffix tmp cấm người khác tạo trước",
+        "Không, PID và target thường có thể đoán được",
+        "Có, $$ là mật mã ngẫu nhiên"
+      ],
+      "correct": 2,
+      "explanation": "Cần cơ chế tạo độc quyền và thư mục có quyền phù hợp."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Preexisting temp symlink",
+      "question": "Nếu path tmpfile đã là symlink do bên khác đặt trong thư mục có thể ghi, redirection có thể gây gì?",
+      "options": [
+        "Luôn tự từ chối mọi symlink",
+        "Tự gọi mktemp để sửa",
+        "Chỉ in tên link",
+        "Ghi vào đích symlink ngoài ý định nếu không có bảo vệ phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Đây là một lý do không tự chế tên tạm trong vùng không tin cậy."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Temp target collision same shell",
+      "question": "Hai lời gọi dùng cùng target và cùng giá trị $$ có thể dựng cùng tmpfile không?",
+      "options": [
+        "Có",
+        "Không, mọi function call tự có UUID",
+        "Không, local tự tạo namespace filesystem",
+        "Chỉ khi OS=unknown"
+      ],
+      "correct": 0,
+      "explanation": "Local binding không tạo tên file riêng tự động."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Parent directory needed",
+      "question": "Nếu /etc/myapp không tồn tại, atomic_write có tự tạo directory đó không?",
+      "options": [
+        "Có, target argument tự mkdir",
+        "Không",
+        "Có, cat tạo mọi parent",
+        "Có, mv -f tạo mọi parent"
+      ],
+      "correct": 1,
+      "explanation": "Cần chuẩn bị và kiểm đường dẫn trước thao tác."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Input read failure",
+      "question": "Nếu cat ghi dở rồi lỗi, script có tự bảo đảm không còn file tạm đó không?",
+      "options": [
+        "Có, cat luôn rollback",
+        "Có, pipefail xóa file dở",
+        "Không, source chưa có cleanup riêng cho tmpfile của function",
+        "Có, trap TMPFILE dọn mọi file .tmp.PID"
+      ],
+      "correct": 2,
+      "explanation": "Error handling và cleanup tài nguyên phải được nối đúng."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Config validity",
+      "question": "Cat và mv thành công có tự xác nhận config được ứng dụng chấp nhận không?",
+      "options": [
+        "Có, mv hiểu mọi format config",
+        "Có, file có nội dung là đủ",
+        "Có, echo tự kiểm syntax",
+        "Không, cần validation schema/nghiệp vụ phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Tính toàn vẹn thao tác khác tính hợp lệ nội dung."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Atomic visibility",
+      "question": "Rename nguyên tử theo điều kiện phù hợp giúp reader mở path nhìn thấy gì?",
+      "options": [
+        "Một entry cũ hoặc mới thay vì file đích được ghi dở theo cách ghi trực tiếp",
+        "Một transaction cho mọi file hệ thống",
+        "Mọi reader hiện có tự đổi descriptor",
+        "Mọi nội dung chắc chắn durable sau mất điện"
+      ],
+      "correct": 0,
+      "explanation": "Đây là phạm vi visibility của thay entry."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Existing open readers",
+      "question": "Reader đã mở file cũ trước rename có bắt buộc tự đọc file mới qua descriptor đó không?",
+      "options": [
+        "Không thể mở file khi có mv",
+        "Không, descriptor cũ có thể vẫn tham chiếu object cũ",
+        "Có, mọi open descriptor tự rebind",
+        "Có, -f buộc mọi process reopen"
+      ],
+      "correct": 1,
+      "explanation": "Pathname và descriptor đang mở khác nhau."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Rename durability",
+      "question": "Rename thành công có tự chứng minh dữ liệu đã an toàn trước mọi mất điện không?",
+      "options": [
+        "Có, -f là fsync",
+        "Có, timestamp đã đủ",
+        "Không, durability cần xét flush/fsync/filesystem và quy trình phù hợp",
+        "Có, nguyên tử luôn đồng nghĩa bền vững tuyệt đối"
+      ],
+      "correct": 2,
+      "explanation": "Atomicity và durability là các thuộc tính khác nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Metadata preservation",
+      "question": "Thay file đích bằng file tạm có tự giữ toàn bộ mode/owner/ACL của file cũ không?",
+      "options": [
+        "Có, mọi mv sao chép metadata cũ sang mới",
+        "Có, target cùng tên là đủ",
+        "Có, local giữ permissions",
+        "Không mặc định, cần policy metadata"
+      ],
+      "correct": 3,
+      "explanation": "File mới có metadata của tài nguyên được tạo/chỉnh theo thao tác thật."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Multi file transaction",
+      "question": "Gọi atomic_write lần lượt cho hai config có tự tạo transaction chung cả hai không?",
+      "options": [
+        "Không",
+        "Có, cùng function name tạo transaction",
+        "Có, set -e rollback file đầu",
+        "Có, mv -f khóa toàn bộ directory"
+      ],
+      "correct": 0,
+      "explanation": "Một rename không tự phối hợp nhiều tài nguyên."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Advisory lock scope",
+      "question": "Flock thông thường ngăn được ai theo nguyên tắc cooperative locking?",
+      "options": [
+        "Mọi script có từ deploy trong tên",
+        "Các bên tuân theo cùng cơ chế/ràng buộc lock",
+        "Mọi process ghi target bất kể có dùng lock",
+        "Mọi network client trên thế giới"
+      ],
+      "correct": 1,
+      "explanation": "Không coi advisory lock như chặn mọi write ngoài cơ chế."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Lock file exists",
+      "question": "Một file myapp.lock tồn tại có tự chứng minh lock hiện đang được giữ không?",
+      "options": [
+        "Có, file có0 byte nghĩa held",
+        "Có, nếu tên có app",
+        "Không, trạng thái lock không chỉ là sự tồn tại pathname",
+        "Có, mọi file đuôi lock luôn là held lock"
+      ],
+      "correct": 2,
+      "explanation": "Cần thực sự dùng cơ chế lock và kiểm kết quả."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Nonblocking result",
+      "question": "Flock -n gặp lock xung đột với cấu hình default thường báo gì?",
+      "options": [
+        "Luôn0 và chờ",
+        "Một PID thay status",
+        "Tự chuyển lock sang shared",
+        "Status khác0, mặc định1 cho conflict"
+      ],
+      "correct": 3,
+      "explanation": "Lỗi vận hành khác cũng cần chẩn đoán; không mọi nonzero đều cùng nguyên nhân."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Lock descriptor lifetime",
+      "question": "Vì sao cần giữ descriptor liên quan lock mở trong vùng được bảo vệ?",
+      "options": [
+        "Vòng đời descriptor/open file description liên quan vòng đời lock",
+        "Vì descriptor là mật khẩu",
+        "Vì file lock tự xóa mọi process khác",
+        "Vì Bash không chạy command sau exec redirection"
+      ],
+      "correct": 0,
+      "explanation": "Cần xét cả descriptor mà child có thể thừa kế."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Inherited lock descriptor",
+      "question": "Một child giữ descriptor lock còn mở có thể ảnh hưởng gì?",
+      "options": [
+        "Descriptor không bao giờ được child thừa kế",
+        "Lock có thể còn được giữ lâu hơn parent mong muốn",
+        "Child tự có lock hoàn toàn không liên quan",
+        "Lock luôn mất ngay khi parent echo"
+      ],
+      "correct": 1,
+      "explanation": "Cần policy đóng descriptor cho child không thuộc vùng bảo vệ."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Deleting held lock path",
+      "question": "Vì sao xóa lockfile khi một process còn giữ lock có thể phá mutual exclusion?",
+      "options": [
+        "Vì pathname tự chuyển lock sang file mới",
+        "Vì flock không có descriptor",
+        "Process khác có thể tạo file mới ở cùng tên và khóa object khác",
+        "Vì file bị xóa luôn kill mọi holder"
+      ],
+      "correct": 2,
+      "explanation": "Định danh object bị khóa và tên file không đồng nhất."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Network filesystem locking",
+      "question": "Có nên mặc định flock có semantics như nhau trên mọi NFS/CIFS mount không?",
+      "options": [
+        "Có, util-linux tự tạo distributed consensus",
+        "Có, tên lockfile là đủ",
+        "Có, -n sửa mọi filesystem limitation",
+        "Không, cần kiểm hỗ trợ và mount/runtime thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Tài liệu util-linux nêu các giới hạn implementation/filesystem."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Flock dependency",
+      "question": "Có Bash có đồng nghĩa chắc chắn có flock executable đúng option không?",
+      "options": [
+        "Không, đây là dependency ngoài shell",
+        "Có, flock là Bash keyword",
+        "Có, shebang tự cài util-linux",
+        "Có, mọi OS cùng một flock binary"
+      ],
+      "correct": 0,
+      "explanation": "Portability cần kiểm công cụ thực tế."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Lock opening redirection",
+      "question": "Dấu > khi mở LOCKFILE có thể làm gì trước khi flock chạy?",
+      "options": [
+        "Tự giữ nguyên mọi nội dung bất kể trạng thái",
+        "Tạo/truncate file theo quyền và loại đích",
+        "Tự lấy exclusive lock",
+        "Tự kiểm ứng dụng đang khỏe"
+      ],
+      "correct": 1,
+      "explanation": "Không nên dùng nội dung file lock như dữ liệu được bảo toàn nhờ thao tác này."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Trap expansion timing",
+      "question": "Trap double-quoted có biến TMPFILE thường chèn giá trị vào command text khi nào?",
+      "options": [
+        "Không bao giờ",
+        "Tự lưu một con trỏ file descriptor thay chuỗi",
+        "Lúc đăng ký trap",
+        "Chỉ khi máy khởi động lại"
+      ],
+      "correct": 2,
+      "explanation": "Cần xét quoting khi text handler được parse lại."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Hidden shred diagnostics",
+      "question": "2>/dev/null trong cleanup shred có thể che gì?",
+      "options": [
+        "Mọi status lỗi biến thành0 bắt buộc",
+        "Mọi bản backup tự bị xóa",
+        "Mọi secret được mã hóa",
+        "Lỗi xóa/thiếu tool/quyền ghi"
+      ],
+      "correct": 3,
+      "explanation": "Ẩn thông báo không chứng minh cleanup thành công."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Shred copies limitation",
+      "question": "Shred một file có tự xóa mọi snapshot/backup hay bản sao của dữ liệu không?",
+      "options": [
+        "Không",
+        "Có, cùng inode name là đủ",
+        "Có, -u tự tìm mọi backup",
+        "Có, shell trap tự truy cloud"
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi công cụ không bao gồm mọi bản sao ngoài vị trí đó."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Storage overwrite assumptions",
+      "question": "Vì sao không bảo đảm shred xóa vật lý hoàn toàn trên mọi SSD/COW filesystem?",
+      "options": [
+        "Vì -u luôn encrypt toàn ổ đĩa",
+        "Ánh xạ ghi đè/đồng bộ/bản sao phụ thuộc storage",
+        "Vì shred chỉ đổi tên và không ghi gì",
+        "Vì mọi SSD đều không lưu dữ liệu"
+      ],
+      "correct": 1,
+      "explanation": "Tài liệu nhấn mạnh giả định overwrite in place có giới hạn."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Commented optimization code",
+      "question": "Các ví dụ Slow/Fast đang comment có chạy khi script chạy không?",
+      "options": [
+        "Chỉ nhánh Fast chạy",
+        "Chỉ khi Linux",
+        "Không",
+        "Có, emoji kích hoạt code"
+      ],
+      "correct": 2,
+      "explanation": "Không gán tác dụng phụ cho comment minh họa."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Pattern predicate scope",
+      "question": "[[ \"$string\" == *pattern* ]] kiểm gì theo ý định?",
+      "options": [
+        "Đếm mọi dòng khớp như grep -c trong mọi trường hợp",
+        "Trả số byte đã match",
+        "Tự đọc file tên string",
+        "Chuỗi chứa phần khớp glob pattern tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Đây là predicate, không tự thay thế mọi kiểu đếm grep."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Optimization semantic mismatch",
+      "question": "Vì sao thay grep -c bằng một phép tăng count có thể không tương đương khi string nhiều dòng?",
+      "options": [
+        "Grep -c đếm dòng khớp, predicate chỉ cho biết có khớp trên chuỗi",
+        "Vì grep -c luôn đếm ký tự",
+        "Vì [[ không nhận string",
+        "Vì count++ tự đếm mọi newline"
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu phải bảo toàn ngữ nghĩa cần thiết."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Postincrement strict mode",
+      "question": "Nếu count đã đặt0, ((count++)) có status nào trước tác động errexit?",
+      "options": [
+        "Status bằng length string",
+        "1",
+        "0",
+        "127"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị expression cũ0 khiến arithmetic command trả1."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Subshell performance claim",
+      "question": "Bỏ external process/subshell có luôn đủ chứng minh ứng dụng nhanh hơn đáng kể không?",
+      "options": [
+        "Có, số dòng source ít là đủ",
+        "Có, -u tự đo throughput",
+        "Không, cần workload và phép đo phù hợp",
+        "Có, mọi builtin luôn nhanh hơn mọi pipeline bất kể dữ liệu"
+      ],
+      "correct": 2,
+      "explanation": "Chi phí và bottleneck phụ thuộc công việc."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Unsafe find command substitution",
+      "question": "for file in $(find ...) có vấn đề gì với filename tùy ý?",
+      "options": [
+        "Find luôn trả JSON tự parse",
+        "Mọi tên có space bị cấm",
+        "Command substitution tự escape argv",
+        "Word splitting/globbing có thể phá ranh giới tên"
+      ],
+      "correct": 3,
+      "explanation": "Text output không tự là danh sách argument an toàn."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Null reader delimiter",
+      "question": "Trong Bash, read -d \"\" chọn delimiter nào?",
+      "options": [
+        "NUL theo quy tắc Bash",
+        "Dấu cách",
+        "Newline bắt buộc",
+        "Một string rỗng làm loop vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "Đây là khả năng Bash cần đúng interpreter."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "IFS empty read",
+      "question": "IFS= trước read trong vòng filename nhằm gì?",
+      "options": [
+        "Tự decode JSON",
+        "Tránh trim/chia theo IFS cho dữ liệu được đọc",
+        "Tự sort filenames",
+        "Tự xóa newline nội bộ"
+      ],
+      "correct": 1,
+      "explanation": "Kết hợp -r và delimiter đúng để giữ ranh giới dữ liệu."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Filename newline display",
+      "question": "Đọc filename bằng NUL an toàn rồi echo raw có tên chứa newline sẽ hiển thị thế nào?",
+      "options": [
+        "Tên bị tách thành hai lượt read chắc chắn",
+        "Echo tự bỏ mọi ký tự đặc biệt",
+        "Có thể nhiều dòng, nên log cần framing phù hợp",
+        "Luôn tự escape thành một dòng"
+      ],
+      "correct": 2,
+      "explanation": "An toàn khi truyền filename khác rõ ràng khi trình bày log."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Pipeline while state",
+      "question": "Biến tăng trong while ở phía phải pipeline có được bảo đảm giữ ở shell cha theo cấu hình Bash mặc định không?",
+      "options": [
+        "Có, mọi pipeline chia sẻ biến",
+        "Có, -r tự export biến",
+        "Có, IFS= tắt subshell",
+        "Không, loop thường chạy trong subshell"
+      ],
+      "correct": 3,
+      "explanation": "Có option/ngữ cảnh như lastpipe cần được xét riêng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Linux OS branch",
+      "question": "uname -s trả Linux thì OS mẫu nhận gì?",
+      "options": [
+        "linux",
+        "windows",
+        "macos",
+        "unknown"
+      ],
+      "correct": 0,
+      "explanation": "Case có pattern Linux*."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Darwin OS branch",
+      "question": "uname -s trả Darwin thì OS mẫu nhận gì?",
+      "options": [
+        "unknown",
+        "macos",
+        "linux",
+        "windows"
+      ],
+      "correct": 1,
+      "explanation": "Pattern Darwin* chọn nhánh này."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Mingw OS branch",
+      "question": "uname -s bắt đầu MINGW hoặc MSYS khiến OS nhận gì?",
+      "options": [
+        "macos",
+        "unknown",
+        "windows",
+        "linux"
+      ],
+      "correct": 2,
+      "explanation": "Đây là phân loại theo pattern minh họa."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Audit logging gap",
+      "question": "Source đã có audit log bền vững đầy đủ cho bài tập chưa?",
+      "options": [
+        "Có, mọi echo tự là audit store",
+        "Có, flock lưu mọi action",
+        "Có, TMPFILE tự chứa toàn bộ lịch sử",
+        "Chưa, chủ yếu echo thông báo"
+      ],
+      "correct": 3,
+      "explanation": "Cần implementation và policy audit riêng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Move lock boundary",
+      "question": "Muốn hai instance không cùng sửa config cần sửa thiết kế nào trước?",
+      "options": [
+        "Lấy lock phù hợp trước vùng read/modify/write cần bảo vệ",
+        "Chỉ đổi tên LOCKFILE",
+        "Chỉ giữ flock sau atomic_write",
+        "Chỉ thêm echo Locked trước write"
+      ],
+      "correct": 0,
+      "explanation": "Lock không bảo vệ ngược thời gian cho thao tác đã xảy ra."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Secure sibling temporary file",
+      "question": "Để thay file nguyên tử mà giảm race tên tạm cần gì?",
+      "options": [
+        "Luôn dùng /tmp khác filesystem và giả mv nguyên tử",
+        "Tạo temp độc quyền ở vùng/ filesystem phù hợp, kiểm quyền và cleanup",
+        "Chỉ thêm PID vào tên dễ đoán",
+        "Tạo tên rồi chờ lâu mới mở"
+      ],
+      "correct": 1,
+      "explanation": "Cần đồng thời xét an toàn tạo file và điều kiện rename."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Atomic versus durable contract",
+      "question": "Ứng dụng cần config còn đúng sau crash điện. Chỉ write rồi mv có đủ không?",
+      "options": [
+        "Đủ vì rename tự commit mọi dữ liệu mọi phần cứng",
+        "Đủ vì có lockfile",
+        "Chưa, cần quy trình durability phù hợp filesystem và xử lý lỗi đồng bộ",
+        "Đủ vì -f chính là fsync"
+      ],
+      "correct": 2,
+      "explanation": "Phải phân biệt visibility nguyên tử và persistence."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Validation before activate",
+      "question": "Muốn tránh kích hoạt config sai nhưng được ghi nguyên vẹn nên làm gì?",
+      "options": [
+        "Chỉ kiểm tmpfile tồn tại",
+        "Chỉ dùng mv -f",
+        "Chỉ tăng số X trong tên",
+        "Validate nội dung/quyền rồi mới thay đích theo giao thức"
+      ],
+      "correct": 3,
+      "explanation": "Ghi nguyên vẹn dữ liệu sai vẫn là lỗi nghiệp vụ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Concurrent writers and lost updates",
+      "question": "Hai writer đều đọc config cũ rồi rename bản sửa riêng. Atomic rename có tự ngăn lost update không?",
+      "options": [
+        "Không, cần phối hợp read/modify/write bằng lock/version contract",
+        "Có, rename merge nội dung tự động",
+        "Có, file mới luôn giữ cả hai thay đổi",
+        "Có, -e giải quyết concurrency"
+      ],
+      "correct": 0,
+      "explanation": "Atomic replacement không tự tạo đồng bộ nghiệp vụ."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Lock shared path discipline",
+      "question": "Các instance dùng hai path trỏ tới hai file lock khác nhau có mutual exclusion chung không?",
+      "options": [
+        "Có, lock suffix tự liên kết",
+        "Không chỉ vì cùng tên app; phải phối hợp cùng lock identity/mechanism",
+        "Có, flock tìm mọi script cùng title",
+        "Có, mọi descriptor200 toàn máy dùng chung lock"
+      ],
+      "correct": 1,
+      "explanation": "Số descriptor là local process, không là định danh lock toàn cục."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Child lock retention",
+      "question": "Script launch child không cần lock nhưng child thừa kế descriptor. Nên làm gì?",
+      "options": [
+        "Giả child không bao giờ giữ descriptor",
+        "Tự kill mọi child sau echo",
+        "Quản lý đóng descriptor/thời gian sống theo vùng bảo vệ",
+        "Luôn xóa pathname lock ngay khi launch"
+      ],
+      "correct": 2,
+      "explanation": "Tránh lock bị giữ ngoài phạm vi mong muốn mà không phá identity."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Cleanup all owned temps",
+      "question": "Trap chỉ dọn TMPFILE đầu script có đủ dọn temp target.tmp.PID sau lỗi ghi không?",
+      "options": [
+        "Có, tên có tmp tự được Bash tìm",
+        "Có, shred quét mọi file cùng PID",
+        "Có, local tự xóa filesystem khi function return",
+        "Không, cần theo dõi và cleanup tài nguyên riêng của atomic_write"
+      ],
+      "correct": 3,
+      "explanation": "Vòng đời local variable không tự quản lý file ngoài."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Shred threat model",
+      "question": "Muốn bảo vệ secret trên hệ thống có snapshot/backup cần tư duy nào?",
+      "options": [
+        "Giảm lưu plaintext, kiểm quyền/vòng đời/bản sao và chọn cơ chế phù hợp threat model",
+        "Chỉ shred một path là bảo đảm xóa mọi bản sao",
+        "Chỉ đổi đuôi thành .secret",
+        "Chỉ giấu stderr cleanup"
+      ],
+      "correct": 0,
+      "explanation": "Không đưa ra bảo đảm xóa vượt phạm vi storage/tool."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Trap unexpected termination",
+      "question": "Cần cleanup khi bị SIGKILL hoặc mất điện thì EXIT trap có đủ không?",
+      "options": [
+        "Có, -u chặn SIGKILL",
+        "Không, cần cơ chế phục hồi tài nguyên còn sót ngoài process",
+        "Có, EXIT luôn chạy sau mọi power loss",
+        "Có, thêm trap hai lần là đủ"
+      ],
+      "correct": 1,
+      "explanation": "Handler cần process đang hoạt động để chạy."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Filename traversal security",
+      "question": "NUL delimiters có tự chứng minh mọi file tìm được đều được phép sửa/xóa không?",
+      "options": [
+        "Có, find tự whitelist dữ liệu người dùng",
+        "Có, read -r làm filesystem readonly",
+        "Không, còn scope/ownership/authorization và race theo thao tác",
+        "Có, NUL là dấu xác thực"
+      ],
+      "correct": 2,
+      "explanation": "Bảo toàn ranh giới tên không thay chọn mục tiêu đúng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Directory race scope",
+      "question": "Giữa kiểm path và mở/rename file, môi trường ghi chung có thể gây gì?",
+      "options": [
+        "Check đầu luôn khóa đường dẫn vĩnh viễn",
+        "Quote shell loại mọi TOCTOU",
+        "PID suffix tự ngăn mọi symlink",
+        "Đối tượng/đường dẫn thay đổi, nên cần cơ chế thao tác và quyền phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Quoting không giải quyết race filesystem."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Builtin optimization correctness",
+      "question": "Trước khi thay pipeline bằng builtin để nhanh hơn cần kiểm gì?",
+      "options": [
+        "Tương đương semantics, edge cases và phép đo workload",
+        "Chỉ số process ít hơn",
+        "Chỉ ít dòng hơn",
+        "Chỉ có [[ là đủ"
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu sai kết quả không đáp ứng yêu cầu."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Count increment fix",
+      "question": "Muốn tăng count trong -e mà không dừng khi giá trị cũ0, hướng nào đúng?",
+      "options": [
+        "Giả count++ luôn status0",
+        "Dùng assignment arithmetic phù hợp hoặc xử lý status có chủ đích",
+        "Chỉ đổi count thành COUNT",
+        "Chỉ thêm comment Fast"
+      ],
+      "correct": 1,
+      "explanation": "Cần hiểu status arithmetic command trước khi dùng trong strict mode."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Null loop completion contract",
+      "question": "Nếu nguồn filename bị cắt giữa một record không có NUL cuối, loop read có thể bỏ phần cuối. Thiết kế cần gì?",
+      "options": [
+        "Đổi NUL thành space cho dễ parse",
+        "Bỏ mọi status producer",
+        "Xác định producer success/framing và xử lý input bị cắt nếu nằm trong scope",
+        "Giả mọi stream luôn đầy đủ vì có -d"
+      ],
+      "correct": 2,
+      "explanation": "Delimiter đúng không tự bảo đảm luồng được truyền đầy đủ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "OS label versus features",
+      "question": "OS=windows từ uname có tự bảo đảm flock/shred/GNU find và mọi option hoạt động không?",
+      "options": [
+        "Có, uname cài đủ mọi dependency",
+        "Có, Bash tự dịch mọi command",
+        "Có, OS label là capability list hoàn chỉnh",
+        "Không, cần kiểm tool/feature thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Portability dựa trên khả năng thực, không chỉ nhãn OS."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Audit event design",
+      "question": "Audit deploy nên giữ thông tin gì theo hợp đồng mà tránh lộ secret?",
+      "options": [
+        "Ai/lúc nào/tác vụ/đích/kết quả và định danh cần thiết với policy che dữ liệu",
+        "Toàn bộ environment gồm token",
+        "Chỉ một chữ done",
+        "Chỉ số file log"
+      ],
+      "correct": 0,
+      "explanation": "Audit phải hỗ trợ truy vết và quyền dữ liệu phù hợp."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Failure matrix test",
+      "question": "Để kiểm secure atomic writer nên có case nào?",
+      "options": [
+        "Chỉ có flock trong source",
+        "Temp creation/write/validation/rename lỗi, overlap và cleanup theo scope mô hình",
+        "Chỉ một echo thành công",
+        "Chỉ filename có PID"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm các ranh giới và đường lỗi cần hỗ trợ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Safe fixture strategy",
+      "question": "Muốn kiểm shell logic mà không sửa /etc hoặc giữ lock hệ thống thật nên làm gì?",
+      "options": [
+        "Chỉ đọc comment rồi khẳng định mọi filesystem pass",
+        "Tắt mọi kiểm quyền",
+        "Dùng fixture/stub trong phạm vi kiểm soát và ghi rõ giới hạn bằng chứng",
+        "Chạy source nguyên văn với quyền cao nhất"
+      ],
+      "correct": 2,
+      "explanation": "Mô hình local kiểm được logic, không tự chứng minh native filesystem/distributed behavior."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Secure deploy completion",
+      "question": "Để hoàn thành bài tập secure deployment cần gì ngoài các pattern mẫu?",
+      "options": [
+        "Chỉ title có chữ security",
+        "Chỉ set -euo pipefail",
+        "Chỉ gọi shred ở EXIT",
+        "Đúng vùng lock, temp an toàn, activate/rollback/durability theo yêu cầu, audit và kiểm behavior"
+      ],
+      "correct": 3,
+      "explanation": "Các pattern phải được tích hợp thành quy trình có hợp đồng rõ."
+    }
+  ]
+}

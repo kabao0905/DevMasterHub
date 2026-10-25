@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "mongodb",
+  "level": "senior",
+  "lesson": "advanced",
+  "language": "vi",
+  "sourceHash": "175847a4b9daf0848ea1d4da82b59aaa2dc1171048451cd014f7bce3180bba4d",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo transaction chuyển tiền và replica set. Đối chiếu MongoDB transaction core/callback API và Mongoose docs; mọi operation tham gia session, invariant số dư/quyền/idempotency không tự có. Không chạy DB, giao dịch thật, kết nối hay retry runtime.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Transaction",
+      "question": "Transaction nhiều document nhằm cung cấp ranh giới nào?",
+      "options": [
+        "Một nhóm thao tác có thể commit hoặc abort theo hợp đồng transaction",
+        "Mọi request HTTP trên Internet cùng một transaction",
+        "Một cách tự tạo mọi index còn thiếu",
+        "Một cơ chế tự phê duyệt chuyển tiền"
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt ranh giới database với toàn bộ nghiệp vụ và các dịch vụ ngoài."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Session",
+      "question": "Source tạo session qua API nào?",
+      "options": [
+        "Transaction.createSessionCookie()",
+        "mongoose.startSession()",
+        "mongoose.startServer()",
+        "Account.beginHTTP()"
+      ],
+      "correct": 1,
+      "explanation": "Session dùng cho các thao tác database liên quan, không là phiên đăng nhập HTTP."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Bắt đầu",
+      "question": "Lệnh nào trong mẫu bắt đầu transaction?",
+      "options": [
+        "console.log()",
+        "Account.findByIdAndUpdate không option",
+        "session.startTransaction()",
+        "session.endSession()"
+      ],
+      "correct": 2,
+      "explanation": "Khởi tạo session và bắt đầu transaction là hai bước khác nhau."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Ghi nợ",
+      "question": "Lệnh cập nhật tài khoản nguồn dùng biểu thức nào?",
+      "options": [
+        "$set balance luôn bằng amount",
+        "$inc balance với amount dương",
+        "$unset balance",
+        "$inc balance với -amount"
+      ],
+      "correct": 3,
+      "explanation": "Ý định là giảm số dư nguồn theo amount, nhưng chưa có validation/guard nghiệp vụ."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Ghi có",
+      "question": "Tài khoản đích được cập nhật bằng cách nào?",
+      "options": [
+        "$inc balance với amount",
+        "$inc balance với -amount",
+        "$set balance bằng 0",
+        "$unset toàn document"
+      ],
+      "correct": 0,
+      "explanation": "Hai update cần cùng tham gia ranh giới transaction."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Session option",
+      "question": "Mỗi update Account trong source được truyền option nào để tham gia transaction?",
+      "options": [
+        "{retryAll:true}",
+        "{session}",
+        "{newSession:true}",
+        "{auth:session.user}"
+      ],
+      "correct": 1,
+      "explanation": "Tham gia transaction cần session đúng; một biến session tồn tại không tự bao phủ mọi operation."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Bản ghi giao dịch",
+      "question": "Transaction.create trong source lưu những thông tin nào?",
+      "options": [
+        "Toàn bộ cấu hình replica set",
+        "Token của mọi client",
+        "from, to, amount và type transfer",
+        "Mọi password của hai tài khoản"
+      ],
+      "correct": 2,
+      "explanation": "Đây là record nghiệp vụ do ứng dụng định nghĩa, không phải cơ chế transaction nội bộ của MongoDB."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Create array",
+      "question": "Vì sao source truyền mảng document cho Transaction.create kèm options?",
+      "options": [
+        "Để tạo nhiều session đăng nhập",
+        "Để tự shard collection",
+        "Để bỏ validation mọi trường",
+        "Để dùng dạng API tạo document với options session được thể hiện rõ"
+      ],
+      "correct": 3,
+      "explanation": "Dạng gọi phải theo API Mongoose/version phù hợp; ở đây mảng chứa một record."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Commit",
+      "question": "Lệnh commit trong mẫu là gì?",
+      "options": [
+        "await session.commitTransaction()",
+        "await session.abortTransaction()",
+        "session.endSession()",
+        "console.log(\"Transfer successful!\")"
+      ],
+      "correct": 0,
+      "explanation": "Log thành công đứng sau await commit, nhưng vẫn cần kiểm invariant trước commit."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Abort",
+      "question": "Khi rơi vào catch, source có ý định làm gì trước khi ném lại lỗi?",
+      "options": [
+        "Tắt replica set",
+        "Abort transaction",
+        "Commit mọi thao tác một lần nữa",
+        "Xóa toàn database"
+      ],
+      "correct": 1,
+      "explanation": "Abort nhắm các ghi thuộc transaction, không đảo mọi side effect ngoài DB."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Rethrow",
+      "question": "throw error trong catch có vai trò gì?",
+      "options": [
+        "Tự đổi amount thành số hợp lệ",
+        "Tự gửi email cho owner",
+        "Truyền thất bại ra caller thay vì coi luồng là thành công",
+        "Tự chạy lại mọi request HTTP"
+      ],
+      "correct": 2,
+      "explanation": "Caller vẫn cần phân loại lỗi và kết quả theo hợp đồng API."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Finally",
+      "question": "Khối finally trong source dùng để làm gì?",
+      "options": [
+        "Tự commit kể cả khi transaction lỗi",
+        "Tự duyệt quyền tài khoản",
+        "Tự tạo tài khoản đích bị thiếu",
+        "Kết thúc session theo vòng đời cleanup"
+      ],
+      "correct": 3,
+      "explanation": "Cleanup session khác với xác nhận nghiệp vụ thành công."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Điều kiện amount",
+      "question": "Source đã kiểm amount là số dương hợp lệ chưa?",
+      "options": [
+        "Chưa",
+        "Rồi, $inc tự cấm mọi số âm",
+        "Rồi, transaction tự áp mọi quy tắc tiền",
+        "Rồi, type transfer là validation số"
+      ],
+      "correct": 0,
+      "explanation": "Không biến một API ghi số thành chính sách nghiệp vụ chưa được viết."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Số dư",
+      "question": "Filter tài khoản nguồn trong source có điều kiện balance>=amount không?",
+      "options": [
+        "Có, Transaction.create tự chặn mọi số dư âm",
+        "Không",
+        "Có, findByIdAndUpdate tự thêm điều kiện đó",
+        "Có, session tự đọc ý định chuyển tiền"
+      ],
+      "correct": 1,
+      "explanation": "Chỉ định danh chưa kiểm đủ điều kiện để trừ tiền."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Quyền",
+      "question": "Source có kiểm caller được phép sử dụng fromAccountId chưa?",
+      "options": [
+        "Rồi, transaction tự xác thực HTTP",
+        "Rồi, finally kiểm quyền",
+        "Chưa",
+        "Rồi, biết ID tự là owner"
+      ],
+      "correct": 2,
+      "explanation": "Quyền tác động lên entity là một lớp riêng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Không match",
+      "question": "Một update không tìm thấy tài khoản có bắt buộc ném lỗi chỉ vì không match không?",
+      "options": [
+        "Có, mọi no-match tự abort",
+        "Có, session tự tạo tài khoản rồi ném lỗi",
+        "Không, vì MongoDB không hỗ trợ filter",
+        "Không; cần kiểm kết quả theo API"
+      ],
+      "correct": 3,
+      "explanation": "Không có exception chưa chứng minh có ghi nợ/ghi có đúng entity."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Replica set",
+      "question": "Replica set chủ yếu phục vụ mục tiêu nào?",
+      "options": [
+        "Duy trì các bản sao dữ liệu và cơ chế sẵn sàng theo topology",
+        "Chia mỗi document thành các field ở mọi shard",
+        "Tự lưu bản backup bất biến vô thời hạn",
+        "Thay mọi kiểm tra consistency của ứng dụng"
+      ],
+      "correct": 0,
+      "explanation": "Replication, sharding và backup là các khái niệm khác nhau."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Topology transaction",
+      "question": "Có nên mặc định transaction nhiều document chạy trên standalone MongoDB thông thường không?",
+      "options": [
+        "Chỉ cần một biến session trong Node",
+        "Không; cần deployment hỗ trợ như replica set hoặc sharded cluster phù hợp",
+        "Có, mọi standalone đều hỗ trợ mọi transaction nhiều document",
+        "Chỉ cần collection tên Transaction"
+      ],
+      "correct": 1,
+      "explanation": "Tên model hoặc code client không thay khả năng topology server."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Idempotency",
+      "question": "Idempotency của một yêu cầu chuyển tiền giúp giải quyết vấn đề nào?",
+      "options": [
+        "Tự thay mọi transaction nhiều document",
+        "Tự bỏ quyền truy cập tài khoản",
+        "Tránh áp dụng lặp cùng ý định nghiệp vụ khi request được gửi lại theo contract",
+        "Tự chứng minh mọi amount hợp lệ"
+      ],
+      "correct": 2,
+      "explanation": "Phải thiết kế key, phạm vi và tính nhất quán; source chưa có cơ chế đó."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Phụ thuộc thiếu",
+      "question": "Các model Account/Transaction và connection có được định nghĩa đầy đủ trong source bài này chưa?",
+      "options": [
+        "Rồi, mongoose.startSession tự tạo model",
+        "Rồi, console.log tạo connection",
+        "Chưa, vì Mongoose không có model",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Snippet cần ngữ cảnh ứng dụng phù hợp trước khi có thể chạy."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Dòng số dư",
+      "question": "Giả sử amount 30, nguồn 100, đích 20, hai update đúng entity và commit thành công. Số dư theo biểu thức là gì?",
+      "options": [
+        "Nguồn 70, đích 50",
+        "Nguồn 130, đích -10",
+        "Nguồn 30, đích 30",
+        "Nguồn 100, đích 20"
+      ],
+      "correct": 0,
+      "explanation": "Suy luận số học theo $inc, không phải kết quả đã chạy database."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Amount âm",
+      "question": "Nếu amount=-10 không bị chặn, biểu thức source có thể làm gì với số dư?",
+      "options": [
+        "Không thay đổi vì mọi số âm bị $inc bỏ qua",
+        "Tăng nguồn 10 và giảm đích 10, ngược ý định chuyển dương",
+        "Tự đổi amount thành 10 dương",
+        "Tự abort vì MongoDB hiểu nghiệp vụ ngân hàng"
+      ],
+      "correct": 1,
+      "explanation": "Cần validate amount trước khi dùng dấu âm/dương của nó trong update."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Amount0",
+      "question": "Nếu nghiệp vụ cấm chuyển 0, transaction có tự áp quy tắc này không?",
+      "options": [
+        "Có, type transfer tự định nghĩa giá trị tối thiểu",
+        "Không, vì không thể so sánh amount với0",
+        "Không, cần validation và error contract phù hợp",
+        "Có, transaction luôn cấm mọi update có mức tăng 0"
+      ],
+      "correct": 2,
+      "explanation": "Atomicity không thay quy tắc giá trị được phép."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Amount chuỗi",
+      "question": "API nhận amount từ JSON có thể là chuỗi hoặc giá trị sai. Thiết kế cần kiểm gì?",
+      "options": [
+        "Chỉ dựa vào tên field amount",
+        "Chỉ chuyển mọi input sai thành0 rồi báo thành công",
+        "Chỉ thêm session vào console.log",
+        "Kiểu, miền giá trị và representation theo hợp đồng trước các phép ghi"
+      ],
+      "correct": 3,
+      "explanation": "Không dùng coercion ngầm như bằng chứng đầu vào nghiệp vụ đúng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Thiếu nguồn",
+      "question": "Nguồn không tồn tại, update trả kết quả không match mà không throw; đích tồn tại. Nếu source không kiểm kết quả, rủi ro gì?",
+      "options": [
+        "Có thể ghi có và record dù không có ghi nợ tương ứng",
+        "Transaction tự bổ sung tài khoản nguồn đúng policy",
+        "Commit luôn bị cấm vì Account model biết ý định",
+        "Không rủi ro vì không có exception"
+      ],
+      "correct": 0,
+      "explanation": "Cần biến điều kiện nghiệp vụ không đạt thành thất bại trước commit."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Thiếu đích",
+      "question": "Nguồn match nhưng đích không tồn tại; code không kiểm kết quả update đích. Vấn đề nào cần chặn?",
+      "options": [
+        "Transaction.create tự gửi tiền ra ngoài",
+        "Ghi nợ có thể commit mà không có ghi có tương ứng",
+        "Đích tự được upsert trong source",
+        "MongoDB tự tìm một đích khác"
+      ],
+      "correct": 1,
+      "explanation": "Source không có upsert hoặc xử lý missing-account đầy đủ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Số dư thiếu",
+      "question": "Nguồn có 20, amount 30 và filter chỉ theo id. Có gì chưa được bảo vệ?",
+      "options": [
+        "Thời gian log phải ở UTC",
+        "Số lượng replica phải luôn bằng amount",
+        "Invariant không cho số dư âm theo policy nếu nghiệp vụ yêu cầu",
+        "Tên collection bắt buộc là accounts"
+      ],
+      "correct": 2,
+      "explanation": "Cần điều kiện và kiểm kết quả phù hợp, không chỉ ranh giới atomic."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Conditional debit",
+      "question": "Để trừ tiền khi số dư đủ trong một thao tác ghi theo policy, nên xem thiết kế nào?",
+      "options": [
+        "Đọc số dư một lần ngoài transaction rồi bỏ mọi điều kiện ghi",
+        "Chỉ đổi $inc thành $set luôn bằng amount",
+        "Chỉ bật retryWrites để đủ số dư",
+        "Filter gồm định danh/quyền và điều kiện số dư, rồi kiểm kết quả match trước tiếp tục"
+      ],
+      "correct": 3,
+      "explanation": "Điều kiện trong thao tác và ranh giới nhất quán cần bảo vệ invariant thực sự."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cùng tài khoản",
+      "question": "fromAccountId và toAccountId giống nhau. Cần làm gì theo thiết kế nghiệp vụ?",
+      "options": [
+        "Định nghĩa rõ cho phép/từ chối và tác động record, không suy transaction tự quyết định",
+        "Luôn coi là lỗi cú pháp MongoDB",
+        "Tự đổi đích thành một tài khoản ngẫu nhiên",
+        "Tự chuyển amount thành phí"
+      ],
+      "correct": 0,
+      "explanation": "Code đúng kiểu chưa xác định ý nghĩa nghiệp vụ của self-transfer."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Thiếu session record",
+      "question": "Nếu Transaction.create bỏ option session còn hai update có session, điều gì không còn được bảo đảm?",
+      "options": [
+        "Tài khoản tự được backup",
+        "Record và cập nhật số dư cùng thuộc một ranh giới commit/abort",
+        "Mọi model dùng mongoose tự tham gia session gần nhất trong mọi API",
+        "Record tự bị xóa nếu console.log không chạy"
+      ],
+      "correct": 1,
+      "explanation": "Source đang truyền session rõ; không nên bỏ mà vẫn claim atomic toàn nhóm."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Thiếu session update",
+      "question": "Update đích không truyền session trong core pattern này. Cần xem gì?",
+      "options": [
+        "Commit tự tìm mọi ghi trong cùng file để gộp",
+        "Chỉ record type bị ảnh hưởng",
+        "Nó có thể nằm ngoài transaction, phá hợp đồng nhất quán của nhóm thao tác",
+        "Nó luôn được tự thêm session bởi tên biến toAccountId"
+      ],
+      "correct": 2,
+      "explanation": "Không suy việc cùng process/file là cùng transaction."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Lỗi trước commit",
+      "question": "Nếu một thao tác trong transaction thất bại và abort được thực hiện thành công trước commit, ý định với các ghi thuộc transaction là gì?",
+      "options": [
+        "Giữ riêng debit nhưng bỏ credit theo tên collection",
+        "Tự commit mọi ghi đã chạy trước lỗi",
+        "Xóa toàn bộ lịch sử tài khoản",
+        "Không commit nhóm ghi đó"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi là các operation thực tham gia transaction."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Log thành công",
+      "question": "Dòng Transfer successful được đặt ở đâu trong source?",
+      "options": [
+        "Sau await commitTransaction trong try",
+        "Trước startTransaction",
+        "Trong finally bất kể kết quả",
+        "Trong catch trước abort"
+      ],
+      "correct": 0,
+      "explanation": "Vị trí log phản ánh luồng control, chưa chứng minh mọi invariant đã được kiểm."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Không catch không invariant",
+      "question": "Một update không match nhưng không throw. Catch có tự xử lý trường hợp đó không?",
+      "options": [
+        "Không, vì JavaScript không có catch cho async",
+        "Không, cần kiểm kết quả và chủ động phản ánh thất bại nghiệp vụ",
+        "Có, catch chạy sau mọi update kể cả thành công",
+        "Có, record transfer tự throw cho mọi missing account"
+      ],
+      "correct": 1,
+      "explanation": "Exception flow chỉ chạy với lỗi thực sự được ném/reject."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Session cleanup",
+      "question": "Nếu code throw trong try/catch và finally được chạy, khối cleanup nhằm mục tiêu gì?",
+      "options": [
+        "Tự retry mãi không giới hạn",
+        "Tự đảo mọi webhook đã gửi",
+        "Giải phóng vòng đời session theo API, không che kết quả transaction",
+        "Tự xác nhận request đã thành công"
+      ],
+      "correct": 2,
+      "explanation": "Nên quản lý cleanup và lỗi để không báo sai trạng thái."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Client timeout",
+      "question": "Client không nhận response sau commit có thể chắc DB chưa ghi không?",
+      "options": [
+        "Có; timeout luôn đồng nghĩa rollback",
+        "Có; HTTP timeout tự abort transaction đã commit",
+        "Không, vì MongoDB không thể timeout",
+        "Không; kết quả phía client có thể chưa rõ dù DB đã commit"
+      ],
+      "correct": 3,
+      "explanation": "Phải thiết kế xử lý kết quả chưa rõ và retry nghiệp vụ."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Unknown commit",
+      "question": "Lỗi được gắn UnknownTransactionCommitResult cần được hiểu thế nào?",
+      "options": [
+        "Kết quả commit chưa chắc chắn với client; cần cơ chế xử lý/retry commit phù hợp",
+        "Chắc chắn mọi ghi đã bị abort",
+        "Chắc chắn mọi ghi thất bại trước khi tới server",
+        "Chỉ là lỗi format console.log"
+      ],
+      "correct": 0,
+      "explanation": "Không tự chạy lại toàn nghiệp vụ như thể chưa có tác động mà không xử lý đúng contract."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Transient retry",
+      "question": "Callback transaction API có thể xử lý retry cho loại lỗi nào theo docs?",
+      "options": [
+        "Mọi lỗi từ dịch vụ ngoài được rollback",
+        "Các transient transaction errors theo semantics driver/API",
+        "Mọi lỗi validation nghiệp vụ được tự sửa",
+        "Mọi password sai của caller"
+      ],
+      "correct": 1,
+      "explanation": "Core API thủ công và helper callback không có cùng phần logic ứng dụng phải viết."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Core API",
+      "question": "Source dùng startTransaction/commit/abort trực tiếp. Có thể coi nó đã dùng helper withTransaction chưa?",
+      "options": [
+        "Có, startSession tự đổi tên mọi method",
+        "Không, vì helper không tồn tại",
+        "Không",
+        "Có, mọi try/catch tự là helper withTransaction"
+      ],
+      "correct": 2,
+      "explanation": "Cần giữ phạm vi retry/cleanup thực hiện bởi API đang dùng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Retry callback",
+      "question": "Nếu transaction callback có thể chạy lại, điều gì cần xem với việc gửi email trong callback?",
+      "options": [
+        "Database tự thu hồi email lần trước",
+        "Email tự thuộc session vì cùng function",
+        "Chỉ đổi subject là tránh lặp",
+        "Email là side effect ngoài DB có thể bị lặp; cần thiết kế delivery phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Database transaction không tự quản lý mọi hiệu ứng bên ngoài."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Outbox",
+      "question": "Outbox theo thiết kế phù hợp giúp kết nối vấn đề nào?",
+      "options": [
+        "Ghi ý định sự kiện cùng dữ liệu và xử lý gửi ngoài DB có retry/dedup",
+        "Tự loại bỏ mọi yêu cầu authorization",
+        "Tự biến mọi webhook thành exactly-once tuyệt đối",
+        "Tự cấp quyền cho email provider"
+      ],
+      "correct": 0,
+      "explanation": "Cần consumer/lifecycle/idempotency; không chỉ thêm tên collection outbox."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Parallelism",
+      "question": "Theo Mongoose transaction docs hiện được đọc, dùng Promise.all để song song các operations trong một transaction có nên mặc định an toàn không?",
+      "options": [
+        "Không, vì JavaScript không có Promise.all",
+        "Không; tài liệu cảnh báo không hỗ trợ/undefined behavior cho kiểu song song đó",
+        "Có, càng song song càng atomic hơn",
+        "Có, session tự tuần tự mọi Promise trong mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Source dùng await tuần tự; không đổi sang song song chỉ để hứa nhanh hơn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Một session",
+      "question": "Hai transaction độc lập chạy lồng trên cùng session có được coi mặc định hợp lệ không?",
+      "options": [
+        "Có, chỉ cần tên session giống nhau",
+        "Không, vì MongoDB không có nhiều client",
+        "Không; cần tuân giới hạn API/session và thiết kế ranh giới transaction",
+        "Có, mỗi function tự tạo một transaction ngầm"
+      ],
+      "correct": 2,
+      "explanation": "Không lồng hoặc tái sử dụng session đồng thời mù quáng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Permission tài khoản",
+      "question": "Caller được đăng nhập có tự được trừ tiền bất kỳ accountId hợp lệ không?",
+      "options": [
+        "Có; ID hợp lệ chứng minh ownership",
+        "Có; transaction tự kiểm JWT",
+        "Không, vì chỉ admin mới có ObjectId",
+        "Không; cần quyền trên tài khoản nguồn và quy tắc đích"
+      ],
+      "correct": 3,
+      "explanation": "Authentication và authorization entity là hai điều khác nhau."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Idempotency key",
+      "question": "Hai lần gửi cùng yêu cầu sau timeout muốn chỉ một transfer nghiệp vụ. Cần điều gì?",
+      "options": [
+        "Một contract idempotency/định danh được enforce nhất quán cùng cập nhật dữ liệu",
+        "Chỉ cùng chuỗi console.log",
+        "Chỉ amount bằng nhau",
+        "Chỉ tên tài khoản nguồn giống nhau"
+      ],
+      "correct": 0,
+      "explanation": "Key phải gắn với ý định và được lưu/kiểm theo ranh giới đúng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Cùng key khác payload",
+      "question": "Request dùng lại idempotency key cũ nhưng đổi amount. Cần thiết kế gì?",
+      "options": [
+        "Chỉ đổi timestamp log",
+        "Phân biệt xung đột ý định/payload theo policy, không tự áp lần mới như cùng request",
+        "Luôn cộng hai amount vì cùng key",
+        "Bỏ key rồi ghi mới tự động"
+      ],
+      "correct": 1,
+      "explanation": "Idempotency không đồng nghĩa mọi payload cùng key đều được coi tương đương."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Unique transfer key",
+      "question": "Chỉ kiểm trước chưa có record key rồi ghi có đủ chống mọi race không?",
+      "options": [
+        "Có, JavaScript await làm cả hệ thống tuần tự",
+        "Không, vì MongoDB không có unique index",
+        "Không; cần ràng buộc/coordination phù hợp và xử lý xung đột",
+        "Có, đọc trước luôn khóa mọi process"
+      ],
+      "correct": 2,
+      "explanation": "Invariant chống lặp cần được enforce vượt một lần kiểm ở một process."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Representation tiền",
+      "question": "Vì sao cần quyết định representation amount/balance thay vì dùng số tùy tiện?",
+      "options": [
+        "Tên amount tự tạo độ chính xác vô hạn",
+        "$inc tự áp quy tắc mọi đồng tiền",
+        "Transaction tự đổi mọi double thành decimal",
+        "Kiểu số, precision và quy tắc làm tròn ảnh hưởng invariant nghiệp vụ"
+      ],
+      "correct": 3,
+      "explanation": "Đây là thiết kế dữ liệu, không phải khuyến nghị tài chính."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Ngoài phạm vi rollback",
+      "question": "Gửi webhook thành công trước commit rồi DB abort. Điều gì đúng?",
+      "options": [
+        "Webhook đã gửi không tự bị DB thu hồi",
+        "Abort tự xóa request ở server ngoài",
+        "Webhook nhận option session qua network ngầm",
+        "Không thể gửi webhook khi có transaction"
+      ],
+      "correct": 0,
+      "explanation": "Cần quản lý nhất quán xuyên hệ thống theo ranh giới thực."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Định nghĩa ACID",
+      "question": "Atomicity trong nhóm transaction có nghĩa nào phù hợp?",
+      "options": [
+        "Mọi read trên replica đều luôn mới nhất",
+        "Các ghi tham gia transaction được commit/abort theo ranh giới đó",
+        "Mọi giá trị nghiệp vụ tự hợp lệ",
+        "Mọi request bên ngoài tự đúng một lần"
+      ],
+      "correct": 1,
+      "explanation": "Không mở rộng atomicity thành mọi đặc tính khác."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Replica vs shard",
+      "question": "Replica set và sharding khác mục tiêu chính thế nào?",
+      "options": [
+        "Replica set tự chia mỗi account theo amount",
+        "Sharding tự thay mọi backup",
+        "Replication tạo bản sao; sharding phân vùng dữ liệu theo thiết kế",
+        "Hai thuật ngữ luôn cùng một thứ"
+      ],
+      "correct": 2,
+      "explanation": "Một kiến trúc có thể kết hợp chúng nhưng không được đồng nhất."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Replica không backup",
+      "question": "Vì sao replica set không tự thay toàn bộ backup/restore?",
+      "options": [
+        "Replica luôn giữ mọi phiên bản bất biến vô hạn",
+        "Replica tự chặn mọi lỗi người vận hành",
+        "Backup không cần khi có primary",
+        "Thay đổi/xóa có thể được replicate; cần chính sách phục hồi dữ liệu riêng"
+      ],
+      "correct": 3,
+      "explanation": "Sẵn sàng và khả năng phục hồi lịch sử là các hợp đồng khác nhau."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Read preference",
+      "question": "Đọc từ secondary có tự bảo đảm vừa thấy mọi ghi mới nhất trên primary không?",
+      "options": [
+        "Không; cần hiểu read/write concern, lag và consistency theo yêu cầu",
+        "Có, mọi secondary luôn cùng thời điểm tuyệt đối",
+        "Có, field balance tự bắt primary",
+        "Không, vì secondary không được đọc trong mọi cấu hình"
+      ],
+      "correct": 0,
+      "explanation": "Không suy consistency chỉ từ việc có nhiều bản sao."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Failover",
+      "question": "Có replica set có nghĩa ứng dụng không bao giờ thấy gián đoạn/lỗi chọn server không?",
+      "options": [
+        "Không, vì replica set không có cơ chế bầu primary",
+        "Không; cần xử lý failover/timeout/retry phù hợp",
+        "Có, replica set cam kết mọi thao tác không thể lỗi",
+        "Có, startSession tự là circuit breaker hoàn chỉnh"
+      ],
+      "correct": 1,
+      "explanation": "HA có điều kiện, không là bảo đảm sẵn sàng tuyệt đối."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Transaction lớn",
+      "question": "Giữ transaction mở rất lâu và làm nhiều công việc không cần thiết có cần xem chi phí không?",
+      "options": [
+        "Không, session tự chạy ngoài database",
+        "Chỉ số dòng console.log bị ảnh hưởng",
+        "Có, thời lượng/tài nguyên/contention và giới hạn deployment cần xét",
+        "Không, transaction không dùng tài nguyên"
+      ],
+      "correct": 2,
+      "explanation": "Nên giữ ranh giới phù hợp mà không phá invariant."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Session cùng client",
+      "question": "Lấy session của một client/connection rồi dùng tùy tiện với operation connection khác có nên mặc định hợp lệ không?",
+      "options": [
+        "Có, mọi session là global token dùng mọi server",
+        "Có, chỉ cần biến cùng tên",
+        "Không, vì Mongoose chỉ hỗ trợ một model",
+        "Không; cần đúng client/session/connection contract của API"
+      ],
+      "correct": 3,
+      "explanation": "Session không là quyền truy cập phổ quát mọi deployment."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Account model chưa có",
+      "question": "Mẫu không cho schema balance và account ownership. Điều gì chưa thể suy chắc?",
+      "options": [
+        "Kiểu/validation/invariant và quyền trên các field tài khoản",
+        "Tên operation $inc đang dùng",
+        "Thứ tự hai update trong code",
+        "Có option session ở hai update"
+      ],
+      "correct": 0,
+      "explanation": "Không tự điền những ràng buộc không được trình bày."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Không commit từng bước",
+      "question": "Tại sao không commit sau debit rồi mở transaction mới cho credit khi yêu cầu cả cặp cùng thành công?",
+      "options": [
+        "Vì Transaction.create không thể có session",
+        "Vì tách ranh giới có thể để debit tồn tại khi credit lỗi",
+        "Vì mọi MongoDB transaction chỉ được có một update",
+        "Vì commit tự xóa mọi Account"
+      ],
+      "correct": 1,
+      "explanation": "Ranh giới commit phải theo invariant cần giữ."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Logging và kết quả",
+      "question": "Chỉ thấy log Transfer successful có đủ kiểm chứng conservation và quyền không?",
+      "options": [
+        "Có, console.log chỉ in khi business đúng",
+        "Không, vì log luôn bị MongoDB sửa",
+        "Không; code có thể chưa kiểm missing account/amount/permission trước commit",
+        "Có, log đứng sau commit tự chứng minh mọi invariant"
+      ],
+      "correct": 2,
+      "explanation": "Control flow thành công không thay kiểm các điều kiện nghiệp vụ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Phạm vi bằng chứng",
+      "question": "Soạn quiz và đối chiếu transaction docs có chứng minh transfer đã chạy trên replica set không?",
+      "options": [
+        "Có, schema80câu tự mở session",
+        "Có, b.save chạy code lesson",
+        "Không, vì replica set không hỗ trợ test",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Serializer của quiz không thực thi đoạn database mẫu."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Debit không match",
+      "question": "Nguồn không có nhưng đích hợp lệ; cả hai update không ném lỗi, record được tạo. Muốn giữ invariant chuyển tiền cần sửa gì?",
+      "options": [
+        "Kiểm match/điều kiện nghiệp vụ của từng bước trong ranh giới transaction và abort khi không đạt",
+        "Chỉ giữ try/catch hiện tại vì no-match luôn lỗi",
+        "Chỉ đổi log thành Verified",
+        "Chỉ tăng replica count"
+      ],
+      "correct": 0,
+      "explanation": "Commit có thể hợp lệ về DB nhưng sai nghiệp vụ nếu code không xác nhận các update mong muốn."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Số dư và cạnh tranh",
+      "question": "Hai request đều đọc nguồn 100 rồi muốn chuyển 80 tới hai đích khác nhau. Thiết kế nào cần bảo vệ hơn chỉ check ngoài transaction?",
+      "options": [
+        "Chỉ đổi read preference thành secondary",
+        "Điều kiện ghi/ràng buộc nhất quán số dư và xử lý conflict/retry đúng, kiểm kết quả trước ghi có",
+        "Chỉ dùng hai biến balance local vì mỗi request thấy100",
+        "Chỉ thêm session vào console.log"
+      ],
+      "correct": 1,
+      "explanation": "Atomicity của từng thao tác không tự giữ điều kiện dựa trên trạng thái đọc cũ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Commit chưa rõ",
+      "question": "Client gặp UnknownTransactionCommitResult rồi định gửi lại toàn request với key mới. Rủi ro và cách xử lý đúng là gì?",
+      "options": [
+        "Mọi key mới tự tham chiếu transaction cũ",
+        "Chỉ cần bỏ response để request không còn tác động",
+        "Có thể áp lặp ý định đã commit; cần xử lý commit outcome và idempotency/provenance phù hợp",
+        "Không rủi ro vì lỗi này chứng minh DB đã abort"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất chưa biết kết quả với chưa có tác động."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Record ngoài session",
+      "question": "Hai số dư trong session bị abort, nhưng record transfer được tạo không có session. Cần hiểu và sửa gì?",
+      "options": [
+        "Model tên Transaction tự làm record rollback",
+        "Finally xóa mọi record trong cùng request",
+        "Chỉ cần đổi type transfer thành aborted mà không kiểm dữ liệu",
+        "Record có thể tồn tại ngoài nhóm; phải đưa các ghi cần atomic vào cùng session/ràng buộc"
+      ],
+      "correct": 3,
+      "explanation": "Một thao tác nằm ngoài transaction không tự nhận bảo đảm commit/abort của nhóm."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Webhook lặp callback",
+      "question": "Helper transaction retry callback; callback gửi webhook rồi gặp transient error. Thiết kế nào giữ đúng delivery?",
+      "options": [
+        "Tách side effect qua cơ chế như outbox và consumer idempotent theo contract",
+        "Coi database tự thu hồi webhook lần trước",
+        "Bỏ mọi retry để dữ liệu luôn đúng",
+        "Chỉ tăng timeout HTTP để webhook tự dedup"
+      ],
+      "correct": 0,
+      "explanation": "Callback có thể chạy nhiều lần; side effect ngoài DB cần cơ chế riêng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Validation amount tổng hợp",
+      "question": "Source nhận amount=-10, from bằng to, và caller không sở hữu tài khoản. Một transaction commit thành công đã đủ chưa?",
+      "options": [
+        "Chỉ thiếu log amount",
+        "Chưa; phải kiểm value/entity/permission và invariant nghiệp vụ trước quyết định ghi/commit",
+        "Rồi, atomicity tự áp mọi quy tắc này",
+        "Rồi, cùng tài khoản tự chứng minh authorization"
+      ],
+      "correct": 1,
+      "explanation": "Transaction không thay contract đầu vào và thẩm quyền thao tác."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Retry không phải loop mọi lỗi",
+      "question": "Một transfer bị validation fail do amount sai. Có nên retry toàn transaction vô hạn như lỗi transient không?",
+      "options": [
+        "Có, retry tự sửa amount",
+        "Không, vì transaction không có retry helper",
+        "Không; phân loại lỗi, giữ budget/deadline và chỉ retry theo contract của lỗi/API",
+        "Có, mọi lỗi cuối cùng đều hết nếu retry đủ"
+      ],
+      "correct": 2,
+      "explanation": "Cần tách lỗi nghiệp vụ cố định khỏi lỗi có khả năng phục hồi."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Parallelization",
+      "question": "Đội đổi ba await source thành Promise.all trong cùng session để giảm thời gian. Theo Mongoose docs, cần đánh giá gì?",
+      "options": [
+        "Promise.all luôn tăng tính atomic của transaction",
+        "Session tự làm mọi Promise an toàn nên không cần review",
+        "Chỉ log order thay đổi, dữ liệu không thể bị ảnh hưởng",
+        "Cách song song đó không được hỗ trợ/undefined; giữ luồng theo API và đo tối ưu hợp lệ khác"
+      ],
+      "correct": 3,
+      "explanation": "Không hứa tăng tốc bằng thay đổi trái giới hạn framework."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Read-modify-write",
+      "question": "Một handler đọc balance ngoài transaction, tính số mới rồi $set trong transaction; handler khác cũng làm vậy. Vì sao có thể sai?",
+      "options": [
+        "Giá trị dùng quyết định có thể cũ; cần ràng buộc/version/toán tử và consistency phù hợp invariant",
+        "StartTransaction tự làm mọi biến local đọc lại đúng thời điểm",
+        "$set tự cộng mọi thay đổi ngoài ý định",
+        "Cùng model Account tự khóa cả request từ lúc đọc"
+      ],
+      "correct": 0,
+      "explanation": "Ranh giới transaction không tự bao phủ mọi đọc đã xảy ra trước đó."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Idempotency race",
+      "question": "Hai process cùng nhận key K và cùng thấy chưa có record K. Thiết kế chống lặp cần nối gì?",
+      "options": [
+        "Chỉ đặt timeout client dài hơn",
+        "Ràng buộc key/payload và cập nhật số dư trong ranh giới nhất quán, xử lý xung đột và trả outcome đúng",
+        "Chỉ một if trước transaction là đủ trong mọi process",
+        "Chỉ ghi K vào log"
+      ],
+      "correct": 1,
+      "explanation": "Chống lặp là invariant nhiều tác nhân, không chỉ một cache local."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Cùng key đổi amount",
+      "question": "Request đầu key K amount 20 đã commit, request sau dùng K amount 50. API nên có hợp đồng nào?",
+      "options": [
+        "Luôn bỏ key cũ rồi chạy amount 50",
+        "Coi mọi request cùng key luôn có amount giống nhau",
+        "Phát hiện khác ý định/payload và xử lý theo policy thay vì áp thêm hoặc báo nhầm cùng kết quả",
+        "Tự cộng thêm30 để tổng thành50 mà không có quyền mới"
+      ],
+      "correct": 2,
+      "explanation": "Key chỉ có ý nghĩa khi liên kết với nội dung và phạm vi thao tác."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Đích thiếu sau debit",
+      "question": "Debit match, credit không match, code vẫn tạo record. Cách giữ invariant hợp lý là gì?",
+      "options": [
+        "Commit debit vì await không throw rồi xem như hoàn tất",
+        "Tự chọn một account khác để credit",
+        "Chỉ thay log thành Not found mà vẫn báo success",
+        "Không coi luồng thành công; kiểm kết quả credit trong transaction và abort/xử lý theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Đúng control flow await không chứng minh mọi entity cần có đã được tác động."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Replica không chống xóa nhầm",
+      "question": "Một lỗi ứng dụng xóa dữ liệu và thay đổi được replicate. Vì sao replica set chưa giải quyết phục hồi lịch sử?",
+      "options": [
+        "Replication có thể sao chép lỗi; cần backup/restore/retention phù hợp và kiểm quy trình phục hồi",
+        "Replica tự giữ mọi phiên bản bất biến của mọi field",
+        "Abort ở một session mới tự undo mọi commit cũ",
+        "Chỉ đổi primary là dữ liệu xóa tự hiện lại"
+      ],
+      "correct": 0,
+      "explanation": "Sẵn sàng nhiều bản sao khác với bảo toàn lịch sử khôi phục."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Phiên bản và topology",
+      "question": "Source chạy trên standalone hoặc deployment thiếu hỗ trợ tương ứng. Có thể sửa chỉ bằng đổi tên model thành Transaction không?",
+      "options": [
+        "Chỉ thêm console.log trước commit",
+        "Không; cần topology/driver/ODM và cấu hình hợp lệ, rồi kiểm runtime trong phạm vi được phép",
+        "Có, server nhận biết tên model để bật ACID",
+        "Có, startSession tự tạo replica set"
+      ],
+      "correct": 1,
+      "explanation": "Code client không tự cung cấp hạ tầng server còn thiếu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Durability và nghiệp vụ",
+      "question": "Commit được xác nhận theo write concern đã chọn. Có thể khẳng định transfer có quyền, amount hợp lệ và không bị duplicate chỉ từ xác nhận đó không?",
+      "options": [
+        "Có, commit tự so mọi idempotency keys trong HTTP",
+        "Chỉ cần log có timestamp",
+        "Không; write concern khác các invariant nghiệp vụ cần enforce",
+        "Có, majority tự xác minh owner"
+      ],
+      "correct": 2,
+      "explanation": "Cần hiểu chính xác lớp nào bảo đảm thuộc tính nào."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Cleanup che lỗi",
+      "question": "Abort hoặc cleanup cũng có thể gặp lỗi trong lúc xử lý thất bại ban đầu. Thiết kế báo lỗi cần giữ gì?",
+      "options": [
+        "Luôn đổi mọi lỗi cleanup thành success",
+        "Chỉ trả nguyên mọi credentials trong stack để dễ debug",
+        "Bỏ finally để session tồn tại mãi",
+        "Phân loại kết quả/original error và cleanup outcome để không báo sai thành công hoặc mất dấu trạng thái chưa rõ"
+      ],
+      "correct": 3,
+      "explanation": "Error handling phải phản ánh trạng thái có căn cứ và giữ dữ liệu chẩn đoán an toàn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Money representation",
+      "question": "Hai tài khoản dùng representation khác nhau hoặc round ở bước debit và credit khác policy. Transaction có tự bảo đảm bảo toàn giá trị không?",
+      "options": [
+        "Không; cần thống nhất kiểu/đơn vị/quy tắc số học và kiểm invariant cùng ranh giới ghi",
+        "Có, ACID tự biết đơn vị tiền của mọi app",
+        "Có, $inc tự đổi mọi currency",
+        "Chỉ tăng maxPoolSize"
+      ],
+      "correct": 0,
+      "explanation": "Atomic ghi sai vẫn có thể là kết quả sai nghiệp vụ."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "External confirmation",
+      "question": "DB commit nhưng gửi notification thất bại. Hướng thiết kế nào phù hợp hơn rollback dữ liệu mù quáng?",
+      "options": [
+        "Bỏ record transfer để không phải retry",
+        "Xác định nguồn outcome, cơ chế delivery/retry/dedup phù hợp và báo trạng thái rõ",
+        "Coi notification fail chứng minh commit chưa xảy ra",
+        "Tự trừ tiền lần nữa để gửi lại email"
+      ],
+      "correct": 1,
+      "explanation": "DB outcome và thông báo là các ranh giới cần phối hợp, không được nhầm lẫn."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Đọc sau ghi failover",
+      "question": "App dùng secondary reads ngay sau transfer và gặp lag/failover. Muốn đáp ứng yêu cầu đọc outcome rõ cần gì?",
+      "options": [
+        "Chỉ sort theo amount",
+        "Chỉ đổi Transaction record thành String",
+        "Chọn consistency/read-write concern và retry/outcome contract phù hợp, không mặc định mọi replica luôn mới nhất",
+        "Chỉ có ba replica là đủ mọi read tuyến tính hóa"
+      ],
+      "correct": 2,
+      "explanation": "Topology sẵn sàng không tự xác định hợp đồng đọc sau ghi của app."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Idempotency trong chuyển tiền",
+      "question": "Chuyển tiền đã commit nhưng response mất; client retry cùng requestId. Làm gì để không ghi nợ lần hai và vẫn trả outcome nhất quán?",
+      "options": [
+        "Mỗi retry sinh requestId mới và dựa vào retryWrites để phát hiện cùng nghiệp vụ",
+        "Kiểm requestId bằng find trước giao dịch nhưng không có unique constraint khi hai request cùng tới",
+        "Chỉ gửi email trước commit để suy giao dịch đã thành công khi client retry",
+        "Ràng buộc requestId với nội dung yêu cầu, lưu kết quả/idempotency cùng giao dịch bằng unique constraint thích hợp và trả lại kết quả khi trùng"
+      ],
+      "correct": 3,
+      "explanation": "Driver retryWrites không thay khóa idempotency nghiệp vụ. Unique constraint và transaction phải bao phủ record kết quả cùng các thay đổi tiền; kiểm cùng key nhưng khác payload cần policy lỗi rõ."
+    }
+  ]
+}

@@ -1,0 +1,1162 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "junior",
+  "lesson": "lifetimes",
+  "language": "vi",
+  "sourceHash": "1d32aeaa088351efea6b425e3de7ac162f69d4b678d6ca6fc8e453d6d47470a2",
+  "status": "approved",
+  "review": "Tự soạn không API. Source và Rust lifetime/Rc/RefCell docs review; selected stdlib compiler/runtime fixtures ghi riêng. Lifetimes mô tả quan hệ,không kéo dài owner; longest chọn theo byte len và ties y; compiler không dựa nội dung runtime để nới lifetime. announce output elision gắn self borrow. Rc shared ownership không thread-safe,RefCell kiểm borrow runtime có thể panic,cycles có thể leak. Không unsafe/Cargo/network hoặc khẳng định lifetime annotation cấp phát dữ liệu.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Lifetime purpose",
+      "question": "Lifetime checking chủ yếu giúp điều gì?",
+      "options": [
+        "Reference không được dùng vượt lifetime dữ liệu hợp lệ theo rules.",
+        "Tự kéo dài mọi local variables.",
+        "Tự deep clone borrowed objects.",
+        "Tự tối ưu mọi query DB."
+      ],
+      "correct": 0,
+      "explanation": "Annotations mô tả quan hệ để compiler kiểm tra,không tạo storage mới."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Named lifetime",
+      "question": "'a trong longest<'a> đóng vai trò gì?",
+      "options": [
+        "Một heap allocation bắt buộc.",
+        "Tham số lifetime cho quan hệ references.",
+        "Một kiểu char literal luôn.",
+        "Một biến runtime chứa số giây."
+      ],
+      "correct": 1,
+      "explanation": "Lifetime generic khác type generic và runtime value."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Longest signature",
+      "question": "Signature longest nguồn biểu đạt output theo lifetime nào?",
+      "options": [
+        "Luôn ownership của String mới.",
+        "Một reference không ràng buộc.",
+        "Cùng lifetime parameter liên quan hai input references.",
+        "Luôn static dù inputs local."
+      ],
+      "correct": 2,
+      "explanation": "Caller phải đáp ứng constraints cho việc dùng output."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "No extension",
+      "question": "Thêm annotation 'static vào return có tự làm local String sống vĩnh viễn không?",
+      "options": [
+        "Có,compiler tự leak buffer.",
+        "Có,ngay cả owner đã drop.",
+        "Chỉ nếu String ASCII.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Annotation không thay execution/lifetime thật của owner."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Elision",
+      "question": "Lifetime elision là gì?",
+      "options": [
+        "Rules suy một số lifetime relationships phổ biến để khỏi viết tường minh.",
+        "Tắt borrow checker.",
+        "Xóa mọi lifetime ở runtime bằng GC.",
+        "Tự cho mọi output static."
+      ],
+      "correct": 0,
+      "explanation": "Không phải mọi ambiguous signature đều elide được theo mong muốn."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Longest selection",
+      "question": "Body longest dùng tiêu chí gì?",
+      "options": [
+        "Số từ.",
+        "len theo bytes của string slices.",
+        "Số grapheme clusters.",
+        "Thứ tự alphabet."
+      ],
+      "correct": 1,
+      "explanation": "Contract tên longest cần hiểu đúng phép đo implementation."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Tie choice",
+      "question": "Nếu x.len()==y.len(),longest nguồn trả gì?",
+      "options": [
+        "Một String ghép x+y.",
+        "None.",
+        "y.",
+        "x luôn."
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện chỉ x.len()>y.len(),nhánh else trả y."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Borrowed struct",
+      "question": "Excerpt<'a> chứa gì?",
+      "options": [
+        "Owned String bắt buộc.",
+        "Một raw pointer không lifetime.",
+        "Một database connection.",
+        "Một &'a str borrowed."
+      ],
+      "correct": 3,
+      "explanation": "Instance chứa reference nên phải tôn trọng lifetime referent."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Level method",
+      "question": "Excerpt.level trả gì?",
+      "options": [
+        "i32 giá trị3.",
+        "Một reference tới text.",
+        "Một lifetime runtime.",
+        "Một String clone."
+      ],
+      "correct": 0,
+      "explanation": "Kết quả scalar này không borrow dữ liệu Excerpt."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Announce result",
+      "question": "announce nguồn trả gì?",
+      "options": [
+        "Một None bắt buộc.",
+        "self.text sau khi in announcement.",
+        "announcement được move thành String.",
+        "Một String ghép tự sở hữu."
+      ],
+      "correct": 1,
+      "explanation": "Signature elision còn gắn return reference với self borrow."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Box owner",
+      "question": "Box<T> thường đại diện gì?",
+      "options": [
+        "Một async runtime.",
+        "Một nullable raw pointer tùy ý.",
+        "Owned allocation chứa T theo contract của Box.",
+        "Reference counted shared ownership mặc định."
+      ],
+      "correct": 2,
+      "explanation": "Box không tự là Rc hay Arc."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Box dereference",
+      "question": "*boxed với boxed:Box<i32> thường truy cập gì?",
+      "options": [
+        "Số reference owners.",
+        "Một file path.",
+        "Một lifetime parameter.",
+        "Giá trị i32 bên trong."
+      ],
+      "correct": 3,
+      "explanation": "Deref/ownership operations còn phụ thuộc T và ngữ cảnh."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Rc role",
+      "question": "Rc<T> dùng cho mô hình nào?",
+      "options": [
+        "Shared ownership bằng reference counting cho ngữ cảnh phù hợp một thread.",
+        "Mọi shared writes concurrent tự an toàn.",
+        "Một DB pool toàn cluster.",
+        "Một mutex luôn exclusive."
+      ],
+      "correct": 0,
+      "explanation": "Rc không implement Send/Sync để tùy ý chuyển qua threads."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Rc clone",
+      "question": "Rc::clone(&shared) thường làm gì?",
+      "options": [
+        "Tự tạo OS thread.",
+        "Tạo thêm strong owner handle tới cùng allocation.",
+        "Deep clone mọi Vec elements.",
+        "Move và làm shared invalid."
+      ],
+      "correct": 1,
+      "explanation": "Đây là Clone scope cụ thể,khác String.clone."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Strong count source",
+      "question": "Sau shared Rc và một clone1 chưa drop,strong_count nguồn là gì?",
+      "options": [
+        "0.",
+        "Phụ thuộc độ dài Vec là3 nên luôn3.",
+        "2.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Số owners không là số phần tử Vec."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "RefCell role",
+      "question": "RefCell<T> hỗ trợ điều gì?",
+      "options": [
+        "Tự bỏ mọi aliasing constraints.",
+        "Một thread-safe mutex thay thế luôn.",
+        "Một garbage collector tracing.",
+        "Interior mutability với borrow rules được kiểm tra lúc runtime."
+      ],
+      "correct": 3,
+      "explanation": "Vi phạm runtime borrow có thể panic hoặc được báo qua try APIs."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Borrow guard",
+      "question": "data.borrow_mut() trả gì về mặt vòng đời truy cập?",
+      "options": [
+        "Guard cho mutable access trong thời gian borrow còn hiệu lực.",
+        "Một owned clone của T luôn.",
+        "Một static reference không bao giờ hết.",
+        "Một thread handle."
+      ],
+      "correct": 0,
+      "explanation": "Guard drop kết thúc runtime borrow đó."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Temporary guard source",
+      "question": "Vì sao borrow_mut().push(4) rồi borrow() ở statement sau hợp lệ trong source?",
+      "options": [
+        "Compiler tự clone RefCell.",
+        "Temporary mutable guard đã drop sau statement push.",
+        "RefCell cho phép mọi mutable/shared overlap.",
+        "Vec push không cần mutation."
+      ],
+      "correct": 1,
+      "explanation": "Nếu giữ guard trong biến lâu hơn,hành vi khác."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Source printed values",
+      "question": "Source RefCell example in slice nào?",
+      "options": [
+        "[4].",
+        "Một địa chỉ pointer.",
+        "[1, 2, 3, 4].",
+        "[1, 2, 3]."
+      ],
+      "correct": 2,
+      "explanation": "push4 làm thay đổi Vec trước shared borrow để in."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Warnings not errors",
+      "question": "boxed/clone1 chưa dùng trực tiếp có nhất thiết làm source Rust mặc định fail compile không?",
+      "options": [
+        "Có,mọi unused local giống Go compiler error.",
+        "Chỉ nếu Box42.",
+        "Không bao giờ có warning.",
+        "Không;thường là warnings tùy lint/config."
+      ],
+      "correct": 3,
+      "explanation": "Không áp lints của ngôn ngữ khác lên Rust."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Longest ASCII",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){println!(\"{}\",longest(\"long\",\"xy\"));}\n",
+      "options": [
+        "long.",
+        "xy.",
+        "longxy.",
+        "Compiler cấm borrow hai string literals."
+      ],
+      "correct": 0,
+      "explanation": "Byte len4 lớn hơn2."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Tie selects y",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){println!(\"{}\",longest(\"ab\",\"cd\"));}\n",
+      "options": [
+        "None.",
+        "cd.",
+        "ab.",
+        "abcd."
+      ],
+      "correct": 1,
+      "explanation": "Equal lengths đi vào else y."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Byte length not scalar count",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){println!(\"{}\",longest(\"é\",\"a\"));}\n",
+      "options": [
+        "Compiler cấm Unicode.",
+        "Hai chuỗi cùnglen1 nên y.",
+        "é.",
+        "a."
+      ],
+      "correct": 2,
+      "explanation": "é có2bytes UTF-8,a có1byte."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Both owners still usable",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let x=String::from(\"abc\");let y=String::from(\"xy\");let out=longest(&x,&y);println!(\"{x} {y} {out}\");}\n",
+      "options": [
+        "Compiler move x,y vào longest.",
+        "abc xy xy.",
+        "Một String clone tự động.",
+        "abc xy abc."
+      ],
+      "correct": 3,
+      "explanation": "Hàm mượn references và trả borrowed slice."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Use result inside shorter scope",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let x=String::from(\"long\");{let y=String::from(\"xy\");let out=longest(&x,&y);println!(\"{out}\");}}\n",
+      "options": [
+        "long.",
+        "Compiler luôn reject s2 local bất kể output dùng ở đâu.",
+        "xy.",
+        "Một địa chỉ."
+      ],
+      "correct": 0,
+      "explanation": "Output chỉ được dùng khi cả owners còn sống."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Result escapes shorter owner",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let x=String::from(\"long\");let out;{let y=String::from(\"xy\");out=longest(&x,&y);}println!(\"{out}\");}\n",
+      "options": [
+        "Chỉ runtime panic.",
+        "Không;y không sống đủ cho việc dùng out ngoài block theo signature.",
+        "Có,compiler nhìn x dài hơn nên tự bỏ lifetime y.",
+        "Có,lifetime parameter tự kéo dài y."
+      ],
+      "correct": 1,
+      "explanation": "Compiler dùng lifetime contract,không chứng minh selection theo nội dung String runtime."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Excerpt borrowed field",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let s=String::from(\"hello\");let e=Excerpt{text:&s};println!(\"{} {}\",e.text,e.level());}\n",
+      "options": [
+        "Compiler cấm borrowed struct.",
+        "Một String clone.",
+        "hello 3.",
+        "hello 0."
+      ],
+      "correct": 2,
+      "explanation": "Owner s còn sống trong toàn usage của excerpt."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Excerpt outlives owner",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let e;{let s=String::from(\"hi\");e=Excerpt{text:&s};}println!(\"{}\",e.text);}\n",
+      "options": [
+        "Có,struct tự own mọi references.",
+        "Có,lifetime annotation clone s.",
+        "Chỉ khi s rỗng mới lỗi.",
+        "Không;s đã hết scope trước lúc đọc e.text."
+      ],
+      "correct": 3,
+      "explanation": "Reference trong struct không làm owner sống lâu hơn."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Announcement lifetime separate",
+      "question": "Chương trình in gì?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let e=Excerpt{text:\"hello\"};let out;{let note=String::from(\"news\");out=e.announce(&note);}println!(\"{out}\");}\n",
+      "options": [
+        "Attention: news rồi hello.",
+        "Compiler buộc output sống đúng lifetime announcement local.",
+        "Attention: hello rồi news.",
+        "Một String owned rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Method elision gắn output với self borrow,không với announcement argument."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Elided self borrow bound",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn longest<'a>(x:&'a str,y:&'a str)->&'a str{if x.len()>y.len(){x}else{y}}\nstruct Excerpt<'a>{text:&'a str}\nimpl<'a> Excerpt<'a>{fn level(&self)->i32{3}fn announce(&self,announcement:&str)->&str{println!(\"Attention: {announcement}\");self.text}}\n\nfn main(){let out;{let e=Excerpt{text:\"static\"};out=e.announce(\"note\");}println!(\"{out}\");}\n",
+      "options": [
+        "Chỉ panic runtime.",
+        "Không;return signature elision gắn out với borrow e đã hết scope.",
+        "Có,self.text literalstatic tự đổi signature sang static.",
+        "Có,mọi methods returning&str mặc định static."
+      ],
+      "correct": 1,
+      "explanation": "Stored referent static không tự nới bound output đã công bố của method."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Explicit stored lifetime return",
+      "question": "Chương trình in gì?",
+      "code": "struct View<'a>{text:&'a str}impl<'a> View<'a>{fn get(&self)->&'a str{self.text}}\nfn main(){let out;{let e=View{text:\"static\"};out=e.get();}println!(\"{out}\");}\n",
+      "options": [
+        "Một địa chỉ.",
+        "None.",
+        "static.",
+        "Compiler cấm output vượt instance e dù signature trả stored lifetime."
+      ],
+      "correct": 2,
+      "explanation": "Method get công bố return lifetime của stored reference,không chỉ self borrow."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Box value",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let boxed=Box::new(42);println!(\"{}\",*boxed);}\n",
+      "options": [
+        "0.",
+        "Một strong_count.",
+        "Compiler cấm Box<int>.",
+        "42."
+      ],
+      "correct": 3,
+      "explanation": "Box dereference truy cập value i32."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Move out of Box",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let boxed=Box::new(String::from(\"hi\"));let owned=*boxed;println!(\"{owned}\");}\n",
+      "options": [
+        "hi.",
+        "Compiler cấm mọi move từ Box.",
+        "Một địa chỉ.",
+        "String bịdrop trướcprintln."
+      ],
+      "correct": 0,
+      "explanation": "Box có semantics cho phép move owned value ra trong ngữ cảnh này."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Rc cloned handle count",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let shared=std::rc::Rc::new(vec![1,2,3]);let clone1=std::rc::Rc::clone(&shared);println!(\"{}\",std::rc::Rc::strong_count(&shared));drop(clone1);}\n",
+      "options": [
+        "Rc clone deep copy allocation nên count1 ở cả hai.",
+        "2.",
+        "1.",
+        "3."
+      ],
+      "correct": 1,
+      "explanation": "Giữ cả shared và clone handle tới điểm quan sát."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Drop one Rc handle",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let shared=std::rc::Rc::new(7);let other=std::rc::Rc::clone(&shared);drop(other);println!(\"{}\",std::rc::Rc::strong_count(&shared));}\n",
+      "options": [
+        "0.",
+        "Drop một handle luôn xóa allocation dù còn owner.",
+        "1.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "Owner shared vẫn giữ allocation sau drop clone."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Rc allocation identity",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a=std::rc::Rc::new(vec![1]);let b=std::rc::Rc::clone(&a);println!(\"{}\",std::rc::Rc::ptr_eq(&a,&b));}\n",
+      "options": [
+        "false.",
+        "ptr_eq tự so payload values chỉ.",
+        "Compiler cấm Rc pointers.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Hai handles được clone từ cùng allocation."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Shared RefCell data",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a=std::rc::Rc::new(std::cell::RefCell::new(vec![1]));let b=std::rc::Rc::clone(&a);b.borrow_mut().push(2);println!(\"{} {}\",a.borrow().len(),b.borrow().len());}\n",
+      "options": [
+        "2 2.",
+        "1 2.",
+        "2 1.",
+        "Clone tự tách Vec contents."
+      ],
+      "correct": 0,
+      "explanation": "Rc handles chung RefCell,một mutation thấy từ cả hai handles."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Overlapping runtime borrow",
+      "question": "Chương trình gặp gì?",
+      "code": "\nfn main(){let data=std::cell::RefCell::new(vec![1]);let guard=data.borrow_mut();println!(\"{:?}\",data.borrow());drop(guard);}\n",
+      "options": [
+        "Đọc memory rác an toàn.",
+        "Panic vì shared borrow trong khi mutable guard còn được giữ.",
+        "Compiler luôn chặn mọi RefCell borrow conflicts tĩnh.",
+        "Tự deep clone dữ liệu."
+      ],
+      "correct": 1,
+      "explanation": "RefCell kiểm borrow runtime,khác borrow checker chứng minh toàn bộ động."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Try borrow reports conflict",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let data=std::cell::RefCell::new(1);let guard=data.borrow_mut();println!(\"{}\",data.try_borrow().is_err());drop(guard);}\n",
+      "options": [
+        "try_borrow luôn panic như borrow.",
+        "Guard tự drop trước statement sử dụng nó.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Try API trả error khi borrow không được,không cần panic."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Rc not Send",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let rc=std::rc::Rc::new(1);let h=std::thread::spawn(move||println!(\"{rc}\"));h.join().unwrap();}\n",
+      "options": [
+        "Có,Rc tự dùng atomic count khi thread::spawn.",
+        "Có,nếu payload int thì Rc trở thành Send.",
+        "Chỉ lỗi runtime.",
+        "Không;Rc không Send để chuyển handle vào thread này."
+      ],
+      "correct": 3,
+      "explanation": "Dùng ownership/thread-safe types phù hợp,không tự tải thư viện để né rule."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Annotations relationships",
+      "question": "longest dùng cùng 'a có nghĩa hai owners phải được tạo và drop đúng cùng lúc không?",
+      "options": [
+        "Không;references có thể được reborrow/ràng buộc ở lifetime phù hợp cho usage.",
+        "Có,mọi owners phải cùng địa chỉ.",
+        "Có,hai Strings được merge allocation.",
+        "Chỉ literal mới hợp lệ."
+      ],
+      "correct": 0,
+      "explanation": "Lifetime relations không đồng nghĩa equality mọi scope của owners."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Compiler cannot choose runtime branch",
+      "question": "Dù x text luôn dài hơn y trong một ví dụ,return ngoài scope y có tự hợp lệ với signature nguồn không?",
+      "options": [
+        "Chỉ cần print sau1ms.",
+        "Không chỉ vì nội dung đó;compiler kiểm quan hệ signature và usage.",
+        "Có,String len được dùng như lifetime proof tự động.",
+        "Có,nếu user thêm commentxlong."
+      ],
+      "correct": 1,
+      "explanation": "Không thay lifetime analysis bằng giả định branch runtime."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Self elision",
+      "question": "Method có &self và thêm một &str parameter,return &str elision thường gắn với input nào?",
+      "options": [
+        "Luôn static.",
+        "Ngắn nhất được đo bằng clock runtime.",
+        "Lifetime của self borrow theo method elision rule.",
+        "Luôn parameter cuối."
+      ],
+      "correct": 2,
+      "explanation": "Đọc signature contract trước khi giả output phụ thuộc argument nào."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Scalar return independence",
+      "question": "level()->i32 có giữ borrowed reference tới Excerpt trong kết quả không?",
+      "options": [
+        "Có,mọi method result mang lifetime self.",
+        "Chỉ nếu value3.",
+        "Chỉ nếu boxed.",
+        "Không;kết quả số không chứa reference đó."
+      ],
+      "correct": 3,
+      "explanation": "Type output quyết định có quan hệ borrow hay không."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Rc ownership shorthand",
+      "question": "Key point one owner cần điều chỉnh thế nào khi dùng Rc?",
+      "options": [
+        "Handle Rc là owners của shared allocation theo reference-counting contract.",
+        "Rc làm ownership rules không còn áp dụng.",
+        "Rc always deep clone nên không shared ownership thật.",
+        "Chỉ khi count2 mới memory-safe."
+      ],
+      "correct": 0,
+      "explanation": "Ownership model hỗ trợ wrappers cho shared ownership,không mọi valuegraph chỉ một handle."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Rc and cycles",
+      "question": "Rc có tự thu mọi strong-reference cycles không?",
+      "options": [
+        "Chỉ nếu dùng RefCell.",
+        "Không;cycles có thể giữ allocations sống.",
+        "Có,reference counting luôn như tracingGC.",
+        "Có,Drop phá mọi graphcycle tự động."
+      ],
+      "correct": 1,
+      "explanation": "Weak links/graph design có thể cần để tránh ownership cycles."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Weak ownership",
+      "question": "Weak<T> có giữ payload alive như một strong Rc owner không?",
+      "options": [
+        "Có,Weak luôn deep clone.",
+        "Chỉ khi payloadVec.",
+        "Không;upgrade có thể trả None sau strong owners hết.",
+        "Có,mọi Weak là owner mạnh."
+      ],
+      "correct": 2,
+      "explanation": "Weak có allocation bookkeeping riêng nhưng không giữ T alive theo strong ownership."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Rc into threads",
+      "question": "Thay Rc<T> bằng Arc<T> có tự cho phép mọi T mutable dùng từ mọi threads không?",
+      "options": [
+        "Có,Arc tự mutex mọi field.",
+        "Có,Arc làm RefCellSync bất kỳ.",
+        "Chỉ cần lifetime static.",
+        "Không;Send/Sync của payload và synchronization vẫn cần phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Atomic reference counting không đồng nghĩa arbitrary shared mutation an toàn."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "RefCell not lock",
+      "question": "RefCell có block chờ writer khác như mutex khi borrow conflict không?",
+      "options": [
+        "Không;borrow APIs panic hoặc try APIs trả lỗi theo contract.",
+        "Có,luôn chờ OS lock vô hạn.",
+        "Có,borrow_mut tạo thread riêng.",
+        "Chỉ nếu payloadVec."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng RefCell như async/thread synchronization primitive."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Borrow guards lexical usage",
+      "question": "Gán borrow_mut guard vào biến có thể kéo runtime borrow lâu hơn temporary statement không?",
+      "options": [
+        "Chỉ nếu Vecdài.",
+        "Có;cho tới guard được drop theo scope/explicit drop.",
+        "Không;mọi guard tự drop ngay khimethodcallreturn.",
+        "Chỉ nếu gọi len."
+      ],
+      "correct": 1,
+      "explanation": "NLL của static borrows không thay mọi destructor timing của owned guard."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Mutability outer binding",
+      "question": "let data=RefCell::new(...) không mut vẫn borrow_mut được vì sao?",
+      "options": [
+        "RefCell không kiểm access.",
+        "Chỉ với Vecint.",
+        "Interior mutability API cho phép theo runtime borrow contract.",
+        "Rust tự đổi mọi immutable binding thành mut."
+      ],
+      "correct": 2,
+      "explanation": "Immutable handle binding không cấm mọi mutation nội bộ qua types được thiết kế cho nó."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Box versus Rc",
+      "question": "Box clone khi T Clone có cùng shared-count semantics với Rc::clone không?",
+      "options": [
+        "Có,mọi smartpointers giống nhau.",
+        "Chỉ với String thì mọi clones shared.",
+        "Rc chỉ là aliasBox.",
+        "Không;Clone contract khác nhau theo wrapper/type."
+      ],
+      "correct": 3,
+      "explanation": "Không khái quát Clone luôn deep copy hoặc luôn handle copy."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Drop handle versus data",
+      "question": "drop một Rc handle có tự chứng minh payload đãdrop ngay không?",
+      "options": [
+        "Không;nếu còn strong owners thì payload còn alive.",
+        "Có,mọi drop xóa mọi aliased data.",
+        "Chỉ nếu handleimmutable.",
+        "Chỉ nếu countđãin."
+      ],
+      "correct": 0,
+      "explanation": "Quan sát strongcount/lifecycle theo contract,không suy từ một binding biến mất."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Runtime borrow panic safety",
+      "question": "RefCell panic có phải bằng chứng vừa đọc invalid memory/UB không?",
+      "options": [
+        "Chỉ khi dataint.",
+        "Không;đó là checked runtime conflict theo safe API.",
+        "Có,mọi panic là UB.",
+        "Có,RefCell bỏ mọi checks."
+      ],
+      "correct": 1,
+      "explanation": "Memory safety và không panic là properties khác nhau."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "try borrow handling",
+      "question": "Nhận Err từ try_borrow_mut có nên luôn unwrap không?",
+      "options": [
+        "Chỉ cần logDebug.",
+        "Chỉ nếu Arc.",
+        "Không;nếu conflict là tình huống cần xử lý thì propagate/fallback theo contract.",
+        "Có,mọi error tự an toàn khiunwrap."
+      ],
+      "correct": 2,
+      "explanation": "Chọn error/panic policy theo invariant thật."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Static lifetime meaning",
+      "question": "&'static str có nghĩa gì cơ bản?",
+      "options": [
+        "Mọi variable chứa nó làglobal.",
+        "Tự cấp phát String lớn vĩnh viễn mỗi call.",
+        "Một timeout vô hạn củaHTTP.",
+        "Reference hợp lệ theo lifetime static,không đơn giản là binding local luôn không drop."
+      ],
+      "correct": 3,
+      "explanation": "Lifetime của referent khác scope/lifetime của referencebinding."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Struct lifetime not allocation",
+      "question": "Excerpt<'a> có tự cấp phát heap để kéo dài text không?",
+      "options": [
+        "Không;source chứa borrowed str,không owned clone.",
+        "Có,mọi generic lifetime cấp phátBox.",
+        "Chỉ nếu text dài.",
+        "Chỉ khi gọi announce."
+      ],
+      "correct": 0,
+      "explanation": "Annotations không tự thay storage/lifetime."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Memory leak allowed scope",
+      "question": "SafeRust có thể bị leak memory qua ownership cycles/forget không?",
+      "options": [
+        "Chỉ khi unsafeblock.",
+        "Có;memory safety không là cam kết không leak.",
+        "Không;compiler chứng minh không leak mọi code.",
+        "Chỉ khi foreignC."
+      ],
+      "correct": 1,
+      "explanation": "Cần resource/lifecycle design ngay cả khi dùng safe APIs."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source unused heap Box",
+      "question": "Box42 nguồn không được in có nghĩa allocation behavior/assembly đã được đo chưa?",
+      "options": [
+        "Có,unusedboxnghĩa0CPU tuyệt đối.",
+        "Chỉ nếu compilerwarning.",
+        "Chưa;source semantics và optimization/performance thực tế là các câu hỏi khác.",
+        "Có,source luôn tạo đúng một heap syscall có thể đo bằng mắt."
+      ],
+      "correct": 2,
+      "explanation": "Không suy benchmark hoặc allocation counts từ code snippet đơn lẻ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source exercise scope",
+      "question": "Source có thực hiện database engine bài tập chưa?",
+      "options": [
+        "Có,Excerpt tựlàstorageengine.",
+        "Có,Rc<Vec>tựlàSQL database.",
+        "Chỉ cần RefCell.",
+        "Chưa;chỉ minh họa lifetimes và smart pointers."
+      ],
+      "correct": 3,
+      "explanation": "Không gọi bài tập được nêu thành feature đã hoàn thành."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Independent lifetime signature",
+      "question": "Chương trình in gì?",
+      "code": "fn first<'a,'b>(x:&'a str,_:&'b str)->&'a str{x}\nfn main(){let x=String::from(\"long\");let out;{let y=String::from(\"xy\");out=first(&x,&y);}println!(\"{out}\");}\n",
+      "options": [
+        "long.",
+        "Compiler vẫn buộc result phụ thuộc cả y như longest gốc.",
+        "xy.",
+        "Một owned Stringclone."
+      ],
+      "correct": 0,
+      "explanation": "Hàm first công bố output chỉ liên quanx,khônggắny vào cùng lifetime return."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Weak upgrade lifetime",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a=std::rc::Rc::new(7);let weak=std::rc::Rc::downgrade(&a);let before=weak.upgrade().is_some();drop(a);println!(\"{before} {}\",weak.upgrade().is_none());}\n",
+      "options": [
+        "Weak tự giữ strong_count1 mãi.",
+        "true true.",
+        "true false.",
+        "false true."
+      ],
+      "correct": 1,
+      "explanation": "Upgrade thành công khi owner alive,None sau owner cuối drop."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Mutable borrow with reader held",
+      "question": "Chương trình gặp gì?",
+      "code": "\nfn main(){let cell=std::cell::RefCell::new(1);let reader=cell.borrow();let _writer=cell.borrow_mut();drop(reader);}\n",
+      "options": [
+        "Tự chờ mọi readguard drop dù cùngthread.",
+        "Tự clone payload.",
+        "Panic vì còn shared borrow guard khi borrow_mut.",
+        "Compiler luôn reject RefCellcall."
+      ],
+      "correct": 2,
+      "explanation": "Đây là finite checked panic,không chạy deadlock/unsafe."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Try mutable conflict",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let cell=std::cell::RefCell::new(1);let reader=cell.borrow();println!(\"{}\",cell.try_borrow_mut().is_err());drop(reader);}\n",
+      "options": [
+        "false.",
+        "try_borrow_mut luônpanic.",
+        "Reader guard tự chuyển writer.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Shared guard đang giữ khiến mutable tryborrow báoErr."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Unique Rc mutation",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut a=std::rc::Rc::new(1);let b=std::rc::Rc::clone(&a);let shared=std::rc::Rc::get_mut(&mut a).is_none();drop(b);println!(\"{shared} {}\",std::rc::Rc::get_mut(&mut a).is_some());}\n",
+      "options": [
+        "true true.",
+        "false true.",
+        "true false.",
+        "Rc::get_mut luôn clone."
+      ],
+      "correct": 0,
+      "explanation": "Hai strong owners khiến get_mut None;drop extraowner cho phép unique mutation ở fixture không Weak."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Rc copy on write",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut a=std::rc::Rc::new(vec![1]);let b=std::rc::Rc::clone(&a);std::rc::Rc::make_mut(&mut a).push(2);println!(\"{a:?} {b:?}\");}\n",
+      "options": [
+        "make_mut tự panic khi nhiềuowners.",
+        "[1, 2] [1].",
+        "[1, 2] [1, 2].",
+        "[1] [1]."
+      ],
+      "correct": 1,
+      "explanation": "make_mut có thể clone payload khi cần để cho mutation riêng theo Rc contract."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Single input elision",
+      "question": "Chương trình in gì?",
+      "code": "fn identity(s:&str)->&str{s}\nfn main(){println!(\"{}\",identity(\"hi\"));}\n",
+      "options": [
+        "Một Stringclone.",
+        "None.",
+        "hi.",
+        "Compiler yêu cầu lifetime name mọi fnreturnref."
+      ],
+      "correct": 2,
+      "explanation": "Elision đủ rõ khi chỉ một input reference lifetime."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Static annotation cannot rescue local",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn bad()->&'static str{let s=String::from(\"hi\");&s}\nfn main(){}\n",
+      "options": [
+        "Có; annotation static tự leak local.",
+        "Có; Box được tạo ngầm.",
+        "Chỉ panic lúc runtime.",
+        "Không; reference trả về trỏ local String không sống đủ lâu cho static."
+      ],
+      "correct": 3,
+      "explanation": "Lifetime annotation không tạo owner hoặc storage mới."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Explicit guard drop permits next borrow",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let cell=std::cell::RefCell::new(vec![1]);let guard=cell.borrow_mut();drop(guard);cell.borrow_mut().push(2);println!(\"{:?}\",cell.borrow());}\n",
+      "options": [
+        "[1, 2].",
+        "Compiler cấm drop guard.",
+        "Panic vì mỗi RefCell chỉ được borrow mutable một lần suốt đời.",
+        "[1]."
+      ],
+      "correct": 0,
+      "explanation": "Drop guard kết thúc mutable borrow, nên có thể mượn lại sau đó."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Owned scalar result outlives input",
+      "question": "Chương trình in gì?",
+      "code": "fn length(s:&str)->usize{s.len()}\nfn main(){let n;{let s=String::from(\"hi\");n=length(&s);}println!(\"{n}\");}\n",
+      "options": [
+        "0.",
+        "2.",
+        "Compiler cấm mọi return value sống lâu hơn input.",
+        "Một pointer."
+      ],
+      "correct": 1,
+      "explanation": "Kết quả usize không chứa reference nên không cần giữ input sống sau khi tính."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Longest API conservative contract",
+      "question": "Có thể dùng output của longest bên ngoài block y chỉ bằng comment nói x luôn dài hơn không?",
+      "options": [
+        "Chỉ cần chạy test một lần.",
+        "Chỉ cần clone một Rc của x.",
+        "Không; cần signature và implementation biểu đạt quan hệ hợp lệ, hoặc return owned data phù hợp.",
+        "Có; comment là lifetime hint cho compiler."
+      ],
+      "correct": 2,
+      "explanation": "Thay đổi API cần đúng semantics, không nới lifetime bằng giả định ngoài type contract."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Choosing owned output",
+      "question": "Return String owned thay vì &str cho longest có tradeoff gì?",
+      "options": [
+        "Luôn không có chi phí trong mọi trường hợp.",
+        "Tự cho output một static reference.",
+        "Tự giải quyết so sánh grapheme clusters.",
+        "Có thể tách lifetime output khỏi input, nhưng cần chiến lược ownership, copy và allocation phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Chọn contract theo nhu cầu caller, không chỉ để né compiler."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Rc RefCell thread claim",
+      "question": "Rc<RefCell<T>> có phải shared mutable state an toàn cho mọi threads mặc định không?",
+      "options": [
+        "Không; Rc và RefCell có giới hạn về thread contracts, không tự biến thành Arc<Mutex<T>>.",
+        "Có; hai wrappers kết hợp tự thành atomic synchronization.",
+        "Chỉ khi payload là Vec.",
+        "Chỉ cần lifetime static."
+      ],
+      "correct": 0,
+      "explanation": "Không biến pattern interior mutability một thread thành bằng chứng concurrency."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Weak cycle design",
+      "question": "Dùng Weak ở mọi cạnh có tự bảo đảm các node sống lâu như ứng dụng mong muốn không?",
+      "options": [
+        "Chỉ cần strong_count bằng0.",
+        "Không; cần strong owners và root/hierarchy đúng, vì Weak có thể upgrade thành None.",
+        "Có; Weak giữ mọi node vĩnh viễn.",
+        "Chỉ cần dùng RefCell."
+      ],
+      "correct": 1,
+      "explanation": "Tránh cycles khác với bảo đảm vòng đời dữ liệu nghiệp vụ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Interior mutability safety",
+      "question": "RefCell chuyển một phần kiểm tra sang runtime có nghĩa bỏ mọi access rules không?",
+      "options": [
+        "Chỉ khi giữ Rc.",
+        "Chỉ cần Box.",
+        "Không; runtime guards vẫn thực thi borrow contract và có thể panic hoặc trả lỗi.",
+        "Có; mọi alias mutations đều tự được cho phép."
+      ],
+      "correct": 2,
+      "explanation": "Safe abstraction không cho phép bỏ qua quy tắc truy cập dữ liệu."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Guard and async scope",
+      "question": "Giữ guard hoặc lock qua công việc dài hay await cần xem xét gì?",
+      "options": [
+        "Mọi smart pointer tự cleanup ngay khi await nên không cần xem xét.",
+        "Chỉ độ dài String.",
+        "Chỉ tên lifetime a.",
+        "Contention, borrow conflicts, Send bounds và cancellation theo API cụ thể."
+      ],
+      "correct": 3,
+      "explanation": "Bài này không chạy async runtime hoặc hứa mọi guard đều phù hợp để giữ qua await."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Smart pointer cloning cost",
+      "question": "Rc::clone và clone nội dung Vec có thể khác nhau về cost và aliasing không?",
+      "options": [
+        "Có; clone handle cùng reference count khác clone payload.",
+        "Không; mọi Clone dùng cùng thuật toán deep copy.",
+        "Chỉ nếu số phần tử bằng0.",
+        "Chỉ nếu dùng Box."
+      ],
+      "correct": 0,
+      "explanation": "Ghi rõ type và API khi giải thích clone; không hứa speedup chưa đo."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Reference validity not data validation",
+      "question": "Một &str có lifetime hợp lệ có tự là email đúng yêu cầu nghiệp vụ không?",
+      "options": [
+        "Chỉ cần Excerpt.",
+        "Không; reference validity khác validation nội dung.",
+        "Có; borrow checker xác thực email.",
+        "Chỉ nếu lifetime static."
+      ],
+      "correct": 1,
+      "explanation": "Type và lifetime requirements không tự bao quát mọi business invariants."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Safety versus resource bound",
+      "question": "Code Rc/Box/RefCell compile có chứng minh không leak, panic hoặc overload không?",
+      "options": [
+        "Chỉ cần không có unsafe.",
+        "Chỉ cần Box chứa42.",
+        "Không; cần kiểm tra vòng đời, invariants và tài nguyên riêng.",
+        "Có; smart pointers giải mọi vấn đề."
+      ],
+      "correct": 2,
+      "explanation": "Safe Rust không đồng nghĩa mọi yêu cầu vận hành đều được đáp ứng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Database exercise completion",
+      "question": "Có thể gọi source Excerpt/Rc/RefCell là database engine đã hoàn thành chưa?",
+      "options": [
+        "Có; Vec được chia sẻ là mọi database.",
+        "Có; lifetime rules tránh được mọi lỗi SQL.",
+        "Chỉ cần đủ80 câu hỏi.",
+        "Chưa; storage, query, transaction và durability logic của bài tập chưa được viết ở đây."
+      ],
+      "correct": 3,
+      "explanation": "Giữ phạm vi nội dung và bằng chứng đúng với code đã có."
+    }
+  ]
+}

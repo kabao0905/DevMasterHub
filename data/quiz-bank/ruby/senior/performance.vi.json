@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "ruby",
+  "level": "senior",
+  "lesson": "performance",
+  "language": "vi",
+  "sourceHash": "41c2013447fc27de54fce8a88e285e87dbbfab43a4aa3622392a666db93a8c53",
+  "status": "approved",
+  "review": "Tự soạn theo Sidekiq/report/cache/counter source và docs chính thức. Show dùng @post làm cache key trước khi gán trong action;không giả before_action chưa thấy hoặc exact nil-key diagnostic mọi adapter. Không chạy Redis/jobs/mail/cache/DB/load tests.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Job module",
+      "question": "ProcessReportJob include module nào?",
+      "options": [
+        "Sidekiq::Job",
+        "ActiveRecord::Base",
+        "Serializable",
+        "Enumerable"
+      ],
+      "correct": 0,
+      "explanation": "Native Sidekiq job API trong mẫu."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Queue selection",
+      "question": "Queue được cấu hình tên gì?",
+      "options": [
+        "posts",
+        "reports",
+        "default bắt buộc",
+        "mailers"
+      ],
+      "correct": 1,
+      "explanation": "Process phải consume queue phù hợp để xử lý."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Retry option",
+      "question": "retry:3 có ý định gì?",
+      "options": [
+        "Chạy lặp mỗi3giây cố định",
+        "Exactly-once guarantee",
+        "Cấu hình ba retries thông thường khi job lỗi",
+        "Chỉ ba jobs được tạo toàn hệ thống"
+      ],
+      "correct": 2,
+      "explanation": "Không là giới hạn tuyệt đối mọi duplicate execution."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Perform inputs",
+      "question": "perform nhận tham số nào?",
+      "options": [
+        "User object và DB connection",
+        "Post ID duy nhất",
+        "Queue và retry count",
+        "user_id và report_type"
+      ],
+      "correct": 3,
+      "explanation": "Inputs đơn giản phù hợp serialization boundary."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "User lookup",
+      "question": "Job đọc user bằng gì?",
+      "options": [
+        "User.find(user_id)",
+        "User.first",
+        "current_user luôn sẵn ở job",
+        "params[:user]"
+      ],
+      "correct": 0,
+      "explanation": "Background job không dựa request context tự động."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Report generator",
+      "question": "Report được tạo bằng lời gọi nào?",
+      "options": [
+        "Comment.count",
+        "ReportGenerator.new(user,report_type).generate",
+        "Post.published.to_json",
+        "Rails.cache.clear"
+      ],
+      "correct": 1,
+      "explanation": "Generator class chưa được định nghĩa ở snippet."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Job email",
+      "question": "Sau generate,job gọi gì?",
+      "options": [
+        "context.go",
+        "Order.save!",
+        "ReportMailer.ready(...).deliver_now",
+        "deliver_later ở source này"
+      ],
+      "correct": 2,
+      "explanation": "Mail gửi đồng bộ trong job thread theo ý định."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Immediate enqueue",
+      "question": "perform_async dùng cho việc gì?",
+      "options": [
+        "Chạy perform đồng bộ trong caller chắc chắn",
+        "Chạy migration",
+        "Tự tạo cron",
+        "Enqueue job để xử lý bất đồng bộ"
+      ],
+      "correct": 3,
+      "explanation": "Enqueue không bảo đảm bắt đầu ngay."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Scheduled enqueue",
+      "question": "perform_in(1.hour,...) biểu diễn gì?",
+      "options": [
+        "Lên lịch một job sau khoảng thời gian tương ứng",
+        "Cron chạy hàng giờ vĩnh viễn",
+        "Timeout job một giờ",
+        "Thời lượng generate cố định"
+      ],
+      "correct": 0,
+      "explanation": "Không là recurring scheduler trong snippet."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Monthly argument",
+      "question": "perform_async mẫu truyền report_type nào?",
+      "options": [
+        "all",
+        "monthly",
+        "daily",
+        "reports"
+      ],
+      "correct": 1,
+      "explanation": "String data cho perform."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Daily argument",
+      "question": "perform_in mẫu truyền report_type nào?",
+      "options": [
+        "reports",
+        "pending",
+        "daily",
+        "monthly"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ một scheduled invocation."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cache fetch role",
+      "question": "Rails.cache.fetch với block thường làm gì?",
+      "options": [
+        "Luôn chạy block bất kể hit",
+        "Tạo database index",
+        "Tự cấp quyền user",
+        "Dùng value cache hoặc tính/lưu khi miss"
+      ],
+      "correct": 3,
+      "explanation": "Behavior còn phụ thuộc cache store/config."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "List key prefix",
+      "question": "Index cache key mẫu bắt đầu bằng gì?",
+      "options": [
+        "posts/page/",
+        "users/report/",
+        "comments/count/",
+        "api/auth/"
+      ],
+      "correct": 0,
+      "explanation": "Key ghép page parameter."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "List expiry",
+      "question": "Index cache fetch đặt expires_in bao lâu?",
+      "options": [
+        "Vĩnh viễn explicit",
+        "15.minutes",
+        "1.hour",
+        "3.seconds"
+      ],
+      "correct": 1,
+      "explanation": "TTL không là freshness realtime."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Cached query filter",
+      "question": "Index block chọn Posts nào?",
+      "options": [
+        "Mọi deleted posts",
+        "Chỉ của user_id job",
+        "published",
+        "draft duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Không thấy personalization trong query hiện tại."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Cached query include",
+      "question": "Index includes association nào?",
+      "options": [
+        "comments và tags",
+        "products",
+        "Mọi associations",
+        "user"
+      ],
+      "correct": 3,
+      "explanation": "Show block có includes khác."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Materialize array",
+      "question": "to_a trong cache block làm gì?",
+      "options": [
+        "Load/materialize relation thành array",
+        "Chỉ tạo SQL String",
+        "Tự cache IDs thay objects",
+        "Tự xóa query"
+      ],
+      "correct": 0,
+      "explanation": "Source đang cache AR instances array."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Fragment caching",
+      "question": "Đoạn ERB cache @post minh họa gì?",
+      "options": [
+        "Một DB index",
+        "Cache một fragment view",
+        "Một global HTTP full-page cache bắt buộc",
+        "Một Sidekiq queue"
+      ],
+      "correct": 1,
+      "explanation": "Đây là comment usage,không view file đã chạy."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Counter cache owner",
+      "question": "Comment belongs_to :post,counter_cache:true nhằm duy trì gì?",
+      "options": [
+        "Số report jobs",
+        "Số cache keys",
+        "Số comments ở post tương ứng",
+        "Số user toàn app"
+      ],
+      "correct": 2,
+      "explanation": "Cần column/schema đúng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Counter column",
+      "question": "Comment source nêu posts cần column nào?",
+      "options": [
+        "reports_count",
+        "users_count",
+        "cache_hits",
+        "comments_count"
+      ],
+      "correct": 3,
+      "explanation": "Chưa có migration tạo column trong snippet."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Class versus instance job methods",
+      "question": "perform_async được gọi trên gì còn perform là gì?",
+      "options": [
+        "Class job enqueue và instance method thực thi",
+        "Cả hai là methods của User",
+        "Cả hai là HTTP endpoints",
+        "perform là class method bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Không gọi nhầm enqueue với body execution."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Enqueue result meaning",
+      "question": "Enqueue thành công có chứng minh report đã generate/mail đã gửi chưa?",
+      "options": [
+        "Có,queue reports có tên đúng",
+        "Không",
+        "Có,async luôn hoàn tất trước return",
+        "Có,report_type monthly là proof"
+      ],
+      "correct": 1,
+      "explanation": "Cần theo dõi completion/failure của job."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Scheduled exact timing",
+      "question": "perform_in(1.hour,...) có bảo đảm chạy đúng giây thứ3600 không?",
+      "options": [
+        "Có,nếu retry3",
+        "Có,vì1.hour là Float",
+        "Không,còn scheduler/queue/process availability",
+        "Có,timing tuyệt đối mọi workload"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng scheduled time như benchmark latency."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "No recurrence",
+      "question": "Một lời perform_in daily có tự lặp mỗi ngày không?",
+      "options": [
+        "Có,vì report_type daily",
+        "Có,Sidekiq hiểu String daily là cron",
+        "Có,retry tự là lịch hàng ngày",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Job argument không là recurring schedule."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Json serializable arguments",
+      "question": "Vì sao truyền user.id thay toàn User object phù hợp Sidekiq?",
+      "options": [
+        "Args cần kiểu dữ liệu JSON đơn giản",
+        "ID tự mã hóa mọi permissions",
+        "User object không bao giờ mutable",
+        "Sidekiq không truy cập DB"
+      ],
+      "correct": 0,
+      "explanation": "Job load dữ liệu bằng ID theo lifecycle của nó."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Deleted user",
+      "question": "User bị xóa trước khi job chạy có thể dẫn tới gì?",
+      "options": [
+        "Job giữ snapshot User object từ enqueue",
+        "User.find raise RecordNotFound",
+        "Tự tạo User mới",
+        "Tự bỏ mail rồi success mặc định"
+      ],
+      "correct": 1,
+      "explanation": "Cần policy recoverable/permanent failures."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Changed user state",
+      "question": "User đổi email sau enqueue,job lookup hiện tại thường đọc gì?",
+      "options": [
+        "Email encoded trong report_type",
+        "Một user giả",
+        "Dữ liệu user ở thời điểm thực thi theo DB",
+        "Snapshot đầy đủ từ lúc enqueue chắc chắn"
+      ],
+      "correct": 2,
+      "explanation": "Truyền ID là choice về freshness/lifetime."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Missing report type validation",
+      "question": "perform có validate allowlist report_type chưa?",
+      "options": [
+        "Có,String tự chỉ nhận daily/monthly",
+        "Có,Sidekiq Job kiểm business enums",
+        "Có,queue name kiểm type",
+        "Không thấy"
+      ],
+      "correct": 3,
+      "explanation": "Generator có thể có policy nhưng chưa cung cấp."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Mailer failure after report",
+      "question": "Nếu generate thành công nhưng deliver_now raise,job có thể làm gì khi retry?",
+      "options": [
+        "Generate lại và thử mail lại theo retry behavior",
+        "Chỉ retry mail riêng tự động từ dòng lỗi",
+        "Tự rollback file/report mọi nơi",
+        "Luôn không retry vì body gần xong"
+      ],
+      "correct": 0,
+      "explanation": "Retry thường chạy lại perform,không resume stack tại dòng lỗi."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Duplicate side effect risk",
+      "question": "Cùng job thực thi lại có thể tạo report/mail trùng nếu không bảo vệ không?",
+      "options": [
+        "Không,vì report_type String",
+        "Có",
+        "Không,vì Sidekiq exactly-once",
+        "Không,vì user_id unique"
+      ],
+      "correct": 1,
+      "explanation": "Idempotency theo operation cần được thiết kế."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Delivery thread scope",
+      "question": "deliver_now ở trong perform có block request HTTP ban đầu theo cùng call stack không?",
+      "options": [
+        "Không tốn thread nào vì now async",
+        "Chỉ khi cache miss",
+        "Không,đang trong background execution,nhưng tốn job thread",
+        "Có,luôn là request thread"
+      ],
+      "correct": 2,
+      "explanation": "Di chuyển work khỏi request không xóa cost xử lý."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "No user from request",
+      "question": "Job có tự có current_user từ controller enqueue không?",
+      "options": [
+        "Có,mọi thread dùng chung current_user",
+        "Có,perform_async tự chuyển session cookie",
+        "Có,Redis lưu toàn request object",
+        "Không,source dùng user_id để load"
+      ],
+      "correct": 3,
+      "explanation": "Explicit context cần được truyền/định nghĩa."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Worker queue configuration",
+      "question": "Job ở queue reports cần điều kiện nào để được tiêu thụ?",
+      "options": [
+        "Có process cấu hình consume reports và dependencies hoạt động",
+        "Chỉ class include Sidekiq::Job là đủ dù không process",
+        "Chỉ cache TTL",
+        "Chỉ User tồn tại"
+      ],
+      "correct": 0,
+      "explanation": "Snippet không khởi động worker/Redis."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Normal retry budget",
+      "question": "retry:3 thông thường là ba retries ngoài lần thực thi đầu nếu liên tục fail không?",
+      "options": [
+        "Có và chứng minh không bao giờ duplicate hơn4lượt",
+        "Có theo cấu hình retry này",
+        "Không,chỉ một lần tổng",
+        "Không,ba lần mỗi giây mãi mãi"
+      ],
+      "correct": 1,
+      "explanation": "Budget retries khác exactly-once/duplicate semantics."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "List cache hit",
+      "question": "Cache hit hợp lệ có nhất thiết chạy lại Post query block mỗi request không?",
+      "options": [
+        "Có,to_a luôn chạy ngoài block",
+        "Có,expires_in vô hiệu hit",
+        "Không,theo fetch semantics thường dùng value cached",
+        "Có,fetch luôn query rồi so"
+      ],
+      "correct": 2,
+      "explanation": "Không xem caching là loại bỏ mọi query khác trong request."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "List cache miss",
+      "question": "Cache miss và block thành công thì fetch làm gì theo pattern?",
+      "options": [
+        "Trả nil mà không chạy block",
+        "Chạy job report",
+        "Xóa posts table",
+        "Tính value rồi ghi cache theo options"
+      ],
+      "correct": 3,
+      "explanation": "Store failures/capabilities cần contract riêng."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Page two key",
+      "question": "params[:page]=\"2\" cho key String nào?",
+      "options": [
+        "posts/page/2",
+        "posts/2/page",
+        "page/posts/2",
+        "posts/page/:page"
+      ],
+      "correct": 0,
+      "explanation": "Ruby interpolation đưa giá trị parameter vào key."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Nil page key",
+      "question": "params[:page] nil nội suy vào key String thành gì?",
+      "options": [
+        "posts/page/1 tự động",
+        "posts/page/",
+        "posts/page/nil literal bắt buộc",
+        "nil key trực tiếp"
+      ],
+      "correct": 1,
+      "explanation": "Nil.to_s rỗng;normalization page chưa viết."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Equivalent page keys",
+      "question": "Page nil và page1 có thể cùng effective first page nhưng cache keys khác không?",
+      "options": [
+        "Không,vì params cấm nil",
+        "Có vì Post tự random page",
+        "Có,tùy paginator default và key raw input",
+        "Không,caching tự canonicalize page string"
+      ],
+      "correct": 2,
+      "explanation": "Nên normalize parameters theo response contract."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "No per option here",
+      "question": "Index query trong bài performance có per(20) tường minh không?",
+      "options": [
+        "Có,kế thừa tự từ bài trước",
+        "Có,page luôn cố định20 mọi library",
+        "Có,TTL15 là perpage",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Page size phụ thuộc paginator/config chưa thấy."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Ordering omission",
+      "question": "Index cache query có order/recent tường minh không?",
+      "options": [
+        "Không",
+        "Có,published luôn newest first",
+        "Có,includes sort theo user",
+        "Có,page tự total order"
+      ],
+      "correct": 0,
+      "explanation": "Pagination cần deterministic ordering nếu contract yêu cầu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Cached objects caveat",
+      "question": "Block to_a đang cache loại values nào?",
+      "options": [
+        "JSON bytes chắc chắn",
+        "ActiveRecord objects array",
+        "Chỉ primitive IDs",
+        "SQL query plan"
+      ],
+      "correct": 1,
+      "explanation": "Rails docs khuyên tránh cached AR instances vì staleness/reloading."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "TTL freshness limitation",
+      "question": "Post đổi ngay sau cache fill có luôn hiện ngay trong index không?",
+      "options": [
+        "Có,AR object trong cache tự subscribe DB",
+        "Có,includes tự refresh cache",
+        "Không,nếu key chưa invalidate/version theo thay đổi",
+        "Có,15.minutes nghĩa là realtime"
+      ],
+      "correct": 2,
+      "explanation": "Explicit String key chưa gắn version dữ liệu."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Eviction before expiry",
+      "question": "TTL15phút có bảo đảm value ở cache đủ15phút không?",
+      "options": [
+        "Có,expiry là minimum retention tuyệt đối",
+        "Có,nếu key String",
+        "Có,nếu published",
+        "Không,có thể eviction/store reset"
+      ],
+      "correct": 3,
+      "explanation": "TTL khác durability/retention guarantee."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Show key before value",
+      "question": "show gọi Rails.cache.fetch với key nào trong source?",
+      "options": [
+        "@post trước assignment từ fetch result",
+        "params[:id] trực tiếp",
+        "Post.find(id) đã load trong dòng trước",
+        "String posts/page/id"
+      ],
+      "correct": 0,
+      "explanation": "Không thấy setup @post trong action trước đó."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Show setup uncertainty",
+      "question": "Không có before_action được cung cấp thì nên kết luận gì về @post key?",
+      "options": [
+        "Rails tự lấy params id cho @post",
+        "Key chưa được xác lập trong snippet,không giả đã đúng record",
+        "Mọi app chắc chắn đã before_action load",
+        "Mọi adapter chắc chắn cùng exception text"
+      ],
+      "correct": 1,
+      "explanation": "Giữ kết luận theo scope source."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Show includes",
+      "question": "Show cache block includes gì?",
+      "options": [
+        "products và customer",
+        "Mọi user roles",
+        "comments và tags",
+        "user duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ chạy block theo fetch/miss behavior phù hợp."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Show lookup",
+      "question": "Record trong show block được tìm bằng gì?",
+      "options": [
+        "Post.first",
+        "current_user.posts.find trong source",
+        "Rails.cache.find",
+        "Post.find(params[:id])"
+      ],
+      "correct": 3,
+      "explanation": "Scope authorization khác chưa được cung cấp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Show not found",
+      "question": "Post.find ID thiếu có thể gây gì?",
+      "options": [
+        "RecordNotFound",
+        "Tự trả cached nil luôn luôn",
+        "Tạo post mới",
+        "Tự render201"
+      ],
+      "correct": 0,
+      "explanation": "Error response handling chưa hiện trong snippet."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Fragment version concept",
+      "question": "Cache @post trong view có thể dùng model cache key/version để làm gì?",
+      "options": [
+        "Tự enqueue Sidekiq",
+        "Liên hệ fragment với identity/version theo store/framework policy",
+        "Mã hóa HTML bảo mật",
+        "Tự cập nhật mọi unrelated page-list cache"
+      ],
+      "correct": 1,
+      "explanation": "Model key semantics khác explicit list String key."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Fragment comment status",
+      "question": "Đoạn ERB có được Ruby chạy chỉ vì nằm trong comments không?",
+      "options": [
+        "Có,cache helper scan comments",
+        "Có,ApplicationController gọi toàn file",
+        "Không",
+        "Có,comments ERB auto render"
+      ],
+      "correct": 2,
+      "explanation": "Cần view template thật nếu triển khai."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Counter create intent",
+      "question": "Comment create qua lifecycle được hỗ trợ có ý định thay đổi counter thế nào?",
+      "options": [
+        "Tăng count mọi post",
+        "Giảm count của user",
+        "Không có updates nào theo counter config",
+        "Tăng count của post phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần DB column và association setup."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Counter destroy intent",
+      "question": "Comment destroy qua lifecycle được hỗ trợ có ý định gì?",
+      "options": [
+        "Giảm count của post phù hợp",
+        "Xóa post bắt buộc",
+        "Tăng reports queue",
+        "Tự bỏ mọi comments cache keys"
+      ],
+      "correct": 0,
+      "explanation": "Counter không tự invalidates mọi cache tự đặt."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Existing rows counter",
+      "question": "Bật counter_cache với dữ liệu cũ có cần backfill/reconcile không?",
+      "options": [
+        "Có nhưng chỉ nếu Redis chạy",
+        "Có,nếu counts chưa được khởi tạo đúng",
+        "Không,mọi row cũ tự được đếm khi đọc code",
+        "Không,column luôn biết count"
+      ],
+      "correct": 1,
+      "explanation": "Schema/config alone không sửa historical values."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Bulk delete bypass",
+      "question": "Xóa comments bằng path bỏ callbacks có rủi ro gì với counter?",
+      "options": [
+        "Không thể bypass ActiveRecord",
+        "Redis tự đếm lại",
+        "Counter có thể lệch nếu không cập nhật tương ứng",
+        "Counter luôn chính xác vì DB trigger tự tạo"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm write paths và reconciliation."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Scoped counts",
+      "question": "comments_count toàn association có tự là approved_comments_count không?",
+      "options": [
+        "Có,mọi counter theo filter hiện tại",
+        "Có,nếu tên Comment",
+        "Có,Post.published khiến comments approved",
+        "Không,cần scope/count contract phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không dùng counter cho tập dữ liệu khác nghĩa."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Counter schema omission",
+      "question": "Migration tạo comments_count có trong snippet không?",
+      "options": [
+        "Chưa,chỉ comment nêu cần column",
+        "Có,belongs_to tự migrate DB",
+        "Có,Sidekiq::Job thêm column",
+        "Có,Rails.cache tạo schema"
+      ],
+      "correct": 0,
+      "explanation": "Không claim migration đã apply."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Action Cable implementation",
+      "question": "Theory nhắc Action Cable;source có channel/broadcast implementation chưa?",
+      "options": [
+        "Có,Comment.counter_cache là channel",
+        "Chưa",
+        "Có,mọi job tự broadcast",
+        "Có,cache.fetch tự WebSocket"
+      ],
+      "correct": 1,
+      "explanation": "Không gán feature chưa viết."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Performance metrics absence",
+      "question": "Source có measurements queue latency/cache hit/query plans chưa?",
+      "options": [
+        "Có,TTL15 là speedup15x",
+        "Có,cache comment là benchmark",
+        "Chưa",
+        "Có,retry3 là throughput3"
+      ],
+      "correct": 2,
+      "explanation": "Không suy tối ưu đã được chứng minh."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Dependency setup gaps",
+      "question": "Để sample chạy cần gì ngoài class/job/cache snippets?",
+      "options": [
+        "Chỉ include Sidekiq::Job",
+        "Chỉ String monthly",
+        "Chỉ comments_count comment",
+        "Rails/models/gems/Redis/process/cache/mailer setup phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Chưa chạy services local/network."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Exactly once myth",
+      "question": "Sidekiq có bảo đảm job chỉ chạy đúng một lần không?",
+      "options": [
+        "Không,tài liệu yêu cầu idempotent và nêu không exactly-once",
+        "Có,nếu retry3",
+        "Có,nếu user ID unique",
+        "Có,perform_async return JID"
+      ],
+      "correct": 0,
+      "explanation": "Completed job vẫn có thể được thực thi lại theo failure scenarios."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Report idempotency key",
+      "question": "Muốn tránh report/mail trùng nên xác định operation identity thế nào?",
+      "options": [
+        "Chỉ User.name",
+        "Theo user,report type/period và attempt/version contract phù hợp",
+        "Chỉ random key mới mỗi retry",
+        "Chỉ queue reports dùng cho mọi report"
+      ],
+      "correct": 1,
+      "explanation": "Cùng operation retry cần dedupe nhưng report kỳ mới vẫn hợp lệ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cache context isolation",
+      "question": "Nếu index về sau cá nhân hóa/có tenant,cache key chỉ page có rủi ro gì?",
+      "options": [
+        "Published scope tự phân tenant",
+        "TTL tự authorize dữ liệu",
+        "Trộn responses giữa context nếu không thêm identity/filter dimensions",
+        "Cache tự biết current_user mọi nơi"
+      ],
+      "correct": 2,
+      "explanation": "Key phải phản ánh inputs ảnh hưởng output."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Cache invalidation coverage",
+      "question": "Post update/delete có tự invalidate String posts/page/2 bằng model cache key không?",
+      "options": [
+        "Có,mọi cache keys tự theo model version",
+        "Có,includes tự xóa",
+        "Có,counter_cache xóa mọi pages",
+        "Không theo code này,cần strategy riêng"
+      ],
+      "correct": 3,
+      "explanation": "Different cache layers có dependencies khác nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Stampede handling",
+      "question": "Nhiều request cùng miss một key tốn query có thể cần gì?",
+      "options": [
+        "Cơ chế chống stampede phù hợp store/workload và fallback policy",
+        "Tăng retry job vô hạn",
+        "Tắt mọi limits",
+        "Giả fetch luôn distributed lock mặc định"
+      ],
+      "correct": 0,
+      "explanation": "Không suy single-flight guarantee universal."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Stale AR cache",
+      "question": "Vì sao cache IDs/primitives có thể tốt hơn AR instances ở boundary này?",
+      "options": [
+        "Không còn cần DB",
+        "Giảm phụ thuộc instance stale/reloading,nhưng vẫn cần query/freshness policy",
+        "IDs tự là realtime cache hoàn chỉnh",
+        "Primitives không bao giờ stale"
+      ],
+      "correct": 1,
+      "explanation": "Đây là tradeoff,không xóa mọi query hay invalidation."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Undefined show key repair",
+      "question": "Sửa show cache key cần theo nguyên tắc nào?",
+      "options": [
+        "Đặt một global key post cho mọi ID",
+        "Dựa assignment sau fetch để key tự đúng trước",
+        "Xác định record/key identity/version hợp lệ trước fetch,đúng authorization scope",
+        "Chỉ giữ @post nil rồi tăng TTL"
+      ],
+      "correct": 2,
+      "explanation": "Đánh giá RHS diễn ra trước gán result."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "No exact nil key diagnostic",
+      "question": "Vì sao không nên khẳng định một exception text cụ thể cho fetch(@post) ở mọi app?",
+      "options": [
+        "Vì Ruby không có nil",
+        "Vì cache không bao giờ lỗi",
+        "Vì mọi key tự thành params id",
+        "Chưa biết before-action/store/version và giá trị key thực"
+      ],
+      "correct": 3,
+      "explanation": "Nêu lỗi setup/rủi ro theo evidence thay đoán runtime."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Queue capacity scope",
+      "question": "Đẩy work vào queue có bảo đảm hệ thống chịu tải vô hạn không?",
+      "options": [
+        "Không,còn arrival rate,service rate,resources và backlog",
+        "Có,Redis lưu vô hạn miễn phí",
+        "Có,async xóa CPU cost",
+        "Có,retry tạo throughput"
+      ],
+      "correct": 0,
+      "explanation": "Cần capacity evidence theo workload."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Concurrency resource pools",
+      "question": "Tăng job threads cần xem gì?",
+      "options": [
+        "Chỉ report_type String",
+        "DB/network connection pools,memory,CPU và downstream limits",
+        "Chỉ số queue names",
+        "Chỉ retry3"
+      ],
+      "correct": 1,
+      "explanation": "Có thể chuyển bottleneck/chồng tải downstream."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Email retry boundary",
+      "question": "Mail gửi thành công nhưng process lỗi trước acknowledge có thể gây gì?",
+      "options": [
+        "Queue tự kiểm inbox recipient",
+        "TTL cache bảo vệ mail",
+        "Retry có thể gửi lại nếu thiếu dedupe/outcome tracking",
+        "Không thể vì deliver_now exactly-once"
+      ],
+      "correct": 2,
+      "explanation": "Side effects cần contract chịu lặp."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Permanent failure policy",
+      "question": "User đã xóa hoặc report_type invalid có nên retry y hệt mọi transient error không?",
+      "options": [
+        "Có,mọi lỗi cứ chờ sẽ hết",
+        "Có,retry3 chứng minh mọi lỗi hồi phục",
+        "Không,vì phải bỏ mọi error logs",
+        "Không tự động,cần phân loại và outcome policy"
+      ],
+      "correct": 3,
+      "explanation": "Retry chỉ có ích với lỗi có khả năng hồi phục."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Observability",
+      "question": "Vận hành job/caching nên theo dõi gì?",
+      "options": [
+        "Queue latency/retries/dead jobs,completion,cache hit và DB metrics theo mục tiêu",
+        "Chỉ class name",
+        "Chỉ số comments",
+        "Chỉ dòng perform_async"
+      ],
+      "correct": 0,
+      "explanation": "Cần biết failure/backlog và freshness thực."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Counter invariant verification",
+      "question": "Counter cache đáng tin cần kiểm gì?",
+      "options": [
+        "Chỉ total post count",
+        "Create/destroy/reparent/bulk paths,backfill và reconciliation theo app",
+        "Chỉ comment column tồn tại",
+        "Chỉ class Comment compile"
+      ],
+      "correct": 1,
+      "explanation": "Đếm cache đúng phụ thuộc toàn bộ write paths."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Counter zero downtime rollout",
+      "question": "Thêm counter trên data lớn cần cân nhắc gì?",
+      "options": [
+        "Chỉ clear Redis",
+        "Chỉ restart Sidekiq",
+        "Schema/backfill/activation và writes concurrent tránh lệch counts",
+        "Chỉ đổi macro rồi giả mọi historical row đúng"
+      ],
+      "correct": 2,
+      "explanation": "Rollout dữ liệu cần bảo toàn invariant."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Cached pagination determinism",
+      "question": "Cache page thiếu order ổn định có thể gây gì?",
+      "options": [
+        "Cache tự sort theo ID",
+        "TTL tự tạo cursor",
+        "Array.to_a tự newest first",
+        "Kết quả/trang không ổn định theo DB/data changes"
+      ],
+      "correct": 3,
+      "explanation": "Cần query order/pagination contract."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Cache error availability",
+      "question": "Cache store unavailable nên có policy gì?",
+      "options": [
+        "Fallback/error behavior và giới hạn tải DB theo mục tiêu",
+        "Coi cache luôn có vì fetch method tồn tại",
+        "Retry network vô hạn trong request",
+        "Ghi data user vào key bất kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Caching có failure mode riêng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Benchmark design",
+      "question": "Muốn chứng minh tối ưu nên đo thế nào?",
+      "options": [
+        "Chỉ TTL lớn hơn",
+        "Workload/conditions so sánh rõ,latency/query/memory/background lag liên quan",
+        "Chỉ đếm cache keywords",
+        "Chỉ thêm indexes trong comment"
+      ],
+      "correct": 1,
+      "explanation": "Evidence cần metrics ở scope thực."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Cache miss stampede",
+      "question": "Nhiều request cùng gặp cache miss ở một key báo cáo đắt. Rủi ro nào cần xét?",
+      "options": [
+        "TTL tự giới hạn số request mỗi giây",
+        "Mọi request miss tự bị hủy",
+        "Chúng có thể đồng thời tính lại và dồn tải DB; cần chính sách chống stampede phù hợp",
+        "fetch luôn khóa phân tán mọi backend nên không có rủi ro"
+      ],
+      "correct": 2,
+      "explanation": "Cache expiration không tự bảo đảm chỉ một worker tính lại; giải pháp phụ thuộc store và yêu cầu freshness."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Whole system readiness",
+      "question": "Background jobs/caching/counter patterns có chứng minh triệu người dùng chưa?",
+      "options": [
+        "Có,Sidekiq luôn scale vô hạn",
+        "Có,cache TTL là concurrency limit",
+        "Có,comments_count xóa mọi DB cost",
+        "Không,cần workload/capacity/failure tests tương ứng hệ thống"
+      ],
+      "correct": 3,
+      "explanation": "Review patterns không là production load proof."
+    }
+  ]
+}

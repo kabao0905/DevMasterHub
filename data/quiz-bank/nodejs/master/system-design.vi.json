@@ -1,0 +1,1154 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "master",
+  "lesson": "system-design",
+  "language": "vi",
+  "sourceHash": "2c6b36823f54122cd5955e42f9e3f57e1d4e76625436a47a5bbc3de1a300781d",
+  "status": "approved",
+  "review": "Tự soạn không API. Review CircuitBreaker/tracing nguồn và Pino/Node docs. Breaker snippets giữ branches nguồn,Date.now được fake riêng trong process và restore,không chờ30s hay gọi downstream thật. timeout là open cooldown không là execution deadline; HALF-OPEN thiếu probe gate và late completions có thể đổi state. Pino chưa cài,không tuyên bố integration/log throughput/1M users.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "System target",
+      "question": "Trước thiết kế cho1M users cần làm rõ điều gì?",
+      "options": [
+        "Workload,SLO,active/concurrent definitions và resource assumptions.",
+        "Chỉ tên framework.",
+        "Chỉ số microservices.",
+        "Chỉ màu dashboard."
+      ],
+      "correct": 0,
+      "explanation": "User count không tự thành requests/sec hoặc simultaneous connections."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Structured log",
+      "question": "Structured logging thường tạo lợi ích gì?",
+      "options": [
+        "Tự bỏ mọi chi phí I/O.",
+        "Fields có schema để tìm/lọc/liên kết sự kiện.",
+        "Tự auth mọi request.",
+        "Tự lưu business history chuẩn event sourcing."
+      ],
+      "correct": 1,
+      "explanation": "Log format là công cụ quan sát,không thay data architecture."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Child logger",
+      "question": "logger.child({requestId,...}) chủ yếu làm gì?",
+      "options": [
+        "Tạo database child row.",
+        "Tự sinh mọi request IDs.",
+        "Tạo logger có bound context fields theo API.",
+        "Tạo OS child process."
+      ],
+      "correct": 2,
+      "explanation": "Bound fields giúp liên kết logs trong scope phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Pretty transport",
+      "question": "pino-pretty trong nguồn dành cho nhu cầu nào?",
+      "options": [
+        "Mã hóa mọi log production.",
+        "Thay Pino core trong mọi trường hợp.",
+        "Tạo tracing protocol tự động.",
+        "Hiển thị log dễ đọc trong development theo config."
+      ],
+      "correct": 3,
+      "explanation": "Transport target cần dependency/config phù hợp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Correlation ID",
+      "question": "requestId dùng chủ yếu để gì?",
+      "options": [
+        "Liên kết chẩn đoán request/events.",
+        "Thay authentication credential.",
+        "Cấp quyền admin.",
+        "Mã hóa payload."
+      ],
+      "correct": 0,
+      "explanation": "Identifier quan sát không tự là danh tính tin cậy."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Incoming headers",
+      "question": "x-request-id client gửi nên được xem như gì?",
+      "options": [
+        "Dữ liệu không thể giả mạo.",
+        "Input cần validation/bounds/trust policy.",
+        "Credential đã verified.",
+        "UUID server đã cấp luôn."
+      ],
+      "correct": 1,
+      "explanation": "Có thể giữ external ID riêng với internal trace ID theo policy."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Finish observation",
+      "question": "res finish event chủ yếu cho biết gì theo server lifecycle?",
+      "options": [
+        "Mọi network peer đã commit dữ liệu.",
+        "Mọi background jobs đã xong.",
+        "Response đã hoàn tất ở phía server stream theo API.",
+        "Client đã xử lý UI chắc chắn."
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất local completion và application acknowledgment."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Wall clock",
+      "question": "Date.now() trả loại thời gian nào?",
+      "options": [
+        "Monotonic duration tuyệt đối mọi điều chỉnh clock.",
+        "CPU cycles.",
+        "Requests count.",
+        "Wall-clock milliseconds theo epoch."
+      ],
+      "correct": 3,
+      "explanation": "Timestamp và elapsed-time measurement có vai trò khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Breaker role",
+      "question": "Circuit Breaker chủ yếu nhằm gì?",
+      "options": [
+        "Giảm tiếp tục gọi dependency đang lỗi theo state/policy.",
+        "Tự sửa dependency.",
+        "Tự retry mọi mutation exactly once.",
+        "Tự giới hạn mọi inflight task."
+      ],
+      "correct": 0,
+      "explanation": "Breaker khác retry,timeout và bulkhead."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Closed state",
+      "question": "CLOSED trong breaker nguồn có ý nghĩa đường gọi nào?",
+      "options": [
+        "Đã đóng toàn server.",
+        "Cho phép thử gọi fn.",
+        "Chặn mọi fn call.",
+        "Chỉ trả fallback cố định."
+      ],
+      "correct": 1,
+      "explanation": "Closed là trạng thái hoạt động bình thường,không phải socket closed."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Open state",
+      "question": "OPEN chưa tới nextAttempt làm gì theo nguồn?",
+      "options": [
+        "Tự reset mọi failure.",
+        "Tự đợi blocking30s.",
+        "Ném Circuit open mà không gọi fn.",
+        "Luôn thử fn rồi bỏ kết quả."
+      ],
+      "correct": 2,
+      "explanation": "Fail-fast này nằm trước try gọi downstream."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Half open intent",
+      "question": "HALF-OPEN thường diễn đạt ý đồ gì?",
+      "options": [
+        "Mọi requests miễn auth.",
+        "Tự timeout HTTP.",
+        "Mọi failure được bỏ qua.",
+        "Thử phục hồi có kiểm soát trước đóng circuit."
+      ],
+      "correct": 3,
+      "explanation": "Snippet cần thêm coordination nếu muốn hạn chế probes."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Default threshold",
+      "question": "threshold mặc định nguồn bằng bao nhiêu?",
+      "options": [
+        "5.",
+        "1.",
+        "30.",
+        "30000."
+      ],
+      "correct": 0,
+      "explanation": "Đây là cấu hình ví dụ,chưa là policy phù hợp mọi dependency."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Default cooldown",
+      "question": "timeout30000 trong nguồn dùng milliseconds tương đương xấp xỉ gì?",
+      "options": [
+        "1 ngày.",
+        "30 giây.",
+        "30 phút.",
+        "30000 giây."
+      ],
+      "correct": 1,
+      "explanation": "Nó được cộng vào nextAttempt sau khi circuit mở."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Failure count",
+      "question": "Khi fn throw/reject được catch trong nguồn,failures thay đổi thế nào?",
+      "options": [
+        "Luôn thànhthreshold trước gọi fn.",
+        "Không bao giờ đổi.",
+        "Tăng1.",
+        "Luôn về0."
+      ],
+      "correct": 2,
+      "explanation": "Concurrent completions có thể làm semantics counter phức tạp hơn gọi tuần tự."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Success reset",
+      "question": "fn thành công thì nguồn làm gì?",
+      "options": [
+        "Luôn state OPEN.",
+        "Giữ mọi failures mãi.",
+        "Tự gửi log vào SQL.",
+        "Reset failures0,state CLOSED và trả result."
+      ],
+      "correct": 3,
+      "explanation": "Không tự kiểm tra HTTP status nếu fn resolve với một object báo lỗi."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Next attempt",
+      "question": "nextAttempt trong nguồn dùng để gì?",
+      "options": [
+        "Mốc wall clock trước khi cho probe lại circuit OPEN.",
+        "Tổng request count.",
+        "Thời hạn JWT.",
+        "ID user."
+      ],
+      "correct": 0,
+      "explanation": "Không phải deadline tự động hủy fn đang chạy."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Observability triad",
+      "question": "Logs,metrics,traces hỗ trợ điều gì?",
+      "options": [
+        "Bảo đảm không còn outage.",
+        "Quan sát trạng thái/tải và liên kết đường thực thi theo scope.",
+        "Thay mọi unit test.",
+        "Thay mọi authorization."
+      ],
+      "correct": 1,
+      "explanation": "Instrumentation cũng có cost/privacy/cardinality policy."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "CQRS meaning",
+      "question": "CQRS chủ yếu tách điều gì theo thiết kế?",
+      "options": [
+        "Mọi CSS khỏi HTML.",
+        "Mọi user khỏi API.",
+        "Command/write responsibility và query/read responsibility.",
+        "Mọi services bắt buộc hai databases."
+      ],
+      "correct": 2,
+      "explanation": "Có nhiều mức triển khai;không luôn đòi physical deployment tách biệt."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Event sourcing distinction",
+      "question": "Event sourcing khác log chẩn đoán ở điểm nào?",
+      "options": [
+        "Mọi console.log tự là event store.",
+        "Chỉ cần file JSON logs là đủ mọi invariant.",
+        "Không cần ordering/schema.",
+        "Events lưu bền làm nguồn tái tạo state theo domain contract."
+      ],
+      "correct": 3,
+      "explanation": "Observability logs và business event history có mục đích/lifecycle khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Initial breaker state",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>7);console.log(b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "CLOSED 0",
+        "OPEN 5",
+        "HALF-OPEN 0",
+        "undefined 0"
+      ],
+      "correct": 0,
+      "explanation": "Constructor khởi tạo state và counter theo source."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Successful call",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>7);console.log(await b.call(),b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "7 HALF-OPEN 0",
+        "7 CLOSED 0",
+        "7 OPEN 1",
+        "undefined CLOSED 0"
+      ],
+      "correct": 1,
+      "explanation": "Success trả7 và reset state/counter."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Below threshold",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>{throw new Error(\"x\");},{threshold:2});try{await b.call();}catch{}console.log(b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "CLOSED 0",
+        "HALF-OPEN 2",
+        "CLOSED 1",
+        "OPEN 1"
+      ],
+      "correct": 2,
+      "explanation": "Một failure nhỏ hơn threshold2 chưa mở circuit."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Threshold reached",
+      "question": "Output là gì với fake clock now1000?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>{throw new Error(\"x\");},{threshold:2});for(let i=0;i<2;i++){try{await b.call();}catch{}}console.log(b.state,b.failures,b.nextAttempt);}finally{Date.now=saved;}",
+      "options": [
+        "OPEN 2 30000",
+        "CLOSED 2 1000",
+        "HALF-OPEN 0 0",
+        "OPEN 2 31000"
+      ],
+      "correct": 3,
+      "explanation": "Failure thứ2 mở circuit và đặt1000+30000."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Open skips fn",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let calls=0;const b=new CircuitBreaker(async()=>{calls++;return 7;});b.state=\"OPEN\";b.nextAttempt=2000;try{await b.call();}catch(e){console.log(e.message,calls);}}finally{Date.now=saved;}",
+      "options": [
+        "Circuit open 0",
+        "Circuit open 1",
+        "7 1",
+        "undefined 0"
+      ],
+      "correct": 0,
+      "explanation": "Open check xảy ra trước gọi fn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Probe at boundary",
+      "question": "Output là gì khi now bằng nextAttempt?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>7);b.state=\"OPEN\";b.failures=5;b.nextAttempt=1000;console.log(await b.call(),b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "undefined OPEN 0",
+        "7 CLOSED 0",
+        "Circuit open OPEN 5",
+        "7 HALF-OPEN 5"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện chặn là now<nextAttempt,nên bằng mốc được thử và success đóng circuit."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Pending probe state",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let release;const b=new CircuitBreaker(()=>new Promise(r=>{release=r;}));b.state=\"OPEN\";b.nextAttempt=1000;const p=b.call();const before=b.state;release(7);await p;console.log(before,b.state);}finally{Date.now=saved;}",
+      "options": [
+        "CLOSED CLOSED",
+        "HALF-OPEN OPEN",
+        "HALF-OPEN CLOSED",
+        "OPEN CLOSED"
+      ],
+      "correct": 2,
+      "explanation": "Probe chuyển HALF-OPEN trước await fn;sau resolve chuyển CLOSED."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Failed half open probe",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>{throw new Error(\"x\");},{threshold:2});b.state=\"OPEN\";b.failures=2;b.nextAttempt=1000;try{await b.call();}catch{}console.log(b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "CLOSED 0",
+        "HALF-OPEN 1",
+        "OPEN 0",
+        "OPEN 3"
+      ],
+      "correct": 3,
+      "explanation": "Counter cũ2 tăng3 vượt threshold2 nên mở lại."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Sequential reset",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let n=0;const b=new CircuitBreaker(async()=>{n++;if(n!==2)throw new Error(\"x\");return 7;},{threshold:2});for(let i=0;i<3;i++){try{await b.call();}catch{}}console.log(b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "CLOSED 1",
+        "OPEN 2",
+        "CLOSED 0",
+        "HALF-OPEN 1"
+      ],
+      "correct": 0,
+      "explanation": "Success giữa hai failures reset counter trong chuỗi gọi tuần tự."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Open rejection counter",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>7);b.state=\"OPEN\";b.failures=2;b.nextAttempt=2000;try{await b.call();}catch{}console.log(b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "5",
+        "2",
+        "3",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Circuit open throw nằm ngoài catch increment failures."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Cooldown not deadline model",
+      "question": "Dù fake clock tiến xa,fn chưa resolve; output trước release là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let release;const b=new CircuitBreaker(()=>new Promise(r=>{release=r;}),{timeout:10});let finished=false;const p=b.call().then(()=>{finished=true;});now=100000;await Promise.resolve();console.log(finished);release(7);await p;}finally{Date.now=saved;}",
+      "options": [
+        "timeout",
+        "Circuit open.",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Source không có timer/race hủy underlying call đang chờ;test resolve sau log để hoàn tất hữu hạn."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Threshold not validated",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>{throw new Error(\"x\");},{threshold:0});try{await b.call();}catch{}console.log(b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "CLOSED 1",
+        "OPEN 0",
+        "TypeError tự động.",
+        "OPEN 1"
+      ],
+      "correct": 3,
+      "explanation": "Threshold0 được constructor nhận,một failure thỏa>=0;production cần validate config."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Negative cooldown",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>{throw new Error(\"x\");},{threshold:1,timeout:-100});try{await b.call();}catch{}console.log(b.nextAttempt);}finally{Date.now=saved;}",
+      "options": [
+        "900",
+        "1100",
+        "30000",
+        "TypeError tự động."
+      ],
+      "correct": 0,
+      "explanation": "Timeout-100 không bị validate;nó tạo nextAttempt1000-100."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Infinite threshold",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async()=>{throw new Error(\"x\");},{threshold:Infinity});try{await b.call();}catch{}console.log(b.state,b.failures);}finally{Date.now=saved;}",
+      "options": [
+        "TypeError tự động.",
+        "CLOSED 1",
+        "OPEN 1",
+        "CLOSED 0"
+      ],
+      "correct": 1,
+      "explanation": "Một failure không đạt Infinity;source chưa validate finite threshold."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Method receiver binding",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const repo={label:\"A\",async get(){return this.label;}};const b=new CircuitBreaker(repo.get);console.log(await b.call());}finally{Date.now=saved;}",
+      "options": [
+        "Circuit open",
+        "TypeError luôn.",
+        "undefined",
+        "A"
+      ],
+      "correct": 2,
+      "explanation": "this.fn() gọi fn với breaker làm receiver,không giữ repo receiver gốc."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Forward arguments",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(async(...args)=>args.join(\":\"));console.log(await b.call(\"A\",\"B\"));}finally{Date.now=saved;}",
+      "options": [
+        "B:A",
+        "undefined",
+        "[object Object]",
+        "A:B"
+      ],
+      "correct": 3,
+      "explanation": "Spread args được forward tới fn."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Synchronous fn exception",
+      "question": "Output là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const b=new CircuitBreaker(()=>{throw new Error(\"x\");},{threshold:1});try{await b.call();}catch{}console.log(b.state);}finally{Date.now=saved;}",
+      "options": [
+        "OPEN",
+        "CLOSED",
+        "HALF-OPEN",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Sync throw trong fn vẫn được try/catch của async call xử lý."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Wall clock duration model",
+      "question": "Output là gì nếu fake wall clock lùi từ1000 về900 trước finish?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{const{EventEmitter}=await import(\"node:events\");const res=new EventEmitter();const start=Date.now();res.on(\"finish\",()=>console.log(Date.now()-start));now=900;res.emit(\"finish\");}finally{Date.now=saved;}",
+      "options": [
+        "TypeError.",
+        "-100",
+        "100",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Source Date.now difference có thể âm khi wall clock điều chỉnh."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "UUID format check",
+      "question": "Output là gì trên Node24 thông thường?",
+      "code": "import{randomUUID}from\"node:crypto\";console.log(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(randomUUID()));",
+      "options": [
+        "Một ID cố định.",
+        "undefined",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "Random UUID được kiểm tra shape,không in credential hoặc dự đoán giá trị."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Mean concurrency model",
+      "question": "Hệ ổn định có200 requests/s và mean time trong hệ0.05s,theo mô hình Little L=lambda*W,output là gì?",
+      "code": "const rate=200,meanSeconds=0.05;console.log(rate*meanSeconds);",
+      "options": [
+        "4000",
+        "200",
+        "0.05",
+        "10"
+      ],
+      "correct": 3,
+      "explanation": "Mô hình dùng means và steady state,không lấy p99 thay W hay suy capacity khi overload."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Timeout meaning source",
+      "question": "timeout trong CircuitBreaker nguồn có thực thi deadline tự động cho fn không?",
+      "options": [
+        "Không;nó là khoảng cooldown trước nextAttempt.",
+        "Có và tự abort mọi I/O.",
+        "Có vì await fn.",
+        "Có vì default30000."
+      ],
+      "correct": 0,
+      "explanation": "Muốn timeout execution cần cơ chế deadline/cancellation phù hợp riêng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Half open gate gap",
+      "question": "Khi một probe đang HALF-OPEN,request tiếp theo có bị source giới hạn về chỉ một probe không?",
+      "options": [
+        "Có vì JavaScript async.",
+        "Không;source chỉ có guard cho OPEN.",
+        "Có vì tên HALF-OPEN.",
+        "Có vì failures chưa0."
+      ],
+      "correct": 1,
+      "explanation": "State name không tự thực thi concurrency policy."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Completion order counter",
+      "question": "Với nhiều call overlap,reset/increment failures của nguồn phản ánh điều gì cần thận trọng?",
+      "options": [
+        "Mọi call tạo breaker riêng.",
+        "Không có interleaving vì async.",
+        "Thứ tự completions có thể đổi state/counter,không phải một chuỗi request tuần tự đơn giản.",
+        "Mọi kết quả luôn được serialize theo thời điểm gọi."
+      ],
+      "correct": 2,
+      "explanation": "Cần state machine/epoch/probe policy nếu yêu cầu concurrency correctness."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Configuration validation",
+      "question": "threshold và timeout nhận từ config cần kiểm tra gì?",
+      "options": [
+        "Chỉ truthy.",
+        "Chỉ tên field.",
+        "Chỉ convert mọi String thànhNumber rồi tin.",
+        "Type,finite range và ý nghĩa policy trước sử dụng."
+      ],
+      "correct": 3,
+      "explanation": "Zero/negative/Infinity ở source cho thấy default parameters không là validation."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Replica scope",
+      "question": "Mỗi process có CircuitBreaker instance riêng;state có tự đồng bộ mọi replica không?",
+      "options": [
+        "Không.",
+        "Có vì cùng class.",
+        "Có vì cùng downstream URL.",
+        "Có vì threshold giống nhau."
+      ],
+      "correct": 0,
+      "explanation": "Local breaker có thể là lựa chọn đúng nhưng phải hiểu scope,không hứa global state."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Breaker versus bulkhead",
+      "question": "CLOSED circuit có tự giới hạn số fn calls đang chạy không?",
+      "options": [
+        "Có vì constructor private.",
+        "Không;bulkhead/concurrency budget là policy khác.",
+        "Có theo threshold failure count.",
+        "Có theo timeout cooldown."
+      ],
+      "correct": 1,
+      "explanation": "Failure threshold không là inflight task limit."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Request ID input",
+      "question": "Client gửi request ID rất dài/tùy ý;server cần gì?",
+      "options": [
+        "Dùng nó làm quyền admin.",
+        "Log mọi input vô hạn.",
+        "Validation,length bounds và trust/correlation policy rõ.",
+        "Tin mọi header là UUID server."
+      ],
+      "correct": 2,
+      "explanation": "Correlation fields cũng tiêu tốn storage/search và có thể bị spoof."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Log level config",
+      "question": "LOG_LEVEL từ môi trường có nên dùng tùy ý mà không validate/configure policy không?",
+      "options": [
+        "Có vì env luôn đáng tin về mọi value.",
+        "Có vì logger tự hiểu nghiệp vụ.",
+        "Chỉ cần fallback info cho mọi chuỗi.",
+        "Không;kiểm tra level hợp lệ và exposure/volume phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Fallback || chỉ xử lý falsy,không xác nhận chuỗi level hợp lệ."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Raw URL log",
+      "question": "Bound path:req.url có thể chứa dữ liệu gì cần xem xét?",
+      "options": [
+        "Query parameters có token/personal data theo client input.",
+        "Chỉ route template không có query luôn.",
+        "Chỉ method GET.",
+        "Chỉ requestId server."
+      ],
+      "correct": 0,
+      "explanation": "Redact/normalize route fields theo use case,không public raw sensitive logs."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Pretty dependency",
+      "question": "Transport target pino-pretty được cấu hình có tự cài package đó lúc runtime không?",
+      "options": [
+        "Có vì String target.",
+        "Không.",
+        "Có vì Pino có network registry tự động.",
+        "Có vì development."
+      ],
+      "correct": 1,
+      "explanation": "Dependency phải có trong artifact/môi trường phù hợp;không tự npm install khi import."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Finish versus receipt",
+      "question": "Log Request completed trong finish có chứng minh client đã nhận/xử lý response chưa?",
+      "options": [
+        "Có vì logger.info.",
+        "Có vì duration không âm.",
+        "Không.",
+        "Có vì statusCode."
+      ],
+      "correct": 2,
+      "explanation": "Local server stream completion khác transport/application acknowledgment."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Duration clock",
+      "question": "Muốn đo elapsed duration chống wall-clock jumps,nên chọn gì?",
+      "options": [
+        "Chỉ Date.now vì luôn monotonic.",
+        "Client Date header tùy ý.",
+        "Số ký tự requestId.",
+        "Nguồn monotonic phù hợp như performance.now cho scope process."
+      ],
+      "correct": 3,
+      "explanation": "Timestamp logs và duration metric không cần cùng nguồn đo."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "ID is not auth",
+      "question": "Một request có x-request-id đúng format có nên được coi authenticated không?",
+      "options": [
+        "Không.",
+        "Có vì UUID khó đoán.",
+        "Có vì gateway nhận được header.",
+        "Có vì Pino child."
+      ],
+      "correct": 0,
+      "explanation": "Credential và diagnostic correlation identifiers có contract khác nhau."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Cross service trace",
+      "question": "Request đi qua nhiều services muốn liên kết tốt cần gì?",
+      "options": [
+        "Mỗi service tự dùng cùng constant ID.",
+        "Propagate context đã validate theo trust boundary và tạo spans/log fields phù hợp.",
+        "Chỉ tên services trong health array.",
+        "Log token thô làm correlation."
+      ],
+      "correct": 1,
+      "explanation": "Không đánh đổi data privacy để chẩn đoán."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Readiness target",
+      "question": "Process còn trả health200 có tự chứng minh mọi critical dependency sẵn sàng không?",
+      "options": [
+        "Có vì Node version mới.",
+        "Có vì có breaker.",
+        "Không;cần readiness contract bounded theo kiến trúc.",
+        "Có vì loop còn chạy."
+      ],
+      "correct": 2,
+      "explanation": "Liveness và khả năng phục vụ use case là hai câu hỏi khác nhau."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "CQRS lag",
+      "question": "Read model cập nhật async có thể có tính chất nào client cần biết?",
+      "options": [
+        "Luôn đồng bộ tức thì bất kể pipeline.",
+        "Không bao giờ thay đổi.",
+        "Tự rollback command nếu query cũ.",
+        "Độ trễ so với write model theo consistency policy."
+      ],
+      "correct": 3,
+      "explanation": "Read-your-writes hoặc pending state cần được thiết kế nếu yêu cầu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Event logs distinction",
+      "question": "Structured diagnostic logs có tự đủ làm event-sourcing store không?",
+      "options": [
+        "Không;thiếu domain persistence/order/schema/replay guarantees tương ứng.",
+        "Có vì JSON mỗi dòng.",
+        "Có vì timestamp.",
+        "Có vì logger là Pino."
+      ],
+      "correct": 0,
+      "explanation": "Đừng đồng nhất quan sát với nguồn chân lý business state."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Shard versus replica",
+      "question": "Sharding và replication khác nhau nổi bật ở điều gì?",
+      "options": [
+        "Replication tự làm mọi writes cross-shard atomic.",
+        "Sharding phân vùng dữ liệu;replication sao chép theo topology/consistency phù hợp.",
+        "Hai từ luôn cùng một cơ chế.",
+        "Sharding là backup duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Mục tiêu scale và availability cần chiến lược cụ thể."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Concurrent user definition",
+      "question": "1M registered users và1M simultaneous active requests có cùng workload không?",
+      "options": [
+        "Có nếu dùng cache.",
+        "Có nếu Kubernetes.",
+        "Không.",
+        "Có vì cùng số1M."
+      ],
+      "correct": 2,
+      "explanation": "Cần mô hình arrivals,think time,connections và task cost để tính capacity."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Success criteria",
+      "question": "Khi load tăng,cần theo dõi gì cùng throughput?",
+      "options": [
+        "Chỉ requests count.",
+        "Chỉ worker names.",
+        "Chỉ CPU model.",
+        "Latency distribution,error rate,resource saturation và consistency theo SLO."
+      ],
+      "correct": 3,
+      "explanation": "Throughput cao nhờ trả lỗi nhanh không là thành công phục vụ người dùng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Half open concurrency",
+      "question": "Output mô hình nguồn khi hai probes vào liên tiếp trước completion là gì?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let calls=0;const releases=[];const b=new CircuitBreaker(()=>{calls++;return new Promise(r=>releases.push(r));});b.state=\"OPEN\";b.nextAttempt=1000;const p=b.call(),q=b.call();console.log(calls);for(const r of releases)r(7);await Promise.all([p,q]);}finally{Date.now=saved;}",
+      "options": [
+        "2",
+        "1",
+        "0",
+        "Circuit open luôn."
+      ],
+      "correct": 0,
+      "explanation": "Probe đầu đổi HALF-OPEN nhưng không chặn call thứ hai;cả hai fn được gọi."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Late success state race",
+      "question": "Output là gì khi call thứ hai fail trước,call đầu success sau?",
+      "code": "class CircuitBreaker{constructor(fn,{threshold=5,timeout=30000}={}){this.fn=fn;this.failures=0;this.threshold=threshold;this.timeout=timeout;this.state=\"CLOSED\";this.nextAttempt=0;}async call(...args){if(this.state===\"OPEN\"){if(Date.now()<this.nextAttempt)throw new Error(\"Circuit open\");this.state=\"HALF-OPEN\";}try{const result=await this.fn(...args);this.failures=0;this.state=\"CLOSED\";return result;}catch(err){this.failures++;if(this.failures>=this.threshold){this.state=\"OPEN\";this.nextAttempt=Date.now()+this.timeout;}throw err;}}}\nconst saved=Date.now;let now=1000;Date.now=()=>now;try{let ok,fail,calls=0;const b=new CircuitBreaker(()=>new Promise((r,j)=>{if(++calls===1)ok=r;else fail=j;}),{threshold:1});const p=b.call();const q=b.call().catch(()=>{});fail(new Error(\"x\"));await q;const before=b.state;ok(7);await p;console.log(before,b.state);}finally{Date.now=saved;}",
+      "options": [
+        "HALF-OPEN CLOSED",
+        "OPEN CLOSED",
+        "OPEN OPEN",
+        "CLOSED OPEN"
+      ],
+      "correct": 1,
+      "explanation": "Success cũ vẫn reset state sau failure mới;source thiếu epoch/state coordination."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Execution cancellation",
+      "question": "Thêm Promise.race với timer có tự dừng underlying fn/side effects khi timer thắng không?",
+      "options": [
+        "Có vì breaker OPEN.",
+        "Có vì elapsed duration.",
+        "Không;phải propagate cancellation/deadline theo API và quản lý effects.",
+        "Có vì Promise thua bị kill tự động."
+      ],
+      "correct": 2,
+      "explanation": "Timeout quan sát khác hủy công việc và rollback."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Breaker scope coupling",
+      "question": "Dùng cùng breaker state cho user-service và payment-service độc lập có thể gây gì?",
+      "options": [
+        "Luôn tăng isolation.",
+        "Tự phân biệt URL dù cùng instance fn.",
+        "Không có tradeoff.",
+        "Lỗi một dependency chặn dependency khác ngoài ý muốn."
+      ],
+      "correct": 3,
+      "explanation": "Chọn failure domain và breaker key theo dependency/use case."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Retry budget composition",
+      "question": "Mỗi tầng retry3 lần qua nhiều tầng có thể gây vấn đề gì?",
+      "options": [
+        "Khuếch đại attempts/latency và duplicate mutations.",
+        "Luôn giữ tổng attempts bằng3.",
+        "Tự hạn chế theo SLO.",
+        "Chỉ thêm logs vô hại."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế deadline,retry budget,backoff và idempotency toàn tuyến."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Bulkhead role",
+      "question": "Dependency rất chậm nhưng chưa throw nhiều lỗi;breaker threshold có đủ ngăn inflight tasks vô hạn không?",
+      "options": [
+        "Có vì fn async.",
+        "Không;cần timeout/concurrency/queue budgets phù hợp.",
+        "Có vì state CLOSED.",
+        "Có vì threshold5."
+      ],
+      "correct": 1,
+      "explanation": "Slow success/hung calls có thể cạn tài nguyên mà failure count chưa tăng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Series availability model",
+      "question": "Giả sử3 dependencies độc lập bắt buộc đều có availability0.999,mô hình product cho request xấp xỉ gì?",
+      "options": [
+        "1.0.",
+        "2.997.",
+        "0.997003.",
+        "0.999999."
+      ],
+      "correct": 2,
+      "explanation": "0.999^3;đây là mô hình có giả định độc lập,không đo thực tế hoặc áp cho failures tương quan."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Connection memory budget",
+      "question": "1M connections mỗi connection riêng2KiB dữ liệu,chưa tính overhead,cần xấp xỉ bao nhiêu GiB?",
+      "options": [
+        "0.002GiB.",
+        "2KiB tổng.",
+        "1.91MiB.",
+        "1.91GiB."
+      ],
+      "correct": 3,
+      "explanation": "1000000*2048/1024^3≈1.907;actual sockets/TLS/queues/runtime còn thêm memory."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Little law scope",
+      "question": "Có nên thay mean time bằng p99 trong Little L=lambda*W rồi coi đó là average concurrency chính xác không?",
+      "options": [
+        "Không;model dùng means và điều kiện steady state phù hợp.",
+        "Có vì p99 luôn bằngmean.",
+        "Có nếu Node async.",
+        "Có nếu queue bounded."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng công thức ngoài điều kiện hoặc trộn statistical metrics."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Queue overload policy",
+      "question": "Queue vô hạn trước service overloaded có thể làm gì?",
+      "options": [
+        "Tự giảm latency.",
+        "Tăng wait/memory và vượt deadlines;admission/degradation cần hữu hạn.",
+        "Tự tạo capacity downstream.",
+        "Luôn tránh mấtrequest không cócost."
+      ],
+      "correct": 1,
+      "explanation": "Control pending work và overload contract quan trọng như active concurrency."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Metric cardinality",
+      "question": "Dùng requestId hoặc user email làm metric label không giới hạn có rủi ro gì?",
+      "options": [
+        "Không ảnh hưởng vì labels làString.",
+        "Tự được Prometheus gộp vô hạn.",
+        "Bùng nổ time series,chi phí memory/storage và dữ liệu nhạy cảm.",
+        "Luôn là cách tối ưu aggregation."
+      ],
+      "correct": 2,
+      "explanation": "Dùng low-cardinality dimensions cho metrics và trace/log IDs đúng nơi."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Logging pipeline bounds",
+      "question": "Log mọi payload lớn đồng bộ trên hot path có thể ảnh hưởng gì?",
+      "options": [
+        "Không vì structured log luôn miễn phí.",
+        "Tự làm app nhanh hơn.",
+        "Không cần retention.",
+        "CPU/serialization/I O/backpressure và privacy;đặt budget/redaction theo nhu cầu."
+      ],
+      "correct": 3,
+      "explanation": "JSON format không loại chi phí và rủi ro dữ liệu."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Event replay evolution",
+      "question": "Replay event store lâu dài khi schema/event handlers thay đổi cần gì?",
+      "options": [
+        "Versioned event contract,migration/upcasting hoặc compatibility policy có kiểm tra.",
+        "Tin mọi JSON cũ tự hiểu schema mới.",
+        "Chỉ đổi timestamp.",
+        "Bỏ các events lỗi không ghi nhận."
+      ],
+      "correct": 0,
+      "explanation": "Nguồn state từ history yêu cầu replay semantics ổn định."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Read your writes",
+      "question": "CQRS read model lag nhưng UI cần thấy command vừa hoàn tất ngay,nên làm gì?",
+      "options": [
+        "Ẩn lỗi bằng200.",
+        "Thiết kế consistency/read-your-writes hoặc pending/reconciliation contract phù hợp.",
+        "Hứa immediate fresh dù chưa đồng bộ.",
+        "Chỉ tăng cache TTL."
+      ],
+      "correct": 1,
+      "explanation": "Completion meaning phải khớp trải nghiệm và cơ chế hệ thống thật."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Cross shard invariant",
+      "question": "Hai records ở hai shards cần cùng thay đổi theo invariant;sharding có tự transaction chúng không?",
+      "options": [
+        "Có vì client typed.",
+        "Có vì Docker network.",
+        "Không;cần distributed transaction/workflow/compensation phù hợp yêu cầu.",
+        "Có vì cùng model name."
+      ],
+      "correct": 2,
+      "explanation": "Partitioning đổi failure/consistency boundaries,cần chọn tradeoffs rõ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Replica connection load",
+      "question": "Tăng app replicas10 lần nhưng DB connection budget giữ nguyên cần xét gì?",
+      "options": [
+        "DB tự tăng capacity10 lần.",
+        "Mọi replica tự chia một JS heap.",
+        "Chỉ thay LOG_LEVEL.",
+        "Pool sizes,total connections,queue/concurrency và downstream saturation."
+      ],
+      "correct": 3,
+      "explanation": "Scale ứng dụng không đồng nghĩa mọi tầng scale cùng tỷ lệ."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Security freshness fallback",
+      "question": "Fallback trả dữ liệu quyền cũ khi auth service lỗi có thể gây gì?",
+      "options": [
+        "Cho quyền đã thu hồi ngoài SLA;degradation phải theo security policy.",
+        "Luôn an toàn vì cache hit.",
+        "Không vì JWT cósignature.",
+        "Chỉ sai UI text."
+      ],
+      "correct": 0,
+      "explanation": "Không áp stale-data fallback như nhau cho catalog và authorization."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Fault injection evidence",
+      "question": "Chỉ happy-path load test có đủ chứng minh breaker/retry/degrade hoạt động khi dependency lỗi chậm chưa?",
+      "options": [
+        "Có vì cómetrics.",
+        "Chưa;cần failure scenarios/deadlines và effects assertions theo scope.",
+        "Có vì throughput đạt target.",
+        "Có vì class tênCircuitBreaker."
+      ],
+      "correct": 1,
+      "explanation": "Resilience cần bằng chứng ở các trạng thái/failure modes mà policy hứa."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Public diagnostic scope",
+      "question": "Expose stack traces,DB config và breaker internals qua public health để dễ debug có rủi ro gì?",
+      "options": [
+        "Tự được logger redact response.",
+        "Không có secret ở config nào.",
+        "Lộ dữ liệu/control-plane details;cần tách public health và restricted diagnostics.",
+        "Luôn vô hại vì chỉread."
+      ],
+      "correct": 2,
+      "explanation": "Quan sát hệ thống phải giữ authorization và data boundaries."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Capacity claim limits",
+      "question": "Có cache,queue,load balancer và breaker có đủ cam kết1M concurrent users chưa?",
+      "options": [
+        "Đủ vì đủ tênpatterns.",
+        "Đủ vì class chạy một lần.",
+        "Đủ vì Node24.",
+        "Chưa;cần workload/resource/SLO assumptions và capacity evidence đại diện."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế và kiểm tra phải khớp loại concurrency,dữ liệu,bottlenecks và failure budget."
+    }
+  ]
+}

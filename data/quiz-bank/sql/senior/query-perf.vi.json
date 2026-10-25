@@ -1,0 +1,1142 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "senior",
+  "lesson": "query-perf",
+  "language": "vi",
+  "sourceHash": "8e231a6676f1ff77473af1b816299aeb81978e6d7e1a71d73840c7cede57eff8",
+  "status": "approved",
+  "review": "Tự soạn không API. Source/spec review PostgreSQL17 materialized refresh/row comparisons/functions; selected pagination/aggregate fixtures chạy SQLite3.49.1 chỉ để kiểm tra logical result. Source CONCURRENTLY thiếu qualifying unique index; AND cursor không lexicographic; keyset không O(1) universal; function không procedure/CALL,COUNTINT overflow vàNULL sums được nêu rõ. Không thực thi PG refresh/function/pool/production integration.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Materialized view purpose",
+      "question": "Materialized view thường lưu gì?",
+      "options": [
+        "Kết quả query được vật chất hóa để có thể đọc lại.",
+        "Chỉ tênquery không có dữ liệu lưu.",
+        "MọiHTTPresponse của người dùng.",
+        "Một backup thay mọi phương án phục hồi."
+      ],
+      "correct": 0,
+      "explanation": "Cần kế hoạch refresh và freshness phù hợp."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Regular view difference",
+      "question": "View thông thường khác materialized view ở điểm chính nào?",
+      "options": [
+        "Cả hai luôn tự cập nhật tức thời như nhau.",
+        "View thông thường không lưu riêng kết quả theo cơ chế materialization đó.",
+        "View thông thường luôn nhanh hơn.",
+        "Materialized view không được SELECT."
+      ],
+      "correct": 1,
+      "explanation": "Đọc result đã lưu và thực thi query definition có tradeoffs khác nhau."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Source view name",
+      "question": "Materialized view doanhthu trong source tên gì?",
+      "options": [
+        "monthly_replicas.",
+        "get_user_stats.",
+        "mv_monthly_sales.",
+        "active_users."
+      ],
+      "correct": 2,
+      "explanation": "Tên được dùng trong REFRESH phía sau."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Source grouping dimensions",
+      "question": "View source tổng hợp theo những dimensions nào?",
+      "options": [
+        "Chỉ customer email.",
+        "Chỉ order ID.",
+        "Mọi rows thành một nhóm duy nhất.",
+        "Tháng của order và category của product."
+      ],
+      "correct": 3,
+      "explanation": "GROUP BY1, 2 tương ứng hai expressions đầu SELECTlist."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Source revenue",
+      "question": "Revenue view nguồn lấy từ công thức nào?",
+      "options": [
+        "SUM(oi.quantity*oi.price).",
+        "SUM(o.id).",
+        "AVG(p.name).",
+        "COUNT(c.email)."
+      ],
+      "correct": 0,
+      "explanation": "Đây là lineitem values, khác cộng ordertotal trên join nhiềuitems."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Source order metric",
+      "question": "View nguồn đếm orders bằng gì?",
+      "options": [
+        "MAX(o.total).",
+        "COUNT(DISTINCT o.id).",
+        "COUNT(*) bắt buộc.",
+        "SUM(o.id)."
+      ],
+      "correct": 1,
+      "explanation": "Distinctorderkey tránh đếm lặp trong mộtcategorygroup."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Refresh purpose",
+      "question": "REFRESH MATERIALIZED VIEW dùng để làm gì?",
+      "options": [
+        "Tự thêm mọi indexes thiếu.",
+        "Chỉ xóa cachetrìnhduyệt.",
+        "Tính/cập nhật nội dung materialized view theo definition.",
+        "Tự tạo login session."
+      ],
+      "correct": 2,
+      "explanation": "Lịch refresh không được tự sinh từ comment."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Concurrently aim",
+      "question": "CONCURRENTLY khi refresh PostgreSQL nhằm lợi ích chính nào?",
+      "options": [
+        "Làm mọi refresh cùng view chạy song song vô hạn.",
+        "Tự tạo unique index.",
+        "Tự bảo đảm realtimefreshness.",
+        "Cho concurrent SELECT tiếp tục đọcview theo guarantees của operation."
+      ],
+      "correct": 3,
+      "explanation": "Có prerequisites và tradeoffs riêng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Cursor goal",
+      "question": "Cursor/keysetpagination thường dựa vào gì?",
+      "options": [
+        "Vị trí ordering keys của row mốc.",
+        "Luôn một OFFSET tăng vô hạn.",
+        "Một ảnh chụp giao diện.",
+        "Một userpassword."
+      ],
+      "correct": 0,
+      "explanation": "Cursor phải phù hợp với sort và filters."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Source sort keys",
+      "question": "Querypagination source sắp theo gì?",
+      "options": [
+        "Không có ORDER BY.",
+        "created_at DESC, id DESC.",
+        "id ASC, name ASC.",
+        "name DESC duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Predicatecursor phải khớp thứ tự hai keys này."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Source page size",
+      "question": "Querycursor source dùng LIMITbao nhiêu?",
+      "options": [
+        "1000.",
+        "10000.",
+        "20.",
+        "10."
+      ],
+      "correct": 2,
+      "explanation": "LIMIT không quyết định tổng số rows DB phải xét."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Offset meaning",
+      "question": "OFFSET10000 trong vídụ thường yêu cầu bỏ qua gì?",
+      "options": [
+        "10000columns.",
+        "10000databases.",
+        "10000milliseconds.",
+        "10000rows đầu theo queryordering trước phần được trả."
+      ],
+      "correct": 3,
+      "explanation": "Work cho offset lớn có thể đáng kể theo plan."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Stable tie key",
+      "question": "Tại sao sortcreated_at thường thêmid làm tie-breaker?",
+      "options": [
+        "Nhiềurows có thể cùng timestamp.",
+        "created_at luônNULL.",
+        "id tự đóngbăngdatabase.",
+        "LIMIT cấm timestamps trùng."
+      ],
+      "correct": 0,
+      "explanation": "Cần đảm bảo keys/NULL policy phù hợp."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Function source name",
+      "question": "Routine get_user_stats trong source nhận tham số nào?",
+      "options": [
+        "Một indexname.",
+        "user_idINTEGER.",
+        "TênCSSclass.",
+        "Một HTTPrequestobject."
+      ],
+      "correct": 1,
+      "explanation": "Tham số được dùng để lọc customer_id trongorders theo schema đang xét."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Function result fields",
+      "question": "Routine source khai báo trả những metrics nào?",
+      "options": [
+        "month, category, productid duy nhất.",
+        "stock, quantity, sku.",
+        "total_orders, total_spent, avg_order.",
+        "name, email, password."
+      ],
+      "correct": 2,
+      "explanation": "RETURNS TABLE khai báo các outputcolumns."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Function language",
+      "question": "Routine source dùng ngôn ngữ PostgreSQL nào?",
+      "options": [
+        "CSS.",
+        "Java bytecode.",
+        "Bash.",
+        "plpgsql."
+      ],
+      "correct": 3,
+      "explanation": "Cần engine có hỗ trợ/cấu hình phù hợp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Routine kind",
+      "question": "Source dùng CREATE OR REPLACE FUNCTION thì object là gì?",
+      "options": [
+        "Function.",
+        "Procedure chỉ gọi bằngCALL theo cú pháp này.",
+        "Materialized view.",
+        "B-treeindex."
+      ],
+      "correct": 0,
+      "explanation": "Tiêu đề comment storedprocedure không thay objectDDL thực."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Connection pooling",
+      "question": "Connectionpool thường nhằm việc gì?",
+      "options": [
+        "Tự thay mọi transactions.",
+        "Tái sử dụng/quản lý một tậpconnections theo giới hạn.",
+        "Tạo connectionvô hạn chomỗiclick.",
+        "Tự tăng CPUdatabase."
+      ],
+      "correct": 1,
+      "explanation": "Pool size vàtimeouts phải theo workload/resourcebudget."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Freshness tradeoff",
+      "question": "Đọc materialized view có thể gặp dữ liệu thế nào so với base tables?",
+      "options": [
+        "Luôn dữ liệu ngẫu nhiên.",
+        "Chỉ metadata không córows.",
+        "Cũ hơn nếu chưarefresh tương ứng.",
+        "Luôn realtime bất kể córefresh hay không."
+      ],
+      "correct": 2,
+      "explanation": "Freshness requirement cần được định nghĩa."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Evidence priority",
+      "question": "Muốn xác nhận dashboardquery được tối ưu, cần gì?",
+      "options": [
+        "Chỉ đổi tênquery thànhfast.",
+        "Chỉ thêmcomment efficient.",
+        "Chỉ chọnDB theo màu logo.",
+        "Correctness vàmeasurement/plan trên workload đại diện."
+      ],
+      "correct": 3,
+      "explanation": "Một nhãn hoặc vídụ không phải performanceevidence."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Source cursor bug fixture",
+      "question": "SQLite query dùngAND nhưsource trảid nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE created_at<'2025-06-01' AND id<1000 ORDER BY created_at DESC,id DESC;",
+      "options": [
+        "998.",
+        "999, 998, 1001.",
+        "1000, 999.",
+        "1002."
+      ],
+      "correct": 0,
+      "explanation": "Nó bỏrowcùng timestamp999 vàrowcũhơnnhưngidcao1001."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Tuple cursor fixture",
+      "question": "SQLite query dùng tuple comparison trảids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE (created_at,id)<('2025-06-01',1000) ORDER BY created_at DESC,id DESC;",
+      "options": [
+        "1001, 998, 999.",
+        "999, 998, 1001.",
+        "998 duy nhất.",
+        "1002, 1000."
+      ],
+      "correct": 1,
+      "explanation": "UniformISOtext ởfixture giúp ordering đúng theo dates đãcho; đây không phải timestamp/timezone test."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Expanded lexicographic fixture",
+      "question": "Query cuối vớiORlogic trảids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE created_at<'2025-06-01' OR (created_at='2025-06-01' AND id<1000) ORDER BY created_at DESC,id DESC;",
+      "options": [
+        "1002, 1000, 999.",
+        "Không córow.",
+        "999, 998, 1001.",
+        "998 duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Datecũhơn hoặc cùngdate vàidnhỏhơn diễnđạtlexicographicDESCcursor."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Same timestamp row",
+      "question": "Query cuối cógiữid999 ởcùng timestamp vớicursor1000 không?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE created_at='2025-06-01' AND id<1000 ORDER BY id DESC;",
+      "options": [
+        "Không, phải timestamp nhỏ hơn tuyệtđối.",
+        "Trả1000.",
+        "Trả1002.",
+        "Có, trả999."
+      ],
+      "correct": 3,
+      "explanation": "Tie-breakerid cho phép đi tiếp trong nhómtimestamp."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Older large id",
+      "question": "Query cuối theo đúngtuplecursor cótrảrow1001ngàycũhơn không?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE id=1001 AND (created_at,id)<('2025-06-01',1000);",
+      "options": [
+        "Có.",
+        "Không vì mọiidphải<1000 độc lập date.",
+        "Chỉ nếu đổiASC.",
+        "Chỉ nếu tênA bị xóa."
+      ],
+      "correct": 0,
+      "explanation": "Khi firstkeyđãnhỏhơn, các keys sau khôngcầnđồng thờinhỏhơn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "First page model",
+      "question": "Query cuối firstpageLIMIT2 trảids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products ORDER BY created_at DESC,id DESC LIMIT 2;",
+      "options": [
+        "1001, 998.",
+        "1002, 1000.",
+        "1000, 999.",
+        "999, 998."
+      ],
+      "correct": 1,
+      "explanation": "Hairows đầu theo timestamp DESC, id DESC."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "After cursor page",
+      "question": "Query cuối saucursorJune1, id1000, limit2 choids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE (created_at,id)<('2025-06-01',1000) ORDER BY created_at DESC,id DESC LIMIT 2;",
+      "options": [
+        "1002, 1000.",
+        "1000, 999.",
+        "999, 998.",
+        "998, 1001."
+      ],
+      "correct": 2,
+      "explanation": "Predicate loạicursorrow và cácrows trước nó."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Next cursor model",
+      "question": "Saupageđó, cursorMay31, id998. Query cuối trảid nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,created_at TEXT NOT NULL);\nINSERT INTO products VALUES(1001,'A','2025-05-30'),(999,'B','2025-06-01'),(998,'C','2025-05-31'),(1000,'Cursor','2025-06-01'),(1002,'New','2025-06-02');\n-- result\nSELECT id FROM products WHERE (created_at,id)<('2025-05-31',998) ORDER BY created_at DESC,id DESC LIMIT 2;",
+      "options": [
+        "999.",
+        "998.",
+        "Không córow.",
+        "1001."
+      ],
+      "correct": 3,
+      "explanation": "RowMay30, id1001 ởsau theo ordering dùidcao hơn."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Empty stats model",
+      "question": "SQLiteaggregate rỗng choCOUNT, SUM, AVG là gì?",
+      "code": "CREATE TABLE orders(customer_id INTEGER,total REAL);\n-- result\nSELECT COUNT(*),SUM(total),AVG(total) FROM orders WHERE customer_id=7;",
+      "options": [
+        "0, NULL, NULL.",
+        "0, 0, 0.",
+        "NULL, NULL, NULL.",
+        "Không córesultrow."
+      ],
+      "correct": 0,
+      "explanation": "Đây làaggregate model, không thực thiPGfunction source."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Nonadditive order counts",
+      "question": "Query cuối cho sumcategorycounts vàglobalordercount là gì?",
+      "code": "CREATE TABLE lines(order_id INTEGER,category TEXT,amount INTEGER);\nINSERT INTO lines VALUES(1,'A',100),(1,'B',20),(2,'A',50);\n-- result\nWITH grouped AS(SELECT category,COUNT(DISTINCT order_id) AS n FROM lines GROUP BY category) SELECT (SELECT SUM(n) FROM grouped),(SELECT COUNT(DISTINCT order_id) FROM lines);",
+      "options": [
+        "1, 2.",
+        "3, 2.",
+        "2, 2.",
+        "3, 3."
+      ],
+      "correct": 1,
+      "explanation": "Order1 thuộcA vàB nênđượcđếmởhainhóm; categoryordercounts khôngcộngđượcthànhglobalcount."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Missing unique refresh prerequisite",
+      "question": "Source đãtạoqualifyingunique index trênmv_monthly_sales trướcCONCURRENTLY chưa?",
+      "options": [
+        "Rồi vìCOUNT DISTINCT.",
+        "Chỉ nếu monthkhácNULL.",
+        "Chưa.",
+        "Rồi vìGROUP BY tự tạoUNIQUE INDEX."
+      ],
+      "correct": 2,
+      "explanation": "Definitiongrouped không tự tạo index đủđiều kiệnrefresh."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Unique refresh key shape",
+      "question": "QualifyingUNIQUE INDEX choCONCURRENTLYPostgreSQL17 cần dạng nào?",
+      "options": [
+        "Chỉpartialindex bất kỳ.",
+        "Chỉexpressionindex dùkhông unique.",
+        "ChỉB-treekhông unique.",
+        "Dùngcolumnnames vàbao gồmtoàn bộrows, khôngexpression/WHEREpredicate."
+      ],
+      "correct": 3,
+      "explanation": "Cầnđọcdocprerequisites thay vìchỉ thấyindex tồn tại."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Populated prerequisite",
+      "question": "CóthểdùngCONCURRENTLY đểpopulate lầnđầu mộtmaterializedview chưa códata theoPostgreSQL17 không?",
+      "options": [
+        "Không; view phảiđãpopulated.",
+        "Có, mọiemptyunpopulatedviewđềuđủ.",
+        "Chỉ nếu tênmv.",
+        "Chỉ nếu cóLIMIT."
+      ],
+      "correct": 0,
+      "explanation": "Phânbiệtemptyresult đãpopulated vớiview ởstate chưa populated."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Refresh overlap",
+      "question": "PostgreSQL17 cho nhiêuREFRESH cùngmột view thực hiệnđồng thời theo guarantee docs?",
+      "options": [
+        "20lần vìLIMIT20.",
+        "ChỉmộtREFRESH tại mộtthời điểm trêncùng view.",
+        "Vôhạn nếuCONCURRENTLY.",
+        "Luônđúng sốCPUcores."
+      ],
+      "correct": 1,
+      "explanation": "CONCURRENTLY chủyếuliên quan concurrentreads, khôngvô hạnrefresh parallelism."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Manual refresh schedule",
+      "question": "Commentrefresh periodically cótự tạoscheduler trongsource không?",
+      "options": [
+        "Có vìmonthbucket.",
+        "Chỉ nếuviewnamechứamonthly.",
+        "Không.",
+        "Có vìREFRESHcóCONCURRENTLY."
+      ],
+      "correct": 2,
+      "explanation": "Cần scheduling, monitoring vàfailurepolicy nếu yêu cầu."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Refresh not automatic incremental",
+      "question": "CREATE MATERIALIZED VIEW củasource có đủđểkhẳngđịnhmọi INSERT orders tựincrementallyupdateview chưa?",
+      "options": [
+        "Rồi, theođịnh nghĩamaterializedview.",
+        "Rồi, nếu cóCOUNT.",
+        "Chỉ nếuorderscóPK.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Standardmaterializedrefresh không tựtrởthành stream/incrementalpipeline."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Source status omission",
+      "question": "Viewrevenue source cólọc chỉdeliveredorders không?",
+      "options": [
+        "Không; definitionkhông cóWHEREstatusdelivered.",
+        "Có nhưmọibàiSQLkhác.",
+        "Có vìSUMoi.price.",
+        "Chỉ nếup.categoryBooks."
+      ],
+      "correct": 0,
+      "explanation": "Khôngmượnfilter từ bài khác đểđọcsource này."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Category revenue meaning",
+      "question": "COUNT DISTINCTordertrongmỗicategory có thểcộngthẳngđểrasốorderstoàncục không?",
+      "options": [
+        "Chỉ cầnROUND.",
+        "Khôngnếumột ordercónhiềucategories.",
+        "CóvìđãDISTINCTmột lần.",
+        "Chỉ nếu cóGIN index."
+      ],
+      "correct": 1,
+      "explanation": "Aggregationgranularity vàadditivity phảiđượccốđịnh."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Cursor comparison directions",
+      "question": "VớiORDER BYcreated_at DESC, id DESC, forwardnextpage thườngdùngtuplepredicatehướngnào trênnon-NULL keys?",
+      "options": [
+        "Luônidnhỏhơnđộc lậpfirstkey.",
+        "Khôngcầnpredicate.",
+        "Tuple nhỏhơncursor theoordering values.",
+        "Luôntuplelớnhơn."
+      ],
+      "correct": 2,
+      "explanation": "MixedASC/DESC cầnlogic tương ứng, khôngcopy quy tắcnàytùyý."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Null cursor keys",
+      "question": "Nullablecreated_at có thểlàmcursorcomparisonbấtngờ vì sao?",
+      "options": [
+        "NULL luônbéhơnmọivalue trongmọisyntax.",
+        "NULL luônbằng0.",
+        "Index tựbỏNULLkhỏimọi queries.",
+        "Rowcomparison cóNULLsemantics vàORDER BYNULLS policy cần được thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Preferkeys/contracts xửlýNULL rõràng thay vìđoán."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Cursor payload",
+      "question": "Cursor cho sort hai keys nênlưuđủgì?",
+      "options": [
+        "Values của cả ordering keys vàcontext/version cầnthiết theoAPIcontract.",
+        "Chỉ tênproductluônđủ.",
+        "Chỉpagesize.",
+        "Chỉtimestampmàbỏties."
+      ],
+      "correct": 0,
+      "explanation": "Context/filter scope giúp tránh dùngcursor saiquery."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Opaque cursor security",
+      "question": "Base64cursor cótựtrởthànhaccesscontrol không?",
+      "options": [
+        "Chỉ nếucursorcóid.",
+        "Không.",
+        "Có vìkhóđọc.",
+        "Có vìđượctruyềnquaURL."
+      ],
+      "correct": 1,
+      "explanation": "Servervẫnvalidate/bindvalues vàenforcequyền/phạmvidữ liệu."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Offset deep cost",
+      "question": "Vì saoOFFSET rấtlớn có thểđắt dùLIMITnhỏ?",
+      "options": [
+        "VìOFFSETtự xóarows.",
+        "Chỉvìnetworktimezone.",
+        "DB có thểphảitìm/bỏ quarất nhiềurows trướcpageđượctrả.",
+        "VìLIMITbịvôhiệu."
+      ],
+      "correct": 2,
+      "explanation": "Costthực tếcòndựaaccesspath/workload."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Keyset complexity claim",
+      "question": "Keysetpagination có luônO(1) tổngthời gian với mọidataset/query không?",
+      "options": [
+        "Có, vìWHEREid<cursor.",
+        "Có, nếucursorbase64.",
+        "Chỉ nếuLIMIT20.",
+        "Không; indexseek, filters, fetches vàpagework vẫncóchi phí."
+      ],
+      "correct": 3,
+      "explanation": "SourceO(1)commentlàđơn giảnhóa quá mức."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Mutable sort key",
+      "question": "created_at bịsửa sau khireadpage có thểgâyvấnđề gì?",
+      "options": [
+        "Rowđổivịtrí qua cursorboundary, dẫnđếnskip/duplicate theo readstrategy.",
+        "Khôngảnh hưởngvìIDunique.",
+        "Tựrollbackmọipages.",
+        "Chỉ đổifont."
+      ],
+      "correct": 0,
+      "explanation": "Stableidentity khônglàmorderingkeybấtbiến."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Function empty totals",
+      "question": "Sourcefunctionđượcgọi cho user không orders cótựtrảtotal_spent0 chưa?",
+      "options": [
+        "Chỉ nếuser ID7.",
+        "Chưa; SUM rỗngtrảNULL nếu khôngCOALESCE.",
+        "Rồi vìCOUNT0đổimọi columnvề0.",
+        "Rồi vìRETURNSDECIMAL."
+      ],
+      "correct": 1,
+      "explanation": "Metricpolicy cầnđượccodehóa, chưađủchỉDDLreturntypes."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Count return cast",
+      "question": "COUNT(*)::INTsource córủi rogì khiorderscountvượtINT32range?",
+      "options": [
+        "Luônsaturate ởmax.",
+        "Chỉ đổialias.",
+        "Castcó thểoverflow/error thayvìgiữcountbigint.",
+        "TựgiữmọisốlớnnhờINT."
+      ],
+      "correct": 2,
+      "explanation": "Chọnreturntypeđủrange theo requirements."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Function invocation",
+      "question": "FunctionRETURNS TABLEPostgreSQL thườngđược dùngtheohướngnào?",
+      "options": [
+        "BắtbuộcCALLnhưproceduređịnh nghĩakhác.",
+        "BắtbuộcHTTPPOSTtrực tiếpvàoDB.",
+        "BắtbuộcDROPviewtrước.",
+        "Trongquery nhưSELECT...FROMget_user_stats(...)."
+      ],
+      "correct": 3,
+      "explanation": "Function vàprocedure cóDDL/callsemantics khác nhau."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Parameter authorization",
+      "question": "Truyềnuser_id vàofunction cótự giớihạnchủaccountmớixemstats không?",
+      "options": [
+        "Không; cầnpermissions/authorization theoarchitecture thực.",
+        "Có, vìtham số tênuser_id.",
+        "Có, vìRETURNS TABLE.",
+        "Chỉ nếucount INT."
+      ],
+      "correct": 0,
+      "explanation": "Routineencapsulation không tự định nghĩaquyềndata."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Pool global budget",
+      "question": "10appinstances mỗipool 20 connections có thểtạocỡbao nhiêuDB connections ởmax này?",
+      "options": [
+        "2.",
+        "200, cầnxétthêm cácclientskhác.",
+        "20toànsystemchắcchắn.",
+        "10."
+      ],
+      "correct": 1,
+      "explanation": "Connectionbudget tínhtheotổngdeployment, khôngchỉmộtprocess."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Materialized storage cost",
+      "question": "Materialized view có đánh đổi tài nguyên nào so với chỉ lưu query definition?",
+      "options": [
+        "Tự thay mọi base tables.",
+        "Tự làm mọi writes miễn phí.",
+        "Lưu kết quả riêng và tốn công việc refresh/maintenance phù hợp.",
+        "Hoàn toàn không tốn storage."
+      ],
+      "correct": 2,
+      "explanation": "Cần đo tổng chi phí đọc, ghi và freshness theo workload."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Base versus view index",
+      "question": "Index trên orders có tự trở thành unique index riêng trên mv_monthly_sales không?",
+      "options": [
+        "Có vì cùng nguồn dữ liệu.",
+        "Có nếu tên index bắt đầu idx.",
+        "Chỉ nếu có GROUP BY.",
+        "Không; materialized view có storage/index definitions riêng."
+      ],
+      "correct": 3,
+      "explanation": "Phải tạo và kiểm tra qualifying view index thực tế."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "No data refresh combination",
+      "question": "Trong PostgreSQL17, có thể kết hợp CONCURRENTLY với WITH NO DATA tùy ý không?",
+      "options": [
+        "Không; hai lựa chọn đó không được dùng cùng nhau theo API.",
+        "Có vì cả hai chỉ là comments.",
+        "Có nếu view đã populated.",
+        "Chỉ nếu có UNIQUE index."
+      ],
+      "correct": 0,
+      "explanation": "Prerequisites phải đúng cả bộ, không chỉ kiểm tra một index."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Function not cache",
+      "question": "Định nghĩa get_user_stats có tự cache kết quả mỗi user cho các lần gọi sau không?",
+      "options": [
+        "Chỉ nếu count INT.",
+        "Không; source chưa có cơ chế cache kết quả đó.",
+        "Có vì là server-side function.",
+        "Có vì có RETURNS TABLE."
+      ],
+      "correct": 1,
+      "explanation": "Encapsulation logic và caching là hai lựa chọn khác nhau."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Stats status population",
+      "question": "Function stats nguồn có lọc orders theo paid/delivered status không?",
+      "options": [
+        "Có vì total_spent là tên metric.",
+        "Chỉ nếu total lớn hơn0.",
+        "Không; nó chỉ lọc customer_id theo đoạn source.",
+        "Có như mọi revenue query."
+      ],
+      "correct": 2,
+      "explanation": "Metric phải xét đúng population, không suy từ tên output."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Null function argument",
+      "question": "Giả sử source schema có orders phù hợp, truyền user_id=NULL vào predicate customer_id=user_id sẽ chọn gì?",
+      "options": [
+        "Mọi customers.",
+        "Chỉ customer_id0.",
+        "Tự lấy user đang đăng nhập.",
+        "Không rows khớp bởi equality này; aggregate count0, sum/avgNULL nếu không có cơ chế khác."
+      ],
+      "correct": 3,
+      "explanation": "NULL parameter không phải session identity tự động."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Pool saturation queue",
+      "question": "Nếu mọi connections đang bận, API cần policy gì cho requests mới?",
+      "options": [
+        "Queue/bounds/timeouts và phản hồi quá tải phù hợp.",
+        "Tạo thêm connections vô hạn bất kể DB budget.",
+        "Luôn retry ngay không giới hạn.",
+        "Coi mọi requests đã hoàn tất."
+      ],
+      "correct": 0,
+      "explanation": "Pool chỉ quản lý tài nguyên; backpressure vẫn cần thiết kế."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Pooled transaction scope",
+      "question": "Vì sao một transaction nhiều statements cần giữ đúng connection context khi dùng pool?",
+      "options": [
+        "Chỉ vì số connections là20.",
+        "Để các lệnh thuộc cùng transaction thật, không rải sang sessions khác ngoài ý muốn.",
+        "Vì cùng tên fileSQL tự đảm bảo transaction.",
+        "Vì pool tự chuyển mọi sessions thành một."
+      ],
+      "correct": 1,
+      "explanation": "Dùng transaction API của driver theo contract của nó."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Previous page design",
+      "question": "Muốn nút trang trước trong keyset pagination, cần gì ngoài tái dùng nguyên next-page query?",
+      "options": [
+        "Chỉ đổi tênbutton.",
+        "Không bao giờ làm được previous page.",
+        "Thiết kế boundary/direction phù hợp và khôi phục display order theo API.",
+        "Chỉ tăng OFFSET giả định cursor làpage number."
+      ],
+      "correct": 2,
+      "explanation": "Navigation directions cần query semantics rõ, không chỉ UI state."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Page size input",
+      "question": "Cho client yêu cầu page size tùy ý rất lớn có thể gây gì?",
+      "options": [
+        "Luôn chỉ đọc20rows vì source có comment.",
+        "Tự tối ưu thànhO(1).",
+        "Không có ảnh hưởng vì keyset.",
+        "Chi phí query/transfer/memory cao; nên validate và giới hạn theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Cursor strategy không thay resource bounds."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "AND cursor logical flaw",
+      "question": "Vì saoANDcreated_at<cursorTimeANDid<cursorId không tương đươnglexicographicDESCcursor?",
+      "options": [
+        "Nóđòicả haikeysđồng thờinhỏhơn, loạisametimestamp/lowerid vàoldtimestamp/higherid hợp lệ.",
+        "VìANDkhôngdùngđượctrongWHERE.",
+        "Vìidkhông bao giờso sánhđược.",
+        "Chỉvì SQLkeywordsviếtthường."
+      ],
+      "correct": 0,
+      "explanation": "Cursorpredicate phảidiễnđạtthứ tựcomposite keythật."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Mixed order cursor",
+      "question": "Đổisortthànhcreated_at DESC, id ASC nhưnggiữtuple< cũcó thểsai vì sao?",
+      "options": [
+        "Chỉ nếuidTEXT.",
+        "Tiehandlingcủaidđãđảochiều, cầnpredicate tương ứng vớimixedorder.",
+        "Không bao giờsai vìđềuhaikeys.",
+        "VìASCcấmindexes."
+      ],
+      "correct": 1,
+      "explanation": "Khôngmộttoán tửtupleđơn giảnđúngchomọimixedsort."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Same timestamp precision",
+      "question": "Cursorserialize timestamp mấtphầnfractional córủi rogì?",
+      "options": [
+        "Tựbổsungprecisionkhi mởbase64.",
+        "Chỉảnh hưởngname.",
+        "Boundarykhông cònđúng ordering value gốc, có thểskip/duplicate.",
+        "Khôngvìdatesluônchỉ cógiây."
+      ],
+      "correct": 2,
+      "explanation": "Cursorrepresentationphảibảo toàn keyprecision/type semantics."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Snapshot versus cursor",
+      "question": "Keysetcursorcó đủbảo đảm mọipageđọccùngdataset khi cóconcurrentwrites không?",
+      "options": [
+        "Có, cursorlàmộtlongtransactiontựđộng.",
+        "Có, idPKđóngbăngmọi rows.",
+        "Chỉ nếuLIMIT20.",
+        "Không; cầnconsistency/snapshot/cutoffstrategy nếu yêu cầuđó."
+      ],
+      "correct": 3,
+      "explanation": "Paginationordering vàsnapshotconsistency làcácyêucầukhác nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Filtered cursor reuse",
+      "question": "Đổifiltercategorynhưngtáidùngcursorcũcó thểcầnxửlýgì?",
+      "options": [
+        "Validatecontext/version/resetcursor theoAPIcontract đểtránhpaginationsaiýđịnh.",
+        "Luônbỏauthorization.",
+        "Chỉ đổipagesize.",
+        "Coi cursorđúngmọi query."
+      ],
+      "correct": 0,
+      "explanation": "Cursor cầnđượcgắnvớitrật tựvàquerycontext phù hợp."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Unique index definition mismatch",
+      "question": "Expressionunique indexhoặcpartialunique index có đủchoprerequisiteCONCURRENTLYsource chưa?",
+      "options": [
+        "Chỉ nếuquerycóSUM.",
+        "KhôngtheoPostgreSQL17requirementcolumnnames/allrows.",
+        "Có, bất kỳindexcóunique.",
+        "Có, nếuindexlớnhơnview."
+      ],
+      "correct": 1,
+      "explanation": "Khôngđánhđồngmọidạngunique indexkhiAPIdocs có điều kiệnriêng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Refresh stale window",
+      "question": "Refreshjobthất bạituầnnày nhưngdashboardvẫnđọcmaterializedview cũ. Cầnđượcthiết kế gì?",
+      "options": [
+        "Chỉ đổitênjob.",
+        "ChỉthêmLIMIT.",
+        "Freshnessmonitoring, SLO/UXpolicy, retries vàrecovery theo nhu cầu.",
+        "Coi dữ liệuluônrealtimevìviewquerythành công."
+      ],
+      "correct": 2,
+      "explanation": "Availabilitycủaread khôngđồngnghĩafreshness."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Group dimensions evolution",
+      "question": "Productcategoryhiệntạiđổi nhưngreportmuốncategorylúcorder. Querysourcejoinproducts có thểsai vì sao?",
+      "options": [
+        "VìJOINkhông đượcthameo.",
+        "VìCOUNT DISTINCTtự đổicategory.",
+        "Chỉ nếuquantity1.",
+        "Nóđọc currentcategory, không tựgiữhistoricalsnapshot."
+      ],
+      "correct": 3,
+      "explanation": "Historicaldimensions cầnmodel/query đápứngđúngbusinessdate."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Revenue currency aggregation",
+      "question": "SUMlinevaluesnhiềucurrencies vào mộtmetric màkhôngquyđổicóvấnđềgì?",
+      "options": [
+        "Khôngcóýnghĩamoneymetricthốngnhất nếu khôngcurrency/conversionpolicy.",
+        "KhôngvấnđềvìDECIMAL.",
+        "TựđổiUSDnhờSUM.",
+        "Chỉ cầnROUND."
+      ],
+      "correct": 0,
+      "explanation": "Representationkiểusốkhôngthayđơn vịđolường."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Pool oversizing",
+      "question": "Tăngpooltừ20lên200có luôn làmtất cảrequestsnhanhhơn không?",
+      "options": [
+        "Chỉ nếu cóview.",
+        "Không; có thểtăngcontention/DBoverload vàtail latency.",
+        "Có, vìmỗi connectionlàmộtCPUcore.",
+        "Có, nếudùngPostgreSQL."
+      ],
+      "correct": 1,
+      "explanation": "Cầnbudget, queue/timeout vàworkloadmeasurements."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Pool timeouts distinction",
+      "question": "Poolacquiretimeoutcóđồngnghĩaqueryexecutiondeadlinekhông?",
+      "options": [
+        "Có, nếupool size20.",
+        "Chỉ nếuHTTPGET.",
+        "Không; chờconnection vàthực thiquery làcácstageskhác nhau.",
+        "Có, mộtsettingtựbao phủmọilayer."
+      ],
+      "correct": 2,
+      "explanation": "Thiếtkếend-to-enddeadline cầnphốihợpcácphần."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Routine latency limit",
+      "question": "Chuyểnlogicvàofunction có đủchứng minh end-to-endAPI latencygiảmkhông?",
+      "options": [
+        "Có, vìserver-sidefunction khôngtốnCPU.",
+        "Có, nếufunction cóRETURN QUERY.",
+        "Chỉ cầnđổitênstats.",
+        "Không; có thểgiảmroundtrips nhưngDB cost, pool wait, network/app workvẫncầnđo."
+      ],
+      "correct": 3,
+      "explanation": "Optimization cầncorrectness vàmeasurement, theođườngthực tế."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Function procedure control",
+      "question": "Function sourcecó đượccoilàprocedurecó thểCOMMIT/ROLLBACKnộibộtheoCALLsemanticskhông?",
+      "options": [
+        "Không; function/procedurekhác nhau vàsource làCREATE FUNCTION.",
+        "Có, vìcommentghistoredprocedure.",
+        "Có, vì mọiPLpgSQLobjectgiống nhau.",
+        "Chỉ nếutotal_spentDECIMAL."
+      ],
+      "correct": 0,
+      "explanation": "ĐọcDDLthậthơnlấynhãncommentlàmbảo đảm."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Nullable composite comparisons",
+      "question": "CóthểcoirowconstructorcomparisonvớiNULLgiốngmọi contextcompositetypesorttrongPostgreSQLkhông?",
+      "options": [
+        "Chỉ nếuidINT.",
+        "Không; docs phânbiệtrowconstructorNULLsemantics vàcáccompositecomparisoncontexts.",
+        "Có, NULLluônbằng0.",
+        "Có, NULLluônlớnnhấttrongmọicomparison."
+      ],
+      "correct": 1,
+      "explanation": "Chốtkeynullability/order trướcviếtcursor, rồitestboundaries."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Count additivity failure",
+      "question": "OrderthuộccảA, B; sumCOUNT DISTINCTorderspercategory có thểlớnhơnglobalCOUNT DISTINCTorders vì sao?",
+      "options": [
+        "VìSUMluônnhânđôi.",
+        "Chỉvì khôngindex.",
+        "Cùngorderđượcđếmriêngtrongmỗicategory.",
+        "VìDISTINCTkhônghoạtđộng."
+      ],
+      "correct": 2,
+      "explanation": "Granularityquyếtđịnhmetriccócộngđượcgiữagroupshaykhông."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Refreshing consistency claim",
+      "question": "CONCURRENTLYcó đủbảo đảmviewlúcnaòcũngcóbasechangesmới nhấttừngmillisecond không?",
+      "options": [
+        "Có, vìtênCONCURRENTLY.",
+        "Có, nếu cóUNIQUEindex.",
+        "Chỉ nếuGROUP BYmonth.",
+        "Không; nókhông phải continuousrealtimeviewmaintenance."
+      ],
+      "correct": 3,
+      "explanation": "Khôngnhầmreadconcurrencyvớifreshnessguarantee."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Offset arbitrary page tradeoff",
+      "question": "Cầnnhảytrực tiếpđếnpage1000.Keysetcó luôn làmđiềuđómàkhôngcầnmốccursor/indexedlookupstrategy không?",
+      "options": [
+        "Không; keysetđánhđổirandompagenumberaccess, cầnAPI/UXstrategy phù hợp.",
+        "Có, vìmỗipageO(1)theođịnh nghĩa.",
+        "Có, chỉencode1000base64.",
+        "Chỉ cầnLIMIT20."
+      ],
+      "correct": 0,
+      "explanation": "Chọnpaginationtheo requirements, khôngchỉmộtkhẩuhiệuperformance."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Index key matching",
+      "question": "Cóindex(id, created_at)có luônhiệuquảtương đương(created_at, id)chocursornguồnkhông?",
+      "options": [
+        "Chỉ nếu cóname.",
+        "Không; thứ tựkeysphảikhớpfilter/sort vàworkload.",
+        "Có, vì cùnghai cột.",
+        "Có, indexluôn sorthaiordersđồng thời."
+      ],
+      "correct": 1,
+      "explanation": "ĐánhgiáplannativeDBvớidatađạidiện."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Stats access control",
+      "question": "Chotùyýuser_idkhitruycậpstats có thểlàm lộgì?",
+      "options": [
+        "Chỉmàuavatar.",
+        "Functiontựẩn mọidata.",
+        "Thôngtinnghiệp vụcủauserkhác nếu thiếuscope/authorization.",
+        "Khônggìvìchỉaggregate."
+      ],
+      "correct": 2,
+      "explanation": "Aggregatesvẫncó thểnhạycảm; routine không tựauthorize."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Source completeness",
+      "question": "Nhậnđịnhnàođúngvềvídụquery-perfnguồn?",
+      "options": [
+        "Đãchứng minhkeysetO(1)mọi trường hợp.",
+        "Đãsẵnmọiauth/poolschedulerindexsetup.",
+        "Đãchạyproductionbenchmarktrêntriệungười.",
+        "Cóý tưởnghữu dụng nhưngcầnunique-refreshprerequisite, cursorlogicđúng, domainmetrics vàbằngchứngperformance."
+      ],
+      "correct": 3,
+      "explanation": "Reviewcầnnhận rađiều kiệnbị thiếuthayvìchỉ đọccomments efficient."
+    }
+  ]
+}

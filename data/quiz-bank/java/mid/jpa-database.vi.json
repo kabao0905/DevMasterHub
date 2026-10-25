@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "java",
+  "level": "mid",
+  "lesson": "jpa-database",
+  "language": "vi",
+  "sourceHash": "d5ae61bb35c41bd54379caf87767ba10b6f5d43f3b9307f56f129f10cc95b86c",
+  "status": "approved",
+  "review": "Tự biên soạn không API sinh nội dung. Đối chiếu JPA 2.2 và Jakarta Persistence 3.1 cùng tài liệu Spring Data JPA; nguồn dùng javax.persistence. Phân biệt JPQL chuẩn SIZE với cú pháp collection.size trong nguồn. Review ngữ nghĩa, không tuyên bố đã chạy provider/DB tích hợp vì workspace không có thư viện JPA.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "ORM",
+      "question": "JPA giải quyết chủ yếu việc gì?",
+      "options": [
+        "Ánh xạ entity Java với dữ liệu quan hệ.",
+        "Biên dịch Java thành JavaScript.",
+        "Thay mọi database bằng RAM.",
+        "Sinh giao diện HTML."
+      ],
+      "correct": 0,
+      "explanation": "JPA là đặc tả persistence; provider thực hiện ánh xạ và quản lý entity."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Entity",
+      "question": "@Entity đánh dấu loại nào?",
+      "options": [
+        "Một HTTP endpoint.",
+        "Lớp được quản lý như entity persistence.",
+        "Mọi DTO response.",
+        "Một SQL index."
+      ],
+      "correct": 1,
+      "explanation": "Entity có identity persistence và phải tuân thủ yêu cầu của đặc tả."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Identity",
+      "question": "@Id trong User biểu diễn gì?",
+      "options": [
+        "Một transaction.",
+        "Chỉ số trang.",
+        "Khóa định danh entity.",
+        "Tên bảng."
+      ],
+      "correct": 2,
+      "explanation": "Identity phân biệt các entity cùng loại trong persistence context."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Table",
+      "question": "@Table(name=\"users\") chọn gì?",
+      "options": [
+        "Tên class bắt buộc phải đổi thành users.",
+        "Tên field Java.",
+        "Tên repository.",
+        "Tên bảng ánh xạ."
+      ],
+      "correct": 3,
+      "explanation": "Tên bảng và tên entity dùng trong JPQL là hai khái niệm riêng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Generated identity",
+      "question": "GenerationType.IDENTITY dựa vào gì?",
+      "options": [
+        "Cột identity của database theo hỗ trợ provider.",
+        "Hash của email Java.",
+        "Số thread hiện tại.",
+        "Vị trí phần tử trong List."
+      ],
+      "correct": 0,
+      "explanation": "Chiến lược này gắn việc sinh ID với database, không phải bộ đếm List."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Nullability",
+      "question": "@Column(nullable=false) diễn đạt gì?",
+      "options": [
+        "Mọi input đã được xác thực.",
+        "Cột không chấp nhận NULL trong ánh xạ/schema tương ứng.",
+        "String luôn không rỗng.",
+        "Email luôn đúng định dạng."
+      ],
+      "correct": 1,
+      "explanation": "NULL khác chuỗi rỗng; annotation không thay thế validation request."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Unique column",
+      "question": "unique=true trên email có ý nghĩa nào?",
+      "options": [
+        "Cho phép mọi bản ghi trùng.",
+        "Tự gửi xác minh email.",
+        "Khai báo ràng buộc duy nhất cho cột trong schema được tạo phù hợp.",
+        "Mã hóa email."
+      ],
+      "correct": 2,
+      "explanation": "Database triển khai ràng buộc; cần migration đúng ở môi trường thật."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Constructor",
+      "question": "Entity JPA portable cần constructor không tham số với visibility nào?",
+      "options": [
+        "Chỉ private.",
+        "Chỉ constructor có String.",
+        "Không được có constructor.",
+        "public hoặc protected."
+      ],
+      "correct": 3,
+      "explanation": "Provider cần khởi tạo entity theo yêu cầu đặc tả."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "To many",
+      "question": "User.posts trong bài diễn đạt quan hệ gì?",
+      "options": [
+        "Một User có nhiều Post.",
+        "Một Post có nhiều database.",
+        "Mọi User có đúng một Post.",
+        "User là subclass Post."
+      ],
+      "correct": 0,
+      "explanation": "Cardinality khác kế thừa class."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "To one",
+      "question": "Post.author biểu diễn gì?",
+      "options": [
+        "User phải chứa đúng một Post.",
+        "Nhiều Post có thể tham chiếu cùng một User.",
+        "Mỗi Post phải có nhiều User.",
+        "Post không liên quan User."
+      ],
+      "correct": 1,
+      "explanation": "ManyToOne mô hình hóa phía nhiều trỏ tới phía một."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Join column",
+      "question": "@JoinColumn(name=\"user_id\") chọn gì?",
+      "options": [
+        "Tên attribute posts.",
+        "Tên transaction.",
+        "Cột khóa ngoại ở phía Post.",
+        "Tên method Java."
+      ],
+      "correct": 2,
+      "explanation": "Cột giữ liên kết trong mapping của phía sở hữu."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Inverse mapping",
+      "question": "mappedBy=\"author\" tham chiếu tên gì?",
+      "options": [
+        "Tên cột user_id.",
+        "Tên bảng users.",
+        "Tên repository.",
+        "Attribute author của entity Post."
+      ],
+      "correct": 3,
+      "explanation": "mappedBy dùng tên field/property Java phía sở hữu."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Cascade",
+      "question": "cascade=ALL bật tập thao tác nào?",
+      "options": [
+        "Các cascade persistence được đặc tả, như persist và remove.",
+        "Mọi thao tác SQL tùy ý.",
+        "Mọi HTTP request.",
+        "Tự động orphanRemoval=true."
+      ],
+      "correct": 0,
+      "explanation": "Cascade không đồng nghĩa xóa orphan khi gỡ khỏi collection."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Repository",
+      "question": "JpaRepository<User,Long> khai báo gì?",
+      "options": [
+        "Một JDBC driver cụ thể.",
+        "Entity User với kiểu ID Long.",
+        "Entity Long với ID User.",
+        "Một List<Long> duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Generic tham số hóa API repository theo entity và identifier."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Derived query",
+      "question": "findByEmail trong bài lọc theo attribute nào?",
+      "options": [
+        "posts.",
+        "id luôn.",
+        "email.",
+        "name."
+      ],
+      "correct": 2,
+      "explanation": "Spring Data phân tích tên method theo thuộc tính domain."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Containing",
+      "question": "findByNameContaining biểu đạt tiêu chí nào?",
+      "options": [
+        "Tên luôn bằng ID.",
+        "Tên phải null.",
+        "Tên phải bắt đầu bằng số.",
+        "Tên chứa chuỗi tìm kiếm."
+      ],
+      "correct": 3,
+      "explanation": "Đây là truy vấn theo chuỗi con, không phải equality."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Optional",
+      "question": "Optional<User> diễn đạt kết quả vắng mặt thế nào?",
+      "options": [
+        "Optional.empty().",
+        "User giả có id0 bắt buộc.",
+        "Luôn ném NullPointerException.",
+        "Luôn trả null."
+      ],
+      "correct": 0,
+      "explanation": "Optional cho caller xử lý trường hợp không có kết quả."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Query language",
+      "question": "@Query không bật nativeQuery trong repository JPA thường dùng gì?",
+      "options": [
+        "CSS.",
+        "JPQL.",
+        "HTML.",
+        "Bash."
+      ],
+      "correct": 1,
+      "explanation": "JPQL thao tác entity và attributes theo mapping."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Named parameter",
+      "question": ":min trong JPQL là gì?",
+      "options": [
+        "Toán tử tăng.",
+        "Hằng String bắt buộc.",
+        "Tham số được bind theo tên.",
+        "Tên bảng min."
+      ],
+      "correct": 2,
+      "explanation": "@Param(\"min\") nối đối số với named parameter."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Namespace",
+      "question": "Nguồn import javax.persistence thuộc thế hệ nào?",
+      "options": [
+        "Mọi bản Jakarta mới đều dùng javax.",
+        "Chỉ API Java SE chuẩn.",
+        "Package của Spring MVC.",
+        "JPA 2.x, cần phân biệt Jakarta Persistence 3.x dùng jakarta.persistence."
+      ],
+      "correct": 3,
+      "explanation": "Không đổi namespace một cách rời rạc khi chưa khớp dependencies."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Entity name",
+      "question": "Với @Entity class User và @Table(name=\"users\"), JPQL portable lấy entity bằng tên nào?",
+      "options": [
+        "SELECT u FROM User u",
+        "SELECT u FROM users u",
+        "SELECT * FROM user_id",
+        "GET /users"
+      ],
+      "correct": 0,
+      "explanation": "Tên entity mặc định là tên class không qualified; tên bảng dành cho SQL."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Collection size",
+      "question": "Cách viết JPQL chuẩn để lấy User có hơn min bài là gì?",
+      "options": [
+        "SELECT u FROM User u LIMIT :min",
+        "SELECT u FROM User u WHERE SIZE(u.posts) > :min",
+        "SELECT u FROM users u WHERE COUNT(*) > min",
+        "SELECT u FROM User u WHERE u.posts.length > :min"
+      ],
+      "correct": 1,
+      "explanation": "SIZE nhận collection-valued path; không dựa vào thuộc tính .size như extension của provider."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Empty collection",
+      "question": "SIZE(u.posts) trả gì khi collection rỗng?",
+      "options": [
+        "-1",
+        "Ném lỗi luôn.",
+        "0",
+        "NULL luôn."
+      ],
+      "correct": 2,
+      "explanation": "Đặc tả SIZE cho collection rỗng kết quả bằng0."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Threshold",
+      "question": "User có 3 Post, min=3; điều kiện SIZE(u.posts)>:min có chọn User không?",
+      "options": [
+        "Có vì bằng.",
+        "Chỉ khi tên An.",
+        "Luôn lỗi.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Dấu lớn hơn không bao gồm bằng; dùng >= nếu nghiệp vụ yêu cầu ít nhất."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Owning update",
+      "question": "Để lưu liên kết hai chiều mới nhất quán, nên làm gì?",
+      "options": [
+        "Gán post.author=user và cập nhật user.posts theo helper.",
+        "Chỉ sửa tên bảng.",
+        "Chỉ thêm vào collection inverse rồi luôn tin FK đổi.",
+        "Chỉ gọi toString."
+      ],
+      "correct": 0,
+      "explanation": "Database association dựa phía sở hữu; bộ nhớ nên nhất quán cả hai phía."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Foreign key name",
+      "question": "Thay tên cột SQL từ user_id thành author_id đòi sửa mapping nào tương ứng?",
+      "options": [
+        "Đổi mọi method thành native SQL.",
+        "@JoinColumn, cùng migration schema.",
+        "mappedBy thành author_id luôn.",
+        "Đổi generic Long thành String."
+      ],
+      "correct": 1,
+      "explanation": "mappedBy vẫn author nếu tên attribute Java không đổi."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Attribute rename",
+      "question": "Đổi field Post.author thành writer cần sửa mappedBy thành gì?",
+      "options": [
+        "posts",
+        "users",
+        "writer",
+        "user_id"
+      ],
+      "correct": 2,
+      "explanation": "mappedBy đi theo tên attribute sở hữu mới."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Default fetching many",
+      "question": "Fetch mặc định của @OneToMany là gì?",
+      "options": [
+        "EAGER.",
+        "Không bao giờ tải được.",
+        "Luôn JOIN mọi bảng.",
+        "LAZY."
+      ],
+      "correct": 3,
+      "explanation": "LAZY là hint; không bảo đảm số query hoặc SQL shape cụ thể."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Default fetching one",
+      "question": "Fetch mặc định của @ManyToOne là gì?",
+      "options": [
+        "EAGER.",
+        "LAZY.",
+        "Chỉ khi gọi save.",
+        "Không có mặc định."
+      ],
+      "correct": 0,
+      "explanation": "EAGER yêu cầu dữ liệu sẵn theo contract; không đồng nghĩa một JOIN SQL duy nhất."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Eager SQL",
+      "question": "Đánh dấu EAGER có bảo đảm chỉ một query SQL không?",
+      "options": [
+        "Có vì tên annotation.",
+        "Không.",
+        "Có với mọi provider.",
+        "Chỉ khi List có10 phần tử."
+      ],
+      "correct": 1,
+      "explanation": "Provider có thể dùng join hoặc truy vấn phụ; đo SQL thực tế."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "New entity",
+      "question": "Object vừa new User(...) chưa persist thuộc trạng thái nào?",
+      "options": [
+        "Removed luôn.",
+        "Detached do đã từng lưu.",
+        "New/transient.",
+        "Managed luôn."
+      ],
+      "correct": 2,
+      "explanation": "New object chưa gắn persistence context qua thao tác quản lý thích hợp."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Persistence context",
+      "question": "persist thành công trong context phù hợp làm entity mới trở thành gì?",
+      "options": [
+        "DTO.",
+        "SQL string.",
+        "Class mới.",
+        "Managed."
+      ],
+      "correct": 3,
+      "explanation": "Entity được context theo dõi; thời điểm SQL không đồng nhất thời điểm method."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Dirty checking",
+      "question": "Sửa field của managed entity trong transaction thường cần gì để cập nhật khi flush?",
+      "options": [
+        "Provider theo dõi thay đổi và đồng bộ theo mapping.",
+        "Luôn phải new repository.",
+        "Phải đổi tên bảng.",
+        "Không thể cập nhật entity."
+      ],
+      "correct": 0,
+      "explanation": "Dirty checking không có nghĩa mọi object Java đều được lưu tự động."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Detach",
+      "question": "detach(entity) chủ yếu có tác dụng gì?",
+      "options": [
+        "Xóa class khỏi JVM.",
+        "Ngừng quản lý entity đó trong context.",
+        "Xóa hàng ngay luôn.",
+        "Commit transaction luôn."
+      ],
+      "correct": 1,
+      "explanation": "Detached không đồng nghĩa removed."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Clear",
+      "question": "EntityManager.clear() tác động context thế nào?",
+      "options": [
+        "Tắt JVM.",
+        "Bật cascade mọi quan hệ.",
+        "Detach tất cả entity đang được quản lý.",
+        "TRUNCATE toàn bộ database."
+      ],
+      "correct": 2,
+      "explanation": "Không flush thay đổi đang chờ trước clear thì có thể mất cập nhật chưa đồng bộ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Merge result",
+      "question": "Sau User managed=em.merge(detached), object nào nên dùng như bản được quản lý?",
+      "options": [
+        "Luôn object detached ban đầu.",
+        "Một String ID.",
+        "Không object nào có thể managed.",
+        "Giá trị trả về managed."
+      ],
+      "correct": 3,
+      "explanation": "Merge sao chép trạng thái vào instance được quản lý; đối số không tự trở thành managed."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Flush",
+      "question": "flush() có bảo đảm transaction đã commit không?",
+      "options": [
+        "Không.",
+        "Có luôn.",
+        "Chỉ khi ID Long.",
+        "Chỉ khi có email."
+      ],
+      "correct": 0,
+      "explanation": "Flush đồng bộ context với database nhưng transaction có thể rollback."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Rollback",
+      "question": "Đã flush INSERT rồi rollback transaction thành công thì dữ liệu transaction đó ra sao?",
+      "options": [
+        "Tự gửi email xin lỗi.",
+        "Thay đổi được rollback theo cơ chế transaction database.",
+        "Luôn tồn tại vĩnh viễn.",
+        "Đổi thành bản ghi read-only."
+      ],
+      "correct": 1,
+      "explanation": "SQL đã chạy không đồng nghĩa đã commit."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Remove",
+      "question": "remove trên managed entity thường đánh dấu gì?",
+      "options": [
+        "Chỉ xóa file .class.",
+        "Chỉ đặt email null.",
+        "Xóa theo persistence lifecycle khi đồng bộ thích hợp.",
+        "Chỉ xóa reference biến local."
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất remove với garbage collection."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Orphan removal",
+      "question": "Chỉ cascade=ALL, gỡ Post khỏi user.posts có bảo đảm xóa hàng Post không?",
+      "options": [
+        "Có vì ALL bao gồm mọi hành vi.",
+        "Chỉ khi ID số chẵn.",
+        "Có vì List mutable.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "orphanRemoval là cấu hình riêng; phía sở hữu và constraint còn quyết định liên kết."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Cascade direction",
+      "question": "Cascade cấu hình trên User.posts tự suy ra cascade từ Post.author về User không?",
+      "options": [
+        "Không.",
+        "Có, mọi quan hệ hai chiều đều đối xứng.",
+        "Chỉ khi EAGER.",
+        "Chỉ khi bảng tên users."
+      ],
+      "correct": 0,
+      "explanation": "Cascade khai báo theo association có hướng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Entity lookup",
+      "question": "Trong cùng persistence context, tìm cùng identity đã managed thường trả gì?",
+      "options": [
+        "Không bao giờ cache.",
+        "Cùng instance managed cho identity đó.",
+        "Luôn bản clone sâu mới.",
+        "Một DTO mới luôn."
+      ],
+      "correct": 1,
+      "explanation": "Persistence context bảo đảm identity của entity được quản lý trong phạm vi đó."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Missing ID",
+      "question": "EntityManager.find trả gì khi không tìm thấy entity với ID hợp lệ?",
+      "options": [
+        "Một entity rỗng luôn.",
+        "List rỗng.",
+        "null.",
+        "Optional.empty luôn."
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm API find với repository.findById trả Optional."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Repository lookup",
+      "question": "Spring Data findById(id) thông thường trả kiểu gì?",
+      "options": [
+        "User[] bắt buộc.",
+        "long.",
+        "EntityManager.",
+        "Optional<User> với repository User tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Kiểu trả giúp diễn đạt vắng mặt."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Binding",
+      "question": "Vì sao bind tham số tốt hơn ghép email trực tiếp vào JPQL?",
+      "options": [
+        "Tách dữ liệu khỏi cú pháp và giảm nguy cơ injection.",
+        "Tự hash password.",
+        "Tự thêm index.",
+        "Tự validate mọi nghiệp vụ."
+      ],
+      "correct": 0,
+      "explanation": "Tên bảng/cột động vẫn cần danh sách cho phép; binding không thay thế toàn bộ kiểm soát."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Null comparison",
+      "question": "JPQL kiểm tra email null dùng điều kiện nào?",
+      "options": [
+        "u.email.length = -1",
+        "u.email IS NULL",
+        "u.email = NULL để luôn true",
+        "u.email == undefined"
+      ],
+      "correct": 1,
+      "explanation": "So sánh NULL theo logic ba giá trị không tương đương equality thông thường."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Join cardinality",
+      "question": "Một User có3 Post; JOIN u.posts không DISTINCT có thể tạo bao nhiêu dòng kết quả quan hệ cho User ấy?",
+      "options": [
+        "0.",
+        "80.",
+        "3.",
+        "Luôn1."
+      ],
+      "correct": 2,
+      "explanation": "Join collection nhân số dòng theo các phần tử phù hợp; semantics entity result còn tùy query/provider."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Distinct result",
+      "question": "Muốn loại các User trùng trong kết quả JPQL join, dùng từ khóa nào?",
+      "options": [
+        "UNIQUE_EMAIL.",
+        "CASCADE.",
+        "IDENTITY.",
+        "DISTINCT."
+      ],
+      "correct": 3,
+      "explanation": "SELECT DISTINCT u diễn đạt kết quả entity không trùng theo query."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Ordering",
+      "question": "Không có ORDER BY có nên dựa vào thứ tự hàng database trả về không?",
+      "options": [
+        "Không.",
+        "Có theo ID tăng luôn.",
+        "Có theo thời gian tạo luôn.",
+        "Có theo vị trí trong file."
+      ],
+      "correct": 0,
+      "explanation": "Thứ tự cần được quy định rõ nếu giao diện/phân trang phụ thuộc."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Stable pages",
+      "question": "Sắp xếp createdAt có thể trùng; bổ sung gì để phân trang ổn định hơn?",
+      "options": [
+        "Chỉ tăng page size vô hạn.",
+        "Tie-breaker ID duy nhất theo chiều đã chọn.",
+        "Bỏ ORDER BY.",
+        "Shuffle ở database."
+      ],
+      "correct": 1,
+      "explanation": "Total order giảm nhảy/trùng do ties, nhưng concurrent writes vẫn cần chiến lược pagination phù hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "DTO boundary",
+      "question": "Trả DTO thay entity JPA trực tiếp qua REST giúp gì?",
+      "options": [
+        "Tự tăng tốc mọi query100 lần.",
+        "Bỏ mọi transaction.",
+        "Kiểm soát trường lộ ra và tách serialization khỏi lazy graph.",
+        "Tự loại mọi lỗi auth."
+      ],
+      "correct": 2,
+      "explanation": "Entity graph hai chiều có thể gây recursion hoặc tải ngoài ý muốn."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Lazy context",
+      "question": "Đọc association chưa khởi tạo sau khi context đóng có rủi ro gì?",
+      "options": [
+        "Chắc chắn luôn tải miễn phí.",
+        "Tự mở transaction distributed.",
+        "Đổi association thành null theo chuẩn luôn.",
+        "Provider có thể không tải được và báo lỗi truy cập lazy."
+      ],
+      "correct": 3,
+      "explanation": "Fetch dữ liệu cần dùng trong ranh giới transaction hoặc projection phù hợp."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "N plus one",
+      "question": "Một query lấy N User, rồi mỗi User gây query lấy posts là mẫu gì?",
+      "options": [
+        "N+1 query.",
+        "Một query duy nhất.",
+        "Zero allocation.",
+        "Optimistic lock."
+      ],
+      "correct": 0,
+      "explanation": "Cần xem SQL và số query để xác nhận, không suy từ tên repository."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Fetch join",
+      "question": "JOIN FETCH được dùng nhằm gì?",
+      "options": [
+        "Mã hóa field.",
+        "Yêu cầu fetch association cùng query entity theo JPQL.",
+        "Tạo database mới.",
+        "Commit transaction."
+      ],
+      "correct": 1,
+      "explanation": "Dùng có chủ đích để phục vụ use case; collection fetch có hệ quả cardinality."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Persistence namespace migration",
+      "question": "Có nên trộn annotation javax.persistence.Entity và API jakarta.persistence.EntityManager3.x tùy tiện không?",
+      "options": [
+        "Chỉ cần đổi comment.",
+        "Luôn tự chuyển bằng JVM.",
+        "Không; cần bộ dependency và namespace tương thích.",
+        "Có vì tên class giống nhau."
+      ],
+      "correct": 2,
+      "explanation": "Hai package có type identity khác nhau."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "No automatic schema proof",
+      "question": "Có @Column(unique=true) trong code đủ chứng minh database production đã có unique index chưa?",
+      "options": [
+        "Đủ trong mọi môi trường.",
+        "Đủ nếu tên email.",
+        "Đủ nếu Java17.",
+        "Chưa; kiểm tra migration và schema thực tế."
+      ],
+      "correct": 3,
+      "explanation": "Annotation metadata không chứng minh migration đã chạy."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Aggregate example",
+      "question": "OrderItem thường giữ @ManyToOne Order order; phía nào giữ FK order_id theo mapping này?",
+      "options": [
+        "OrderItem.",
+        "Một DTO bất kỳ.",
+        "Controller.",
+        "JVM heap header."
+      ],
+      "correct": 0,
+      "explanation": "Phía nhiều thường là phía sở hữu của quan hệ hai chiều one-to-many/many-to-one."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Transaction boundary",
+      "question": "Nhiều cập nhật phải cùng thành công nên đặt ranh giới ở đâu?",
+      "options": [
+        "Không cần vì dùng repository.",
+        "Use case/service với transaction phù hợp.",
+        "Mỗi getter một transaction tách rời.",
+        "Chỉ trên HTML."
+      ],
+      "correct": 1,
+      "explanation": "Atomicity cần bao trùm toàn bộ thay đổi nghiệp vụ liên quan."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Column vs attribute",
+      "question": "JPQL lọc Post theo author.id nên viết theo gì?",
+      "options": [
+        "Tên endpoint /users.",
+        "Tên biến trong controller.",
+        "Tên association và attribute Java trong model.",
+        "Luôn tên SQL user_id."
+      ],
+      "correct": 2,
+      "explanation": "Native SQL và JPQL dùng hệ tên khác nhau."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Collection initialization",
+      "question": "List<Post> posts chưa được khởi tạo trong object vừa new có thể là gì?",
+      "options": [
+        "Luôn ArrayList vì @OneToMany.",
+        "Luôn collection immutable rỗng.",
+        "Luôn collection có một Post.",
+        "null theo Java nếu không gán."
+      ],
+      "correct": 3,
+      "explanation": "Provider có thể thay collection khi quản lý; constructor/helper cho new entity vẫn cần thiết kế đúng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Optimistic lock",
+      "question": "Hai transaction cùng sửa entity có @Version đúng mapping; mục tiêu cơ chế version là gì?",
+      "options": [
+        "Phát hiện cập nhật dựa trên phiên bản cũ.",
+        "Cho phép mọi ghi đè im lặng.",
+        "Tự merge mọi xung đột nghiệp vụ.",
+        "Khóa tất cả bảng vô thời hạn."
+      ],
+      "correct": 0,
+      "explanation": "Khi phát hiện xung đột cần rollback/xử lý retry theo nghiệp vụ, không retry mù mọi lỗi."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Check then insert",
+      "question": "Hai request cùng thấy email chưa tồn tại rồi cùng insert; hàng rào cuối cho uniqueness là gì?",
+      "options": [
+        "Chỉ validation regex.",
+        "Unique constraint database và xử lý lỗi phù hợp.",
+        "Chỉ existsByEmail trước save.",
+        "Synchronized trên một controller ở một máy."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm tra trước không loại race giữa transaction hoặc nhiều instance."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Entity manager concurrency",
+      "question": "Có nên chia sẻ một EntityManager application-managed cho nhiều thread đồng thời không?",
+      "options": [
+        "Có nếu email unique.",
+        "Có nếu dùng List.",
+        "Không; EntityManager không được yêu cầu thread-safe.",
+        "Có nếu field final."
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm proxy quản lý theo transaction với instance context dùng chung tùy tiện."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Bulk update context",
+      "question": "JPQL bulk UPDATE đổi name nhưng entity cùng ID đã managed; vấn đề nào cần xử lý?",
+      "options": [
+        "Mọi object tự đổi ngay theo chuẩn.",
+        "Bulk update luôn tạo DTO.",
+        "Không thể có managed entity khi UPDATE.",
+        "Context có thể giữ trạng thái cũ, cần đồng bộ/clear/refresh theo thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Bulk operations không đồng bộ ngược mọi instance đang có trong context."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Pagination fetch join",
+      "question": "Phân trang trực tiếp query fetch join collection có nguy cơ gì?",
+      "options": [
+        "Giới hạn theo dòng join và hành vi provider gây kết quả/chi phí ngoài mong muốn.",
+        "Bảo đảm mỗi page chính xác và rẻ mọi lúc.",
+        "Tự loại mọi duplicate không cần DISTINCT.",
+        "Không bao giờ nhân dòng."
+      ],
+      "correct": 0,
+      "explanation": "Có thể lấy page ID trước rồi fetch graph cần thiết; kiểm tra SQL và dữ liệu thực tế."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Cartesian collections",
+      "question": "Fetch hai collection độc lập kích thước4 và5 trên một root có thể tạo bao nhiêu cặp dòng quan hệ?",
+      "options": [
+        "0 luôn.",
+        "20.",
+        "9 luôn.",
+        "1 luôn."
+      ],
+      "correct": 1,
+      "explanation": "Tích cardinality làm tăng dữ liệu truyền; provider còn có hạn chế loại collection cụ thể."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Merge stale data",
+      "question": "Merge detached object nhận trực tiếp từ client có nguy cơ gì?",
+      "options": [
+        "Luôn chỉ sửa một field client muốn.",
+        "Tự giải quyết xung đột mọi version.",
+        "Ghi đè field không được phép hoặc trạng thái cũ nếu không kiểm soát.",
+        "Tự xác thực quyền từng field."
+      ],
+      "correct": 2,
+      "explanation": "Dùng DTO, authorization, load aggregate và áp dụng thay đổi hợp lệ có chủ đích."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Generated ID equality",
+      "question": "hashCode dựa ID được sinh sau persist có rủi ro nào nếu object đang trong HashSet?",
+      "options": [
+        "HashSet tự rehash khi entity được lưu.",
+        "Không thể dùng entity trong collection.",
+        "JPA bắt mọi hashCode bằng0.",
+        "Hash thay đổi có thể làm lookup/remove sai kỳ vọng."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế equality phải xét lifecycle và contract collection."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Cascade remove safety",
+      "question": "Cascade REMOVE từ Post.author tới User có thể nguy hiểm vì sao?",
+      "options": [
+        "Xóa Post có thể lan sang User còn được nhiều Post tham chiếu.",
+        "Không bao giờ có tác dụng.",
+        "Chỉ làm tăng tốc SELECT.",
+        "Chỉ xóa String email trong RAM."
+      ],
+      "correct": 0,
+      "explanation": "Cascade phải phản ánh ownership nghiệp vụ, không chỉ hướng FK."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Orphan aggregate",
+      "question": "Order sở hữu vòng đời OrderItem, muốn xóa item khi gỡ khỏi collection nên cân nhắc gì?",
+      "options": [
+        "Xóa OrderController.",
+        "orphanRemoval=true và helper cập nhật hai phía trong transaction.",
+        "Chỉ cascade=PERSIST luôn đủ.",
+        "Đổi List thành static."
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm tra mapping, constraint và semantics nghiệp vụ trước khi bật xóa lan."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Rollback object state",
+      "question": "Sau rollback, có nên tin mọi field Java và generated ID đã tự khôi phục trạng thái trước transaction không?",
+      "options": [
+        "Có nếu ID Long.",
+        "Có nếu transaction từng flush.",
+        "Không; reload/quản lý vòng đời phù hợp.",
+        "Có với mọi provider và mọi field."
+      ],
+      "correct": 2,
+      "explanation": "Rollback database không là cơ chế undo tổng quát cho heap Java."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Lock ordering",
+      "question": "Hai transaction lấy pessimistic lock các Order theo thứ tự ngược nhau tăng nguy cơ gì?",
+      "options": [
+        "Type erasure.",
+        "HTTP redirect.",
+        "Compile error.",
+        "Deadlock."
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự khóa nhất quán và timeout/retry có kiểm soát giúp giảm tác động; không loại mọi deadlock."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Read only hint",
+      "question": "readOnly=true trong framework có nên được xem là ranh giới authorization chống mọi ghi không?",
+      "options": [
+        "Không.",
+        "Có, thay được quyền database.",
+        "Có, không cần kiểm thử.",
+        "Chỉ khi dùng Spring thì tuyệt đối."
+      ],
+      "correct": 0,
+      "explanation": "Đây là semantics/hint quản lý transaction phụ thuộc stack, không thay thế quyền và kiểm soát nghiệp vụ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Transaction proxy",
+      "question": "Trong chế độ Spring proxy thông thường, self-invocation method @Transactional có tạo interceptor mới như gọi qua proxy không?",
+      "options": [
+        "Chỉ cần repository tồn tại.",
+        "Không tự động.",
+        "Luôn có với mọi private method.",
+        "Chỉ cần final field."
+      ],
+      "correct": 1,
+      "explanation": "Ranh giới phải đi qua proxy hoặc cơ chế weaving/cấu hình tương ứng; đừng suy từ annotation đơn lẻ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Large import",
+      "question": "Import hàng triệu entity vào một persistence context duy nhất có rủi ro gì?",
+      "options": [
+        "Tự phân trang mọi insert.",
+        "Không cần theo dõi lỗi.",
+        "Context tăng bộ nhớ; cần chunk/flush/clear theo transaction và yêu cầu nghiệp vụ.",
+        "Bảo đảm O(1) RAM."
+      ],
+      "correct": 2,
+      "explanation": "Flush không tự detach entity; chunk transaction có đánh đổi atomicity."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Identity batching",
+      "question": "Có nên hứa IDENTITY luôn hỗ trợ batching INSERT hiệu quả y hệt SEQUENCE với mọi provider không?",
+      "options": [
+        "Có vì cả hai có @GeneratedValue.",
+        "Có nếu bảng users.",
+        "Có nếu dùng Java21.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Thời điểm cần lấy ID và hỗ trợ provider/driver ảnh hưởng batching; đo cấu hình thật."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Offset under mutation",
+      "question": "Dù ORDER BY duy nhất, offset pagination khi hàng bị thêm/xóa giữa request có thể thế nào?",
+      "options": [
+        "Có thể bỏ sót hoặc lặp bản ghi giữa page.",
+        "Luôn snapshot nhất quán toàn phiên.",
+        "Tự khóa toàn bảng mãi.",
+        "Luôn trả tổng số không đổi."
+      ],
+      "correct": 0,
+      "explanation": "Keyset/snapshot có thể phù hợp tùy nhu cầu; stable order không tạo snapshot tự động."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Aggregate count query",
+      "question": "Muốn tìm User có ít nhất2 Post bằng GROUP BY/HAVING, điểm nào quan trọng?",
+      "options": [
+        "Dùng tên cột SQL trong mọi JPQL.",
+        "Đếm Post đúng association và đặt điều kiện aggregate trong HAVING.",
+        "Đặt COUNT trong WHERE tùy ý.",
+        "Đếm mọi User rồi luôn chia2."
+      ],
+      "correct": 1,
+      "explanation": "SIZE cũng có thể diễn đạt tiêu chí đơn giản; chọn theo dữ liệu và query plan."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Lazy serialization",
+      "question": "API serialize cả User.posts và Post.author có hai rủi ro đi cùng nào?",
+      "options": [
+        "Tự an toàn vì JSON không có kiểu User.",
+        "Tự bỏ mọi field nhạy cảm.",
+        "Vòng tham chiếu và truy vấn lazy ngoài ý muốn.",
+        "Chỉ compile error luôn."
+      ],
+      "correct": 2,
+      "explanation": "DTO/projection và fetch plan rõ giúp kiểm soát graph và dữ liệu lộ ra."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Persistence context identity",
+      "question": "Entity A được em1 quản lý; muốn cập nhật qua em2, nên dựa vào instance nào?",
+      "options": [
+        "Mọi object em1 tự trở thành managed ở em2.",
+        "Bất kỳ DTO cùng tên field.",
+        "Không cần transaction cho mọi cập nhật.",
+        "Instance được em2 quản lý sau load/merge phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Managed state gắn persistence context; merge trả instance được quản lý, không tự chuyển đối số sang context mới."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "lua",
+  "level": "master",
+  "lesson": "advanced",
+  "language": "vi",
+  "sourceHash": "f84ce2aa7ff3fbc9b2c975b062c8efaf185067617772d799262d76441755c019",
+  "status": "approved",
+  "review": "Tự soạn theo counter yield/resume, Lua5.4 coroutine manual và LuaJIT2.1 compatibility/FFI docs. Hai resume hữu hạn, không chạy generator vô hạn. Producer–Consumer/DSL là bài tập và lý thuyết chưa được hiện thực trong mẫu. Không mặc định JIT đạt tốc độ C hay ABI5.4.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Cooperative scheduling",
+      "question": "Coroutine trong bài thuộc mô hình nào?",
+      "options": [
+        "Đa nhiệm hợp tác",
+        "Luôn chạy song song trên nhiều CPU core",
+        "Một truy vấn SQL phân tán",
+        "Một trình duyệt độc lập"
+      ],
+      "correct": 0,
+      "explanation": "Coroutine nhường quyền điều khiển tại các điểm hợp tác như yield."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Coroutine creation",
+      "question": "Hàm nào tạo coroutine từ counter?",
+      "options": [
+        "package.searchpath",
+        "coroutine.create",
+        "coroutine.yield",
+        "lua_close"
+      ],
+      "correct": 1,
+      "explanation": "create trả về một thread Lua chứa coroutine."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Resume operation",
+      "question": "coroutine.resume(co) dùng để làm gì?",
+      "options": [
+        "Chỉ lấy tên function",
+        "Biên dịch chương trình C",
+        "Bắt đầu hoặc tiếp tục coroutine",
+        "Luôn xóa coroutine"
+      ],
+      "correct": 2,
+      "explanation": "Coroutine tiếp tục tới yield, return hoặc lỗi tiếp theo."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Yield operation",
+      "question": "coroutine.yield(i) làm gì?",
+      "options": [
+        "Đóng cả tiến trình",
+        "Chạy một OS thread mới",
+        "Tự giảm i về 0",
+        "Tạm dừng và gửi i về phía đã resume"
+      ],
+      "correct": 3,
+      "explanation": "Yield giữ trạng thái thực thi để có thể tiếp tục."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Counter initial value",
+      "question": "Trong counter, i bắt đầu bằng giá trị nào?",
+      "options": [
+        "0",
+        "1",
+        "nil",
+        "100"
+      ],
+      "correct": 0,
+      "explanation": "i được tăng trước lần yield đầu tiên."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "First yielded value",
+      "question": "Lần resume đầu của mẫu nhận giá trị đếm nào?",
+      "options": [
+        "true như giá trị đếm",
+        "1",
+        "0",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "i tăng từ 0 lên 1 rồi yield."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Second yielded value",
+      "question": "Lần resume thứ hai nhận giá trị đếm nào?",
+      "options": [
+        "0",
+        "nil",
+        "2",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Coroutine tiếp tục sau yield trước đó và chạy vòng kế tiếp."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Resume status boolean",
+      "question": "Giá trị trả về đầu tiên của coroutine.resume biểu thị gì?",
+      "options": [
+        "Giá trị i luôn luôn",
+        "Số lượng OS thread",
+        "Thời gian ngủ tính bằng giây",
+        "Thành công hay lỗi của lần resume"
+      ],
+      "correct": 3,
+      "explanation": "Các giá trị yield/return đứng sau cờ boolean."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Underscore variable",
+      "question": "Dấu _ trong local _, v1=coroutine.resume(co) là gì?",
+      "options": [
+        "Một tên biến bình thường dùng theo quy ước bỏ qua status",
+        "Keyword tự xử lý mọi exception",
+        "Toán tử lấy giá trị cuối",
+        "Một callback chạy nền"
+      ],
+      "correct": 0,
+      "explanation": "Gán vào _ không tự kiểm tra hay xử lý lỗi."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "New coroutine status",
+      "question": "Coroutine vừa tạo nhưng chưa resume thường có status nào?",
+      "options": [
+        "closed như tên status chuẩn",
+        "suspended",
+        "running",
+        "dead"
+      ],
+      "correct": 1,
+      "explanation": "Chưa bắt đầu cũng thuộc trạng thái suspended."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Yielded status",
+      "question": "Sau khi mẫu yield lần thứ hai và trả điều khiển cho caller, co có status gì?",
+      "options": [
+        "running đồng thời với caller",
+        "normal vì đã return kết thúc",
+        "suspended",
+        "dead"
+      ],
+      "correct": 2,
+      "explanation": "Body chưa kết thúc và đang dừng tại yield."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Finished status",
+      "question": "Coroutine đã return kết thúc có status nào?",
+      "options": [
+        "suspended mãi mãi",
+        "new",
+        "sleeping",
+        "dead"
+      ],
+      "correct": 3,
+      "explanation": "Coroutine kết thúc không thể bắt đầu lại bằng resume."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Local state persistence",
+      "question": "Vì sao i không trở về 0 mỗi lần resume cùng co?",
+      "options": [
+        "Trạng thái local của lần chạy được giữ qua yield",
+        "Vì i tự thành global",
+        "Vì create chạy lại main",
+        "Vì resume luôn cộng trực tiếp vào mọi biến"
+      ],
+      "correct": 0,
+      "explanation": "Resume tiếp tục một lần gọi đang tạm dừng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Counter output",
+      "question": "Nếu hai resume thành công, print cuối mẫu tạo nội dung nào?",
+      "options": [
+        "Không có lời gọi print trong mẫu",
+        "Lan 1: 1, Lan 2: 2",
+        "Lan 1: 0, Lan 2: 0",
+        "Lan 1: true, Lan 2: true"
+      ],
+      "correct": 1,
+      "explanation": "v1 và v2 nhận các giá trị yielded, không nhận cờ đầu."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "LuaJIT concept",
+      "question": "JIT trong LuaJIT có ý nghĩa gì?",
+      "options": [
+        "Một chuẩn HTML",
+        "Một phương thức mã hóa file",
+        "Biên dịch khi thực thi để tối ưu các đường chạy phù hợp",
+        "Một hệ quản trị dữ liệu"
+      ],
+      "correct": 2,
+      "explanation": "Không phải mọi đường chạy đều được bảo đảm nhanh như mã C."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "DSL purpose",
+      "question": "DSL là ngôn ngữ hướng tới mục đích nào?",
+      "options": [
+        "Thay thế mọi ngôn ngữ đa dụng trong mọi việc",
+        "Tự cấp quyền truy cập hệ thống",
+        "Bảo đảm mọi chương trình không có lỗi",
+        "Diễn đạt một miền vấn đề cụ thể"
+      ],
+      "correct": 3,
+      "explanation": "Một DSL có thể cung cấp cú pháp/API phù hợp miền như cấu hình game."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Exercise model",
+      "question": "Bài tập cuối yêu cầu triển khai mô hình nào?",
+      "options": [
+        "Producer–Consumer bằng coroutine",
+        "Một web browser",
+        "Một compiler C hoàn chỉnh",
+        "Một hệ thống thanh toán"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu đếm chưa phải một pipeline producer–consumer đầy đủ."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Yield not sleep",
+      "question": "Yield có tự bảo đảm chờ đúng một giây không?",
+      "options": [
+        "Có, LuaJIT tự đặt timer",
+        "Không, việc tiếp tục phụ thuộc caller hoặc scheduler",
+        "Có, mặc định luôn một giây",
+        "Có, nếu tên biến là i"
+      ],
+      "correct": 1,
+      "explanation": "Yield là nhường điều khiển, không phải timer."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Lua thread term",
+      "question": "Thread của coroutine.create có đồng nghĩa OS thread riêng không?",
+      "options": [
+        "Có, tự chạy trước resume",
+        "Có, mỗi yield tạo một process",
+        "Không, đó là thread Lua cho coroutine",
+        "Có, luôn có core riêng"
+      ],
+      "correct": 2,
+      "explanation": "Thuật ngữ thread của Lua không tự hàm ý song song hệ điều hành."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Finite sample driver",
+      "question": "Mẫu gọi resume bao nhiêu lần một cách trực tiếp?",
+      "options": [
+        "Vô hạn",
+        "Không lần nào",
+        "Một trăm",
+        "Hai"
+      ],
+      "correct": 3,
+      "explanation": "Body generator vô hạn nhưng caller chỉ yêu cầu hai lượt."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Third request",
+      "question": "Nếu thêm một resume thành công trên cùng co sau hai lần trong mẫu, giá trị đếm tiếp theo là gì?",
+      "options": [
+        "3",
+        "1",
+        "0",
+        "nil do coroutine đã dead"
+      ],
+      "correct": 0,
+      "explanation": "i được giữ và tăng tiếp sau điểm yield."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Independent counters",
+      "question": "Tạo hai coroutine riêng từ counter rồi resume mỗi cái một lần thì giá trị đếm là gì?",
+      "options": [
+        "Không thể tạo hai coroutine từ cùng function",
+        "Mỗi cái cho 1",
+        "Cái đầu 1, cái sau 2 vì dùng chung i",
+        "Cả hai cho 0"
+      ],
+      "correct": 1,
+      "explanation": "i là local của từng lần chạy body."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Creation laziness",
+      "question": "Sau local co=coroutine.create(f), body f đã chắc chắn chạy chưa?",
+      "options": [
+        "Rồi, create chạy song song tự động",
+        "Chỉ chạy nếu máy có hai core",
+        "Chưa, cần resume hoặc cơ chế gọi tương ứng",
+        "Rồi, create chạy tới return luôn"
+      ],
+      "correct": 2,
+      "explanation": "create chuẩn bị coroutine, không tự lập lịch chạy body."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "First resume arguments",
+      "question": "Các đối số sau co ở lần resume đầu được truyền đi đâu?",
+      "options": [
+        "Thành kết quả của lần yield chưa tồn tại",
+        "Vào package.loaded",
+        "Thành OS environment variables",
+        "Vào các tham số của body coroutine"
+      ],
+      "correct": 3,
+      "explanation": "Lần đầu bắt đầu lời gọi body với các đối số đó."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Later resume arguments",
+      "question": "Coroutine đang dừng ở local x=coroutine.yield(1); lần resume kế truyền 9 thì x nhận gì?",
+      "options": [
+        "9",
+        "1",
+        "true bắt buộc",
+        "Tên coroutine"
+      ],
+      "correct": 0,
+      "explanation": "Các đối số resume tiếp theo là kết quả trả về của yield đang chờ."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Yield tuple",
+      "question": "Coroutine gọi coroutine.yield(\"a\",\"b\"); resume thành công trả về bộ nào?",
+      "options": [
+        "Một table bắt buộc chứa cả ba",
+        "true,\"a\",\"b\"",
+        "\"a\", true,\"b\"",
+        "false,\"a\",\"b\""
+      ],
+      "correct": 1,
+      "explanation": "Cờ status đứng trước mọi giá trị yielded."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Body return values",
+      "question": "Body return 7,8 thay vì yield; resume thành công trả gì?",
+      "options": [
+        "true rồi tự chạy lại body",
+        "Một coroutine mới",
+        "true,7,8 và coroutine kết thúc",
+        "false,7,8 dù không có lỗi"
+      ],
+      "correct": 2,
+      "explanation": "Cần dùng status/trạng thái để phân biệt kết thúc với tạm dừng."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Resume dead coroutine",
+      "question": "Resume một coroutine đã kết thúc có bắt đầu lại body không?",
+      "options": [
+        "Có, tự đặt lại mọi local",
+        "Có, nếu body không có tham số",
+        "Có, yield trước đó được xóa",
+        "Không, trả failure cùng thông tin lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Muốn chạy lại cần tạo coroutine mới."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Error return",
+      "question": "Nếu body gọi error(\"bad\"), resume thường trả gì?",
+      "options": [
+        "false và đối tượng lỗi",
+        "true và luôn nil",
+        "Ném thẳng như wrap trong mọi trường hợp",
+        "Số 0 duy nhất"
+      ],
+      "correct": 0,
+      "explanation": "resume cho caller kiểm tra cờ lỗi một cách tường minh."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Ignored status risk",
+      "question": "Nếu giữ cách local _, v=resume(co), rủi ro nào dễ xảy ra?",
+      "options": [
+        "Bảo đảm v luôn là number",
+        "Xử lý error object như dữ liệu yielded hợp lệ",
+        "Tự sửa lỗi trước khi caller thấy",
+        "Đếm nhanh hơn đúng hai lần"
+      ],
+      "correct": 1,
+      "explanation": "Dấu _ chỉ là quy ước tên biến."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Wrap interface",
+      "question": "coroutine.wrap(f) trả về gì?",
+      "options": [
+        "Một table chứa toàn bộ kết quả tương lai",
+        "Một số status duy nhất",
+        "Một function dùng để tiếp tục coroutine",
+        "Một OS thread handle"
+      ],
+      "correct": 2,
+      "explanation": "Wrapper ẩn boolean status và truyền lỗi ra phía gọi."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Wrap error behavior",
+      "question": "Khác biệt quan trọng khi wrapper coroutine gặp lỗi là gì?",
+      "options": [
+        "Wrapper luôn nuốt lỗi và trả 0",
+        "Wrapper tự rollback mọi table",
+        "Wrapper tự tạo lại coroutine",
+        "Lời gọi wrapper truyền lỗi thay vì trả cờ false như resume"
+      ],
+      "correct": 3,
+      "explanation": "Phía gọi có thể cần protected call theo hợp đồng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Status running",
+      "question": "Một coroutine đang thực thi body của chính nó được mô tả bằng status nào?",
+      "options": [
+        "running",
+        "dead",
+        "suspended",
+        "normal trong mọi tình huống"
+      ],
+      "correct": 0,
+      "explanation": "Đang chạy khác với đang chờ coroutine khác hoàn tất."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Status normal",
+      "question": "Coroutine A đang chờ resume của coroutine B trả về thường có status nào?",
+      "options": [
+        "new",
+        "normal",
+        "dead",
+        "suspended do chưa bắt đầu"
+      ],
+      "correct": 1,
+      "explanation": "A đang hoạt động nhưng không trực tiếp chạy ở thời điểm B chạy."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Local init position",
+      "question": "Đưa local i=0 vào bên trong while trước mỗi yield sẽ làm gì?",
+      "options": [
+        "Tự chia sẻ i giữa các coroutine",
+        "Tự đóng vòng lặp sau hai lần",
+        "Mỗi lượt lại bắt đầu từ 0 rồi tăng thành 1",
+        "Giữ nguyên dãy 1,2,3 chắc chắn"
+      ],
+      "correct": 2,
+      "explanation": "Vị trí khởi tạo quyết định trạng thái có tích lũy qua vòng hay không."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Yield removed",
+      "question": "Bỏ yield khỏi while true trong counter có nguy cơ gì khi resume?",
+      "options": [
+        "Resume vẫn tự dừng sau một vòng",
+        "Lua tự thêm sleep vào mỗi vòng",
+        "Coroutine luôn chạy trên core khác",
+        "Body không tự nhường lại và có thể chặn luồng đang chạy"
+      ],
+      "correct": 3,
+      "explanation": "Đa nhiệm hợp tác đòi hỏi các điểm nhường phù hợp."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Return instead of yield",
+      "question": "Thay coroutine.yield(i) bằng return i trong body sẽ thay đổi gì?",
+      "options": [
+        "Lần đầu trả 1 rồi coroutine kết thúc",
+        "Vẫn sinh vô hạn các số",
+        "Tự tạo coroutine kế tiếp",
+        "Trả nil ở mọi lần"
+      ],
+      "correct": 0,
+      "explanation": "Return kết thúc lời gọi, yield chỉ tạm dừng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Counter increment placement",
+      "question": "Nếu yield(i) đứng trước i=i+1 và i bắt đầu 0, giá trị đầu là gì?",
+      "options": [
+        "false",
+        "0",
+        "1",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "Thứ tự thao tác trước điểm nhường quyết định giá trị đầu."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Pull producer",
+      "question": "Consumer chủ động resume producer để lấy từng mục là kiểu điều khiển nào?",
+      "options": [
+        "Luôn broadcast cho mọi OS thread",
+        "Tự lưu mọi mục vào SQL",
+        "Lấy theo yêu cầu, producer sinh tới yield tiếp theo",
+        "Producer tự chạy nền không cần consumer"
+      ],
+      "correct": 2,
+      "explanation": "Mô hình pull có thể giới hạn số mục cần tính trước."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Finite completion protocol",
+      "question": "Producer hữu hạn cần cho consumer biết điều gì?",
+      "options": [
+        "Chỉ tên biến loop",
+        "Chỉ số core trên máy",
+        "Một global print được đổi màu",
+        "Phân biệt mục dữ liệu, kết thúc và lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Không nên đánh đồng nil dữ liệu với hết dữ liệu nếu nil được phép."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Nil payload ambiguity",
+      "question": "Producer có thể yield nil hợp lệ. Vì sao consumer chỉ kiểm value==nil để kết thúc có thể sai?",
+      "options": [
+        "Nó nhầm payload nil với dấu kết thúc",
+        "Vì Lua không cho yield nil",
+        "Vì nil tự thành 0",
+        "Vì resume luôn trả table"
+      ],
+      "correct": 0,
+      "explanation": "Cần tag/status hoặc kiểm trạng thái theo một giao thức rõ ràng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Multiple payload fields",
+      "question": "Muốn nhận đủ tuple yielded ngoài cờ thành công, consumer cần lưu gì?",
+      "options": [
+        "Chỉ coroutine.status thay mọi dữ liệu",
+        "Đủ các giá trị trả về hoặc pack kèm số lượng theo contract",
+        "Chỉ một biến luôn chứa tất cả",
+        "Chỉ biến _"
+      ],
+      "correct": 1,
+      "explanation": "Lua hỗ trợ nhiều giá trị, phép gán ít biến sẽ bỏ phần dư."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Resource retained",
+      "question": "Một coroutine suspended còn tham chiếu table lớn có thể gây điều gì?",
+      "options": [
+        "Table tự được ghi ra đĩa",
+        "Không thể chứa table trong coroutine",
+        "Dữ liệu còn được giữ sống khi vẫn reachable",
+        "Table luôn bị GC ngay tại yield"
+      ],
+      "correct": 2,
+      "explanation": "Tạm dừng không có nghĩa giải phóng toàn bộ trạng thái."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Cancellation design",
+      "question": "Muốn hủy producer đang suspended nên thiết kế gì?",
+      "options": [
+        "Chỉ đặt tên biến là cancel",
+        "Chỉ bỏ qua boolean của resume",
+        "Chỉ gọi resume vô hạn",
+        "Chính sách dừng và cleanup tài nguyên phù hợp runtime"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng đóng/cleanup và các API liên quan phụ thuộc phiên bản."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Close version",
+      "question": "Có thể mặc định API coroutine.close của Lua 5.4 có trong mọi Lua 5.1 host không?",
+      "options": [
+        "Không, phải kiểm tra runtime và API phiên bản",
+        "Có, mọi API coroutine đều giống nhau",
+        "Có, tên coroutine bảo đảm backport",
+        "Có, chỉ cần đổi comment thành 5.4"
+      ],
+      "correct": 0,
+      "explanation": "Không suy diễn API mới sang mọi dialect/runtime cũ."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Scheduling fairness",
+      "question": "Một producer xử lý lượng việc rất lớn giữa hai yield có thể gây vấn đề nào?",
+      "options": [
+        "Tự chuyển sang GPU",
+        "Làm consumer hoặc tác vụ khác phải chờ lâu",
+        "Bảo đảm mọi tác vụ chia CPU đều nhau",
+        "Tự có deadline một frame"
+      ],
+      "correct": 1,
+      "explanation": "Yield cần đặt ở mức công việc và độ trễ phù hợp."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "JIT baseline compatibility",
+      "question": "LuaJIT 2.1 có nền tương thích API/ABI với dòng Lua nào theo tài liệu dự án?",
+      "options": [
+        "Mọi phiên bản Lua như nhau",
+        "Luau của Roblox đầy đủ",
+        "Lua 5.1",
+        "Lua 5.4 đầy đủ trong mọi cấu hình"
+      ],
+      "correct": 2,
+      "explanation": "Có các mở rộng và tính năng tương thích bổ sung, cần kiểm tra cụ thể."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "JIT speed claim",
+      "question": "Câu “LuaJIT tiệm cận C/C++” nên được hiểu thế nào khi đánh giá chương trình cụ thể?",
+      "options": [
+        "Là hằng số tốc độ chính xác cho mọi máy",
+        "Là chứng minh mọi code Lua nhanh hơn C",
+        "Là bảo đảm không dùng RAM",
+        "Là khả năng cần đo theo workload, không phải bảo đảm mọi code"
+      ],
+      "correct": 3,
+      "explanation": "JIT warmup, đường chạy và tương tác host đều có ảnh hưởng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "FFI concept",
+      "question": "FFI của LuaJIT phục vụ điều gì?",
+      "options": [
+        "Giao tiếp với thư viện/kiểu dữ liệu C theo khai báo phù hợp",
+        "Tự kiểm chứng mọi truy cập bộ nhớ an toàn",
+        "Tự chuyển mọi API C++ thành Lua",
+        "Chỉ định dạng chuỗi in"
+      ],
+      "correct": 0,
+      "explanation": "FFI mở khả năng native, đồng thời yêu cầu đúng ABI và vòng đời."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "FFI not standard",
+      "question": "Có nên dùng require(\"ffi\") và mặc định chạy trên Lua 5.4 chuẩn không?",
+      "options": [
+        "Có, đổi tên file thành ffi.lua luôn đủ",
+        "Không, ffi là khả năng của môi trường như LuaJIT, không phải thư viện chuẩn 5.4",
+        "Có, mọi Lua runtime có ffi",
+        "Có, coroutine.create tự cài ffi"
+      ],
+      "correct": 1,
+      "explanation": "Portability cần kiểm tra runtime và dependency thực tế."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "DSL minimal vocabulary",
+      "question": "Một DSL cấu hình hành vi nhân vật nên ưu tiên điều gì?",
+      "options": [
+        "Dùng thật nhiều global không liên quan",
+        "Che giấu mọi lỗi cú pháp",
+        "Từ vựng/API rõ theo miền và ràng buộc dữ liệu",
+        "Cấp toàn bộ API hệ điều hành mặc định"
+      ],
+      "correct": 2,
+      "explanation": "Miền mục tiêu quyết định cách diễn đạt và các giới hạn."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "DSL implementation options",
+      "question": "DSL có nhất thiết phải thực thi chuỗi Lua tùy ý không?",
+      "options": [
+        "Có, DSL luôn là load toàn bộ source người dùng",
+        "Có, không được dùng table cấu hình",
+        "Có, phải chạy shell command",
+        "Không, có thể dùng dữ liệu có schema hoặc parser hạn chế"
+      ],
+      "correct": 3,
+      "explanation": "Ngữ pháp và capability có thể được giới hạn theo nhu cầu."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Source DSL absence",
+      "question": "Trong mẫu counter, phần DSL đã được hiện thực chưa?",
+      "options": [
+        "Chưa, chỉ có coroutine đếm và phần giới thiệu lý thuyết",
+        "Rồi, mọi function tên counter đều là DSL hoàn chỉnh",
+        "Rồi, print tự tạo parser",
+        "Rồi, local i khai báo một compiler"
+      ],
+      "correct": 0,
+      "explanation": "Không gán tính năng ngoài những gì source thực hiện."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Consumer validation",
+      "question": "Consumer nhận một item từ producer nên kiểm gì trước khi dùng?",
+      "options": [
+        "Không cần vì yield bảo đảm đúng schema",
+        "Cờ resume và payload theo hợp đồng",
+        "Chỉ độ dài tên coroutine",
+        "Chỉ giá trị item có truthy là đủ mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Coroutine không tự xác minh cấu trúc nghiệp vụ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Zero item",
+      "question": "Nếu producer yield số 0, if value then trong Lua xử lý thế nào?",
+      "options": [
+        "Tự đổi 0 thành nil",
+        "Ném lỗi vì number không dùng trong if",
+        "Đi vào nhánh true vì 0 là truthy",
+        "Luôn coi là kết thúc"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ nil và false là falsy; vẫn cần giao thức kết thúc riêng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "False item",
+      "question": "Nếu producer được phép yield false, consumer chỉ dùng if value then có thể làm gì sai?",
+      "options": [
+        "Tự xử lý item hai lần",
+        "Tự khởi tạo OS thread",
+        "Luôn coi đó là số 0",
+        "Bỏ qua một item hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt dữ liệu boolean với trạng thái vận hành."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Repeated consumer demand",
+      "question": "Consumer muốn lấy đúng năm mục từ counter nên làm gì?",
+      "options": [
+        "Điều khiển số lần resume và kiểm thành công từng lần",
+        "Chờ coroutine tự dừng ở 5",
+        "Gọi create năm lần rồi không resume",
+        "Gán i=5 trong global bất kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Generator không có điều kiện dừng theo số mục trong source."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Cooperative IO limits",
+      "question": "Bọc một lời gọi blocking I/O dài trong coroutine có tự biến nó thành nonblocking không?",
+      "options": [
+        "Có, LuaJIT tự tách mọi I/O thành thread",
+        "Không, cần API/scheduler hỗ trợ bất đồng bộ phù hợp",
+        "Có, mọi call trong coroutine đều không chặn",
+        "Có, chỉ cần đổi tên function"
+      ],
+      "correct": 1,
+      "explanation": "Coroutine là cơ chế điều khiển, không tự thay đổi tính chất I/O."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Consumer buffer",
+      "question": "Nếu dùng queue giữa producer và consumer có tốc độ khác nhau, cần quyết định gì?",
+      "options": [
+        "Luôn giữ vô hạn mọi item",
+        "Không cần xét tốc độ consumer",
+        "Giới hạn bộ đệm và chính sách áp lực ngược/dừng",
+        "Chỉ thứ tự tên biến theo alphabet"
+      ],
+      "correct": 2,
+      "explanation": "Coroutine đơn thuần không tự tạo một queue có giới hạn."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Coroutine value type",
+      "question": "Trong Lua, type của giá trị trả về từ coroutine.create là gì?",
+      "options": [
+        "function trong mọi trường hợp",
+        "table",
+        "number",
+        "thread"
+      ],
+      "correct": 3,
+      "explanation": "coroutine.wrap mới trả một function wrapper."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Safe resume handling",
+      "question": "Consumer cần làm gì để tránh in lỗi như một số đếm khi producer hỏng?",
+      "options": [
+        "Nhận ok, value; xử lý ok==false riêng rồi mới kiểm kiểu payload",
+        "Chỉ đổi _ thành biến tên ignored",
+        "Chỉ nối mọi value với chuỗi và coi thành công",
+        "Chỉ kiểm value~=nil và bỏ qua ok"
+      ],
+      "correct": 0,
+      "explanation": "Status vận hành và hợp đồng dữ liệu cần được kiểm riêng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Yield versus final return",
+      "question": "Một producer yield 1 rồi return 2. Cách nào phân biệt kết quả thứ hai là kết thúc?",
+      "options": [
+        "Không thể phân biệt trong Lua",
+        "Sau resume thành công kiểm trạng thái dead hoặc dùng protocol kết thúc rõ",
+        "Mọi giá trị số đều chứng minh còn suspended",
+        "Chỉ kiểm cờ true vì true luôn nghĩa còn dữ liệu tương lai"
+      ],
+      "correct": 1,
+      "explanation": "Cả yield và return đều có thể làm resume trả true cùng dữ liệu."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Nil preserving protocol",
+      "question": "Producer cần gửi tuple (nil,\"x\") và báo hết riêng. Thiết kế nào tránh mất thông tin?",
+      "options": [
+        "Coi nil đầu là hết bất kể field sau",
+        "Nối các field bằng dấu phẩy rồi không escape",
+        "Tag item/done/error và giữ số lượng payload khi đóng gói",
+        "Dùng #table làm số lượng chính xác với mọi lỗ nil"
+      ],
+      "correct": 2,
+      "explanation": "Nil và arity cần được biểu diễn tường minh khi chuyển nhiều giá trị sang container."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Resume feedback flow",
+      "question": "Coroutine có local x=yield(\"ready\"); return x*2. Sau lần đầu, resume(co,6) trả gì nếu không có lỗi?",
+      "options": [
+        "true,\"ready\" lần nữa và co vẫn suspended",
+        "false,6 vì không nhận được tham số sau yield",
+        "true,6 vì phép nhân bị bỏ qua",
+        "true,12 và co kết thúc"
+      ],
+      "correct": 3,
+      "explanation": "6 trở thành giá trị trả về của yield bên trong coroutine."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Nested scheduling state",
+      "question": "A đang chạy và resume B; B hỏi status của A. Vì sao không trả suspended?",
+      "options": [
+        "A là normal vì đang chờ B trong một lời gọi resume, không tự yield",
+        "Vì A đã dead ngay khi gọi B",
+        "Vì B tự tạo bản sao A",
+        "Vì mọi coroutine trừ B đều running"
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt normal với suspended giúp hiểu điều khiển lồng nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Independent versus shared state",
+      "question": "Hai coroutine có i riêng nhưng cùng ghi một table global. Có thể kết luận chúng độc lập hoàn toàn không?",
+      "options": [
+        "Có, cooperative nghĩa không có tương tác dữ liệu",
+        "Không, table được chia sẻ có thể bị sửa xen kẽ giữa các lần yield",
+        "Có, local i làm mọi global thành bản sao",
+        "Có, coroutine tự deep clone heap"
+      ],
+      "correct": 1,
+      "explanation": "Cần xét cả local state lẫn đối tượng dùng chung."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Logical atomicity",
+      "question": "Một thao tác cập nhật hai field của table nhưng yield giữa chúng có rủi ro gì?",
+      "options": [
+        "Lua tự rollback field thứ nhất",
+        "Không ai nhìn thấy table cho tới coroutine dead",
+        "Caller/tác vụ khác có thể quan sát trạng thái cập nhật dở",
+        "Hai field luôn commit nguyên tử tự động"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ một luồng thực thi không có nghĩa mọi chuỗi thao tác đều nguyên tử qua yield."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Backpressure strategy",
+      "question": "Producer tạo dữ liệu nhanh hơn consumer với queue hữu hạn. Chính sách nào hợp lý?",
+      "options": [
+        "Tăng queue vô hạn mà không xét RAM",
+        "Bỏ mọi kiểm tra lỗi để tăng tốc",
+        "Resume producer vô hạn trong một frame",
+        "Tạm dừng producer khi đủ hạn mức và tiếp tục theo nhu cầu consumer"
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế phải quyết định throughput, bộ nhớ và độ trễ theo nhu cầu."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Early consumer stop",
+      "question": "Consumer chỉ cần hai item rồi dừng nhưng producer còn giữ file. Cần thiết kế thêm gì?",
+      "options": [
+        "Đường hủy/cleanup rõ ràng, không dựa vào việc caller sẽ resume tới cuối",
+        "Chỉ bỏ biến value là file đóng tức thì",
+        "Giữ mọi coroutine trong global mãi mãi",
+        "Chỉ đổi tên yield thành close"
+      ],
+      "correct": 0,
+      "explanation": "Vòng đời tài nguyên phải được xử lý cả khi pipeline kết thúc sớm."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Coroutine close constraints",
+      "question": "Trong Lua 5.4, có thể dùng coroutine.close lên coroutine đang trực tiếp running theo ý muốn không?",
+      "options": [
+        "Có, close luôn bỏ qua mọi lỗi cleanup",
+        "Không, close yêu cầu coroutine dead hoặc suspended",
+        "Có, close là OS thread kill ở mọi thời điểm",
+        "Có, mọi status đều được hỗ trợ như nhau"
+      ],
+      "correct": 1,
+      "explanation": "Cần tuân thủ điều kiện trạng thái và kiểm kết quả đóng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Coroutine wrap tradeoff",
+      "question": "Vì sao đổi resume thành wrap không tự loại nhu cầu xử lý lỗi?",
+      "options": [
+        "Vì wrap tự sửa mọi lỗi logic",
+        "Vì wrap không thể có exception",
+        "Wrap truyền lỗi ra caller nên cần chiến lược bảo vệ phù hợp",
+        "Vì wrap luôn trả false ở vị trí thứ nhất"
+      ],
+      "correct": 2,
+      "explanation": "Giao diện báo lỗi thay đổi, lỗi không biến mất."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Fair scheduling requirement",
+      "question": "Muốn nhiều producer phản hồi trong hạn thời gian, chỉ thêm một yield cuối tác vụ dài có đủ không?",
+      "options": [
+        "Đủ vì mỗi coroutine luôn có CPU core riêng",
+        "Đủ vì yield bảo đảm deadline một millisecond",
+        "Đủ vì Lua tự chia mọi vòng lặp",
+        "Chưa, phải xét lượng việc giữa các điểm nhường và scheduler"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế điểm nhường theo yêu cầu độ trễ thực tế."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "FFI ownership hazard",
+      "question": "LuaJIT FFI giữ con trỏ C sau khi host đã giải phóng vùng nhớ. Vì sao JIT không làm nó an toàn?",
+      "options": [
+        "Con trỏ hết vòng đời vẫn nguy hiểm; cần ownership và cleanup đúng",
+        "Vì JIT tự deep copy mọi vùng C",
+        "Vì mọi pointer C đều bất biến",
+        "Vì Lua GC tự biết mọi free của host"
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu thực thi không chứng minh an toàn bộ nhớ ngoài."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Dialect migration",
+      "question": "Chuyển script dùng coroutine.close và API Lua 5.4 sang host LuaJIT2.1 nên làm gì trước?",
+      "options": [
+        "Giữ ABI5.4 mà không kiểm thư viện",
+        "Kiểm từng API/cú pháp theo build thực tế và có adapter nếu cần",
+        "Chỉ đổi executable vì mọi runtime là superset5.4",
+        "Bỏ mọi kiểm tra status vì JIT nhanh hơn"
+      ],
+      "correct": 1,
+      "explanation": "Nền tương thích 5.1 cùng các mở rộng không đồng nghĩa toàn bộ chuẩn 5.4."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "JIT measurement design",
+      "question": "Muốn đánh giá LuaJIT có lợi cho pipeline nào, phép đo nào hữu ích?",
+      "options": [
+        "Chỉ dựa vào lời quảng bá tiệm cận C",
+        "Chỉ đo một lần print rồi suy ra mọi hệ thống",
+        "Workload đại diện, warmup thích hợp, cùng đầu vào và đo cả thời gian/bộ nhớ",
+        "Chỉ đếm số chữ JIT trong source"
+      ],
+      "correct": 2,
+      "explanation": "Đường nóng, I/O và biên native có thể ảnh hưởng kết quả."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "DSL code execution boundary",
+      "question": "Nếu DSL dùng load với chuỗi người dùng và toàn bộ global host, rủi ro nào chưa được giải quyết?",
+      "options": [
+        "Tên DSL tự bảo đảm sandbox",
+        "load chỉ đọc dữ liệu và không chạy code",
+        "Mọi script người dùng tự được tin cậy",
+        "Mã có thể tiếp cận capability ngoài miền DSL; cần giới hạn và kiểm dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Nhãn DSL không biến thực thi mã tùy ý thành cấu hình an toàn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "DSL validation phases",
+      "question": "Một DSL điều khiển nhân vật nên kiểm cả cú pháp lẫn ngữ nghĩa vì sao?",
+      "options": [
+        "Cú pháp hợp lệ vẫn có thể chứa lệnh hoặc giá trị trái hợp đồng miền",
+        "Parser đúng tự chứng minh mọi hành động được phép",
+        "Số âm luôn sai cú pháp Lua",
+        "Ngữ nghĩa không liên quan cấu hình"
+      ],
+      "correct": 0,
+      "explanation": "Ví dụ hành động không tồn tại hoặc giới hạn tốc độ cần kiểm theo miền."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Protocol test matrix",
+      "question": "Bộ tình huống nào giúp kiểm producer–consumer hữu hạn một cách có ý nghĩa?",
+      "options": [
+        "Chỉ tạo coroutine nhưng không resume",
+        "Rỗng, nhiều item, lỗi giữa chừng, nil/false hợp lệ và consumer dừng sớm",
+        "Chỉ counter cho ra số1",
+        "Chỉ tên function viết đúng"
+      ],
+      "correct": 1,
+      "explanation": "Các đường hoàn tất, lỗi và hủy cần được phân biệt."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Infinity versus demand",
+      "question": "Vì sao generator while true có yield không đồng nghĩa đoạn mẫu sẽ chạy vô hạn trước print?",
+      "options": [
+        "Coroutine luôn bị hủy sau hai lệnh local",
+        "Print chạy trên OS thread khác nên không cần yield",
+        "Mỗi resume dừng tại yield và caller chỉ resume hai lần",
+        "Lua tự đổi while true thành for hai lượt"
+      ],
+      "correct": 2,
+      "explanation": "Phải xét luồng caller và các điểm nhường, không chỉ từ khóa while true."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exercise completion criteria",
+      "question": "Để đáp ứng bài tập producer–consumer cần bổ sung gì ngoài counter mẫu?",
+      "options": [
+        "Chỉ đổi tên counter thành producer",
+        "Chỉ thêm câu quảng bá LuaJIT",
+        "Chỉ in cùng v1 hai lần",
+        "Consumer, giao thức item/kết thúc/lỗi, điều khiển nhu cầu và cleanup theo tài nguyên dùng"
+      ],
+      "correct": 3,
+      "explanation": "Producer mẫu là nền tảng để xây pipeline, chưa mô tả toàn bộ tương tác."
+    }
+  ]
+}

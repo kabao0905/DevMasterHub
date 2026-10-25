@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "senior",
+  "lesson": "concurrency",
+  "language": "vi",
+  "sourceHash": "4c6c953e19e83e7006d0cbfc48a7b057e6aa34bbae2f3ca7dd69a4293a6dc754",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và Go1.26.1 context/sync/time docs. Source thiếu main, unused sync; pipeline không cancellation và limiter goroutine/ticker không stop path. Không gọi NewRateLimiter nguồn hoặc chạy deadlock/race/vòng vô hạn. Selected finite fixtures dùng Wait method với token channels thủ công, models refill rõ scope, sync primitives và pipeline drain/join. Không khẳng định exact QPS, circuit breaker implementation hoặc global distributed limit.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Pipeline",
+      "question": "Pipeline trong bài là gì?",
+      "options": [
+        "Các stage xử lý nối với nhau bằng channels.",
+        "Một database transaction bắt buộc.",
+        "Một goroutine duy nhất không có dữ liệu.",
+        "Một API trả mọi secrets."
+      ],
+      "correct": 0,
+      "explanation": "Mỗi stage cần contract input/output và vòng đời rõ."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Generator output",
+      "question": "generator(nums...) trả kiểu gì?",
+      "options": [
+        "*sync.Mutex.",
+        "<-chan int.",
+        "chan<- string.",
+        "[]error."
+      ],
+      "correct": 1,
+      "explanation": "Caller được receive từ output."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Square work",
+      "question": "square biến n thành gì?",
+      "options": [
+        "n/2.",
+        "Một HTTP response thật.",
+        "n*n.",
+        "n+2."
+      ],
+      "correct": 2,
+      "explanation": "Stage gửi giá trị đã bình phương vào output."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Producer close",
+      "question": "defer close(out) trong stage nhằm gì?",
+      "options": [
+        "Tự cancel mọi upstream send.",
+        "Xóa ngay mọi output đã gửi.",
+        "Giết mọi goroutine process.",
+        "Báo stage không còn output sau khi kết thúc."
+      ],
+      "correct": 3,
+      "explanation": "Close output không tự giải quyết upstream bị bỏ không drain."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Fan out",
+      "question": "Fan-out thường nghĩa gì?",
+      "options": [
+        "Nhiều workers nhận từ nguồn công việc.",
+        "Một worker lưu mọi dữ liệu vào global.",
+        "Mọi job phải chạy lặp trên mọi worker.",
+        "Tự sắp xếp mọi results."
+      ],
+      "correct": 0,
+      "explanation": "Competing consumers khác broadcast."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Fan in",
+      "question": "Fan-in thường nhằm gì?",
+      "options": [
+        "Bắt buộc dùng network.",
+        "Gộp nhiều luồng kết quả thành luồng tiêu thụ chung.",
+        "Tự rollback mọi error.",
+        "Chỉ dùng một int global không khóa."
+      ],
+      "correct": 1,
+      "explanation": "Đóng output cần biết mọi producers đã xong."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Limiter token",
+      "question": "tokens chan struct{} được dùng để biểu diễn gì?",
+      "options": [
+        "Một database table.",
+        "Một timer luôn hoàn tất ngay.",
+        "Các permit/token không cần payload.",
+        "Mọi request body JSON."
+      ],
+      "correct": 2,
+      "explanation": "struct{} là empty struct; channel vẫn có tài nguyên/runtime cost."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Limiter wait",
+      "question": "Wait(ctx) nguồn thành công khi nào?",
+      "options": [
+        "Tự gọi HTTP request thành công.",
+        "Chờ mọi goroutine kết thúc.",
+        "Luôn sau đúng1s.",
+        "Nhận được một token và trả nil."
+      ],
+      "correct": 3,
+      "explanation": "Nhánh cancellation có thể trả ctx.Err."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Cancellation branch",
+      "question": "case <-ctx.Done() trong Wait trả gì?",
+      "options": [
+        "ctx.Err().",
+        "Luôn nil.",
+        "Một token mới.",
+        "HTTP status201."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ context đã done mới khiến branch đó ready theo contract."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Ticker role",
+      "question": "time.NewTicker(d) cung cấp gì?",
+      "options": [
+        "Một callback tự có cancellation.",
+        "Channel phát ticks theo period với scheduling/drop semantics.",
+        "Một exact clock không có jitter.",
+        "Một DB scheduler durable."
+      ],
+      "correct": 1,
+      "explanation": "Timestep không bảo đảm exact request pacing ở mọi scheduling."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Ticker interval source",
+      "question": "Source tính period bằng gì?",
+      "options": [
+        "rate giây cố định.",
+        "len(tokens)+1 giờ.",
+        "interval/time.Duration(rate).",
+        "interval*rate luôn."
+      ],
+      "correct": 2,
+      "explanation": "Cần validate cả rate lẫn period sau phép chia duration."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Refill select",
+      "question": "default ở refill select nhằm gì?",
+      "options": [
+        "Luôn block tới khi có chỗ.",
+        "Tự tăng capacity.",
+        "Tự cancel limiter.",
+        "Bỏ tick/token refill khi không gửi được vì bucket đầy."
+      ],
+      "correct": 3,
+      "explanation": "Bucket giới hạn burst capacity, không lưu vô hạn tick bị bỏ."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Mutex purpose",
+      "question": "sync.Mutex thường bảo vệ gì?",
+      "options": [
+        "Truy cập shared mutable state cần loại trừ lẫn nhau.",
+        "Tự xác thực users.",
+        "Tự tạo goroutine.",
+        "Tự serialize mọi DB query toàn cluster."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ bảo vệ code tuân theo cùng protocol locking."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "RWMutex purpose",
+      "question": "RWMutex cho phép mô hình nào?",
+      "options": [
+        "Tự upgrade lock khi muốn.",
+        "Nhiều readers hoặc một writer theo contract.",
+        "Mọi readers và writers sửa cùng lúc an toàn vô điều kiện.",
+        "Tự deep clone dữ liệu."
+      ],
+      "correct": 1,
+      "explanation": "RLock không cho phép viết dữ liệu shared tùy ý."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Once purpose",
+      "question": "sync.Once.Do dùng cho gì?",
+      "options": [
+        "Một lần mỗi goroutine bắt buộc.",
+        "Một lần mỗi HTTP user tự động.",
+        "Thực hiện một action một lần cho Once object đó.",
+        "Retry error mãi tới khi thành công."
+      ],
+      "correct": 2,
+      "explanation": "Scope là object Once, không global/distributed exactly-once."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Pool purpose",
+      "question": "sync.Pool thường dùng cho gì?",
+      "options": [
+        "Lưu durable data không bao giờ mất.",
+        "Một DB connection pool bắt buộc.",
+        "Một cache có TTL/eviction notifications đầy đủ.",
+        "Tái sử dụng temporary objects để giảm allocation pressure khi phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Pool có thể bỏ items tự động, không là storage tin cậy."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Closed input range",
+      "question": "square range input kết thúc khi nào?",
+      "options": [
+        "Input đóng và mọi values trước đó đã drain.",
+        "Input tạm rỗng dù mở.",
+        "Sau một phần tử.",
+        "Khi GC chạy."
+      ],
+      "correct": 0,
+      "explanation": "Stage có thể block nếu upstream không close hoặc không gửi."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Circuit breaker scope",
+      "question": "Source đã có circuit breaker implementation chưa?",
+      "options": [
+        "Chỉ cần sync import.",
+        "Chưa, chỉ theory nhắc pattern.",
+        "Có, RateLimiter tự là breaker đầy đủ.",
+        "Có, NewTicker tự đo lỗi downstream."
+      ],
+      "correct": 1,
+      "explanation": "Rate limit và failure-state circuit breaker giải quyết vấn đề khác."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Initial bucket",
+      "question": "Source NewRateLimiter có fill sẵn token lúc tạo không?",
+      "options": [
+        "Có, make(chan,rate) tự chứa rate tokens.",
+        "Chỉ khi rate=1.",
+        "Không.",
+        "Có, luôn đầy bucket ngay."
+      ],
+      "correct": 2,
+      "explanation": "make capacity không làm len bằng capacity."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Source compile scope",
+      "question": "Source advanced concurrency có lỗi hoàn chỉnh nào?",
+      "options": [
+        "Go không hỗ trợ channels.",
+        "time không có ticker.",
+        "Context không có Err.",
+        "Unused sync import và chưa có main cho executable."
+      ],
+      "correct": 3,
+      "explanation": "Source là snippet; fixture có scaffold riêng phải được nêu đúng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Finite joined pipeline",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){var wg sync.WaitGroup;in:=make(chan int);out:=make(chan int);wg.Add(2);go func(){defer wg.Done();defer close(in);for _,n:=range []int{1,2,3}{in<-n}}();go func(){defer wg.Done();defer close(out);for n:=range in{out<-n*n}}();var values []int;for n:=range out{values=append(values,n)};wg.Wait();fmt.Println(values)}\n",
+      "options": [
+        "[1 4 9].",
+        "[1 2 3].",
+        "[9 4 1] luôn.",
+        "Block do mọi pipeline đều sai."
+      ],
+      "correct": 0,
+      "explanation": "Cả hai stage đóng output và được Wait join sau khi drain."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Finite fan out total",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){jobs:=make(chan int,3);results:=make(chan int,3);var wg sync.WaitGroup;for i:=0;i<2;i++{wg.Add(1);go func(){defer wg.Done();for n:=range jobs{results<-2*n}}()};jobs<-1;jobs<-2;jobs<-3;close(jobs);wg.Wait();close(results);sum:=0;for n:=range results{sum+=n};fmt.Println(sum)}\n",
+      "options": [
+        "Tổng luôn thay đổi theo worker.",
+        "12.",
+        "6.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Mỗi job nhận đúng một worker, results drain sau workers hoàn tất với buffer đủ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Empty bucket canceled",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\ntype RateLimiter struct{tokens chan struct{}}\nfunc(rl *RateLimiter)Wait(ctx context.Context)error{select{case <-rl.tokens:return nil;case <-ctx.Done():return ctx.Err()}}\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();rl:=&RateLimiter{tokens:make(chan struct{},1)};fmt.Println(rl.Wait(ctx)==context.Canceled)}\n",
+      "options": [
+        "Wait tự tạo token.",
+        "Block dù context đã cancel.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Empty bucket không ready nên cancellation branch được chọn."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Available token",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\ntype RateLimiter struct{tokens chan struct{}}\nfunc(rl *RateLimiter)Wait(ctx context.Context)error{select{case <-rl.tokens:return nil;case <-ctx.Done():return ctx.Err()}}\nfunc main(){rl:=&RateLimiter{tokens:make(chan struct{},1)};rl.tokens<-struct{}{};fmt.Println(rl.Wait(context.Background())==nil,len(rl.tokens))}\n",
+      "options": [
+        "false 1.",
+        "true 1.",
+        "Background tự timeout ngay.",
+        "true 0."
+      ],
+      "correct": 3,
+      "explanation": "Wait lấy đúng một token; Background.Done=nil không cạnh tranh branch."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Nil token channel canceled",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\ntype RateLimiter struct{tokens chan struct{}}\nfunc(rl *RateLimiter)Wait(ctx context.Context)error{select{case <-rl.tokens:return nil;case <-ctx.Done():return ctx.Err()}}\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();rl:=&RateLimiter{};fmt.Println(rl.Wait(ctx)==context.Canceled)}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Panic vì mọi nil channel receive đều panic.",
+        "Block dù Done đã closed."
+      ],
+      "correct": 0,
+      "explanation": "rl object non-nil, tokens nil chỉ vô hiệu hóa receive case."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Bounded refill model",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){tokens:=make(chan struct{},2);for i:=0;i<3;i++{select{case tokens<-struct{}{}:default:}};fmt.Println(len(tokens))}\n",
+      "options": [
+        "Panic vì bucket đầy.",
+        "2.",
+        "3.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Ba lần thử nonblocking chỉ lấp buffer2; đây là model refill hữu hạn, không chạy ticker nguồn."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Capacity is not prefill",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){tokens:=make(chan struct{},4);fmt.Println(len(tokens),cap(tokens))}\n",
+      "options": [
+        "0 0.",
+        "make tự khởi refill goroutine.",
+        "0 4.",
+        "4 4."
+      ],
+      "correct": 2,
+      "explanation": "Capacity khác số tokens ban đầu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Once single execution",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){var once sync.Once;n:=0;once.Do(func(){n++});once.Do(func(){n++});fmt.Println(n)}\n",
+      "options": [
+        "2.",
+        "0.",
+        "Do tự retry vô hạn.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "Hai Do trên cùng Once chỉ chạy function đầu."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Once after panic",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){var once sync.Once;n:=0;func(){defer func(){_ = recover()}();once.Do(func(){n++;panic(\"boom\")})}();once.Do(func(){n++});fmt.Println(n)}\n",
+      "options": [
+        "1.",
+        "2.",
+        "0.",
+        "Do lần sau luôn panic lại như OnceFunc."
+      ],
+      "correct": 0,
+      "explanation": "sync.Once.Do coi action đã hoàn tất kể cả panic; outer recover cho phép kiểm tra lần gọi sau."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Pool New fallback",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){p:=sync.Pool{New:func()any{return \"new\"}};fmt.Println(p.Get())}\n",
+      "options": [
+        "Một object được đảm bảo từ caller khác.",
+        "new.",
+        "nil.",
+        "Panic vì chưa Put."
+      ],
+      "correct": 1,
+      "explanation": "Pool mới rỗng dùng New nếu được cấu hình; không kiểm tra guarantee reuse."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Empty pool nil",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){var p sync.Pool;fmt.Println(p.Get()==nil)}\n",
+      "options": [
+        "Pool tự cấp []byte bắt buộc.",
+        "Panic khi Get.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Pool rỗng không New có thể trả nil; fixture chưa Put bất kỳ item nào."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "TryLock while held",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){var mu sync.Mutex;mu.Lock();ok:=mu.TryLock();fmt.Println(ok);mu.Unlock()}\n",
+      "options": [
+        "true.",
+        "Deadlock vì TryLock luôn block.",
+        "TryLock tự unlock mutex.",
+        "false."
+      ],
+      "correct": 3,
+      "explanation": "TryLock không chờ và không lấy được mutex đang locked trong fixture."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "RWMutex guarded value",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){var mu sync.RWMutex;n:=0;mu.Lock();n=7;mu.Unlock();mu.RLock();fmt.Println(n);mu.RUnlock()}\n",
+      "options": [
+        "7.",
+        "0.",
+        "Giá trị không xác định do RWMutex luôn gây race.",
+        "Compiler cấm RLock."
+      ],
+      "correct": 0,
+      "explanation": "Fixture ghi dưới Lock rồi đọc dưới RLock, không concurrency hazard."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Duration division rounding",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"time\")\n\nfunc main(){period:=time.Second/time.Duration(3);fmt.Println(period.Nanoseconds())}\n",
+      "options": [
+        "0.",
+        "333333333.",
+        "333333333.3333333.",
+        "3."
+      ],
+      "correct": 1,
+      "explanation": "Duration số nguyên nanoseconds; chia3 cắt phần lẻ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Ticker stop not close",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"time\")\n\nfunc main(){t:=time.NewTicker(time.Hour);t.Stop();select{case _,ok:=<-t.C:fmt.Println(ok);default:fmt.Println(\"not closed\")}}\n",
+      "options": [
+        "Một tick ngay lập tức bắt buộc.",
+        "Block vì không default.",
+        "not closed.",
+        "closed."
+      ],
+      "correct": 2,
+      "explanation": "Ticker mới period1h được Stop ngay; Stop không close channel."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Early consumer exit",
+      "question": "Nếu consumer ngừng đọc giữa pipeline nguồn, upstream có thể thế nào?",
+      "options": [
+        "Tự dừng do out là receive-only.",
+        "Tự được garbage collector kill.",
+        "Luôn gửi vào buffer vô hạn.",
+        "Bị kẹt ở unbuffered send vì không có cancellation/drain path."
+      ],
+      "correct": 3,
+      "explanation": "Goroutine leak có thể giữ sống referenced data; phân tích tĩnh, không chạy leak."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Stage cancel select",
+      "question": "Muốn send stage có thể thoát khi caller hủy thì thường cần gì?",
+      "options": [
+        "Select giữa send và ctx.Done cùng cleanup/close protocol đúng.",
+        "Chỉ đặt tên tham số ctx mà không đọc.",
+        "Chỉ Sleep ngắn hơn.",
+        "Chỉ close downstream từ mọi workers."
+      ],
+      "correct": 0,
+      "explanation": "Cancellation phải được quan sát tại operations có thể block."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Read cancellation too",
+      "question": "Chỉ thêm cancellation cho send mà receive vẫn for range input có đủ mọi trường hợp không?",
+      "options": [
+        "Chỉ cần output buffer1.",
+        "Không; stage có thể kẹt chờ input, cần cân nhắc cả receive path.",
+        "Có, mọi receive tự dùng cùng context.",
+        "Có, range input luôn timeout."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế toàn call chain thay vì một điểm check."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Zero rate",
+      "question": "rate0 trong constructor nguồn có rủi ro gì?",
+      "options": [
+        "Tự đổi thành rate1.",
+        "Luôn compiler error vì rate là biến.",
+        "Phép chia interval/Duration(rate) có thể panic vì chia0 trong goroutine refill.",
+        "Tự được hiểu là unlimited."
+      ],
+      "correct": 2,
+      "explanation": "Cần validate trước khi khởi goroutine; không gọi constructor lỗi để tạo panic nền."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Negative rate",
+      "question": "rate âm có vấn đề gì ngay khi make channel?",
+      "options": [
+        "Tự tạo unlimited capacity.",
+        "Tự đổi sang trị tuyệt đối.",
+        "Tự giới hạn1 token.",
+        "Capacity âm không hợp lệ và có thể panic."
+      ],
+      "correct": 3,
+      "explanation": "Validate miền rate trước allocation."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Nonpositive period",
+      "question": "rate dương nhưng interval/rate <=0 gây gì với NewTicker?",
+      "options": [
+        "NewTicker panic vì period phải dương.",
+        "Ticker tự chạy với nanosecond1.",
+        "Ticker tự bị disable an toàn.",
+        "Không thể xảy ra với Duration."
+      ],
+      "correct": 0,
+      "explanation": "Rounding về0 cũng cần kiểm tra, không chỉ interval>0."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Fractional rate",
+      "question": "interval1s rate3 có cho tick interval chính xác1/3 giây không?",
+      "options": [
+        "Chỉ khi buffer3.",
+        "Không; duration integer rounding và scheduling/drop semantics ảnh hưởng.",
+        "Có, thời gian dùng rational vô hạn chính xác.",
+        "Có, mọi tick theo đồng hồ tuyệt đối không jitter."
+      ],
+      "correct": 1,
+      "explanation": "Không hứa exact QPS từ phép chia duration."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Ticker lifecycle",
+      "question": "Constructor nguồn có stop/cancel path cho refill goroutine không?",
+      "options": [
+        "Có, bucket đầy làm goroutine return.",
+        "Có, default tự break vòng for ngoài.",
+        "Chưa.",
+        "Có, Wait trả là ticker tự stop."
+      ],
+      "correct": 2,
+      "explanation": "Default chỉ bỏ lần refill hiện tại, không kết thúc goroutine."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Ticker GC scope",
+      "question": "Go1.23+ có thể thu ticker không còn reference thì source goroutine range ticker.C có tự chắc biến mất không?",
+      "options": [
+        "Có, mọi ticker sống được tối đa1s.",
+        "Có, GC kill mọi blocked goroutine.",
+        "Chỉ cần không export RateLimiter.",
+        "Không; goroutine còn chờ/giữ channel/vòng đời nên không được coi GC là cancellation protocol."
+      ],
+      "correct": 3,
+      "explanation": "Tài nguyên không còn reachable và goroutine đang dùng channel là hai trường hợp khác."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Burst capacity",
+      "question": "Bucket capacity=rate cho biết gì về burst?",
+      "options": [
+        "Có thể tích lũy tối đa số tokens đó theo refill, không phải exact sliding-window guarantee.",
+        "Mọi cửa sổ interval đều tuyệt đối không hơn rate requests.",
+        "Mọi request cách nhau đúng period.",
+        "Không bao giờ có burst."
+      ],
+      "correct": 0,
+      "explanation": "Token bucket cho burst theo tokens đã tích lũy."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Empty initial wait",
+      "question": "Do bucket nguồn rỗng ban đầu, request đầu có luôn đi qua ngay không?",
+      "options": [
+        "Chỉ nếu rate âm.",
+        "Không; thường chờ token refill hoặc context done.",
+        "Có, make capacity tự fill.",
+        "Có, Wait tự mint token."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần initial burst phải thiết kế prefill rõ ràng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Global limit scope",
+      "question": "Mỗi replica có limiter riêng rate100 có bảo đảm cả cluster chỉ100 không?",
+      "options": [
+        "Có, cùng tên struct chia sẻ memory.",
+        "Chỉ cần cùng Go version.",
+        "Không; local limit không tự là shared global limit.",
+        "Có, chan struct tự đồng bộ network."
+      ],
+      "correct": 2,
+      "explanation": "Distributed quota cần kiến trúc khác hoặc partitioned budgets."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Rate versus concurrency",
+      "question": "Giới hạn arrivals theo token có tự giới hạn số requests đang chạy không?",
+      "options": [
+        "Có, rate luôn bằng concurrent work.",
+        "Có, một token tự quay về khi request xong theo source.",
+        "Chỉ cần buffer=rate.",
+        "Không; request dài có thể tích lũy concurrency, cần giới hạn riêng khi cần."
+      ],
+      "correct": 3,
+      "explanation": "Source Wait lấy token, không có release semaphore cho completion."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Semaphore distinction",
+      "question": "Semaphore thường giới hạn điều gì khác refill rate limiter?",
+      "options": [
+        "Số tác vụ đồng thời đang giữ permit với release protocol.",
+        "Tổng số log records suốt đời.",
+        "Một exact rolling-window QPS bắt buộc.",
+        "Mọi network failures."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt thời điểm cấp theo clock và permit theo work completion."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Pool eviction",
+      "question": "sync.Pool có được bỏ items tự động không?",
+      "options": [
+        "Pool không bao giờ tương tác GC.",
+        "Có, không notification; không dùng như durable cache.",
+        "Không, mọi Put sẽ tồn tại tới process exit.",
+        "Chỉ khi caller gọi Delete key."
+      ],
+      "correct": 1,
+      "explanation": "Đừng lưu state bắt buộc phải có trong Pool."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Pool object ownership",
+      "question": "Put object vào Pool rồi tiếp tục sửa nó đồng thời với người Get có an toàn không?",
+      "options": [
+        "Có, Put cấm compiler dùng pointer cũ.",
+        "Chỉ nếu object là map.",
+        "Không; cần ownership rõ để tránh aliases/data race.",
+        "Có, Pool tự deep clone."
+      ],
+      "correct": 2,
+      "explanation": "Pool API concurrent-safe không làm payload tự an toàn."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Once and retry",
+      "question": "Once.Do có phù hợp tự retry một initialization trả error tới khi thành công không?",
+      "options": [
+        "Có, error tự reset Once.",
+        "Có, panic tự reset Do theo docs.",
+        "Chỉ cần đặt error global.",
+        "Không tự đáp ứng; action đã gọi một lần nên cần state/retry design khác."
+      ],
+      "correct": 3,
+      "explanation": "Once không nhận contract error result để tự quyết định retry."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "RWMutex upgrade",
+      "question": "Giữ RLock rồi gọi Lock để upgrade có được bảo đảm an toàn không?",
+      "options": [
+        "Không; docs không hỗ trợ upgrade kiểu đó.",
+        "Có, luôn atomic upgrade.",
+        "Có, writer tự bỏ read lock của caller.",
+        "Chỉ cần có một reader."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy deadlock để kiểm tra; thiết kế khóa theo contract."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Copy sync objects",
+      "question": "Có nên copy Mutex/RWMutex/Once/Pool sau lần dùng đầu không?",
+      "options": [
+        "Chỉ cần đặt trong struct generic.",
+        "Không theo docs của các types này.",
+        "Có, mọi copy giữ cùng lock identity.",
+        "Chỉ với field export."
+      ],
+      "correct": 1,
+      "explanation": "Truyền pointer hoặc bảo đảm ownership thích hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Counter overflow",
+      "question": "square trên int có bảo đảm bình phương mọi input toán học chính xác không?",
+      "options": [
+        "Có, goroutine tự chuyển big.Int.",
+        "Chỉ cần channel không buffer.",
+        "Không; int hữu hạn, overflow/domain cần cân nhắc theo yêu cầu.",
+        "Có, Go int có precision vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Không hứa kết quả vượt giới hạn kiểu."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Empty pipeline input",
+      "question": "Nếu generator nhận0 số và consumer drain tới khi output đóng, có bao nhiêu giá trị được nhận?",
+      "options": [
+        "Một giá trị0 tự được gửi như job.",
+        "Luôn block vì channel chưa từng send.",
+        "Một error value bắt buộc.",
+        "0; producer close output khi loop kết thúc."
+      ],
+      "correct": 3,
+      "explanation": "Đóng channel không đồng nghĩa gửi thêm phần tử; range dừng sau khi stream kết thúc."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Fixed result count contract",
+      "question": "Consumer đợi đúng N kết quả nhưng producer có thể bỏ một job khi lỗi mà không gửi gì có rủi ro gì?",
+      "options": [
+        "Consumer có thể chờ mãi; cần result/error/close/cancel protocol khớp số lượng và vòng đời.",
+        "Channel tự bổ sung zero values dù chưa đóng.",
+        "WaitGroup tự gửi error vào mọi channel.",
+        "Không có rủi ro nếu N là int."
+      ],
+      "correct": 0,
+      "explanation": "Counting protocol chỉ đúng khi mọi path tuân theo contract của nó."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Once publication contract",
+      "question": "Do trả về có bảo đảm action được chọn đã hoàn tất theo contract không?",
+      "options": [
+        "Chỉ nếu gọi đúng một lần.",
+        "Có, Do chờ action đó hoàn tất; không chỉ bảo đảm đã bắt đầu.",
+        "Không, Do luôn tạo goroutine rồi return ngay.",
+        "Chỉ khi action không dùng int."
+      ],
+      "correct": 1,
+      "explanation": "Khác với flag CAS ngây thơ không chờ initialization xong."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Slow IO under lock",
+      "question": "Giữ mutex qua I/O chậm có thể gây gì?",
+      "options": [
+        "Tự tăng throughput vô hạn.",
+        "Mutex tự tạm unlock khi syscall chậm.",
+        "Tăng contention/độ trễ cho công việc khác cần cùng lock; nên thiết kế scope phù hợp.",
+        "Tự làm I/O không lỗi."
+      ],
+      "correct": 2,
+      "explanation": "Không bỏ lock tùy tiện nếu phá invariant; tách snapshot/work/commit có kiểm soát khi phù hợp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Slow ticker consumer",
+      "question": "Ticker có bảo đảm xếp hàng mọi tick receiver chậm bỏ lỡ không?",
+      "options": [
+        "Có, backlog tick vô hạn được lưu durable.",
+        "Có, mỗi tick luôn đúng một request đã được xử lý.",
+        "Chỉ cần rate lớn.",
+        "Không; docs cho phép điều chỉnh hoặc drop ticks."
+      ],
+      "correct": 3,
+      "explanation": "Không suy tổng tick đã nhận luôn bằng thời gian đã qua chia period."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "OnceValue memoization",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){calls:=0;f:=sync.OnceValue(func()int{calls++;return 7});a:=f();b:=f();fmt.Println(a,b,calls)}\n",
+      "options": [
+        "7 7 1.",
+        "7 7 2.",
+        "0 0 0.",
+        "OnceValue luôn gọi hàm mỗi lần."
+      ],
+      "correct": 0,
+      "explanation": "OnceValue lưu kết quả một lần cho callable được trả về."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "OnceFunc repeated panic",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\")\n\nfunc main(){calls,panics:=0,0;f:=sync.OnceFunc(func(){calls++;panic(\"boom\")});for i:=0;i<2;i++{func(){defer func(){if recover()!=nil{panics++}}();f()}()};fmt.Println(calls,panics)}\n",
+      "options": [
+        "0 0.",
+        "1 2.",
+        "2 2.",
+        "1 1."
+      ],
+      "correct": 1,
+      "explanation": "OnceFunc chỉ thực hiện action một lần nhưng các lần gọi sau panic cùng giá trị nếu action panic."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Finite drop accounting",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){ch:=make(chan struct{},2);drops:=0;for i:=0;i<5;i++{select{case ch<-struct{}{}:default:drops++}};fmt.Println(len(ch),drops)}\n",
+      "options": [
+        "0 5.",
+        "Buffer tự tăng thành5.",
+        "2 3.",
+        "5 0."
+      ],
+      "correct": 2,
+      "explanation": "Model5 lần refill, bucket2 không consumer nên3 lần drop; không đo thời gian."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Explicit canceled budget",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\ntype RateLimiter struct{tokens chan struct{}}\nfunc(rl *RateLimiter)Wait(ctx context.Context)error{select{case <-rl.tokens:return nil;case <-ctx.Done():return ctx.Err()}}\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();rl:=&RateLimiter{tokens:make(chan struct{},2)};fmt.Println(rl.Wait(ctx)==context.Canceled)}\n",
+      "options": [
+        "false.",
+        "Wait vẫn tiêu thụ token không tồn tại.",
+        "Ticker nền tự được tạo trong Wait.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Done có sẵn và token channel rỗng; fixture không gọi constructor refill."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Atomic counter finite",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"sync\";\"sync/atomic\")\n\nfunc main(){var n atomic.Int64;var wg sync.WaitGroup;for i:=0;i<2;i++{wg.Add(1);go func(){defer wg.Done();n.Add(1)}()};wg.Wait();fmt.Println(n.Load())}\n",
+      "options": [
+        "2.",
+        "1.",
+        "0.",
+        "Always race vì atomic không có mutex."
+      ],
+      "correct": 0,
+      "explanation": "Hai atomic increments và Wait join trước Load, không giả mọi workflow atomic."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Select priority ambiguity",
+      "question": "Token có sẵn và ctx đã cancel, Wait nguồn có bảo đảm trả ctx.Err không?",
+      "options": [
+        "Token branch luôn thắng tuyệt đối.",
+        "Không; hai case ready được lựa chọn theo select semantics.",
+        "Có, Done luôn priority.",
+        "Có, chỉ cần case Done viết sau."
+      ],
+      "correct": 1,
+      "explanation": "Contract cancellation priority cần thiết kế bổ sung, không suy thứ tự case."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Fairness promise",
+      "question": "Select pseudo-random có bảo đảm từng request không bao giờ starvation trong mọi lịch hữu hạn không?",
+      "options": [
+        "Có, channel luôn round-robin workers theo ID.",
+        "Chỉ cần buffer lớn.",
+        "Không nên suy fairness/latency bound tuyệt đối từ rule lựa chọn đó.",
+        "Có, mỗi request chắc chắn trong1ms."
+      ],
+      "correct": 2,
+      "explanation": "Correctness/SLAs cần phân tích scheduling và workload riêng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Close refill tokens",
+      "question": "Đóng rl.tokens từ consumer khi refill goroutine vẫn chạy có an toàn không?",
+      "options": [
+        "Có, select default luôn tránh panic send closed.",
+        "Có, close tự dừng ticker.",
+        "Chỉ nếu channel chứa struct{}.",
+        "Không; refill send vào closed channel có thể panic."
+      ],
+      "correct": 3,
+      "explanation": "Send closed channel không trở thành case không ready an toàn."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Ticker stop range",
+      "question": "Chỉ ticker.Stop rồi chờ for range ticker.C tự kết thúc có đúng không?",
+      "options": [
+        "Không; Stop không close C, cần done/select protocol.",
+        "Có, Stop luôn close channel.",
+        "Có, range thấy không tick tự return.",
+        "Chỉ cần rate=1."
+      ],
+      "correct": 0,
+      "explanation": "Stop timer và dừng goroutine là hai hành động khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Pipeline timeout cleanup",
+      "question": "Timeout caller nhưng stage còn blocked send có được coi request đã cleanup đầy đủ không?",
+      "options": [
+        "Chỉ cần trả nil cho nhanh.",
+        "Chưa; cần propagation và join/ack để xác nhận stage thoát khi yêu cầu.",
+        "Có, ctx.Err tự giải phóng mọi goroutine.",
+        "Có, main không còn reference nên GC kill."
+      ],
+      "correct": 1,
+      "explanation": "Completion evidence khác tín hiệu cancel."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Shared mutable outputs",
+      "question": "Fan-in chuyển pointers tới objects mà producers còn sửa có tự thread-safe không?",
+      "options": [
+        "Có, FIFO là data-race proof mọi object.",
+        "Chỉ nếu có nhiều workers.",
+        "Không; cần ownership hoặc đồng bộ cả sau send.",
+        "Có, channel deep freeze."
+      ],
+      "correct": 2,
+      "explanation": "Happens-before của send/receive không bảo vệ mọi mutation về sau."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "RWMutex read mutation",
+      "question": "Code dưới RLock sửa map shared có đúng chỉ vì nhiều readers được phép không?",
+      "options": [
+        "Có, mọi operation dưới RLock đều safe.",
+        "Có, Go tự nâng lên Lock.",
+        "Chỉ với int values.",
+        "Không; RLock dành cho đọc theo protocol, writers cần exclusive lock phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Phải kiểm soát cả các hàm tưởng đọc nhưng có cache mutation."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Once recursive call",
+      "question": "Action của once.Do gọi lại once.Do trên cùng object có rủi ro gì?",
+      "options": [
+        "Deadlock theo contract Do chờ action hoàn tất.",
+        "Tự nhận diện recursion rồi return success.",
+        "Luôn tạo object Once mới.",
+        "Compiler luôn inline xóa lời gọi."
+      ],
+      "correct": 0,
+      "explanation": "Không thực thi deadlock trong fixtures; dùng thiết kế initialization không tự phụ thuộc."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Pool capacity bound",
+      "question": "sync.Pool có phải pool tài nguyên có max count và Close resource guarantee không?",
+      "options": [
+        "Chỉ cần value implement io.Closer.",
+        "Không; cần resource-pool abstraction khác nếu phải bound/close connections.",
+        "Có, mọi Put đều được Close khi GC.",
+        "Có, New chỉ chạy đúng một lần suốt process."
+      ],
+      "correct": 1,
+      "explanation": "Temporary object reuse không đồng nghĩa quản lý scarce external resource."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Retry amplifier",
+      "question": "Limiter local có tự ngăn retry storm từ mọi replicas không?",
+      "options": [
+        "Có, time.NewTicker hiểu downstream health.",
+        "Chỉ cần rate100.",
+        "Không; cần tổng budget/backoff/jitter/circuit-breaker/load-shedding phù hợp.",
+        "Có, một token bucket tự phối hợp cluster."
+      ],
+      "correct": 2,
+      "explanation": "Không coi pattern đơn lẻ là xử lý mọi failure mode."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Precise rolling window",
+      "question": "Token bucket capacity100 refill100/s có bảo đảm không cửa sổ1s nào hơn100 arrivals không?",
+      "options": [
+        "Có, capacity chính là mọi sliding-window count.",
+        "Có, mọi tick là một giây.",
+        "Chỉ nếu initial bucket rỗng thì luôn.",
+        "Không; burst tích lũy và refill có thể cho arrivals vượt ngưỡng sliding-window theo cách tính khác."
+      ],
+      "correct": 3,
+      "explanation": "Chọn algorithm theo contract rate/burst/window cụ thể."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Backpressure resources",
+      "question": "Tăng pipeline buffer rất lớn để né block có giải quyết toàn bộ overload không?",
+      "options": [
+        "Không; có thể tăng memory/latency và chỉ dời điểm nghẽn.",
+        "Có, buffer càng lớn luôn vô hạn throughput.",
+        "Có, queue không giữ objects sống.",
+        "Chỉ cần không dùng mutex."
+      ],
+      "correct": 0,
+      "explanation": "Cần bound work, consumer capacity và overload policy."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Race detector scope",
+      "question": "Không chạy race detector mà finite outputs đúng có nên báo race check passed không?",
+      "options": [
+        "Chỉ cần stderr rỗng.",
+        "Không.",
+        "Có, compiler thường tự làm đủ race detector.",
+        "Có, có channel là đủ."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ ghi tool/flags/checks thật đã chạy, không giả bằng chứng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Source full readiness",
+      "question": "Sửa unused sync và thêm main có đủ khiến limiter/pipeline production-ready không?",
+      "options": [
+        "Có, Go luôn tự sửa leaks.",
+        "Chỉ cần chạy một input.",
+        "Chưa; validation/lifecycle/cancel/limits/error semantics vẫn cần thiết kế và kiểm chứng.",
+        "Có, mọi compile success là production proof."
+      ],
+      "correct": 2,
+      "explanation": "Tách compile correctness với contract và operational correctness."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Distributed budget",
+      "question": "Muốn giới hạn toàn hệ thống nhiều replicas cần xem xét gì ngoài limiter RAM này?",
+      "options": [
+        "Chỉ dùng cùng tên tokens ở mọi máy.",
+        "Chỉ tăng GOMAXPROCS.",
+        "Đổi capacity thành số users đăng ký.",
+        "Phân bổ hoặc phối hợp quota, failure behavior, burst/latency và measurement theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Không tuyên bố global limit từ state độc lập trong mỗi process."
+    }
+  ]
+}

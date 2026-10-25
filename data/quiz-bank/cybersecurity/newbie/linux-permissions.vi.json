@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cybersecurity",
+  "level": "newbie",
+  "lesson": "linux-permissions",
+  "language": "vi",
+  "sourceHash": "473161526313163ced03d96b0bd4472dc4a4509ce406f872582f351b5286683a",
+  "status": "approved",
+  "review": "Tự soạn 80 câu theo chmod/chown source và Linux man-pages. Phân biệt quyền file/thư mục, xóa entry phụ thuộc parent/sticky, numeric 700 đặt cả rwx owner chứ không chỉ thêm x. Không áp mẫu /etc/shadow lên máy thật; không đọc tệp nhạy cảm, chmod/chown hay chạy lệnh Linux.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Ba lớp quyền",
+      "question": "Ba lớp u, g, o trong mode cơ bản là gì?",
+      "options": [
+        "Owner, group, others",
+        "User, guest, operator",
+        "Upload, get, output",
+        "Root, admin, anonymous"
+      ],
+      "correct": 0,
+      "explanation": "Các lớp quyền được chọn theo identity và quan hệ sở hữu."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Read bit",
+      "question": "Giá trị octal của quyền read là gì?",
+      "options": [
+        "7",
+        "4",
+        "2",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "Một nhóm quyền cộng các bit read, write, execute."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Write bit",
+      "question": "Giá trị octal của quyền write là gì?",
+      "options": [
+        "1",
+        "5",
+        "2",
+        "4"
+      ],
+      "correct": 2,
+      "explanation": "Bit write khác read và execute."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Execute bit",
+      "question": "Giá trị octal của quyền execute là gì?",
+      "options": [
+        "2",
+        "4",
+        "6",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "Ý nghĩa execute/search còn phụ thuộc file hay directory."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Rwx digit",
+      "question": "rwx tương ứng digit octal nào?",
+      "options": [
+        "7",
+        "6",
+        "5",
+        "4"
+      ],
+      "correct": 0,
+      "explanation": "4+2+1 bằng 7."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Read write digit",
+      "question": "rw- tương ứng digit nào?",
+      "options": [
+        "3",
+        "6",
+        "7",
+        "5"
+      ],
+      "correct": 1,
+      "explanation": "4+2 bằng 6, chưa có execute."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Read execute digit",
+      "question": "r-x tương ứng digit nào?",
+      "options": [
+        "6",
+        "3",
+        "5",
+        "7"
+      ],
+      "correct": 2,
+      "explanation": "4+1 bằng 5."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Read only digit",
+      "question": "r-- tương ứng digit nào?",
+      "options": [
+        "2",
+        "1",
+        "0",
+        "4"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ bit read được bật."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "No permission digit",
+      "question": "--- tương ứng digit nào?",
+      "options": [
+        "0",
+        "1",
+        "2",
+        "4"
+      ],
+      "correct": 0,
+      "explanation": "Không có ba quyền cơ bản trong lớp đó."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Numeric order",
+      "question": "Trong 755, ba digit cơ bản theo thứ tự nào?",
+      "options": [
+        "Read, write, execute cho mọi user",
+        "Owner, group, others",
+        "Others, group, owner",
+        "Group, owner, others"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi digit chứa tổ hợp ba quyền của một lớp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "755 owner",
+      "question": "755 cấp owner những quyền cơ bản nào?",
+      "options": [
+        "r-x",
+        "r--",
+        "rwx",
+        "rw-"
+      ],
+      "correct": 2,
+      "explanation": "Digit đầu 7 gồm cả read/write/execute."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "755 group",
+      "question": "755 cấp group những quyền nào?",
+      "options": [
+        "rwx",
+        "rw-",
+        "-wx",
+        "r-x"
+      ],
+      "correct": 3,
+      "explanation": "Digit giữa là 5."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "755 others",
+      "question": "755 cấp others những quyền nào?",
+      "options": [
+        "r-x",
+        "rw-",
+        "rwx",
+        "---"
+      ],
+      "correct": 0,
+      "explanation": "Digit cuối bằng 5, không có write."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "700 ý nghĩa",
+      "question": "700 thiết lập quyền cơ bản thế nào?",
+      "options": [
+        "Owner rw-, group r--, others ---",
+        "Owner rwx, group và others không có quyền",
+        "Owner chỉ x, group và others giữ nguyên",
+        "Mọi lớp rwx"
+      ],
+      "correct": 1,
+      "explanation": "Numeric mode đặt tổ hợp quyền, không chỉ thêm execute."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Chmod purpose",
+      "question": "chmod chủ yếu thay đổi điều gì?",
+      "options": [
+        "Nội dung file",
+        "Mật khẩu tài khoản",
+        "Mode/permission bits theo thao tác",
+        "Tên owner và group"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất quyền truy cập với ownership."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Chown purpose",
+      "question": "chown chủ yếu thay đổi điều gì?",
+      "options": [
+        "Nội dung mã nguồn",
+        "Tên file tự động",
+        "Mọi quyền sudo",
+        "Chủ sở hữu và/hoặc nhóm theo cú pháp"
+      ],
+      "correct": 3,
+      "explanation": "Ownership và mode cần được xét cùng nhau."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Ls metadata",
+      "question": "ls -l thường hiển thị thông tin nào hữu ích cho quyền?",
+      "options": [
+        "Mode, owner và group của entries",
+        "Mọi private key tự động",
+        "Mọi ACL của tất cả remote servers",
+        "Password plaintext của owner"
+      ],
+      "correct": 0,
+      "explanation": "Thông tin metadata không tự chứng minh toàn chính sách truy cập."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Hidden entries",
+      "question": "-a trong ls -la thường thêm điều gì?",
+      "options": [
+        "Mọi process root",
+        "Các entries ẩn theo quy ước tên chấm",
+        "Mọi file trong toàn filesystem",
+        "Mọi secret đã giải mã"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi thư mục vẫn phụ thuộc đường dẫn/cwd."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Owner source",
+      "question": "Cú pháp root:root trong chown nguồn thể hiện gì?",
+      "options": [
+        "User root với password root",
+        "Group root và mode root",
+        "Owner root và group root",
+        "Hai owner root nối tiếp"
+      ],
+      "correct": 2,
+      "explanation": "Không thực thi thay ownership /etc/shadow trên máy thật."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Least privilege",
+      "question": "Nguyên tắc phù hợp khi đặt quyền là gì?",
+      "options": [
+        "Luôn dùng 777 để tránh mọi lỗi",
+        "Luôn đổi mọi file sang root:root",
+        "Coi tên file bí mật là đủ",
+        "Chỉ cấp quyền cần thiết cho đúng chủ thể/tài nguyên"
+      ],
+      "correct": 3,
+      "explanation": "Quyền phải theo nhu cầu thực, không áp mẫu mù quáng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "700 không chỉ x",
+      "question": "Comment nguồn nói cấp thực thi owner nhưng dùng chmod 700. Điều gì còn xảy ra với quyền cơ bản?",
+      "options": [
+        "Owner nhận rwx, group/others bị đặt về 0",
+        "Chỉ owner x được thêm, mọi bit khác giữ nguyên",
+        "Mọi người đều nhận x",
+        "Owner mất read/write"
+      ],
+      "correct": 0,
+      "explanation": "Muốn chỉ thay một bit cần hiểu symbolic mode thay numeric replacement."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Symbolic add",
+      "question": "Ý nghĩa u+x theo mode symbolic là gì?",
+      "options": [
+        "Đổi owner thành user tên x",
+        "Thêm execute cho owner, không chủ đích đặt lại toàn bộ quyền cơ bản khác",
+        "Đặt owner chỉ có execute và xóa quyền khác",
+        "Thêm execute cho mọi lớp"
+      ],
+      "correct": 1,
+      "explanation": "So sánh rõ hành vi thêm bit với numeric mode."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Group remove write",
+      "question": "g-w nhằm thay đổi gì?",
+      "options": [
+        "Đổi group thành w",
+        "Thêm write cho others",
+        "Bỏ write của group theo symbolic mode",
+        "Bỏ mọi quyền owner"
+      ],
+      "correct": 2,
+      "explanation": "Không phải cú pháp đổi tên nhóm."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Others remove",
+      "question": "o-rwx nhằm mục tiêu gì?",
+      "options": [
+        "Bỏ owner khỏi group",
+        "Xóa file",
+        "Đổi mode owner thành 7",
+        "Bỏ ba quyền cơ bản của others"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi o khác u và g."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "600 file riêng",
+      "question": "File cấu hình riêng mode 600 cấp quyền cơ bản thế nào?",
+      "options": [
+        "Owner đọc/ghi, group và others không có quyền",
+        "Owner thực thi, group đọc",
+        "Mọi người đọc, owner ghi",
+        "Group đọc/ghi, owner không có quyền"
+      ],
+      "correct": 0,
+      "explanation": "Mode 600 thường phù hợp hơn public write cho dữ liệu chỉ owner dùng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "640 chia sẻ đọc",
+      "question": "Mode 640 cho file, theo mode cơ bản, group được làm gì?",
+      "options": [
+        "Không có quyền nào",
+        "Đọc nhưng không ghi/thực thi",
+        "Đọc/ghi",
+        "Thực thi nhưng không đọc"
+      ],
+      "correct": 1,
+      "explanation": "Digit group là 4."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "660 file nhóm",
+      "question": "Mode 660 cho file thể hiện điều gì?",
+      "options": [
+        "Owner rwx, group r-x",
+        "Others đọc/ghi còn owner không",
+        "Owner và group đọc/ghi, others không có quyền",
+        "Mọi người được thực thi"
+      ],
+      "correct": 2,
+      "explanation": "Không có execute trong digit 6."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "750 directory",
+      "question": "Directory 750 cho group quyền cơ bản nào?",
+      "options": [
+        "Tạo/xóa mọi entries",
+        "Chỉ đọc file con bất kể mode file",
+        "Đổi owner directory",
+        "Đọc danh sách và search/traverse, không sửa entries chỉ từ mode đó"
+      ],
+      "correct": 3,
+      "explanation": "Directory read và execute/search có ý nghĩa khác file thường."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "File execute",
+      "question": "Đặt x cho một file có tự bảo đảm file là chương trình chạy hợp lệ không?",
+      "options": [
+        "Không, còn định dạng, interpreter, mounts và điều kiện khác",
+        "Có, mọi text thành binary hợp lệ",
+        "Có, chmod tự viết shebang",
+        "Chỉ cần filename .sh"
+      ],
+      "correct": 0,
+      "explanation": "Permission là một điều kiện, không tự sửa nội dung hay môi trường."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Script read",
+      "question": "Interpreter cần đọc script nhưng chỉ được execute bit có đủ mọi trường hợp không?",
+      "options": [
+        "Chỉ khi owner root",
+        "Không, còn cơ chế thực thi và quyền đọc/interpreter phù hợp",
+        "Có, x tự cấp read toàn bộ",
+        "Có, tên .sh bỏ kiểm read"
+      ],
+      "correct": 1,
+      "explanation": "Phải xét đường thực thi thực tế thay chỉ một bit."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Directory x",
+      "question": "Execute/search trên directory chủ yếu cho phép gì?",
+      "options": [
+        "Sửa mọi file con",
+        "Tự đọc toàn bộ nội dung file con",
+        "Đi qua/tra cứu tên bên trong theo đường dẫn",
+        "Chạy directory như binary"
+      ],
+      "correct": 2,
+      "explanation": "Quyền truy cập file con còn phụ thuộc chính file và đường đi."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Directory r",
+      "question": "Read trên directory chủ yếu liên quan việc gì?",
+      "options": [
+        "Tự ghi nội dung mọi file con",
+        "Chạy mọi file con",
+        "Đổi owner mọi file",
+        "Liệt kê các tên entries theo cơ chế"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ có read directory không thay mọi quyền search và quyền file."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Directory w",
+      "question": "Write trên directory liên quan điều gì?",
+      "options": [
+        "Thay đổi entries theo các quyền/điều kiện đi kèm",
+        "Tự ghi mọi byte của file con bất kể quyền file",
+        "Chỉ đổi password owner",
+        "Tự tạo sudo policy"
+      ],
+      "correct": 0,
+      "explanation": "Tạo/xóa/đổi tên entry khác sửa nội dung file."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Xóa file",
+      "question": "Nguồn nói write file gồm xóa file. Cần sửa cách hiểu nào?",
+      "options": [
+        "Chỉ owner file mới xóa được trong mọi directory",
+        "Xóa tên file chủ yếu phụ thuộc quyền thư mục cha và các điều kiện như sticky",
+        "Có write file là luôn xóa được ở mọi parent",
+        "Không ai có thể xóa file readonly"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất sửa nội dung với xóa directory entry."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Readonly vẫn unlink",
+      "question": "Chỉ xét DAC cơ bản, không sticky/ACL/đặc quyền; user có write+search parent nhưng file không writable. Có thể xóa tên file không?",
+      "options": [
+        "Chỉ khi file có execute",
+        "Chỉ khi SHA-256 file khớp",
+        "Có thể, quyền file readonly không tự ngăn unlink",
+        "Không, file read-only luôn bất khả xóa"
+      ],
+      "correct": 2,
+      "explanation": "Đây là lý do phải bảo vệ cả directory chứa file."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Writable file parent locked",
+      "question": "User có write file nhưng không có quyền đổi entries parent. Có tự được xóa entry nhờ write file không?",
+      "options": [
+        "Có, write file bao mọi parent",
+        "Chỉ cần đổi filename",
+        "Có, read file thay search parent",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung file và quyền quản lý tên trong directory là hai lớp."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Path traversal",
+      "question": "File có read cho user nhưng một directory trên đường đi thiếu search quyền phù hợp. Có thể bị từ chối đọc qua path không?",
+      "options": [
+        "Có",
+        "Không, read file vượt mọi parent",
+        "Chỉ khi file là binary",
+        "Không, chmod file tự sửa parents"
+      ],
+      "correct": 0,
+      "explanation": "Permission check có thể diễn ra trên nhiều thành phần đường dẫn."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Owner class không fallback",
+      "question": "Chỉ xét mode DAC cơ bản: user là owner, owner bits 0 nhưng group có read. Có tự cộng thêm group read để owner được đọc không?",
+      "options": [
+        "Có, group luôn ưu tiên hơn owner",
+        "Không, không cộng tùy ý các lớp như vậy",
+        "Có, luôn lấy union mọi lớp",
+        "Chỉ khi file có .txt"
+      ],
+      "correct": 1,
+      "explanation": "Phải hiểu thứ tự áp dụng lớp quyền, không chỉ cộng các digit."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Group membership",
+      "question": "Group bits có ý nghĩa với user nào theo DAC cơ bản?",
+      "options": [
+        "Chỉ owner duy nhất",
+        "Mọi người truy cập qua SSH",
+        "User thuộc nhóm sở hữu file theo cơ chế kiểm quyền",
+        "Mọi user có cùng tên file"
+      ],
+      "correct": 2,
+      "explanation": "Identity/group membership ảnh hưởng lớp quyền được xét."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Others scope",
+      "question": "Others có phải chỉ người dùng internet không?",
+      "options": [
+        "Có, chỉ tài khoản remote",
+        "Có, chỉ anonymous web requests",
+        "Chỉ process trong container",
+        "Không, là lớp còn lại theo identity/ownership trong cơ chế quyền"
+      ],
+      "correct": 3,
+      "explanation": "Lớp filesystem không trực tiếp đồng nghĩa loại người dùng ứng dụng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Owner và mode",
+      "question": "Đổi owner từ A sang B mà giữ mode 600 có thể ảnh hưởng ai đọc được không?",
+      "options": [
+        "Có, lớp owner áp cho identity khác",
+        "Không, mode giữ nguyên nghĩa mọi quyền hiệu dụng không đổi",
+        "Chỉ ảnh hưởng màu ls",
+        "Không, filename quyết định owner"
+      ],
+      "correct": 0,
+      "explanation": "Mode cần được đọc cùng ownership và identity."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Chown group",
+      "question": "Phát biểu nào sai về chown user:group trong CLI?",
+      "options": [
+        "Cần quyền thao tác phù hợp",
+        "Đặt password của user thành group",
+        "Thay owner/group theo đối số",
+        "Có thể làm lớp group áp cho nhóm khác"
+      ],
+      "correct": 1,
+      "explanation": "Dấu hai chấm phân tách owner/group, không phải mật khẩu."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Chown quyền cần",
+      "question": "Có quyền write nội dung file có mặc nhiên được đổi owner sang bất kỳ user không?",
+      "options": [
+        "Có, group write luôn đổi owner tùy ý",
+        "Chỉ cần execute file",
+        "Không, chown có quy tắc đặc quyền riêng",
+        "Có, write tương đương CAP_CHOWN"
+      ],
+      "correct": 2,
+      "explanation": "Không nên suy từ quyền dữ liệu sang quyền quản trị ownership."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Shadow mẫu",
+      "question": "Có nên áp nguyên root:root lên /etc/shadow mọi distro chỉ vì source minh họa không?",
+      "options": [
+        "Có, mọi distro bắt buộc cùng group root",
+        "Có, thay owner không thể làm hỏng auth",
+        "Chỉ cần ls có output",
+        "Không, cần policy/ownership đúng của hệ thống, không dùng mẫu như lệnh sửa chung"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình file hệ thống nhạy cảm phụ thuộc platform và yêu cầu."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "777 file riêng",
+      "question": "Đặt file secret thành 777 có rủi ro cơ bản nào?",
+      "options": [
+        "Các lớp đều có quyền đọc/ghi/thực thi theo mode, mở phạm vi không cần thiết",
+        "Mã hóa file cho mọi user",
+        "Chỉ cho owner đọc",
+        "Tự kích hoạt 2FA"
+      ],
+      "correct": 0,
+      "explanation": "World-writable/readable không phù hợp dữ liệu cần hạn chế truy cập."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "777 không thuốc chữa",
+      "question": "App báo permission denied có nên mặc định chmod 777 toàn cây không?",
+      "options": [
+        "Chỉ khi app production",
+        "Không, cần xác định identity, path và quyền cần thiết",
+        "Có, luôn là least privilege",
+        "Có, không thể ảnh hưởng security"
+      ],
+      "correct": 1,
+      "explanation": "Sửa lỗi quyền cần nhắm đúng tài nguyên và thao tác."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Directory shared sticky",
+      "question": "Sticky bit trên shared directory hỗ trợ hạn chế điều gì theo Unix/Linux?",
+      "options": [
+        "Mọi user thực thi file",
+        "Mọi login SSH",
+        "Ai được xóa/đổi tên entries theo ownership và quyền phù hợp",
+        "Mọi người đọc bytes của mọi file"
+      ],
+      "correct": 2,
+      "explanation": "Sticky không thay thế đầy đủ mode của directory và file."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "1777 khác 777",
+      "question": "Directory 1777 có thêm gì so với 0777 trong scope mode bits?",
+      "options": [
+        "Setuid owner file",
+        "Encryption bit",
+        "Quyền root bắt buộc cho mọi read",
+        "Sticky bit"
+      ],
+      "correct": 3,
+      "explanation": "Shared temporary directory là ví dụ cần hiểu special bit, không chỉ ba digit cuối."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Sticky không encrypt",
+      "question": "Sticky bit có giữ kín nội dung file vốn world-readable không?",
+      "options": [
+        "Không",
+        "Có, sticky mã hóa dữ liệu",
+        "Có, sticky tắt read mọi file",
+        "Chỉ với file text"
+      ],
+      "correct": 0,
+      "explanation": "Kiểm soát xóa entry khác bảo vệ đọc nội dung."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Ls plus ACL",
+      "question": "Mode ls -l có thêm dấu ACL theo hệ thống. Chỉ ba digit có đủ mô tả toàn quyền hiệu dụng chưa?",
+      "options": [
+        "Chỉ filename mới quan trọng",
+        "Chưa, cần xét ACL và các lớp áp dụng nếu có",
+        "Rồi, ACL không ảnh hưởng access",
+        "Rồi, file mode loại mọi policy khác"
+      ],
+      "correct": 1,
+      "explanation": "Các câu DAC đơn giản cần nêu rõ giả định khi có policy bổ sung."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Read-only mount",
+      "question": "Mode cho write nhưng filesystem/mount readonly có thể vẫn ghi thất bại không?",
+      "options": [
+        "Chỉ nếu owner khác",
+        "Không, chown tự đổi mount",
+        "Có",
+        "Không, write bit luôn vượt mount policy"
+      ],
+      "correct": 2,
+      "explanation": "Mode không phải điều kiện duy nhất của thao tác filesystem."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Mandatory policy",
+      "question": "Mode rwx có cho phép bỏ qua mọi LSM policy như SELinux không?",
+      "options": [
+        "Có, mode luôn cao hơn mọi policy",
+        "Chỉ nếu file có execute",
+        "Có, group write vô hiệu mọi policy",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt DAC và các lớp bảo vệ bổ sung."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Root không model thường",
+      "question": "Có nên dùng kết quả chạy bằng user đặc quyền để suy rằng mọi user đều truy cập được không?",
+      "options": [
+        "Không",
+        "Có, cùng filename nghĩa cùng quyền",
+        "Có, root chỉ là tên thông thường",
+        "Chỉ khi file ở home"
+      ],
+      "correct": 0,
+      "explanation": "Identity và capabilities có thể thay đổi kết quả kiểm."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Recursive risk",
+      "question": "Thao tác đổi quyền/owner đệ quy cần đặc biệt hiểu điều gì?",
+      "options": [
+        "Chỉ số user đang login",
+        "Scope đường dẫn và tác động lên nhiều files/directories",
+        "Chỉ tên lệnh có ngắn không",
+        "Chỉ extension của file đầu"
+      ],
+      "correct": 1,
+      "explanation": "Không thực thi thay đổi hệ thống theo mẫu trong lần soạn này."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Home private",
+      "question": "Directory riêng cần chỉ owner truy cập theo mode cơ bản, 700 hướng tới điều gì?",
+      "options": [
+        "Chỉ others có execute",
+        "Tự mã hóa mọi file con",
+        "Owner rwx, group/others không truy cập theo các bits này",
+        "Mọi group đọc toàn bộ file con"
+      ],
+      "correct": 2,
+      "explanation": "Quyền directory không tự mã hóa dữ liệu."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "File mode sau parent",
+      "question": "Parent cho search nhưng file không cho user read theo các policy áp dụng. Có đọc được chỉ nhờ parent không?",
+      "options": [
+        "Có, parent x tự cấp mọi file read",
+        "Có, tên file đã biết là đủ",
+        "Chỉ cần parent r",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần đáp ứng cả điều kiện đường đi và quyền tài nguyên đích."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Ownership và trust",
+      "question": "File owner root có tự chứng minh nội dung do nguồn đáng tin tạo và chưa bị sửa không?",
+      "options": [
+        "Không",
+        "Có, ownership thay chữ ký số",
+        "Có, root-owned tự có checksum đúng",
+        "Chỉ nếu filename hệ thống"
+      ],
+      "correct": 0,
+      "explanation": "Metadata ownership không tự là provenance của toàn nội dung."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "User app với group",
+      "question": "App cần đọc file nhóm nhưng process chưa có group membership phù hợp. Cần phân tích gì?",
+      "options": [
+        "Chỉ thêm extension .conf",
+        "Identity/group thực của process và policy file/path",
+        "Chỉ đổi tên biến trong app",
+        "Chỉ tăng CPU quota"
+      ],
+      "correct": 1,
+      "explanation": "Tài khoản đăng nhập và process đang chạy có thể có nhóm hiệu dụng khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Open file descriptor",
+      "question": "Xóa tên file có luôn đồng nghĩa mọi process đã mở file mất ngay nội dung không?",
+      "options": [
+        "Có, mode xóa cả RAM app",
+        "Chỉ khi file thuộc root",
+        "Không, open descriptor và link lifecycle có ý nghĩa",
+        "Có, unlink luôn đóng mọi descriptor"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất xóa entry với chấm dứt mọi truy cập đang tồn tại."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Audit evidence",
+      "question": "Báo cáo quyền tốt cần gắn mode với gì?",
+      "options": [
+        "Chỉ ba digit rời rạc",
+        "Chỉ tên user root",
+        "Chỉ một ảnh terminal không có đường dẫn",
+        "Path, loại tài nguyên, owner/group và identity/policy được xét"
+      ],
+      "correct": 3,
+      "explanation": "Ngữ cảnh quyết định tác động thực của cấu hình quyền."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "700 và chia sẻ script",
+      "question": "Nhóm cần đọc/chạy script, nhưng source dùng chmod 700 dù comment chỉ nói thêm execute owner. Vì sao có thể mất quyền nhóm?",
+      "options": [
+        "700 đặt group về 0 chứ không chỉ thêm bit x cho owner",
+        "700 tự thêm group rwx",
+        "Comment giữ nguyên mọi bit cũ",
+        "Execute owner tự cấp read cho group"
+      ],
+      "correct": 0,
+      "explanation": "Numeric replacement và ý định thay một bit là hai cơ chế khác nhau."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Readonly file vẫn bị xóa",
+      "question": "File 444 trong parent writable/searchable bởi user khác, không sticky/ACL/đặc quyền đặc biệt. Vì sao readonly chưa đủ bảo vệ tên file?",
+      "options": [
+        "Hash nội dung tự ngăn xóa",
+        "Unlink phụ thuộc quyền parent nên cần kiểm cả directory entry policy",
+        "444 luôn ngăn mọi unlink",
+        "Chỉ cần đổi owner filename"
+      ],
+      "correct": 1,
+      "explanation": "Giữ nguyên bytes không thay quản lý tên file trong thư mục cha."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Secret parent mở",
+      "question": "Secret file được sửa thành 600 nhưng parent cho người khác thay entries. Cần đánh giá thêm gì?",
+      "options": [
+        "Không cần xét parent vì owner secret đã rõ",
+        "Chỉ cần giấu extension",
+        "Khả năng xóa/thay tên/thay entry và đường dùng file, không chỉ read bits của file",
+        "600 làm parent tự readonly"
+      ],
+      "correct": 2,
+      "explanation": "Quyền file và an toàn đường dẫn cần được xem cùng nhau."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "App read denied",
+      "question": "File cho group read, app tưởng thuộc group đó nhưng parent thiếu search. Hướng kiểm đúng?",
+      "options": [
+        "Chỉ chmod 777 file đích",
+        "Chỉ đổi filename thành public",
+        "Chỉ restart app vô hạn",
+        "Đối chiếu identity/group thực và toàn đường dẫn/policy"
+      ],
+      "correct": 3,
+      "explanation": "Nhiều điều kiện quyền có thể cùng gây access denied."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Shadow ownership blanket",
+      "question": "Một hướng dẫn chown root:root /etc/shadow được copy sang máy thật không kiểm distro/policy. Rủi ro thiết kế nào?",
+      "options": [
+        "Có thể phá quyền truy cập đúng của cơ chế auth và tác động file nhạy cảm",
+        "Đổi owner không bao giờ ảnh hưởng authentication",
+        "Root:root luôn là policy duy nhất mọi Linux",
+        "File shadow tự khôi phục mọi metadata"
+      ],
+      "correct": 0,
+      "explanation": "Lệnh mẫu không thay hiểu biết hệ thống và scope thao tác."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "777 để chữa app",
+      "question": "App chỉ cần ghi thư mục cache nhưng đề xuất cấp 777 toàn cây source. Cách sửa phù hợp hơn?",
+      "options": [
+        "Coi permission denied không cần chẩn đoán",
+        "Xác định user/process và cấp đúng vùng cache/quyền cần thiết",
+        "Cấp mọi user write source để tránh mọi lỗi",
+        "Đổi toàn owner thành root rồi bỏ kiểm"
+      ],
+      "correct": 1,
+      "explanation": "Sửa tối thiểu đúng nhu cầu giúp giữ code/config khỏi quyền ghi dư thừa."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Directory r thiếu x",
+      "question": "User liệt kê được một số tên nhưng không tra cứu/read file bên trong qua path. Trong mô hình đơn giản cần xét gì?",
+      "options": [
+        "Chỉ độ dài filename",
+        "Chỉ số lượng entries",
+        "Search/execute directory và quyền file, không chỉ directory read",
+        "Chỉ file extension"
+      ],
+      "correct": 2,
+      "explanation": "Liệt kê tên không đồng nghĩa tra cứu metadata/nội dung thành công."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Owner zero group read",
+      "question": "User là owner của file mode 040 theo DAC cơ bản, đồng thời thuộc owning group. Vì sao không cộng quyền tùy ý?",
+      "options": [
+        "Group read luôn ưu tiên trên owner",
+        "Others luôn override owner",
+        "Tên user trùng group tự cấp rwx",
+        "Class owner được xét cho owner; cần hiểu mô hình thay vì union bits"
+      ],
+      "correct": 3,
+      "explanation": "Giả định câu hỏi loại ACL/capabilities để làm rõ lựa chọn lớp quyền."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Group thay đổi phạm vi",
+      "question": "File mode 640 giữ nguyên nhưng chown đổi group sang nhóm đông người. Tác động có thể là gì?",
+      "options": [
+        "Mở quyền đọc cho tập chủ thể mới dù digit mode không đổi",
+        "Không thể đổi quyền hiệu dụng vì mode giữ nguyên",
+        "Tự mã hóa file cho nhóm cũ",
+        "Chỉ thay display label không ảnh hưởng access"
+      ],
+      "correct": 0,
+      "explanation": "Ownership/group là phần của policy chứ không chỉ thông tin trang trí."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Sticky và privacy",
+      "question": "Shared directory có sticky giúp hạn chế unlink của người khác, nhưng file vẫn mode 644. Có tự bảo mật nội dung không?",
+      "options": [
+        "Chỉ cần directory tên tmp",
+        "Không, sticky không bỏ read của file cho các lớp được cấp",
+        "Có, sticky mã hóa mọi file",
+        "Có, owner directory tự thành owner mọi data"
+      ],
+      "correct": 1,
+      "explanation": "Cần tách yêu cầu quản lý entries với confidentiality."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "User non-root nhưng rootfs readonly",
+      "question": "App đúng owner và mode rw cho file nhưng mount readonly. Vì sao chmod không tự chữa được?",
+      "options": [
+        "Chmod tự remount filesystem",
+        "Chown đổi kernel policy",
+        "Mount policy là điều kiện khác, phải thiết kế vùng ghi đúng scope",
+        "Owner luôn vượt readonly mount"
+      ],
+      "correct": 2,
+      "explanation": "Không áp một lệnh ở lớp mode để suy rằng mọi lớp khác sẽ cho phép."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Privileged audit bias",
+      "question": "Admin thử đọc file thành công rồi kết luận service user đọc được. Còn thiếu gì?",
+      "options": [
+        "Chỉ xác nhận tên file giống nhau",
+        "Chỉ thêm read cho owner hiện tại",
+        "Chỉ xem user.name Git",
+        "Kiểm identity và policy thật của service trong phạm vi được phép"
+      ],
+      "correct": 3,
+      "explanation": "Quyền đặc biệt của người kiểm có thể che nguyên nhân với user thường."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Path và symlink scope",
+      "question": "Một thay đổi ownership theo path có thể gặp symlink hoặc tài nguyên ngoài ý định. Cần chú ý gì trước thao tác thật?",
+      "options": [
+        "Đối tượng/path được resolve và phạm vi thay đổi theo semantics công cụ",
+        "Chỉ tên lệnh ngắn",
+        "Chỉ đếm ký tự root:root",
+        "Giả mọi symlink là bản sao độc lập"
+      ],
+      "correct": 0,
+      "explanation": "Các lệnh quản trị cần scope đúng, không được thực thi mù quáng từ ví dụ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Write config cao quyền",
+      "question": "Service đặc quyền đọc config mà user thường có thể sửa. Vì sao quyền đọc chặt của binary chưa đủ?",
+      "options": [
+        "Chỉ execute bit của config quyết định mọi rủi ro",
+        "Dữ liệu/đầu vào điều khiển service cũng có thể ảnh hưởng hành vi đặc quyền",
+        "Chỉ binary owner mới quan trọng",
+        "Config text không thể ảnh hưởng process"
+      ],
+      "correct": 1,
+      "explanation": "Audit phải xem các đường code/config/dependency mà process tin dùng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Root-owned mutable parent",
+      "question": "File executable root-owned nhưng directory chứa cho user thấp quyền thay entries. Cần đánh giá gì?",
+      "options": [
+        "Chỉ cần file có x",
+        "Tên file giống luôn là cùng object",
+        "Ownership file không đủ bảo vệ đường dẫn khỏi thay entry theo điều kiện",
+        "Root-owned khiến mọi parent bất biến"
+      ],
+      "correct": 2,
+      "explanation": "Trust đường dẫn cần xem cả các thư mục cha và đối tượng thực."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Recursive mixed types",
+      "question": "Áp cùng numeric mode đệ quy lên files và directories có thể gây gì?",
+      "options": [
+        "Mọi file và directory có cùng semantics nên luôn đúng",
+        "Chmod tự chọn mode tối ưu cho từng loại",
+        "Chỉ owner name bị đổi",
+        "Quyền execute/search và nhu cầu ghi/đọc khác nhau nên có thể phá chức năng hoặc mở quyền thừa"
+      ],
+      "correct": 3,
+      "explanation": "Mode cần theo loại tài nguyên và nhu cầu thực."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Permissions không secrecy tuyệt đối",
+      "question": "File 600 nhưng ứng dụng owner đọc rồi ghi nội dung vào log public. Rủi ro còn gì?",
+      "options": [
+        "Confidentiality bị phá qua bản sao/log dù mode file gốc hạn chế",
+        "600 tự chặn app log dữ liệu",
+        "Mode theo dõi mọi byte dẫn xuất",
+        "Chỉ integrity bị ảnh hưởng"
+      ],
+      "correct": 0,
+      "explanation": "Phân quyền nguồn không tự bảo vệ mọi nơi dữ liệu được sử dụng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Policy thêm ACL",
+      "question": "Report chỉ ghi 640 nhưng hệ thống có ACL cấp thêm quyền. Có đủ xác định tập người đọc chưa?",
+      "options": [
+        "Chỉ cần có owner root",
+        "Chưa, cần xem ACL/mask và policy áp dụng đúng scope",
+        "Rồi, mode ba digit bao mọi ACL",
+        "Rồi, filename xác định nhóm"
+      ],
+      "correct": 1,
+      "explanation": "Không mở rộng mô hình đơn giản sang hệ thống có cơ chế khác mà không kiểm."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Process nhóm cũ",
+      "question": "Admin đổi group membership account nhưng service vẫn chạy với identity/groups cũ. Cần hiểu gì?",
+      "options": [
+        "Chỉ cần đổi file extension",
+        "Group file tự reload mọi daemon",
+        "Trạng thái credentials của process và lifecycle cập nhật phù hợp",
+        "Mọi process tự đổi group tức thì tuyệt đối"
+      ],
+      "correct": 2,
+      "explanation": "Thông tin tài khoản và credentials của process đang tồn tại có lifecycle riêng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "700 source đúng nghĩa",
+      "question": "Source nói chỉ cấp execute owner, dùng 700 trên file nhóm đang đọc; đồng thời theory gộp write với delete. Hai điểm cần sửa là gì?",
+      "options": [
+        "700 chỉ thêm x và write file luôn cho phép delete",
+        "Chown mới là lệnh đặt mode còn chmod đổi owner",
+        "755 mã hóa file nên giải quyết cả hai",
+        "700 đặt lại cả rwx theo lớp và delete entry phụ thuộc parent/sticky, không chỉ file write"
+      ],
+      "correct": 3,
+      "explanation": "Đọc đúng numeric/symbolic mode và phân biệt file contents với directory entries."
+    }
+  ]
+}

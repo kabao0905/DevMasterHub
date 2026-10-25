@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "csharp",
+  "level": "mid",
+  "lesson": "di-patterns",
+  "language": "vi",
+  "sourceHash": "698abf6f44f40370f802638cf1310c97eda35f63e4b06961d0145c10ad4b0031",
+  "status": "approved",
+  "review": "Tự soạn không API. Microsoft DI/CQRS contracts và MediatR official registration docs review. Source-only framework scope,không build container/MediatR/SQL/email. Handler ct chưa forward;repo CreateAsync return ignored;save-then-notify không atomic/outbox;supportingtypes/validation/mappings thiếu. Không coi Domain no dependencies là không dùng BCL,không đảo compile-time dependencies theo sơ đồ flow.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Dependency injection role",
+      "question": "Dependency Injection chủ yếu giúp làm gì?",
+      "options": [
+        "Cung cấp dependencies từ bên ngoài thay hardcode construction trong consumer.",
+        "Tự chứng minh mọi business rules.",
+        "Tự deploy database.",
+        "Tự scale mọi requests vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "DI hỗ trợ wiring và thay implementations theo contract."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Repository contract",
+      "question": "IOrderRepository nguồn định nghĩa capability nào?",
+      "options": [
+        "Tạo image pixels.",
+        "GetByIdAsync và CreateAsync cho Order.",
+        "Gửi email trực tiếp bắt buộc.",
+        "Đăng ký HTTP routes."
+      ],
+      "correct": 1,
+      "explanation": "Repository abstraction khác notification dependency."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Query nullable return",
+      "question": "GetByIdAsync trong interface nguồn trả shape nào?",
+      "options": [
+        "OrderId đồng bộ.",
+        "Một HTTP response bắt buộc.",
+        "Task<Order?>.",
+        "Task<List<Order>> duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Nullable reference contract thể hiện khả năng thiếu Order."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Create return contract",
+      "question": "CreateAsync nguồn trả kiểu nào?",
+      "options": [
+        "Task<void> theo cú pháp.",
+        "bool duy nhất.",
+        "Một SqlConnection.",
+        "Task<Order>."
+      ],
+      "correct": 3,
+      "explanation": "Caller cần hiểu semantics của returned Order theo implementation."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Command interface",
+      "question": "CreateOrderCommand nguồn implement gì?",
+      "options": [
+        "IRequest<OrderDto>.",
+        "DbContext.",
+        "INotificationService.",
+        "IDisposable bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "MediatR request contract gắn response type."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Command customer input",
+      "question": "Command nguồn có property text nào?",
+      "options": [
+        "Country duy nhất.",
+        "CustomerName.",
+        "Password.",
+        "ConnectionString."
+      ],
+      "correct": 1,
+      "explanation": "Default là chuỗi rỗng, chưa tự là valid customer."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Command items",
+      "question": "Items property nguồn có kiểu gì?",
+      "options": [
+        "OrderDto duy nhất.",
+        "Một DbSet<Order>.",
+        "List<OrderItemDto>.",
+        "List<string> duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Init-only reference không deep-freeze list contents."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Handler contract",
+      "question": "CreateOrderHandler implement generic interface nào?",
+      "options": [
+        "IRepository<OrderDto> tự tạo.",
+        "IEnumerable<Order>.",
+        "IComparer<Order>.",
+        "IRequestHandler<CreateOrderCommand, OrderDto>."
+      ],
+      "correct": 3,
+      "explanation": "Handler chịu trách nhiệm use-case orchestration được thể hiện."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Injected repository",
+      "question": "Constructor handler nhận dependency repository nào?",
+      "options": [
+        "IOrderRepository.",
+        "SqlConnection trực tiếp trong signature.",
+        "Một Order entity đã tạo sẵn.",
+        "Một builder services."
+      ],
+      "correct": 0,
+      "explanation": "Consumer phụ thuộc abstraction ở signature."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Injected notifier",
+      "question": "Dependency thứ hai trong constructor handler là gì?",
+      "options": [
+        "AppDbContext trực tiếp.",
+        "INotificationService.",
+        "IProductService.",
+        "HttpContext."
+      ],
+      "correct": 1,
+      "explanation": "Notification abstraction có thể được implement khác theo wiring."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Handler method",
+      "question": "Method Handle nguồn nhận parameter gì ngoài command?",
+      "options": [
+        "Một JWT secret.",
+        "Một HTTP port.",
+        "CancellationToken ct.",
+        "Một SQL transaction đã commit."
+      ],
+      "correct": 2,
+      "explanation": "Token tồn tại trong signature không tự là propagation đầy đủ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Domain creation source",
+      "question": "Dòng đầu Handle tạo order qua operation nào?",
+      "options": [
+        "new SqlOrderRepository().",
+        "EmailNotifier.Create().",
+        "builder.Build().",
+        "Order.Create(cmd.CustomerName, cmd.Items)."
+      ],
+      "correct": 3,
+      "explanation": "Factory definition chưa nằm trong snippet."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Persistence call source",
+      "question": "Handler gọi dependency nào để tạo/lưu Order theo interface?",
+      "options": [
+        "_repo.CreateAsync(order).",
+        "_notifier.GetByIdAsync(order).",
+        "cmd.SaveChanges().",
+        "Program.CreateDb()."
+      ],
+      "correct": 0,
+      "explanation": "Durability thực tế phụ thuộc repository implementation."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Notification source",
+      "question": "Sau repository call bình thường, handler gọi gì?",
+      "options": [
+        "Tự chạy GetByIdAsync một lần.",
+        "_notifier.SendAsync với message New order và order.Id.",
+        "Tự rollback order.",
+        "Tự tạo JWT."
+      ],
+      "correct": 1,
+      "explanation": "Handler dùng await tuần tự cho các bước nguồn."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Handler output",
+      "question": "Return cuối của handler nguồn là gì?",
+      "options": [
+        "Một bool true cố định.",
+        "HttpResponseMessage.",
+        "order.ToDto().",
+        "cmd.Items trực tiếp."
+      ],
+      "correct": 2,
+      "explanation": "Mapping implementation chưa được cung cấp."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Repository wiring",
+      "question": "AddScoped<IOrderRepository, SqlOrderRepository>() nối contract tới gì?",
+      "options": [
+        "EmailNotifier.",
+        "OrderDto.",
+        "CreateOrderCommand.",
+        "SqlOrderRepository."
+      ],
+      "correct": 3,
+      "explanation": "Registration không tự tạo class implementation còn thiếu."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Notifier wiring",
+      "question": "AddScoped<INotificationService, EmailNotifier>() nối contract tới gì?",
+      "options": [
+        "EmailNotifier.",
+        "SqlOrderRepository.",
+        "OrderId.",
+        "AppJsonContext."
+      ],
+      "correct": 0,
+      "explanation": "Tên implementation không chứng minh email thực tế đã gửi."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "MediatR purpose",
+      "question": "MediatR chủ yếu là cơ chế nào theo docs?",
+      "options": [
+        "Một browser renderer.",
+        "Mediator trong process cho request/response và notifications theo contracts.",
+        "Một durable external message broker tự động.",
+        "Một SQL database server."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất in-process dispatch với distributed delivery."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "CQRS abbreviation",
+      "question": "CQRS là viết tắt của gì?",
+      "options": [
+        "Concurrent Query Retry Scheduler.",
+        "Class Quality Record Service.",
+        "Command Query Responsibility Segregation.",
+        "Cache Queue Runtime Serialization."
+      ],
+      "correct": 2,
+      "explanation": "Nó phân tách trách nhiệm read và write theo thiết kế."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Domain dependency principle",
+      "question": "Domain không phụ thuộc Infrastructure nhằm mục tiêu gì?",
+      "options": [
+        "Cấm dùng mọi BCL types như string/List.",
+        "Bắt buộc domain tự mở database.",
+        "Tự bảo đảm mọi domain state hợp lệ.",
+        "Giữ domain rules độc lập khỏi chi tiết storage/transport cụ thể."
+      ],
+      "correct": 3,
+      "explanation": "Dependency direction không tự enforce invariants nếu implementation thiếu."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Source dependency abstraction",
+      "question": "Handler phụ thuộc IOrderRepository thay new SqlOrderRepository trực tiếp có lợi ích gì?",
+      "options": [
+        "Có thể cung cấp implementation phù hợp mà không hardcode construction trong handler.",
+        "Tự làm repository operations atomic với email.",
+        "Tự chứng minh DB schema đúng.",
+        "Tự ngăn mọi network errors."
+      ],
+      "correct": 0,
+      "explanation": "Abstraction hỗ trợ substitution, không tạo semantics còn thiếu."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Composition root",
+      "question": "Nơi registrations/wiring implementations thường thuộc vai trò nào?",
+      "options": [
+        "Database migration bắt buộc.",
+        "Composition root của application host.",
+        "Domain entity phải tự gọi builder.Services.",
+        "Mỗi DTO tự đăng ký container global."
+      ],
+      "correct": 1,
+      "explanation": "Domain không cần biết host DI container để biểu diễn nghiệp vụ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Compile dependency direction",
+      "question": "Trong Clean Architecture, Application thường tham chiếu Domain theo nghĩa nào?",
+      "options": [
+        "Mọi compile dependencies luôn đi theo thứ tự runtime calls.",
+        "Chỉ cần folders đặt tên đúng.",
+        "Application use cases dùng domain abstractions/types, không ép Domain tham chiếu Infrastructure.",
+        "Domain phải import SQL provider và HTTP framework."
+      ],
+      "correct": 2,
+      "explanation": "Runtime control flow và source dependency direction khác nhau."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Layer folders limitation",
+      "question": "Chia folders Domain/Application/Infrastructure có tự enforce boundaries chưa?",
+      "options": [
+        "Rồi; folder name là compiler security boundary.",
+        "Rồi; mọi classes tự move dependencies đúng.",
+        "Chỉ cần MediatR.",
+        "Chưa; project references, type dependencies và responsibilities mới quyết định."
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm actual dependency graph."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Domain BCL use",
+      "question": "Domain no dependencies có nghĩa không thể dùng Task/Guid/string/List như source không?",
+      "options": [
+        "Không; nguyên tắc thường nhắm không phụ thuộc chi tiết outer layers/frameworks theo design.",
+        "Có; domain chỉ chứa raw bytes.",
+        "Có; mọi BCL là Infrastructure.",
+        "Chỉ cần bỏ async."
+      ],
+      "correct": 0,
+      "explanation": "Diễn đạt nguyên tắc đúng phạm vi, không tuyệt đối hóa khẩu hiệu."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Command data versus entity",
+      "question": "CreateOrderCommand có tự là persisted domain Order không?",
+      "options": [
+        "Chỉ cần property CustomerName.",
+        "Không; đó là request/use-case input shape.",
+        "Có; IRequest tự map thành table.",
+        "Có; Items mặc định tạo domain Order."
+      ],
+      "correct": 1,
+      "explanation": "Mapping/validation/ownership cần rõ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Factory validation unknown",
+      "question": "Order.Create được gọi có đủ biết customer/items đã validate chưa?",
+      "options": [
+        "Đủ; List không thể rỗng.",
+        "Chỉ cần decimal.",
+        "Chưa; factory implementation không có trong snippet.",
+        "Đủ; tên Create tự validate mọi rule."
+      ],
+      "correct": 2,
+      "explanation": "Không bịa invariants của supporting types thiếu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Empty command defaults",
+      "question": "CustomerName=\"\" và Items=new() có tự là command hợp lệ nghiệp vụ không?",
+      "options": [
+        "Có; default initializer là validator.",
+        "Có; MediatR không cho gửi emptylist.",
+        "Chỉ cần init setters.",
+        "Không; domain/application cần rules phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Object có thể constructed nhưng chưa đáp ứng business preconditions."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Init list mutability",
+      "question": "Items init-only có ngăn caller mutate list sau command được tạo không?",
+      "options": [
+        "Không.",
+        "Có; init freeze toàn list.",
+        "Có; MediatR tự deep clone payload.",
+        "Chỉ cần class sealed."
+      ],
+      "correct": 0,
+      "explanation": "Nếu input cần snapshot/immutable semantics phải thiết kế riêng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Readonly dependencies",
+      "question": "readonly _repo/_notifier bảo đảm điều gì cơ bản?",
+      "options": [
+        "Tự validate command.",
+        "Giới hạn gán lại fields theo rules, không tự làm dependencies thread-safe.",
+        "Tự deep freeze service object.",
+        "Tự tạo transaction."
+      ],
+      "correct": 1,
+      "explanation": "Reference binding và object behavior khác nhau."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Source execution order",
+      "question": "Handle source tiến hành repository và notifier theo thứ tự nào?",
+      "options": [
+        "Luôn chạy song song WhenAll.",
+        "Random mỗi lần.",
+        "Await repository bình thường trước rồi await notifier.",
+        "Gửi email trước rồi mới tạo Order."
+      ],
+      "correct": 2,
+      "explanation": "Control flow có thể dừng ở exception tại từng step."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Repo fault before notify",
+      "question": "Nếu await _repo.CreateAsync throw, normal source path có tiếp tục SendAsync không?",
+      "options": [
+        "Có; await bỏ qua errors.",
+        "Có; MediatR tự retry notifier trước.",
+        "Chỉ cần command non-null.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Không có catch/finally để gửi notification trong path đó."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Notifier fault after repo",
+      "question": "Nếu repository đã lưu rồi SendAsync throw, có thể kết luận order chưa tồn tại không?",
+      "options": [
+        "Không; durable outcome của repository cần xem riêng.",
+        "Có; exception tự rollback mọi DB.",
+        "Có; async task là distributed transaction.",
+        "Chỉ cần handler scoped."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa có transaction/outbox compensation semantics."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Repo returned entity ignored",
+      "question": "Source có gán kết quả Order trả từ CreateAsync vào local không?",
+      "options": [
+        "Chỉ cần return Task<Order>.",
+        "Không; await result được bỏ qua.",
+        "Có; order tự thay thành returned object trong mọi implementation.",
+        "Có; ToDto dùng biến returnedOrder."
+      ],
+      "correct": 1,
+      "explanation": "Nếu implementation trả instance khác hoặc generated values cần contract rõ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "ID propagation assumption",
+      "question": "Có thể hứa order.Id dùng trong email là persisted/generated ID đúng chỉ từ source không?",
+      "options": [
+        "Có; field tên Id tự DB unique.",
+        "Chỉ cần Sql prefix.",
+        "Chưa; Order/repository identity update semantics chưa được cung cấp.",
+        "Có; await tự đồng bộ mọi fields của returned object bị bỏ qua."
+      ],
+      "correct": 2,
+      "explanation": "Không áp assumptions của một repository implementation chưa có."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Cancellation source forwarding",
+      "question": "ct trong Handle đã được truyền tới _repo.CreateAsync hoặc _notifier.SendAsync rõ chưa?",
+      "options": [
+        "Có; tên parameter tự inject vào mọi awaited call.",
+        "Có; MediatR tự chèn arguments không có trong signature.",
+        "Chỉ cần async.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Token propagation là explicit contract responsibility."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Repository token signatures",
+      "question": "Interface IOrderRepository nguồn có CancellationToken parameter chưa?",
+      "options": [
+        "Chưa.",
+        "Có; Task<T> ngầm chứa token.",
+        "Có; id là token.",
+        "Chỉ cần Domain layer."
+      ],
+      "correct": 0,
+      "explanation": "Muốn cancellation cần design signatures/implementation phù hợp."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Scoped DI meaning",
+      "question": "AddScoped cho repository/notifier trong request host thường có lifetime theo gì?",
+      "options": [
+        "Một instance mới mỗi method call bắt buộc.",
+        "Dependency injection scope tương ứng.",
+        "Một user session vĩnh viễn mọi requests.",
+        "Một instance toàn cluster."
+      ],
+      "correct": 1,
+      "explanation": "Scope semantics phụ thuộc host/context, cần hiểu actual registration use."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Transient comparison",
+      "question": "Transient lifetime thường khác scoped ở điểm nào?",
+      "options": [
+        "Transient luôn thread-safe.",
+        "Transient tự mở thread mỗi lần.",
+        "Resolve thường tạo instance mới theo container contract, thay vì reuse trong cùng scope.",
+        "Transient tự durable data qua restart."
+      ],
+      "correct": 2,
+      "explanation": "Lifetime không tự quyết định persistence/business state."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Singleton comparison",
+      "question": "Singleton lifetime thường cần chú ý điều gì khi giữ mutable state?",
+      "options": [
+        "Không cần synchronization vì DI tạo.",
+        "Tự chia sẻ state giữa mọi server replicas.",
+        "Không cần dispose resources bao giờ.",
+        "Concurrent access và dependency lifetimes phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Container lifetime không tự là concurrency protocol."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "MediatR assembly scan",
+      "question": "RegisterServicesFromAssembly(typeof(Program).Assembly) chỉ rõ nguồn discovery nào?",
+      "options": [
+        "Assembly chứa Program.",
+        "Mọi assemblies trên internet.",
+        "Mọi database schemas.",
+        "Chỉ command instance hiện tại."
+      ],
+      "correct": 0,
+      "explanation": "Handlers ở assembly khác cần registration/discovery phù hợp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Handler in another assembly",
+      "question": "Nếu CreateOrderHandler ở Application assembly khác Program, source scan có chắc tìm nó không?",
+      "options": [
+        "Chỉ cần handler class public.",
+        "Không chắc; phải include đúng assembly registration.",
+        "Chắc; mọi loadedassemblies tự scan bất kể config.",
+        "Chắc; generic compiler tự register."
+      ],
+      "correct": 1,
+      "explanation": "Không coi AddMediatR call là proof full registration."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Container missing dependency",
+      "question": "Nếu handler được tìm nhưng INotificationService không resolve đúng, cần xem gì?",
+      "options": [
+        "MediatR tự tạo một email provider bất kỳ.",
+        "Tự bỏ notification để báo success.",
+        "Registration/type construction graph và lifetime/configuration errors.",
+        "Chỉ đổi method thành static."
+      ],
+      "correct": 2,
+      "explanation": "Actual composition cần được kiểm tra trong app setup."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Request response coupling",
+      "question": "IRequest<OrderDto> giúp biểu diễn điều gì?",
+      "options": [
+        "Tự đảm bảo DTO chứa đúng authorization fields.",
+        "Tự generate SQL migration.",
+        "Tự tạo exactly-once delivery.",
+        "Request có response contract OrderDto theo MediatR interface."
+      ],
+      "correct": 3,
+      "explanation": "Type relationship không là full use-case correctness."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "CQRS storage requirement",
+      "question": "CQRS có bắt buộc mọi app dùng hai physical databases không?",
+      "options": [
+        "Không; read/write models có thể tách với chung storage tùy design.",
+        "Có; CQRS định nghĩa đúng hai DBservers.",
+        "Có; MediatR tự tạo hai databases.",
+        "Chỉ nếu OrderDto record."
+      ],
+      "correct": 0,
+      "explanation": "Chọn pattern theo complexity/workload thực sự."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "CQRS event sourcing",
+      "question": "Dùng CQRS có tự đồng nghĩa đã triển khai Event Sourcing không?",
+      "options": [
+        "Chỉ cần DTO.",
+        "Không; hai concepts có thể kết hợp nhưng không đồng nhất.",
+        "Có; mọi command tự persist eventlog.",
+        "Có; MediatR là eventstore."
+      ],
+      "correct": 1,
+      "explanation": "Source không có eventstore/replay implementation."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Mediator versus broker",
+      "question": "MediatR in-process dispatch có tự giữ messages bền vững qua process crash không?",
+      "options": [
+        "Có; AddMediatR tự tạo broker cluster.",
+        "Chỉ cần async.",
+        "Không theo cơ chế mặc định được thể hiện.",
+        "Có; mọi IRequest tự ghi durable queue."
+      ],
+      "correct": 2,
+      "explanation": "Durability/retry/delivery cần architecture phù hợp."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Notifier versus MediatR notification",
+      "question": "INotificationService.SendAsync nguồn có chắc là MediatR INotification.Publish không?",
+      "options": [
+        "Có; mọi tên Notification tự implement MediatR notification.",
+        "Có; EmailNotifier là built-inMediatR.",
+        "Chỉ cần handler.",
+        "Không; đó là custom abstraction chưa thấy definition."
+      ],
+      "correct": 3,
+      "explanation": "Tên giống nhau không chứng minh cùng API/semantics."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Mapping scope",
+      "question": "order.ToDto() có đủ xác định mọi mapping fields/security rules khi implementation thiếu không?",
+      "options": [
+        "Chưa.",
+        "Đủ; extension tự biết required fields.",
+        "Đủ; DTO luôn copy tất cảprivate fields.",
+        "Chỉ cần return type."
+      ],
+      "correct": 0,
+      "explanation": "Mapping là boundary cần actual implementation."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Layer dependency inversion",
+      "question": "Infrastructure implementation phụ thuộc domain/application interface giúp điều gì?",
+      "options": [
+        "Chỉ đổi tên files.",
+        "Đảo source dependency khỏi core phụ thuộc concrete storage detail.",
+        "Tự xóa runtime dependency vào database.",
+        "Tự bảo đảm network availability."
+      ],
+      "correct": 1,
+      "explanation": "Core vẫn được cung cấp runtime services qua composition."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Testing orchestration",
+      "question": "Fake repository/notifier có thể giúp test gì có ý nghĩa trong handler?",
+      "options": [
+        "Proof million-user capacity.",
+        "Tự test DIassemblyscan nếu không chạy container.",
+        "Call order, input forwarding và failure paths theo orchestration contract.",
+        "Proof actual SQL/email provider đã hoạt động."
+      ],
+      "correct": 2,
+      "explanation": "Unit behavior evidence không thay integration."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Domain validation testing",
+      "question": "Domain Order.Create nên được test theo gì nếu requirements có invariants?",
+      "options": [
+        "Chỉ count properties.",
+        "Chỉ code compiles.",
+        "Chỉ command class tên đúng.",
+        "Valid/invalid inputs và state transitions liên quan rules."
+      ],
+      "correct": 3,
+      "explanation": "Source definition chưa có nên không báo invariants đã đạt."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Service locator contrast",
+      "question": "Gọi global IServiceProvider từ mọi domain entity có thể làm gì với dependencies?",
+      "options": [
+        "Che giấu dependencies và gắn core với container theo design không mong muốn.",
+        "Tự là CleanArchitecture hoàn hảo.",
+        "Tự loại mọi coupling.",
+        "Tự tăng runtime speed bảo đảm."
+      ],
+      "correct": 0,
+      "explanation": "Dependencies explicit ở boundary thường dễ xét/test hơn."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Interface semantic contract",
+      "question": "Hai IOrderRepository implementations compile có tự hứa cùng behavior về transactions/errors không?",
+      "options": [
+        "Chỉ cần Task<Order>.",
+        "Không; semantic contract và verification cần rõ.",
+        "Có; compiler prove mọi side effects.",
+        "Có; mọi CreateAsync tự commit cùng cách."
+      ],
+      "correct": 1,
+      "explanation": "Type signature chỉ là một phần của substitution."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Persistence notification atomicity",
+      "question": "Hai awaited operations tuần tự có tự atomic với nhau không?",
+      "options": [
+        "Có; DI scoped là transaction.",
+        "Chỉ cần no exceptions trong tests.",
+        "Không.",
+        "Có; await tự tạo transaction xuyên services."
+      ],
+      "correct": 2,
+      "explanation": "Source save-then-send có failure gap cần policy nếu requirement yêu cầu."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Outbox purpose",
+      "question": "Transactional outbox thường nhắm giải quyết gap nào?",
+      "options": [
+        "Biến mọi email thành synchronousfreeoperation.",
+        "Tự exactly-once mọi external effects không cần dedupe.",
+        "Thay mọi authorization.",
+        "Ghi business state và ý định publish trong cùng durable transaction phù hợp, rồi dispatch có cơ chế xử lý."
+      ],
+      "correct": 3,
+      "explanation": "Source chưa triển khai outbox."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Error contract source",
+      "question": "Handle hiện có explicit Result/error mapping chưa?",
+      "options": [
+        "Chưa; normal return OrderDto và failures có thể propagate.",
+        "Có; mọi IRequest tự Result<T>.",
+        "Có; DTO tự giấu mọi exceptions.",
+        "Chỉ cần notifier."
+      ],
+      "correct": 0,
+      "explanation": "Không áp Result pattern của lesson khác nếu chưa được dùng ở đây."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Input ownership",
+      "question": "Giữ reference tới command.Items và mutate nó trong parallel paths cần xem gì?",
+      "options": [
+        "Chỉ cần readonly repo field.",
+        "Ownership/snapshot/concurrency protocol của input và domain construction.",
+        "Init tự guarantee deep immutable.",
+        "MediatR tự lock every List."
+      ],
+      "correct": 1,
+      "explanation": "Task không chạy uncontrolled mutation race."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Refactor objective",
+      "question": "Refactor sang CleanArchitecture nên đánh giá theo gì ngoài number of projects?",
+      "options": [
+        "Đổi toàn bộ filenames thành Domain.",
+        "Chỉ addMediatRpackage.",
+        "Boundaries/responsibilities/change impact/testability theo requirement.",
+        "Tạo càng nhiều interfaces càng chuẩn tự động."
+      ],
+      "correct": 2,
+      "explanation": "Pattern hữu ích khi giải quyết problem cụ thể."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source runnable completeness",
+      "question": "Source có đầy đủ Order/OrderDto/SqlOrderRepository/EmailNotifier definitions chưa?",
+      "options": [
+        "Có; registration tự sinh business classes.",
+        "Có; generic type names đủ tạoimplementation.",
+        "Chỉ cần builder variable.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Bài hiện là schematic source, không project framework đã build."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Commit then notify failure",
+      "question": "Repo commit thành công, email failure rồi caller retry command có thể gặp issue gì?",
+      "options": [
+        "Duplicate orders/notifications nếu thiếu idempotency và recovery policy phù hợp.",
+        "Database tự rollback vì email không gửi.",
+        "MediatR tự undo mọi priorsteps.",
+        "Không thể retry async request."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa có dedupe/outbox/compensation contract."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Outbox delivery limits",
+      "question": "Outbox dispatcher retry có tự bảo đảm exactly-once external email trong mọi failure scenarios không?",
+      "options": [
+        "Chỉ cần Task.",
+        "Không; cần idempotency/deduplication và delivery/outcome contract phù hợp.",
+        "Có; outbox keyword là global atomic transaction.",
+        "Có; network không bao giờ mấtresponse."
+      ],
+      "correct": 1,
+      "explanation": "Durable intent và external side-effect uniqueness khác nhau."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Ignored repo result semantics",
+      "question": "Repository trả một Order instance mới có generated ID nhưng không mutate input thì handler nguồn có nguy cơ gì?",
+      "options": [
+        "Compiler tự copy mọi fields theo tên.",
+        "Không có ảnh hưởng bất kỳ.",
+        "Email/DTO đọc old instance vì returned value bị bỏ qua.",
+        "Input local tự rebind sang returned object."
+      ],
+      "correct": 2,
+      "explanation": "Cần rõ CreateAsync mutation/return contract và dùng result đúng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Cancellation partial success",
+      "question": "Caller cancel sau repo đã commit có tự bảo đảm order không tạo không?",
+      "options": [
+        "Có; cancellation token rollback mọi durablework.",
+        "Có; request scope dispose undo DB.",
+        "Chỉ cần ct parameter.",
+        "Không; cần outcome/reconciliation/idempotency semantics."
+      ],
+      "correct": 3,
+      "explanation": "Không gộp cancellation với businesstransaction rollback."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Scoped into singleton",
+      "question": "Singleton giữ injected scoped repository có thể gây gì?",
+      "options": [
+        "Captive dependency và invalidscope/lifetime/stateconcurrency risks.",
+        "Tự tạo scope mới mỗimethod.",
+        "Scoped tự convert thành distributedcache.",
+        "Không ảnh hưởng vì interface."
+      ],
+      "correct": 0,
+      "explanation": "Có thể cần explicit scopes/factory tùy design, không giữ references tùy tiện."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Dependency cycle",
+      "question": "Handler dependency graph vòng lặp có tự được DI container giải quyết thành đúng business flow không?",
+      "options": [
+        "Chỉ cần transient.",
+        "Không; cần sửa design/registration theo actual cycle.",
+        "Có; container tự chọn một instance rồi bỏdependency.",
+        "Có; MediatR tự làm mọi dependenciesoptional."
+      ],
+      "correct": 1,
+      "explanation": "Compiler types hợp lệ không hứa graph construction thành công."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Pipeline behavior meaning",
+      "question": "MediatR pipeline behavior validation có tự biết mọi domain invariant nếu không implementrules không?",
+      "options": [
+        "Có; mọi Order.Create đã validate dù source thiếu.",
+        "Chỉ cần AddMediatR.",
+        "Không; cần actualbehavior/rules/registration và domain enforcement phù hợp.",
+        "Có; IRequest type names đủ suy nghiệp vụ."
+      ],
+      "correct": 2,
+      "explanation": "Cross-cutting mechanism không thay required logic."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "DI scope authorization",
+      "question": "Scoped lifetime có tự tách quyền truy cập orders theo customer/tenant không?",
+      "options": [
+        "Có; instance riêng đồng nghĩa data được phép tự động.",
+        "Có; MediatR tự xác thực customer.",
+        "Chỉ cần CustomerName.",
+        "Không; authorization và query/write filters cần contract riêng."
+      ],
+      "correct": 3,
+      "explanation": "Object scope không là security identity."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Domain depending DTO",
+      "question": "Nếu Domain Order.Create thật sự nhận DTO được định nghĩa trong Application, điều gì cần xem lại?",
+      "options": [
+        "Compile dependency direction và mapping/type ownership giữa layers.",
+        "Mọi DTOname tự là BCL nên không sao.",
+        "CleanArchitecture yêu cầu Domain phụ thuộc mọi outer layers.",
+        "Chỉ cần interface repo."
+      ],
+      "correct": 0,
+      "explanation": "Source thiếu type definitions nên phải kiểm actual references thay đoán theo suffix."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "CQRS added complexity",
+      "question": "Khi nào CQRS/MediatR có thể cần cân nhắc thay vì áp mặc định mọi CRUD?",
+      "options": [
+        "Tự thay mọi tests.",
+        "Khi lợi ích tách models/responsibilities phải bù complexity theo requirements.",
+        "Luôn cần dù một endpoint đơn giản.",
+        "Luôn làm mọi app nhanh hơn."
+      ],
+      "correct": 1,
+      "explanation": "Không biến pattern thành quota architectures."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Consistency read model",
+      "question": "Nếu sau này tách read/write stores, cần xác định điều gì với query sau command?",
+      "options": [
+        "MediatR tự replicate giữaDBs.",
+        "Chỉ cần OrderDto.",
+        "Consistency/lag và clientexpectations khi read model chưa cập nhật.",
+        "Mọi stores tự đồng bộ tức thời."
+      ],
+      "correct": 2,
+      "explanation": "Source hiện không có separate read store, đây là contract cho expansion."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Lifetime disposal ownership",
+      "question": "Container-managed IDisposable dependency nên được release theo gì?",
+      "options": [
+        "Dispose ngay sau constructor luôn.",
+        "Không bao giờ dispose singletonresources.",
+        "Chỉ GC tự giải quyết mọithingđúng lúc.",
+        "Owner/container scope contract, không tùy tiện dispose giữa usecase khi còn được dùng."
+      ],
+      "correct": 3,
+      "explanation": "Resource cleanup và lifetime ownership cần đồng nhất."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Test fake limitation",
+      "question": "Fake notifier ghi listmessages có đủ chứng minh email delivery thực tế không?",
+      "options": [
+        "Chưa; chỉ prove tương tác/logic đã modeled.",
+        "Đủ; mọi providers giống fake.",
+        "Đủ; message chứaId đúng nghĩa network done.",
+        "Chỉ cần await."
+      ],
+      "correct": 0,
+      "explanation": "Integration/delivery cần evidence riêng khi được triển khai."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Validation atomic invariant",
+      "question": "Precheck customer/items trong pipeline có tự giữ invariant dưới concurrentwrites không?",
+      "options": [
+        "Chỉ cần commandimmutable.",
+        "Không; domain/storage constraints và transaction/concurrency strategy cần phù hợp.",
+        "Có; pipeline là global mutex.",
+        "Có; async validation khóa mọi replicas."
+      ],
+      "correct": 1,
+      "explanation": "Validation checks và enforcement atwrite boundary khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Exception retry scope",
+      "question": "Retry toàn Handle cho mọi Exception có thể sai vì sao?",
+      "options": [
+        "MediatR retry tự transactional mọi dependencies.",
+        "Chỉ emailfail mới không córisk.",
+        "Có thể lặp side effects không idempotent và che failures không transient.",
+        "Mọi exceptions tự cho biết safe retry vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Retry policy phải hiểu outcome và error categories."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Registration version scope",
+      "question": "Code AddMediatR theo một API docs có đủ chứng minh đúng packageversion của project chưa?",
+      "options": [
+        "Có; using tự pin mọi versions.",
+        "Có; compiler tự tải version mới nhất.",
+        "Chỉ cần generic interfaces.",
+        "Không; source cần manifest/lock/package setup tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Task không restore/install packages hoặc resolve licensing/cost từ snippet."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Assembly scanning deployment",
+      "question": "Assembly scan tìm handlers có thể cần xét gì nếu trim/AOT deployment được yêu cầu?",
+      "options": [
+        "Discovery/registration và reflectionmetadata support theo version/tooling, verify actual publish.",
+        "Mọi reflection tự safe với mọi AOT.",
+        "Chỉ đổi tên assembly.",
+        "MediatR luôn compile mọi typekhông cầnmetadata."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa có AOT artifact hoặc trimmedbuild."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Command correlation",
+      "question": "Khi cần chẩn đoán/reconcile tạo order qua retries, thông tin nào thường hữu ích theo contract?",
+      "options": [
+        "Bỏ mọi logs để không thấy lỗi.",
+        "Correlation/idempotency identifiers và outcome logs không lộ sensitive data.",
+        "Chỉ CustomerName làm unique ID toànhệthống.",
+        "Ghi mọi secrets vào email."
+      ],
+      "correct": 1,
+      "explanation": "Observability cần policy rõ và protectdata."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Architecture proof scope",
+      "question": "Có repository interfaces/handler đúng cú pháp có đủ khẳng định hệ thống chịu tải triệu users chưa?",
+      "options": [
+        "Có; DI scoped scale vô hạn.",
+        "Chỉ cần MediatR.",
+        "Không; cần requirements/workload/latency/resource/failure evidence.",
+        "Có; CleanArchitecture tự là capacity proof."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng patternnames làm production evidence."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Core invariant ownership",
+      "question": "Khi nhiều entrypoints tạo Order, domain invariants quan trọng nên được bảo đảm thế nào?",
+      "options": [
+        "Chỉ một controller đầu tiên cầncheck.",
+        "Chỉ frontendvalidation.",
+        "Chỉ commandproperty có init.",
+        "Ở domain/write boundaries phù hợp để mọi validpaths giữ contract, không chỉ một UI hoặc handler."
+      ],
+      "correct": 3,
+      "explanation": "Layering có ích khi responsibility và invariant ownership rõ."
+    }
+  ]
+}

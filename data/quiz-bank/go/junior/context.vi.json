@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "junior",
+  "lesson": "context",
+  "language": "vi",
+  "sourceHash": "c6e96e643e994ce0f87440eeb199b6ac3b6a8fa153925ffeb506fd06505cfc8b",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và local Go1.26.1 context/net/http/errors docs. Source là snippet không có main; fetchData bỏ lỗi tạo request, chưa đọc body/kiểm tra status và trả nil,nil khi Do không lỗi. Selected finite fixtures chỉ dùng context, error chains và handler/recorder trong RAM, không gọi DefaultClient.Do hay network. Cancellation hợp tác, values không là optional parameters; deadline và typed nil được phân biệt.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Context purpose",
+      "question": "context.Context thường truyền những gì qua call chain?",
+      "options": [
+        "Deadline, cancellation và request-scoped values.",
+        "Mọi tham số nghiệp vụ bắt buộc dưới dạng global.",
+        "Một database connection tự động.",
+        "Bộ nhớ riêng của mọi goroutine."
+      ],
+      "correct": 0,
+      "explanation": "Context là tín hiệu/vật mang ngữ cảnh, không tự thực hiện công việc."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Context position",
+      "question": "Convention thường đặt ctx context.Context ở đâu?",
+      "options": [
+        "Tham số trả về duy nhất.",
+        "Tham số đầu của hàm cần context.",
+        "Trong tên package.",
+        "Luôn là global mutable."
+      ],
+      "correct": 1,
+      "explanation": "Truyền tường minh giúp theo dõi propagation."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Background context",
+      "question": "context.Background() tạo context cơ sở như thế nào?",
+      "options": [
+        "Đã bị cancel ngay.",
+        "Mang token đăng nhập tự động.",
+        "Không có deadline hay cancellation từ bản thân nó.",
+        "Tự timeout sau5s."
+      ],
+      "correct": 2,
+      "explanation": "Context gốc thường dùng ở ranh giới vòng đời phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "TODO context",
+      "question": "context.TODO() thường biểu đạt gì?",
+      "options": [
+        "Một job queue có todo tasks.",
+        "Một context tự recover panic.",
+        "Một HTTP handler sẵn có.",
+        "Chỗ chưa rõ context nào nên dùng, thay vì truyền nil."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng TODO để âm thầm bỏ cancellation cần được truyền."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "WithCancel return",
+      "question": "context.WithCancel(parent) trả những gì?",
+      "options": [
+        "Context con và hàm cancel.",
+        "HTTP response và error.",
+        "Một bool và một mutex.",
+        "Một goroutine và một PID."
+      ],
+      "correct": 0,
+      "explanation": "Caller cần quản lý vòng đời cancel phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Done channel",
+      "question": "ctx.Done() dùng để làm gì?",
+      "options": [
+        "Là một hàm tự kill process.",
+        "Nhận tín hiệu channel đóng khi context bị hủy hoặc deadline hết.",
+        "Đếm số goroutine còn chạy.",
+        "Chứa body request JSON."
+      ],
+      "correct": 1,
+      "explanation": "Một số context như Background có Done=nil."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Err meaning",
+      "question": "Sau cancellation, ctx.Err() thường cho biết gì?",
+      "options": [
+        "Luôn nil.",
+        "HTTP status luôn500.",
+        "Canceled hoặc DeadlineExceeded theo nguyên nhân context.",
+        "Toàn bộ stacktrace mọi goroutine."
+      ],
+      "correct": 2,
+      "explanation": "Context error không tự quyết định status API cho mọi tình huống."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "WithTimeout",
+      "question": "WithTimeout(ctx,5*time.Second) làm gì?",
+      "options": [
+        "Sleep đồng bộ chính xác5s rồi mới trả.",
+        "Tự giết mọi goroutine sau5s.",
+        "Đổi timeout global của mọi HTTP client.",
+        "Tạo context con với deadline theo timeout và parent."
+      ],
+      "correct": 3,
+      "explanation": "Công việc cần quan sát context để phản ứng với tín hiệu."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Cancel cleanup",
+      "question": "Vì sao source defer cancel()?",
+      "options": [
+        "Giải phóng tài nguyên liên quan context khi hàm kết thúc sớm.",
+        "Tự đọc response body.",
+        "Tự sửa HTTP status.",
+        "Tự retry request."
+      ],
+      "correct": 0,
+      "explanation": "Không cần đợi timeout tự hết để giải phóng timer/liên kết."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Context propagation",
+      "question": "Truyền parent context xuống hàm con giúp gì?",
+      "options": [
+        "Tự cấp quyền admin.",
+        "Cho phép deadline/cancellation liên quan lan xuống call chain.",
+        "Bảo đảm mọi goroutine tự dừng ngay.",
+        "Tự clone DB cho mỗi call."
+      ],
+      "correct": 1,
+      "explanation": "Propagation cần được giữ qua các API hỗ trợ context."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Middleware shape",
+      "question": "Middleware HTTP trong source có kiểu cơ bản nào?",
+      "options": [
+        "Một struct không có method.",
+        "Một JSON tag.",
+        "func(http.Handler) http.Handler.",
+        "func() int duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Middleware nhận next handler và trả handler bao ngoài."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "ServeHTTP next",
+      "question": "next.ServeHTTP(w,r) có vai trò gì?",
+      "options": [
+        "Tự mở listener mới.",
+        "Tự trả500.",
+        "Tự tạo goroutine bắt buộc.",
+        "Chuyển xử lý tới handler tiếp theo."
+      ],
+      "correct": 3,
+      "explanation": "Code trước/sau next tạo phần bao quanh xử lý đồng bộ."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "HandlerFunc adapter",
+      "question": "http.HandlerFunc giúp gì?",
+      "options": [
+        "Cho hàm có signature phù hợp đáp ứng http.Handler.",
+        "Tự thêm authentication hoàn chỉnh.",
+        "Tự timeout mọi DB query.",
+        "Tự chuyển error thành HTTP response."
+      ],
+      "correct": 0,
+      "explanation": "Adapter không thay logic trong hàm."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Custom error contract",
+      "question": "*AppError đáp ứng error nhờ method nào?",
+      "options": [
+        "ServeHTTP().",
+        "Error() string.",
+        "Unwrap() bool.",
+        "Code() int bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Unwrap là contract bổ sung cho error chains."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Unwrap role",
+      "question": "Unwrap() error trong AppError nguồn trả gì?",
+      "options": [
+        "Code được đổi thành string.",
+        "Một context mới.",
+        "Error bên trong trường Err.",
+        "HTTP response body."
+      ],
+      "correct": 2,
+      "explanation": "errors.Is/As có thể đi theo chain này."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Error fields",
+      "question": "Code và Message trong AppError nguồn thể hiện gì?",
+      "options": [
+        "HTTP response đã được gửi tự động.",
+        "Một database transaction đã rollback.",
+        "Một quyền truy cập đã được kiểm tra.",
+        "Thông tin do ứng dụng gán cho error này."
+      ],
+      "correct": 3,
+      "explanation": "Tạo error object không tự viết response."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Request with context",
+      "question": "http.NewRequestWithContext gắn gì vào request?",
+      "options": [
+        "Context được cung cấp cho vòng đời request client.",
+        "Một server listener mới.",
+        "Một response cache luôn bền vững.",
+        "Một retry policy bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Hàm có thể trả error khi tạo request không hợp lệ."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Body close",
+      "question": "defer resp.Body.Close() trong source nhằm gì?",
+      "options": [
+        "Tự đọc hết body.",
+        "Đóng response body khi hàm kết thúc theo luồng return/unwind.",
+        "Tự decode JSON thành []byte.",
+        "Tự bảo đảm status2xx."
+      ],
+      "correct": 1,
+      "explanation": "Close và read là hai thao tác khác nhau."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Source placeholder",
+      "question": "return nil,nil // simplified trong fetchData có nghĩa gì thực tế?",
+      "options": [
+        "Tự lưu response vào database.",
+        "Luôn báo lỗi404.",
+        "Chưa trả dữ liệu body dù tên hàm gợi ý fetch dữ liệu.",
+        "Đã đọc hết và trả bản sao body ngầm."
+      ],
+      "correct": 2,
+      "explanation": "Comment simplified không tạo implementation còn thiếu."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Partial source entry",
+      "question": "Source context có chạy trực tiếp như executable hoàn chỉnh không?",
+      "options": [
+        "Có, loggingMiddleware tự là main.",
+        "Có, AppError tự được runtime gọi.",
+        "Chỉ cần filename context.go là đủ.",
+        "Chưa; package main không có hàm main trong snippet."
+      ],
+      "correct": 3,
+      "explanation": "Các fixture thêm main phải được phân biệt với source gốc."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Background observations",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){ctx:=context.Background();fmt.Println(ctx.Done()==nil,ctx.Err()==nil)}\n",
+      "options": [
+        "true true.",
+        "false true.",
+        "true false.",
+        "Panic ở Done."
+      ],
+      "correct": 0,
+      "explanation": "Background không có Done channel và Err=nil."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Explicit cancel",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();<-ctx.Done();fmt.Println(ctx.Err()==context.Canceled,ctx.Err()!=nil)}\n",
+      "options": [
+        "Cancel luôn panic.",
+        "true true.",
+        "false true.",
+        "true false."
+      ],
+      "correct": 1,
+      "explanation": "Cancel đóng Done và đặt Err=Canceled."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Cancel idempotence",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();cancel();fmt.Println(ctx.Err()==context.Canceled)}\n",
+      "options": [
+        "Panic do cancel lần hai.",
+        "Block mãi.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "CancelFunc có thể được gọi nhiều lần; các lần sau không làm đổi trạng thái đã hủy."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Parent cancellation",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){p,pc:=context.WithCancel(context.Background());c,cc:=context.WithCancel(p);defer cc();pc();<-c.Done();fmt.Println(p.Err()==context.Canceled,c.Err()==context.Canceled)}\n",
+      "options": [
+        "true false.",
+        "false true.",
+        "Child không bao giờ bị cancel theo parent.",
+        "true true."
+      ],
+      "correct": 3,
+      "explanation": "Cancel parent lan xuống child."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Child does not cancel parent",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){p,pc:=context.WithCancel(context.Background());defer pc();c,cc:=context.WithCancel(p);cc();fmt.Println(c.Err()==context.Canceled,p.Err()==nil)}\n",
+      "options": [
+        "true true.",
+        "false true.",
+        "true false.",
+        "Cancel child tự close parent Done."
+      ],
+      "correct": 0,
+      "explanation": "Propagation theo chiều parent xuống child, không tự đi ngược."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Immediate timeout",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){ctx,cancel:=context.WithTimeout(context.Background(),0);defer cancel();<-ctx.Done();fmt.Println(ctx.Err()==context.DeadlineExceeded)}\n",
+      "options": [
+        "Panic vì timeout0 bị cấm.",
+        "true.",
+        "false.",
+        "Luôn phải chờ5s."
+      ],
+      "correct": 1,
+      "explanation": "Timeout0 tạo deadline đã tới, Done đóng và Err=DeadlineExceeded."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Earlier parent deadline",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\";\"time\")\n\nfunc main(){at:=time.Now().Add(time.Hour);p,pc:=context.WithDeadline(context.Background(),at);defer pc();c,cc:=context.WithTimeout(p,2*time.Hour);defer cc();d,ok:=c.Deadline();fmt.Println(ok,d.Equal(at))}\n",
+      "options": [
+        "true false.",
+        "Child luôn kéo dài parent thêm2h.",
+        "true true.",
+        "false true."
+      ],
+      "correct": 2,
+      "explanation": "Child không thể kéo dài deadline parent; so sánh chính deadline đã lấy, không đo timing."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Request scoped value",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){type key struct{};ctx:=context.WithValue(context.Background(),key{},\"abc\");fmt.Println(ctx.Value(key{}))}\n",
+      "options": [
+        "nil.",
+        "0.",
+        "Panic vì key type riêng.",
+        "abc."
+      ],
+      "correct": 3,
+      "explanation": "Value được tra theo key bằng nhau cùng kiểu."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Immutable derivation",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){type key struct{};p:=context.Background();c:=context.WithValue(p,key{},\"abc\");fmt.Println(p.Value(key{})==nil,c.Value(key{}))}\n",
+      "options": [
+        "true abc.",
+        "false abc.",
+        "true nil.",
+        "Parent tự có cùng value sau WithValue."
+      ],
+      "correct": 0,
+      "explanation": "WithValue trả context con, không sửa parent."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Different typed keys",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){type a string;type b string;ctx:=context.WithValue(context.Background(),a(\"id\"),7);fmt.Println(ctx.Value(b(\"id\"))==nil)}\n",
+      "options": [
+        "Panic vì key rỗng.",
+        "true.",
+        "false.",
+        "Không compile vì hai key có cùng underlying string."
+      ],
+      "correct": 1,
+      "explanation": "Hai named types khác nhau là các key khác nhau."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "App error text",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"errors\")\ntype AppError struct{Code int;Message string;Err error}\nfunc(e *AppError)Error()string{return fmt.Sprintf(\"%d: %s\",e.Code,e.Message)}\nfunc(e *AppError)Unwrap()error{return e.Err}\n\nfunc main(){e:=&AppError{Code:500,Message:\"fetch failed\",Err:errors.New(\"root\")};fmt.Println(e.Error())}\n",
+      "options": [
+        "root.",
+        "nil.",
+        "500: fetch failed.",
+        "500: root."
+      ],
+      "correct": 2,
+      "explanation": "Error method nguồn chỉ định dạng Code và Message, không nối Err."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Unwrap error identity",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"errors\")\ntype AppError struct{Code int;Message string;Err error}\nfunc(e *AppError)Error()string{return fmt.Sprintf(\"%d: %s\",e.Code,e.Message)}\nfunc(e *AppError)Unwrap()error{return e.Err}\n\nfunc main(){base:=errors.New(\"root\");var e error=&AppError{Code:500,Message:\"fetch failed\",Err:base};fmt.Println(errors.Is(e,base),e==base)}\n",
+      "options": [
+        "false false.",
+        "true true.",
+        "Compiler không cho errors.Is dùng custom error.",
+        "true false."
+      ],
+      "correct": 3,
+      "explanation": "errors.Is đi qua Unwrap; == không tự unwrap."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Errors As target",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"errors\")\ntype AppError struct{Code int;Message string;Err error}\nfunc(e *AppError)Error()string{return fmt.Sprintf(\"%d: %s\",e.Code,e.Message)}\nfunc(e *AppError)Unwrap()error{return e.Err}\n\nfunc main(){wrapped:=fmt.Errorf(\"outer: %w\",&AppError{Code:503,Message:\"busy\"});var out *AppError;ok:=errors.As(wrapped,&out);fmt.Println(ok,out.Code)}\n",
+      "options": [
+        "true 503.",
+        "false 0.",
+        "true 0.",
+        "Panic vì target phải là AppError value thay vì pointer."
+      ],
+      "correct": 0,
+      "explanation": "&out là con trỏ tới biến *AppError để As gán object phù hợp trong chain."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Text does not identify errors",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"errors\")\n\nfunc main(){a:=errors.New(\"x\");b:=errors.New(\"x\");fmt.Println(a.Error()==b.Error(),errors.Is(a,b))}\n",
+      "options": [
+        "false false.",
+        "true false.",
+        "true true.",
+        "false true."
+      ],
+      "correct": 1,
+      "explanation": "Hai errors.New có cùng text không tự là cùng error identity."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Middleware ordering",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){var calls []string;next:=http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){calls=append(calls,\"handler\")});wrap:=func(next http.Handler)http.Handler{return http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){calls=append(calls,\"before\");next.ServeHTTP(w,r);calls=append(calls,\"after\")})};wrap(next).ServeHTTP(httptest.NewRecorder(),httptest.NewRequest(\"GET\",\"/\",nil));fmt.Println(calls)}\n",
+      "options": [
+        "[after handler before].",
+        "Một thứ tự ngẫu nhiên bắt buộc.",
+        "[before handler after].",
+        "[handler before after]."
+      ],
+      "correct": 2,
+      "explanation": "Trong fixture đồng bộ, wrapper chạy trước và sau next."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Short circuit middleware",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\n\nfunc main(){called:=false;next:=http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){called=true});wrap:=func(next http.Handler)http.Handler{return http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){w.WriteHeader(401)})};w:=httptest.NewRecorder();wrap(next).ServeHTTP(w,httptest.NewRequest(\"GET\",\"/\",nil));fmt.Println(w.Code,called)}\n",
+      "options": [
+        "200 true.",
+        "401 true.",
+        "500 false.",
+        "401 false."
+      ],
+      "correct": 3,
+      "explanation": "Middleware không gọi next nên handler không được chạy."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Request context copy",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\";\"net/http/httptest\")\n\nfunc main(){type key struct{};r:=httptest.NewRequest(\"GET\",\"/\",nil);ctx:=context.WithValue(r.Context(),key{},\"abc\");next:=r.WithContext(ctx);fmt.Println(r.Context().Value(key{})==nil,next.Context().Value(key{}))}\n",
+      "options": [
+        "true abc.",
+        "false abc.",
+        "true nil.",
+        "WithContext làm request gốc đổi context luôn."
+      ],
+      "correct": 0,
+      "explanation": "WithContext trả shallow copy request có context mới, không sửa context request gốc."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Invalid request URL",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\";\"net/http\")\n\nfunc main(){r,e:=http.NewRequestWithContext(context.Background(),\"GET\",\"http://[::1\",nil);fmt.Println(r==nil,e!=nil)}\n",
+      "options": [
+        "Tự gọi HTTP dù URL chưa hợp lệ.",
+        "true true.",
+        "false true.",
+        "true false."
+      ],
+      "correct": 1,
+      "explanation": "Tạo request có thể trả error; không có network được thực hiện ở đây."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "WithoutCancel scope",
+      "question": "Chương trình in gì trên Go1.26?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){type key struct{};p,pc:=context.WithCancel(context.WithValue(context.Background(),key{},\"abc\"));c:=context.WithoutCancel(p);pc();fmt.Println(c.Done()==nil,c.Err()==nil,c.Value(key{}))}\n",
+      "options": [
+        "true true nil.",
+        "Panic vì parent đã cancel.",
+        "true true abc.",
+        "false false abc."
+      ],
+      "correct": 2,
+      "explanation": "WithoutCancel không mang cancellation/deadline của parent nhưng vẫn tra values qua parent."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Cancel cause",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\";\"errors\")\n\nfunc main(){cause:=errors.New(\"shutdown\");ctx,cancel:=context.WithCancelCause(context.Background());cancel(cause);fmt.Println(ctx.Err()==context.Canceled,errors.Is(context.Cause(ctx),cause))}\n",
+      "options": [
+        "true false.",
+        "false true.",
+        "Cause luôn bằng DeadlineExceeded.",
+        "true true."
+      ],
+      "correct": 3,
+      "explanation": "Err phản ánh Canceled; Cause giữ error nguyên nhân riêng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "No forced stop",
+      "question": "Context bị cancel có tự kill goroutine không quan sát nó không?",
+      "options": [
+        "Không; cancellation mang tính hợp tác.",
+        "Có, runtime luôn terminate goroutine ngay.",
+        "Có, mọi loop int tự chèn cancel check.",
+        "Chỉ kill nếu goroutine có tên fetch."
+      ],
+      "correct": 0,
+      "explanation": "Code cần select/check ctx và cleanup phù hợp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Values not options",
+      "question": "Có nên dùng WithValue để thay mọi optional business parameter không?",
+      "options": [
+        "Chỉ cần gọi key là config.",
+        "Không; docs khuyên chỉ dùng request-scoped data qua API/process boundaries.",
+        "Có, mọi struct options nên biến thành string keys.",
+        "Có, để compiler khỏi kiểm tra kiểu."
+      ],
+      "correct": 1,
+      "explanation": "Dùng tham số/struct options rõ ràng cho cấu hình nghiệp vụ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Context key design",
+      "question": "Tại sao thường dùng key type riêng không export cho context values?",
+      "options": [
+        "Để biến value thành readonly sâu.",
+        "Để mọi module tự dùng cùng string key.",
+        "Giảm collision với packages khác và hỗ trợ accessor có kiểu.",
+        "Để tự mã hóa value."
+      ],
+      "correct": 2,
+      "explanation": "Comparable key là yêu cầu, nhưng naming/type design còn giúp tránh xung đột."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Context thread safety",
+      "question": "Context safe cho nhiều goroutine có nghĩa values chứa bên trong tự thread-safe không?",
+      "options": [
+        "Có, WithValue tự gắn mutex mọi object.",
+        "Có, context deep clone mỗi lần Value.",
+        "Chỉ với map thì tự an toàn.",
+        "Không; object được value trỏ tới vẫn cần đồng bộ riêng nếu mutable."
+      ],
+      "correct": 3,
+      "explanation": "Safety của Context API không lan tự động sang mọi payload."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Parent timeout",
+      "question": "Nếu parent còn deadline1s, WithTimeout(parent,5s) có bảo đảm được chạy5s không?",
+      "options": [
+        "Không; deadline sớm hơn của parent vẫn giới hạn child.",
+        "Có, child luôn override parent kéo dài5s.",
+        "Có, mọi timeout độc lập tuyệt đối.",
+        "Chỉ cần defer cancel để kéo dài."
+      ],
+      "correct": 0,
+      "explanation": "Child không dùng để vượt giới hạn của parent."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Cancellation direction",
+      "question": "Cancel một child có tự hủy sibling cùng parent không?",
+      "options": [
+        "Chỉ nếu child có values.",
+        "Không theo cơ chế propagation thông thường.",
+        "Có, mọi child cùng parent là một cancel global.",
+        "Có, nếu cùng tên biến ctx."
+      ],
+      "correct": 1,
+      "explanation": "Muốn hủy nhóm cần điều phối ở parent hoặc cơ chế riêng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Source ignored request error",
+      "question": "req,_ := NewRequestWithContext có vấn đề gì?",
+      "options": [
+        "Blank identifier tự sửa URL.",
+        "Compiler không bao giờ cho bỏ error.",
+        "Bỏ lỗi tạo request khiến luồng sau có thể dùng request nil/không hợp lệ.",
+        "Mọi URL luôn hợp lệ nên không có lỗi."
+      ],
+      "correct": 2,
+      "explanation": "Cần xử lý error trước khi gọi client."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Client non2xx",
+      "question": "HTTP client Do nhận response500 có nhất thiết trả error không?",
+      "options": [
+        "Có, mọi status>=400 là error tự động.",
+        "Có, chỉ201 không lỗi.",
+        "Do luôn trả error kể cả200.",
+        "Không; non-2xx tự nó không làm Do trả error."
+      ],
+      "correct": 3,
+      "explanation": "Source chưa kiểm tra status nên có thể coi response lỗi là thành công."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Source data missing",
+      "question": "fetchData trả nil,nil sau khi có response nhưng chưa đọc body có hạn chế gì?",
+      "options": [
+        "Caller không nhận dữ liệu response và không thấy status errors được kiểm tra.",
+        "Caller tự nhận body nhờ tên hàm.",
+        "Body tự đọc hết bởi Close trong mọi trường hợp.",
+        "Error luôn chứa body dù nil."
+      ],
+      "correct": 0,
+      "explanation": "Source mới là skeleton, không là fetch implementation đầy đủ."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Read and close",
+      "question": "Đóng response body có đồng nghĩa đã đọc EOF không?",
+      "options": [
+        "Nếu status200 thì không còn body.",
+        "Không.",
+        "Có, mọi Close luôn đọc toàn bộ body vô hạn.",
+        "Chỉ với JSON thì luôn có."
+      ],
+      "correct": 1,
+      "explanation": "Việc đọc/drain có tác động reuse kết nối; cần giới hạn dữ liệu phù hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Logging status scope",
+      "question": "loggingMiddleware nguồn có ghi status HTTP chính xác không?",
+      "options": [
+        "Có, log.Printf tự đọc ResponseWriter.",
+        "Chỉ khi AppError có Code.",
+        "Chưa; chỉ log method,path và duration, không wrap để capture status.",
+        "Có, time.Since tự chứa status."
+      ],
+      "correct": 2,
+      "explanation": "Muốn status logging phải thiết kế capture và xử lý implicit status phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Recovery missing",
+      "question": "Middleware nguồn có recover panic không?",
+      "options": [
+        "Có, mọi HandlerFunc tự recover thành AppError.",
+        "Có, log.Printf bắt panic toàn process.",
+        "Chỉ khi duration lớn hơn5s.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Code sau next không có defer có thể không chạy khi next panic."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Middleware no next",
+      "question": "Middleware cố ý trả sớm trước next có thể dùng cho gì?",
+      "options": [
+        "Từ chối request hoặc trả response khi điều kiện cụ thể không đạt.",
+        "Luôn là lỗi syntax.",
+        "Tự buộc next chạy sau return.",
+        "Tự retry vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "Cần contract rõ, tránh vừa viết response vừa gọi next ngoài ý định."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Error As versus Is",
+      "question": "Mục đích khác nhau cơ bản của errors.As và errors.Is là gì?",
+      "options": [
+        "Cả hai chỉ hoạt động với nil.",
+        "As tìm error theo kiểu phù hợp; Is kiểm tra match với target error qua chain/rules.",
+        "As luôn so string, Is chỉ so HTTP code.",
+        "Cả hai tự retry network."
+      ],
+      "correct": 1,
+      "explanation": "Custom As/Is có thể tham gia; không chỉ nhìn message."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Nil error field",
+      "question": "AppError có Err=nil nhưng Code500 có phải error interface nil nếu gán *AppError non-nil vào error không?",
+      "options": [
+        "Có, nếu Message rỗng.",
+        "Chỉ khi Code dưới400.",
+        "Không; vẫn có AppError object trong interface.",
+        "Có, Unwrap nil làm toàn error biến mất."
+      ],
+      "correct": 2,
+      "explanation": "Error object bên ngoài tồn tại độc lập với inner cause."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Context nil parameter",
+      "question": "Docs khuyên truyền gì khi chưa rõ context thay vì nil?",
+      "options": [
+        "nil trong mọi API để disable timeout.",
+        "Một string rỗng.",
+        "Một global pointer tùy ý.",
+        "context.TODO() với kế hoạch xác định đúng context."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng nil Context dù một hàm có thể cho phép."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Value lookup result",
+      "question": "ctx.Value trả về kiểu nào theo interface Context?",
+      "options": [
+        "any.",
+        "Luôn string.",
+        "Luôn int.",
+        "Luôn error."
+      ],
+      "correct": 0,
+      "explanation": "Accessor có kiểu thường xử lý type assertion và trường hợp không có giá trị."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Canceled before work",
+      "question": "Hàm nhận ctx đã cancel nên cân nhắc gì?",
+      "options": [
+        "Tự đổi canceled thành success.",
+        "Kiểm tra/quan sát cancellation và trả sớm phù hợp trước công việc không cần thiết.",
+        "Tự bỏ ctx để chạy bằng Background.",
+        "Bắt buộc cứ chạy đủ timeout mới trả."
+      ],
+      "correct": 1,
+      "explanation": "Hành vi cụ thể theo API nhưng không nên giả cancellation tự xử lý mọi lớp."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Deadline exact latency",
+      "question": "WithTimeout5s có bảo đảm hàm chắc chắn return đúng5s không?",
+      "options": [
+        "Có, kể cả foreign blocking calls không hỗ trợ ctx.",
+        "Chỉ cần defer cancel.",
+        "Không; scheduling và code quan sát/cleanup ảnh hưởng thời điểm return.",
+        "Có, runtime preempt-kill chính xác tại5s."
+      ],
+      "correct": 2,
+      "explanation": "Deadline là tín hiệu giới hạn, không là promise latency tuyệt đối."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Input error classification",
+      "question": "Mọi lỗi từ fetchData có nên luôn map500 cho client ứng dụng không?",
+      "options": [
+        "Có, mọi lỗi đều là server bug giống nhau.",
+        "Chỉ cần Message fetch failed là đủ mọi điều kiện.",
+        "Nên trả200 cho mọi error.",
+        "Cần phân loại theo contract, ví dụ canceled/deadline/input/upstream, không gộp máy móc mọi lỗi."
+      ],
+      "correct": 3,
+      "explanation": "Code500 trong ví dụ không chứng minh đã có error policy đầy đủ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Typed nil custom error",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype AppError struct{Code int;Message string;Err error}\nfunc(e *AppError)Error()string{return fmt.Sprintf(\"%d: %s\",e.Code,e.Message)}\nfunc(e *AppError)Unwrap()error{return e.Err}\n\nfunc main(){var p *AppError;var e error=p;fmt.Println(e==nil)}\n",
+      "options": [
+        "false.",
+        "true.",
+        "Panic ngay khi gán error interface.",
+        "Compiler cấm typed nil."
+      ],
+      "correct": 0,
+      "explanation": "Interface chứa dynamic type *AppError dù pointer value nil nên e!=nil."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Mutable context payload",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){type key struct{};n:=1;ctx:=context.WithValue(context.Background(),key{},&n);n=2;fmt.Println(*ctx.Value(key{}).(*int))}\n",
+      "options": [
+        "Compiler cấm pointer trong context values.",
+        "2.",
+        "1.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Context derivation không deep clone payload."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Formatting not wrapping",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"errors\")\n\nfunc main(){base:=errors.New(\"root\");a:=fmt.Errorf(\"x: %v\",base);b:=fmt.Errorf(\"x: %w\",base);fmt.Println(errors.Is(a,base),errors.Is(b,base))}\n",
+      "options": [
+        "false false.",
+        "%v tự wrap giống %w.",
+        "false true.",
+        "true true."
+      ],
+      "correct": 2,
+      "explanation": "%v chỉ format; %w tạo unwrap chain cho errors.Is."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Defer with middleware panic",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){var calls []string;func(){defer func(){if recover()!=nil{calls=append(calls,\"recovered\")}}();func(){calls=append(calls,\"before\");defer func(){calls=append(calls,\"cleanup\")}();func(){panic(\"boom\")}();calls=append(calls,\"after\")}()}();fmt.Println(calls)}\n",
+      "options": [
+        "[before after cleanup].",
+        "Chỉ [before].",
+        "Compiler cấm recover trong defer.",
+        "[before cleanup recovered]."
+      ],
+      "correct": 3,
+      "explanation": "Next panic bỏ statement after; defer cleanup vẫn chạy và outer recover ghi nhận."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Joined causes",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"errors\")\n\nfunc main(){a:=errors.New(\"a\");b:=errors.New(\"b\");e:=errors.Join(a,b);fmt.Println(errors.Is(e,a),errors.Is(e,b))}\n",
+      "options": [
+        "true true.",
+        "true false.",
+        "false true.",
+        "Join luôn xóa mọi identity."
+      ],
+      "correct": 0,
+      "explanation": "errors.Is có thể duyệt error tree do errors.Join tạo."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Error nil receiver",
+      "question": "Gọi p.Error() khi p là *AppError nil với implementation nguồn có an toàn không?",
+      "options": [
+        "Chỉ cần Unwrap trả nil.",
+        "Không; truy cập e.Code/e.Message dereference nil có thể panic.",
+        "Có, fmt tự tạo AppError mới trước khi method chạy.",
+        "Có, mọi Error method được miễn nil dereference."
+      ],
+      "correct": 1,
+      "explanation": "Typed nil trong error interface và nil-safe method là hai vấn đề khác nhau."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cancellation select race",
+      "question": "Select giữa result ready và ctx.Done closed có luôn chọn cancellation không?",
+      "options": [
+        "Có, chỉ cần đặt case Done đầu.",
+        "Luôn chọn result dù viết sau.",
+        "Không; cả hai ready không có priority mặc định.",
+        "Có, vì context là type đặc quyền."
+      ],
+      "correct": 2,
+      "explanation": "Nếu contract cần ưu tiên/kiểm tra sau nhận thì thiết kế rõ thay vì dựa scheduling."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "WithoutCancel lifecycle",
+      "question": "Dùng WithoutCancel cho mọi request background job có rủi ro gì?",
+      "options": [
+        "Tự an toàn vô hạn và không giữ memory.",
+        "Tự bắt mọi panic.",
+        "Tự tạo persistence cho job.",
+        "Mất cancellation/deadline gốc nên phải cấp vòng đời/giới hạn/cleanup phù hợp cho job."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng để né timeout mà bỏ quản lý tài nguyên."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Context values credentials",
+      "question": "Có nên coi WithValue là kho bí mật được mã hóa hoặc cơ chế phân quyền không?",
+      "options": [
+        "Không; chỉ mang giá trị, cần bảo vệ/kiểm tra quyền theo thiết kế riêng.",
+        "Có, mọi value tự được encrypt.",
+        "Có, key type riêng tự cấp quyền admin.",
+        "Chỉ nếu value là string."
+      ],
+      "correct": 0,
+      "explanation": "Tránh log dữ liệu nhạy cảm và không suy bảo mật từ carrier API."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Middleware nesting",
+      "question": "Với A(B(handler)), thứ tự bình thường khi cả hai gọi next rồi chạy phần after là gì?",
+      "options": [
+        "A và B luôn chạy concurrent.",
+        "A trước, B trước, handler, B sau, A sau.",
+        "B trước, A trước, handler, A sau, B sau.",
+        "Handler luôn chạy trước cả hai."
+      ],
+      "correct": 1,
+      "explanation": "Wrappers tạo call stack lồng nhau nếu không khởi concurrency riêng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Status capture interfaces",
+      "question": "Wrapper ResponseWriter chỉ cài Write/WriteHeader có đủ mọi API như Flusher/Hijacker tự động không?",
+      "options": [
+        "Có, HTTP version tự sửa wrapper.",
+        "Chỉ cần thêm field status.",
+        "Không; cần cân nhắc optional interfaces và khả năng unwrap theo API sử dụng.",
+        "Có, interface embedding luôn tự giữ mọi optional behavior qua mọi wrapper."
+      ],
+      "correct": 2,
+      "explanation": "Status logging wrapper có thể làm mất capabilities nếu thiết kế thiếu."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Timeout retries budget",
+      "question": "Retry mỗi lần WithTimeout5s có chắc tổng request không vượt5s không?",
+      "options": [
+        "Có, mọi timeout local tự chia sẻ cùng một clock budget5s.",
+        "Có, chỉ cần3 retries.",
+        "Chỉ cần cancel sau thành công.",
+        "Không; cần tổng budget/deadline parent cùng retry/backoff phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Local attempt timeout và end-to-end deadline là hai giới hạn khác nhau."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Body read canceled",
+      "question": "Đã nhận response headers có nghĩa context không còn ảnh hưởng đọc body client không?",
+      "options": [
+        "Không; request context còn kiểm soát vòng đời đọc body theo client/transport contract.",
+        "Có, context tự bỏ sau headers.",
+        "Có, Body.Close luôn đọc đủ nội dung.",
+        "Chỉ với status200 thì context mất hiệu lực."
+      ],
+      "correct": 0,
+      "explanation": "Cần truyền context và xử lý read errors cùng giới hạn size."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Request copy alias",
+      "question": "r.WithContext trả shallow copy có nghĩa Body và các dữ liệu referenced đều deep cloned không?",
+      "options": [
+        "Chỉ nếu ctx có deadline.",
+        "Không; không suy độc lập hoàn toàn cho mọi field.",
+        "Có, mọi reader/body được copy sâu.",
+        "Có, header map luôn là một DB transaction độc lập."
+      ],
+      "correct": 1,
+      "explanation": "Muốn sửa dữ liệu dùng chung cần hiểu contract Clone/WithContext và body lifetime."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Cancellation cleanup acknowledgement",
+      "question": "Gọi cancel có đồng nghĩa mọi worker đã cleanup và kết thúc không?",
+      "options": [
+        "Có, Done đóng là mọi tài nguyên đã giải phóng toàn hệ thống.",
+        "Chỉ cần sleep1ms là proof.",
+        "Không; cần join/ack riêng nếu phải chờ hoàn tất.",
+        "Có, CancelFunc luôn block đến mọi goroutine xong."
+      ],
+      "correct": 2,
+      "explanation": "Signal cancellation và completion acknowledgement khác nhau."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Source missing main evidence",
+      "question": "Fixture thêm main và fake handler có chứng minh source fetchData đã gọi HTTP thật thành công không?",
+      "options": [
+        "Có, mọi source trong cùng lesson được coi đã chạy hết.",
+        "Có, tên fetch là bằng chứng network.",
+        "Chỉ cần report exit0.",
+        "Không; chỉ chứng minh phần semantics thật được fixture thực thi."
+      ],
+      "correct": 3,
+      "explanation": "Không suy integration từ code có thể compile hoặc mô hình trong RAM."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Unwrap loss",
+      "question": "Nếu thay AppError.Unwrap bằng return nil bất kể Err, errors.Is còn tự tìm Err bên trong không?",
+      "options": [
+        "Không theo chain mặc định đó; nguyên nhân không được expose qua Unwrap.",
+        "Có, errors.Is tự đọc mọi field private/public.",
+        "Có, tên Err tự là protocol reflection.",
+        "Chỉ nếu Code500."
+      ],
+      "correct": 0,
+      "explanation": "Contract method chứ không tên field quyết định traversal mặc định."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Context key comparability",
+      "question": "Dùng slice làm key trực tiếp cho WithValue có hợp lệ không?",
+      "options": [
+        "Chỉ nếu slice ngắn hơn10.",
+        "Không; key phải comparable, slice không comparable.",
+        "Có, mọi any đều làm key được.",
+        "Có, context tự hash mọi bytes."
+      ],
+      "correct": 1,
+      "explanation": "Không chạy hoặc chấp nhận thiết kế key sai chỉ vì signature nhận any."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Middleware panic recovery scope",
+      "question": "Recover ở goroutine handler có bắt panic từ goroutine khác do nó tạo không?",
+      "options": [
+        "Có nếu cùng request context.",
+        "Chỉ cần dùng AppError.",
+        "Không; recover áp dụng trong goroutine đang unwind theo quy tắc defer.",
+        "Có, wrapper tự bắt mọi panic process."
+      ],
+      "correct": 2,
+      "explanation": "Goroutine con cần vòng đời/error handling phù hợp, không suy recovery toàn process."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Source readiness",
+      "question": "Muốn fetchData đáp ứng contract tải dữ liệu thực tế cần bổ sung gì?",
+      "options": [
+        "Chỉ đổi comment simplified thành production.",
+        "Chỉ tăng timeout lên1h.",
+        "Chỉ log URL rồi return nil,nil.",
+        "Xử lý lỗi tạo request, status/body/limits, context/error policy và kiểm thử đúng phạm vi trước khi tuyên bố hoàn chỉnh."
+      ],
+      "correct": 3,
+      "explanation": "Ví dụ skeleton không tự đáp ứng dữ liệu, an toàn và vận hành của ứng dụng."
+    }
+  ]
+}

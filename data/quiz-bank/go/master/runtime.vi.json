@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "master",
+  "lesson": "runtime",
+  "language": "vi",
+  "sourceHash": "ab30b1f3a8a4248ae95b81dae3acab73c1e1b54b6a8c3daf0ac841ee01a3607d",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source/local Go1.26.1 runtime/debug/unsafe/cmd-go docs và Go1.26 release notes Green Tea default. Selected finite child-process fixtures, settings restored in child, no app/global config change. Không dự đoán CPU/goroutine/address/heap counts cố định, không dereference pointer tùy ý, không chạy generator/profiler listener. MemoryLimit soft runtime-managed bytes không RSS hard cap; source double-comment directives không active. Layout exact chỉ windows/amd64 scope, không đo escape/GC performance hoặc claim collector flags đã được quan sát.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Runtime package",
+      "question": "runtime package cho phép quan sát/điều khiển gì trong phạm vi API?",
+      "options": [
+        "Một số thông tin scheduler,goroutines,memory và runtime settings.",
+        "Mọi query DB tự động.",
+        "Mọi user password.",
+        "Một deployment cloud mới."
+      ],
+      "correct": 0,
+      "explanation": "Các API cần đọc đúng contract và version."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "GMP G",
+      "question": "G trong mô hình GMP thường đại diện gì?",
+      "options": [
+        "GPU bắt buộc.",
+        "Goroutine.",
+        "Garbage byte.",
+        "Global SQL table."
+      ],
+      "correct": 1,
+      "explanation": "Đây là mô hình runtime implementation, không phải mỗi G là OS process."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "GMP M",
+      "question": "M thường tương ứng gì trong mô hình runtime?",
+      "options": [
+        "Một HTTP message.",
+        "Một memory limit byte.",
+        "OS thread/runtime machine.",
+        "Một map Go bất kỳ."
+      ],
+      "correct": 2,
+      "explanation": "Goroutines được multiplex lên threads."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "GMP P",
+      "question": "P liên quan thành phần nào?",
+      "options": [
+        "Một process riêng cho mỗi user.",
+        "Một con trỏ bất kỳ.",
+        "Một package import.",
+        "Tài nguyên scheduler cần để thực thi Go code theo mô hình runtime."
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất số P với tổng OS threads hoặc goroutines."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "GOMAXPROCS query",
+      "question": "runtime.GOMAXPROCS(0) trong source chủ yếu làm gì?",
+      "options": [
+        "Lấy setting hiện tại mà không đổi nó.",
+        "Đặt số processors về0.",
+        "Xóa mọi goroutine.",
+        "Bắt buộc dùng mọi physical CPU."
+      ],
+      "correct": 0,
+      "explanation": "API không đổi setting khi n<1."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Goroutine count",
+      "question": "runtime.NumGoroutine() trả gì?",
+      "options": [
+        "Một hằng luôn bằng1.",
+        "Số goroutines đang tồn tại tại thời điểm quan sát.",
+        "Số users đăng ký.",
+        "Số OS threads chính xác."
+      ],
+      "correct": 1,
+      "explanation": "Không hardcode output của source từ một lần chạy khác."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "CPU count",
+      "question": "runtime.NumCPU() mô tả gì theo docs?",
+      "options": [
+        "Số goroutines tối đa.",
+        "Số requests mỗi giây.",
+        "Số logical CPUs usable được ghi nhận theo process startup contract.",
+        "Luôn số cores vật lý."
+      ],
+      "correct": 2,
+      "explanation": "Không tự là capacity/RPS hay mặc định GOMAXPROCS trong mọi môi trường."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "GC percentage",
+      "question": "SetGCPercent(100) điều chỉnh gì?",
+      "options": [
+        "Hard cap process100MB.",
+        "Số goroutines100.",
+        "Tốc độ CPU tăng100%.",
+        "GC target percentage theo runtime contract."
+      ],
+      "correct": 3,
+      "explanation": "GC target còn chịu memory limit và runtime policy."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Memory limit unit",
+      "question": "1<<30 bytes tương ứng gì?",
+      "options": [
+        "1GiB, tức1073741824 bytes.",
+        "1GB thập phân chính xác1000000000 bytes.",
+        "1MiB.",
+        "30bytes."
+      ],
+      "correct": 0,
+      "explanation": "Source gọi1GB theo cách nói phổ biến, nhưng số bytes là binary GiB."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Soft memory limit",
+      "question": "SetMemoryLimit cung cấp giới hạn kiểu nào?",
+      "options": [
+        "Giới hạn số TCP sockets.",
+        "Soft limit cho memory được runtime quản lý theo docs.",
+        "Hard RSS cap mọi memory process không ngoại lệ.",
+        "Disk quota."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất với cgroup/OS hard memory limit."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Read memory stats",
+      "question": "runtime.ReadMemStats(&m) làm gì?",
+      "options": [
+        "Tạo database backup.",
+        "Tự tối ưu mọi allocation.",
+        "Đọc statistics về memory allocator/runtime vào m.",
+        "Tự giải phóng mọi memory leak."
+      ],
+      "correct": 2,
+      "explanation": "Snapshot có giá trị tại thời điểm và contract của các fields."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Alloc field",
+      "question": "m.Alloc chủ yếu liên quan gì?",
+      "options": [
+        "Toàn bộ RSS chắc chắn.",
+        "Dung lượng disk image.",
+        "Số request HTTP.",
+        "Bytes của allocated heap objects đang dùng theo MemStats contract."
+      ],
+      "correct": 3,
+      "explanation": "Không coi mọi memory metrics là cùng một loại."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Sys field",
+      "question": "m.Sys gần với khái niệm nào?",
+      "options": [
+        "Tổng bytes memory lấy từ OS cho các thành phần runtime được tính trong field.",
+        "Chỉ bytes user strings.",
+        "Mọi memory external chưa bao giờ được Go quản lý.",
+        "Một số users."
+      ],
+      "correct": 0,
+      "explanation": "Sys không tự là live heap hay hard RSS measurement."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "NumGC field",
+      "question": "m.NumGC thể hiện gì?",
+      "options": [
+        "Số heap allocations.",
+        "Số GC cycles hoàn tất theo MemStats.",
+        "Số goroutines.",
+        "Số CPUs."
+      ],
+      "correct": 1,
+      "explanation": "Counter khác frequency, pause duration hoặc garbage bytes."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "MiB display",
+      "question": "m.Alloc/1024/1024 tính đơn vị gần đúng nào?",
+      "options": [
+        "GiB.",
+        "Số objects.",
+        "MiB theo số nguyên bị cắt phần lẻ.",
+        "MB thập phân theo1000²."
+      ],
+      "correct": 2,
+      "explanation": "Source label MB chưa nêu chính xác đơn vị binary của phép chia."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Escape analysis",
+      "question": "Escape analysis chủ yếu giúp compiler quyết định gì?",
+      "options": [
+        "User có quyền đọc database hay không.",
+        "Mọi network request có timeout hay không.",
+        "Một type luôn immutable.",
+        "Vị trí/lifetime allocation phù hợp như stack hay heap trong implementation."
+      ],
+      "correct": 3,
+      "explanation": "Quyết định có thể thay đổi theo code/optimization/compiler version."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Compiler diagnostics flag",
+      "question": "go build -gcflags=\"-m\" thường dùng để xem gì?",
+      "options": [
+        "Compiler diagnostics về optimization/escape theo version.",
+        "Một benchmark CPU đầy đủ.",
+        "Một network trace.",
+        "Một database migration."
+      ],
+      "correct": 0,
+      "explanation": "Không coi diagnostics là kết quả đo performance production."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Unsafe role",
+      "question": "unsafe.Pointer cho phép gì ở mức khái niệm?",
+      "options": [
+        "Tự deep clone objects.",
+        "Chuyển đổi pointer theo các patterns/caveats ngoài type safety thông thường.",
+        "Tự làm mọi memory access an toàn.",
+        "Tự tăng precision float."
+      ],
+      "correct": 1,
+      "explanation": "Cần tuân thủ contract, không dùng pointer tùy ý để thử đáp án."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Int64 size",
+      "question": "unsafe.Sizeof một int64 cho kích thước nào?",
+      "options": [
+        "64bytes.",
+        "Phụ thuộc giá trị42 hay43.",
+        "8bytes.",
+        "4bytes trong mọi implementation."
+      ],
+      "correct": 2,
+      "explanation": "int64 có64bits, kích thước value không theo số chữ số thập phân."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Pointer display",
+      "question": "Có thể đặt expected output địa chỉ pointer nguồn cố định cho mọi lần chạy không?",
+      "options": [
+        "Có, luôn0x42.",
+        "Có, địa chỉ phụ thuộc tên biến x duy nhất.",
+        "Chỉ cần tắt fmt.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Địa chỉ phụ thuộc runtime/memory layout, không là stable quiz answer."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Int64 sizeof",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){var x int64=42;fmt.Println(unsafe.Sizeof(x))}\n",
+      "options": [
+        "8.",
+        "42.",
+        "64.",
+        "0."
+      ],
+      "correct": 0,
+      "explanation": "Sizeof đo kích thước value int64, không đọc nội dung số42."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Positive usable CPU count",
+      "question": "Trên executable local, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime\")\n\nfunc main(){fmt.Println(runtime.NumCPU()>0)}\n",
+      "options": [
+        "NumCPU luôn bằng0.",
+        "true.",
+        "false.",
+        "Một số physical cores cố định."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ kiểm tra count dương, không hardcode số CPU máy."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "At least main goroutine",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime\")\n\nfunc main(){fmt.Println(runtime.NumGoroutine()>=1)}\n",
+      "options": [
+        "NumGoroutine luôn chính xác1 là output code này.",
+        "Compiler cấm API ở main.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Có goroutine main, nhưng số thực tế không được giả luôn1."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Child process GOMAXPROCS",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime\")\n\nfunc main(){old:=runtime.GOMAXPROCS(1);defer runtime.GOMAXPROCS(old);fmt.Println(runtime.GOMAXPROCS(0))}\n",
+      "options": [
+        "0.",
+        "Luôn NumCPU.",
+        "GOMAXPROCS1 giết mọi goroutine khác.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "Đặt explicit1 rồi query trong child; deferred restore không thay config ứng dụng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "GC prior setting result",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime/debug\")\n\nfunc main(){old:=debug.SetGCPercent(200);defer debug.SetGCPercent(old);previous:=debug.SetGCPercent(300);fmt.Println(previous)}\n",
+      "options": [
+        "200.",
+        "300.",
+        "100 chắc chắn là giá trị được in.",
+        "SetGCPercent không trả giá trị."
+      ],
+      "correct": 0,
+      "explanation": "Lần thứ hai trả setting200 vừa đặt, không đo giá trị env ban đầu."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Read memory limit",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime/debug\")\n\nfunc main(){old:=debug.SetMemoryLimit(1<<30);defer debug.SetMemoryLimit(old);fmt.Println(debug.SetMemoryLimit(-1))}\n",
+      "options": [
+        "Tự allocate1GiB để kiểm tra.",
+        "1073741824.",
+        "1000000000.",
+        "30."
+      ],
+      "correct": 1,
+      "explanation": "SetMemoryLimit(-1) đọc setting mà không đổi, không cấp phát bằng limit."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Binary memory units",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){var bytes uint64=3*1024*1024;fmt.Println(bytes/1024/1024)}\n",
+      "options": [
+        "3.145728.",
+        "0.",
+        "3.",
+        "3145728."
+      ],
+      "correct": 2,
+      "explanation": "Phép chia integer theo1024² cho3MiB."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Padding amd64",
+      "question": "Với toolchain windows/amd64 đang kiểm tra, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){var x struct{A byte;B int64};fmt.Println(unsafe.Sizeof(x))}\n",
+      "options": [
+        "9.",
+        "8.",
+        "1.",
+        "16."
+      ],
+      "correct": 3,
+      "explanation": "Struct có padding để align int64; đây là layout được giới hạn architecture."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Valid pointer round trip",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){var x int64=42;p:=unsafe.Pointer(&x);q:=(*int64)(p);*q=7;fmt.Println(x)}\n",
+      "options": [
+        "7.",
+        "42.",
+        "Một địa chỉ cố định.",
+        "Mọi unsafe.Pointer đều tự panic."
+      ],
+      "correct": 0,
+      "explanation": "Chuyển pointer tới int64 qua unsafe.Pointer rồi về đúng kiểu và referent còn sống."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "KeepAlive scope",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime\")\n\nfunc main(){x:=new(int);*x=1;fmt.Println(*x);runtime.KeepAlive(x)}\n",
+      "options": [
+        "KeepAlive tự tăng giá trị.",
+        "1.",
+        "0.",
+        "KeepAlive tự giải phóng x trước Println."
+      ],
+      "correct": 1,
+      "explanation": "KeepAlive giữ reachability tới điểm gọi, không thay nội dung hay là synchronization."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "String data pointer",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){s:=\"Go\";fmt.Println(unsafe.StringData(s)!=nil)}\n",
+      "options": [
+        "unsafe.StringData luôn copy string.",
+        "Compiler không có unsafe.StringData ở Go1.26.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "String không rỗng có data pointer; không được sửa bytes của string qua pointer này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Slice descriptor size",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){a:=make([]int,1);b:=make([]int,100);fmt.Println(unsafe.Sizeof(a)==unsafe.Sizeof(b))}\n",
+      "options": [
+        "false.",
+        "Sizeof slice bằng tổng bytes backing array.",
+        "Panic vì slice dài100.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Sizeof slice đo descriptor, không bao gồm memory referenced."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Map descriptor versus contents",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){a:=map[int]int{};b:=map[int]int{1:2,3:4};fmt.Println(unsafe.Sizeof(a)==unsafe.Sizeof(b))}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Sizeof tự đếm mọi map entries.",
+        "Panic vì map không có Sizeof."
+      ],
+      "correct": 0,
+      "explanation": "Sizeof value map không đo toàn bộ allocations của map."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "New zero int",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){p:=new(int);fmt.Println(*p)}\n",
+      "options": [
+        "Code chứng minh allocation luôn trên heap.",
+        "0.",
+        "nil.",
+        "Một giá trị rác."
+      ],
+      "correct": 1,
+      "explanation": "new(int) khởi tạo zero value; vị trí allocation do compiler quyết định."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "New expression Go126",
+      "question": "Trên Go1.26.1 và module go1.26.0, chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){p:=new(7);fmt.Println(*p)}\n",
+      "options": [
+        "Compiler bắt buộc từ chối vì new chỉ nhận type ở mọi version.",
+        "Một pointer address cố định.",
+        "7.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "Go1.26 cho phép new với expression tạo biến có giá trị khởi tạo đó."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Runtime version scope",
+      "question": "Với toolchain1.26.1 đã ghi nhận, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime\";\"strings\")\n\nfunc main(){fmt.Println(strings.HasPrefix(runtime.Version(),\"go1.26.\"))}\n",
+      "options": [
+        "false.",
+        "Version luôn lấy từ biến user tự khai báo.",
+        "Compiler tự update qua network.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "runtime.Version phản ánh toolchain của binary; fixture không đổi version."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Negative GC target",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime/debug\")\n\nfunc main(){old:=debug.SetGCPercent(-1);defer debug.SetGCPercent(old);fmt.Println(debug.SetGCPercent(100))}\n",
+      "options": [
+        "-1.",
+        "100.",
+        "0.",
+        "Compiler cấm SetGCPercent âm."
+      ],
+      "correct": 0,
+      "explanation": "Lần đặt100 trả setting-1 vừa đặt; memory limit vẫn có thể buộc GC theo docs."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Explicit GC count",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime\")\n\nfunc main(){var before,after runtime.MemStats;runtime.ReadMemStats(&before);runtime.GC();runtime.ReadMemStats(&after);fmt.Println(after.NumGC>before.NumGC)}\n",
+      "options": [
+        "runtime.GC tự bảo đảm mọi memory về OS ngay.",
+        "true.",
+        "false.",
+        "NumGC luôn reset về0."
+      ],
+      "correct": 1,
+      "explanation": "runtime.GC hoàn tất một cycle trước khi trả; chỉ kiểm tra counter tăng, không memory reclaimed bao nhiêu."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Negative memory limit query",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"runtime/debug\")\n\nfunc main(){a:=debug.SetMemoryLimit(-1);b:=debug.SetMemoryLimit(-1);fmt.Println(a==b)}\n",
+      "options": [
+        "Mỗi read-1 tự giảm limit1byte.",
+        "SetMemoryLimit-1 luôn panic.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Hai reads không thay setting, không suy số ban đầu từ environment."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Invalid direct pointer integer cast",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){x:=1;fmt.Println(uintptr(&x))}\n",
+      "options": [
+        "Có, uintptr luôn giống pointer trong type system.",
+        "Có, compiler tự insert mọi unsafe conversions.",
+        "Chỉ lỗi nếu x bằng0.",
+        "Không; không chuyển trực tiếp *int sang uintptr bằng cú pháp này."
+      ],
+      "correct": 3,
+      "explanation": "Pointer conversion patterns yêu cầu đúng types và caveats; không dereference địa chỉ tùy ý."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Actual counts source",
+      "question": "Có nên cố định NumCPU,NumGoroutine,Alloc,Sys,NumGC như source output chung không?",
+      "options": [
+        "Không; phụ thuộc môi trường/runtime/thời điểm và workload.",
+        "Có, tên package main xác định mọi số.",
+        "Có, SetGCPercent100 làm tất cả bằng100.",
+        "Chỉ khi cùng filename."
+      ],
+      "correct": 0,
+      "explanation": "Quiz nên hỏi contract/điều kiện hoặc dùng fixture xác định thay vì đoán runtime numbers."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Default GOMAXPROCS",
+      "question": "Go1.26 có luôn mặc định GOMAXPROCS=NumCPU trong mọi môi trường không?",
+      "options": [
+        "Luôn bằng1.",
+        "Không; env,affinity,container quota và compatibility settings có thể ảnh hưởng.",
+        "Có tuyệt đối mọi OS.",
+        "Chỉ phụ thuộc số goroutines."
+      ],
+      "correct": 1,
+      "explanation": "Local docs runtime/debug.go nêu default có thể thay theo environment/version."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "OS threads count",
+      "question": "GOMAXPROCS2 có nghĩa process chỉ được có đúng2 OS threads không?",
+      "options": [
+        "Có, mọi goroutine mới bị từ chối sau2.",
+        "Chỉ với Windows thì mọi loại thread đều đúng2.",
+        "Không; đó không phải tổng threads cap.",
+        "Có, mọi syscall và runtime threads bị giới hạn2 tổng cộng."
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt scheduler Go execution resources với toàn bộ process threads."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Concurrent versus parallel",
+      "question": "GOMAXPROCS1 có làm chương trình không còn concurrency logic không?",
+      "options": [
+        "Có, mọi data race tự được chứng minh không thể.",
+        "Có, channel trở thành slice.",
+        "Chỉ cần1 CPU để bỏ mọi locks.",
+        "Không; goroutines vẫn có thể được interleave, concurrency khác parallel execution."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng setting1 thay synchronization correctness."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "GC percent tradeoff",
+      "question": "Tăng GOGC/target thường hướng tới tradeoff nào?",
+      "options": [
+        "Cho phép heap growth nhiều hơn để giảm tần suất/chi phí GC trong những workload phù hợp, cần đo.",
+        "Luôn giảm cả memory lẫn CPU tuyệt đối.",
+        "Tự sửa mọi leaks.",
+        "Tự đặt hard RSS cap."
+      ],
+      "correct": 0,
+      "explanation": "Memory limit/workload/runtime policy có thể thay kết quả thực tế."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Memory outside Go",
+      "question": "SetMemoryLimit có tính mọi memory cgo/OS/binary vào một hard cap không?",
+      "options": [
+        "Chỉ nếu limit là1GiB.",
+        "Không; docs loại trừ một số memory ngoài runtime quản lý.",
+        "Có, cả memory của process khác.",
+        "Có, đó là OS kill threshold."
+      ],
+      "correct": 1,
+      "explanation": "Cần headroom và quan sát đúng metrics của deployment."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "GOGC off nuance",
+      "question": "SetGCPercent(-1) có bảo đảm GC không chạy trong mọi tình huống không?",
+      "options": [
+        "Có, runtime.GC không còn tồn tại.",
+        "Chỉ nếu có unsafe.",
+        "Không; memory limit vẫn có thể dẫn tới GC.",
+        "Có, mọi GC API bị vô hiệu hóa hoàn toàn."
+      ],
+      "correct": 2,
+      "explanation": "Không dạy negative target như cấm tuyệt đối GC bất kể limits."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Allocation cost",
+      "question": "Nhận xét source stack allocation is free nên hiểu chính xác thế nào?",
+      "options": [
+        "Mọi stack allocation dùng0bytes.",
+        "Stack không cần lifetime.",
+        "Mọi heap allocation luôn chậm hơn vô hạn.",
+        "Không literal miễn phí; thường giảm GC heap pressure nhưng vẫn có chi phí/giới hạn."
+      ],
+      "correct": 3,
+      "explanation": "Cần profile/benchmark thay slogans về chi phí tuyệt đối."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Pointer escape inference",
+      "question": "Có con trỏ trong code có đủ kết luận object luôn heap allocated không?",
+      "options": [
+        "Không; escape analysis/inlining/context quyết định trong compiler cụ thể.",
+        "Có, mọi &x luôn heap.",
+        "Chỉ nếu x int.",
+        "Nếu dùng new thì specification bắt heap bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Ngữ nghĩa lifetime khác vị trí storage optimization."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Pointer lifetime rule",
+      "question": "Có thể return pointer tới local Go variable an toàn về lifetime không?",
+      "options": [
+        "Chỉ khi biến global export.",
+        "Có; runtime/compiler bảo đảm lifetime theo semantics, không như dangling stack pointer tùy ý.",
+        "Không, mọi pointer local luôn dangling ngay.",
+        "Chỉ nếu dùng unsafe."
+      ],
+      "correct": 1,
+      "explanation": "Không cần đoán vị trí stack/heap để suy lifetime hợp lệ của Go pointer thông thường."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Sizeof not deep size",
+      "question": "unsafe.Sizeof(string/slice/interface) có bao gồm toàn bộ referenced data không?",
+      "options": [
+        "Chỉ với slices thì có.",
+        "Chỉ nếu value non-nil.",
+        "Không.",
+        "Có, luôn recursively đo mọi allocations."
+      ],
+      "correct": 2,
+      "explanation": "Muốn phân tích memory workload cần metrics/profiles phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "uintptr liveness",
+      "question": "Giữ một uintptr có bảo đảm GC xem object đó còn reachable như pointer không?",
+      "options": [
+        "Có, mọi integer tự là GC root.",
+        "Chỉ nếu số khác0.",
+        "Chỉ khi in ra hex.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Không lưu địa chỉ kiểu integer rồi dereference tùy ý sau này."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Valid unsafe patterns",
+      "question": "go vet im lặng có chứng minh mọi unsafe usage an toàn không?",
+      "options": [
+        "Không; docs unsafe nói silence không là guarantee code hợp lệ.",
+        "Có, vet chứng minh toàn bộ memory safety.",
+        "Có, compile success là đủ.",
+        "Chỉ cần uintptr8bytes."
+      ],
+      "correct": 0,
+      "explanation": "Cần tuân patterns/caveats và kiểm tra đúng phạm vi, không chạy UB để đoán."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Build tag placement",
+      "question": "Directive //go:build thực sự cần đặt ở đâu theo build rules?",
+      "options": [
+        "Sau return như statement.",
+        "Gần đầu file trước package clause theo quy tắc comments/blank lines.",
+        "Bất kỳ trong function body cũng tạo filter file.",
+        "Trong JSON body."
+      ],
+      "correct": 1,
+      "explanation": "Source hiển thị double-comment bên trong main nên không active."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Double comment directives",
+      "question": "// //go:build linux && amd64 trong source có active directive không?",
+      "options": [
+        "Chỉ trên Linux thì parser tự sửa.",
+        "Chỉ nếu unsafe imported.",
+        "Không; đó là comment về một comment.",
+        "Có, Go tự bỏ mọi dấu // dư."
+      ],
+      "correct": 2,
+      "explanation": "Đừng gọi source đã được lọc Linux/amd64 bởi dòng này."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Generate separate step",
+      "question": "go build có tự chạy mọi //go:generate directives không?",
+      "options": [
+        "Có, mọi compile đều chạy generator tự động.",
+        "Có, chỉ khi stringer chưa cài.",
+        "Chỉ trên Windows.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "go generate là bước riêng và có thể chạy commands; không thực hiện trong tác vụ này."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Stringer external tool",
+      "question": "Comment go:generate stringer có chứng minh tool đã cài/chạy/generated files tồn tại không?",
+      "options": [
+        "Không.",
+        "Có, compiler tự tải tool.",
+        "Có, runtime tự gọi stringer mỗi fmt.Println.",
+        "Chỉ cần Status có type."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa cung cấp đầy đủ Status/tool/build evidence."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "GC collector version",
+      "question": "Go1.26 release notes nêu collector nào được bật mặc định?",
+      "options": [
+        "Không có GC nữa.",
+        "Green Tea, sau giai đoạn experimental ở1.25.",
+        "Một collector không bao giờ scan objects.",
+        "Một reference counter đơn giản bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Đây là release default, không là benchmark hoặc quan sát GOEXPERIMENT thực tế của mọi binary."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "GC shorthand",
+      "question": "Tri-color mark-and-sweep trong theory có đủ mô tả mọi chi tiết collector Go1.26 không?",
+      "options": [
+        "Có, GC không có concurrent phases.",
+        "Chỉ cần nhớ ba màu là đo được pause.",
+        "Không; là khái niệm nền, implementation đã có thay đổi như Green Tea.",
+        "Có, mọi version cùng code GC bất biến."
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt conceptual model với version-specific implementation và measurements."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Profiling scope",
+      "question": "CPU profile và heap profile giúp trả lời cùng một câu hỏi tuyệt đối không?",
+      "options": [
+        "Có, mọi profile chỉ là số users.",
+        "Có, CPU profile tự chứng minh không leak.",
+        "Chỉ cần một screenshot source.",
+        "Không; chúng quan sát các loại chi phí/dữ liệu khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Chọn tool/metric/workload theo vấn đề cần kiểm chứng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "String descriptor size",
+      "question": "Trên windows/amd64, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\";\"strings\")\n\nfunc main(){a:=\"x\";b:=strings.Repeat(\"x\",100);fmt.Println(unsafe.Sizeof(a),unsafe.Sizeof(a)==unsafe.Sizeof(b))}\n",
+      "options": [
+        "16 true.",
+        "1 false.",
+        "100 true.",
+        "Sizeof luôn bằng len string."
+      ],
+      "correct": 0,
+      "explanation": "Sizeof string descriptor không tính bytes string referenced; exact16 giới hạn architecture."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Struct field offset",
+      "question": "Trên windows/amd64, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){var x struct{A byte;B int64};fmt.Println(unsafe.Offsetof(x.B))}\n",
+      "options": [
+        "0.",
+        "8.",
+        "1.",
+        "9."
+      ],
+      "correct": 1,
+      "explanation": "Alignment làm field B có offset8 trong struct cụ thể."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Inert build comment",
+      "question": "Build file này trên windows/amd64 có thể in gì?",
+      "code": "// //go:build linux && amd64\npackage main\nimport \"fmt\"\nfunc main(){fmt.Println(\"runs\")}\n",
+      "options": [
+        "Compiler tự đổi GOOS thành linux.",
+        "Không có main vì comment xóa nó.",
+        "runs.",
+        "Luôn bị loại bởi Linux tag active."
+      ],
+      "correct": 2,
+      "explanation": "Dòng double-comment không là directive; fixture compile explicit file, không là bài test package file-selection đầy đủ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Generate not invoked",
+      "question": "go build rồi chạy executable của file này in gì?",
+      "code": "//go:generate quiz-tool-not-installed --demo\npackage main\nimport \"fmt\"\nfunc main(){fmt.Println(\"build only\")}\n",
+      "options": [
+        "Tự thực thi quiz-tool-not-installed.",
+        "Luôn lỗi vì generator chưa cài dù chỉ build.",
+        "Tự tải generator từ internet.",
+        "build only."
+      ],
+      "correct": 3,
+      "explanation": "Build không thực hiện go generate; directive chỉ được để nguyên trong source fixture."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Pointer integer width scope",
+      "question": "Trên windows/amd64 đã ghi nhận, chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"unsafe\")\n\nfunc main(){fmt.Println(unsafe.Sizeof(uintptr(0)))}\n",
+      "options": [
+        "8.",
+        "4.",
+        "64bytes.",
+        "Một địa chỉ cố định."
+      ],
+      "correct": 0,
+      "explanation": "uintptr size phản ánh word size ở target này, không áp lên mọi architecture."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Soft limit versus OOM",
+      "question": "Đặt runtime memory limit bằng đúng container hard limit có bảo đảm tránh OOM không?",
+      "options": [
+        "Chỉ cần GOGC100.",
+        "Không; cần headroom cho memory ngoài accounting và overhead/workload.",
+        "Có, runtime không bao giờ vượt soft limit.",
+        "Có, OS luôn bỏ qua cgroup limit."
+      ],
+      "correct": 1,
+      "explanation": "Soft target và OS kill policy không đồng nhất."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Live heap above budget",
+      "question": "Nếu live data cần giữ đã vượt limit, GC có thể tự làm mọi dữ liệu đó biến mất an toàn không?",
+      "options": [
+        "Có, SetMemoryLimit biến map thành disk.",
+        "Chỉ cần gọi GC trong loop.",
+        "Không; live references và requirements vẫn tồn tại, cần bound/reduce workload/state.",
+        "Có, GC tự xóa random live objects."
+      ],
+      "correct": 2,
+      "explanation": "GC thu unreachable data, không giải quyết mọi growth do state còn reachable."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "GC pressure tradeoff",
+      "question": "Tuning GOGC thấp nhất có luôn tối ưu latency và throughput không?",
+      "options": [
+        "Có, càng thấp luôn miễn phí.",
+        "Có, memory thấp nghĩa mọi latency thấp.",
+        "Chỉ cần1 test input.",
+        "Không; cần đo CPU,allocation rate,live heap,pause và SLO cụ thể."
+      ],
+      "correct": 3,
+      "explanation": "Tradeoff cần measurements đúng workload, không hứa gains cố định."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "GreenTea speed claim",
+      "question": "Release notes có nêu giảm overhead GC thì có được khẳng định ứng dụng này nhanh hơn40% không?",
+      "options": [
+        "Không; cần benchmark/profile của ứng dụng và môi trường cụ thể.",
+        "Có, mọi code Go tăng40% end-to-end.",
+        "Có, memory limit tự nhân CPU speed.",
+        "Chỉ cần binary build bằng1.26."
+      ],
+      "correct": 0,
+      "explanation": "GC overhead khác toàn bộ request latency; không áp con số minh họa như cam kết."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Goroutine leak GC",
+      "question": "Một goroutine blocked send còn giữ dữ liệu có tự được thu chỉ vì caller không còn dùng kết quả không?",
+      "options": [
+        "Chỉ nếu channel unbuffered.",
+        "Không nên coi GC là cơ chế dừng goroutine; cần cancel/drain/join phù hợp.",
+        "Có, GC luôn kill mọi blocked goroutine.",
+        "Chỉ cần gọi ReadMemStats."
+      ],
+      "correct": 1,
+      "explanation": "Reachability/leak detection và lifecycle cleanup là chuyện khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Explicit GC memory release",
+      "question": "runtime.GC trả về có chứng minh RSS giảm ngay về mức tối thiểu không?",
+      "options": [
+        "Có, mọi leaked live object bị xóa.",
+        "Chỉ cần NumGC tăng.",
+        "Không; collection,allocator reuse và trả pages về OS có semantics khác nhau.",
+        "Có, mọi heap pages lập tức biến mất."
+      ],
+      "correct": 2,
+      "explanation": "Không suy hiệu quả reclamation từ counter cycle đơn lẻ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Escape diagnostics stability",
+      "question": "Compiler báo một allocation escapes hôm nay có là API guarantee mọi compiler/version luôn vậy không?",
+      "options": [
+        "Có, diagnostics là language contract cố định.",
+        "Có, mọi pointer luôn heap như nhau.",
+        "Chỉ cần tên biến không đổi.",
+        "Không; implementation optimization có thể đổi khi code/context/version thay."
+      ],
+      "correct": 3,
+      "explanation": "Lưu toolchain/flags/source khi dùng bằng chứng về allocations."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Unsafe bounds",
+      "question": "Có thể lấy địa chỉ arbitrary từ uintptr rồi đọc để xem quiz đáp án đúng không?",
+      "options": [
+        "Không; chỉ dùng valid pointer patterns/referents theo contract, không chạy invalid memory access để đoán.",
+        "Có, compile success làm mọi địa chỉ hợp lệ.",
+        "Có, uintptr khác0 luôn là object Go.",
+        "Chỉ cần unsafe imported."
+      ],
+      "correct": 0,
+      "explanation": "Bằng chứng chỉ dùng pointer round-trip tới object còn sống và đúng kiểu."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Data race not scheduler setting",
+      "question": "Giảm GOMAXPROCS1 có thay việc sửa unsynchronized shared mutation không?",
+      "options": [
+        "Chỉ cần NumCPU1.",
+        "Không; correctness cần synchronization/ownership, không dựa lịch tình cờ.",
+        "Có, mọi concurrency bugs biến mất theo spec.",
+        "Có, runtime tự atomic hóa mọi map writes."
+      ],
+      "correct": 1,
+      "explanation": "Không dùng output đúng một lần làm race proof."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Build tags actual selection",
+      "question": "Fixture go build main.go có đủ chứng minh package file-selection theo build tags trên mọi target không?",
+      "options": [
+        "Có, double-comment tag đã active.",
+        "Chỉ cần đặt tên file main.",
+        "Không; explicit file list và package selection khác nhau, cần test đúng lệnh/targets khi muốn claim đó.",
+        "Có, mọi lệnh go build cùng selection rules tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Báo cáo giữ scope compile source, còn directive rules được review theo docs."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Generate supply chain",
+      "question": "Vì sao không tự chạy directive generator lạ chỉ để kiểm tra ví dụ?",
+      "options": [
+        "Vì go generate chỉ đọc comment không bao giờ thực thi gì.",
+        "Vì compiler không hỗ trợ generator nào.",
+        "Chỉ cần đổi tên tool là an toàn.",
+        "go generate có thể thực thi commands; cần đúng scope/tooling/authorization và không cần cho câu hỏi này."
+      ],
+      "correct": 3,
+      "explanation": "Task này không tải/chạy stringer hoặc generator bên ngoài."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Runtime stats interpretation",
+      "question": "Alloc giảm nhưng Sys không giảm tương ứng có nhất thiết là leak không?",
+      "options": [
+        "Không; runtime có thể giữ memory để reuse, cần metrics/profile/workload theo thời gian.",
+        "Có, hai số luôn bằng nhau theo spec.",
+        "Có, Sys chỉ là Alloc được đổi đơn vị.",
+        "Chỉ cần gọi log.Fatal."
+      ],
+      "correct": 0,
+      "explanation": "Không kết luận leak từ một snapshot không có ngữ cảnh."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Pprof endpoint scope",
+      "question": "Import net/http/pprof rồi mở public listener có cần coi là mặc định harmless trong content test không?",
+      "options": [
+        "Chỉ cần port8080.",
+        "Không; không cần mở endpoint để soạn quiz, profiling surface cần quản lý theo deployment.",
+        "Có, mọi profiler tự bảo mật tuyệt đối.",
+        "Có, endpoint không bao giờ có dữ liệu nhạy cảm."
+      ],
+      "correct": 1,
+      "explanation": "Không mở profiler/listener trong fixtures hiện tại."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Collector default evidence",
+      "question": "Biết Go1.26 default Green Tea có bằng chứng binary này được đo collector flags và gains chưa?",
+      "options": [
+        "Có, mọi GOEXPERIMENT được tự in vào quiz.",
+        "Chỉ cần heap nhỏ.",
+        "Chưa; release default khác quan sát build/runtime flags và measurements của binary cụ thể.",
+        "Có, version string là full profile."
+      ],
+      "correct": 2,
+      "explanation": "Không giả quan sát những flags/profile chưa ghi nhận."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "System readiness",
+      "question": "Runtime tuning source có đủ khiến toàn website sẵn sàng triệu người dùng không?",
+      "options": [
+        "Có, SetMemoryLimit1GiB là capacity proof.",
+        "Có, Go scheduler tự sửa mọi query chậm.",
+        "Chỉ cần8byte int64.",
+        "Không; còn kiến trúc,storage,concurrency,workload,SLAs và kiểm chứng hệ thống."
+      ],
+      "correct": 3,
+      "explanation": "Tuning cục bộ là một phần nhỏ, không thay đo và thiết kế toàn hệ thống."
+    }
+  ]
+}

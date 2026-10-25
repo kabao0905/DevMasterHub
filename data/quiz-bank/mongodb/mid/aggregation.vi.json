@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "mongodb",
+  "level": "mid",
+  "lesson": "aggregation",
+  "language": "vi",
+  "sourceHash": "2ccf7aa10fe5034e1ef5de21474f9dddcf6ef7b63ef56562a7c7888d5eaf6300",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo sáu stage orders analytics; kiểm tra cardinality sau unwind, revenue, mean không trọng số, lookup kiểu khóa, project _id và thứ tự stage. Các phép tính minh họa được suy luận trên dữ liệu nêu rõ, không giả lập JavaScript thành MongoDB execution.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Pipeline",
+      "question": "Aggregation pipeline biểu diễn cách xử lý nào?",
+      "options": [
+        "Chuỗi stage biến đổi dữ liệu theo thứ tự",
+        "Một tập lệnh luôn chạy ngẫu nhiên",
+        "Chỉ một phép tạo index",
+        "Một transaction bắt buộc cho mọi truy vấn"
+      ],
+      "correct": 0,
+      "explanation": "Output của stage trước trở thành input cho stage sau."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Nguồn",
+      "question": "Pipeline trong bài bắt đầu từ collection nào?",
+      "options": [
+        "sessions",
+        "orders",
+        "categories",
+        "users"
+      ],
+      "correct": 1,
+      "explanation": "Lời gọi là db.orders.aggregate."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Match",
+      "question": "Vai trò $match đầu pipeline là gì?",
+      "options": [
+        "Tạo category mới",
+        "Làm tròn giá",
+        "Lọc đơn theo thời điểm createdAt",
+        "Nhóm category"
+      ],
+      "correct": 2,
+      "explanation": "Filter thời gian áp trước các bước tính toán tiếp theo."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Ngưỡng ngày",
+      "question": "Ngưỡng thời gian được nêu trong source là ngày nào?",
+      "options": [
+        "2024-01-15",
+        "2025-01-01",
+        "2024-12-31",
+        "2024-01-01"
+      ],
+      "correct": 3,
+      "explanation": "Điều kiện dùng $gte với ISODate của ngày đầu năm 2024."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Unwind",
+      "question": "Vai trò $unwind:\"$items\" là gì?",
+      "options": [
+        "Tách mảng items thành các dòng theo phần tử",
+        "Gộp mọi order vào một array",
+        "Tạo index cho items",
+        "Xóa field _id khỏi mọi order"
+      ],
+      "correct": 0,
+      "explanation": "Cardinality thay đổi là điểm cần theo dõi khi tính aggregate."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Group",
+      "question": "Pipeline nhóm theo trường nào?",
+      "options": [
+        "items.price",
+        "items.category",
+        "orderId",
+        "createdAt"
+      ],
+      "correct": 1,
+      "explanation": "_id của group là giá trị category trên dòng item sau unwind."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Sum revenue",
+      "question": "totalRevenue được tính từ biểu thức nào?",
+      "options": [
+        "Số lượng document categories",
+        "Giá lớn nhất của order",
+        "Tổng price nhân qty của các dòng",
+        "Trung bình price không xét qty"
+      ],
+      "correct": 2,
+      "explanation": "Doanh thu trong source là tổng tiền hàng theo các giả định dữ liệu."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Multiply",
+      "question": "$multiply trong revenue dùng để làm gì?",
+      "options": [
+        "Cộng price với qty",
+        "So sánh price và qty",
+        "Đếm phần tử mảng",
+        "Nhân price với qty"
+      ],
+      "correct": 3,
+      "explanation": "Đây là biểu thức số học bên trong accumulator $sum."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Avg",
+      "question": "avgPrice trong $group dùng accumulator nào?",
+      "options": [
+        "$avg",
+        "$push",
+        "$lookup",
+        "$sort"
+      ],
+      "correct": 0,
+      "explanation": "Nó lấy trung bình các giá trị price của dòng item hợp lệ theo semantics."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Count expression",
+      "question": "orderCount trong source dùng biểu thức nào?",
+      "options": [
+        "$size:\"$orders\"",
+        "$sum:1",
+        "$sum:\"$items.qty\"",
+        "$avg:1"
+      ],
+      "correct": 1,
+      "explanation": "Sau unwind, mỗi dòng đóng góp1; tên field không tự làm nó đếm distinct order."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Push",
+      "question": "items:{$push:\"$items.name\"} tích lũy gì?",
+      "options": [
+        "Tổng số category",
+        "Một unique index tên",
+        "Các tên item theo dòng input của group",
+        "Chỉ các tên distinct tự động"
+      ],
+      "correct": 2,
+      "explanation": "$push giữ các giá trị được đưa vào, không tự deduplicate."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Sort",
+      "question": "Kết quả được sort theo trường nào?",
+      "options": [
+        "avgPrice tăng dần",
+        "createdAt tăng dần",
+        "categoryInfo.name giảm dần",
+        "totalRevenue giảm dần"
+      ],
+      "correct": 3,
+      "explanation": "Source dùng totalRevenue:-1 sau group."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Lookup from",
+      "question": "$lookup tham chiếu collection nào?",
+      "options": [
+        "categories",
+        "orders",
+        "products",
+        "users"
+      ],
+      "correct": 0,
+      "explanation": "Collection categories cung cấp thông tin bổ sung theo khóa."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Local key",
+      "question": "localField của $lookup trong bài là gì?",
+      "options": [
+        "createdAt",
+        "_id của dòng group",
+        "items.name",
+        "orderCount"
+      ],
+      "correct": 1,
+      "explanation": "Sau group, _id chứa category key, không còn là định danh một order cụ thể."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Foreign key",
+      "question": "foreignField của lookup là gì?",
+      "options": [
+        "price của orders",
+        "qty của items",
+        "_id của categories",
+        "name của categories"
+      ],
+      "correct": 2,
+      "explanation": "Equality lookup so local category key với _id của document categories."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Lookup output",
+      "question": "Field chứa array kết quả lookup có tên gì?",
+      "options": [
+        "items",
+        "totalRevenue",
+        "orders",
+        "categoryInfo"
+      ],
+      "correct": 3,
+      "explanation": "$lookup bổ sung một array vào từng dòng input."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Project",
+      "question": "Stage cuối $project dùng để làm gì?",
+      "options": [
+        "Định hình các trường kết quả",
+        "Tạo collection categories",
+        "Commit transaction chuyển tiền",
+        "Xóa index không dùng"
+      ],
+      "correct": 0,
+      "explanation": "Projection ở đây bao gồm giữ và tính lại một số trường."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "ArrayElemAt",
+      "question": "$arrayElemAt với chỉ số0 lấy phần tử nào?",
+      "options": [
+        "Số lượng phần tử",
+        "Phần tử đầu của array được nêu",
+        "Phần tử cuối bất kể độ dài",
+        "Mọi phần tử distinct"
+      ],
+      "correct": 1,
+      "explanation": "Source lấy tên đầu trong categoryInfo.name."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Round",
+      "question": "avgPrice cuối pipeline được xử lý thế nào?",
+      "options": [
+        "Lấy giá lớn nhất",
+        "Đổi thành số lượng order",
+        "Làm tròn tới hai chữ số thập phân",
+        "Nhân với100 rồi đổi thànhString"
+      ],
+      "correct": 2,
+      "explanation": "$round nhận số chữ số thập phân là2."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Stage order",
+      "question": "Pipeline source có thứ tự khái quát nào?",
+      "options": [
+        "Group, match, project, unwind, sort, lookup",
+        "Lookup, sort, match, group, project, unwind",
+        "Project, unwind, match, lookup, sort, group",
+        "Match, unwind, group, sort, lookup, project"
+      ],
+      "correct": 3,
+      "explanation": "Đổi thứ tự có thể đổi dữ liệu và nghĩa phép tính."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Biên ngày",
+      "question": "Order có createdAt đúng ngưỡng Date 2024-01-01 có được $match source giữ không?",
+      "options": [
+        "Có vì dùng $gte",
+        "Không vì chỉ sau ngày đó mới được",
+        "Chỉ nếu có qty lớn hơn1",
+        "Chỉ nếu categoryInfo tồn tại"
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện bao gồm thời điểm ngưỡng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Order cũ",
+      "question": "Order từ 2023 có items doanh thu cao. Nó có tham gia group source không?",
+      "options": [
+        "Chỉ nếu categories có tên",
+        "Không nếu createdAt không thỏa ngưỡng",
+        "Có vì $group bỏ mọi filter trước",
+        "Có vì $sort luôn tìm mọi doanh thu"
+      ],
+      "correct": 1,
+      "explanation": "Stage lọc đã loại order trước khi unwind/group."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Cardinality",
+      "question": "Một order khớp filter có ba phần tử items. Unwind đơn giản tạo bao nhiêu dòng từ order đó?",
+      "options": [
+        "0",
+        "9",
+        "3",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Mỗi phần tử thành một dòng, các field order khác được mang theo."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Empty items",
+      "question": "Order có items=[] và dùng unwind dạng chuỗi như source. Có tạo một dòng giữ order rỗng mặc định không?",
+      "options": [
+        "Có; mọi order luôn góp một dòng",
+        "Có; tự tạo item qty0",
+        "Chỉ nếu orderCount được đặt tên đúng",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Mặc định không preserve null/empty arrays."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Missing items",
+      "question": "Order không có items. Unwind source mặc định xử lý thế nào?",
+      "options": [
+        "Không đưa order đó thành dòng output",
+        "Tự tạo items từ categories",
+        "Tự ném lỗi chỉ vì missing field trong mọi trường hợp",
+        "Đổi items thành array một phần tử null"
+      ],
+      "correct": 0,
+      "explanation": "Nếu muốn giữ trường hợp này cần option phù hợp và xem lại aggregate."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Null items",
+      "question": "items:null có được unwind source giữ nguyên thành một dòng không?",
+      "options": [
+        "Chỉ nếu createdAt là Date",
+        "Không với cấu hình mặc định này",
+        "Có trong mọi trường hợp",
+        "Có vì $match đã chạy"
+      ],
+      "correct": 1,
+      "explanation": "Null/empty/missing mặc định không được giữ bởi unwind này."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Doanh thu dòng",
+      "question": "Một item price 20, qty 3 đóng góp bao nhiêu vào totalRevenue?",
+      "options": [
+        "20",
+        "3",
+        "60",
+        "23"
+      ],
+      "correct": 2,
+      "explanation": "Biểu thức nhân20 với3 rồi sum."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Hai dòng cùng nhóm",
+      "question": "Category A có dòng price 10 qty 2 và price 30 qty 1. Tổng revenue theo source là gì?",
+      "options": [
+        "40",
+        "60",
+        "3",
+        "50"
+      ],
+      "correct": 3,
+      "explanation": "10×2 +30×1 bằng50."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Mean giá dòng",
+      "question": "Cùng hai dòng price 10 và 30, avgPrice của source trước làm tròn là gì?",
+      "options": [
+        "20",
+        "16.67",
+        "50",
+        "3"
+      ],
+      "correct": 0,
+      "explanation": "$avg price lấy trung bình hai giá trị10 và 30, không trọng số qty."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Không đếm quantity",
+      "question": "Một item qty 100 vẫn đóng góp bao nhiêu vào orderCount source?",
+      "options": [
+        "Giá price của item",
+        "1",
+        "100",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "$sum1 đếm dòng sau unwind, không đếm tổng số đơn vị hàng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Một order hai item",
+      "question": "Một order có hai item cùng category A. Nó đóng góp bao nhiêu vào orderCount của A?",
+      "options": [
+        "0",
+        "Số category trong database",
+        "2",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Tên orderCount dễ gây hiểu nhầm vì đang đếm item rows."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Hai category",
+      "question": "Một order có một item A và một item B. Sau group theo category tạo nhóm nào từ các item đó?",
+      "options": [
+        "Chỉ một nhóm theo order _id",
+        "Một nhóm theo tổng qty",
+        "Nhóm luôn có _id null",
+        "A và B riêng"
+      ],
+      "correct": 3,
+      "explanation": "Group key là category chứ không phải order identity."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Group id đổi nghĩa",
+      "question": "Sau group source, _id mang ý nghĩa nào?",
+      "options": [
+        "Category key",
+        "Định danh order đầu tiên chắc chắn",
+        "Tên khách hàng",
+        "Định danh transaction"
+      ],
+      "correct": 0,
+      "explanation": "Cần theo dõi shape của dòng qua mỗi stage."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Field order mất",
+      "question": "Sau group chỉ khai báo các accumulator trong bài. Có thể dùng createdAt nguyên gốc của từng order như trước mà không tích lũy nó không?",
+      "options": [
+        "Không; vì group chỉ trả scalar",
+        "Không; group đã đổi shape và không tự giữ mọi field",
+        "Có; mọi field input tự đi qua group",
+        "Có; lookup tự khôi phục createdAt order"
+      ],
+      "correct": 1,
+      "explanation": "Field cần dùng sau group phải được thiết kế giữ/tổng hợp rõ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Push duplicate",
+      "question": "Hai item dòng có cùng name Pen. $push name có tự chỉ giữ một Pen không?",
+      "options": [
+        "Có; name tự là unique key",
+        "Chỉ nếu qty bằng 1",
+        "Không; cả hai giá trị có thể xuất hiện",
+        "Có; push luôn distinct"
+      ],
+      "correct": 2,
+      "explanation": "Nếu cần tập tên distinct phải dùng accumulator/thiết kế tương ứng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Push không qty nhân bản",
+      "question": "Một dòng item name Pen qty 5 được $push đưa vào mảng mấy lần từ dòng đó?",
+      "options": [
+        "5",
+        "0",
+        "Theo số order của category khác",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "$push xử lý mỗi input row, không tự lặp theo qty."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Sort trace",
+      "question": "Revenue của A 50 và B 100. Sort totalRevenue:-1 ưu tiên nhóm nào trước?",
+      "options": [
+        "B",
+        "A",
+        "Luôn theo tên category alphabet",
+        "Luôn theo order đầu tiên"
+      ],
+      "correct": 0,
+      "explanation": "Giảm dần đặt doanh thu lớn hơn lên trước."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Sort không limit",
+      "question": "Source sort revenue giảm nhưng không có limit. Có tự chỉ trả top 10 category không?",
+      "options": [
+        "Chỉ nếu categoryInfo là array",
+        "Không",
+        "Có; aggregate mặc định chỉ 10 group",
+        "Có; lookup tự limit 10"
+      ],
+      "correct": 1,
+      "explanation": "Muốn top-k cần giới hạn rõ và hợp đồng tie phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Lookup shape",
+      "question": "Một category key khớp một category document. categoryInfo thường có dạng gì?",
+      "options": [
+        "Một Number doanh thu",
+        "Tên category String trực tiếp",
+        "Array chứa document khớp",
+        "Document scalar tự thay _id"
+      ],
+      "correct": 2,
+      "explanation": "Lookup thêm array, projection sau mới lấy tên."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Lookup không match",
+      "question": "Không có category document khớp. Lookup đơn giản có mặc định xóa dòng group không?",
+      "options": [
+        "Có; mọi lookup đều inner join",
+        "Có; group revenue tự bị xóa",
+        "Không; vì lookup tự tạo category",
+        "Không; categoryInfo là array rỗng trong trường hợp này"
+      ],
+      "correct": 3,
+      "explanation": "Left-outer-like khác inner join; cách projection thiếu tên cần quy định."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Loại khóa khác",
+      "question": "Group _id là String hex còn categories._id là ObjectId tương ứng. Có nên coi lookup chắc chắn khớp chỉ vì hiển thị giống nhau?",
+      "options": [
+        "Không; cần thống nhất giá trị và kiểu khóa",
+        "Có; equality lookup bỏ qua mọi BSON type",
+        "Có; field tên _id tự cast toàn pipeline",
+        "Không; lookup không hỗ trợ ObjectId"
+      ],
+      "correct": 0,
+      "explanation": "Một nguồn sai type có thể làm categoryInfo rỗng dù ý nghĩa ID dự kiến giống nhau."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "From đúng tên",
+      "question": "Collection category thật tên productCategories nhưng from source là categories. Cần sửa gì?",
+      "options": [
+        "Chỉ đổi hướng sort",
+        "Tham chiếu collection đúng theo mô hình dữ liệu",
+        "Chỉ đổi field as thành productCategories",
+        "Chỉ tăng orderCount"
+      ],
+      "correct": 1,
+      "explanation": "Tên output array không sửa nguồn collection lookup."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "LocalField context",
+      "question": "Vì sao localField _id sau group có thể lookup category?",
+      "options": [
+        "Vì lookup tự tìm tên field có chữ category",
+        "Vì $push đã tạo category index",
+        "Vì group đã đặt _id bằng items.category",
+        "Vì _id của mọi order luôn bằng category _id"
+      ],
+      "correct": 2,
+      "explanation": "Đúng ý nghĩa field phụ thuộc vị trí lookup sau group."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Projection include",
+      "question": "totalRevenue:1 trong $project có ý nghĩa gì?",
+      "options": [
+        "Đặt totalRevenue luôn bằng 1",
+        "Chỉ chọn nhóm revenue bằng 1",
+        "Tạo unique index revenue",
+        "Giữ trường totalRevenue"
+      ],
+      "correct": 3,
+      "explanation": "Nếu muốn literal1 trong aggregation projection cần biểu thức khác phù hợp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Projection computed",
+      "question": "category được tính từ categoryInfo.name bằng gì?",
+      "options": [
+        "$arrayElemAt chỉ số0",
+        "Một phép tổng mọi tên",
+        "$sum:1",
+        "Một sort mới"
+      ],
+      "correct": 0,
+      "explanation": "Source chọn phần tử tên đầu, không xuất toàn bộ array categoryInfo."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Id output",
+      "question": "Source $project không nêu _id:0. _id của nhóm có mặc định bị loại không?",
+      "options": [
+        "Chỉ khi sort giảm",
+        "Không; _id được giữ mặc định trong projection phù hợp này",
+        "Có; mọi project luôn bỏ _id",
+        "Có; category field mới tự thay _id"
+      ],
+      "correct": 1,
+      "explanation": "Không suy field đầu ra chỉ từ các key được giữ mà quên ngoại lệ _id."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Items output",
+      "question": "Mảng items được $push nhưng không include ở project cuối. Nó có được trả mặc định cùng mọi field khác không?",
+      "options": [
+        "Có; _id default kéo theo mọi field",
+        "Chỉ nếu array có ít hơn 3 phần tử",
+        "Không; projection inclusion/computed này không tự giữ mảng đó",
+        "Có; mọi accumulator luôn được trả"
+      ],
+      "correct": 2,
+      "explanation": "Công việc tích lũy có thể không cần thiết nếu kết quả không được sử dụng sau đó."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Round trace",
+      "question": "avgPrice=12.346, $round tới 2 chữ số có kết quả số dự kiến nào?",
+      "options": [
+        "12.34",
+        "12",
+        "1234.6",
+        "12.35"
+      ],
+      "correct": 3,
+      "explanation": "Đây là ví dụ không ở biên tie; không khẳng định định dạng chuỗi luôn có hai chữ số."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Không fixed string",
+      "question": "Kết quả số10 sau $round:[value,2] có tự thành chuỗi \"10.00\" không?",
+      "options": [
+        "Không; làm tròn số khác định dạng chuỗi hiển thị",
+        "Có; $round luôn trảString",
+        "Có; project luôn stringify mọi số",
+        "Không; vì không thể làm tròn số nguyên"
+      ],
+      "correct": 0,
+      "explanation": "UI cần quy tắc hiển thị tiền/số riêng nếu muốn số chữ số cố định."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Round không source",
+      "question": "$round ở projection có thay mọi price trong collection orders không?",
+      "options": [
+        "Chỉ nếu sử dụng $gte",
+        "Không; nó tính kết quả pipeline này",
+        "Có; mọi aggregate tự ghi lại source",
+        "Có; lookup commit giá mới"
+      ],
+      "correct": 1,
+      "explanation": "Pipeline không có stage ghi như $merge/$out trong source."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Match và shape",
+      "question": "Đưa match createdAt ra sau group nhưng group không giữ createdAt có hợp lý để lọc order gốc không?",
+      "options": [
+        "Có; sort tự khôi phục ngày",
+        "Chỉ cần đổi $gte thành $gt",
+        "Không; field và đơn vị dòng đã thay đổi",
+        "Có; mọi group vẫn giữ từng order nguyên vẹn"
+      ],
+      "correct": 2,
+      "explanation": "Predicate cần áp tại nơi dữ liệu và semantics phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Match sớm",
+      "question": "Vì sao lọc order thời gian trước unwind/group có thể có ích?",
+      "options": [
+        "Luôn loại nhu cầu mọi index",
+        "Tự làm revenue thành tiền đã thu thật",
+        "Tự bảo đảm pipeline không có lỗi kiểu",
+        "Giảm dữ liệu đầu vào cần xử lý và giữ đúng phạm vi phép tính"
+      ],
+      "correct": 3,
+      "explanation": "Lợi ích cụ thể còn phụ thuộc kế hoạch/dữ liệu; không tuyên bố tốc độ tuyệt đối."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Revenue gross",
+      "question": "price×qty không trừ discount/refund/tax. Có thể gọi chắc là net revenue thực tế không?",
+      "options": [
+        "Không; cần định nghĩa metric theo nghiệp vụ",
+        "Có; tên totalRevenue tự áp mọi điều chỉnh",
+        "Có; MongoDB biết chính sách thuế",
+        "Không; vì không thể dùng qty trong pipeline"
+      ],
+      "correct": 0,
+      "explanation": "Tên metric không thay công thức và ý nghĩa được triển khai."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Data types",
+      "question": "items.price hoặc qty chứa chuỗi không theo hợp đồng số. Cần xem gì?",
+      "options": [
+        "Chỉ thêm _id:0",
+        "Validation/chuyển kiểu và semantics biểu thức số học",
+        "Chỉ tên field có chữprice",
+        "Chỉ sắp xếp mảng items"
+      ],
+      "correct": 1,
+      "explanation": "Không dựa vào tên trường để bảo đảm phép nhân hợp lệ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Lookup name thiếu",
+      "question": "Category document khớp nhưng không có name. Projection có tự tạo tên phù hợp không?",
+      "options": [
+        "Có; tự gọi API dịch tên",
+        "Chỉ nếu revenue lớn hơn0",
+        "Không; cần chính sách dữ liệu thiếu/fallback rõ",
+        "Có; tự lấy group _id làm tên trong mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "Khai báo arrayElemAt không có logic fallback tên được viết thêm."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Equality join",
+      "question": "Muốn lookup theo category code nhưng categories._id không phải code. Cần sửa gì?",
+      "options": [
+        "Chỉ tên as",
+        "Chỉ interval thời gian",
+        "Chỉ round avgPrice",
+        "Trường khóa và kiểu giá trị của quan hệ lookup"
+      ],
+      "correct": 3,
+      "explanation": "Cả local/foreign fields phải thể hiện đúng quan hệ dữ liệu cần nối."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Không distinct order",
+      "question": "Muốn đếm đơn hàng khác nhau theo category, cần thay gì so với sum1 sau unwind?",
+      "options": [
+        "Giữ/thu thập định danh order và đếm distinct theo thiết kế phù hợp",
+        "Chỉ đổi tên orderCount thànhuniqueOrders",
+        "Chỉ thêm sort trước sum1",
+        "Chỉ bỏ categoryInfo khỏi projection"
+      ],
+      "correct": 0,
+      "explanation": "Đổi label output không đổi đơn vị dòng được đếm."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Không weighted avg",
+      "question": "Muốn giá trung bình mỗi đơn vị hàng bán, cần dùng công thức loại nào?",
+      "options": [
+        "Dùng orderCount thay qty trong mọi trường hợp",
+        "Tổng price×qty chia tổng qty với xử lý mẫu số phù hợp",
+        "Giữ $avg price rồi chỉ đổi tên field",
+        "Lấy revenue chia số category luôn đúng"
+      ],
+      "correct": 1,
+      "explanation": "Mean dòng và mean theo số lượng hàng là hai metric khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Tie revenue",
+      "question": "Hai category cùng totalRevenue. Sort một key có bảo đảm thứ tự tie cố định không?",
+      "options": [
+        "Có; lookup tự sắp xếp tên alphabet",
+        "Chỉ nếu project loại _id",
+        "Không; cần khóa phụ nếu yêu cầu ổn định",
+        "Có; luôn theo createdAt order đầu"
+      ],
+      "correct": 2,
+      "explanation": "Không dựa vào thứ tự tie tình cờ cho dashboard có hợp đồng xác định."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Không runtime",
+      "question": "Phép tính mẫu trên hai dòng được suy luận bằng công thức. Nó có chứng minh execution plan của MongoDB không?",
+      "options": [
+        "Có; mọi phép tính đúng nghĩa DB đã chạy",
+        "Có; JavaScript và MongoDB có optimizer giống hệt",
+        "Không; vì revenue không thể kiểm bằng suy luận",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Suy luận số học hữu ích nhưng không được gắn nhãn thực thi database."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Count bị nhân",
+      "question": "Một order có ba dòng category A, order khác có một dòng A. Source orderCount cho A bằng4. Nếu dashboard gọi đó là số đơn thì sai ở đâu?",
+      "options": [
+        "Đơn vị đếm sau unwind là dòng item chứ không là distinct order",
+        "Phải sửa sort giảm thành tăng để count thành2",
+        "Lookup luôn nhân count theo số category document",
+        "Round biến số đơn 2 thành 4"
+      ],
+      "correct": 0,
+      "explanation": "Cần định nghĩa metric và chỉnh aggregation để đếm đúng entity."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Mean có trọng số",
+      "question": "Hai dòng giá 10 qty 9 và giá 100 qty 1. Source avgPrice=55, nhưng doanh thu chia tổng qty=19. Cách hiểu đúng là gì?",
+      "options": [
+        "55 là tổng revenue",
+        "55 là mean dòng;19 là giá trung bình theo đơn vị, cần chọn metric đúng mục đích",
+        "Hai phép tính bắt buộc luôn bằng nhau",
+        "MongoDB tự áp qty vào $avg nên source cũng trả19"
+      ],
+      "correct": 1,
+      "explanation": "Công thức mean phải phản ánh đơn vị quan sát và trọng số."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Đếm đơn nhiều category",
+      "question": "Một order có cả A và B. Khi đếm distinct orders theo từng category, tổng count các category có nhất thiết bằng tổng số order không?",
+      "options": [
+        "Có; lookup tự loại category phụ",
+        "Không; vì không thể đếm distinct order",
+        "Không; một order có thể thuộc nhiều nhóm category",
+        "Có; mọi group tự chia đều một order vào một nhóm duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt metric theo nhóm với tổng unique entity toàn tập."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Empty order bị mất",
+      "question": "Dashboard muốn đếm cả order không có items nhưng pipeline dùng unwind mặc định. Cần xem lại gì?",
+      "options": [
+        "Chỉ đổi tên orderCount",
+        "Chỉ thêm index category",
+        "Chỉ đưa $round lên đầu",
+        "Preserve/null handling và thiết kế phép đếm đúng cấp order"
+      ],
+      "correct": 3,
+      "explanation": "Bảo toàn dòng không đủ nếu accumulator vẫn hiểu sai đơn vị đếm; cần thiết kế cùng metric."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Lookup type mismatch",
+      "question": "Tổng revenue đúng nhưng category name thiếu cho mọi nhóm. categories dùng ObjectId, items.category dùngString. Nguyên nhân cần kiểm tra là gì?",
+      "options": [
+        "Hợp đồng kiểu khóa và phép lookup equality",
+        "Chắc chắn $sum làm mất doanh thu",
+        "Chỉ avgPrice chưa round",
+        "Chỉ sort revenue sai chiều"
+      ],
+      "correct": 0,
+      "explanation": "Một pipeline có thể tính số đúng nhưng join không đúng do type mismatch."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Metric definition",
+      "question": "Business muốn doanh thu sau refund nhưng source chỉ lọc createdAt rồi sum price×qty. Thiếu hợp đồng gì?",
+      "options": [
+        "Chỉ orderCount mới cần kiểm tra",
+        "Trạng thái đơn, refund/discount/thuế và đơn vị tiền theo định nghĩa doanh thu",
+        "Chỉ tên totalRevenue chưa đủ dài",
+        "Chỉ thêm $lookup categories là tự xử lý refund"
+      ],
+      "correct": 1,
+      "explanation": "Công thức analytic phải được xác định bằng nghiệp vụ, không chỉ nhãn field."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Project mất info",
+      "question": "Source project chỉ giữ category name, revenue,avg,count nhưng vẫn tính $push item names. Tối ưu có căn cứ cần làm gì?",
+      "options": [
+        "Chỉ đổi $push thành $avg bất kể nghĩa",
+        "Coi mọi accumulator miễn phí nên không bao giờ review",
+        "Xác nhận mảng không dùng downstream rồi bỏ accumulator không cần thiết và kiểm kết quả",
+        "Bỏ mọi $group vì output không có items"
+      ],
+      "correct": 2,
+      "explanation": "Giảm công việc cần gắn với hợp đồng output và bằng chứng, không thay logic mù quáng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Sort trước computed field",
+      "question": "Muốn sort theo category name nhưng vẫn đặt sort trước lookup/project tạo category. Vì sao cần đổi thiết kế?",
+      "options": [
+        "Tên category tự tồn tại ở mọi stage",
+        "Sort tự chạy cuối bất kể vị trí array",
+        "Chỉ thêm _id:0 làm category xuất hiện sớm",
+        "Field cần sort chưa được tạo ở vị trí đó; phải sắp xếp đúng sau biến đổi phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự stage và shape dữ liệu là hợp đồng thực thi quan trọng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Ngày và loại dữ liệu",
+      "question": "Nguồn createdAt lẫn Date vàString ISO, nhưng match dùng ISODate. Muốn analytic thời gian tin cậy cần gì?",
+      "options": [
+        "Quy ước/validation/migration kiểu ngày và semantics thời gian rõ",
+        "Chỉ nhìn chuỗi có cùng năm 2024",
+        "Đổi createdAt thành tên khác để tựcast",
+        "Chỉ round revenue"
+      ],
+      "correct": 0,
+      "explanation": "Đồng nhất hiển thị không bảo đảm cùng loại so sánh trong database."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Phạm vi thời gian",
+      "question": "Dashboard gọi recent orders nhưng source chỉ có ngưỡng từ2024 không có upper bound. Điều gì phải làm rõ?",
+      "options": [
+        "$group tự loại mọi order tương lai",
+        "Khoảng thời gian nghiệp vụ, múi giờ và thời điểm chốt báo cáo",
+        "Tên comment recent tự làm rolling30days",
+        "ISODate tự cập nhật mỗi ngày"
+      ],
+      "correct": 1,
+      "explanation": "Comment không thêm predicate chưa được viết."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Missing category key",
+      "question": "Một số item thiếu category nhưng vẫn có price/qty hợp lệ. Khi group, cần chính sách nào?",
+      "options": [
+        "Lookup tự tạo category mới đúng nghĩa",
+        "Chỉ đổi sort để item thiếu biến mất",
+        "Xử lý nhóm thiếu/null và đối chiếu toàn vẹn dữ liệu thay vì coi mọi item được gán category đúng",
+        "MongoDB tự suy category từ name cho mọi item"
+      ],
+      "correct": 2,
+      "explanation": "Cần thống nhất dữ liệu thiếu có được đưa vào báo cáo và hiển thị thế nào."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Array name chọn đầu",
+      "question": "Nếu lookup dùng khóa không unique và trả nhiều categoryInfo, arrayElemAt0 có đủ biểu diễn quan hệ mong muốn không?",
+      "options": [
+        "Có; phần tử đầu luôn là mới nhất theo createdAt",
+        "Có; mọi lookup tự sort theo tên",
+        "Không; vì arrayElemAt không dùng được trong project",
+        "Không; cần xác định cardinality/khóa và quy tắc chọn nếu có nhiều kết quả"
+      ],
+      "correct": 3,
+      "explanation": "Không biến phần tử đầu không có quy tắc thành sự lựa chọn nghiệp vụ đáng tin."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Round và tiền",
+      "question": "Tính tiền bằng double rồi round cuối có tự giải quyết mọi sai số và quy tắc làm tròn tài chính không?",
+      "options": [
+        "Không; cần representation và quy tắc làm tròn theo nghiệp vụ",
+        "Có; hai chữ số tự là chuẩn cho mọi đồng tiền",
+        "Có; $round tự biết luật thuế",
+        "Không; vì MongoDB chỉ cóinteger"
+      ],
+      "correct": 0,
+      "explanation": "Representation như đơn vị tiền nhỏ nhất/decimal và thời điểm làm tròn cần được thiết kế rõ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Round tie",
+      "question": "Với số nguyên+0.5 được biểu diễn chính xác, $round theo tài liệu dùng quy tắc tie nào?",
+      "options": [
+        "Luôn làm tròn khỏi0",
+        "Làm tròn về số chẵn gần nhất",
+        "Luôn làm tròn lên bất kể phần nguyên",
+        "Luôn cắt bỏ phần thập phân"
+      ],
+      "correct": 1,
+      "explanation": "Không gán quy tắc half-up phổ biến cho API có round-to-even; số double còn có vấn đề biểu diễn riêng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Lookup historical name",
+      "question": "Category đổi tên sau ngày bán, lookup từ collection hiện tại. Báo cáo có tự giữ tên lịch sử lúc bán không?",
+      "options": [
+        "Có; createdAt order tự bật time travel cho mọi collection",
+        "Không; vì name không được thay đổi",
+        "Không; phải quyết định dùng dữ liệu hiện tại hay snapshot lịch sử theo thiết kế",
+        "Có; lookup tự đọc category ở timestamp từng order"
+      ],
+      "correct": 2,
+      "explanation": "Analytic cần hợp đồng lịch sử của dimension, không chỉ phép join."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Sort không proof tốc độ",
+      "question": "Có match đầu pipeline và sort cuối group. Có thể tuyên bố pipeline đã tối ưu cho dữ liệu lớn chưa?",
+      "options": [
+        "Rồi; match đầu luôn đủ để mọi pipeline nhanh",
+        "Rồi; aggregation không bao giờ dùng nhiều RAM",
+        "Chưa; chỉ cần thêm limit ở bất kỳ vị trí",
+        "Chưa; cần xem dữ liệu,index,plan,cardinality và nguồn lực thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu không chỉ là vị trí một stage; thay đổi phải giữ semantics."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Giới hạn đặt sai",
+      "question": "Muốn top category toàn tập nhưng thêm limit 10 trước group để giảm chi phí. Rủi ro là gì?",
+      "options": [
+        "Có thể tính trên một phần order/item thay vì toàn tập cần báo cáo",
+        "Limit trước group chỉ thay output chứ không đổi tổng",
+        "Mọi group tự đọc lại toàn collection",
+        "Chỉ lookup bị ảnh hưởng, revenue không đổi"
+      ],
+      "correct": 0,
+      "explanation": "Stage giới hạn sớm có thể thay nghĩa metric dù giảm công việc."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Multi-tenant analytic",
+      "question": "Orders nhiều tenant nhưng $match chỉ có ngày. Cần bổ sung gì cho dashboard riêng từng tenant?",
+      "options": [
+        "Chỉ đặt tên database trong comment",
+        "Phạm vi dữ liệu/quyền tenant trong toàn pipeline và dimension lookup phù hợp",
+        "Chỉ projection _id0",
+        "Chỉ không hiển thị categoryInfo trên UI"
+      ],
+      "correct": 1,
+      "explanation": "Pipeline analytic cũng là đường đọc dữ liệu cần giữ ranh giới quyền."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Phân biệt đơn hàng và dòng hàng",
+      "question": "Sau match có đơn A gồm hai dòng category C: price 10/qty 2 và price 20/qty 1; đơn B có một dòng C: price 5/qty 4. Theo pipeline nguồn sau unwind/group, revenue, avgPrice chưa round và orderCount là gì?",
+      "options": [
+        "35; 35/3; 2",
+        "60; 35/2; 7",
+        "60; 35/3; 3",
+        "60; 60/7; 2"
+      ],
+      "correct": 2,
+      "explanation": "Revenue là 10×2 + 20×1 + 5×4 = 60; avgPrice lấy trung bình ba giá dòng nên là 35/3; $sum: 1 đếm ba dòng sau unwind, không đếm hai đơn hay bảy sản phẩm."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Distinct orders và giá theo số lượng",
+      "question": "Cùng category có nhiều dòng trong một đơn. Dashboard cần số đơn phân biệt và giá trung bình theo số lượng bán. Thay nhóm sau unwind theo hướng nào đúng?",
+      "options": [
+        "Giữ $sum: 1 làm số đơn và $avg: price làm giá theo số lượng trong mọi trường hợp",
+        "Dùng $sum: qty làm số đơn và chia tổng price cho số dòng",
+        "Chỉ đặt $limit: 1 sau group để mỗi category còn đúng một đơn",
+        "Giữ tập ID đơn bằng $addToSet rồi lấy kích thước; lấy tổng price×qty chia tổng qty với policy mẫu số 0"
+      ],
+      "correct": 3,
+      "explanation": "Unwind tạo nhiều dòng từ một đơn nên cần distinct theo ID. Trung bình theo số lượng dùng tổng doanh thu/tổng số lượng, khác trung bình các giá dòng."
+    }
+  ]
+}

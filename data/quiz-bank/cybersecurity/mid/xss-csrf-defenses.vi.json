@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cybersecurity",
+  "level": "mid",
+  "lesson": "xss-csrf-defenses",
+  "language": "vi",
+  "sourceHash": "d9a42d9b68bbde49defa84686fd0d561eac302964d76e468df5117b261c305d3",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo nguồn và OWASP/EJS docs. EJS <%= mặc định escape nên nhãn vulnerable nguồn không đúng vô điều kiện; textContent trên div khác script/style và cần dữ liệu được đưa tới JS an toàn. CSRF trong tiêu đề chưa được source triển khai. Không render payload/browser/HTTP hay đọc cookie thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "XSS",
+      "question": "Bản chất XSS là gì?",
+      "options": [
+        "Dữ liệu không tin cậy được diễn giải thành nội dung thực thi trong ngữ cảnh web",
+        "Mọi lỗi kết nối database",
+        "Mọi request có cookie",
+        "Mọi đoạn HTML tĩnh"
+      ],
+      "correct": 0,
+      "explanation": "Cần xem nguồn dữ liệu, nơi sử dụng và ngữ cảnh parser."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Stored",
+      "question": "Stored XSS thường có đặc điểm gì?",
+      "options": [
+        "Chỉ xảy ra nếu dùng SQL",
+        "Dữ liệu gây vấn đề được lưu rồi hiển thị cho người dùng sau",
+        "Chỉ tồn tại ở header TLS",
+        "Luôn tự hết khi đóng một tab"
+      ],
+      "correct": 1,
+      "explanation": "Lưu trữ không nhất thiết vĩnh viễn; cơ chế xuất dữ liệu vẫn quyết định rủi ro."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Reflected",
+      "question": "Reflected XSS thường liên quan luồng nào?",
+      "options": [
+        "Mọi file CSS nội bộ",
+        "Chỉ dữ liệu chưa từng qua mạng",
+        "Đầu vào được phản chiếu vào phản hồi mà thiếu bảo vệ đúng ngữ cảnh",
+        "Mọi backup database"
+      ],
+      "correct": 2,
+      "explanation": "Query parameter là một ví dụ, không phải nguồn duy nhất."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "DOM based",
+      "question": "DOM-based XSS nhấn mạnh điểm nào?",
+      "options": [
+        "Bắt buộc server phải lưu payload vào DB",
+        "Mọi DOM API đều thực thi dữ liệu",
+        "Chỉ cURL mới tạo được",
+        "Luồng source tới sink không an toàn trong mã xử lý phía client"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn có thể là URL hoặc các dữ liệu không tin cậy khác."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Output encoding",
+      "question": "Output encoding nhằm mục tiêu gì?",
+      "options": [
+        "Giữ dữ liệu như dữ liệu trong ngữ cảnh xuất phù hợp",
+        "Mã hóa dữ liệu bằng password mới",
+        "Tự ngăn mọi request cross-site",
+        "Tự tạo cookie session"
+      ],
+      "correct": 0,
+      "explanation": "HTML, attribute, JavaScript và URL không có cùng quy tắc parser."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "HTML context",
+      "question": "Khi hiển thị comment chỉ là văn bản trong div, hướng phù hợp là gì?",
+      "options": [
+        "Chỉ đổi tên biến thành safeComment",
+        "Dùng text sink hoặc HTML escaping đúng ngữ cảnh",
+        "Chèn raw HTML bất kỳ",
+        "Dùng eval để format comment"
+      ],
+      "correct": 1,
+      "explanation": "Mục tiêu hiển thị text không cần trao quyền tạo markup."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "textContent div",
+      "question": "textContent trên div thông thường xử lý giá trị thế nào?",
+      "options": [
+        "Tự gửi giá trị tới database",
+        "Tự xác thực nguồn dữ liệu",
+        "Tạo nội dung text thay vì parse giá trị như HTML",
+        "Chạy giá trị như JavaScript"
+      ],
+      "correct": 2,
+      "explanation": "Không nói thuộc tính này tự bảo vệ mọi ngữ cảnh của mọi element."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "innerHTML",
+      "question": "innerHTML khác textContent ở điểm nào liên quan an toàn?",
+      "options": [
+        "Nó luôn chỉ tạo text",
+        "Nó tự là sanitizer hoàn chỉnh",
+        "Nó tự kiểm quyền tác giả comment",
+        "Nó diễn giải chuỗi thành HTML theo ngữ cảnh"
+      ],
+      "correct": 3,
+      "explanation": "Nếu cần rich HTML phải có thiết kế sanitization phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "EJS escaped tag",
+      "question": "Trong EJS với escaping mặc định, <%= value %> tạo output loại nào?",
+      "options": [
+        "Output đã escape theo cơ chế mặc định",
+        "Luôn raw HTML không escape",
+        "Luôn chạy value như code EJS mới",
+        "Một HTTP-only cookie"
+      ],
+      "correct": 0,
+      "explanation": "Escape function có thể được cấu hình; cần biết ngữ cảnh đích."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "EJS raw tag",
+      "question": "Theo EJS docs, <%- value %> thường khác <%= ở điểm nào?",
+      "options": [
+        "Tự kiểm quyền nguồn value",
+        "Xuất raw không qua escaping mặc định",
+        "Bắt buộc mã hóa AES",
+        "Chỉ tạo comment không output"
+      ],
+      "correct": 1,
+      "explanation": "Raw output cần một hợp đồng tin cậy/sanitization phù hợp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "HttpOnly",
+      "question": "HttpOnly trên session cookie chủ yếu giảm đường nào?",
+      "options": [
+        "Mọi request sử dụng session",
+        "Mọi khả năng CSRF",
+        "JavaScript truy cập cookie qua các API script thông thường",
+        "Mọi JavaScript chạy trong trang"
+      ],
+      "correct": 2,
+      "explanation": "Cookie attribute không thay việc sửa XSS."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "CSP",
+      "question": "CSP là nhóm kiểm soát nào?",
+      "options": [
+        "Một bộ sanitizer HTML tự chạy trên mọi dữ liệu",
+        "Một database role",
+        "Một hàm hash password",
+        "Policy giới hạn nguồn/hành vi nội dung được browser cho phép theo cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "CSP là lớp bổ sung và cần cấu hình/kiểm phù hợp."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "CSRF",
+      "question": "CSRF thường lợi dụng điều gì?",
+      "options": [
+        "Request được kích hoạt trong ngữ cảnh user có credential tự gửi để làm thao tác ngoài ý muốn",
+        "Chỉ việc đọc một file CSS public",
+        "Mọi dấu nháy trong SQL",
+        "Mọi JavaScript được tải từ cùng origin"
+      ],
+      "correct": 0,
+      "explanation": "CSRF và XSS có cơ chế khác nhau dù có thể liên quan."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "CSRF token",
+      "question": "CSRF token có ích khi được làm gì?",
+      "options": [
+        "Chỉ đặt tên cookie csrf",
+        "Sinh/truyền/kiểm ở server theo cơ chế phù hợp và gắn đúng luồng",
+        "Chỉ in tên token trong HTML comment",
+        "Chỉ tạo một hằng public dùng mãi"
+      ],
+      "correct": 1,
+      "explanation": "Có token không kiểm không tạo cổng bảo vệ."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "SameSite",
+      "question": "SameSite hỗ trợ điều gì trong phòng vệ cookie-based app?",
+      "options": [
+        "Sửa mọi output sink",
+        "Tự xác thực role admin",
+        "Kiểm soát gửi cookie theo ngữ cảnh site và chế độ phù hợp",
+        "Mã hóa toàn bộ JavaScript"
+      ],
+      "correct": 2,
+      "explanation": "Cần xem giới hạn và workflow thật, không dùng như bảo đảm tuyệt đối."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Sanitization",
+      "question": "HTML sanitization thích hợp khi nào?",
+      "options": [
+        "Mọi comment chỉ cần text nhưng muốn chạy script",
+        "Muốn thay authorization",
+        "Muốn giải mã hash password",
+        "Ứng dụng cần cho phép một tập markup rich text được kiểm soát"
+      ],
+      "correct": 3,
+      "explanation": "Sanitizer cần được duy trì và cấu hình đúng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Encoding≠encryption",
+      "question": "HTML escaping có giữ kín comment khỏi người được xem trang không?",
+      "options": [
+        "Không, nó bảo vệ cách diễn giải, không mã hóa giữ bí mật nội dung",
+        "Có, mọi entity chỉ admin đọc được",
+        "Có, escaping tạo secret key",
+        "Chỉ nếu dùng HTTPS"
+      ],
+      "correct": 0,
+      "explanation": "An toàn parser khác với confidentiality."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Source thiếu dữ liệu",
+      "question": "Trong đoạn script source, userComment đã được định nghĩa/đưa vào JavaScript đầy đủ chưa?",
+      "options": [
+        "Có, id comment tự tạo global chứa mọi dữ liệu",
+        "Chưa được thể hiện",
+        "Có, tên biến tự lấy từ EJS template",
+        "Có, textContent tự truy vấn database"
+      ],
+      "correct": 1,
+      "explanation": "Snippet cần wiring dữ liệu hợp lệ và an toàn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Base64 exercise",
+      "question": "Base64 trong bài tập có phải cơ chế phòng XSS tự đủ không?",
+      "options": [
+        "Có, Base64 tự sanitize HTML",
+        "Chỉ cần đổi đuôi file",
+        "Không, giải mã rồi vẫn phải xử lý theo ngữ cảnh đích",
+        "Có, mọi Base64 luôn là dữ liệu đáng tin"
+      ],
+      "correct": 2,
+      "explanation": "Encoding biểu diễn không chứng minh quyền hoặc an toàn sink."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Scope source",
+      "question": "Source có thực hiện token validation CSRF cụ thể chưa?",
+      "options": [
+        "Có, HttpOnly tự là token validation",
+        "Có, textContent tự kiểm request server",
+        "Có, comment An toàn tạo middleware",
+        "Chưa, tên bài có CSRF nhưng snippet chủ yếu minh họa comment/text sink"
+      ],
+      "correct": 3,
+      "explanation": "Không suy implementation từ tiêu đề hoặc comment."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Nhãn sai EJS",
+      "question": "Nguồn đánh dấu <%= userComment %> trong div là vulnerable. Với EJS mặc định cần sửa hiểu thế nào?",
+      "options": [
+        "Nhãn đó không đúng vô điều kiện vì <%= escape; cần xét cấu hình và ngữ cảnh thật",
+        "Mọi EJS escaped output luôn raw",
+        "Chỉ đổi tên biến là hết XSS",
+        "Có dấu % là mọi dữ liệu được thực thi"
+      ],
+      "correct": 0,
+      "explanation": "Không sao chép khẳng định sai của nguồn thành đáp án."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Custom escape",
+      "question": "Một app thay escape function thành identity rồi dùng <%= comment %>. Điều gì cần review?",
+      "options": [
+        "Chỉ version Node của client",
+        "Cơ chế bảo vệ mặc định đã bị thay, phải xem output và trust/sanitization phù hợp",
+        "Ký hiệu <%= luôn giữ nguyên protection bất kể options",
+        "Chỉ tên file ejs"
+      ],
+      "correct": 1,
+      "explanation": "Cú pháp tag không thay hiểu biết cấu hình hiệu lực."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Text chỉ hiển thị",
+      "question": "Comment có ký tự < và > nhưng yêu cầu chỉ hiển thị text. Nên dùng gì?",
+      "options": [
+        "eval(comment)",
+        "Chỉ xóa mọi dấu cách",
+        "Text sink trên element thông thường, không parse như markup",
+        "Raw innerHTML để tự hiểu ý người dùng"
+      ],
+      "correct": 2,
+      "explanation": "Giữ nguyên nội dung như dữ liệu mà không trao quyền cấu trúc HTML."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Rich HTML yêu cầu",
+      "question": "Người dùng cần một số thẻ định dạng. Chỉ HTML-escape toàn chuỗi có đáp ứng đầy đủ UI không?",
+      "options": [
+        "Escape tự cho phép mọi thẻ an toàn và giữ mọi thẻ nguy hiểm",
+        "Chỉ thêm HttpOnly là đủ render HTML",
+        "CSP tự chuyển text thành markup sạch",
+        "Có thể an toàn cho text nhưng không render định dạng mong muốn; cần sanitization phù hợp nếu cho rich HTML"
+      ],
+      "correct": 3,
+      "explanation": "Yêu cầu hiển thị và cơ chế bảo vệ cần được thiết kế cùng nhau."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Script context",
+      "question": "Dùng HTML escaping mặc định để nhúng dữ liệu trực tiếp vào source JavaScript có phải giải pháp chung không?",
+      "options": [
+        "Không, parser/ngữ cảnh khác và nên dùng cơ chế truyền dữ liệu an toàn phù hợp",
+        "Có, mọi context đều parse như text div",
+        "Có, chỉ cần dấu nháy đôi",
+        "Chỉ đổi script thành type module"
+      ],
+      "correct": 0,
+      "explanation": "Không dùng một encoder cho mọi nơi."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "URL href",
+      "question": "Một URL được escape HTML đúng có tự giới hạn scheme/đích được phép không?",
+      "options": [
+        "Chỉ cần tên biến safeUrl",
+        "Không, còn validation/mapping URL theo policy phù hợp",
+        "Có, HTML escaping tự cấm mọi scheme không an toàn",
+        "Có, href luôn là text không hành vi"
+      ],
+      "correct": 1,
+      "explanation": "An toàn cú pháp attribute và an toàn URL là các điều kiện khác nhau."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Attribute quotes",
+      "question": "Khi chèn dữ liệu vào ordinary text attribute, cần gì?",
+      "options": [
+        "Cho client chọn bất kỳ attribute event handler",
+        "Chỉ dùng Base64 mọi tên thuộc tính",
+        "Encoder đúng ngữ cảnh và giá trị được quote, tên attribute cố định phù hợp",
+        "Bỏ quotes để mọi dữ liệu an toàn hơn"
+      ],
+      "correct": 2,
+      "explanation": "Không áp cùng quy tắc text attribute cho event/script/URL đặc biệt."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Dangerous handlers",
+      "question": "Dữ liệu không tin cậy làm nguyên giá trị onclick có nên được coi an toàn chỉ nhờ HTML escaping không?",
+      "options": [
+        "Có, HTML attribute nào cũng chỉ là text",
+        "Có, HttpOnly chặn mọi handler",
+        "Chỉ đổi onclick thành onload",
+        "Không, đó là ngữ cảnh code, nên tránh cấu trúc này và dùng handler tin cậy"
+      ],
+      "correct": 3,
+      "explanation": "Không trao dữ liệu quyền trở thành mã thực thi."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "textContent script",
+      "question": "Có thể áp kết luận textContent an toàn cho text div sang script element không?",
+      "options": [
+        "Không, script/style có semantics khác và có thể là nội dung thực thi",
+        "Có, cùng tên property nghĩa cùng bảo vệ",
+        "Có, nếu element có id",
+        "Chỉ cần tạo script bằng createElement"
+      ],
+      "correct": 0,
+      "explanation": "Cần xác định đúng element và cách nội dung được dùng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Safe sink quá muộn",
+      "question": "Nếu dữ liệu đã được chèn không an toàn vào inline script trước khi gọi div.textContent, sink cuối có sửa rủi ro trước đó không?",
+      "options": [
+        "Chỉ cần thêm một dấu chấm phẩy",
+        "Không, phải giữ an toàn toàn đường đưa dữ liệu vào ngữ cảnh JavaScript",
+        "Có, textContent cuối làm vô hiệu mọi bước trước",
+        "Có, div tự lọc source script"
+      ],
+      "correct": 1,
+      "explanation": "Luồng dữ liệu cần an toàn ở mọi boundary liên quan."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "DOM nguồn khác",
+      "question": "DOM XSS chỉ có thể bắt đầu từ window.location không?",
+      "options": [
+        "Chỉ có database mới là nguồn DOM XSS",
+        "Chỉ cURL mới truyền được dữ liệu",
+        "Không, có thể từ các nguồn dữ liệu không tin cậy khác đi tới unsafe sink",
+        "Có, mọi nguồn khác tự được browser sanitize"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn được nêu là ví dụ, không danh sách tuyệt đối."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Stored lifecycle",
+      "question": "Stored XSS có bắt buộc tồn tại vĩnh viễn không?",
+      "options": [
+        "Có, persistence luôn nghĩa không thể xóa",
+        "Chỉ khi database dùng SQL",
+        "Chỉ khi payload là query parameter",
+        "Không, lưu và sử dụng lại có thể có vòng đời khác nhau"
+      ],
+      "correct": 3,
+      "explanation": "Không biến mô tả phổ biến thành điều kiện không đúng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Reflected body",
+      "question": "Dữ liệu từ POST body được phản chiếu không an toàn có thể liên quan reflected XSS không?",
+      "options": [
+        "Có, không chỉ URL query mới có thể là nguồn phản chiếu",
+        "Không, reflected chỉ có GET",
+        "Không, POST tự mã hóa HTML",
+        "Chỉ nếu session cookie public"
+      ],
+      "correct": 0,
+      "explanation": "Phân loại dựa vào luồng dữ liệu và sink."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "HttpOnly và actions",
+      "question": "Script XSS không đọc được cookie HttpOnly có thể vẫn gọi API trong session người dùng không?",
+      "options": [
+        "Không, SameSite tự chặn script cùng trang",
+        "Có thể, nên không coi HttpOnly là sửa toàn bộ XSS",
+        "Không, HttpOnly tắt mọi request của trang",
+        "Chỉ nếu cookie tên admin"
+      ],
+      "correct": 1,
+      "explanation": "Giảm lộ token không loại mọi tác động session."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "CSP lớp bổ sung",
+      "question": "Có CSP header có đủ bỏ output encoding/sanitization không?",
+      "options": [
+        "Có, chỉ cần header không rỗng",
+        "Chỉ nếu tên file csp.js",
+        "Không, cần policy hiệu lực và vẫn sửa nguồn/sink phù hợp",
+        "Có, CSP tự sanitize mọi dữ liệu"
+      ],
+      "correct": 2,
+      "explanation": "CSP có thể cấu hình yếu hoặc không bao hết các ngữ cảnh cần bảo vệ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "CSP report only",
+      "question": "Một CSP chỉ ở chế độ report có tự chặn theo cùng policy như enforcement không?",
+      "options": [
+        "Có, tên CSP luôn chặn mọi script",
+        "Chỉ khi report URL là HTTPS",
+        "Có, có log là mọi payload bị chặn",
+        "Không, chế độ quan sát không tự là enforcement tương đương"
+      ],
+      "correct": 3,
+      "explanation": "Cần xem effective headers và mode thực tế."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Sanitize rồi sửa",
+      "question": "HTML đã sanitize nhưng thư viện sau đó nối thêm raw dữ liệu không tin cậy. Cần review gì?",
+      "options": [
+        "Luồng biến đổi sau sanitize có thể làm mất bảo vệ",
+        "Sanitize một lần làm mọi chuỗi về sau trusted",
+        "Chỉ tên sanitizer",
+        "Chỉ cookie Secure"
+      ],
+      "correct": 0,
+      "explanation": "Điểm dữ liệu trở thành markup cuối cùng vẫn cần đúng contract."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Sanitizer updates",
+      "question": "Vì sao cần cập nhật sanitizer theo phiên bản và cấu hình?",
+      "options": [
+        "Vì HTML không có đặc tả",
+        "Parser/browser và bypass có thể thay đổi; thư viện không là bảo đảm bất biến",
+        "Vì mọi bản cũ đều lập tức chạy shell",
+        "Chỉ để đổi màu output"
+      ],
+      "correct": 1,
+      "explanation": "Không cài/tải sanitizer mới trong lần soạn này."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Double encoding",
+      "question": "Pre-encode dữ liệu rồi dùng textContent trên div có thể tạo lỗi hiển thị gì?",
+      "options": [
+        "Mọi input trở thành script",
+        "Chỉ làm cookie hết hạn",
+        "Entity có thể xuất hiện như text thay vì ký tự mong muốn",
+        "Browser tự giải mã mọi entity trong text node"
+      ],
+      "correct": 2,
+      "explanation": "Text sink nhận dữ liệu text, không cần HTML encoding trước cho mục tiêu đó."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "CSRF method",
+      "question": "Đổi thao tác thay đổi state từ GET sang POST có tự là toàn bộ phòng vệ CSRF không?",
+      "options": [
+        "Có, mọi POST không thể cross-site",
+        "Có, JSON luôn chặn mọi request",
+        "Chỉ cần thêm HttpOnly",
+        "Không, cần cơ chế kiểm request phù hợp với auth/client và policy"
+      ],
+      "correct": 3,
+      "explanation": "Method phù hợp là một phần thiết kế, không phép bảo đảm đơn lẻ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Token không validate",
+      "question": "Form có hidden CSRF token nhưng backend không kiểm. Có đủ bảo vệ không?",
+      "options": [
+        "Không",
+        "Có, browser tự kiểm token cho server",
+        "Có, hidden nghĩa attacker không thể gửi",
+        "Chỉ nếu token dài"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế bảo vệ phải được enforce tại điểm xử lý request."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Token static",
+      "question": "Mọi người dùng chung một CSRF token public cố định có đáp ứng cùng mục tiêu secret/unpredictable token đúng pattern không?",
+      "options": [
+        "Chỉ nếu trong cookie",
+        "Không, cần contract token phù hợp thay vì một hằng công khai",
+        "Có, token chỉ cần có tên csrf",
+        "Có, shared value tự là signature"
+      ],
+      "correct": 1,
+      "explanation": "Thuộc tính token cần phù hợp mô hình bảo vệ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "SameSite tradeoff",
+      "question": "Chọn SameSite mà không xét OAuth/navigation/login có thể gây gì?",
+      "options": [
+        "Tự cấp authorization",
+        "Không ảnh hưởng request nào",
+        "Luồng hợp lệ bị ảnh hưởng hoặc protection không đúng mục tiêu",
+        "Tự sửa mọi XSS"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm luồng thật và giới hạn của chế độ."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "XSS và CSRF",
+      "question": "XSS trong origin có thể ảnh hưởng bảo vệ CSRF ra sao?",
+      "options": [
+        "Không liên quan vì tên khác nhau",
+        "CSRF token tự tắt mọi script XSS",
+        "Chỉ cần đổi cookie name",
+        "Có thể làm suy yếu/bypass các cơ chế dựa vào script/token trong cùng ngữ cảnh, nên phải sửa XSS"
+      ],
+      "correct": 3,
+      "explanation": "Không coi một nhóm control là thay thế nhóm khác."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Origin check",
+      "question": "Kiểm Origin/Referer cho thao tác nhạy cảm cần gì?",
+      "options": [
+        "So đúng origin theo policy, xử lý missing/proxy/trust rõ ràng",
+        "Chỉ tìm substring tên domain trong chuỗi",
+        "Tin mọi origin chứa chữ localhost",
+        "Chỉ xem User-Agent"
+      ],
+      "correct": 0,
+      "explanation": "Validation phải phản ánh ranh giới đích được phép."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "CORS không toàn CSRF",
+      "question": "Không có CORS read permission có bảo đảm không request cross-site nào thay đổi state được gửi không?",
+      "options": [
+        "Chỉ cần không có wildcard",
+        "Không, khả năng đọc response và khả năng gửi một số request khác nhau",
+        "Có, CORS chặn mọi request ở mọi browser",
+        "Có, nếu cookie HttpOnly"
+      ],
+      "correct": 1,
+      "explanation": "CSRF cần kiểm request và auth context theo thiết kế."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Output theo nơi dùng",
+      "question": "Một giá trị xuất ở HTML text và URL attribute có nên mặc định dùng cùng xử lý không?",
+      "options": [
+        "Chỉ Base64 là đủ cả hai",
+        "Chỉ minify dữ liệu",
+        "Không, cần bảo vệ theo từng ngữ cảnh và URL policy",
+        "Có, một encoder giải quyết mọi semantics"
+      ],
+      "correct": 2,
+      "explanation": "Không đánh mất thông tin context khi tái sử dụng dữ liệu."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Stored trust",
+      "question": "Comment đã được lưu trong DB có tự là HTML tin cậy không?",
+      "options": [
+        "Có, mọi DB row là trusted code",
+        "Có, chỉ request hiện tại mới untrusted",
+        "Chỉ nếu row có ID",
+        "Không, nguồn lưu trữ không tự sanitize hoặc cấp quyền tạo markup"
+      ],
+      "correct": 3,
+      "explanation": "Trust boundary cần theo nguồn và semantics sử dụng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Admin view",
+      "question": "Comment từ user thường xuất vào admin dashboard có cần bảo vệ XSS không?",
+      "options": [
+        "Có, quyền của người xem không làm dữ liệu tự an toàn",
+        "Không, admin không thể bị XSS",
+        "Không, dashboard nội bộ luôn trusted",
+        "Chỉ khi domain public"
+      ],
+      "correct": 0,
+      "explanation": "Các view ít public vẫn có dữ liệu không tin cậy."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Raw bypass framework",
+      "question": "Framework auto-escape có bảo vệ một đường raw HTML bypass được dùng sai không?",
+      "options": [
+        "Chỉ nếu cookie Secure",
+        "Không, escape hatch cần contract riêng và review",
+        "Có, mọi raw API được tự sanitize",
+        "Chỉ cần component tên Safe"
+      ],
+      "correct": 1,
+      "explanation": "Hiểu giới hạn của framework là phần của phòng vệ."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Undefined data",
+      "question": "Script source dùng userComment chưa định nghĩa. Điều gì có thể xảy ra trước khi sink được dùng?",
+      "options": [
+        "textContent tự tạo biến từ EJS",
+        "CSP tự nạp dữ liệu",
+        "Lỗi runtime vì thiếu binding dữ liệu, tùy môi trường thật",
+        "Browser tự lấy mọi comment từ server"
+      ],
+      "correct": 2,
+      "explanation": "Không đánh đồng ý tưởng sink với implementation đã hoạt động."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Element missing",
+      "question": "getElementById không tìm thấy div dự kiến thì assignment có tự tạo nó không?",
+      "options": [
+        "Có, mọi id tự tạo div",
+        "Chỉ nếu comment là text",
+        "Có, EJS tự chạy lại để thêm node",
+        "Không, cần lifecycle/DOM wiring phù hợp và xử lý lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Đây là điều kiện hoạt động, khác điều kiện an toàn của sink."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "JavaScript serialization",
+      "question": "JSON.stringify có tự an toàn khi dán raw vào mọi script tag trong HTML không?",
+      "options": [
+        "Không, còn ngữ cảnh HTML/script và các ký tự đóng block cần cơ chế truyền dữ liệu phù hợp",
+        "Có, JSON hợp lệ tự an toàn cho mọi parser",
+        "Chỉ cần stringify hai lần",
+        "Có, mọi chuỗi JSON đều được CSP cho phép"
+      ],
+      "correct": 0,
+      "explanation": "Tính hợp lệ của một ngôn ngữ không thay an toàn khi lồng vào ngôn ngữ khác."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "CSP nonce",
+      "question": "Nonce cho script cần được quản lý theo cách nào theo policy phù hợp?",
+      "options": [
+        "Chỉ bật HttpOnly",
+        "Giá trị/chuyển qua headers và markup đúng cơ chế, không coi hằng public tái dùng là đủ",
+        "Chỉ đặt id=nonce cho mọi tag",
+        "Chỉ dùng một comment chứa nonce"
+      ],
+      "correct": 1,
+      "explanation": "Nonce là một phần hợp đồng CSP cụ thể, không chỉ một tên thuộc tính."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "URL encoding",
+      "question": "URL-encode một chuỗi rồi nhúng vào HTML attribute có thay mọi bước context validation không?",
+      "options": [
+        "Có, percent-encoding tự xác thực server",
+        "Chỉ khi dùng HTTPS",
+        "Không, vẫn cần đúng URL policy và attribute context",
+        "Có, mọi encoded URL tự trusted"
+      ],
+      "correct": 2,
+      "explanation": "Nhiều ngữ cảnh lồng nhau cần các bước phù hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Input blacklist",
+      "question": "Xóa một chuỗi script cố định có đủ là bộ lọc XSS tổng quát không?",
+      "options": [
+        "Có, mọi XSS chỉ có một spelling",
+        "Có, browser tự sửa blacklist",
+        "Chỉ nếu input lowercase",
+        "Không, cần cơ chế output/sink/sanitization theo context thay vì một blacklist mỏng"
+      ],
+      "correct": 3,
+      "explanation": "Không dạy một vài replace như bảo đảm toàn diện."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "CSRF và authz",
+      "question": "CSRF token hợp lệ có tự cấp quyền sửa record bất kỳ không?",
+      "options": [
+        "Không, authorization vẫn cần theo tài nguyên/thao tác",
+        "Có, token là quyền admin",
+        "Có, chỉ cần session cookie",
+        "Chỉ nếu token ở header"
+      ],
+      "correct": 0,
+      "explanation": "Intent/request origin và quyền dữ liệu là các vấn đề riêng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Logged token",
+      "question": "Ghi CSRF/session token vào URL/log public có thể gây gì?",
+      "options": [
+        "Chỉ ảnh hưởng CSS",
+        "Mở rộng exposure và làm suy yếu các cơ chế dựa vào bí mật token",
+        "Không có vì token chỉ là chống CSRF",
+        "Tự tăng khả năng kiểm tra"
+      ],
+      "correct": 1,
+      "explanation": "Bảo vệ lifecycle token không chỉ ở chỗ tạo nó."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không thấy alert",
+      "question": "Không thấy một hộp alert trong một lần thử có chứng minh không có XSS không?",
+      "options": [
+        "Chỉ cần hai lần reload",
+        "Có, browser không có console errors",
+        "Không, cần hiểu luồng/sink/context và phạm vi kiểm thực",
+        "Có, mọi XSS bắt buộc alert"
+      ],
+      "correct": 2,
+      "explanation": "Không kết luận toàn hệ thống từ một dấu hiệu hẹp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Claim source",
+      "question": "Có thể nói snippet đã phòng cả XSS/CSRF hoàn chỉnh chỉ vì comment An toàn không?",
+      "options": [
+        "Có, comment là một assertion runtime",
+        "Có, textContent tự thành middleware CSRF",
+        "Chỉ cần Base64 exercise",
+        "Không, còn context/wiring và request-side CSRF chưa được thể hiện"
+      ],
+      "correct": 3,
+      "explanation": "Kết luận theo nội dung và bằng chứng thật."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "EJS label sai",
+      "question": "Nhóm thay EJS <%= trong div bằng <%- để sửa nhãn vulnerable của source. Vì sao có thể làm xấu hơn?",
+      "options": [
+        "<%= mặc định escape còn <%- raw; cần review dữ liệu/context thay vì đổi sang bỏ bảo vệ",
+        "Hai tag đều luôn raw nên không khác",
+        "<%- tự sanitize mạnh hơn",
+        "Chỉ tên userComment quyết định an toàn"
+      ],
+      "correct": 0,
+      "explanation": "Đọc đúng framework semantics quan trọng hơn tin nhãn minh họa."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Safe sink nhưng inline không an toàn",
+      "question": "App nhúng raw dữ liệu vào inline JavaScript rồi sau đó gán div.textContent. Cần sửa gì?",
+      "options": [
+        "Chỉ đổi div thành span",
+        "Đường truyền dữ liệu vào JavaScript phải an toàn và sink cuối đúng context; textContent không sửa bước parse trước",
+        "Chỉ giữ sink cuối là đủ",
+        "Chỉ thêm HttpOnly cho cookie"
+      ],
+      "correct": 1,
+      "explanation": "Một luồng có nhiều boundary cần bảo vệ đồng bộ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "TextContent ngữ cảnh sai",
+      "question": "Nhóm dùng textContent để chèn dữ liệu không tin cậy vào script element rồi gọi đó là safe text. Đánh giá đúng?",
+      "options": [
+        "Chỉ cần tag có id",
+        "Chỉ thêm SameSite",
+        "Không áp kết luận text sink div sang nội dung script thực thi; cần tránh trao dữ liệu quyền code",
+        "Tên property textContent bảo đảm mọi element không thực thi"
+      ],
+      "correct": 2,
+      "explanation": "Element type và vòng đời chèn DOM ảnh hưởng semantics."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Rich text và sanitization",
+      "question": "Sản phẩm cho phép rich HTML, sanitizer chạy trước rồi plugin nối raw HTML từ user. Hướng hoàn thiện?",
+      "options": [
+        "Sanitize một lần làm mọi dữ liệu sau đó trusted",
+        "Chỉ đổi plugin name",
+        "Chỉ thêm cookie Secure",
+        "Review pipeline và sanitize/kiểm tại boundary cuối theo policy, giữ thư viện/config được cập nhật"
+      ],
+      "correct": 3,
+      "explanation": "Các biến đổi sau sanitize có thể làm mất invariant an toàn."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "HttpOnly chưa đủ",
+      "question": "XSS không đọc được cookie nhưng vẫn gửi API đổi email trong session. Vì sao cần sửa gốc?",
+      "options": [
+        "HttpOnly giảm một đường đọc token, không chặn mọi hành động trong origin; cần xử lý source/sink và policy server",
+        "HttpOnly đã bảo đảm không thể có tác động",
+        "Chỉ cần đổi tên API",
+        "Chỉ tăng thời hạn cookie"
+      ],
+      "correct": 0,
+      "explanation": "Tác động XSS không chỉ là đánh cắp cookie."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Token gắn session và method thay đổi state",
+      "question": "Ứng dụng đã chọn synchronizer token theo session. Form có hidden token nhưng backend chỉ kiểm có field token và session cookie; cùng thao tác còn chấp nhận GET. Thay đổi nào hoàn thiện đúng pattern đã chọn và semantics HTTP?",
+      "options": [
+        "Kiểm token theo session nhưng tiếp tục cho GET thay đổi state để link chia sẻ tiện, đồng thời thêm HttpOnly cho cookie",
+        "Server kiểm token gửi rõ trong request khớp token hợp lệ của session, từ chối thiếu/sai, không thay đổi state qua GET và vẫn kiểm quyền thao tác",
+        "Giữ kiểm token không rỗng, bỏ GET và chỉ nhận POST; coi hidden field có mặt là chứng minh ý định của user",
+        "So token gửi với một giá trị cookie do request tự mang thay vì token session; giữ GET nếu query có token"
+      ],
+      "correct": 1,
+      "explanation": "Synchronizer token phải được server kiểm với trạng thái session tương ứng, không chỉ sự hiện diện của field. Safe method như GET không nên làm thay đổi state; token hợp lệ cũng không thay authorization."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "CSP yếu và raw sink",
+      "question": "App dùng raw HTML với CSP cho phép inline rộng rồi nói đã an toàn vì có header. Đánh giá đúng?",
+      "options": [
+        "Chỉ cần CSP dài hơn",
+        "Chỉ tắt console log",
+        "Cần sửa sink/sanitization và đánh giá effective CSP; sự hiện diện header không chứng minh policy đủ",
+        "Mọi CSP header tự chặn raw HTML"
+      ],
+      "correct": 2,
+      "explanation": "CSP là lớp bổ sung, không thay nguyên tắc xử lý dữ liệu."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "SameSite và luồng thật",
+      "question": "Team chọn SameSite mà không kiểm auth callback và các subdomain/flows rồi công bố hết CSRF. Cần gì?",
+      "options": [
+        "Chỉ tên SameSite là đủ cho mọi kiến trúc",
+        "Chỉ dùng HTTPS",
+        "Chỉ thêm user agent check",
+        "Đánh giá site/origin, chế độ gửi cookie, request validation và luồng hợp lệ theo threat model"
+      ],
+      "correct": 3,
+      "explanation": "Một thuộc tính có giới hạn và đánh đổi cần được kiểm theo yêu cầu thật."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Double encoding và bypass",
+      "question": "Để sửa entity hiển thị sai, đội đổi mọi escaped output thành raw. Hướng xử lý tốt hơn?",
+      "options": [
+        "Xác định dữ liệu gốc/context và bỏ encoding thừa đúng chỗ, không tắt toàn bộ output protection",
+        "Raw mọi nơi luôn đúng vì hiển thị đẹp",
+        "Chỉ xóa mọi dấu &",
+        "Chỉ đổi cookie name"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi hiển thị không nên được chữa bằng bỏ ranh giới parser."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "XSS qua admin view",
+      "question": "User comment được escape ở public page nhưng raw ở moderation dashboard quyền cao. Kết luận nào đúng?",
+      "options": [
+        "Chỉ cần ẩn URL moderation",
+        "Còn một sink cần sửa; bảo vệ một view không tự áp cho mọi consumer",
+        "Public view an toàn bảo vệ mọi dashboard",
+        "Admin không thể bị XSS"
+      ],
+      "correct": 1,
+      "explanation": "Dữ liệu có nhiều consumer với context và quyền khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "JSON lồng HTML",
+      "question": "Một object được JSON.stringify rồi dán raw vào script tag; nhóm coi JSON hợp lệ đủ. Cần gì?",
+      "options": [
+        "Chỉ stringify thêm tên biến",
+        "Chỉ thêm type=module",
+        "Cơ chế nhúng/truyền dữ liệu an toàn theo HTML/JS context và kiểm boundary, không chỉ JSON validity",
+        "JSON parser luôn kiểm toàn HTML document"
+      ],
+      "correct": 2,
+      "explanation": "Lồng ngôn ngữ tạo thêm điều kiện an toàn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "URL đúng syntax sai policy",
+      "question": "Một href được quote/HTML-encode nhưng nhận scheme/đích không được phép. Điều gì còn thiếu?",
+      "options": [
+        "Chỉ thêm một lớp HTML entity nữa",
+        "Chỉ đổi tên biến safeHref",
+        "Coi encode nghĩa được phép mọi đích",
+        "Validation/mapping URL và policy navigation phù hợp ngoài attribute encoding"
+      ],
+      "correct": 3,
+      "explanation": "An toàn cú pháp không đồng nghĩa mọi hành vi URL được chấp nhận."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "CORS và CSRF nhầm",
+      "question": "API cookie-auth không cho origin lạ đọc response, nhưng vẫn xử lý một số state-changing request. Đã hết CSRF chưa?",
+      "options": [
+        "Chưa thể suy, cần cơ chế kiểm request/intention phù hợp và authorization; đọc response khác gửi request",
+        "Rồi, không đọc response nghĩa không có tác động",
+        "Chỉ cần header Server bị ẩn",
+        "Chỉ dùng POST là đủ tuyệt đối"
+      ],
+      "correct": 0,
+      "explanation": "Policy browser có các chức năng khác nhau."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Stored content cũ",
+      "question": "Sink đã sửa nhưng bản HTML cache/admin export cũ còn chứa raw dữ liệu. Cần xem gì?",
+      "options": [
+        "Chỉ băm tên file export",
+        "Các bản sao/consumer và lifecycle cache/export theo scope, không chỉ template hiện tại",
+        "Sửa một template tự xóa mọi bản sao",
+        "Chỉ đổi thời gian cookie"
+      ],
+      "correct": 1,
+      "explanation": "Khắc phục cần theo đường dữ liệu thực tế."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Token lộ ở log",
+      "question": "CSRF protection dùng token theo session nhưng log rộng lưu cả token/session. Cần xử lý gì?",
+      "options": [
+        "Chỉ đổi file extension log",
+        "Chỉ thêm SameSite",
+        "Exposure/quyền/log retention và token lifecycle theo policy, ngoài việc token validation vẫn đúng",
+        "Token chống CSRF luôn public nên không cần xét"
+      ],
+      "correct": 2,
+      "explanation": "Một cơ chế đúng cũng có thể bị suy yếu bởi cách xử lý bí mật."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Nguồn chưa wiring",
+      "question": "Snippet gọi getElementById và userComment chưa có dữ liệu/DOM lifecycle đầy đủ; không có CSRF middleware. Có thể claim gì?",
+      "options": [
+        "Đã phòng toàn bộ XSS/CSRF production",
+        "Đã chạy browser test thành công",
+        "Chỉ cần comment An toàn là đủ",
+        "Mới minh họa một ý tưởng text sink; cần wiring an toàn và cơ chế CSRF riêng để kiểm chứng mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình/ý tưởng không là kết quả thực thi."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Framework trust escape",
+      "question": "Auto-escape framework có raw HTML API dùng cho user input để hỗ trợ rich text. Bộ hợp đồng phù hợp?",
+      "options": [
+        "Cho markup cần thiết qua sanitizer/trust policy đúng context và review consumer, không tin API raw tự an toàn",
+        "Mọi API của framework đều sanitize tự động",
+        "Chỉ cần component tên RichSafe",
+        "Chỉ thêm HttpOnly"
+      ],
+      "correct": 0,
+      "explanation": "Escape hatch cần kiểm soát riêng theo mục tiêu."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Input script vs data",
+      "question": "Một app cho end user tự cung cấp template EJS hoàn chỉnh và gọi render với quyền server. Vì sao khác comment text thông thường?",
+      "options": [
+        "CSP browser tự hạn chế quyền server",
+        "Template là mã thực thi theo engine, không chỉ dữ liệu được escape ở một output value",
+        "Mọi EJS input đều là text vô hại",
+        "Chỉ <%= mới thực thi trên server"
+      ],
+      "correct": 1,
+      "explanation": "Không mở quyền thực thi template như một cách xử lý dữ liệu không tin cậy."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Phân quyền vẫn cần",
+      "question": "CSRF token hợp lệ và output escape đúng nhưng API cho user sửa record của người khác. Còn lỗi gì?",
+      "options": [
+        "Chỉ cần CSP mạnh hơn",
+        "Chỉ cần đổi method",
+        "Authorization theo tài nguyên/thao tác chưa đúng",
+        "Không có vì token chứng minh mọi quyền"
+      ],
+      "correct": 2,
+      "explanation": "Các lớp phòng vệ không thay thế nhau."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Subdomain, CSRF và rich HTML",
+      "question": "app.example.com dùng cookie session SameSite=Strict; một subdomain cùng site do bên khác kiểm soát. API đổi email chỉ dựa vào cookie. Comment rich HTML được sanitize nhưng plugin sau đó nối thêm raw HTML từ input. Kế hoạch nào xử lý cả request ngoài ý muốn và đường XSS này?",
+      "options": [
+        "Giữ chỉ SameSite=Strict vì subdomain khác origin luôn bị chặn cookie, nhưng chuyển sanitization xuống sau plugin",
+        "Kiểm CSRF/token đúng trên API nhưng giữ raw HTML sau sanitize vì comment đã qua sanitizer một lần",
+        "Chỉ siết CORS read permission và nonce CSP; coi response không đọc được là không đổi email được và dữ liệu đã sanitize luôn giữ an toàn",
+        "Bổ sung kiểm CSRF/request context phù hợp tại server theo origin/token policy, đồng thời loại đường nối raw hoặc bảo vệ HTML sau các biến đổi theo policy và sanitizer phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Site và origin không đồng nhất: subdomain cùng site làm SameSite không đủ cho giả định này. Sanitization trước một bước nối raw không bảo toàn invariant của HTML cuối; hai đường rủi ro cần được xử lý riêng."
+    }
+  ]
+}

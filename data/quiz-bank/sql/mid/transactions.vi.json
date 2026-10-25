@@ -1,0 +1,1147 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "mid",
+  "lesson": "transactions",
+  "language": "vi",
+  "sourceHash": "06fa6319f3573a5c67124f369e72093fa67331420c8ec6e861f5d9927c491c91",
+  "status": "approved",
+  "review": "Tự soạn không API. Source và PostgreSQL17 isolation/savepoint/locking docs reviewed; các fixtures tuần tự portable chạy SQLite3.49.1 in-memory, không giả concurrency hoặc PG execution. Nêu lỗi source credit/log dù debit0rows, receiver missing, thiếu app check/rollback. Atomicity khác business validity; retry whole transaction và idempotency/external effects có scope.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Atomicity",
+      "question": "Atomicity của transaction chủ yếu nói gì?",
+      "options": [
+        "Các thay đổi thuộc đơn vị transaction được commit hoặc rollback theo semantics của DB.",
+        "Mọi câu SQL đều đúng nghiệp vụ tự động.",
+        "Mọi query luôn không có locks.",
+        "Mọi API request chạy đúng một lần."
+      ],
+      "correct": 0,
+      "explanation": "DB transaction không tự hiểu các quy tắc chưa được viết."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Consistency",
+      "question": "Consistency trong ACID liên quan gì?",
+      "options": [
+        "Mọi transaction luôn commit.",
+        "Giữ các invariants được thiết kế/enforce khi chuyển trạng thái hợp lệ.",
+        "Mọi replica luôn tức thời giống nhau bất kể cấu hình.",
+        "Mọi field luôn là string."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm ACID consistency với toàn bộ định nghĩa distributed consistency."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Isolation",
+      "question": "Isolation kiểm soát khía cạnh nào?",
+      "options": [
+        "Dung lượng ảnh.",
+        "Tên bảng viết hoa hay thường.",
+        "Cách các transactions đồng thời quan sát và ảnh hưởng lẫn nhau.",
+        "Màu sắc giao diện."
+      ],
+      "correct": 2,
+      "explanation": "Mức bảo đảm phụ thuộc engine và isolation level."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Durability",
+      "question": "Durability nói đến điều gì?",
+      "options": [
+        "Không cần backup nữa.",
+        "Không thể có mất dữ liệu trong mọi sự cố tưởng tượng.",
+        "Mọi transaction luôn chạy nhanh.",
+        "Khả năng giữ kết quả đã commit theo guarantees/cấu hình của hệ thống."
+      ],
+      "correct": 3,
+      "explanation": "Cần xem acknowledgement, storage và replication policy thực tế."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Begin role",
+      "question": "BEGIN trong ví dụ dùng để làm gì?",
+      "options": [
+        "Bắt đầu transaction block.",
+        "Tự tạo mọi accounts.",
+        "Tự xác thực người gửi.",
+        "Tự commit ngay mọi lệnh phía sau."
+      ],
+      "correct": 0,
+      "explanation": "Cần kết thúc transaction theo đường thành công/thất bại phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Commit role",
+      "question": "COMMIT thực hiện gì?",
+      "options": [
+        "Tự kiểm tra mọi nghiệp vụ chưa khai báo.",
+        "Yêu cầu hoàn tất transaction thành công theo DB semantics.",
+        "Tự rollback mọi thay đổi.",
+        "Chỉ hiển thị execution plan."
+      ],
+      "correct": 1,
+      "explanation": "Commit không thay việc kiểm tra kết quả của từng bước nghiệp vụ."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Rollback role",
+      "question": "ROLLBACK dùng để làm gì?",
+      "options": [
+        "Chỉ đổi tên savepoint.",
+        "Tạo một index.",
+        "Hủy các thay đổi trong transaction theo phạm vi của lệnh.",
+        "Nhân đôi số dư."
+      ],
+      "correct": 2,
+      "explanation": "External effects và sequence semantics có thể cần xét riêng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Savepoint role",
+      "question": "SAVEPOINT tạo gì?",
+      "options": [
+        "Một backup độc lập vĩnh viễn.",
+        "Một transaction đã commit.",
+        "Một replica mới.",
+        "Mốc trong transaction để có thể rollback một phần phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Savepoint không tự persist changes ra ngoài transaction."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Rollback to role",
+      "question": "ROLLBACK TO before_update trong source nhằm làm gì?",
+      "options": [
+        "Hoàn tác phần sau savepoint đó, giữ transaction ngoài theo semantics engine.",
+        "Commit toàn bộ transaction.",
+        "Xóa bảng products.",
+        "Đổi stock thành NULL."
+      ],
+      "correct": 0,
+      "explanation": "Khác full ROLLBACK."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Source amount",
+      "question": "Ví dụ chuyển tiền source dùng amount bao nhiêu?",
+      "options": [
+        "1.",
+        "1000.",
+        "100.",
+        "10."
+      ],
+      "correct": 1,
+      "explanation": "Cần xác định đơn vị/currency trong ứng dụng thật."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Source sender",
+      "question": "Sender account source có id nào?",
+      "options": [
+        "42.",
+        "1000.",
+        "1.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "Receiver là account2."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Source receiver",
+      "question": "Receiver account source có id nào?",
+      "options": [
+        "1.",
+        "42.",
+        "0.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "Target existence vẫn cần kiểm tra trong implementation."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Debit guard",
+      "question": "Điều kiện balance>=1000 ở debit nhằm làm gì?",
+      "options": [
+        "Chỉ trừ khi row phù hợp có số dư đủ theo điều kiện.",
+        "Tự hủy mọi lệnh tiếp theo khi không khớp.",
+        "Tự tạo account thiếu.",
+        "Tự gửi thông báo hoàn tiền."
+      ],
+      "correct": 0,
+      "explanation": "Zero affected rows thường không phải SQL exception."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Source log",
+      "question": "INSERT vào transfers source nhằm ghi gì?",
+      "options": [
+        "Index statistics.",
+        "from_id, to_id, amount.",
+        "Mọi password tài khoản.",
+        "Một CSS animation."
+      ],
+      "correct": 1,
+      "explanation": "Log phải phản ánh giao dịch thật theo cùng contract."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Stock example",
+      "question": "UPDATE stock source có phép tính nào?",
+      "options": [
+        "stock=NULL.",
+        "stock=product_id.",
+        "stock=stock-1.",
+        "stock=stock+1000."
+      ],
+      "correct": 2,
+      "explanation": "Source chỉ minh họa savepoint, chưa có guard stock dương."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Isolation names",
+      "question": "Tên nào là một isolation level trong theory?",
+      "options": [
+        "READ EVERY FILE.",
+        "WRITE ALL USERS.",
+        "SELECT FOREVER.",
+        "READ COMMITTED."
+      ],
+      "correct": 3,
+      "explanation": "Các mức chuẩn có thể được engine triển khai với guarantees mạnh hơn tối thiểu."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Dirty read",
+      "question": "Dirty read nghĩa là gì?",
+      "options": [
+        "Đọc dữ liệu do transaction khác ghi nhưng chưa commit.",
+        "Đọc một string có spaces.",
+        "Đọc từ cache bất kỳ.",
+        "Đọc nhiều hơn một row."
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt với nonrepeatable read và phantom."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Nonrepeatable read",
+      "question": "Nonrepeatable read là tình huống nào?",
+      "options": [
+        "Bảng không có PRIMARY KEY.",
+        "Đọc lại dữ liệu và thấy giá trị đã đổi do concurrent transaction commit.",
+        "Mọi query chỉ được chạy một lần.",
+        "Không thể SELECT trong transaction."
+      ],
+      "correct": 1,
+      "explanation": "Semantics phụ thuộc isolation/snapshot của DB."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Phantom read",
+      "question": "Phantom read liên quan điều gì?",
+      "options": [
+        "Một query có alias.",
+        "Một exception về CSS.",
+        "Tập rows thỏa predicate thay đổi giữa các lần đọc bởi concurrent commits.",
+        "Một field tự biến thành ảnh."
+      ],
+      "correct": 2,
+      "explanation": "Không chỉ là giá trị của cùng một row đã đổi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Serializable goal",
+      "question": "Serializable hướng đến guarantee nào cho transactions commit thành công?",
+      "options": [
+        "Không bao giờ abort hoặc retry.",
+        "Không cần constraints.",
+        "Không cần kiểm tra business rules.",
+        "Kết quả tương đương một thứ tự chạy tuần tự phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Có thể cần retry khi DB phát hiện serialization conflict."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Successful sequential transfer",
+      "question": "SQLite fixture cuối có balances nào?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,1500),(2,100);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nINSERT INTO transfers VALUES(1,2,1000);\nCOMMIT;\n-- result\nSELECT id,balance FROM accounts ORDER BY id;",
+      "options": [
+        "1:500; 2:1100.",
+        "1:1500; 2:100.",
+        "1:500; 2:100.",
+        "1:1500; 2:1100."
+      ],
+      "correct": 0,
+      "explanation": "Sender đủ tiền và receiver tồn tại, các lệnh tuần tự chuyển1000."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Insufficient sender bug",
+      "question": "SQLite fixture mô phỏng source có balances cuối nào?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,500),(2,100);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nINSERT INTO transfers VALUES(1,2,1000);\nCOMMIT;\n-- result\nSELECT id,balance FROM accounts ORDER BY id;",
+      "options": [
+        "Không có rows vì tự rollback.",
+        "1:500; 2:1100.",
+        "1:500; 2:100.",
+        "1:-500; 2:1100."
+      ],
+      "correct": 1,
+      "explanation": "Debit không khớp nhưng credit vẫn chạy; BEGIN không tự sửa lỗi nghiệp vụ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Missing receiver bug",
+      "question": "Receiver2 thiếu trong fixture. Balance sender cuối là gì?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,1500);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nINSERT INTO transfers VALUES(1,2,1000);\nCOMMIT;\n-- result\nSELECT balance FROM accounts WHERE id=1;",
+      "options": [
+        "2500.",
+        "NULL.",
+        "500.",
+        "1500."
+      ],
+      "correct": 2,
+      "explanation": "Debit thành công nhưng credit 0 rows; source vẫn commit nếu không kiểm tra."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Exact available amount",
+      "question": "SQLite fixture sender có đúng1000 cho balances cuối nào?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,1000),(2,0);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nCOMMIT;\n-- result\nSELECT id,balance FROM accounts ORDER BY id;",
+      "options": [
+        "1:1000; 2:0.",
+        "1:-1000; 2:1000.",
+        "1:0; 2:0.",
+        "1:0; 2:1000."
+      ],
+      "correct": 3,
+      "explanation": ">= bao gồm trường hợp bằng1000."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Explicit rollback proof",
+      "question": "SQLite fixture cuối giữ balances nào?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,1500),(2,100);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nROLLBACK;\n-- result\nSELECT id,balance FROM accounts ORDER BY id;",
+      "options": [
+        "1:1500; 2:100.",
+        "1:500; 2:1100.",
+        "1:1500; 2:1100.",
+        "1:0; 2:0."
+      ],
+      "correct": 0,
+      "explanation": "ROLLBACK hủy cả hai updates trong transaction này."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Savepoint stock proof",
+      "question": "SQLite fixture cuối stock bằng bao nhiêu?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,stock INTEGER);\nINSERT INTO products VALUES(42,1);\nBEGIN;\nSAVEPOINT before_update;\nUPDATE products SET stock=stock-1 WHERE id=42;\nROLLBACK TO before_update;\nCOMMIT;\n-- result\nSELECT stock FROM products WHERE id=42;",
+      "options": [
+        "NULL.",
+        "1.",
+        "0.",
+        "2."
+      ],
+      "correct": 1,
+      "explanation": "Rollback vềsavepoint hoàn tác stock-1 trước commit."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Partial rollback proof",
+      "question": "Query cuối SQLite trả các values nào?",
+      "code": "CREATE TABLE t(v INTEGER);\nBEGIN;\nINSERT INTO t VALUES(1);\nSAVEPOINT s;\nINSERT INTO t VALUES(2);\nROLLBACK TO s;\nINSERT INTO t VALUES(3);\nCOMMIT;\n-- result\nSELECT v FROM t ORDER BY v;",
+      "options": [
+        "Chỉ1.",
+        "Không có row.",
+        "1, 3.",
+        "1, 2, 3."
+      ],
+      "correct": 2,
+      "explanation": "Insert2 bịrollback tới savepoint; insert1 trước mốc vàinsert3 sau đó đượccommit."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Release not independent commit",
+      "question": "SQLite query cuối sauRELEASE rồifullROLLBACK trảCOUNT bao nhiêu?",
+      "code": "CREATE TABLE t(v INTEGER);\nBEGIN;\nSAVEPOINT s;\nINSERT INTO t VALUES(1);\nRELEASE s;\nROLLBACK;\n-- result\nSELECT COUNT(*) FROM t;",
+      "options": [
+        "1.",
+        "2.",
+        "NULL.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Release savepoint không commit riêng thay đổi của nó."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Atomic guard repeated",
+      "question": "SQLite fixture cóbalance1000, chạy debitguard hai lần rồicommit chobalance nào?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER);\nINSERT INTO accounts VALUES(1,1000);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nCOMMIT;\n-- result\nSELECT balance FROM accounts WHERE id=1;",
+      "options": [
+        "0.",
+        "-1000.",
+        "1000.",
+        "NULL."
+      ],
+      "correct": 0,
+      "explanation": "Lần thứhai không khớp balance>=1000; không chứng minh concurrent behavior của engine khác."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Failed debit log bug",
+      "question": "SQLite fixture source-style vẫn có bao nhiêutransfer logs?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,500),(2,100);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nINSERT INTO transfers VALUES(1,2,1000);\nCOMMIT;\n-- result\nSELECT COUNT(*) FROM transfers;",
+      "options": [
+        "NULL.",
+        "1.",
+        "0.",
+        "2."
+      ],
+      "correct": 1,
+      "explanation": "INSERT không phụ thuộc affected rows debit nếu app không kiểm tra."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Missing app branch",
+      "question": "Comment source nói nếu sender không đủ thìrollback đã là executable handling chưa?",
+      "options": [
+        "Rồi, COMMIT đọc comment đó.",
+        "Chỉ nếu comment tiếngAnh.",
+        "Chưa; cần code kiểm tra kết quả và thực hiện rollback/return đúng.",
+        "Rồi, DB thực thi mọi comments."
+      ],
+      "correct": 2,
+      "explanation": "Comment mô tả ý định không thay logic thực thi."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Zero rows not exception",
+      "question": "UPDATE có predicate không khớp thường có tựthrow vì nghiệp vụ thất bại không?",
+      "options": [
+        "Có trong mọi SQLengine.",
+        "Chỉ nếu cóWHERE.",
+        "Chỉ nếu bảng cóPK.",
+        "Không; app cần diễn giải row count/result phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "SQL execution thành công khác target/business action thành công."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Receiver validation",
+      "question": "Trước committransfer, vì sao cần xác nhận receiver đượccredit đúng?",
+      "options": [
+        "Receiver có thểthiếu hoặc không đủđiều kiện nênupdate0rows.",
+        "Vìsender luônNULL.",
+        "VìCOMMIT chỉcho mộtUPDATE.",
+        "Chỉđể tăngsốqueries."
+      ],
+      "correct": 0,
+      "explanation": "Cần invariant cả debit, credit vàlog chứ không chỉ balance guard."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Read committed snapshots",
+      "question": "PostgreSQL17 READ COMMITTED thường cung cấp snapshot choSELECT theo mốc nào?",
+      "options": [
+        "Luôn sau khiHTTPresponseđã gửi.",
+        "Bắt đầu mỗi statement.",
+        "Luôn bắt đầu toàn session.",
+        "Luôn nhìn cảuncommittedwrites củaothers."
+      ],
+      "correct": 1,
+      "explanation": "HaiSELECT trong cùngtransaction có thểthấyconcurrentcommits khác nhau."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Read uncommitted pg",
+      "question": "PostgreSQL17 xử lý READ UNCOMMITTED như thế nào?",
+      "options": [
+        "Luôn thànhSERIALIZABLE.",
+        "Tựtắttransactions.",
+        "Hành vi nhưREAD COMMITTED.",
+        "Cho dirtyreads như mọiengine."
+      ],
+      "correct": 2,
+      "explanation": "Không dạy tên chuẩn nhưguaranteesimplementationgiống nhau ởmọi DB."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Repeatable read pg",
+      "question": "PostgreSQL17 REPEATABLE READ có cho phantomreads theo implementation của nó không?",
+      "options": [
+        "Có trongmọi DB vì tênlevel.",
+        "Chỉ nếu khôngindex.",
+        "Chỉ nếu dùngLEFT JOIN.",
+        "Không, guarantee mạnh hơn mức tối thiểu chuẩn ở điểm này."
+      ],
+      "correct": 3,
+      "explanation": "Vẫn có thểcóserializationanomalies nhưwrite skew."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Serializable retries",
+      "question": "Khi serializationfailure xảyra, cách xử lý đúng hướng là gì?",
+      "options": [
+        "Rollback vàretry cảtransaction vớireads/decisions mới khi phù hợp.",
+        "ChỉretryCOMMIT vô hạn.",
+        "Bỏqua error vàbáothành công.",
+        "Đổi tênsavepoint."
+      ],
+      "correct": 0,
+      "explanation": "Retry policy cần cóbounds/backoff và xử lýexternal effects."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Lock duration",
+      "question": "SELECT FOR UPDATE khóa row theo semanticsPostgreSQL để làm gì?",
+      "options": [
+        "Giữrow không bao giờđượcsửa sau commit.",
+        "Chặn cácconflictingoperations chođến khi transaction kết thúc.",
+        "Ngăn mọi reads khônglocking trên toàn DB.",
+        "Tạo authorization rule."
+      ],
+      "correct": 1,
+      "explanation": "Temporary lock không phải invariant vĩnh viễn."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Deadlock pattern",
+      "question": "Hai transactions giữlocks theo thứ tựngược nhau có thểgặp gì?",
+      "options": [
+        "Chỉ tăngINDEXsize.",
+        "Luôn dirtyread.",
+        "Deadlock.",
+        "Luôn tựmerge thànhmột transaction."
+      ],
+      "correct": 2,
+      "explanation": "Lock acquisition order là một phần thiết kế concurrency."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Consistent lock order",
+      "question": "Với chuyển giữa haiaccounts, theo cùng một orderingkey khi lấylocks có lợi gì?",
+      "options": [
+        "Bảođảm không bao giờ cómọideadlock.",
+        "Tựkiểm tra currency.",
+        "Thay mọiNOT NULL.",
+        "Giảm một lớp deadlock do thứ tựđảo."
+      ],
+      "correct": 3,
+      "explanation": "Còn cần xem toàn bộ nhữngresources khác và retry khi phù hợp."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Savepoint recovery pg",
+      "question": "TransactionPostgreSQL cóSQLerror sau savepoint vàởabortedstate.Cầncơ chế nào đểtiếp tụcphầnngoài phù hợp?",
+      "options": [
+        "ROLLBACK TOsavepoint phù hợp hoặc rollbacktoàn transaction tùyerror/contract.",
+        "ChỉRELEASEsavepoint ởabortedstate.",
+        "ChỉSELECT tiếpnhưchưacóerror.",
+        "ChỉCOMMIT lại100lần."
+      ],
+      "correct": 0,
+      "explanation": "Errorstate củaPostgreSQL không nên suy từSQLite/DBkhác."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Savepoint not nested commit",
+      "question": "RELEASEsavepoint có làmchanges đó bềnvững dùtransaction ngoàirollback không?",
+      "options": [
+        "Chỉ nếu cóINSERT.",
+        "Không.",
+        "Có vìrelease làcommitđộclập.",
+        "Chỉ nếu savepoint cótên."
+      ],
+      "correct": 1,
+      "explanation": "Savepoints cung cấp scope phục hồi trong transaction ngoài."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Transaction timeout",
+      "question": "Giữtransaction mở trong lúcchờuser nhậpOTP dài có thểgâyvấnđề gì?",
+      "options": [
+        "Tựrefresh toàn DB.",
+        "Khôngcóbấtcứchi phí nào.",
+        "Giữresources/locks/snapshot lâu vàtăngcontention/rủi rooperational.",
+        "Tựgiảm mọi querylatency."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kếworkflow ngắn/phases phù hợp, khônggiữDB transactionvô hạn."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "External email",
+      "question": "ROLLBACK DB có tựthu hồiemail đã gửi qua dịchvụngoài không?",
+      "options": [
+        "Có vìatomicity bao phủmọi system.",
+        "Chỉ nếuemailgửitrước COMMIT.",
+        "Chỉ nếu cóSAVEPOINT.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "External effects cần phối hợp theo pattern/contract phù hợp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Transaction connection",
+      "question": "Cácstatements thuộc cùngtransaction phải được gửi qua đâu theo connection-baseddriver thôngthường?",
+      "options": [
+        "Cùngtransaction/session/connectioncontext màdriver quản lý.",
+        "Tùyý chọnconnection từpool chomỗi lệnh màkhônggiữcontext.",
+        "MộtHTTPtabngẫu nhiên.",
+        "ChỉcùngSQLfilename."
+      ],
+      "correct": 0,
+      "explanation": "Dùng transaction API của driver đúng scope."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Parameter amount",
+      "question": "Amount từrequest cần có gì ngoài parameterbinding?",
+      "options": [
+        "Binding tự định nghĩatất cảdomain.",
+        "Validation type/range/currency, quyền vàbusinessrules phù hợp.",
+        "Chỉkhông cóspace.",
+        "Chỉ đổi sangstring."
+      ],
+      "correct": 1,
+      "explanation": "Binding bảo vệ syntax, khôngthaydomain/authorization."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Idempotency purpose",
+      "question": "Idempotencykey cho transfer thường nhằm gì?",
+      "options": [
+        "MộtCSSkeyframe.",
+        "TựchoSQLSERIALgapsbiếnmất.",
+        "Nhận diện cùngyêucầunghiệp vụ đểtránhthực hiện lặp ngoàiýmuốn theo contract.",
+        "Tựtăngbalance."
+      ],
+      "correct": 2,
+      "explanation": "Key cần được enforce cùngresult/state, khôngchỉ thêmheader rồi bỏ qua."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Commit response loss",
+      "question": "DB đã commit nhưngresponse bịmất. Clientcó thểkếtluận chắcchắn transferchưa xảyra không?",
+      "options": [
+        "Có, vìtimeoutluônrollback.",
+        "Có, nếuchưađọcJSON.",
+        "Chỉ nếuCOMMITviếthoa.",
+        "Không; outcome cần được giải quyết bằng operationidentity/reconciliation."
+      ],
+      "correct": 3,
+      "explanation": "Networkfailure sau commit có thểlàmclientkhôngbiếtkết quả."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Retry permanent error",
+      "question": "Có nênretryvô hạn mọiconstraintviolation như thiếureceiver không?",
+      "options": [
+        "Không; cần phân loại lỗi vàbounds/contract phù hợp.",
+        "Có, mọi errorđềutransient.",
+        "Chỉ cầnsleep1ms.",
+        "Chỉ nếu cóBEGIN."
+      ],
+      "correct": 0,
+      "explanation": "Retry khôngsửa dữ liệu/domainkhông hợp lệ."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Source stock guard",
+      "question": "Stock0 rồisource UPDATEstock=stock-1 khôngCHECK/WHEREstock>0 cóngănam không?",
+      "options": [
+        "Chỉ cầnsortid.",
+        "Không; cầnconstraint/guard thíchhợp.",
+        "Có vìBEGIN tựchặnsố âm.",
+        "Có vìSAVEPOINT làvalidation."
+      ],
+      "correct": 1,
+      "explanation": "Partialrollback chỉhữu dụng khi đượcgọiđúngquy tắc."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Isolation tradeoff scope",
+      "question": "Higherisolation có luôntốcđộthấphơn theo một hệsốcốđịnh không?",
+      "options": [
+        "Có, luôntuần tựphysical.",
+        "Chỉ nếu cóindex.",
+        "Không; đo workload và contention, retries, correctness requirements.",
+        "Có, luônchậm2lần."
+      ],
+      "correct": 2,
+      "explanation": "Guarantee vàthroughput làđánhđổi cần đo, khôngcôngthứcđơn giản."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Atomic invalid operation",
+      "question": "Mộttransactioncommitthành côngnhưnginvarianttiềnsai có thểxảyra không?",
+      "options": [
+        "Không vìACIDtựhiểumọinghiệp vụ.",
+        "Chỉ nếuSQLsyntaxsai.",
+        "Chỉ nếu dùngTEXT.",
+        "Có nếu logic/constraints chưaenforce invariantđó."
+      ],
+      "correct": 3,
+      "explanation": "Nguồninsufficientfunds làvídụ cụthể."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Balance check scope",
+      "question": "CHECKbalance>=0 một mình cóđảm bảo conservationgiữa sender/receiver không?",
+      "options": [
+        "Không; nókhôngngăncredit vô cớ hoặcdebitthiếureceiver.",
+        "Có, chỉ cầnnonnegative.",
+        "Có, vìnócộngmọibalance.",
+        "Chỉ nếuidPK."
+      ],
+      "correct": 0,
+      "explanation": "Rowbounds vàcross-rowinvariants khác nhau."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Log invariant",
+      "question": "Transferlog ghi1000 có đủchứng minhactualdebit/creditđúng chưa?",
+      "options": [
+        "Chỉ nếulogcóID.",
+        "Chưa; logcó thểđượcinsert dùupdate0rows nhưsource.",
+        "Rồi, vìINSERTlàproofbusiness.",
+        "Rồi, vìlogcósố dương."
+      ],
+      "correct": 1,
+      "explanation": "Auditrecord phải được ghivới guarantees phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Isolation setup placement",
+      "question": "SET TRANSACTION ISOLATION LEVEL củaPostgreSQL cầnđượcđặt trongcontextnào?",
+      "options": [
+        "TrongCSSfile.",
+        "ChỉởclientlocalStorage.",
+        "Transactionđang hoạt động vàđúngthời điểm trước các query/datamodification liên quan theoquy tắcDB.",
+        "Bấtkỳdòngcommentnào sauCOMMITđềuthayđổi quákhứ."
+      ],
+      "correct": 2,
+      "explanation": "Bài sourcechỉliệtkêlệnhminh họa, chưacóscopehoànchỉnh chomột nexttransaction."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Lock wait not success",
+      "question": "UPDATE đang chờlock có nghĩa nóđãthành côngchưa?",
+      "options": [
+        "Rồi, vìDB đãnhậnrequest.",
+        "Rồi, nếu cóWHERE.",
+        "Chỉ nếubalanceđủ.",
+        "Chưa; cầnđợiresult/commit hoặcxửlýtimeout/error."
+      ],
+      "correct": 3,
+      "explanation": "Accepted/running/completed/committed làcáctrạngtháikhác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Engine scope",
+      "question": "CácfixturesSQLite tuần tự có được dùngđểkhẳngđịnh PostgreSQLisolation đã đượcconcurrencytest không?",
+      "options": [
+        "Không.",
+        "Có, vì SQLtươngtự.",
+        "Có, nếuđều dùngBEGIN.",
+        "Chỉ cầnđổitênreport."
+      ],
+      "correct": 0,
+      "explanation": "Engine vàworkload đãchạy phảiđược ghiđúng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Savepoint cost",
+      "question": "Cósavepoint có nghĩa có thểgiữmọinetworkoperationtrong DB transactionmiễnphí không?",
+      "options": [
+        "Chỉ nếu savepointnamed.",
+        "Không; resources, contention vàexternal effects vẫn cần quản lý.",
+        "Có, mọithayđổiđềuđượctáchserver.",
+        "Có vìpartialrollbackngăntimeout."
+      ],
+      "correct": 1,
+      "explanation": "Savepoint khôngthayworkflowdesign."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source success criteria",
+      "question": "Trướccredit/log/commit, implementation nguồn cần kiểm tra tối thiểu nhữngkết quả nghiệp vụ nào?",
+      "options": [
+        "ChỉresponseHTTP200.",
+        "Chỉcóloginsert.",
+        "Sender/receiver phù hợp, debit/credit đúng sốrows/amountvàinvariants thỏa.",
+        "ChỉSQLkhôngsyntaxerror."
+      ],
+      "correct": 2,
+      "explanation": "Tiềnsố/currency/quyền/idempotency còn cần định nghĩarõ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "No exception commit",
+      "question": "KhôngcóSQLexception có đủđểluônCOMMITbusinessaction không?",
+      "options": [
+        "Có, vì SQLbiếtmọi domain.",
+        "Chỉ nếu cóSAVEPOINT.",
+        "Chỉ nếuqueryngắn.",
+        "Không; zeromatch vàdomainfailures có thểkhôngthrow."
+      ],
+      "correct": 3,
+      "explanation": "Kếtquảconditionals phảiđược diễn giảitheo contract."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Source conservation failure",
+      "question": "Sender 500, receiver 100, amount1000 vớisourceunconditionalcreditcommit làm tổngbalanceđổi thế nào?",
+      "options": [
+        "Từ600 lên1600 dùdebit khôngthành công.",
+        "Giữnguyên600.",
+        "Giảmthành-400.",
+        "Luônrollbacktựđộng."
+      ],
+      "correct": 0,
+      "explanation": "Đây làbusinessinvariantbug dùSQLtransaction vẫn nguyên tử."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Receiver missing conservation",
+      "question": "Sender 1500, receiver khôngtồntại, amount1000. Nếusourcecommitkhôngcheckreceiver, tổngbalancecó thểra sao?",
+      "options": [
+        "LuônROLLBACK.",
+        "Giảm1000màkhôngcreditaccountnào.",
+        "Tựtạoreceiver 1000.",
+        "Khôngđổivì mọi UPDATE0rowsthrow."
+      ],
+      "correct": 1,
+      "explanation": "Cầnvalidatecả hai bước vàrollbackkhiđơn vịnghiệp vụ không đạt."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Retry stale decisions",
+      "question": "Sauserializationfailure, chỉretryUPDATEdựatrêncác reads cũ cóvấnđề gì?",
+      "options": [
+        "TựbỏmọiWHERE.",
+        "Chỉlàmqueryngắnhơn.",
+        "Cóthểlặplạiquyếtđịnhkhông cònhợp lệ; cầnretrywhole transaction với snapshot/reads mới.",
+        "Luônđúngvìold readsđượcbảo đảmvĩnhviễn."
+      ],
+      "correct": 2,
+      "explanation": "Retryboundary phảibao gồmlogicraquyếtđịnhcầnđược tínhlại."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Write skew scope",
+      "question": "PostgreSQLREPEATABLE READ khôngphantom nhưngcó thểvẫnanomaly loạinào?",
+      "options": [
+        "Dirtyreadbắtbuộc.",
+        "Mọiqueryđềunonrepeatable.",
+        "Khôngbaogiờcầnretry.",
+        "Serializationanomaly nhưwrite skew khi cross-rowinvariantkhông đượcbảovệđúng."
+      ],
+      "correct": 3,
+      "explanation": "Stable snapshot khôngđồngnghĩa mọiconcurrentoutcomes serializable."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Locking nonexistent rows",
+      "question": "SELECT FOR UPDATEreceiveridkhôngtồntại cótựkhóa một rowreceiver thậtlúcđó không?",
+      "options": [
+        "Khôngcómatchedrowđểkhóatheocáchnày; cầnstrategychoexistence/inserts phù hợp.",
+        "Có, nótự tạoaccount.",
+        "Có, mọi IDtươnglaiđượckhóavĩnhviễn.",
+        "Chỉ nếuidâm."
+      ],
+      "correct": 0,
+      "explanation": "Khôngsuyrow locklàpredicate/gaplockingcho mọiengine/isolation."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Idempotent transfer transaction",
+      "question": "Idempotencyrecordđượccheckở app rồighi sau transfer ngoài DB transaction córủi ro gì?",
+      "options": [
+        "Chỉảnh hưởngfont.",
+        "Race/crashcó thểđểtransferđã thực hiệnnhưngkhông córecord chốnglặp.",
+        "Khôngrủi ro, vìcóheader.",
+        "TựđượcACIDbaophủmọi system."
+      ],
+      "correct": 1,
+      "explanation": "Cầnthiết kếatomicrelationshipgiữayêucầu, kết quảvàledger/invariants."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "External charge retry",
+      "question": "RetryDB transaction cóHTTPchargeởgiữa có thểnguyhiểm vì sao?",
+      "options": [
+        "VìSAVEPOINTtựhoàntiền.",
+        "Chỉ cầntăngtimeout.",
+        "DB rollbackkhôngthu hồicharge; retry có thểlặpexternaleffect nếu thiếu protocol/idempotency.",
+        "VìHTTPkhông thểgọitrongfunction."
+      ],
+      "correct": 2,
+      "explanation": "Khôngđồngnhất DBatomicityvới distributedbusinessatomicity."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Lock order completeness",
+      "question": "Cảhaidebitlocks theo idtăngcó đủchứng minhkhông bao giờdeadlock trong app không?",
+      "options": [
+        "Có theođịnhlýchung.",
+        "Có vìPKlàinteger.",
+        "Chỉ nếuamount1000.",
+        "Không; còn locks/resources/triggers/queries khác trong toànworkflow."
+      ],
+      "correct": 3,
+      "explanation": "Consistentorderinggiảm mộtlớprủi ro, chưaphải proofmọipaths."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Timeout uncertain commit",
+      "question": "ClienttimeoutgầnCOMMIT nênxửlýoutcome thế nào?",
+      "options": [
+        "Khôngđoánchắcrollback; traoperationstatus/reconciliation theo identity vàcontract.",
+        "Luônchạylạichuyển tiềnnhưrequestmới.",
+        "Luônbáo chưa ghiDB.",
+        "Chỉ cầnxóalog."
+      ],
+      "correct": 0,
+      "explanation": "Outcomeuncertainty cần được thiết kế, khôngsửabằngblindretry."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Receiver same sender",
+      "question": "Allowfrom_id=to_id trongsourcecó thểcầnbusinessdecision gì?",
+      "options": [
+        "Khôngthểviếtpredicatechotrườnghợpnày.",
+        "Cho phépno-op hayreject, fee/log/authorization vàinvariants phảiđượcrõràng.",
+        "Luôntự nhânđôitiền.",
+        "Luôntựdeleteaccount."
+      ],
+      "correct": 1,
+      "explanation": "CorrectnesskhôngchỉlàSQLchạyđược."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Conservation model proof",
+      "question": "SQLitefixture sourcebugcuốitrảSUMbalance bao nhiêu?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER NOT NULL);\nCREATE TABLE transfers(from_id INTEGER,to_id INTEGER,amount INTEGER);\nINSERT INTO accounts VALUES(1,500),(2,100);\nBEGIN;\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\nUPDATE accounts SET balance=balance+1000 WHERE id=2;\nCOMMIT;\n-- result\nSELECT SUM(balance) FROM accounts;",
+      "options": [
+        "-400.",
+        "1000.",
+        "1600.",
+        "600."
+      ],
+      "correct": 2,
+      "explanation": "Debitkhông matchnhưngcredit+1000đượcommit. Fixturetuần tự, chưaconcurrencytest."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Savepoint scope proof",
+      "question": "SQLitefixture cuối choSUMv là gì?",
+      "code": "CREATE TABLE t(v INTEGER);\nBEGIN;\nINSERT INTO t VALUES(10);\nSAVEPOINT s;\nINSERT INTO t VALUES(20);\nROLLBACK TO s;\nRELEASE s;\nCOMMIT;\n-- result\nSELECT SUM(v) FROM t;",
+      "options": [
+        "30.",
+        "0.",
+        "NULL.",
+        "10."
+      ],
+      "correct": 3,
+      "explanation": "10trước savepoint đượcgiữ; 20sau đó bịrollback."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Unconditional negative stock",
+      "question": "SQLitefixture khôngconstraintcuối cho stock nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,stock INTEGER);\nINSERT INTO products VALUES(42,0);\nBEGIN;\nUPDATE products SET stock=stock-1 WHERE id=42;\nCOMMIT;\n-- result\nSELECT stock FROM products;",
+      "options": [
+        "-1.",
+        "0.",
+        "1.",
+        "LỗitựđộngdoBEGIN."
+      ],
+      "correct": 0,
+      "explanation": "KhôngcóCHECK/guardnêntransactionkhông tựngănstockâm."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Rollback audit proof",
+      "question": "SQLitefixture cuối choCOUNTlog bao nhiêu?",
+      "code": "CREATE TABLE transfers(amount INTEGER);\nBEGIN;\nINSERT INTO transfers VALUES(1000);\nROLLBACK;\n-- result\nSELECT COUNT(*) FROM transfers;",
+      "options": [
+        "NULL.",
+        "0.",
+        "1.",
+        "2."
+      ],
+      "correct": 1,
+      "explanation": "INSERTlogởcùngtransaction bịrollback. Khôngkhẳngđịnhemailsngoàicũngrollback."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Atomic guard rowcount proof",
+      "question": "SQLitechanges()cuối sau debit không đủ cho gì?",
+      "code": "CREATE TABLE accounts(id INTEGER PRIMARY KEY,balance INTEGER);\nINSERT INTO accounts VALUES(1,500);\nUPDATE accounts SET balance=balance-1000 WHERE id=1 AND balance>=1000;\n-- result\nSELECT changes();",
+      "options": [
+        "500.",
+        "1000.",
+        "0.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "SQLitechanges báorowsaffected củalệnhUPDATE trướcđó; khôngkháiquátmọidriverrowcountsemantics."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Serializable not business oracle",
+      "question": "Chạy sourcebịlỗiunconditionalcredit ởSERIALIZABLE cótự sửalỗi không?",
+      "options": [
+        "Có, vìmứccaođọc đượccomments.",
+        "Có, vì mọiCOMMITtựcheckconservation.",
+        "Chỉ nếubalanceINTEGER.",
+        "Không; tuần tựhóamộtlogic sai vẫn có thểcho kết quảnghiệp vụsai."
+      ],
+      "correct": 3,
+      "explanation": "Isolationkhôngthayimplementation/invariantsđúng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Durability versus backups",
+      "question": "Durabilityguarantee cóthay nhu cầubackup/PITR/disasterrecoverytheo yêu cầu không?",
+      "options": [
+        "Không.",
+        "Có, mộtcommitlàbackupmọithứ.",
+        "Có, nếu cóSAVEPOINT.",
+        "Chỉ nếu không cóDELETE."
+      ],
+      "correct": 0,
+      "explanation": "Operationalrecovery có thểcầnphụchồi sauhumanerrors, hỏnghạ tầngvàcáckịchbảnkhác."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Validation across retries",
+      "question": "Trongwhole transaction retry, cácđiều kiện nhưquyền/trạngtháiaccount cầnđượcxét lại theo gì?",
+      "options": [
+        "Chỉđộdàiname.",
+        "Contractvàfreshstate phù hợp, khôngmặcđịnhcác readscũcònhợp lệ.",
+        "Chỉlầntạorequestđầu tiênvĩnhviễn.",
+        "ChỉCSSstate."
+      ],
+      "correct": 1,
+      "explanation": "Retrycần giữđúngbusinessdecisionboundary vàauthorizationpolicy."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Connection pool release",
+      "question": "Trảconnectionvềpool khi transactionchưakết thúc córủi ro gì?",
+      "options": [
+        "Tựtạoreplicamới.",
+        "Khôngcórủi rovì cùngprocess.",
+        "Rò transactionstate/locks vàảnh hưởngrequestkhác nếuquản lýsai.",
+        "Tựcommitantoànmọi trường hợp."
+      ],
+      "correct": 2,
+      "explanation": "Dùngdriver transaction cleanup đúngerror/finallyscope."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Production proof boundary",
+      "question": "CácfixturesđúngtrênSQLite vàreviewPGdocs có đủclaim safeproductionmoneytransfer chưa?",
+      "options": [
+        "Có, vìđã có80câu.",
+        "Có, vìBEGIN/COMMITluônđủ.",
+        "Chỉ cầntăngisolationlevel.",
+        "Chưa; cầnimplementationthật, invariants, concurrency/failure/security/operationaltesting phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Quizcontent/proofchọnlọc khácviệckiểmchứngứngdụngchuyển tiềnthật."
+    }
+  ]
+}

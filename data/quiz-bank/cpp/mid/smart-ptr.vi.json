@@ -1,0 +1,1161 @@
+{
+  "version": 1,
+  "tech": "cpp",
+  "level": "mid",
+  "lesson": "smart-ptr",
+  "language": "vi",
+  "sourceHash": "08d06787f5b6eb86ea3872c4beed36de64a9fe4d24ef446f93ec0ee691058e92",
+  "status": "approved",
+  "review": "Tự biên soạn, không API. C++17 RAII, unique/shared/weak ownership, exception paths và alias/lifetime. Không chạy double delete, dangling dereference hoặc data race để đoán output. RAII áp dụng cho kết thúc vòng đời đúng, không hứa cleanup khi abort/mất điện.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "RAII idea",
+      "question": "RAII gắn quản lý tài nguyên với điều gì?",
+      "options": [
+        "Vòng đời object quản lý tài nguyên.",
+        "Số lần người dùng nhấn nút.",
+        "Tên file nguồn.",
+        "Một timer phải gọi delete định kỳ."
+      ],
+      "correct": 0,
+      "explanation": "Object RAII nhận tài nguyên qua khởi tạo và giải phóng theo destructor phù hợp."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Smart pointer header",
+      "question": "Header trực tiếp cho unique_ptr/shared_ptr/weak_ptr là gì?",
+      "options": [
+        "<pointer>",
+        "<memory>",
+        "<smart>",
+        "<fstream>"
+      ],
+      "correct": 1,
+      "explanation": "Các smart pointer thư viện chuẩn được khai báo trong <memory>."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Unique ownership",
+      "question": "unique_ptr diễn đạt gì?",
+      "options": [
+        "Mọi object được copy khi truy cập.",
+        "Chia sẻ bộ đếm strong với mọi pointer.",
+        "Quyền sở hữu độc quyền theo handle quản lý đó.",
+        "Bắt buộc chỉ có một raw pointer nhìn thấy object."
+      ],
+      "correct": 2,
+      "explanation": "Có thể có pointer/reference mượn; chúng không cùng sở hữu."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Shared ownership",
+      "question": "shared_ptr thường quản lý vòng đời theo gì?",
+      "options": [
+        "Số lượng mọi raw pointer tồn tại.",
+        "Số lượng biến int trong object.",
+        "Độ dài tên object.",
+        "Nhóm strong owners chung control block."
+      ],
+      "correct": 3,
+      "explanation": "Object được hủy khi strong ownership cuối cùng kết thúc theo deleter."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Weak ownership",
+      "question": "weak_ptr chủ yếu dùng để làm gì?",
+      "options": [
+        "Quan sát object do shared_ptr quản lý mà không giữ strong ownership.",
+        "Sở hữu mạnh hơn shared_ptr.",
+        "Tự delete object sau mỗi lần lock.",
+        "Thay thế mọi unique_ptr mà không cần shared_ptr."
+      ],
+      "correct": 0,
+      "explanation": "weak_ptr hỗ trợ tránh vòng strong ownership và kiểm tra lifetime."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Make unique",
+      "question": "make_unique<T>(args...) làm gì khi thành công?",
+      "options": [
+        "Tự ghi T xuống file.",
+        "Tạo T và trả unique_ptr<T> quản lý nó.",
+        "Tạo shared_ptr<T> có count2.",
+        "Trả T& tới biến local."
+      ],
+      "correct": 1,
+      "explanation": "Tài nguyên được gắn vào owner RAII ngay trong thao tác tạo."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Make shared",
+      "question": "make_shared<T>(args...) trả gì?",
+      "options": [
+        "weak_ptr<T> luôn expired.",
+        "T* không có owner.",
+        "shared_ptr<T>.",
+        "unique_ptr<T>."
+      ],
+      "correct": 2,
+      "explanation": "Kết quả bắt đầu một nhóm shared ownership mới."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Unique copy",
+      "question": "Có copy unique_ptr bằng auto b=a; khi a là unique_ptr lvalue không?",
+      "options": [
+        "Có; deep-copy object tự động.",
+        "Có; hai owner cùng delete object.",
+        "Có nếu T là int.",
+        "Không; copy constructor bị xóa."
+      ],
+      "correct": 3,
+      "explanation": "Ownership độc quyền thường được chuyển bằng move."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Move owner",
+      "question": "std::move(a) thường được dùng trong chuyển unique_ptr để làm gì?",
+      "options": [
+        "Cho phép chọn move operation chuyển ownership.",
+        "Tự copy sâu object ngay khi gọi std::move.",
+        "Giải phóng object ngay bất kể nơi nhận.",
+        "Đổi object thành shared_ptr tự động."
+      ],
+      "correct": 0,
+      "explanation": "std::move là cast hỗ trợ overload selection; operation nhận mới thực hiện chuyển."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Get pointer",
+      "question": "p.get() trên unique_ptr trả gì?",
+      "options": [
+        "Số strong reference.",
+        "Raw pointer quan sát, không chuyển ownership.",
+        "Object copy mới.",
+        "Một owner mới tự delete."
+      ],
+      "correct": 1,
+      "explanation": "Không tự delete raw pointer này khi owner vẫn quản lý."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Reset",
+      "question": "p.reset() không đối số thường làm gì?",
+      "options": [
+        "Tăng reference count.",
+        "Trả raw pointer nhưng không giải phóng như release.",
+        "Giải phóng ownership hiện tại và để p rỗng.",
+        "Chỉ đọc địa chỉ."
+      ],
+      "correct": 2,
+      "explanation": "unique_ptr reset sẽ gọi deleter cho object hiện có, nếu có."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Release",
+      "question": "p.release() trên unique_ptr làm gì?",
+      "options": [
+        "Luôn hủy object rồi trả nullptr.",
+        "Tăng count thành2.",
+        "Copy object sang stack.",
+        "Trả raw pointer và bỏ ownership mà không tự delete object đó."
+      ],
+      "correct": 3,
+      "explanation": "Caller phải tiếp tục quản lý tài nguyên đã được chuyển ra."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Use count",
+      "question": "shared_ptr::use_count() thường báo gì?",
+      "options": [
+        "Số strong owners hiện tại dùng chung control block.",
+        "Tổng số weak_ptr và raw pointer.",
+        "Số method đã gọi.",
+        "Dung lượng object theo byte."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng số này như cơ chế đồng bộ truy cập dữ liệu."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Weak lock",
+      "question": "weak_ptr::lock() trả gì?",
+      "options": [
+        "unique_ptr chiếm owner khỏi mọi shared_ptr.",
+        "shared_ptr giữ ownership nếu object còn sống, hoặc shared_ptr rỗng.",
+        "Raw pointer luôn hợp lệ.",
+        "bool và tự delete object."
+      ],
+      "correct": 1,
+      "explanation": "Giữ kết quả lock trong lúc cần dùng object."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Expired",
+      "question": "weak_ptr::expired() biểu thị gì?",
+      "options": [
+        "Pointer được cấp phát trên stack.",
+        "Tài nguyên đang bị khóa mutex.",
+        "Không còn strong owner cho nhóm được quan sát.",
+        "Object chắc chắn có dữ liệu rỗng."
+      ],
+      "correct": 2,
+      "explanation": "expired không phải một lock bảo vệ trạng thái sau lần kiểm tra."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Dereference access",
+      "question": "Với unique_ptr<T> p hợp lệ và T có query(), gọi method thường viết gì?",
+      "options": [
+        "p.query() để gọi member của T luôn",
+        "*p.query[]",
+        "query<p>",
+        "p->query()"
+      ],
+      "correct": 3,
+      "explanation": "Smart pointer cung cấp toán tử -> cho truy cập object được quản lý."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Scope cleanup",
+      "question": "Khi unique_ptr local ra khỏi scope bình thường, điều gì xảy ra nếu nó còn sở hữu object?",
+      "options": [
+        "Deleter được gọi để giải phóng object.",
+        "Chỉ pointer bị xóa còn object luôn leak.",
+        "Object tự trở thành global.",
+        "Phải gọi free(p) sau scope."
+      ],
+      "correct": 0,
+      "explanation": "RAII loại bỏ delete thủ công trên các đường kết thúc vòng đời phù hợp."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Shared copy",
+      "question": "Copy một shared_ptr lvalue thành shared_ptr khác trong luồng đơn thường làm gì?",
+      "options": [
+        "Hủy object ngay.",
+        "Chia sẻ cùng object/control block và tăng strong count.",
+        "Deep-copy toàn bộ object.",
+        "Để owner cũ rỗng như move."
+      ],
+      "correct": 1,
+      "explanation": "Copy handle shared ownership khác copy dữ liệu object."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Borrow pointer",
+      "question": "Hàm chỉ mượn T để đọc trong lời gọi thường có thể nhận gì?",
+      "options": [
+        "unique_ptr<T> bằng giá trị luôn để chiếm ownership.",
+        "void* để tự delete tùy ý.",
+        "const T& hoặc const T* theo nhu cầu nullable.",
+        "shared_ptr<T> bằng giá trị bắt buộc mọi lúc."
+      ],
+      "correct": 2,
+      "explanation": "Chữ ký nên biểu đạt việc mượn hay chuyển/chia sẻ ownership."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Circular ownership",
+      "question": "Hai object giữ shared_ptr mạnh tới nhau có thể gây gì?",
+      "options": [
+        "Tự động thành weak_ptr.",
+        "Bắt buộc lỗi biên dịch.",
+        "Object tự hợp nhất thành một.",
+        "Vòng sở hữu khiến strong count không về0 sau khi bỏ owner ngoài."
+      ],
+      "correct": 3,
+      "explanation": "Chọn weak_ptr ở quan hệ không sở hữu phù hợp để phá vòng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Unique read",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_unique<int>(5);std::cout<<*p;\n}\n",
+      "options": [
+        "5",
+        "0",
+        "1",
+        "Địa chỉ cố định5."
+      ],
+      "correct": 0,
+      "explanation": "Dereference owner hợp lệ đọc object int đã khởi tạo5."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Move source emptiness",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_unique<int>(5);auto q=std::move(p);std::cout<<(p==nullptr)<<\" \"<<*q;\n}\n",
+      "options": [
+        "Lỗi vì unique_ptr không move được.",
+        "1 5",
+        "0 5",
+        "1 0"
+      ],
+      "correct": 1,
+      "explanation": "Move chuyển ownership sang q và để unique_ptr p rỗng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Shared initial count",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(5);std::cout<<p.use_count();\n}\n",
+      "options": [
+        "2",
+        "Số raw pointer trong hệ thống.",
+        "1",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ p sở hữu strong reference mới tạo."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Shared copied count",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(5);auto q=p;std::cout<<p.use_count()<<\" \"<<q.use_count();\n}\n",
+      "options": [
+        "1 1",
+        "2 1",
+        "0 0",
+        "2 2"
+      ],
+      "correct": 3,
+      "explanation": "Hai handle cùng control block nên cùng nhìn count2."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Shared scope decrements",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(5);{auto q=p;std::cout<<p.use_count();}std::cout<<p.use_count();\n}\n",
+      "options": [
+        "21",
+        "22",
+        "11",
+        "20"
+      ],
+      "correct": 0,
+      "explanation": "q hết scope bỏ một strong owner; p vẫn giữ object."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Shared data alias",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(5);auto q=p;*q=9;std::cout<<*p;\n}\n",
+      "options": [
+        "Copy shared_ptr tạo int khác nên không biết.",
+        "9",
+        "5",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "p và q nhìn cùng object int."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Unique reset destruction",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\nstruct T{~T(){std::cout<<\"D\";}};\nint main(){\nauto p=std::make_unique<T>();p.reset();std::cout<<\"X\";\n}\n",
+      "options": [
+        "X",
+        "DDX",
+        "DX",
+        "XD"
+      ],
+      "correct": 2,
+      "explanation": "reset hủy object trước statement in X; destructor unique_ptr rỗng không hủy lần nữa."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Get does not increment",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(7);int* raw=p.get();std::cout<<p.use_count()<<\" \"<<*raw;\n}\n",
+      "options": [
+        "2 7",
+        "0 7",
+        "1 0",
+        "1 7"
+      ],
+      "correct": 3,
+      "explanation": "Raw pointer mượn không tăng strong ownership."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Release caller deletes",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_unique<int>(6);int* raw=p.release();std::cout<<(p==nullptr)<<\" \"<<*raw;delete raw;\n}\n",
+      "options": [
+        "1 6",
+        "0 6",
+        "1 0",
+        "Object đã bị release hủy trước khi đọc."
+      ],
+      "correct": 0,
+      "explanation": "release chuyển trách nhiệm tới raw; ví dụ đọc lúc còn sống rồi delete đúng một lần."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Weak no strong increment",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(3);std::weak_ptr<int> w=p;std::cout<<p.use_count();\n}\n",
+      "options": [
+        "3",
+        "1",
+        "2",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "weak_ptr quan sát không tăng strong count."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Lock strong increment",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(3);std::weak_ptr<int>w=p;auto q=w.lock();std::cout<<p.use_count()<<\" \"<<*q;\n}\n",
+      "options": [
+        "0 0",
+        "3 3",
+        "2 3",
+        "1 3"
+      ],
+      "correct": 2,
+      "explanation": "q từ lock giữ thêm một strong owner khi object còn sống."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Expired after final owner",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(3);std::weak_ptr<int>w=p;p.reset();auto q=w.lock();std::cout<<w.expired()<<\" \"<<bool(q);\n}\n",
+      "options": [
+        "0 1",
+        "1 1",
+        "0 0",
+        "1 0"
+      ],
+      "correct": 3,
+      "explanation": "Sau p reset không có strong owner, w expired và lock rỗng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Locked lifetime retained",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(4);std::weak_ptr<int>w=p;auto q=w.lock();p.reset();std::cout<<w.expired()<<\" \"<<*q;\n}\n",
+      "options": [
+        "0 4",
+        "1 4",
+        "0 0",
+        "Dangling vì p reset luôn hủy object."
+      ],
+      "correct": 0,
+      "explanation": "q đã lock thành công và giữ object dù p reset."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Unique copy compile",
+      "question": "Vì sao code bị từ chối?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_unique<int>(1);auto q=p;std::cout<<*q;\n}\n",
+      "options": [
+        "p bắt buộc phải const.",
+        "unique_ptr không cho copy ownership từ lvalue.",
+        "int không được cấp phát bằng make_unique.",
+        "auto không dùng được với smart pointer."
+      ],
+      "correct": 1,
+      "explanation": "Dùng move nếu thực sự muốn chuyển ownership, hoặc mượn object nếu chỉ cần đọc."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Default empty unique",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nstd::unique_ptr<int> p;std::cout<<bool(p);\n}\n",
+      "options": [
+        "Giá trị int chưa khởi tạo.",
+        "Lỗi vì unique_ptr cần new trong constructor.",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Unique_ptr mặc định rỗng, kiểm tra bool cho false."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Default weak",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nstd::weak_ptr<int>w;std::cout<<w.expired();\n}\n",
+      "options": [
+        "0",
+        "nullptr được in thành chuỗi luôn.",
+        "Lỗi vì weak_ptr phải gắn ngay shared_ptr.",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "Weak_ptr mặc định không quan sát strong owner nào."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Unique array init",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_unique<int[]>(2);p[1]=8;std::cout<<p[0]<<\" \"<<p[1];\n}\n",
+      "options": [
+        "0 8",
+        "8 0",
+        "Giá trị chưa khởi tạo ở index0.",
+        "Lỗi vì make_unique không hỗ trợ array."
+      ],
+      "correct": 0,
+      "explanation": "make_unique<int[]>(2) value-initialize các phần tử; dạng array dùng operator[]."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Unique reset replacement",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\nstruct T{int n;T(int x):n(x){}~T(){std::cout<<n;}};\nint main(){\n{auto p=std::make_unique<T>(1);p.reset(new T(2));std::cout<<\":\";}\n}\n",
+      "options": [
+        "2:2",
+        "1:2",
+        "2:1",
+        "1:1"
+      ],
+      "correct": 1,
+      "explanation": "reset(new T(2)) giải phóng object1; object2 được hủy khi p hết scope."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Empty reset safe",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nstd::unique_ptr<int> p;p.reset();std::cout<<\"ok\";\n}\n",
+      "options": [
+        "0",
+        "Double delete bắt buộc.",
+        "ok",
+        "nullptr"
+      ],
+      "correct": 2,
+      "explanation": "Reset owner rỗng không hủy object nào."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Shared move",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(5);auto q=std::move(p);std::cout<<bool(p)<<\" \"<<q.use_count();\n}\n",
+      "options": [
+        "1 2",
+        "0 2",
+        "1 1",
+        "0 1"
+      ],
+      "correct": 3,
+      "explanation": "Move chuyển handle sang q, không thêm strong owner mới."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Unique consume signature",
+      "question": "Hàm void take(unique_ptr<T> p) nhận đối số bằng giá trị diễn đạt ý định gì?",
+      "options": [
+        "Nhận ownership được chuyển vào hàm.",
+        "Chỉ mượn một raw pointer không đổi lifetime.",
+        "Tự copy sâu T.",
+        "Không bao giờ được gọi."
+      ],
+      "correct": 0,
+      "explanation": "Caller với unique_ptr lvalue thường phải std::move khi chấp nhận chuyển quyền sở hữu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Unique borrow reference",
+      "question": "void inspect(const T& x) có bắt caller chuyển unique_ptr<T> ownership vào hàm không?",
+      "options": [
+        "Không nhưng inspector phải delete &x.",
+        "Không; caller có thể truyền *p để mượn object còn sống.",
+        "Có; mọi reference tiêu thụ owner.",
+        "Có nếu p tạo bằng make_unique."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ dereference khi p hợp lệ và owner sống trong thời gian mượn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Shared by value",
+      "question": "void keep(shared_ptr<T> p) có thể giữ object sau lời gọi bằng cách lưu p không?",
+      "options": [
+        "Chỉ nếu gọi release trước.",
+        "Không vì p local không copy được.",
+        "Có; copy strong owner phù hợp kéo dài lifetime.",
+        "Không; shared_ptr chỉ là weak observer."
+      ],
+      "correct": 2,
+      "explanation": "Truyền shared_ptr bằng giá trị phù hợp khi hàm cần tham gia ownership."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "No manual delete get",
+      "question": "Có nên delete p.get() rồi để unique_ptr p hủy bình thường không?",
+      "options": [
+        "Có; get tự release ownership.",
+        "Có nếu T là int.",
+        "Chỉ cần đổi delete thành delete[].",
+        "Không; owner sẽ còn quản lý địa chỉ đã giải phóng và có nguy cơ delete lần nữa."
+      ],
+      "correct": 3,
+      "explanation": "get chỉ mượn, release mới bỏ ownership theo hợp đồng riêng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Database destruction order",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\nstruct DB{char n;DB(char c):n(c){}~DB(){std::cout<<n;}};\nint main(){\nauto main=std::make_unique<DB>('M');auto config=std::make_shared<DB>('C');auto backup=config;\n}\n",
+      "options": [
+        "CM",
+        "MC",
+        "CCMM",
+        "Không có destructor tự chạy."
+      ],
+      "correct": 0,
+      "explanation": "config và backup cùng object C; backup hết đời trước, config hết đời kế mới hủy C; main owner M hủy sau."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Early return RAII",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\nstruct T{~T(){std::cout<<\"D\";}};void f(){auto p=std::make_unique<T>();return;}\nint main(){\nf();std::cout<<\"X\";\n}\n",
+      "options": [
+        "D bị leak vì return sớm.",
+        "DX",
+        "XD",
+        "X"
+      ],
+      "correct": 1,
+      "explanation": "Owner local bị hủy khi hàm return bình thường."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Exception unwind cleanup",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\nstruct T{~T(){std::cout<<\"D\";}};void f(){auto p=std::make_unique<T>();throw std::runtime_error(\"x\");}\nint main(){\ntry{f();}catch(const std::runtime_error&){std::cout<<\"C\";}\n}\n",
+      "options": [
+        "C",
+        "Không catch được vì có smart pointer.",
+        "DC",
+        "CD"
+      ],
+      "correct": 2,
+      "explanation": "Trong đường unwind tới catch phù hợp, owner local bị hủy trước khi in C."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Unique swap",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto a=std::make_unique<int>(1);auto b=std::make_unique<int>(2);a.swap(b);std::cout<<*a<<\" \"<<*b;\n}\n",
+      "options": [
+        "1 2",
+        "2 2",
+        "Không được swap ownership.",
+        "2 1"
+      ],
+      "correct": 3,
+      "explanation": "swap đổi các owner mà không copy object int."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Weak reset only observer",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(1);std::weak_ptr<int>w=p;w.reset();std::cout<<w.expired()<<\" \"<<p.use_count();\n}\n",
+      "options": [
+        "1 1",
+        "0 1",
+        "1 0",
+        "0 0"
+      ],
+      "correct": 0,
+      "explanation": "w.reset chỉ bỏ quan sát; p vẫn giữ strong ownership."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Shared reset one owner",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto p=std::make_shared<int>(7);auto q=p;p.reset();std::cout<<q.use_count()<<\" \"<<*q;\n}\n",
+      "options": [
+        "q dangling sau p.reset.",
+        "1 7",
+        "0 7",
+        "2 7"
+      ],
+      "correct": 1,
+      "explanation": "q còn strong owner nên object7 sống sau p reset."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Custom deleter need",
+      "question": "Vì sao tài nguyên mở bằng API trả handle không nên mặc định bọc unique_ptr với delete nếu API yêu cầu closeHandle?",
+      "options": [
+        "Vì mọi handle đều phải free.",
+        "Vì smart pointer tự đoán mọi API đóng tài nguyên.",
+        "Cần deleter đúng quy tắc giải phóng của tài nguyên đó.",
+        "Vì RAII chỉ dùng được với int."
+      ],
+      "correct": 2,
+      "explanation": "RAII quản lý nhiều loại tài nguyên khi thao tác giải phóng được cung cấp đúng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Shared pointer empty count",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nstd::shared_ptr<int> p;std::cout<<p.use_count()<<\" \"<<bool(p);\n}\n",
+      "options": [
+        "1 0",
+        "0 1",
+        "1 1",
+        "0 0"
+      ],
+      "correct": 3,
+      "explanation": "Shared_ptr mặc định rỗng không có strong owner và bool false."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Raw borrowed lifetime",
+      "question": "Raw pointer lấy từ unique_ptr::get có kéo dài lifetime object nếu owner bị hủy không?",
+      "options": [
+        "Không.",
+        "Có vì get tăng count.",
+        "Có vì pointer lưu địa chỉ.",
+        "Chỉ nếu raw là const."
+      ],
+      "correct": 0,
+      "explanation": "Reference/pointer mượn phụ thuộc owner còn sống."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Unique to shared transfer",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\n\nint main(){\nauto u=std::make_unique<int>(5);std::shared_ptr<int>s=std::move(u);std::cout<<bool(u)<<\" \"<<s.use_count()<<\" \"<<*s;\n}\n",
+      "options": [
+        "Không chuyển unique ownership sang shared được.",
+        "0 1 5",
+        "1 2 5",
+        "0 2 5"
+      ],
+      "correct": 1,
+      "explanation": "shared_ptr nhận rvalue unique_ptr, chuyển object sang nhóm shared ownership."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Shared not unique conversion",
+      "question": "shared_ptr<T> có thể ngầm biến thành unique_ptr<T> chỉ vì use_count()==1 không?",
+      "options": [
+        "Có nếu T là int.",
+        "Có bằng cách unique_ptr<T>(s.get()) trong mọi trường hợp.",
+        "Không; không có phép chuyển ngầm như vậy.",
+        "Có; compiler kiểm tra count ở compile time."
+      ],
+      "correct": 2,
+      "explanation": "Không tạo owner độc lập từ get; count không chuyển quyền sở hữu control block."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Move const unique",
+      "question": "const unique_ptr<T> p; std::move(p) có cho chuyển ownership bằng move constructor unique_ptr thông thường không?",
+      "options": [
+        "Có; std::move luôn bỏ const.",
+        "Có; const chỉ áp dụng T.",
+        "Có; compiler tự clone T.",
+        "Không; nguồn const không thể bị rỗng hóa bởi move constructor đó."
+      ],
+      "correct": 3,
+      "explanation": "std::move không loại const; move operation cần sửa handle nguồn."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Const owner pointee",
+      "question": "const unique_ptr<int> p=make_unique<int>(1); *p=2; có hợp lệ không?",
+      "options": [
+        "Có; const handle không tự làm int đích const.",
+        "Không; const lan sang mọi object đích.",
+        "Chỉ nếu reset trước.",
+        "Chỉ khi p là shared_ptr."
+      ],
+      "correct": 0,
+      "explanation": "Dùng unique_ptr<const int> nếu muốn giới hạn sửa pointee qua owner."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Const pointee owner",
+      "question": "unique_ptr<const int> p quản lý gì?",
+      "options": [
+        "Không có object vì const cấm cấp phát.",
+        "Object được truy cập như const int qua p.",
+        "Một handle const không thể move bất kể khai báo biến.",
+        "Pointer tới int có thể gán *p tùy ý."
+      ],
+      "correct": 1,
+      "explanation": "Const của pointee và const của biến smart pointer là hai ràng buộc khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Unique vector transfer",
+      "question": "Muốn thêm unique_ptr<T> lvalue p vào vector<unique_ptr<T>> và chuyển ownership, thao tác nào phù hợp?",
+      "options": [
+        "v.push_back(p.get()); để tạo owner độc lập tự động",
+        "delete p.get(); rồi push_back(p)",
+        "v.push_back(std::move(p));",
+        "v.push_back(p); để tự copy"
+      ],
+      "correct": 2,
+      "explanation": "Move operation chuyển handle vào vector và để p rỗng."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "RAII broader resources",
+      "question": "RAII có chỉ áp dụng bộ nhớ heap không?",
+      "options": [
+        "Có; file luôn phải close bằng timer.",
+        "Có; mutex không có vòng đời.",
+        "Không nhưng mọi resource đều giải phóng bằng delete.",
+        "Không; còn dùng cho file, lock và handle tài nguyên phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi resource cần thao tác giải phóng đúng và class owner phù hợp."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Duplicate control blocks",
+      "question": "auto a=make_shared<T>(); shared_ptr<T> b(a.get()); có phải chia sẻ ownership an toàn không?",
+      "options": [
+        "Không; b tạo control block độc lập có thể dẫn đến delete trùng.",
+        "Có; shared_ptr tự dò mọi control block theo địa chỉ.",
+        "Có; get tự chuyển reference count.",
+        "Chỉ nếu a.use_count()==1."
+      ],
+      "correct": 0,
+      "explanation": "Muốn chia sẻ hãy copy a; không tạo owner mới từ raw pointer đã được owner khác quản lý."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Reset same unique pointer",
+      "question": "unique_ptr<T> p đang sở hữu T. Vì sao p.reset(p.get()) là sai?",
+      "options": [
+        "Chỉ sai nếu T có virtual method.",
+        "reset hủy object đang quản lý nhưng lại giữ chính địa chỉ đã bị giải phóng.",
+        "reset nhận thấy giống địa chỉ nên luôn no-op theo chuẩn.",
+        "get tự release nên reset chỉ lấy lại owner."
+      ],
+      "correct": 1,
+      "explanation": "Không reset về chính raw pointer đang được sở hữu; dùng thao tác owner đúng ý định."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cycle break edge",
+      "question": "Parent giữ shared_ptr<Child>, Child giữ shared_ptr<Parent>. Nếu Parent sở hữu Child còn Child chỉ cần quan sát Parent, sửa gì hợp lý?",
+      "options": [
+        "Giữ nguyên vì reference count tự thu gom vòng.",
+        "Chỉ đổi tên parent thành owner.",
+        "Child giữ weak_ptr<Parent> và lock khi cần dùng.",
+        "Đổi mọi pointer thành raw owning pointer rồi delete tùy chỗ."
+      ],
+      "correct": 2,
+      "explanation": "Đặt weak ở cạnh không sở hữu theo mô hình lifetime, không thay mọi edge một cách máy móc."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Expired then lock race",
+      "question": "Trong code đồng thời, if(!w.expired()) rồi dùng *w.lock() không kiểm tra kết quả có an toàn không?",
+      "options": [
+        "Có; expired khóa object tới cuối scope.",
+        "Có; weak_ptr tự thành strong sau expired.",
+        "Có nếu pointee không const.",
+        "Không; strong owner cuối có thể mất giữa hai thao tác; kiểm tra và giữ kết quả lock."
+      ],
+      "correct": 3,
+      "explanation": "Mẫu if(auto p=w.lock()) dùng p trong block giữ lifetime sau lock thành công."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Shared pointee race",
+      "question": "Hai shared_ptr khác nhau cùng object, hai luồng cùng ++object.counter không atomic. Shared_ptr có tự bảo vệ counter không?",
+      "options": [
+        "Không; control block thread safety không bảo vệ dữ liệu pointee.",
+        "Có; shared_ptr tự khóa mọi operator->.",
+        "Có; use_count tăng làm ++ thành atomic.",
+        "Chỉ cần khai báo pointer const."
+      ],
+      "correct": 0,
+      "explanation": "Cần mutex/atomic hoặc ownership isolation cho dữ liệu chia sẻ; không chạy data race để đoán số."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Same handle concurrency",
+      "question": "Hai luồng cùng sửa một biến shared_ptr s bằng assignment/reset không đồng bộ. Có an toàn chỉ vì shared_ptr có bộ đếm thread safe không?",
+      "options": [
+        "Có nếu T có destructor rỗng.",
+        "Không; cùng handle cần cơ chế đồng bộ thích hợp.",
+        "Có; mọi thao tác trên mọi shared_ptr đều tự atomic.",
+        "Có nếu s.use_count()>1."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt nhiều handle độc lập dùng chung control block với cạnh tranh trên chính một object shared_ptr."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Use count not lock",
+      "question": "use_count()==1 có đủ để sửa pointee độc quyền trong hệ thống đồng thời mà không đồng bộ thêm không?",
+      "options": [
+        "Có; mọi raw pointer được tính vào count.",
+        "Có; weak_ptr không thể lock khi count1.",
+        "Không; quan sát count không khóa được việc owner khác xuất hiện hoặc truy cập mượn.",
+        "Có; nó tự khóa control block."
+      ],
+      "correct": 2,
+      "explanation": "Count là thông tin ownership, không là giao thức bảo vệ dữ liệu."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Aliasing shared pointer",
+      "question": "Output là gì trong luồng đơn?",
+      "code": "#include <iostream>\n#include <memory>\n#include <string>\n#include <utility>\n#include <stdexcept>\nstruct Pair{int a=3,b=7;};\nint main(){\nauto p=std::make_shared<Pair>();std::shared_ptr<int>q(p,&p->b);std::cout<<q.use_count()<<\" \"<<*q;\n}\n",
+      "options": [
+        "1 7",
+        "2 3",
+        "Hai control block độc lập.",
+        "2 7"
+      ],
+      "correct": 3,
+      "explanation": "Aliasing constructor chia sẻ ownership p nhưng q.get trỏ member b."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Aliasing lifetime",
+      "question": "q là shared_ptr<int> alias member của object Pair do p quản lý. p.reset() có làm q lập tức dangling không?",
+      "options": [
+        "Không nếu q vẫn giữ control block và member thuộc object còn sống đó.",
+        "Có; aliasing pointer luôn là weak.",
+        "Có vì chỉ p mới có địa chỉ Pair.",
+        "Không và q tự sở hữu riêng int bằng delete int*."
+      ],
+      "correct": 0,
+      "explanation": "Deleter vẫn quản lý object gốc; get của alias không nhất thiết là địa chỉ object bị delete trực tiếp."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Enable shared this",
+      "question": "Trong object đã do shared_ptr quản lý, vì sao shared_from_this() được thiết kế phù hợp hơn shared_ptr<T>(this)?",
+      "options": [
+        "Nó tự khóa mọi data member.",
+        "Nó tham gia control block sẵn có khi tiền điều kiện enable_shared_from_this được đáp ứng.",
+        "Nó luôn tạo object mới deep-copy.",
+        "Nó không cần object được shared ownership bao giờ."
+      ],
+      "correct": 1,
+      "explanation": "Cần public inheritance đúng và object đã được owner phù hợp quản lý; không tự tạo control block thứ hai từ this."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Shared from this before ownership",
+      "question": "Gọi shared_from_this() khi object chưa được một shared_ptr phù hợp quản lý có bảo đảm trả owner hợp lệ không trong C++17?",
+      "options": [
+        "Có; constructor luôn thiết lập mọi control block trước thân.",
+        "Có; use_count tự bắt đầu1 với mọi T.",
+        "Không; có thể ném std::bad_weak_ptr.",
+        "Có; nó tự nhận quyền sở hữu mọi object stack."
+      ],
+      "correct": 2,
+      "explanation": "Đừng dùng shared_from_this trong constructor với giả định shared ownership đã được thiết lập."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "RAII abnormal termination",
+      "question": "RAII có bảo đảm destructor local chạy khi std::abort hoặc tiến trình bị tắt đột ngột không?",
+      "options": [
+        "Có vì destructor là một finally toàn hệ điều hành.",
+        "Có nếu unique_ptr khác null.",
+        "Chỉ cần thêm noexcept để bảo đảm.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "RAII dựa trên kết thúc vòng đời theo cơ chế ngôn ngữ phù hợp; không là bảo đảm phục hồi sau crash/mất điện."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Destructor throws unwind",
+      "question": "Deleter/destructor của owner nên tránh ném lỗi khi đang stack unwinding vì sao?",
+      "options": [
+        "Một ngoại lệ thoát ra trong quá trình unwind có thể khiến std::terminate, phá luồng xử lý dự kiến.",
+        "Vì throw tự gọi delete hai lần theo chuẩn.",
+        "Vì mọi destructor đều phải trả bool.",
+        "Vì catch không được dùng với smart pointer."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế cleanup không ném và có cơ chế báo lỗi thích hợp ngoài destructor khi cần."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Weak coallocation memory",
+      "question": "Với implementation make_shared đồng cấp phát object/control block, strong count về0 nhưng weak_ptr còn sống, điều nào đúng?",
+      "options": [
+        "Mọi byte chắc chắn được trả allocator ngay strong count0.",
+        "Object được hủy nhưng vùng cấp phát chung có thể còn giữ cho tới khi weak observers hết.",
+        "Object chắc chắn vẫn sống để weak_ptr đọc trực tiếp.",
+        "Weak_ptr giữ strong count1."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt vòng đời object với vòng đời bộ nhớ control block; không nói weak_ptr giữ object còn sống."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Unique polymorphic delete",
+      "question": "unique_ptr<Base> nhận unique_ptr<Derived> với default deleter, Base destructor public non-virtual. Vì sao cần xem lại?",
+      "options": [
+        "Unique ownership làm mọi delete base an toàn.",
+        "Chỉ shared_ptr mới gọi destructor.",
+        "Owner cuối delete qua Base*, không tự lưu kiểu Derived để cứu destructor non-virtual.",
+        "Move conversion tự thêm virtual destructor."
+      ],
+      "correct": 2,
+      "explanation": "Nếu API hỗ trợ hủy đa hình qua Base theo cách này, thiết kế destructor/deleter phải đúng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Leak via discarded release",
+      "question": "p.release(); bỏ qua giá trị trả khi p là owner duy nhất dẫn đến gì nếu không ai giữ địa chỉ?",
+      "options": [
+        "Object được hủy ngay như reset.",
+        "Reference count về0 và shared_ptr cứu object.",
+        "p tự lấy lại ownership cuối scope.",
+        "Mất đường giải phóng object còn sống, gây leak."
+      ],
+      "correct": 3,
+      "explanation": "Dùng reset để hủy, move để chuyển cho owner khác; release dành cho ranh giới nhận raw ownership rõ."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Unique incomplete type",
+      "question": "Có thể khai báo unique_ptr<Impl> với Impl forward-declared trong class Pimpl không?",
+      "options": [
+        "Có trong mô hình phù hợp, nhưng nơi default deleter cần hủy phải nhìn thấy Impl hoàn chỉnh.",
+        "Không; smart pointer luôn cấm forward declaration.",
+        "Có và không bao giờ cần định nghĩa Impl để delete.",
+        "Chỉ nếu Impl=int."
+      ],
+      "correct": 0,
+      "explanation": "Thường định nghĩa destructor owner ngoài header sau definition Impl; yêu cầu complete type không tự biến mất."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Temporary lock borrow",
+      "question": "Vì sao lưu raw=w.lock().get(); rồi dùng raw ở statement sau có thể sai?",
+      "options": [
+        "Raw pointer tự tăng count sau assignment.",
+        "shared_ptr temporary từ lock bị hủy cuối full-expression; raw không giữ ownership.",
+        "get chuyển ownership sang raw nên luôn an toàn.",
+        "weak_ptr lock luôn rỗng."
+      ],
+      "correct": 1,
+      "explanation": "Lưu shared_ptr kết quả lock rồi dùng object trong lifetime owner đó."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Get null versus ownership",
+      "question": "shared_ptr<int> p(nullptr, customDeleter) có thể có bool(p)==false nhưng use_count()>0 không?",
+      "options": [
+        "Không; shared_ptr luôn cấp int0 nếu truyền nullptr.",
+        "Có nhưng chỉ trong data race.",
+        "Có; stored pointer null khác việc có control block ownership.",
+        "Không; mọi pointer null bắt buộc không có control block."
+      ],
+      "correct": 2,
+      "explanation": "Một shared_ptr có custom deleter cho null vẫn có thể tạo nhóm ownership; đừng đồng nhất get với control block."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Ownership refactor audit",
+      "question": "Khi refactor raw pointers sang smart pointers, bước nào quan trọng nhất trước chọn loại?",
+      "options": [
+        "Đổi mọi T* thành shared_ptr<T> bằng tìm/thay.",
+        "Bọc mọi get() thành owner mới.",
+        "Thêm delete cho mọi destructor dù có unique_ptr member.",
+        "Xác định ai sở hữu, ai mượn, vòng đời và cách giải phóng đúng của từng resource."
+      ],
+      "correct": 3,
+      "explanation": "Smart pointer chỉ đúng khi mô hình ownership đúng; thay cú pháp đơn thuần có thể tạo double delete hoặc chu kỳ."
+    }
+  ]
+}

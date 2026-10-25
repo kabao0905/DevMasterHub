@@ -1,0 +1,1160 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "mid",
+  "lesson": "architecture",
+  "language": "vi",
+  "sourceHash": "7bf939ef2274f2d1925ab4088c5b8b606b9f15abb3a16451d10e7ff5cc32793b",
+  "status": "approved",
+  "review": "Tự viết không API. Review classes/formatting/service nguồn. Snippets giữ semantics Node24 của Error, async/catch và dependency injection; environment được truyền bằng chuỗi giả, không đọc env thật. Operational flag không tự public-safe/retry-safe; statusCode||500 chưa validate HTTP status, handler nguồn thiếu headersSent guard. Không sửa âm thầm source.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Layer map",
+      "question": "Luồng tổ chức nguồn đi qua các lớp trách nhiệm nào?",
+      "options": [
+        "Routes,controllers,services,repositories.",
+        "Only CSS và HTML.",
+        "JWT,GC,JIT.",
+        "Docker,heap,stack."
+      ],
+      "correct": 0,
+      "explanation": "Tổ chức layers hữu ích khi trách nhiệm và dependency direction rõ."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Route responsibility",
+      "question": "Route thường tập trung gì?",
+      "options": [
+        "Mọi secret lifecycle.",
+        "Mapping HTTP method/path tới middleware/controller.",
+        "Mọi business invariant và SQL trong một chuỗi.",
+        "Mọi heap allocation."
+      ],
+      "correct": 1,
+      "explanation": "Mapping là ranh giới transport, không tự hiện thực domain."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Controller responsibility",
+      "question": "Controller thường chuyển đổi gì?",
+      "options": [
+        "Every array sang database.",
+        "Mọi Error thành success200.",
+        "HTTP input/output sang lời gọi use case và response contract.",
+        "Source Java thành bytecode."
+      ],
+      "correct": 2,
+      "explanation": "Không trộn toàn bộ storage/transport/domain nếu cần thay đổi độc lập."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Service responsibility",
+      "question": "Service/use case thường chứa gì?",
+      "options": [
+        "Chỉ màu response.",
+        "Chỉ TCP packets.",
+        "Chỉ package metadata.",
+        "Điều phối nghiệp vụ và invariant theo thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Tên Service không tự chứng minh abstraction tốt."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Repository responsibility",
+      "question": "Repository thường che ranh giới nào?",
+      "options": [
+        "Truy cập/lưu dữ liệu.",
+        "Giao diện CSS.",
+        "Browser rendering.",
+        "JVM class loader."
+      ],
+      "correct": 0,
+      "explanation": "Contract repository nên diễn đạt dữ liệu/behavior cần thiết."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Dependency injection",
+      "question": "UserService nhận userRepo qua constructor là gì?",
+      "options": [
+        "JWT decode.",
+        "Dependency injection tường minh.",
+        "Hard-coded global lookup.",
+        "Kế thừa database."
+      ],
+      "correct": 1,
+      "explanation": "Caller lắp dependency phù hợp cho runtime/test."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Base error",
+      "question": "AppError trong nguồn extends gì?",
+      "options": [
+        "Array.",
+        "Promise.",
+        "Error.",
+        "UserService."
+      ],
+      "correct": 2,
+      "explanation": "Custom subclass giữ các semantics Error và thêm metadata."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Status metadata",
+      "question": "this.statusCode trong AppError nhằm gì?",
+      "options": [
+        "Tự gửi response ngay trong constructor.",
+        "Tự mở socket.",
+        "Tự commit DB.",
+        "Ghi status metadata để adapter/error handler sử dụng."
+      ],
+      "correct": 3,
+      "explanation": "Metadata không thực hiện HTTP side effect tự động."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Operational tag",
+      "question": "isOperational=true nguồn diễn đạt ý định gì?",
+      "options": [
+        "Lỗi đã được phân loại/định nghĩa để xử lý theo ứng dụng.",
+        "Lỗi luôn an toàn retry mọi lúc.",
+        "Message luôn có thể public mọi dữ liệu.",
+        "Code không có bug."
+      ],
+      "correct": 0,
+      "explanation": "Tag cần contract tin cậy, không tự là bảo đảm chất lượng/secrecy."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Not found subclass",
+      "question": "NotFoundError đặt status mặc định nguồn nào?",
+      "options": [
+        "201.",
+        "404.",
+        "400.",
+        "500."
+      ],
+      "correct": 1,
+      "explanation": "Constructor gọi super với message và404."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Validation subclass",
+      "question": "ValidationError nguồn đặt status nào?",
+      "options": [
+        "201.",
+        "204.",
+        "400.",
+        "404."
+      ],
+      "correct": 2,
+      "explanation": "Mapping cụ thể là contract của ví dụ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Default status",
+      "question": "new AppError(message) nguồn có statusCode mặc định nào?",
+      "options": [
+        "0.",
+        "200.",
+        "undefined luôn.",
+        "500."
+      ],
+      "correct": 3,
+      "explanation": "Default parameter chỉ áp dụng khi không truyền/undefined theo JS."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Unexpected public message",
+      "question": "Với lỗi không operational, source chọn public message nào?",
+      "options": [
+        "Internal Error.",
+        "Toàn bộ stack luôn.",
+        "Mọi SQL text.",
+        "Password hash."
+      ],
+      "correct": 0,
+      "explanation": "Chi tiết chẩn đoán thuộc log có kiểm soát."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Development stack",
+      "question": "Source chỉ thêm stack field response khi environment bằng gì?",
+      "options": [
+        "Mọi chuỗi truthy.",
+        "development.",
+        "production.",
+        "test tự động luôn."
+      ],
+      "correct": 1,
+      "explanation": "Đây là behavior source, vẫn cần quản lý exposure môi trường."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Central errors",
+      "question": "Central error handler giúp gì?",
+      "options": [
+        "Tự sửa schema.",
+        "Tự auth mọi request.",
+        "Tập trung chuyển lỗi sang response/log policy.",
+        "Tự bắt mọi lỗi trên mọi thread/async task."
+      ],
+      "correct": 2,
+      "explanation": "Phải forward lỗi tới đúng boundary và quản lý lifecycle."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Service result",
+      "question": "UserService.findById tìm thấy User thì trả gì trong nguồn?",
+      "options": [
+        "JWT mới luôn.",
+        "HTTP res object.",
+        "Mọi users array.",
+        "User repository trả về."
+      ],
+      "correct": 3,
+      "explanation": "Service không trực tiếp gửi HTTP response trong snippet."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Service missing",
+      "question": "Repository trả null cho findById, source service làm gì?",
+      "options": [
+        "Throw NotFoundError(\"User\").",
+        "Trả200 rỗng tự động.",
+        "Tự tạo User.",
+        "Tự delete repository."
+      ],
+      "correct": 0,
+      "explanation": "Caller/adapter chọn cách biểu đạt lỗi cho transport."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Async function",
+      "question": "Async findById trả kiểu cơ chế kết quả nào?",
+      "options": [
+        "Một SQL connection luôn.",
+        "Promise resolve/reject theo execution.",
+        "Record đồng bộ luôn dù có await.",
+        "Chỉ callback req,res."
+      ],
+      "correct": 1,
+      "explanation": "Consumer cần await/return Promise đúng lifecycle."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Configuration scope",
+      "question": "Environment-based config dùng để làm gì?",
+      "options": [
+        "Tự đổi Node version.",
+        "Tự prove test coverage.",
+        "Chọn cấu hình theo môi trường với validation phù hợp.",
+        "Tự giữ mọi secret an toàn."
+      ],
+      "correct": 2,
+      "explanation": "Config source và actual deployed values cần quản lý."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Validation layers",
+      "question": "HTTP input validation có thay toàn bộ business invariant service không?",
+      "options": [
+        "Có nếu JSON parse thành công.",
+        "Có nếu route tên đúng.",
+        "Có nếu statusCode400.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Nhiều entry points vẫn phải giữ cùng invariant nghiệp vụ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Error name",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconsole.log(new NotFoundError(\"User\").name);",
+      "options": [
+        "Error",
+        "AppError",
+        "NotFoundError",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn không override name; thuộc tính name kế thừa từ Error.prototype."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Subclass status",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconsole.log(new NotFoundError(\"User\").statusCode);",
+      "options": [
+        "undefined",
+        "404",
+        "500",
+        "400"
+      ],
+      "correct": 1,
+      "explanation": "NotFoundError gọi super status404."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Resource message",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconsole.log(new NotFoundError(\"User\").message);",
+      "options": [
+        "Internal Error",
+        "undefined",
+        "User not found",
+        "Not found User"
+      ],
+      "correct": 2,
+      "explanation": "Message được dựng trong constructor NotFoundError."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Instance hierarchy",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconst e=new ValidationError(\"bad\");console.log(e instanceof AppError,e instanceof Error);",
+      "options": [
+        "true false",
+        "false true",
+        "false false",
+        "true true"
+      ],
+      "correct": 3,
+      "explanation": "Object thuộc cả custom base và native Error chain."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Validation metadata",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconst e=new ValidationError(\"bad\");console.log(e.statusCode,e.isOperational);",
+      "options": [
+        "400 true",
+        "404 true",
+        "500 false",
+        "400 false"
+      ],
+      "correct": 0,
+      "explanation": "Subclass giữ isOperational=true từ AppError."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Default error status",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconsole.log(new AppError(\"bad\").statusCode);",
+      "options": [
+        "undefined",
+        "500",
+        "200",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Default argument500 dùng khi không đưa status."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Operational message selection",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nfunction format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(format(new ValidationError(\"bad\"),\"production\").error.message);",
+      "options": [
+        "undefined",
+        "500",
+        "bad",
+        "Internal Error"
+      ],
+      "correct": 2,
+      "explanation": "Formatter source public operational message theo tag."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Unexpected message selection",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(format(new Error(\"secret detail\"),\"production\").error.message);",
+      "options": [
+        "secret detail",
+        "undefined",
+        "Error",
+        "Internal Error"
+      ],
+      "correct": 3,
+      "explanation": "Native Error không có operational tag theo source formatter."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Falsy status fallback",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(format({statusCode:0,isOperational:false},\"production\").error.status);",
+      "options": [
+        "500",
+        "0",
+        "undefined",
+        "TypeError."
+      ],
+      "correct": 0,
+      "explanation": "|| thay0 vì falsy; không phải cơ chế validate mọi status."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Invalid truthy status",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(format({statusCode:-1,isOperational:false},\"production\").error.status);",
+      "options": [
+        "undefined",
+        "-1",
+        "500",
+        "200"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị âm truthy đi qua ||; HTTP adapter cần validation riêng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Truthy string tag",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(format({statusCode:400,isOperational:\"false\",message:\"detail\"},\"production\").error.message);",
+      "options": [
+        "false",
+        "undefined",
+        "detail",
+        "Internal Error"
+      ],
+      "correct": 2,
+      "explanation": "String false là truthy, không là Boolean false."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Development field",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(Object.hasOwn(format(new Error(\"x\"),\"development\"),\"stack\"));",
+      "options": [
+        "false",
+        "undefined",
+        "Một stack trace cố định.",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Object response model thêm stack property trong development."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Production field",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(Object.hasOwn(format(new Error(\"x\"),\"production\"),\"stack\"));",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "Một stack trace cố định."
+      ],
+      "correct": 0,
+      "explanation": "Object spread boolean false không thêm stack property."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Undefined public message",
+      "question": "Output là gì?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(JSON.stringify(format({statusCode:404,isOperational:true},\"production\")));",
+      "options": [
+        "TypeError.",
+        "{\"error\":{\"status\":404}}",
+        "{\"error\":{\"message\":null,\"status\":404}}",
+        "{}"
+      ],
+      "correct": 1,
+      "explanation": "Tag true nhưng thiếu message cho undefined; JSON bỏ property đó."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Unverified tag origin",
+      "question": "Output là gì theo formatter mô hình?",
+      "code": "function format(err,env){const status=err.statusCode||500;const message=err.isOperational?err.message:\"Internal Error\";return{error:{message,status},...(env===\"development\"&&{stack:err.stack})};}\nconsole.log(format({statusCode:400,isOperational:true,message:\"caller text\"},\"production\").error.message);",
+      "options": [
+        "undefined",
+        "401",
+        "caller text",
+        "Internal Error"
+      ],
+      "correct": 2,
+      "explanation": "Formatter tin tag shape; app phải kiểm soát nguồn lỗi/metadata trước public response."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Service found record",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nclass UserService{constructor(repo){this.repo=repo;}async findById(id){const user=await this.repo.findById(id);if(!user)throw new NotFoundError(\"User\");return user;}}\nconst s=new UserService({findById:async id=>({id})});console.log((await s.findById(7)).id);",
+      "options": [
+        "undefined",
+        "404",
+        "Promise string.",
+        "7"
+      ],
+      "correct": 3,
+      "explanation": "Await repo rồi trả đúng record tìm được."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Service null record",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nclass UserService{constructor(repo){this.repo=repo;}async findById(id){const user=await this.repo.findById(id);if(!user)throw new NotFoundError(\"User\");return user;}}\nconst s=new UserService({findById:async()=>null});try{await s.findById(7);}catch(e){console.log(e.message);}",
+      "options": [
+        "User not found",
+        "null",
+        "Internal Error",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn chuyển kết quả vắng thành NotFoundError."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Storage error propagation",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nclass UserService{constructor(repo){this.repo=repo;}async findById(id){const user=await this.repo.findById(id);if(!user)throw new NotFoundError(\"User\");return user;}}\nconst s=new UserService({findById:async()=>{throw new Error(\"db\");}});try{await s.findById(7);}catch(e){console.log(e.message);}",
+      "options": [
+        "null",
+        "db",
+        "User not found",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Rejection xảy ra tại await repo trước kiểm tra user; source không đổi mọi DB error thành404."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "ID forwarded",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nclass UserService{constructor(repo){this.repo=repo;}async findById(id){const user=await this.repo.findById(id);if(!user)throw new NotFoundError(\"User\");return user;}}\nlet seen;const s=new UserService({findById:async id=>{seen=id;return{id};}});await s.findById(42);console.log(seen);",
+      "options": [
+        "undefined",
+        "404",
+        "42",
+        "7"
+      ],
+      "correct": 2,
+      "explanation": "Service truyền argument nguyên tới repository trong source."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Repository method context",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nclass UserService{constructor(repo){this.repo=repo;}async findById(id){const user=await this.repo.findById(id);if(!user)throw new NotFoundError(\"User\");return user;}}\nconst repo={record:{id:7},async findById(){return this.record;}};console.log((await new UserService(repo).findById(7)).id);",
+      "options": [
+        "undefined",
+        "TypeError luôn.",
+        "404",
+        "7"
+      ],
+      "correct": 3,
+      "explanation": "Call this.repo.findById giữ repo làm method receiver."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Return Promise catch",
+      "question": "Output là gì?",
+      "code": "async function f(){try{return Promise.reject(new Error(\"outside\"));}catch{return\"caught\";}}try{console.log(await f());}catch(e){console.log(e.message);}",
+      "options": [
+        "outside",
+        "caught",
+        "undefined",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "Return Promise không await trong try không catch rejection bất đồng bộ đó."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Return await catch",
+      "question": "Output là gì?",
+      "code": "async function f(){try{return await Promise.reject(new Error(\"outside\"));}catch{return\"caught\";}}console.log(await f());",
+      "options": [
+        "null",
+        "caught",
+        "outside",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Await quan sát rejection trong try nên catch xử lý được."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Native error serialization",
+      "question": "Output là gì?",
+      "code": "console.log(JSON.stringify(new Error(\"bad\")));",
+      "options": [
+        "\"bad\"",
+        "null",
+        "{}",
+        "{\"message\":\"bad\"}"
+      ],
+      "correct": 2,
+      "explanation": "Message/stack native Error không là enumerable fields cho JSON stringify mặc định."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Custom enumerable fields",
+      "question": "Output là gì?",
+      "code": "class AppError extends Error{constructor(message,statusCode=500){super(message);this.statusCode=statusCode;this.isOperational=true;}}class NotFoundError extends AppError{constructor(resource){super(`${resource} not found`,404);}}class ValidationError extends AppError{constructor(msg){super(msg,400);}}\nconsole.log(Object.keys(new AppError(\"bad\")).join(\",\"));",
+      "options": [
+        "message,stack",
+        "name,message",
+        "undefined",
+        "statusCode,isOperational"
+      ],
+      "correct": 3,
+      "explanation": "Các assignments của AppError tạo own enumerable fields; native message không nằm trong Object.keys."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Error cause",
+      "question": "Output là gì trên Node24?",
+      "code": "const root=new Error(\"root\");const wrapped=new Error(\"outer\",{cause:root});console.log(wrapped.cause.message);",
+      "options": [
+        "root",
+        "outer",
+        "undefined",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "Native Error options cause giữ nguyên nguyên nhân được đưa vào."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Fractional HTTP status guard",
+      "question": "Output là gì?",
+      "code": "const status=500.5;console.log(Number.isInteger(status)&&status>=400&&status<=599);",
+      "options": [
+        "undefined",
+        "false",
+        "true",
+        "500"
+      ],
+      "correct": 1,
+      "explanation": "Status HTTP policy nên yêu cầu integer hợp lệ, không chỉ truthy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Known error mapping",
+      "question": "Output là gì?",
+      "code": "const allowed=new Set([400,404,409]);const supplied=418;console.log(allowed.has(supplied)?supplied:500);",
+      "options": [
+        "200",
+        "undefined",
+        "500",
+        "418"
+      ],
+      "correct": 2,
+      "explanation": "Mapping allowlist này đưa status không được phân loại về server error."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Error handler arity",
+      "question": "Output là gì?",
+      "code": "function a(err,req,res,next){}const b=(...args)=>{};console.log(a.length,b.length);",
+      "options": [
+        "0 4",
+        "4 4",
+        "3 0",
+        "4 0"
+      ],
+      "correct": 3,
+      "explanation": "Function.length của explicit4 params khác rest-only wrapper; Express nhận diện error middleware cần đúng signature."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Error middleware order",
+      "question": "Error handler muốn nhận lỗi forwarded từ routes thường được đăng ký ở đâu?",
+      "options": [
+        "Sau middleware/routes cần xử lý trong chain.",
+        "Chỉ trước tất cả routes rồi bỏ qua phần sau.",
+        "Trong CSS.",
+        "Trong package-lock."
+      ],
+      "correct": 0,
+      "explanation": "Order và đường request phải được test, không dựa tên file errors."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Repository contract",
+      "question": "Repository trả null cho vắng mặt nhưng throw khi DB fail; service nên phân biệt gì?",
+      "options": [
+        "Không cần xử lý because async.",
+        "Resource missing và infrastructure failure.",
+        "Đổi mọi lỗi thành404.",
+        "Đổi mọi kết quả thành200."
+      ],
+      "correct": 1,
+      "explanation": "Contract rõ giúp adapter/logging phản ánh đúng vấn đề."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Validation placement",
+      "question": "Range amount>=0 cần giữ cho cả HTTP và job worker; nên đặt invariant ở đâu?",
+      "options": [
+        "Chỉ Express router name.",
+        "Chỉ response JSON.",
+        "Domain/service dùng chung, cộng input validation tại adapters khi cần.",
+        "Chỉ browser form."
+      ],
+      "correct": 2,
+      "explanation": "Đừng để entry point khác bỏ qua quy tắc cốt lõi."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Startup configuration",
+      "question": "Config thiếu DB URL bắt buộc thì hướng xử lý tốt là gì?",
+      "options": [
+        "Âm thầm dùng production password mặc định.",
+        "Bỏ database validation.",
+        "Trả mọi request200.",
+        "Validate sớm và fail startup có thông báo kiểm soát."
+      ],
+      "correct": 3,
+      "explanation": "Fail sớm tránh hệ nửa hoạt động và fallback nguy hiểm."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Operational log",
+      "question": "Lỗi chứa token trong context cần log thế nào?",
+      "options": [
+        "Log có redaction và quyền/retention phù hợp.",
+        "Dump toàn context công khai.",
+        "Không bao giờ ghi bất kỳ diagnostic nào.",
+        "Cho token vào public message để user debug."
+      ],
+      "correct": 0,
+      "explanation": "Quan sát và bảo vệ dữ liệu phải cùng được thiết kế."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Transaction orchestration",
+      "question": "Use case cập nhật hai repository cần atomicity; điều gì phải rõ?",
+      "options": [
+        "Chỉ return Promise.all luôn giải mọi vấn đề.",
+        "Ranh giới transaction/unit of work bao trùm các thao tác liên quan.",
+        "Mỗi method async tự làm atomic toàn use case.",
+        "Controller name đủ tạo transaction."
+      ],
+      "correct": 1,
+      "explanation": "Hai thao tác thành công riêng lẻ không tự thành một transaction chung."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Stable error contract",
+      "question": "Client không nên parse câu message dịch để biết loại lỗi; nên cung cấp gì theo nhu cầu?",
+      "options": [
+        "Tên private method.",
+        "Toàn SQL query.",
+        "Error code ổn định và schema response rõ.",
+        "Chỉ stack trace."
+      ],
+      "correct": 2,
+      "explanation": "Public code và user-facing text có vai trò khác nhau."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Input to domain mapping",
+      "question": "Tại controller, nên truyền body sang use case bằng cách nào khi fields được giới hạn?",
+      "options": [
+        "Gán mọi req.body vào entity không xem.",
+        "Tin mọi body vì JSON.",
+        "Chỉ xóa password khỏi response sau khi lưu.",
+        "Validate/map DTO fields cho phép theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Mapping boundary giúp bảo vệ invariant và field ownership."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Operational retry",
+      "question": "isOperational=true có tự có nghĩa retry an toàn không?",
+      "options": [
+        "Không.",
+        "Có vì đã biết lỗi.",
+        "Có nếu statusCode400.",
+        "Có nếu message String."
+      ],
+      "correct": 0,
+      "explanation": "Retry phụ thuộc nguyên nhân,tác động đã xảy ra và idempotency."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Service unit test",
+      "question": "Constructor injection cho phép service unit test như thế nào?",
+      "options": [
+        "Không cần assertions.",
+        "Lắp repo fake/mock mà không cần app.listen.",
+        "Tự chứng minh SQL indexes.",
+        "Tự generate fixtures đúng mọi rule."
+      ],
+      "correct": 1,
+      "explanation": "Tách construction khỏi transport giúp test scope rõ."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Forward async errors",
+      "question": "Express4 controller gọi async service nên làm gì với rejection?",
+      "options": [
+        "Bỏ await rồi gửi201.",
+        "Catch rồi không response gì.",
+        "Catch/forward next(err) qua boundary phù hợp.",
+        "Tin error middleware bắt mọi detached Promise."
+      ],
+      "correct": 2,
+      "explanation": "Flow phải hoàn tất response hoặc chuyển lỗi có kiểm soát."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Missing source guard",
+      "question": "Source error handler thiếu kiểm tra nào khi lỗi xuất hiện sau response headers đã gửi?",
+      "options": [
+        "Số CPU.",
+        "Tên package manager.",
+        "Màu terminal.",
+        "res.headersSent và đường delegate thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không thể luôn gửi response JSON lỗi mới sau khi response đã commit."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Folder architecture illusion",
+      "question": "Chia file thành controllers/services/repos có đủ Clean Architecture khi domain vẫn import Express trực tiếp mọi nơi không?",
+      "options": [
+        "Chưa; dependency direction và coupling thực tế quyết định.",
+        "Đủ vì folder names.",
+        "Đủ vì mọi function async.",
+        "Đủ vì code nhiều files."
+      ],
+      "correct": 0,
+      "explanation": "Tổ chức vật lý không tự tạo boundary logic có thể thay thế."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "HTTP domain coupling",
+      "question": "Domain error mang statusCode HTTP có tradeoff nào?",
+      "options": [
+        "Tự thêm transaction.",
+        "Gắn domain với transport; có thể map domain error sang HTTP ở adapter nếu cần nhiều transports.",
+        "Luôn sai trong mọi app nhỏ.",
+        "Tự tách mọi transport."
+      ],
+      "correct": 1,
+      "explanation": "Chọn mức abstraction theo yêu cầu, không áp pattern tuyệt đối."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Untrusted status metadata",
+      "question": "Lấy err.statusCode||500 rồi gửi thẳng có rủi ro gì?",
+      "options": [
+        "Tự reject mọi String.",
+        "Tự normalize mọi error.",
+        "Status ngoài miền hoặc success code gây lỗi/phân loại sai; validate/map nguồn metadata tin cậy.",
+        "Tự bảo đảm4xx/5xx hợp lệ."
+      ],
+      "correct": 2,
+      "explanation": "Truthy không là kiểm tra type/range hay policy HTTP."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Public message trust",
+      "question": "isOperational=true có đủ chứng minh message không chứa secret/SQL detail không?",
+      "options": [
+        "Có theo keyword operational.",
+        "Có vì custom class.",
+        "Có nếu status400.",
+        "Không; cần phân loại message public và diagnostic có kiểm soát."
+      ],
+      "correct": 3,
+      "explanation": "Expected error vẫn có thể mang dữ liệu nhạy cảm nếu xây message sai."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Environment exposure",
+      "question": "App production vô tình chạy config development có thể lộ gì qua handler nguồn?",
+      "options": [
+        "Stack trace trong response.",
+        "Chỉ số todo.",
+        "Không có ảnh hưởng.",
+        "Tự tắt server."
+      ],
+      "correct": 0,
+      "explanation": "Config validation/deployment kiểm tra environment và public error format là quan trọng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Adapter replacement",
+      "question": "Thay repo SQL bằng RAM trong nhiều instance có thể giữ interface mà đổi semantics nào?",
+      "options": [
+        "Chỉ tốc độ logs.",
+        "Persistence,durability,consistency/uniqueness giữa instance.",
+        "Mọi semantics tự giống vì cùng methods.",
+        "Chỉ tên import."
+      ],
+      "correct": 1,
+      "explanation": "Contract cần diễn đạt thuộc tính quan trọng, không chỉ chữ ký method."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "External side effects",
+      "question": "DB transaction rollback có tự undo email đã gửi trong service không?",
+      "options": [
+        "Có vì AppError.",
+        "Có vì Promise reject.",
+        "Không; thiết kế workflow/outbox/idempotency theo nhu cầu.",
+        "Có vì service chung file."
+      ],
+      "correct": 2,
+      "explanation": "Resource transaction boundary không trùm tác động không tham gia."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Commit failure boundary",
+      "question": "Service trả entity trước khi transaction commit thật, commit fail sau đó; API phải tránh gì?",
+      "options": [
+        "Quan sát commit result.",
+        "Map lỗi commit phù hợp.",
+        "Giữ ranh giới transaction rõ.",
+        "Báo success đã hoàn tất khi persistence chưa thành công."
+      ],
+      "correct": 3,
+      "explanation": "Kết quả nghiệp vụ cần khớp thời điểm durable/committed mà contract hứa."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Retry classification",
+      "question": "Tự retry mọi AppError ba lần có vấn đề gì?",
+      "options": [
+        "Validation/permission không transient và mutation có thể không idempotent.",
+        "Luôn sửa mọi lỗi.",
+        "Không tạo duplicate side effects.",
+        "Không cần backoff/deadline."
+      ],
+      "correct": 0,
+      "explanation": "Phân loại retryable errors và scope tác động, không dựa tag operational đơn lẻ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Headers committed",
+      "question": "Lỗi sau res.json đã bắt đầu gửi mà handler tiếp tục status500.json có thể gây gì?",
+      "options": [
+        "Chỉ thêm stack vào response cũ.",
+        "Headers-sent/write-after-end errors và response không nhất quán.",
+        "Tự tạo HTTP response thứ hai hợp lệ.",
+        "Tự rollback body đầu."
+      ],
+      "correct": 1,
+      "explanation": "Delegate/log và terminate lifecycle theo framework contract thay vì cố ghi lần hai."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Partial batch policy",
+      "question": "Batch use case cho phép một phần thành công; nên mô hình hóa kết quả thế nào?",
+      "options": [
+        "Luôn retry vô hạn mọi item.",
+        "Luôn coi bất kỳ lỗi nào là404.",
+        "Kết quả từng item và lỗi/partial status rõ theo contract.",
+        "Nuốt lỗi rồi báo toàn bộ success."
+      ],
+      "correct": 2,
+      "explanation": "Fail-fast hay partial success là quyết định nghiệp vụ, không mặc định của Promise API."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Cancellation propagation",
+      "question": "Request bị hủy có tự dừng service/repo async đã chạy không?",
+      "options": [
+        "Có vì req object bị đóng.",
+        "Có vì constructor injection.",
+        "Có vì Error stack.",
+        "Không; propagate deadline/cancellation và cleanup qua API phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Cancellation không tự undo commit hoặc external effects."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Request context isolation",
+      "question": "Lưu tenant/currentUser mutable trong service singleton để các repo đọc có nguy cơ gì?",
+      "options": [
+        "Dữ liệu lẫn giữa các request theo async interleaving.",
+        "Tự tạo per-request isolation.",
+        "Không vì JavaScript một event loop.",
+        "Chỉ ảnh hưởng comments."
+      ],
+      "correct": 0,
+      "explanation": "Truyền context có scope/ownership rõ thay vì shared mutable request state."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Repository permissions",
+      "question": "Repository.findById(id) dùng chung hệ đa tenant cần contract nào?",
+      "options": [
+        "Tự chọn mọi tenant vì id globally unique.",
+        "Scope tenant/authorization ở layer phù hợp và query không vượt phạm vi được phép.",
+        "Tin ID khó đoán.",
+        "Chỉ res.locals màu khác."
+      ],
+      "correct": 1,
+      "explanation": "Unique identity không tự quyền truy cập."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Error cause retention",
+      "question": "Wrap lỗi storage thành AppError mới nhưng mất cause có nhược điểm gì?",
+      "options": [
+        "Tự chữa lỗi storage.",
+        "Không bao giờ cần root cause.",
+        "Khó chẩn đoán nguyên nhân gốc; giữ causal metadata/logging có kiểm soát.",
+        "Tự bảo đảm user privacy tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Không public cause thô nếu nhạy cảm; giữ nó ở diagnostic boundary thích hợp."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Infrastructure not missing",
+      "question": "DB timeout có nên map như User not found chỉ vì không lấy được user không?",
+      "options": [
+        "Có để mọi lỗi thành404.",
+        "Có vì message ngắn.",
+        "Chỉ cần AppError subclass.",
+        "Không; hạ tầng thất bại khác truy vấn thành công nhưng vắng record."
+      ],
+      "correct": 3,
+      "explanation": "Phân loại đúng giúp client retry/monitoring và tránh che sự cố."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Resource existence privacy",
+      "question": "NotFoundError404 và Forbidden403 có luôn chọn chỉ theo việc row tồn tại không?",
+      "options": [
+        "Không; policy có thể che existence, nhưng cần nhất quán và giữ authorization đúng.",
+        "Có và phải lộ mọi row tồn tại.",
+        "Chỉ dựa tên class.",
+        "Chỉ dựa client muốn status gì."
+      ],
+      "correct": 0,
+      "explanation": "Public error contract cần xét quyền và thông tin lộ ra."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cross field partial update",
+      "question": "Validate chỉ field mới của PATCH có đủ khi invariant phụ thuộc state cũ mới không?",
+      "options": [
+        "Đủ vì middleware trả next.",
+        "Chưa; kiểm tra aggregate kết quả trong boundary phù hợp.",
+        "Đủ vì JSON parse.",
+        "Đủ vì field có tên đúng."
+      ],
+      "correct": 1,
+      "explanation": "Không để adapter validation bỏ qua invariant nhiều field hoặc concurrency."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Contract test scope",
+      "question": "Service mock repo pass có thể bỏ mọi test adapter storage/error translation không?",
+      "options": [
+        "Có vì coverage80%.",
+        "Có vì mockRejectValue đã dùng.",
+        "Không khi các boundary đó còn rủi ro cần xác minh.",
+        "Có vì interface methods khớp."
+      ],
+      "correct": 2,
+      "explanation": "Dùng bằng chứng ở từng ranh giới cần thiết, tránh test chỉ lặp implementation."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Lifecycle ownership",
+      "question": "App tạo server,DB client và background worker; ai cần chịu trách nhiệm đóng chúng khi shutdown?",
+      "options": [
+        "Mọi controller tùy ý đóng sau mỗi request.",
+        "Garbage collector luôn đóng ngay.",
+        "Error constructor tự close toàn app.",
+        "Composition/entrypoint lifecycle có thứ tự và deadline phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Ownership tường minh tránh leak/cắt tác vụ giữa chừng và chờ vô hạn."
+    }
+  ]
+}

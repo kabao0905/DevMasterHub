@@ -1,0 +1,1170 @@
+{
+  "version": 1,
+  "tech": "python",
+  "level": "mid",
+  "lesson": "generators",
+  "language": "vi",
+  "sourceHash": "38cd4d0f7c5a3c892f6b2b92c04f03cfbea7f816fcbc903f269e41535e64d768",
+  "status": "approved",
+  "review": "Tự biên soạn trực tiếp, không gọi API. Rà yield, iterator, lazy evaluation, exhaustion, yield from và pipeline đọc log; các ví dụ theo Python 3.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Hàm generator",
+      "question": "Điều gì khiến một def thông thường trở thành generator function?",
+      "options": [
+        "Có yield trong thân hàm của chính nó",
+        "Tên hàm bắt đầu bằng gen",
+        "Hàm trả một list",
+        "Hàm có vòng for bất kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Sự có mặt của yield trong thân hàm quyết định loại hàm, không phải tên."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Giá trị khi gọi generator function",
+      "question": "Gọi một generator function thông thường trả gì ngay?",
+      "options": [
+        "Luôn None",
+        "Một generator object",
+        "Một list mọi giá trị đã yield",
+        "Giá trị đầu tiên đã yield"
+      ],
+      "correct": 1,
+      "explanation": "Thân chưa chạy tới yield đầu cho đến khi iterator được tiến."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Đánh giá lười",
+      "question": "Lazy evaluation trong generator có nghĩa gì?",
+      "options": [
+        "Không bao giờ tính giá trị",
+        "Tự chạy một thread nền",
+        "Tính giá trị khi bên tiêu thụ yêu cầu",
+        "Luôn tính mọi giá trị trước khi trả object"
+      ],
+      "correct": 2,
+      "explanation": "Lazy không đồng nghĩa xử lý song song hay tự chạy nền."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Tạm dừng",
+      "question": "yield value làm gì?",
+      "options": [
+        "Kết thúc hàm vĩnh viễn như return trong mọi trường hợp.",
+        "In giá trị ra màn hình.",
+        "Tự lưu giá trị vào file.",
+        "Đưa giá trị ra ngoài và tạm dừng, giữ trạng thái để có thể tiếp tục."
+      ],
+      "correct": 3,
+      "explanation": "Lần next tiếp theo tiếp tục từ sau điểm yield trước đó."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Tiến iterator",
+      "question": "Hàm nào yêu cầu giá trị kế tiếp từ một iterator?",
+      "options": [
+        "next()",
+        "len() bắt buộc",
+        "print_next()",
+        "advance_all()"
+      ],
+      "correct": 0,
+      "explanation": "next(iterator) gọi giao thức lấy phần tử tiếp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Hết iterator",
+      "question": "next(g) không có mặc định ném gì khi g đã cạn?",
+      "options": [
+        "ValueError luôn",
+        "StopIteration",
+        "IndexError",
+        "KeyError"
+      ],
+      "correct": 1,
+      "explanation": "StopIteration báo kết thúc iterator cho bên tiêu thụ."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Generator expression",
+      "question": "Cách viết nào tạo generator expression?",
+      "options": [
+        "{x * x for x in nums}",
+        "{x: x * x for x in nums}",
+        "(x * x for x in nums)",
+        "[x * x for x in nums]"
+      ],
+      "correct": 2,
+      "explanation": "Ngoặc tròn tạo generator expression thay vì list/set/dict comprehension."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "List hóa generator",
+      "question": "list(g) làm gì?",
+      "options": [
+        "Sao chép g thành iterator độc lập chưa chạy",
+        "Luôn trả list rỗng",
+        "Tự đặt lại g về đầu",
+        "Tiêu thụ các phần tử còn lại của g vào một list"
+      ],
+      "correct": 3,
+      "explanation": "list là bên tiêu thụ và có thể làm mất lợi ích bộ nhớ nếu gom dữ liệu rất lớn."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Dùng với sum",
+      "question": "sum(x*x for x in nums) có cần tạo list bình phương trung gian không?",
+      "options": [
+        "Không, sum có thể tiêu thụ generator trực tiếp.",
+        "Có, luôn tạo list đầy đủ ngầm.",
+        "Chỉ cần list nếu nums là range.",
+        "Không, vì sum bỏ qua generator và trả 0."
+      ],
+      "correct": 0,
+      "explanation": "sum lấy từng giá trị mà không cần list kết quả trung gian."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Trạng thái generator",
+      "question": "Sau yield, generator thông thường giữ lại gì để tiếp tục?",
+      "options": [
+        "Luôn mọi dữ liệu từng yield mãi mãi",
+        "Trạng thái thực thi và các biến cục bộ cần thiết",
+        "Chỉ tên hàm dạng chuỗi",
+        "Một bản sao toàn bộ tiến trình"
+      ],
+      "correct": 1,
+      "explanation": "Generator giữ frame/trạng thái, không mặc định lưu toàn bộ lịch sử đầu ra."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Generator không tự tua lại",
+      "question": "Một generator đã cạn có tự bắt đầu lại khi dùng for lần nữa không?",
+      "options": [
+        "Chỉ khi tên biến là g",
+        "Chỉ nếu nó từng yield số 0",
+        "Không",
+        "Có, luôn tự quay về đầu"
+      ],
+      "correct": 2,
+      "explanation": "Muốn một lượt duyệt mới thường gọi lại generator function để tạo object mới."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Pipeline",
+      "question": "Chaining generators trong bài học dùng để làm gì?",
+      "options": [
+        "Chuyển mọi bước thành một list khổng lồ",
+        "Tự tạo nhiều tiến trình",
+        "Bỏ hoàn toàn việc xử lý lỗi",
+        "Kết nối các bước đọc, lọc, biến đổi theo từng phần tử"
+      ],
+      "correct": 3,
+      "explanation": "Pipeline có thể xử lý dữ liệu theo luồng mà không giữ mọi kết quả trung gian."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "for xử lý kết thúc",
+      "question": "Khi iterator ném StopIteration bình thường, vòng for làm gì?",
+      "options": [
+        "Kết thúc vòng lặp",
+        "In traceback bắt buộc",
+        "Tự gọi iterator lại từ đầu",
+        "Tiếp tục tạo giá trị None vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "for xử lý giao thức kết thúc iterator cho người dùng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Tạo iterator",
+      "question": "Hàm built-in nào lấy iterator từ một iterable?",
+      "options": [
+        "yield()",
+        "iter()",
+        "next_all()",
+        "list_only()"
+      ],
+      "correct": 1,
+      "explanation": "iter(obj) dùng giao thức __iter__ hoặc giao thức sequence được hỗ trợ."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Iterable và iterator",
+      "question": "Một iterator chuẩn cần hỗ trợ thao tác nào để lấy phần tử tiếp?",
+      "options": [
+        "__getitem__() bắt buộc với mọi iterator",
+        "__sort__()",
+        "__next__()",
+        "__len__() bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "__next__ cung cấp giá trị hoặc báo hết bằng StopIteration."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Nhiều generator cùng hàm",
+      "question": "Hai lần gọi cùng một generator function thông thường tạo gì?",
+      "options": [
+        "Cùng một object duy nhất cho mọi lời gọi",
+        "Hai list đã được điền đầy đủ",
+        "Luôn hai thread mới",
+        "Hai generator object có trạng thái tiến riêng"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi lần gọi tạo một lần thực thi generator riêng, trừ trạng thái ngoài được chia sẻ."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Return kết thúc",
+      "question": "return không có giá trị trong generator đang chạy làm gì?",
+      "options": [
+        "Kết thúc generator",
+        "Yield None rồi tiếp tục",
+        "Tua generator về đầu",
+        "Chuyển generator thành list"
+      ],
+      "correct": 0,
+      "explanation": "return kết thúc luồng sinh giá trị của object đó."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Yield from cơ bản",
+      "question": "yield from iterable chủ yếu dùng để làm gì?",
+      "options": [
+        "Chạy iterable trên mạng",
+        "Ủy quyền sinh từng phần tử từ iterable",
+        "Chỉ yield nguyên iterable như một phần tử",
+        "Luôn đổi iterable thành set"
+      ],
+      "correct": 1,
+      "explanation": "yield from chuyển tiếp phần tử, khác yield iterable."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Iterator một lượt",
+      "question": "Vì sao generator thường được mô tả là một lượt duyệt?",
+      "options": [
+        "Nó không dùng được với for.",
+        "Nó luôn đóng ngay sau khi tạo.",
+        "Các phần tử đã tiêu thụ không được phát lại tự động.",
+        "Nó chỉ được yield tối đa một phần tử."
+      ],
+      "correct": 2,
+      "explanation": "Một lượt nghĩa là tiến trạng thái, không giới hạn số phần tử chỉ một."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Giới hạn RAM",
+      "question": "Generator giúp giảm RAM trong tình huống nào?",
+      "options": [
+        "Bên tiêu thụ vẫn list() toàn bộ dữ liệu vô hạn.",
+        "Generator tự lưu mọi dòng vào list nội bộ.",
+        "Mọi generator luôn dùng đúng một byte.",
+        "Xử lý từng phần tử mà không giữ tất cả kết quả trung gian."
+      ],
+      "correct": 3,
+      "explanation": "Lợi ích còn phụ thuộc trạng thái mà generator giữ và cách bên tiêu thụ dùng đầu ra."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Giá trị lần next đầu",
+      "question": "Đoạn code in gì?",
+      "code": "def values():\n    yield 1\n    yield 2\ng = values()\nprint(next(g))",
+      "options": [
+        "1",
+        "2",
+        "[1, 2]",
+        "None"
+      ],
+      "correct": 0,
+      "explanation": "Lần next đầu chạy tới yield đầu."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Tiếp tục sau yield",
+      "question": "Hai lần print in gì?",
+      "code": "def values():\n    yield 1\n    yield 2\ng = values()\nprint(next(g))\nprint(next(g))",
+      "options": [
+        "StopIteration ngay lần đầu",
+        "1 rồi 2",
+        "1 rồi 1",
+        "2 rồi 2"
+      ],
+      "correct": 1,
+      "explanation": "Generator nhớ vị trí sau yield thứ nhất để tiếp tục."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Mặc định khi hết",
+      "question": "Đầu ra là gì?",
+      "code": "g = (x for x in [1])\nlist(g)\nprint(next(g, \"done\"))",
+      "options": [
+        "None",
+        "StopIteration không được bắt",
+        "done",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Lần list trước đã tiêu thụ phần tử duy nhất; next có mặc định trả done."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Phần còn lại sau next",
+      "question": "List được in là gì?",
+      "code": "g = (x for x in [1, 2, 3])\nnext(g)\nprint(list(g))",
+      "options": [
+        "[1, 2, 3]",
+        "[1]",
+        "[]",
+        "[2, 3]"
+      ],
+      "correct": 3,
+      "explanation": "next đã lấy 1, nên list thu hai giá trị còn lại."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Hàm chưa chạy khi tạo object",
+      "question": "Đoạn code in gì?",
+      "code": "def values():\n    print(\"start\")\n    yield 1\ng = values()\nprint(\"created\")",
+      "options": [
+        "created",
+        "start rồi created",
+        "created rồi start",
+        "1"
+      ],
+      "correct": 0,
+      "explanation": "Tạo generator object chưa thực thi lệnh print trong thân."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Bắt đầu chạy ở next",
+      "question": "Đầu ra theo thứ tự là gì?",
+      "code": "def values():\n    print(\"start\")\n    yield 1\ng = values()\nprint(next(g))",
+      "options": [
+        "Chỉ start",
+        "start rồi 1",
+        "1 rồi start",
+        "Chỉ 1"
+      ],
+      "correct": 1,
+      "explanation": "next khiến thân chạy; nó in start rồi trả giá trị yield 1."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Bình phương lazy",
+      "question": "Kết quả là gì?",
+      "code": "print(sum(x * x for x in [1, 2, 3]))",
+      "options": [
+        "9",
+        "[1, 4, 9]",
+        "14",
+        "6"
+      ],
+      "correct": 2,
+      "explanation": "sum cộng các bình phương 1+4+9."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Fibonacci đầu dãy",
+      "question": "List kết quả là gì?",
+      "code": "def fib(n):\n    a, b = 0, 1\n    for _ in range(n):\n        yield a\n        a, b = b, a + b\nprint(list(fib(5)))",
+      "options": [
+        "[1, 1, 2, 3, 5]",
+        "[0, 1, 2, 3, 4]",
+        "[0, 1, 1, 2]",
+        "[0, 1, 1, 2, 3]"
+      ],
+      "correct": 3,
+      "explanation": "Yield xảy ra trước cập nhật, bắt đầu từ a=0."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Generator đếm không phần tử",
+      "question": "Đoạn code in gì?",
+      "code": "def numbers(n):\n    for i in range(n):\n        yield i\nprint(list(numbers(0)))",
+      "options": [
+        "[]",
+        "[0]",
+        "None",
+        "ValueError"
+      ],
+      "correct": 0,
+      "explanation": "range(0) rỗng nên hàm không đi tới yield nào trong lần chạy này."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Lọc generator",
+      "question": "List được in là gì?",
+      "code": "g = (x for x in [1, 2, 3, 4] if x % 2 == 0)\nprint(list(g))",
+      "options": [
+        "[True, True]",
+        "[2, 4]",
+        "[1, 2, 3, 4]",
+        "[1, 3]"
+      ],
+      "correct": 1,
+      "explanation": "Chỉ các số chẵn được yield bởi biểu thức."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Hai lần list trên cùng object",
+      "question": "Đầu ra là gì?",
+      "code": "g = (x for x in [1, 2])\nprint(list(g))\nprint(list(g))",
+      "options": [
+        "[] rồi [1, 2]",
+        "Lỗi vì list không nhận generator",
+        "[1, 2] rồi []",
+        "[1, 2] rồi [1, 2]"
+      ],
+      "correct": 2,
+      "explanation": "Lần đầu làm cạn iterator."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Tạo lại object để duyệt lại",
+      "question": "Cách nào cho hai lượt đầy đủ khi values là generator function không dùng trạng thái ngoài?",
+      "options": [
+        "Dùng cùng g=values() rồi for g hai lần mà không tạo lại.",
+        "Gọi iter(g) để tua về đầu.",
+        "Đổi tên biến g thành h.",
+        "Gọi values() riêng cho từng lượt duyệt."
+      ],
+      "correct": 3,
+      "explanation": "iter(generator) trả chính iterator đó, không khởi tạo lại trạng thái."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Yield nguyên list",
+      "question": "Đầu ra là gì?",
+      "code": "def f():\n    yield [1, 2]\nprint(list(f()))",
+      "options": [
+        "[[1, 2]]",
+        "[1, 2]",
+        "[1]",
+        "2"
+      ],
+      "correct": 0,
+      "explanation": "yield đưa list ra như một phần tử duy nhất."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Yield from list",
+      "question": "Đoạn code in gì?",
+      "code": "def f():\n    yield from [1, 2]\nprint(list(f()))",
+      "options": [
+        "None",
+        "[1, 2]",
+        "[[1, 2]]",
+        "[]"
+      ],
+      "correct": 1,
+      "explanation": "yield from chuyển tiếp từng phần tử của list."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Return sớm",
+      "question": "List được in là gì?",
+      "code": "def f():\n    yield 1\n    return\n    yield 2\nprint(list(f()))",
+      "options": [
+        "[None]",
+        "[]",
+        "[1]",
+        "[1, 2]"
+      ],
+      "correct": 2,
+      "explanation": "return sau yield 1 kết thúc; yield 2 không tới được."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Iterator list lấy tiếp",
+      "question": "Đoạn code in gì?",
+      "code": "it = iter([10, 20])\nnext(it)\nprint(next(it))",
+      "options": [
+        "10",
+        "[10, 20]",
+        "StopIteration",
+        "20"
+      ],
+      "correct": 3,
+      "explanation": "next đầu tiêu thụ 10; next sau lấy 20."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Generator không có len thông thường",
+      "question": "Điều gì xảy ra?",
+      "code": "g = (x for x in range(3))\nprint(len(g))",
+      "options": [
+        "TypeError vì generator object không có độ dài sẵn.",
+        "In 3.",
+        "In 0.",
+        "In None."
+      ],
+      "correct": 0,
+      "explanation": "Dù nguồn range có độ dài, generator object không cung cấp len mặc định."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Pipeline lọc log trong RAM",
+      "question": "List kết quả là gì?",
+      "code": "lines = iter([\"INFO a\", \"ERROR b\"])\nerrors = (line for line in lines if \"ERROR\" in line)\nprint(list(errors))",
+      "options": [
+        "[]",
+        "['ERROR b']",
+        "['INFO a', 'ERROR b']",
+        "['b']"
+      ],
+      "correct": 1,
+      "explanation": "Bộ lọc giữ dòng chứa đúng chuỗi ERROR."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Generator expression không phải tuple",
+      "question": "Biểu thức (x for x in [1,2]) tạo kiểu gì?",
+      "options": [
+        "List hai phần tử",
+        "Set hai phần tử",
+        "Generator",
+        "Tuple hai phần tử"
+      ],
+      "correct": 2,
+      "explanation": "Ngoặc tròn bao comprehension không có dấu phẩy tạo generator expression."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Chuyển thành tuple",
+      "question": "Cách nào lấy tuple mọi giá trị còn lại của g?",
+      "options": [
+        "(g)",
+        "g.tuple()",
+        "tuple[g]",
+        "tuple(g)"
+      ],
+      "correct": 3,
+      "explanation": "tuple là bên tiêu thụ iterable, tương tự list."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Thay đổi biến dùng lúc tiêu thụ",
+      "question": "Đoạn code in gì?",
+      "code": "scale = 2\ng = (x * scale for x in [1, 2])\nscale = 10\nprint(list(g))",
+      "options": [
+        "[10, 20]",
+        "[2, 4]",
+        "[1, 2]",
+        "Lỗi vì scale thay đổi"
+      ],
+      "correct": 0,
+      "explanation": "Biểu thức x*scale được tính khi generator chạy, lúc scale đã bằng 10."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Hai trạng thái độc lập",
+      "question": "Đầu ra là gì?",
+      "code": "def f():\n    yield 0\n    yield 1\na = f()\nb = f()\nprint(next(a), next(b))",
+      "options": [
+        "Lỗi vì gọi generator hai lần",
+        "0 0",
+        "0 1",
+        "1 1"
+      ],
+      "correct": 1,
+      "explanation": "a và b là hai generator mới, đều bắt đầu từ 0."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Hai tên cùng object",
+      "question": "Đầu ra là gì?",
+      "code": "a = (x for x in [0, 1])\nb = a\nprint(next(a), next(b))",
+      "options": [
+        "1 1",
+        "None None",
+        "0 1",
+        "0 0"
+      ],
+      "correct": 2,
+      "explanation": "b=a tạo alias của cùng generator, nên hai lần next tiến cùng trạng thái."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "sum tiêu thụ phần còn lại",
+      "question": "Dòng cuối in gì?",
+      "code": "g = (x for x in [1, 2, 3])\nnext(g)\nprint(sum(g))",
+      "options": [
+        "6",
+        "1",
+        "0",
+        "5"
+      ],
+      "correct": 3,
+      "explanation": "Đã lấy 1; sum cộng 2+3."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "any dừng sớm",
+      "question": "Dòng cuối in gì?",
+      "code": "g = (x for x in [0, 1, 2])\nany(g)\nprint(next(g))",
+      "options": [
+        "2",
+        "1",
+        "0",
+        "StopIteration"
+      ],
+      "correct": 0,
+      "explanation": "any đọc 0 rồi 1 và dừng vì 1 truthy; phần còn lại bắt đầu bằng 2."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "all dừng sớm",
+      "question": "Dòng cuối in gì?",
+      "code": "g = (x for x in [1, 0, 9])\nall(g)\nprint(next(g))",
+      "options": [
+        "StopIteration",
+        "9",
+        "0",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "all đọc 1 rồi 0 và dừng vì 0 falsy; 9 còn lại."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Giá trị sau yield giữ biến cục bộ",
+      "question": "List là gì?",
+      "code": "def f():\n    x = 1\n    yield x\n    x += 1\n    yield x\nprint(list(f()))",
+      "options": [
+        "[2]",
+        "[]",
+        "[1, 2]",
+        "[1, 1]"
+      ],
+      "correct": 2,
+      "explanation": "x giữ trạng thái và được tăng sau lần yield đầu."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Iterable trả lại chính iterator",
+      "question": "Với g là generator object, iter(g) is g cho kết quả gì?",
+      "options": [
+        "False",
+        "None",
+        "TypeError",
+        "True"
+      ],
+      "correct": 3,
+      "explanation": "Generator là iterator và __iter__ trả chính nó."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Vòng for sau next",
+      "question": "Đoạn code in gì?",
+      "code": "g = (x for x in [1, 2, 3])\nnext(g)\nfor x in g:\n    print(x)",
+      "options": [
+        "2 rồi 3",
+        "1 rồi 2 rồi 3",
+        "Chỉ 1",
+        "Không in gì"
+      ],
+      "correct": 0,
+      "explanation": "Vòng for tiếp tục từ vị trí hiện tại."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "next có mặc định không thay phần tử thật",
+      "question": "Đầu ra là gì?",
+      "code": "g = (x for x in [None])\nprint(next(g, \"fallback\"))",
+      "options": [
+        "0",
+        "None",
+        "fallback",
+        "StopIteration"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị yield thật là None, nên mặc định không được dùng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Hàm có yield ở nhánh không chạy",
+      "question": "Gọi f() trả gì?",
+      "code": "def f():\n    if False:\n        yield 1\n    return 5\ng = f()",
+      "options": [
+        "None ngay.",
+        "SyntaxError vì yield trong if.",
+        "Một generator object mà khi duyệt không có phần tử.",
+        "Số 5 ngay."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ cần có yield trong thân là generator function; return 5 sẽ là giá trị kết thúc, không được yield."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Dữ liệu sau bộ lọc",
+      "question": "Pipeline sau tạo list gì?",
+      "code": "raw = [\" error a \", \" info b \"]\nclean = (line.strip().upper() for line in raw)\nerrors = (line for line in clean if \"ERROR\" in line)\nprint(list(errors))",
+      "options": [
+        "[' error a ']",
+        "['INFO B']",
+        "['ERROR A', 'INFO B']",
+        "['ERROR A']"
+      ],
+      "correct": 3,
+      "explanation": "Chuẩn hóa trước rồi lọc theo chuỗi ERROR."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Ghép hai nguồn",
+      "question": "List là gì?",
+      "code": "def f():\n    yield from [1, 2]\n    yield from [3]\nprint(list(f()))",
+      "options": [
+        "[1, 2, 3]",
+        "[[1, 2], [3]]",
+        "[3, 1, 2]",
+        "[1, 2]"
+      ],
+      "correct": 0,
+      "explanation": "Hai yield from chạy lần lượt theo thứ tự."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Iterator không phải iterable tái dùng",
+      "question": "Để cùng dữ liệu được hai phép tổng độc lập dùng đầy đủ, cách nào phù hợp nếu dữ liệu nhỏ?",
+      "options": [
+        "Đổi generator thành str(g).",
+        "Lưu dữ liệu vào list rồi tạo lượt duyệt riêng cho mỗi phép tổng.",
+        "Dùng cùng generator đã cạn và hy vọng sum tự reset.",
+        "Gọi next(g) trước mỗi sum để làm mới."
+      ],
+      "correct": 1,
+      "explanation": "List là iterable có thể tạo iterator mới; generator một lượt không tự tái phát dữ liệu."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Lỗi xảy ra khi tiêu thụ",
+      "question": "Exception chia 0 phát sinh ở đâu?",
+      "code": "def f():\n    yield 1 / 0\ng = f()\nnext(g)",
+      "options": [
+        "Chỉ khi generator bị xóa",
+        "Không bao giờ vì generator bỏ qua lỗi",
+        "Khi next(g) yêu cầu giá trị đầu tiên",
+        "Ngay khi g = f() tạo object"
+      ],
+      "correct": 2,
+      "explanation": "Thân hàm bắt đầu chạy khi iterator được tiến."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Đọc generator bằng for một lượt",
+      "question": "Cách nào in từng dòng từ generator lines mà không gom list trung gian?",
+      "options": [
+        "print(list(lines)) nếu mục tiêu không gom list",
+        "for line in [list(lines)]: print(line)",
+        "lines = list(lines) trước khi đọc",
+        "for line in lines: print(line)"
+      ],
+      "correct": 3,
+      "explanation": "for tiêu thụ từng phần tử trực tiếp."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "StopIteration được báo đúng nơi",
+      "question": "Khi tự viết __next__, cách chuẩn báo không còn dữ liệu là gì?",
+      "options": [
+        "raise StopIteration",
+        "return None trong mọi trường hợp",
+        "return False luôn",
+        "raise KeyError"
+      ],
+      "correct": 0,
+      "explanation": "None/False có thể là giá trị dữ liệu hợp lệ; kết thúc iterator được báo qua exception giao thức."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Chỉ giữ mẫu nhỏ của nguồn lớn",
+      "question": "Muốn xem 5 giá trị đầu của iterator rất lớn, cách nào tránh tạo list toàn nguồn?",
+      "options": [
+        "str(list(g))[:5] là cách ít RAM nhất.",
+        "Lấy tối đa 5 lần next với xử lý hết dữ liệu, hoặc dùng itertools.islice.",
+        "list(g)[:5] luôn tránh đọc toàn nguồn.",
+        "tuple(g)[:5] luôn chỉ đọc 5."
+      ],
+      "correct": 1,
+      "explanation": "Cắt sau list() vẫn đã tiêu thụ và giữ toàn nguồn."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Đếm bằng tiêu thụ",
+      "question": "sum(1 for _ in g) làm gì?",
+      "options": [
+        "Đếm số generator object trong chương trình.",
+        "Luôn trả 1.",
+        "Đếm các phần tử còn lại và làm cạn g nếu hữu hạn.",
+        "Đọc len(g) mà không tiến iterator."
+      ],
+      "correct": 2,
+      "explanation": "Mỗi phần tử đóng góp 1; thao tác này tiêu thụ nguồn."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Generator giữ tham chiếu dữ liệu ngoài",
+      "question": "Generator có tự tạo bản sao sâu của mọi object mà nó yield không?",
+      "options": [
+        "Có, luôn deepcopy.",
+        "Có, trừ khi object là list.",
+        "Không, vì nó chỉ yield được số nguyên.",
+        "Không, thường yield các tham chiếu tới object."
+      ],
+      "correct": 3,
+      "explanation": "Nếu cần snapshot độc lập phải chủ động sao chép theo ngữ nghĩa mong muốn."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Hai lần tiêu thụ nguồn trong pipeline",
+      "question": "Vì sao total thứ hai bằng 0?",
+      "code": "g = (x for x in [1, 2, 3])\nfirst = sum(g)\nsecond = sum(g)\nprint(second)",
+      "options": [
+        "Lần sum đầu đã làm cạn cùng iterator g.",
+        "sum chỉ dùng được một lần trong mỗi script.",
+        "Generator luôn giữ giá trị 0 cuối cùng.",
+        "Python tự xóa biến total thứ hai."
+      ],
+      "correct": 0,
+      "explanation": "Tạo nguồn mới hoặc lưu dữ liệu phù hợp nếu cần hai lượt đầy đủ."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Lợi ích lazy mất ở bên tiêu thụ",
+      "question": "Generator đọc log từng dòng nhưng phía gọi dùng list(read_lines(path)) với file rất lớn. Điều gì cần lưu ý?",
+      "options": [
+        "Không thể dùng list với generator.",
+        "List vẫn gom toàn bộ các dòng vào RAM, làm mất lợi ích không giữ toàn bộ đầu ra.",
+        "Vì có yield nên list không tốn RAM cho dữ liệu.",
+        "Python tự chuyển list thành tệp tạm luôn."
+      ],
+      "correct": 1,
+      "explanation": "Lazy chỉ tránh tính/giữ trước ở nguồn; bên tiêu thụ vẫn quyết định có tích lũy mọi dữ liệu hay không."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Tệp mở ngoài vòng đời generator",
+      "question": "Vì sao cách dưới có thể lỗi khi bên ngoài mới duyệt g?",
+      "code": "def lines(path):\n    with open(path) as f:\n        return (line.strip() for line in f)",
+      "options": [
+        "strip xóa luôn file.",
+        "return luôn sao chép nội dung file.",
+        "with đã đóng tệp trước khi generator expression được tiêu thụ.",
+        "Generator tự đọc xong file ngay khi tạo."
+      ],
+      "correct": 2,
+      "explanation": "Cần giữ tài nguyên sống trong thời gian tiêu thụ, chẳng hạn with bên trong generator function."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Đóng sớm generator giữ tài nguyên",
+      "question": "Nếu generator function dùng with open và bên tiêu thụ dừng sớm nhưng vẫn giữ g sống, điều gì nên cân nhắc?",
+      "options": [
+        "break luôn bảo đảm đóng mọi iterator bất kỳ ngay.",
+        "Tệp đã được đóng trước yield đầu trong mọi trường hợp.",
+        "Tệp không bao giờ cần đóng nếu dùng generator.",
+        "Đóng generator/tài nguyên rõ ràng khi không dùng nữa, không chỉ dựa vào hết vòng."
+      ],
+      "correct": 3,
+      "explanation": "Thời gian giữ tài nguyên có thể theo vòng đời generator; cần hợp đồng sở hữu rõ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Yield từ cùng object mutable",
+      "question": "List kết quả có đặc điểm gì?",
+      "code": "def f():\n    values = []\n    for n in [1, 2]:\n        values.append(n)\n        yield values\nresult = list(f())",
+      "options": [
+        "Hai phần tử tham chiếu cùng list cuối cùng là [1,2].",
+        "Hai snapshot độc lập lần lượt [1] và [1,2].",
+        "Hai tuple bất biến.",
+        "Generator tự chặn yield object mutable."
+      ],
+      "correct": 0,
+      "explanation": "Yield không tự sao chép; muốn snapshot mỗi lượt cần tạo bản sao."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Cập nhật Fibonacci đồng thời",
+      "question": "Vì sao a,b = b,a+b phù hợp hơn hai lệnh a=b; b=a+b nếu muốn dãy Fibonacci?",
+      "options": [
+        "Tuple assignment tự sort hai số.",
+        "Vế phải của gán đồng thời được tính từ hai giá trị cũ.",
+        "Hai phép gán riêng luôn dùng cùng giá trị cũ tự động.",
+        "Gán đồng thời chạy trên hai thread."
+      ],
+      "correct": 1,
+      "explanation": "Hai lệnh riêng khiến b mới dùng a đã thay, sai công thức ban đầu."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Kiểm tra thành viên cũng tiêu thụ",
+      "question": "Sau kiểm tra 2 in g, next(g) trả gì?",
+      "code": "g = (x for x in [1, 2, 3])\nfound = 2 in g\nprint(next(g))",
+      "options": [
+        "2",
+        "StopIteration",
+        "3",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Membership duyệt đến khi gặp 2, nên phần tử tiếp là 3."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Membership không tìm thấy làm cạn",
+      "question": "Đoạn code in gì?",
+      "code": "g = (x for x in [1, 2, 3])\nfound = 9 in g\nprint(list(g))",
+      "options": [
+        "[1, 2, 3]",
+        "[3]",
+        "Lỗi vì in không dùng với generator",
+        "[]"
+      ],
+      "correct": 3,
+      "explanation": "Tìm 9 phải duyệt hết nguồn hữu hạn vì không khớp phần tử nào."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Nguồn vô hạn cần giới hạn",
+      "question": "Vì sao list(g) nguy hiểm với generator phát số vô hạn?",
+      "options": [
+        "Nó cố tiêu thụ không kết thúc và có thể cạn bộ nhớ.",
+        "List tự giới hạn ở 100 phần tử.",
+        "Generator tự dừng ở sys.maxsize luôn.",
+        "Python không cho generator yield số nguyên."
+      ],
+      "correct": 0,
+      "explanation": "Nguồn vô hạn cần bên tiêu thụ có giới hạn hoặc điều kiện dừng thích hợp."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "zip dùng chung iterator",
+      "question": "Đầu ra là gì?",
+      "code": "g = iter([1, 2, 3, 4])\nprint(list(zip(g, g)))",
+      "options": [
+        "[]",
+        "[(1, 2), (3, 4)]",
+        "[(1, 1), (2, 2), (3, 3), (4, 4)]",
+        "[(1, 3), (2, 4)]"
+      ],
+      "correct": 1,
+      "explanation": "Hai đối số zip cùng một iterator nên mỗi tuple lấy hai phần tử kế nhau từ cùng nguồn."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Yield from và return value",
+      "question": "StopIteration.value của generator f sau khi hết là gì?",
+      "code": "def f():\n    yield 1\n    return 9",
+      "options": [
+        "None",
+        "[1, 9]",
+        "9",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "return 9 là giá trị kết thúc, không phải một phần tử yield."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Không chủ động raise StopIteration trong generator",
+      "question": "Trong Python 3 hiện đại, vì sao nên dùng return để kết thúc generator thay vì raise StopIteration trong thân?",
+      "options": [
+        "return luôn yield thêm None.",
+        "raise StopIteration tạo generator mới.",
+        "Hai cách luôn giống hệt trong mọi ngữ cảnh.",
+        "StopIteration thoát khỏi thân generator có thể được chuyển thành RuntimeError."
+      ],
+      "correct": 3,
+      "explanation": "Quy tắc xử lý StopIteration trong generator khác với __next__ tự viết; return thể hiện kết thúc đúng cách."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Generator lỗi rồi không tự hồi phục",
+      "question": "Sau next(g) đầu ném ZeroDivisionError không được xử lý trong generator, next(g,\"end\") tiếp theo trả gì?",
+      "code": "def f():\n    yield 1 / 0\ng = f()",
+      "options": [
+        "end",
+        "1",
+        "0",
+        "Tự thử lại phép chia"
+      ],
+      "correct": 0,
+      "explanation": "Exception thoát khỏi generator chấm dứt lần thực thi; iterator không tự retry."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Bộ lọc làm đổi số lượng phần tử",
+      "question": "Tại sao không được giả định next(errors) luôn có giá trị dù nguồn lines có dòng?",
+      "options": [
+        "Chỉ list mới có thể rỗng.",
+        "Mọi dòng có thể bị bộ lọc loại nên errors cạn ngay.",
+        "Generator filter luôn tạo ít nhất một giá trị None.",
+        "Nguồn có n dòng thì bộ lọc luôn có n dòng."
+      ],
+      "correct": 1,
+      "explanation": "Cần xử lý nguồn rỗng sau mỗi bước lọc theo hợp đồng bên tiêu thụ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Đếm và lấy mẫu không làm mất nguồn ngoài ý muốn",
+      "question": "Cần vừa đếm toàn bộ log vừa xử lý mọi dòng. Cách nào phù hợp cho dữ liệu lớn một lượt?",
+      "options": [
+        "len(list(g)) rồi xử lý lại g mà không tạo nguồn mới.",
+        "Gọi iter(g) sau khi đếm để reset.",
+        "Đếm trong chính lượt xử lý từng dòng.",
+        "sum(1 for _ in g) rồi xử lý lại cùng g từ đầu."
+      ],
+      "correct": 2,
+      "explanation": "Kết hợp hai nhiệm vụ trong một lượt tránh làm cạn nguồn trước bước xử lý chính."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Chuỗi pipeline vẫn đồng bộ",
+      "question": "Chỉ kết nối nhiều generator đọc/lọc/parse có tự khiến các bước chạy song song không?",
+      "options": [
+        "Có, mỗi generator luôn là một CPU worker.",
+        "Có, yield luôn tạo thread.",
+        "Có, chỉ cần dùng ngoặc tròn.",
+        "Không; generator đồng bộ thường tiến theo các yêu cầu kéo dữ liệu."
+      ],
+      "correct": 3,
+      "explanation": "Lazy data flow không đồng nghĩa concurrency."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Trạng thái ngoài thay đổi",
+      "question": "Nếu generator đọc tham chiếu tới cấu hình mutable và cấu hình đổi giữa các next, chuyện gì có thể xảy ra?",
+      "options": [
+        "Các giá trị sau có thể dùng cấu hình mới, trừ khi đã chủ động chụp snapshot.",
+        "Generator luôn giữ bản sao sâu toàn bộ cấu hình ban đầu.",
+        "Python cấm thay đổi object ngoài khi generator tạm dừng.",
+        "next tự khôi phục cấu hình cũ."
+      ],
+      "correct": 0,
+      "explanation": "Thời điểm đọc dữ liệu quan trọng trong tính lười và trạng thái chia sẻ."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Iterator tee có bộ đệm",
+      "question": "Dùng itertools.tee để tách hai lượt đọc từ một iterator có luôn dùng bộ nhớ hằng số dù một nhánh chạy rất xa trước không?",
+      "options": [
+        "tee tạo hai bản sao sâu của mọi object ngay từ đầu.",
+        "Không; nó có thể phải đệm các phần tử mà nhánh chậm chưa đọc.",
+        "Có, luôn đúng một phần tử bất kể độ lệch.",
+        "Có, vì tee đọc lại file gốc cho từng nhánh."
+      ],
+      "correct": 1,
+      "explanation": "Tách luồng không miễn phí; độ lệch giữa các bên tiêu thụ ảnh hưởng bộ đệm."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Ngoại lệ phát sinh xa chỗ tạo",
+      "question": "Vì sao nên cân nhắc đặt xử lý lỗi quanh bước tiêu thụ pipeline, không chỉ quanh việc tạo generator?",
+      "options": [
+        "Mọi lỗi trong generator luôn bị nuốt.",
+        "for không thể ném exception.",
+        "Lỗi đọc/parse thường chỉ xảy ra khi next/for thực sự chạy thân.",
+        "Khởi tạo generator luôn chạy hết mọi bước trước."
+      ],
+      "correct": 2,
+      "explanation": "Ranh giới xử lý phải bao phủ thời điểm code có thể được thực thi."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Kiểm tra pipeline không chỉ dữ liệu thường",
+      "question": "Bộ trường hợp nào phù hợp cho generator lọc log?",
+      "options": [
+        "Chỉ file có đúng một dòng hợp lệ.",
+        "Chỉ kiểm tra tên generator.",
+        "Chỉ đổi generator thành str mà không duyệt.",
+        "Nguồn rỗng, không dòng khớp, nhiều dòng khớp, lỗi giữa chừng và dừng tiêu thụ sớm."
+      ],
+      "correct": 3,
+      "explanation": "Các đường rỗng, lỗi và vòng đời tài nguyên đều ảnh hưởng hành vi thực tế của pipeline."
+    }
+  ]
+}

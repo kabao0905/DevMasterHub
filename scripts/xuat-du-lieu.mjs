@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import curriculum from '../lib/curriculum.js';
+import hashes from '../lib/quiz-bank.js';
+import { validateBank } from '../shared/quiz-bank.mjs';
 
 const { napGiaoTrinh } = curriculum;
 const GOC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,6 +74,21 @@ export function xuatDuLieu({ thuMucDuLieu = path.join(GOC, 'data'), thuMucRa = p
   for (const t of congNghe) {
     for (const l of t.levels || []) {
       for (const ls of l.lessons || []) {
+        // Never publish a draft or silently accept content for an outdated lesson.
+        delete ls.quizBanks;
+        const bankDir = path.join(thuMucDuLieu, 'quiz-bank', t.id, l.id);
+        for (const lang of ['vi', 'en', 'ja', 'ko', 'zh', 'fr', 'de', 'es']) {
+          const file = path.join(bankDir, `${ls.id}.${lang}.json`);
+          if (!fs.existsSync(file)) continue;
+          const bank = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const errors = validateBank(bank, { tech: t.id, level: l.id, lesson: ls.id, language: lang, sourceHash: hashes.lessonHash(ls) });
+          if (errors.length) throw new Error(`${file}: ${errors.join('; ')}`);
+          if (bank.status !== 'approved') continue;
+          const name = `${ls.id}.${lang}.${createHash('sha256').update(JSON.stringify(bank)).digest('hex').slice(0, 16)}.json`;
+          ghiJson(path.join(thuMucRa, 'quiz-bank', t.id, l.id), name, bank);
+          ls.quizBanks ??= {};
+          ls.quizBanks[lang] = { url: `/quiz-bank/${t.id}/${l.id}/${name}`, sourceHash: bank.sourceHash, count: 80 };
+        }
         const pg = napPlayground(path.join(thuMucDuLieu, 'playground', t.id, l.id, ls.id));
         if (pg) ls.playground = pg;
       }

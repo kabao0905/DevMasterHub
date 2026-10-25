@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "zig",
+  "level": "junior",
+  "lesson": "memory",
+  "language": "vi",
+  "sourceHash": "cd138c08499ebad3ee617561a0e974e45a5ca30be7db95bbfa527a8e0e6d3a86",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo GPA và managed ArrayList(i32) trong Zig 0.13.0, hai append 100/200 và bài tính trung bình. Đối chiếu std source/language reference; không áp API 0.13 cho ArrayList unmanaged mặc định 0.15. Đọc đầy đủ 80 câu, key/ba nhiễu/giải thích. Source/docs và bank checks, không compiler/runtime/allocator execution.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Allocator",
+      "question": "Allocator phục vụ mục tiêu nào?",
+      "options": [
+        "Cung cấp giao diện cấp phát/quản lý vùng nhớ theo hợp đồng",
+        "Tự thu gom mọi object không dùng",
+        "Tự đổi kiểu mọi pointer",
+        "Chỉ định nghĩa format string"
+      ],
+      "correct": 0,
+      "explanation": "Allocator không thay ownership của chương trình."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "GPA",
+      "question": "Nguồn tạo allocator owner từ thành phần nào?",
+      "options": [
+        "std.debug.print",
+        "std.heap.GeneralPurposeAllocator",
+        "std.net.Address",
+        "std.Build"
+      ],
+      "correct": 1,
+      "explanation": "Tên API được scope Zig 0.13.0."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Lấy giao diện",
+      "question": "gpa.allocator() trong nguồn trả ý nghĩa gì?",
+      "options": [
+        "Một ArrayList đã có dữ liệu",
+        "Một số lượng byte đã dùng",
+        "Giao diện allocator gắn với owner gpa",
+        "Một bản sao sâu mọi allocation"
+      ],
+      "correct": 2,
+      "explanation": "Giao diện cần owner còn sống đủ lâu."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Binding allocator",
+      "question": "const allocator có tự cấm gọi allocate qua giao diện không?",
+      "options": [
+        "Có, mọi allocator phải var mới hoạt động",
+        "Có, const làm heap read-only",
+        "Chỉ khi list rỗng",
+        "Không, const binding khác trạng thái allocator gián tiếp"
+      ],
+      "correct": 3,
+      "explanation": "Mutability binding không đồng nhất pointee/context."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "List element",
+      "question": "std.ArrayList(i32) trong nguồn lưu kiểu phần tử nào?",
+      "options": [
+        "i32",
+        "f64",
+        "u8",
+        "bool"
+      ],
+      "correct": 0,
+      "explanation": "Kiểu phần tử được chọn khi tạo generic container type."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Init theo phiên bản",
+      "question": "Ở API managed 0.13.0, list.init(allocator) có ý nghĩa gì?",
+      "options": [
+        "Tự gọi gpa.deinit",
+        "Khởi tạo list giữ allocator dùng cho các thao tác sau",
+        "Đọc điểm từ bàn phím",
+        "Tự thêm phần tử 0"
+      ],
+      "correct": 1,
+      "explanation": "Không áp API này cho mọi Zig version."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Append",
+      "question": "list.append(100) nhằm gì?",
+      "options": [
+        "Đặt capacity bằng đúng 100",
+        "Thay list bằng scalar 100",
+        "Thêm giá trị 100 vào cuối list",
+        "Tăng mọi phần tử thêm 100"
+      ],
+      "correct": 2,
+      "explanation": "Length khác giá trị và capacity."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Append thứ hai",
+      "question": "Giá trị append tiếp theo trong nguồn là gì?",
+      "options": [
+        "100",
+        "2",
+        "0",
+        "200"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn thêm 100 rồi 200."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Try append",
+      "question": "try trước append phản ánh điều gì?",
+      "options": [
+        "Append có thể trả lỗi như lỗi cấp phát theo API",
+        "Append luôn được chạy lại tự động",
+        "Try tự free mọi dữ liệu list",
+        "Try chuyển list thành optional"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi cần được propagate hoặc handle."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Length nguồn",
+      "question": "Nếu hai append thành công, list.items.len bằng gì?",
+      "options": [
+        "100",
+        "2",
+        "300",
+        "200"
+      ],
+      "correct": 1,
+      "explanation": "Length đếm phần tử được lưu."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Items",
+      "question": "list.items trong mẫu managed ArrayList biểu diễn gì?",
+      "options": [
+        "Tổng số byte của mọi allocation",
+        "Một file điểm trên đĩa",
+        "Slice các phần tử hiện có",
+        "Allocator owner"
+      ],
+      "correct": 2,
+      "explanation": "Items không tự là toàn bộ capacity dùng được."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "List deinit",
+      "question": "list.deinit() theo contract nguồn nhằm gì?",
+      "options": [
+        "Tự đọc thêm input",
+        "Giữ list dùng được mãi với dữ liệu cũ",
+        "Tự giải phóng mọi allocation không thuộc list",
+        "Giải phóng storage list theo allocator của nó"
+      ],
+      "correct": 3,
+      "explanation": "Cleanup có phạm vi tài nguyên cụ thể."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Defer",
+      "question": "defer list.deinit() đăng ký gì?",
+      "options": [
+        "Cleanup khi scope được rời theo cơ chế thông thường",
+        "Cleanup ngay tại declaration",
+        "Chỉ cleanup sau lần append thứ nhất",
+        "Một GC chạy định kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Defer không phải garbage collector."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Owner deinit",
+      "question": "defer _ = gpa.deinit() trong nguồn có ý định gì?",
+      "options": [
+        "Chuyển ownership của list sang stdin",
+        "Dọn allocator owner ở cuối scope và bỏ giá trị trả về của deinit",
+        "Tự append một phần tử mới",
+        "Chỉ in tên allocator"
+      ],
+      "correct": 1,
+      "explanation": "Bỏ kết quả kiểm không là chứng minh không leak."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Thứ tự defer",
+      "question": "Nguồn đăng ký gpa cleanup trước list cleanup. Khi rời scope thứ tự nào?",
+      "options": [
+        "Hai cleanup luôn song song",
+        "Theo alphabet tên biến",
+        "List cleanup rồi gpa cleanup",
+        "Gpa cleanup rồi list cleanup"
+      ],
+      "correct": 2,
+      "explanation": "Defer chạy ngược thứ tự đăng ký."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Không GC",
+      "question": "Không có GC có tự làm list hết scope được free dù không cleanup không?",
+      "options": [
+        "Có, mọi local list tự có destructor ẩn",
+        "Có, const tự free heap",
+        "Chỉ khi length=2",
+        "Không, cần cleanup theo ownership"
+      ],
+      "correct": 3,
+      "explanation": "Zig không tự gọi deinit chỉ vì tên object hết scope."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Length và capacity",
+      "question": "Capacity của list có ý nghĩa nào?",
+      "options": [
+        "Khả năng chứa phần tử trong backing storage hiện tại",
+        "Luôn bằng tổng giá trị items",
+        "Luôn bằng số byte của kiểu i32",
+        "Luôn nhỏ hơn length"
+      ],
+      "correct": 0,
+      "explanation": "Container phải giữ length không vượt capacity hợp lệ."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Bài tập",
+      "question": "Bài tập memory yêu cầu xử lý gì?",
+      "options": [
+        "Chỉ chuyển list sang chuỗi",
+        "Lưu điểm nhập bằng ArrayList và tính trung bình",
+        "Chỉ in capacity",
+        "Chỉ gọi hai append cố định rồi coi là đã đọc bàn phím"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn cố định chưa tự cung cấp luồng nhập đầy đủ."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Tổng nguồn",
+      "question": "Tổng 100 và 200 bằng gì?",
+      "options": [
+        "2",
+        "200",
+        "300",
+        "150"
+      ],
+      "correct": 2,
+      "explanation": "Giá trị tổng khác length."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Mean nguồn",
+      "question": "Trung bình toán học của 100 và 200 là gì?",
+      "options": [
+        "300",
+        "100",
+        "2",
+        "150"
+      ],
+      "correct": 3,
+      "explanation": "300 chia 2 bằng 150."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Init không item",
+      "question": "Ngay sau managed ArrayList.init ở 0.13.0, trước append, items có bao nhiêu phần tử?",
+      "options": [
+        "0",
+        "1 mặc định bằng 0",
+        "2 theo mẫu tương lai",
+        "Bằng sizeof(i32)"
+      ],
+      "correct": 0,
+      "explanation": "Khởi tạo container không tự thêm quan sát."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Capacity không dữ liệu",
+      "question": "List có capacity 16 và len 2. Có thể coi đã có 16 điểm hợp lệ không?",
+      "options": [
+        "Chỉ nếu allocator từ heap",
+        "Không, chỉ 2 phần tử hiện có theo len",
+        "Có, capacity luôn là số quan sát thật",
+        "Có, phần dư tự là điểm 0 thật"
+      ],
+      "correct": 1,
+      "explanation": "Storage dự phòng không phải dữ liệu quan sát."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Append OOM",
+      "question": "Nếu append cần allocation và trả lỗi, try trong main !void làm gì?",
+      "options": [
+        "Tự tăng capacity dù không có memory",
+        "Tiếp tục print như append chắc chắn thành công",
+        "Trả lỗi ra khỏi main qua error propagation, chạy cleanup đã đăng ký phù hợp",
+        "Tự điền phần tử mới bằng 0"
+      ],
+      "correct": 2,
+      "explanation": "Try không là fallback hay retry."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Defer đã đăng ký",
+      "question": "List được init rồi defer deinit được đăng ký trước append. Append sau trả lỗi. List cleanup có được chạy khi error-return rời scope không?",
+      "options": [
+        "Không, defer chỉ success",
+        "Chỉ nếu lỗi được print",
+        "Chỉ nếu đủ hai phần tử",
+        "Có, theo defer đã đăng ký"
+      ],
+      "correct": 3,
+      "explanation": "Đăng ký cleanup trước bước có thể thất bại giúp quản lý đường lỗi."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Bỏ deinit",
+      "question": "Chỉ gọi gpa.deinit thay vì list.deinit có đủ đáp ứng contract cleanup list theo mẫu không?",
+      "options": [
+        "Không, cần giải phóng từng tài nguyên đúng owner và thứ tự",
+        "Có, allocator owner luôn tự sửa mọi ownership sai",
+        "Có, list.items là slice nên không allocate",
+        "Chỉ nếu dùng const allocator"
+      ],
+      "correct": 0,
+      "explanation": "Không dùng owner teardown thay thế hợp đồng từng allocation một cách tùy ý."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Allocator family",
+      "question": "Vùng được cấp bởi allocator A có thể free tùy ý bằng allocator B không?",
+      "options": [
+        "Chỉ khi data là i32",
+        "Không, phải theo allocator và allocation contract tương ứng",
+        "Có, mọi allocator cùng byte pointer",
+        "Có, chỉ cần len giống"
+      ],
+      "correct": 1,
+      "explanation": "Giao diện giống nhau không đồng nghĩa cùng quản lý vùng nhớ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Borrowed items",
+      "question": "Lấy view=list.items có tự tạo bản sao dữ liệu độc lập không?",
+      "options": [
+        "Có, const view tự allocate",
+        "Chỉ khi list có 2 phần tử",
+        "Không, đó là view vào backing storage list",
+        "Có, assignment slice luôn clone"
+      ],
+      "correct": 2,
+      "explanation": "View có thể bị invalidated bởi biến đổi storage."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Reallocation",
+      "question": "Append làm list tăng backing allocation có thể ảnh hưởng view cũ thế nào?",
+      "options": [
+        "Mọi view tự cập nhật tới allocation mới",
+        "Const view buộc allocator không di chuyển",
+        "View cũ tự đổi thành error union",
+        "Pointer trong view cũ có thể không còn hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Borrowed views không tự theo dõi owner."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Reserve và len",
+      "question": "Reserve thêm capacity có nhất thiết tăng số phần tử đang dùng không?",
+      "options": [
+        "Không, capacity và len có vai trò riêng",
+        "Có, reserve tạo mọi điểm còn thiếu",
+        "Có, phần mới luôn là quan sát 0",
+        "Chỉ nếu reserve thành công"
+      ],
+      "correct": 0,
+      "explanation": "Không đọc phần dư như initialized items."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Var list",
+      "question": "Vì sao list trong nguồn dùng var?",
+      "options": [
+        "Vì const tự cấm mọi pointer context",
+        "Các thao tác append/deinit cần truy cập trạng thái mutable của container theo API",
+        "Vì mọi var bắt buộc ở heap",
+        "Vì i32 chỉ dùng được với var"
+      ],
+      "correct": 1,
+      "explanation": "Mutability cần theo chữ ký API."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "GPA lifetime",
+      "question": "Allocator interface được lấy từ gpa local rồi trả ra cho caller dùng sau owner kết thúc có rủi ro gì?",
+      "options": [
+        "Mọi allocator value đều sở hữu owner độc lập",
+        "Chỉ nếu tên gpa thay đổi",
+        "Interface có thể tham chiếu context đã hết lifetime",
+        "Interface tự giữ gpa sống bằng GC"
+      ],
+      "correct": 2,
+      "explanation": "Giao diện thường mang context pointer cần hợp lệ."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Deinit rồi dùng",
+      "question": "Sau list.deinit, dùng items cũ có được bảo đảm hợp lệ không?",
+      "options": [
+        "Có, len cũ vẫn đủ để đọc",
+        "Có, const giữ bytes sống",
+        "Chỉ nếu chưa allocate vùng khác",
+        "Không, storage đã được giải phóng theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung tình cờ còn trong memory không là quyền dùng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Double cleanup",
+      "question": "Gọi deinit hai lần trên cùng list mà không có contract cho phép có nên mặc định an toàn không?",
+      "options": [
+        "Không, cần tránh double free và giữ ownership rõ",
+        "Có, mọi deinit đều idempotent",
+        "Có, const allocator tự đếm references",
+        "Chỉ nếu len=2"
+      ],
+      "correct": 0,
+      "explanation": "Không suy tính idempotent chỉ từ tên method."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "List copy",
+      "question": "Copy managed ArrayList struct có tự clone backing storage không?",
+      "options": [
+        "Chỉ nếu bản copy var",
+        "Không, có thể copy descriptor/allocator và alias cùng allocation",
+        "Có, mọi container copy deep clone",
+        "Có, i32 không pointer nên list luôn độc lập"
+      ],
+      "correct": 1,
+      "explanation": "Element scalar không làm container storage tự clone."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Không heap bắt buộc",
+      "question": "Một allocator có nhất thiết luôn dùng heap OS cho mọi allocation không?",
+      "options": [
+        "Có, const allocator luôn heap",
+        "Chỉ ArrayList mới được allocate",
+        "Không, có thể dùng fixed buffer/arena và nguồn storage khác theo contract",
+        "Có, mọi allocator gọi malloc cho từng phần tử"
+      ],
+      "correct": 2,
+      "explanation": "Allocator là abstraction, không một nguồn bộ nhớ duy nhất."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Fixed buffer lifetime",
+      "question": "Allocator dựa buffer stack caller cần gì?",
+      "options": [
+        "Chỉ pointer đúng kiểu",
+        "Chỉ list là const",
+        "Tự gọi GC ở cuối append",
+        "Buffer và allocator context sống đủ lâu cho dữ liệu dùng nó"
+      ],
+      "correct": 3,
+      "explanation": "Storage source vẫn quyết định lifetime."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Defer không abort guarantee",
+      "question": "Defer có tự bảo đảm cleanup khi process bị kill đột ngột không?",
+      "options": [
+        "Không, không nên mở rộng scope-exit cleanup thành mọi chấm dứt bất thường",
+        "Có, OS luôn chạy mọi Zig defer",
+        "Có, chỉ cần main trả !void",
+        "Chỉ nếu list len nhỏ"
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt error return và process termination."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Errdefer transfer",
+      "question": "Hàm allocate buffer rồi trả buffer cho caller trên success thường dùng errdefer nhằm gì?",
+      "options": [
+        "Tự retry allocation thất bại",
+        "Cleanup trên đường lỗi trước khi chuyển ownership thành công",
+        "Free buffer ngay cả sau success trước caller dùng",
+        "Tự sao chép buffer sang caller"
+      ],
+      "correct": 1,
+      "explanation": "Rollback khác cleanup của owner nhận trên success."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Read-only view",
+      "question": "Trả []const i32 từ list có tự giữ list không được deinit không?",
+      "options": [
+        "Có, const tự tăng refcount",
+        "Chỉ nếu caller không mutate",
+        "Không, qualification không tự quản ownership/lifetime",
+        "Có, read-only reference giữ owner sống"
+      ],
+      "correct": 2,
+      "explanation": "Cần giữ owner hoặc chuyển/copy data phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Average empty",
+      "question": "Danh sách chưa có điểm, tính mean cần gì?",
+      "options": [
+        "Tự coi mean 0 là một điểm đã nhập",
+        "Tăng len thành 1 mà không ghi data",
+        "Đọc items[0] làm default",
+        "Kiểm nonempty và policy lỗi/optional phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không có dữ liệu khác điểm 0 hợp lệ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Average fractional",
+      "question": "Muốn giữ điểm thập phân 8.5,7.5, ArrayList(i32) có tự lưu nguyên vẹn không?",
+      "options": [
+        "Không, chọn element type/representation phù hợp và parse đúng",
+        "Có, i32 tự giữ phần thập phân",
+        "Có, format {d:.1} phục hồi phần lẻ",
+        "Chỉ nếu allocator có đủ capacity"
+      ],
+      "correct": 0,
+      "explanation": "Container type không tự đổi element representation."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Sum width",
+      "question": "Cộng nhiều điểm i32 vào tổng i32 cần xem gì?",
+      "options": [
+        "Chỉ tên biến total",
+        "Miền tổng và overflow, dù từng điểm hợp lệ",
+        "Chỉ len có bằng capacity không",
+        "Mọi for tự dùng số nguyên vô hạn"
+      ],
+      "correct": 1,
+      "explanation": "Arithmetic result có thể cần miền rộng hơn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Mean numeric conversion",
+      "question": "Mean cần kết quả phân số từ tổng nguyên và count. Cần tổ chức gì?",
+      "options": [
+        "Chỉ đổi tên total thành mean",
+        "Dùng len làm điểm trung bình",
+        "Chọn phép chuyển và arithmetic numeric phù hợp trước chia, giữ precision theo mục tiêu",
+        "Dựa vào format để tự khôi phục phần bị mất trong phép tính"
+      ],
+      "correct": 2,
+      "explanation": "Representation và phép toán cần khớp kết quả yêu cầu."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Invalid input",
+      "question": "Một dòng điểm parse thất bại; append 0 rồi báo đã nhập điểm thật có vấn đề gì?",
+      "options": [
+        "Không, mọi parse error mặc định là điểm 0 trong Zig",
+        "Chỉ cần tăng capacity",
+        "Chỉ đổi nhãn output",
+        "Đồng nhất lỗi input với điểm 0 hợp lệ; cần policy xử lý rõ"
+      ],
+      "correct": 3,
+      "explanation": "Schema hợp lệ không tự xác nhận dữ liệu thật."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Missing vs empty",
+      "question": "Người dùng kết thúc nhập trước có điểm và người dùng nhập một điểm 0 có cùng ý nghĩa không?",
+      "options": [
+        "Không, len 0 và len 1 với giá trị 0 khác nhau",
+        "Có, cùng sum bằng 0 nghĩa cùng mean",
+        "Có, list tự bỏ mọi giá trị 0",
+        "Chỉ nếu dùng GPA"
+      ],
+      "correct": 0,
+      "explanation": "Số quan sát là thông tin cần giữ."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Allocator parameter",
+      "question": "Hàm nhận allocator từ caller có lợi ích nào?",
+      "options": [
+        "Mọi dữ liệu trở thành immutable",
+        "Caller kiểm soát nguồn/chiến lược memory theo contract rõ",
+        "Hàm không còn cần xử lý OOM",
+        "Mọi returned slice tự sống vô hạn"
+      ],
+      "correct": 1,
+      "explanation": "Explicit allocator không xóa các ràng buộc lỗi/lifetime."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "0.15 migration",
+      "question": "Mẫu ArrayList.init(allocator)/append(value) theo 0.13 có nên dạy là chữ ký mặc định mọi 0.15.x không?",
+      "options": [
+        "Có, generic T tự làm mọi version tương thích",
+        "Chỉ cần đổi target",
+        "Không, 0.15 đổi default sang unmanaged và API allocator cần đối chiếu",
+        "Có, std API không thay chữ ký giữa release"
+      ],
+      "correct": 2,
+      "explanation": "Version là một phần context của ví dụ."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Managed allocator",
+      "question": "Managed ArrayList trong mẫu 0.13 giữ allocator để làm gì?",
+      "options": [
+        "Tự phân loại điểm dễ/trung bình/khó",
+        "Thay element type khi append",
+        "Tự đọc dữ liệu từ stdin",
+        "Dùng trong các thao tác storage sau đó theo API"
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm context memory với domain data."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Items len không allocation size",
+      "question": "Có items.len=2 có đủ suy backing allocation đúng hai phần tử không?",
+      "options": [
+        "Không, capacity có thể lớn hơn len",
+        "Có, append luôn allocate đúng một slot mỗi lần",
+        "Có, allocator không được reserve dư",
+        "Chỉ nếu i32"
+      ],
+      "correct": 0,
+      "explanation": "Chiến lược tăng capacity phụ thuộc implementation/API."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Local variable không free",
+      "question": "Một slice local hết scope có tự free allocation mà nó trỏ tới không?",
+      "options": [
+        "Chỉ nếu pointer không null",
+        "Không, cần cleanup theo owner",
+        "Có, mọi slice có destructor ẩn",
+        "Có, chỉ const slice mới tự free"
+      ],
+      "correct": 1,
+      "explanation": "Vòng đời descriptor và allocation là hai điều khác nhau."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Cleanup success path",
+      "question": "Đặt free chỉ ở cuối success path có đủ khi các bước giữa có try trả lỗi không?",
+      "options": [
+        "Có, main !void tự chạy mọi free trong source",
+        "Chỉ nếu lỗi ít xảy ra",
+        "Không, cần cleanup cả các đường thoát theo contract",
+        "Có, try tự tới cuối success path"
+      ],
+      "correct": 2,
+      "explanation": "Control flow cần được quản lý cụ thể."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Defer registering",
+      "question": "Defer đặt sau một lời gọi có thể return lỗi có hiệu lực trước khi control flow tới nó không?",
+      "options": [
+        "Có, mọi defer có hiệu lực từ đầu hàm",
+        "Có, compiler sắp cleanup theo tên biến",
+        "Chỉ nếu cùng allocator",
+        "Không, chỉ được đăng ký khi thực thi tới declaration"
+      ],
+      "correct": 3,
+      "explanation": "Đặt cleanup ngay sau acquire trước bước rủi ro."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Borrow vs own",
+      "question": "Hàm chỉ mượn items để sum có mặc định quyền gọi list.deinit không?",
+      "options": [
+        "Không, ownership cleanup phải rõ ở API",
+        "Có, người đọc cuối tự thành owner",
+        "Có, []const i32 tự trao quyền free",
+        "Chỉ nếu sum=0"
+      ],
+      "correct": 0,
+      "explanation": "Không lấy quyền giải phóng từ việc được đọc dữ liệu."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Nested allocations",
+      "question": "ArrayList(User) có name heap trong từng User; list.deinit có tự biết free mọi name nếu không API nào làm điều đó không?",
+      "options": [
+        "Chỉ nếu User public",
+        "Không, cleanup backing storage container khác cleanup tài nguyên từng element",
+        "Có, mọi ArrayList tự gọi deinit của từng element",
+        "Có, const name tự được GC"
+      ],
+      "correct": 1,
+      "explanation": "Cần thiết kế ownership của element và container."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Large input",
+      "question": "Bài nhập điểm có thể nhận dữ liệu tùy ý dài; cần cân nhắc gì ngoài append?",
+      "options": [
+        "Dùng ReleaseFast để bỏ nhu cầu capacity",
+        "Chỉ in len để tự giới hạn",
+        "Giới hạn memory/input và policy khi đầy/OOM theo mục tiêu",
+        "Giả explicit allocator tạo memory vô hạn"
+      ],
+      "correct": 2,
+      "explanation": "Tài nguyên hữu hạn cần giới hạn domain phù hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "GPA result discarded",
+      "question": "_ = gpa.deinit() có tự chứng minh đã kiểm không leak không?",
+      "options": [
+        "Có, ký hiệu _ là assertion không leak",
+        "Có, const allocator làm leak không thể có",
+        "Chỉ nếu có hai append",
+        "Không, nó bỏ kết quả; cleanup/report behavior cần xem đúng API"
+      ],
+      "correct": 3,
+      "explanation": "Discard không phải một kiểm định đã được xác nhận."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Error after first append",
+      "question": "Nếu append(100) thành công còn append(200) thất bại và hàm propagate, có thể coi list đã đủ hai điểm không?",
+      "options": [
+        "Không, phải dựa các thao tác thành công và contract lỗi",
+        "Có, source có hai dòng append nên len luôn 2",
+        "Có, try tự tạo phần tử còn thiếu",
+        "Chỉ nếu capacity từng lớn hơn 0"
+      ],
+      "correct": 0,
+      "explanation": "Không suy dữ liệu từ số dòng code."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Free và init",
+      "question": "Muốn tái dùng container sau deinit cần làm gì?",
+      "options": [
+        "Dùng cùng địa chỉ là đủ",
+        "Khởi tạo lại theo API nếu muốn vòng đời mới, không dùng descriptor/storage cũ tùy ý",
+        "Chỉ đọc len cũ rồi append",
+        "Đổi binding const để hồi sinh storage"
+      ],
+      "correct": 1,
+      "explanation": "Một vòng đời kết thúc cần contract khởi tạo mới."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Mean theo items",
+      "question": "Để tính mean điểm thật, nên duyệt phạm vi nào?",
+      "options": [
+        "Mọi byte của allocator owner",
+        "Chỉ giá trị append cuối",
+        "items đang dùng theo len",
+        "Toàn bộ capacity kể cả chưa khởi tạo"
+      ],
+      "correct": 2,
+      "explanation": "Capacity dư không phải tập quan sát."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Lifetime owner order",
+      "question": "Vì sao list phải cleanup trước gpa owner trong pattern nguồn?",
+      "options": [
+        "Gpa chỉ được deinit nếu len list bằng 0",
+        "Defer luôn yêu cầu alphabet ngược",
+        "I32 chỉ được free trước f64",
+        "List cleanup còn cần allocator context/storage hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Tài nguyên phụ thuộc phải kết thúc đúng thứ tự."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Dangling items sau append",
+      "question": "Hàm giữ middle=list.items[0..2], append thêm khiến reallocation rồi dùng middle để tính mean. Cần gì?",
+      "options": [
+        "Lấy lại view sau thao tác có thể invalidation hoặc giữ storage ổn định theo contract, không dùng pointer cũ",
+        "Const middle tự theo dõi allocation mới",
+        "Length middle vẫn 2 nên mọi pointer đều hợp lệ",
+        "Chỉ đổi format mean để tránh đọc sai memory"
+      ],
+      "correct": 0,
+      "explanation": "Descriptor mượn không tự cập nhật khi owner đổi backing allocation."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Copy container double free",
+      "question": "Managed ArrayList được copy thành hai biến, cả hai defer deinit. Cách sửa ownership?",
+      "options": [
+        "Đổi tên allocator của bản copy để tách ownership",
+        "Clone dữ liệu khi cần hai owner hoặc chuyển/mượn theo API rõ, chỉ cleanup allocation một lần đúng owner",
+        "Mọi struct copy đã deep clone nên không cần sửa",
+        "Đổi một biến thành const để free không còn tác động"
+      ],
+      "correct": 1,
+      "explanation": "Copy descriptor không tạo allocation độc lập."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Allocator context hết scope",
+      "question": "Factory tạo gpa local, tạo list rồi trả list; defer gpa.deinit chạy trước caller dùng list. Cần thiết kế gì?",
+      "options": [
+        "Copy allocator interface thêm lần nữa để clone owner",
+        "Bỏ list.deinit ở caller là đủ hợp thức hóa pointer",
+        "Owner allocator sống đủ lâu hoặc caller cấp allocator; trả container không tự kéo dài gpa local",
+        "Chỉ trả list const để gpa được giữ lại"
+      ],
+      "correct": 2,
+      "explanation": "Cần giữ cả storage và allocator context đúng lifetime."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "OOM giữa input",
+      "question": "Đã đọc 10 điểm, append điểm thứ 11 lỗi. API hứa kết quả là mean của toàn bộ input hoặc báo thất bại. Cách xử lý?",
+      "options": [
+        "Bỏ lỗi rồi báo đã xử lý đủ 11 vì parse thành công",
+        "Append 0 không cần allocation để giả điểm còn thiếu",
+        "Chỉ in capacity thay mean để coi là success",
+        "Propagate/handle lỗi theo contract và cleanup, không lặng lẽ báo mean 10 điểm như đủ toàn bộ"
+      ],
+      "correct": 3,
+      "explanation": "Lỗi storage ảnh hưởng phạm vi dữ liệu thực sự được xử lý."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Cleanup đăng ký muộn",
+      "question": "Sau init list, code try đọc/append trước defer list.deinit. Bước đó lỗi. Vì sao leak có thể xảy ra?",
+      "options": [
+        "Defer chưa được đăng ký; đặt cleanup sau acquire và trước bước có thể thoát lỗi",
+        "Mọi defer trong source luôn chạy dù chưa tới dòng đó",
+        "Try tự gọi deinit mọi biến cùng scope",
+        "Đổi tên list thành owner sẽ tự đăng ký cleanup"
+      ],
+      "correct": 0,
+      "explanation": "Cleanup cần đúng vị trí control flow."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Vòng đời và thứ tự",
+      "question": "Team chuyển defer gpa.deinit xuống sau defer list.deinit, khiến gpa cleanup chạy trước list. Sửa gì?",
+      "options": [
+        "Mọi defer được compiler sắp theo dependency tự động",
+        "Đặt đăng ký theo thứ tự để list được cleanup trước owner khi unwind ngược",
+        "Đổi const allocator thành var để thứ tự không còn quan trọng",
+        "List deinit tự dựng lại gpa sau owner kết thúc"
+      ],
+      "correct": 1,
+      "explanation": "Defer dùng thứ tự đăng ký, không tự suy dependency graph tài nguyên."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Parse lỗi thành điểm thật",
+      "question": "Mỗi input sai được append 0, mean nhìn hợp lệ và len tăng. Muốn phản ánh đúng dữ liệu đã chấm cần gì?",
+      "options": [
+        "Dùng capacity làm mẫu số để bù missing",
+        "Đổi output một chữ số để che điểm giả",
+        "Policy parse/missing rõ, chỉ tính tập điểm hợp lệ theo mục tiêu và báo lỗi/số quan sát phù hợp",
+        "Giữ vì len bằng số dòng chứng minh đủ điểm thật"
+      ],
+      "correct": 2,
+      "explanation": "Dữ liệu hợp kiểu có thể sai ý nghĩa nghiệp vụ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Empty list và divide",
+      "question": "Người dùng kết thúc nhập ngay; code sum=0 rồi chia cho len=0 và catch 0 ở tầng khác. Cần sửa gì?",
+      "options": [
+        "Capacity>0 đủ chứng minh đã có điểm",
+        "Thêm một điểm 0 ngầm để có mẫu số 1",
+        "Try quanh mọi phép chia tự tạo error union từ mọi numeric special value",
+        "Kiểm trạng thái không có điểm trước mean, trả lỗi/optional hoặc policy rõ thay vì giả mean 0"
+      ],
+      "correct": 3,
+      "explanation": "Không có quan sát khác một điểm 0 và cần được biểu diễn đúng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Precision và kiểu điểm",
+      "question": "Input có điểm 8.5 nhưng list i32 ép mất phần lẻ, sau đó in mean bằng một chữ số. Hướng đúng?",
+      "options": [
+        "Chọn element representation/parse và arithmetic phù hợp từ đầu; format không phục hồi dữ liệu đã mất",
+        "Giữ i32 vì {d:.1} tự khôi phục mọi phần lẻ",
+        "Đổi allocator sẽ làm i32 chứa số thực",
+        "Chỉ lưu len làm độ chính xác điểm"
+      ],
+      "correct": 0,
+      "explanation": "Representation input ảnh hưởng kết quả trước bước trình bày."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Capacity đọc như initialized",
+      "question": "List len=2 capacity=8, code sum mọi 8 slot để tận dụng memory. Cần sửa gì?",
+      "options": [
+        "Đổi total thành f64 sẽ hợp lệ hóa đọc slot chưa có dữ liệu",
+        "Chỉ đọc các initialized items theo len, không coi capacity dư là điểm quan sát",
+        "Mọi capacity được allocator điền 0 nên dùng như điểm thật",
+        "Chỉ const list mới giới hạn len"
+      ],
+      "correct": 1,
+      "explanation": "Allocated storage và initialized element range không đồng nghĩa."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Arena reset và view",
+      "question": "Danh sách điểm được cấp qua arena; reset arena xong vẫn giữ items view để báo cáo. Cần gì?",
+      "options": [
+        "Chỉ len đúng là dữ liệu còn quyền đọc",
+        "Gọi debug.print trước reset sẽ giữ allocation",
+        "Giữ arena/storage sống tới hết dùng hoặc copy/chuyển dữ liệu phù hợp trước reset",
+        "Const view sống độc lập với arena"
+      ],
+      "correct": 2,
+      "explanation": "Reset owner có thể invalidation toàn bộ vùng mượn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Element cleanup",
+      "question": "ArrayList các struct giữ tên heap được deinit backing array nhưng names không free. Thiết kế đầy đủ?",
+      "options": [
+        "ArrayList.deinit luôn tự tìm mọi pointer sâu và free",
+        "Đổi names thành []const u8 tự có reference counting",
+        "Chỉ free tên đầu và cuối vì list có capacity",
+        "Cleanup đúng tài nguyên từng element theo ownership rồi container, giữ allocator dependencies hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Container không tự suy destructor/ownership của mọi field gián tiếp."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Transfer success và error",
+      "question": "Hàm tạo danh sách rồi trả owner cho caller, nhưng defer list.deinit vẫn chạy trên success. Cần sửa gì?",
+      "options": [
+        "Thiết kế transfer rõ, rollback trên lỗi và cleanup ở caller nhận owner; không trả view vào storage vừa free",
+        "Giữ defer vì returned list tự clone allocation",
+        "Chỉ thêm const vào return value để kéo dài storage",
+        "Bỏ mọi cleanup cả error và success để tránh double free"
+      ],
+      "correct": 0,
+      "explanation": "Ownership transfer phải phân biệt đường thành công và thất bại."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Allocator nhầm nguồn",
+      "question": "Buffer cấp từ fixed-buffer allocator nhưng helper free qua GPA vì cùng []u8. Cách đánh giá?",
+      "options": [
+        "Đổi len cho bằng capacity sẽ sửa allocator mismatch",
+        "Phải dùng allocator/allocation contract đúng nguồn, không suy từ kiểu slice",
+        "Mọi []u8 được quản lý bởi GPA mặc định",
+        "Const allocator tự nhận diện mọi vùng từ allocator khác"
+      ],
+      "correct": 1,
+      "explanation": "Interface đồng dạng không cho phép trộn owner storage."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Đổi version ArrayList",
+      "question": "Dự án chuyển từ mẫu managed 0.13 sang default ArrayList 0.15.x; team chỉ xóa init nhưng giữ append/deinit chữ ký cũ. Cần gì?",
+      "options": [
+        "Xóa try là đủ khắc phục mọi thay đổi allocator",
+        "Đổi i32 sang f64 để method cũ quay lại",
+        "Đối chiếu managed/unmanaged và truyền allocator đúng API/version cho các thao tác, giữ ownership như thiết kế",
+        "Mọi method tự lấy allocator từ tên biến toàn cục"
+      ],
+      "correct": 2,
+      "explanation": "Migration cần sửa contract API, không chỉ một dòng syntax."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Tổng vượt miền",
+      "question": "List chứa nhiều i32 hợp lệ, sum i32 overflow trước chuyển f64 để mean. Cần làm gì?",
+      "options": [
+        "Chuyển output f64 sau overflow luôn phục hồi tổng gốc",
+        "Capacity lớn tự tăng bit width của sum",
+        "ReleaseFast làm mọi tổng thành số nguyên vô hạn",
+        "Dùng arithmetic/accumulator đủ miền hoặc kiểm overflow trước chuyển, xác định precision theo mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Phải bảo vệ phép tính tại nơi nó xảy ra."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Snapshot cho báo cáo",
+      "question": "Một tác vụ nền đọc items trong khi luồng nhập append có thể reallocate. Read-only view có đủ không?",
+      "options": [
+        "Không, cần đồng bộ/ownership snapshot hoặc storage ổn định phù hợp, không chỉ []const view",
+        "Có, const slice khóa list khỏi append từ mọi nơi",
+        "Có, append chỉ thay len nên pointer không bao giờ đổi",
+        "Chỉ nếu mean dùng f64"
+      ],
+      "correct": 0,
+      "explanation": "Concurrency và invalidation không được giải quyết bằng qualification đơn lẻ."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Giới hạn nhập",
+      "question": "Dữ liệu nhập không có điểm kết thúc và list tăng mãi; explicit allocator có tự bảo đảm RAM tối thiểu không?",
+      "options": [
+        "Chỉ cần reserve capacity rất lớn một lần",
+        "Không, cần giới hạn input/storage, handling khi đầy và lifecycle theo yêu cầu",
+        "Có, allocator tự loại điểm cũ bất kể semantics",
+        "Có, không GC nghĩa memory không tăng"
+      ],
+      "correct": 1,
+      "explanation": "Chiến lược memory phải đáp ứng tài nguyên hữu hạn và mục tiêu dữ liệu."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Reuse sau cleanup",
+      "question": "Code deinit list khi nhập xong rồi dùng list.items để mean, vì descriptor vẫn có len cũ. Sửa luồng nào?",
+      "options": [
+        "Gọi init sau free sẽ tự phục hồi đúng các điểm cũ",
+        "Đổi print sang stderr để tránh use-after-free",
+        "Tính/đưa dữ liệu tới consumer trước cleanup hoặc chuyển owner đúng cách; không đọc storage đã free",
+        "Chỉ giữ len vào const để mọi item còn sống"
+      ],
+      "correct": 2,
+      "explanation": "Metadata cũ không duy trì allocation lifetime."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Nhập điểm và report",
+      "question": "CLI nhận điểm thập phân đến khi người dùng kết thúc, cần mean hoặc lỗi rõ khi dữ liệu không đủ/OOM. Thiết kế nào phù hợp?",
+      "options": [
+        "Append 0 cho mọi lỗi, chia theo capacity rồi luôn báo success",
+        "Deinit trước mean để tiết kiệm RAM, dùng pointer cũ vì len còn đúng",
+        "Chỉ tăng capacity và dùng format một chữ số để giải quyết mọi lỗi dữ liệu",
+        "Parse/validate điểm và giới hạn nhập, dùng container/accumulator phù hợp, giữ view sống lúc tính, xử lý empty/OOM và cleanup theo owner"
+      ],
+      "correct": 3,
+      "explanation": "Đầu vào, phép tính và lifetime storage phải cùng phục vụ hợp đồng bài toán."
+    }
+  ]
+}

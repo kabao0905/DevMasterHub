@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "php",
+  "level": "mid",
+  "lesson": "performance",
+  "language": "vi",
+  "sourceHash": "51fd32db6d254cd45388ad150098c8f76d297f7bfd4873c81a26bc15a022ec63",
+  "status": "approved",
+  "review": "Tự soạn không API. Đọc source và Laravel12 cache/pagination/Octane/routing docs, Eloquent Builder source. Không chạy PHP/cache/DB/Octane/load test. Popular cache không có tags, projection root thiếu user_id cho belongsTo giả định từ bài nền tảng, limiter cần middleware attachment. Không lặp cam kết auto-refresh nền/10x hoặc million-user readiness.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Popular cache key",
+      "question": "Cache::remember đầu nguồn dùng key nào?",
+      "options": [
+        "posts:popular.",
+        "user_feed.",
+        "posts:all_forever.",
+        "views:count."
+      ],
+      "correct": 0,
+      "explanation": "Key xác định giá trị popular được lưu riêng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Popular TTL",
+      "question": "Thời hạn 3600 nguồn tương ứng bao lâu theo đơn vị giây?",
+      "options": [
+        "3600 giờ.",
+        "Một giờ.",
+        "Một phút.",
+        "Một ngày."
+      ],
+      "correct": 1,
+      "explanation": "Trong API cache hiện đại này, số thời hạn là giây."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Feed TTL",
+      "question": "Cache feed nguồn được put với TTL bao nhiêu?",
+      "options": [
+        "60 ngày.",
+        "10 giờ.",
+        "600 giây.",
+        "3600 giây."
+      ],
+      "correct": 2,
+      "explanation": "TTL là một phần chính sách độ cũ, không tự là invalidation nghiệp vụ."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Popular selection",
+      "question": "Popular query nguồn lọc scope nào trước khi đếm views?",
+      "options": [
+        "draft.",
+        "archived.",
+        "byAuthor(userId) rõ ràng.",
+        "published."
+      ],
+      "correct": 3,
+      "explanation": "Scope phải được định nghĩa trong ứng dụng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Count metric",
+      "question": "Popular query dùng withCount relation nào?",
+      "options": [
+        "views.",
+        "comments.",
+        "tags.",
+        "author."
+      ],
+      "correct": 0,
+      "explanation": "Metric sắp xếp là views_count."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Rank order",
+      "question": "Popular query sắp metric theo chiều nào?",
+      "options": [
+        "Theo thứ tự email.",
+        "Giảm dần.",
+        "Tăng dần.",
+        "Ngẫu nhiên."
+      ],
+      "correct": 1,
+      "explanation": "orderByDesc ưu tiên count lớn."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Popular result bound",
+      "question": "take nguồn giới hạn bao nhiêu root Posts?",
+      "options": [
+        "60.",
+        "600.",
+        "10.",
+        "20."
+      ],
+      "correct": 2,
+      "explanation": "Không phải giới hạn số views trong toàn hệ thống."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Terminal call",
+      "question": "Popular query thực sự lấy kết quả qua phương thức nào?",
+      "options": [
+        "select được dùng riêng.",
+        "whereHas được dùng riêng.",
+        "withCount declaration đơn lẻ.",
+        "get."
+      ],
+      "correct": 3,
+      "explanation": "Builder được thực thi để tạo giá trị callback."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Feed tags",
+      "question": "Feed nguồn được gắn những tag nào?",
+      "options": [
+        "posts và user:{userId}.",
+        "users và comments.",
+        "posts:popular duy nhất.",
+        "Không có tag."
+      ],
+      "correct": 0,
+      "explanation": "Đọc đúng danh sách tags của put feed."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Flush tag",
+      "question": "Lệnh flush nguồn nhắm tag nào?",
+      "options": [
+        "Mọi cache toàn ứng dụng bằng Cache::flush rõ ràng.",
+        "posts.",
+        "user:{userId} duy nhất.",
+        "views."
+      ],
+      "correct": 1,
+      "explanation": "Tagged flush khác global flush và untagged key."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Root projection",
+      "question": "Root Post select nguồn gồm những cột nào?",
+      "options": [
+        "name, email, password.",
+        "Mọi cột dùng dấu*.",
+        "id, title, created_at.",
+        "id, title, user_id."
+      ],
+      "correct": 2,
+      "explanation": "Danh sách này ảnh hưởng khả năng ghép author relation."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Author projection",
+      "question": "with(author:id, name) chọn cột nào của author?",
+      "options": [
+        "user_id và body.",
+        "title và created_at.",
+        "password và token.",
+        "id và name."
+      ],
+      "correct": 3,
+      "explanation": "Projection related model khác projection root."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Tag filter",
+      "question": "whereHas tags nguồn yêu cầu tag có name nào?",
+      "options": [
+        "php.",
+        "laravel.",
+        "redis.",
+        "popular."
+      ],
+      "correct": 0,
+      "explanation": "Đây là filter sự tồn tại quan hệ, không là eager load tags."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Cursor page size",
+      "question": "cursorPaginate nguồn nhận kích thước nào?",
+      "options": [
+        "255.",
+        "20.",
+        "10.",
+        "60."
+      ],
+      "correct": 1,
+      "explanation": "Trang có thể ít hơn kích thước tối đa này."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Octane process",
+      "question": "Lệnh Octane trong comment chọn server nào?",
+      "options": [
+        "sqlite.",
+        "pest.",
+        "swoole.",
+        "nginx trực tiếp qua server option."
+      ],
+      "correct": 2,
+      "explanation": "Đó là cấu hình minh họa, không có process được khởi chạy."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Worker count",
+      "question": "Comment Octane đặt bao nhiêu workers?",
+      "options": [
+        "1.",
+        "20.",
+        "60.",
+        "4."
+      ],
+      "correct": 3,
+      "explanation": "Số worker không là số user tối đa hay bảo đảm throughput."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Long lived concept",
+      "question": "Octane hướng đến lợi ích nào?",
+      "options": [
+        "Giữ ứng dụng trong worker sống lâu để giảm chi phí khởi tạo lặp.",
+        "Biến mọi query thành RAM không cần DB.",
+        "Cấp CPU vô hạn.",
+        "Loại mọi lỗi state."
+      ],
+      "correct": 0,
+      "explanation": "Lifetimes dài cũng đòi kiểm soát state qua requests."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Limiter name",
+      "question": "RateLimiter::for nguồn khai báo limiter tên gì?",
+      "options": [
+        "posts:popular.",
+        "api.",
+        "payments.",
+        "admin_only."
+      ],
+      "correct": 1,
+      "explanation": "Tên limiter phải được tham chiếu khi gắn vào route/middleware."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Limiter allowance",
+      "question": "Limit::perMinute nguồn đặt giá trị nào?",
+      "options": [
+        "600.",
+        "3600.",
+        "60.",
+        "4."
+      ],
+      "correct": 2,
+      "explanation": "Đó là cấu hình rate limit, không phải concurrency limit."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Limiter identity fallback",
+      "question": "Khi không có user id truthy, key nguồn dùng gì?",
+      "options": [
+        "Luôn title.",
+        "Luôn category_id.",
+        "Tên worker Swoole.",
+        "Request IP."
+      ],
+      "correct": 3,
+      "explanation": "Biểu thức dùng nullsafe rồi toán tử ?: của PHP."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Cache hit callback",
+      "question": "Khi remember có giá trị cache hit hợp lệ, callback có phải chạy để lấy lại DB mỗi request không?",
+      "options": [
+        "Không; giá trị cache được dùng theo cơ chế remember.",
+        "Có; remember chỉ ghi log.",
+        "Có; TTL bắt callback chạy liên tục.",
+        "Có; withCount bỏ qua mọi hit."
+      ],
+      "correct": 0,
+      "explanation": "Cache-aside giảm truy vấn khi hit."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Cache miss callback",
+      "question": "Khi cache miss, remember nguồn làm gì theo hợp đồng thông thường?",
+      "options": [
+        "Chỉ đặt lịch nhưng không lấy dữ liệu.",
+        "Chạy callback lấy dữ liệu, lưu kết quả với TTL rồi trả giá trị.",
+        "Tự trả 404 mọi trường hợp.",
+        "Tự xóa database posts."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt lấy dữ liệu khi miss với làm mới nền."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "No background refresh",
+      "question": "TTL hết hạn có tự chạy callback ngay khi không có request nào không?",
+      "options": [
+        "Có; every cache key có thread riêng.",
+        "Có; get luôn chạy trong nền dù không ai gọi.",
+        "Không theo remember thông thường.",
+        "Có; TTL tự tạo cron."
+      ],
+      "correct": 2,
+      "explanation": "Lần đọc miss sau đó mới kích hoạt callback; refresh nền cần cơ chế khác."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Untagged popular item",
+      "question": "Giá trị posts:popular nguồn có được lưu bằng Cache::tags không?",
+      "options": [
+        "Có vì key có chữ posts.",
+        "Có vì Post là model.",
+        "Có vì views_count tự gắn tag.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Tên key không tự tạo tag membership."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Tagged flush limitation",
+      "question": "Flush tag posts có chắc xóa posts:popular của remember nguồn không?",
+      "options": [
+        "Không; key popular được ghi untagged.",
+        "Có; mọi key bắt đầu posts đều tự thuộc tag.",
+        "Có; tagged flush là xóa toàn server.",
+        "Có; take 10 tự gắn tag."
+      ],
+      "correct": 0,
+      "explanation": "Muốn invalidation cùng nhóm cần thiết kế ghi/đọc tag phù hợp hoặc xóa key riêng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Feed invalidation scope",
+      "question": "Feed user 7 được lưu với tags posts, user:7. Flush posts nhằm gì?",
+      "options": [
+        "Tự gửi notification cho user 7.",
+        "Vô hiệu các entry thuộc tag posts theo backend hỗ trợ, gồm feed đó.",
+        "Chỉ xóa user 7 model khỏi DB.",
+        "Chỉ xóa tag label mà mọi entry luôn đọc được như cũ."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất cache invalidation với database deletion."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Read same tag context",
+      "question": "Đọc lại entry đã ghi qua tags cần chú ý gì theo docs?",
+      "options": [
+        "Bỏ key vì tags chứa toàn bộ value.",
+        "Tự đổi thứ tự tags ngẫu nhiên để dedup.",
+        "Dùng cùng danh sách tags theo đúng thứ tự khi truy cập tagged store.",
+        "Chỉ gọi untagged get là luôn cùng entry."
+      ],
+      "correct": 2,
+      "explanation": "Tag context tham gia định danh store/key."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Unsupported tag backend",
+      "question": "Theo Laravel 12 docs, nhóm driver nào không hỗ trợ cache tags?",
+      "options": [
+        "Redis và Memcached là hai driver duy nhất không hỗ trợ.",
+        "Mọi driver đều hỗ trợ tuyệt đối.",
+        "Không driver nào có thể cache dữ liệu.",
+        "file, database, dynamodb."
+      ],
+      "correct": 3,
+      "explanation": "Phải chọn backend và tính năng tương thích, không giả setup đã có."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "TTL staleness",
+      "question": "Popular cache có thể cũ trong thời hạn TTL nếu views thay đổi không?",
+      "options": [
+        "Có, nếu chưa có invalidation/refresh khác.",
+        "Không; withCount tạo live view trong cache.",
+        "Không; cached collection tự query lại mỗi lần serialize.",
+        "Không; 3600 nghĩa realtime."
+      ],
+      "correct": 0,
+      "explanation": "Chọn độ cũ chấp nhận được cho ranking."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Stampede scenario",
+      "question": "Nhiều requests cùng miss một key đắt có thể gây gì?",
+      "options": [
+        "Mọi request nhận cùng lock bằng tên method.",
+        "Nhiều callback cùng chạy nếu không có cơ chế chống stampede.",
+        "Tự chỉ một query trên mọi server bảo đảm.",
+        "Tự tắt database."
+      ],
+      "correct": 1,
+      "explanation": "Cần cơ chế phối hợp phù hợp nếu rủi ro đáng kể."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Owner foreign key missing",
+      "question": "Giả sử author belongsTo User qua user_id như bài nền tảng, root select nguồn thiếu gì để ghép đáng tin?",
+      "options": [
+        "views_count bắt buộc cho mọi belongsTo.",
+        "password của User.",
+        "user_id.",
+        "author.name trong root select."
+      ],
+      "correct": 2,
+      "explanation": "Giữ đủ relation keys khi thu hẹp projection."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Root versus relation key",
+      "question": "Giữ id trong author:id, name có thay được user_id bị bỏ ở root Post không?",
+      "options": [
+        "Có; hai key luôn là cùng cột.",
+        "Có; name tự suy owner.",
+        "Có; with tự bỏ qua matching key.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi phía có vai trò key riêng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Has filter not loading",
+      "question": "whereHas(tags, ...) có tự cung cấp tags collection để serialize không?",
+      "options": [
+        "Không; nó lọc root dựa trên quan hệ.",
+        "Có; mọi whereHas là with.",
+        "Có; cursor tự tải mọi tags.",
+        "Có; tag name là đủ chứa collection."
+      ],
+      "correct": 0,
+      "explanation": "Cần eager load nếu use case thực sự cần dữ liệu tags."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Select transfer benefit",
+      "question": "Projection hẹp nhằm giảm gì khi phù hợp query?",
+      "options": [
+        "Mọi constraint database.",
+        "Dữ liệu cột tải/truyền và hydrate không cần thiết.",
+        "Mọi chi phí I/O về 0 chắc chắn.",
+        "Mọi nhu cầu authorization."
+      ],
+      "correct": 1,
+      "explanation": "Phải giữ keys và fields dùng về sau."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Cursor versus offset",
+      "question": "Cursor pagination thường dựa trên gì thay vì bỏ qua nhiều rows bằng offset?",
+      "options": [
+        "Mật khẩu user.",
+        "Tên browser tab.",
+        "Giá trị các cột ordering làm mốc trang tiếp.",
+        "Số random mới mỗi request."
+      ],
+      "correct": 2,
+      "explanation": "Ordering và index tương thích ảnh hưởng hiệu quả."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Cursor numbering",
+      "question": "Cursor paginator có mặc nhiên cung cấp links cho mọi số trang như length-aware paginator không?",
+      "options": [
+        "Có; luôn có tổng số trang chính xác không count.",
+        "Có; mỗi cursor chính là page number bất biến.",
+        "Có; cursor tự tải mọi pages.",
+        "Không; thường phục vụ next/previous dựa cursor."
+      ],
+      "correct": 3,
+      "explanation": "Chọn UX phân trang theo loại paginator."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Unique cursor order",
+      "question": "Vì sao ordering cursor cần key hoặc tổ hợp unique phù hợp?",
+      "options": [
+        "Để phân biệt vị trí các rows có cùng giá trị sort.",
+        "Để cấp quyền tenant.",
+        "Để tự nén title.",
+        "Để xóa mọi duplicate content."
+      ],
+      "correct": 0,
+      "explanation": "Có thể dùng tie-breaker id theo thiết kế."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Cursor not snapshot",
+      "question": "Cursor giúp giảm vấn đề offset nhưng có bảo đảm snapshot bất biến toàn phiên không?",
+      "options": [
+        "Có; token tự lưu bản sao toàn bộ DB.",
+        "Không.",
+        "Có; cursor khóa toàn DB.",
+        "Có; mọi writes từ đó bị cấm."
+      ],
+      "correct": 1,
+      "explanation": "Ordering fields và dữ liệu thay đổi vẫn cần được xét."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Nullable order limitation",
+      "question": "Theo cursor pagination docs, cột ordering có null cần chú ý gì?",
+      "options": [
+        "Null tự cấp thứ tự duy nhất.",
+        "Không có giới hạn nào.",
+        "Không được hỗ trợ theo yêu cầu ordering được tài liệu nêu.",
+        "Null tự trở thành timestamp hiện tại."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế dữ liệu/order phù hợp thay vì giả mọi column đều dùng được."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Cursor order fields selected",
+      "question": "Khi chọn cột hẹp, ngoài relation keys còn phải chú ý gì với cursor?",
+      "options": [
+        "Chỉ title luôn đủ bất kể order.",
+        "Bỏ mọi sort key để nhanh hơn.",
+        "Chỉ password của author.",
+        "Các cột/expression ordering cần có dữ liệu phù hợp cho cursor theo API."
+      ],
+      "correct": 3,
+      "explanation": "Đối chiếu truy vấn cuối cùng, không chỉ đoạn select rời."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Octane speed claim",
+      "question": "Comment 10 x faster có phải bằng chứng đo hệ thống hiện tại không?",
+      "options": [
+        "Không.",
+        "Có; comment là benchmark result.",
+        "Có; workers 4 luôn nghĩa 10 x.",
+        "Có; mọi query từ đó nhanh 10 x."
+      ],
+      "correct": 0,
+      "explanation": "Cần đo workload/baseline và tài nguyên thực tế."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Persistent state risk",
+      "question": "Worker giữ singleton có dữ liệu user cũ có rủi ro gì?",
+      "options": [
+        "Chỉ đổi màu giao diện.",
+        "Rò hoặc dùng nhầm state giữa requests nếu thiết kế/reset sai.",
+        "Tự bảo đảm isolation user.",
+        "Không thể vì PHP luôn khởi tạo lại mọi object dưới Octane."
+      ],
+      "correct": 1,
+      "explanation": "Lifetimes phải phù hợp request/job boundaries."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Worker count capacity",
+      "question": "Workers 4 có nghĩa chỉ phục vụ được 4 users tổng cộng không?",
+      "options": [
+        "Có; worker là một user account.",
+        "Có; database chỉ được 4 rows.",
+        "Không; user count, requests và concurrency/throughput là các đại lượng khác nhau.",
+        "Có; user thứ 5 không bao giờ đăng ký được."
+      ],
+      "correct": 2,
+      "explanation": "Đo thời gian phục vụ và tài nguyên để đánh giá năng lực."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Limiter registration attachment",
+      "question": "RateLimiter::for(api, ...) đã tự áp cho mọi route chưa?",
+      "options": [
+        "Rồi; tên api tự quét mọi endpoint.",
+        "Rồi; perMinute luôn là global firewall.",
+        "Rồi; for tự sửa proxy config.",
+        "Chưa; cần middleware/route wiring tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Definition khác attachment."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Anonymous NAT sharing",
+      "question": "Nhiều guest dùng cùng IP có thể chịu tác động gì với key nguồn?",
+      "options": [
+        "Có thể chia sẻ quota IP.",
+        "Mỗi guest chắc có quota riêng theo danh tính dù chưa login.",
+        "Tự tạo user id riêng.",
+        "Không bao giờ bị rate limit."
+      ],
+      "correct": 0,
+      "explanation": "Chọn chính sách phù hợp và tránh chỉ tin IP tuyệt đối."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Authenticated key",
+      "question": "User id 42 truthy và IPx, biểu thức by nguồn ưu tiên gì?",
+      "options": [
+        "Title Post.",
+        "42.",
+        "IPx luôn.",
+        "Tên queue."
+      ],
+      "correct": 1,
+      "explanation": "Toán tử ?: chọn vế trái truthy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Zero ID caveat",
+      "question": "Giả định user id=0, biểu thức ?: nguồn chọn gì?",
+      "options": [
+        "Tự trả 401.",
+        "Tự tạo UUID.",
+        "IP vì 0 falsy.",
+        "0 luôn bất kể PHP truthiness."
+      ],
+      "correct": 2,
+      "explanation": "Nếu 0 là định danh hợp lệ, cần chính sách fallback khác phù hợp."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Trusted proxy input",
+      "question": "Rate limit theo request IP cần cấu hình proxy thế nào?",
+      "options": [
+        "Tin mọi forwarded header tùy client.",
+        "Dùng title thay IP.",
+        "Bỏ rate limit khỏi routes.",
+        "Xác định proxy đáng tin và cách lấy IP đúng deployment."
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình sai có thể gom sai người dùng hoặc cho giả mạo key."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Rate versus concurrency",
+      "question": "60/phút có tự giới hạn đúng 60 requests đang chạy đồng thời không?",
+      "options": [
+        "Không; rate và số request đang xử lý đồng thời khác nhau.",
+        "Có; hai khái niệm luôn như nhau.",
+        "Có; mỗi request chạy đúng 1 giây.",
+        "Có; Redis tự dừng mọi request quá 60 threads."
+      ],
+      "correct": 0,
+      "explanation": "Cần concurrency/admission policy riêng nếu mục tiêu yêu cầu."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Backend shared counters",
+      "question": "Nhiều nodes dùng counter cache riêng có bảo đảm một quota chung toàn hệ thống không?",
+      "options": [
+        "Có; user id tự là globalcounter.",
+        "Không.",
+        "Có; tên limiter tự replicate.",
+        "Có; mỗi node biết mọi request qua RAM."
+      ],
+      "correct": 1,
+      "explanation": "Cần shared state/algorithm phù hợp phạm vi quota."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Query cache scope",
+      "question": "Cache key popular cố định có thích hợp nếu kết quả khác theo tenant mà callback không phân biệt không?",
+      "options": [
+        "Có; title luôn public với mọi tenant.",
+        "Có; TTL tự là authorization.",
+        "Không; cần key/query scope phù hợp để tránh dùng lẫn dữ liệu.",
+        "Có; cache tự đọc tenant chưa được truyền."
+      ],
+      "correct": 2,
+      "explanation": "Cache phải giữ ranh giới dữ liệu như query gốc."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Independent cache lifetimes",
+      "question": "Feed TTL 600 và popular TTL 3600 có nghĩa gì?",
+      "options": [
+        "Feed luôn sống lâu hơn popular sáu lần.",
+        "Mọi cache chung một thời hạn theo tên model.",
+        "Flush một entry luôn reset toàn bộ TTL khác.",
+        "Hai entry có thời hạn riêng, không tự làm mới đồng thời."
+      ],
+      "correct": 3,
+      "explanation": "Khi tổng hợp response từ nhiều cache, cần xét độ cũ từng phần."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Cache miss is not empty result",
+      "question": "Một collection rỗng đã cache hợp lệ khác gì cache miss?",
+      "options": [
+        "Rỗng có thể là kết quả đã biết; miss là chưa có giá trị khả dụng.",
+        "Hai trạng thái luôn giống nhau.",
+        "Rỗng tự chứng minh DB lỗi.",
+        "Miss tự chứng minh không có bài."
+      ],
+      "correct": 0,
+      "explanation": "Không nên luôn query lại chỉ vì kết quả nghiệp vụ có 0 phần tử."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Ranking ties",
+      "question": "Nhiều bài cùng views_count, nguồn popular đã ghi secondary ordering chưa?",
+      "options": [
+        "Không thể có count trùng.",
+        "Chưa.",
+        "Có; tự sắp title được hiển thị.",
+        "Có; cache luôn tạo thứ tự theo id."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần ranking ổn định giữa các lần tính, thêm tie-break phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Index for relation predicate",
+      "question": "whereHas(tags, name=php) cần xem index ở những dữ liệu nào?",
+      "options": [
+        "Chỉ index user password.",
+        "Không bao giờ cần index khi dùng whereHas.",
+        "Các cột lọc/join của tags và pivot theo SQL/schema thực.",
+        "Chỉ một index tùy ý trên body của Post."
+      ],
+      "correct": 2,
+      "explanation": "ORM không loại bỏ chi phí truy xuất relation/pivot."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Cache key cardinality",
+      "question": "Nếu sau này key chứa mọi search string tùy ý không giới hạn, cần xem rủi ro gì?",
+      "options": [
+        "Cache tự có số key cố định 10.",
+        "Mọi search tự dùng cùng kết quả đúng.",
+        "TTL tự làm mọi key miễn tài nguyên.",
+        "Số lượng keys/memory tăng và hit rate thấp."
+      ],
+      "correct": 3,
+      "explanation": "Chuẩn hóa/giới hạn đầu vào và chọn dữ liệu đáng cache."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Metrics for caching",
+      "question": "Muốn biết cache có hiệu quả nên quan sát nhóm metric nào?",
+      "options": [
+        "Hit/miss, latency, lỗi, dung lượng và tải DB liên quan.",
+        "Chỉ số dòng PHP.",
+        "Chỉ số chữ trong key.",
+        "Chỉ tên driver."
+      ],
+      "correct": 0,
+      "explanation": "Hit rate cao cũng cần đúng dữ liệu/quyền và giảm chi phí thực."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Comment is not process",
+      "question": "Comment php artisan octane:start có nghĩa gì về máy hiện tại?",
+      "options": [
+        "Đã mở port production.",
+        "Chỉ là hướng dẫn trong source, không chứng minh server đã chạy.",
+        "Đã mở 4 workers ngay khi đọcJSON.",
+        "Đã cài Swoole tự động."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm tài liệu cấu hình với trạng thái vận hành."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Per user limiter scope",
+      "question": "User 42 ở hai thiết bị, dùng cùng shared backend và limiter key 42 thì quota thường theo ai?",
+      "options": [
+        "Luôn riêng session dù key giống.",
+        "Luôn riêng từng URL bất kể cấu hình.",
+        "Theo key user 42, không mặc nhiên riêng từng thiết bị.",
+        "Luôn riêng browser tab."
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi limiter/middleware/key cần được thiết kế rõ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Root versus related limit",
+      "question": "take(10) ở popular query có tự giới hạn database chỉ lưu 10 Posts không?",
+      "options": [
+        "Có; rows ngoài top 10 bị xóa.",
+        "Có; migration tự đặt quota 10.",
+        "Có; cache thay toàn bộ table.",
+        "Không; chỉ giới hạn kết quả query đó."
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn đầu ra không phải hạn mức lưu trữ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Untagged invalidation bug",
+      "question": "User đăng bài mới, code chỉ flush tag posts nhưng popular vẫn trả cũ. Nguyên nhân trực tiếp có thể là gì?",
+      "options": [
+        "Popular được ghi untagged nên flush tag không chạm entry đó.",
+        "Redis không hỗ trợ mọi caching.",
+        "withCount tự giữ transaction vĩnh viễn.",
+        "take 10 luôn bỏ mọi bài mới dù count cao."
+      ],
+      "correct": 0,
+      "explanation": "Sửa chính sách cache write/read/invalidation cùng nhau."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Cached permission leak",
+      "question": "Cache popular dùng chung chứa bài tenantA rồi trả tenantB. TTL ngắn có giải quyết quyền đúng không?",
+      "options": [
+        "Có; published tự đồng nghĩa cross-tenant authorized.",
+        "Không; cần scope query/key và authorization đúng, không chỉ giảm thời gian rò.",
+        "Có; rò dưới 1 giờ luôn an toàn.",
+        "Có; key có dấu: tự phân tenant."
+      ],
+      "correct": 1,
+      "explanation": "Độ cũ và phạm vi truy cập là hai chiều riêng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cache stale write race",
+      "question": "Một miss đọc dữ liệu cũ, write mới rồi invalidate, miss cũ sau đó ghi cache. Rủi ro gì?",
+      "options": [
+        "DB tự rollback write mới.",
+        "Không thể vì callback chạy tức thì.",
+        "Cache cũ có thể xuất hiện lại; cần chiến lược versioning/phối hợp/TTL theo yêu cầu.",
+        "Invalidate tự ngăn mọi write cache sau đó."
+      ],
+      "correct": 2,
+      "explanation": "Xem thứ tự các thao tác cạnh tranh thay vì chỉ happy path."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Stampede lock scope",
+      "question": "Dùng local mutex mỗi node có bảo đảm chỉ một refresh trên toàn cluster không?",
+      "options": [
+        "Có; mọi mutex tự phân tán.",
+        "Có; PHP biếnstaticchia sẻmọi node.",
+        "Có; tên key toàncầulàđủ.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi lock phải phù hợp phạm vi cache và tải."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Projection matching repair",
+      "question": "Với Post.author qua user_id, sửa projection nào trực tiếp giữ relation đúng?",
+      "options": [
+        "Thêm user_id vào root select cùng các cột cần dùng.",
+        "Chỉ thêm name vào root không có join.",
+        "Bỏ id của User.",
+        "Đổi with thành withCount(author) để lấy name."
+      ],
+      "correct": 0,
+      "explanation": "Không chữa thiếu foreign key bằng field không phục vụ matching."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Keyset mutable rank",
+      "question": "Dùng cursor theo views_count biến đổi liên tục có thể gặp gì dù thêm id?",
+      "options": [
+        "Cursor tự lưu mọi version DB.",
+        "Thay đổi vị trí giữa requests có thể ảnh hưởng việc đi qua danh sách; tie-break không tạo snapshot.",
+        "Chắc chắn cố định mọi rank vĩnh viễn.",
+        "Mọi viewswrites bị khóa."
+      ],
+      "correct": 1,
+      "explanation": "Chọn consistency và UX phù hợp danh sách ranking động."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cursor query evidence",
+      "question": "Chỉ thấy cursorPaginate mà chưa biết index/data có đủ khẳng định query luôn nhanh hơn không?",
+      "options": [
+        "Có; page 20 luôn tương đương 20 rows scanned.",
+        "Có; ORM cấm mọi querychậm.",
+        "Không; cần query plan và đo với workload thực.",
+        "Có; keyset luôn có 0 I/O."
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện whereHas và index thực vẫn có chi phí."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Octane memory leak",
+      "question": "Singleton giữ thêm Request vào array sau mỗi lần xử lý sẽ có rủi ro gì?",
+      "options": [
+        "Mỗi request tự giải phóng singleton chắc chắn.",
+        "Octane cấm mọi array.",
+        "Tự thành cache an toàn đa tenant.",
+        "RAM tăng và dữ liệu request cũ tồn tại qua lifecycle."
+      ],
+      "correct": 3,
+      "explanation": "Dùng lifecycle/ownership phù hợp và đo memory theo thời gian."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Worker restart deployment",
+      "question": "Cập nhật code/config với workers sống lâu cần kế hoạch gì?",
+      "options": [
+        "Reload/restart workers có kiểm soát và kiểm version đang phục vụ.",
+        "Chỉ sửa file là mọi object đang giữ tự tái tạo ngay.",
+        "Không bao giờ cần rollout.",
+        "Đổi cache TTL thành 0 là đủ."
+      ],
+      "correct": 0,
+      "explanation": "App boot và process lifetime ảnh hưởng phiên bản code/config đang dùng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Limiter bypass identity",
+      "question": "Client giả forwarded IP nếu proxy trust sai có thể gây gì?",
+      "options": [
+        "Không thể vì tên api.",
+        "Thay đổi key để né hoặc làm sai quota.",
+        "Tự được authorizationDB.",
+        "Luôn tăng quota đúng user."
+      ],
+      "correct": 1,
+      "explanation": "Key từ request cần trust boundary rõ."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Distributed limiter consistency",
+      "question": "Ba nodes mỗi node cho 60/phút độc lập. Có thể tổng lưu lượng vượt 60/phút toàn hệ thống không?",
+      "options": [
+        "Không vì user id 42 tự khóa ba process.",
+        "Không vì mỗi phút chỉ tồn tại một node.",
+        "Có.",
+        "Không vì cùng tên limiter."
+      ],
+      "correct": 2,
+      "explanation": "Quota global cần counter/algorithm có scope global phù hợp."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Cost aware limits",
+      "question": "Mọi endpoint cùng tính 1 request dù một endpoint query rất nặng có thể bỏ sót gì?",
+      "options": [
+        "Số ký tự tên PHP.",
+        "Tổng số icon.",
+        "Màu chart.",
+        "Chi phí tài nguyên khác nhau và nhu cầu giới hạn theo operation/concurrency."
+      ],
+      "correct": 3,
+      "explanation": "Định nghĩa quota theo rủi ro tải và mục tiêu công bằng."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Limiter is not authentication",
+      "question": "Guest không vượt rate limit có được quyền đọc mọi user feed không?",
+      "options": [
+        "Không; limiter không thay authentication/authorization.",
+        "Có; quota là permission.",
+        "Có; IP là owner của mọi record.",
+        "Có; cache tags cấp quyền."
+      ],
+      "correct": 0,
+      "explanation": "Giữ cơ chế quyền và hạn mức đúng trách nhiệm."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Failover cache outage",
+      "question": "Cache backend lỗi nên luôn chạy query đắt không giới hạn để giữ API thành công có rủi ro gì?",
+      "options": [
+        "Mọi request trở thành read-only RAM.",
+        "Dồn tải vào DB gây quá tải dây chuyền; cần chính sách suy giảm/admission phù hợp.",
+        "Luôn an toàn vì miss không tốn tài nguyên.",
+        "Tự tăng DBcapacity."
+      ],
+      "correct": 1,
+      "explanation": "Chọn fallback theo SLA và giới hạn tài nguyên thực."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Tag invalidation breadth",
+      "question": "Gắn mọi feed vào posts rồi flush sau mọi write có tradeoff gì?",
+      "options": [
+        "Mọi feed tự update incrementally.",
+        "Tự giữ mọi TTL không đổi và không miss.",
+        "Dễ invalidation rộng gây nhiều miss/refresh dù chỉ ít feed liên quan.",
+        "Không bao giờ ảnh hưởng hitrate."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế granularity dựa trên dependency và độ cũ chấp nhận."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Count query costs",
+      "question": "withCount(views) có tránh mọi chi phí quét/tổng hợp views chưa?",
+      "options": [
+        "Có; count không bao giờ đọc dữ liệu.",
+        "Có; Eloquent luôn có counter maintained sẵn.",
+        "Có; take 10 loại mọi aggregatecost.",
+        "Không; cần xem SQL/index/data và cách tính metric thực tế."
+      ],
+      "correct": 3,
+      "explanation": "Có thể cân nhắc counter/materialization nếu đo cho thấy cần."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Benchmark comparability",
+      "question": "Muốn xác nhận lợi ích Octane nên so thế nào?",
+      "options": [
+        "Cùng workload, dữ liệu, tài nguyên và các metric latency/throughput/errors phù hợp.",
+        "Chỉ so hai comment trong source.",
+        "Chỉ nhân workers 4 với 10.",
+        "Chỉ đo một request rỗng rồi suy mọi query."
+      ],
+      "correct": 0,
+      "explanation": "Bằng chứng phải mô tả baseline và điều kiện đo."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cached model contract",
+      "question": "Lưu collection model vào cache lâu cần cân nhắc gì?",
+      "options": [
+        "TTLloạimọi authorization need.",
+        "Kích thước, serialization/version và độ cũ dữ liệu/quyền theo use case.",
+        "Model cached tự đồng bộ DB mọi lúc.",
+        "Cache không bao giờ có version mismatch."
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng representation phù hợp thay vì mặc định lưu mọi object."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Request state injection",
+      "question": "Singleton giữ user hiện tại ở constructor dưới worker lâu sống có thể sai thế nào?",
+      "options": [
+        "Luôn đúng vì constructor promotion.",
+        "Không thể có nhiều requests trong mộtworker.",
+        "Dùng nhầm user từ lifecycle trước nếu giữ state không phù hợp.",
+        "Tự resolve lại constructor trên mỗi methodcall."
+      ],
+      "correct": 2,
+      "explanation": "Ưu tiên truyền context đúng lúc hoặc lifecycle phù hợp thiết kế."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Readiness conclusion",
+      "question": "Các tối ưu nguồn có đủ chứng minh phục vụ hàng triệu người dùng chưa?",
+      "options": [
+        "Đủ chỉ nhờ cache+workers 4.",
+        "Đủ chỉ nhờ page 20.",
+        "Đủ chỉ nhờ limiter 60.",
+        "Chưa; còn đo tải, dữ liệu, dependency, consistency và vận hành thực tế."
+      ],
+      "correct": 3,
+      "explanation": "Đánh giá toàn request path và failure modes bằng bằng chứng tương ứng."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "jest",
+  "level": "junior",
+  "lesson": "mocking",
+  "language": "vi",
+  "sourceHash": "067e5c47e92a06cc831337c2b5e9b0cb8feda1fee235e0a99fdf68d2622324f9",
+  "status": "approved",
+  "review": "Biên soạn trực tiếp theo UserService source và Jest 30 mock-function-api/jest-object docs. Mock ở biên dependency, spyOn mặc định gọi implementation thật; clear/reset/restore khác nhau, assignment thủ công cần restore riêng. Không gửi email, truy cập DB hoặc thực thi Jest.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Mock function",
+      "question": "jest.fn() tạo gì?",
+      "options": [
+        "Function mock có theo dõi lời gọi",
+        "Database thật",
+        "Email đã gửi",
+        "HTTP server"
+      ],
+      "correct": 0,
+      "explanation": "Nó cho phép kiểm tương tác mà không cần dịch vụ ngoài."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Dependency injection",
+      "question": "UserService nhận db và emailSender qua đâu?",
+      "options": [
+        "File CSS",
+        "Constructor",
+        "URL query",
+        "Biến PORT"
+      ],
+      "correct": 1,
+      "explanation": "Test có thể truyền dependency giả có contract phù hợp."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Save call",
+      "question": "createUser gọi method nào để lưu user?",
+      "options": [
+        "this.email.save",
+        "this.db.sendWelcome",
+        "this.db.save",
+        "this.db.findById"
+      ],
+      "correct": 2,
+      "explanation": "findById được tạo mock nhưng không dùng trong hàm này."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Welcome call",
+      "question": "createUser gửi chào mừng qua method nào?",
+      "options": [
+        "this.db.findById",
+        "this.db.send",
+        "this.email.save",
+        "this.email.sendWelcome"
+      ],
+      "correct": 3,
+      "explanation": "Tên và thứ tự đối số cần được kiểm theo source."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Async resolved",
+      "question": "mockResolvedValue(value) cấu hình mock trả gì?",
+      "options": [
+        "Promise resolve với value",
+        "Value đồng bộ bắt buộc",
+        "Promise reject mọi lần",
+        "Lỗi ném trước khi trả Promise"
+      ],
+      "correct": 0,
+      "explanation": "Đây là shorthand của implementation Promise.resolve."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Async rejected",
+      "question": "mockRejectedValue(error) mô phỏng điều gì?",
+      "options": [
+        "Một database được khởi động",
+        "Promise bị reject với error",
+        "Response HTTP luôn 200",
+        "Object lỗi được resolve thành công"
+      ],
+      "correct": 1,
+      "explanation": "Promise reject khác trả object Error bình thường."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Call arguments",
+      "question": "Matcher nào kiểm mock từng được gọi với đối số mong muốn?",
+      "options": [
+        "toMatchSnapshot",
+        "toHaveLength trên service",
+        "toHaveBeenCalledWith",
+        "toBeNull"
+      ],
+      "correct": 2,
+      "explanation": "Nó kiểm lịch sử tương tác đã ghi."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Call count",
+      "question": "Matcher nào kiểm mock được gọi đúng một lần?",
+      "options": [
+        "toBe(1)",
+        "toMatch(1)",
+        "toThrow(1)",
+        "toHaveBeenCalledTimes(1)"
+      ],
+      "correct": 3,
+      "explanation": "Đếm lời gọi khác kiểm giá trị trả về."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "No call",
+      "question": "not.toHaveBeenCalled kiểm điều gì?",
+      "options": [
+        "Mock chưa có lời gọi được ghi",
+        "Mock trả false",
+        "Mock không tồn tại",
+        "Mock luôn throw"
+      ],
+      "correct": 0,
+      "explanation": "Zero calls không phải một giá trị trả về."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Returned user",
+      "question": "createUser trả về kết quả từ đâu?",
+      "options": [
+        "Mock function save",
+        "Kết quả đã await của db.save",
+        "Giá trị true của sendWelcome",
+        "Đối số email thuần"
+      ],
+      "correct": 1,
+      "explanation": "Hàm chờ email rồi mới return user đã lưu."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Default fixture id",
+      "question": "Mock db.save trong source resolve user id bao nhiêu?",
+      "options": [
+        "999",
+        "undefined",
+        "1",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Đây là dữ liệu fixture, không phải DB thật cấp ID."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Failure source",
+      "question": "Test DB fails cấu hình method nào reject?",
+      "options": [
+        "mockEmail.sendWelcome",
+        "mockDb.findById",
+        "UserService constructor",
+        "mockDb.save"
+      ],
+      "correct": 3,
+      "explanation": "Không có try/catch nuốt rejection trong createUser."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Order source",
+      "question": "Theo source, thao tác nào được await trước?",
+      "options": [
+        "db.save",
+        "email.sendWelcome",
+        "Cả hai bắt đầu bằng Promise.all",
+        "Không thao tác nào được await"
+      ],
+      "correct": 0,
+      "explanation": "Email chỉ được gọi sau save resolve."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Fresh mocks",
+      "question": "beforeEach trong suite tạo gì?",
+      "options": [
+        "Một module npm mới",
+        "Mock dependency và service mới cho mỗi test",
+        "Một DB production mới",
+        "Email thật tới khách hàng"
+      ],
+      "correct": 1,
+      "explanation": "Giúp không dùng lại lịch sử lời gọi giữa test."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Spy purpose",
+      "question": "jest.spyOn(object,\"method\") dùng để làm gì?",
+      "options": [
+        "Tạo mọi method chưa tồn tại",
+        "Tự chặn mọi network trong project",
+        "Theo dõi method hiện có, mặc định vẫn gọi implementation gốc",
+        "Luôn thay method bằng no-op mà không cấu hình"
+      ],
+      "correct": 2,
+      "explanation": "Muốn ngăn side effect cần thay implementation rõ ràng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Module mock",
+      "question": "jest.mock theo ý tưởng bài dùng cho phạm vi nào?",
+      "options": [
+        "Chỉ phép cộng số",
+        "Chỉ tên test",
+        "Chỉ port hệ điều hành",
+        "Mock module theo cơ chế môi trường phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "CJS/ESM và transform ảnh hưởng cách module mocking hoạt động."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Mock implementation",
+      "question": "mockImplementation(fn) cung cấp gì?",
+      "options": [
+        "Hành vi thực thi thay thế cho mock",
+        "Tên suite mới",
+        "Coverage report",
+        "Lịch cron"
+      ],
+      "correct": 0,
+      "explanation": "Có thể trả dữ liệu hoặc Promise theo contract dependency."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Clear calls",
+      "question": "mockClear chủ yếu xóa gì?",
+      "options": [
+        "Mọi dòng code dependency",
+        "Dữ liệu lịch sử lời gọi/kết quả theo mock API",
+        "Tự khôi phục mọi module thật",
+        "Mọi file trong repo"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nghĩa reset implementation hay restore gốc."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Reset mock",
+      "question": "mockReset khác clear ở điểm chính nào?",
+      "options": [
+        "Tự cài package mới",
+        "Chỉ đổi tên mock",
+        "Còn reset implementation mock về function rỗng",
+        "Luôn restore mọi assignment thủ công"
+      ],
+      "correct": 2,
+      "explanation": "Sau reset, giá trị trả mặc định có thể trở thành undefined."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Restore spy",
+      "question": "mockRestore với spy có mục tiêu gì?",
+      "options": [
+        "Chỉ tăng call count",
+        "Chỉ đổi response code",
+        "Tự rollback database",
+        "Khôi phục implementation gốc đã được spy"
+      ],
+      "correct": 3,
+      "explanation": "Với mock thay thủ công, việc phục hồi reference cần quản lý riêng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Save payload",
+      "question": "createUser(\"An\",\"a@b.com\") gọi save với đối số nào?",
+      "options": [
+        "{name:\"An\",email:\"a@b.com\"}",
+        "[\"An\",\"a@b.com\"]",
+        "\"a@b.com\"",
+        "{id:1}"
+      ],
+      "correct": 0,
+      "explanation": "Source tạo object name/email trước khi save."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Email arguments",
+      "question": "Lời gọi sendWelcome trong source có thứ tự đối số nào?",
+      "options": [
+        "id rồi email",
+        "email rồi name",
+        "name rồi email",
+        "user rồi id"
+      ],
+      "correct": 1,
+      "explanation": "Assertion nên phát hiện đảo thứ tự hai chuỗi."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Result identity",
+      "question": "Nếu save resolve object u và email resolve true, createUser resolve gì?",
+      "options": [
+        "undefined",
+        "[u,true]",
+        "u",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả email không được trả trực tiếp."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Save rejection path",
+      "question": "Khi db.save reject, sendWelcome có được gọi theo source không?",
+      "options": [
+        "Có, vì mọi await tự chạy song song",
+        "Có, vì mock tự gửi email",
+        "Không vì email luôn là undefined",
+        "Không, await save ném trước dòng email"
+      ],
+      "correct": 3,
+      "explanation": "Luồng lỗi dừng trước thao tác sau."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Email rejection path",
+      "question": "Nếu save thành công nhưng sendWelcome reject, createUser có kết quả Promise nào?",
+      "options": [
+        "Reject theo lỗi email",
+        "Luôn resolve user vì đã lưu",
+        "Luôn rollback DB tự động",
+        "Resolve false"
+      ],
+      "correct": 0,
+      "explanation": "Hàm chưa có catch/compensation cho email failure."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "No implicit transaction",
+      "question": "Khi email thất bại sau save, source có tự xóa user đã lưu không?",
+      "options": [
+        "Có, return user tự xóa DB",
+        "Không, không có rollback hoặc delete trong hàm",
+        "Có, await tự rollback mọi side effect",
+        "Có, Jest mock tạo transaction"
+      ],
+      "correct": 1,
+      "explanation": "Cần tách kiểm hành vi hiện có với yêu cầu giao dịch mới."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Await assertion",
+      "question": "Để test rejection được runner chờ, cách nào phù hợp?",
+      "options": [
+        "Chỉ đặt comment wait",
+        "Chỉ expect(promise).toBeTruthy()",
+        "await expect(promise).rejects.toThrow(...)",
+        "expect(promise).rejects.toThrow(...) rồi không return/await"
+      ],
+      "correct": 2,
+      "explanation": "Assertion async phải được nối vào vòng đời test."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Return promise assertion",
+      "question": "Trong test không async, cách nào cũng hợp lệ để runner chờ rejection assertion?",
+      "options": [
+        "return undefined sau khi tạo assertion",
+        "setTimeout rồi kết thúc test",
+        "Chỉ truyền Error vào describe",
+        "return expect(promise).rejects.toThrow(...)"
+      ],
+      "correct": 3,
+      "explanation": "Return Promise là một lựa chọn thay async/await."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Default mock value",
+      "question": "jest.fn() không có implementation khi được gọi thường trả gì?",
+      "options": [
+        "undefined",
+        "Promise.resolve(true) tự động",
+        "Object user mẫu",
+        "Error bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Nếu dependency async cần fixture, phải cấu hình contract phù hợp."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Await undefined",
+      "question": "Nếu db.save là jest.fn() rỗng, await save trả undefined. Source tiếp tục thế nào nếu email mock resolve?",
+      "options": [
+        "Tự bỏ qua email vì userundefined",
+        "Gọi email rồi resolveundefined",
+        "Tự tạo user id1",
+        "Tự ném DB Error tường minh"
+      ],
+      "correct": 1,
+      "explanation": "Source không kiểm kết quả save trước khi gửi email."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "MockReturn vs resolved",
+      "question": "mockReturnValue({id:1}) và mockResolvedValue({id:1}) khác trực tiếp điều gì?",
+      "options": [
+        "Một tự gọi save hai lần",
+        "Không khác loại giá trị trả về",
+        "Một trả object đồng bộ, một trả Promise resolve object",
+        "Cả hai luôn gửi email thật"
+      ],
+      "correct": 2,
+      "explanation": "await có thể nhận cả hai, nhưng contract dependency vẫn cần đúng."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Throw vs rejection",
+      "question": "mockImplementation(() => {throw error}) khác mockRejectedValue(error) ở tầng nào?",
+      "options": [
+        "Luôn khác thông báo lỗi",
+        "Luôn gọi function hai lần",
+        "Một không thể được await",
+        "Ném đồng bộ tại lời gọi so với trả Promise reject"
+      ],
+      "correct": 3,
+      "explanation": "Async service có thể đưa cả hai thành rejection nhưng dependency contract khác nhau."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Unused method",
+      "question": "Source tạo mock findById nhưng createUser không gọi. Assertion nào phản ánh điều này?",
+      "options": [
+        "expect(mockDb.findById).not.toHaveBeenCalled()",
+        "expect(mockDb.findById).toHaveBeenCalledTimes(1)",
+        "expect(mockDb.findById()).toBe(1)",
+        "expect(mockDb).toBeNull()"
+      ],
+      "correct": 0,
+      "explanation": "Không được gọi mock chỉ để kiểm nó chưa được gọi."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Call history structure",
+      "question": "mockFn.mock.calls lưu loại thông tin nào?",
+      "options": [
+        "Chỉ source code function",
+        "Mảng đối số của từng lần gọi",
+        "Mọi dữ liệu DB thật",
+        "Chỉ thời gian CPU"
+      ],
+      "correct": 1,
+      "explanation": "Có thể quan sát từng lần gọi nhưng không thay assertion nghiệp vụ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Calls expected member",
+      "question": "Mock được gọi(\"a\") rồi(\"b\"). toHaveBeenCalledWith(\"a\") có buộc lần cuối làa không?",
+      "options": [
+        "Có, chỉ kiểm lần đầu và không có lần khác",
+        "Không vì chỉ nhận object",
+        "Không, chỉ cần một lời gọi khớp",
+        "Có, chỉ kiểm lần cuối"
+      ],
+      "correct": 2,
+      "explanation": "Muốn kiểm thứ tự/lần cụ thể dùng matcher tương ứng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Nth call",
+      "question": "Muốn kiểm lần gọi thứ hai có đối số b, matcher nào phù hợp?",
+      "options": [
+        "toHaveBeenCalledTimes(\"b\")",
+        "toBe(\"b\")",
+        "toContainEqual(2) trên function",
+        "toHaveBeenNthCalledWith(2,\"b\")"
+      ],
+      "correct": 3,
+      "explanation": "Call index trong matcher này bắt đầu từ 1."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Last call",
+      "question": "Matcher nào nhắm vào đối số lần gọi cuối?",
+      "options": [
+        "toHaveBeenLastCalledWith",
+        "toBeCloseTo",
+        "toHaveProperty",
+        "toBeUndefined"
+      ],
+      "correct": 0,
+      "explanation": "Đừng suy ra last-call từ matcher any-call."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Call once plus payload",
+      "question": "Vì sao source kiểm cả toHaveBeenCalledWith và Times(1) cho save?",
+      "options": [
+        "Times tự kiểm nội dung payload",
+        "Một kiểm payload, một kiểm không gọi thừa",
+        "Hai matcher luôn hoàn toàn trùng nghĩa",
+        "CalledWith tự buộc đúng một lần"
+      ],
+      "correct": 1,
+      "explanation": "Một chiều đúng không thay chiều khác."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Clear preserves implementation",
+      "question": "Mock resolve user, sau mockClear rồi gọi lại: điều gì còn giữ?",
+      "options": [
+        "Reference DB tự khôi phục",
+        "Promise tự thành lỗi",
+        "Implementation đã cấu hình vẫn còn",
+        "Implementation tự thành thật"
+      ],
+      "correct": 2,
+      "explanation": "Clear lịch sử không reset hành vi."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Reset removes fixture",
+      "question": "Sau mockReset, mockResolvedValue cũ có còn là hành vi mặc định không?",
+      "options": [
+        "Có, reset chỉ clear history",
+        "Có, mọi async mock không reset được",
+        "Không vì mock bị xóa khỏi OS",
+        "Không, phải cấu hình lại nếu cần"
+      ],
+      "correct": 3,
+      "explanation": "Reset có thể làm fixture thiếu nếu hiểu sai vòng đời."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "RestoreAll scope",
+      "question": "restoreAllMocks có tự khôi phục global.fetch=jest.fn() gán thủ công không?",
+      "options": [
+        "Không, cần phục hồi assignment đó riêng",
+        "Có, theo dõi mọi assignment JS",
+        "Có, xóa cả global",
+        "Chỉ có thể nếu dùng CommonJS"
+      ],
+      "correct": 0,
+      "explanation": "Docs giới hạn tự restore cho spyOn/replaceProperty tương ứng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Spy real side effect",
+      "question": "Spy lên email.sendWelcome thật mà không mock implementation có rủi ro gì?",
+      "options": [
+        "Spy tự biến mọi Promise thành resolve",
+        "Có thể vẫn gọi implementation gửi thật",
+        "Luôn an toàn vì spy là no-op",
+        "Jest tự chặn SMTP"
+      ],
+      "correct": 1,
+      "explanation": "Cần thay hành vi ở biên khi không được phép side effect."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Spy override",
+      "question": "Muốn spy method async và tránh hành vi thật, cấu hình nào phù hợp?",
+      "options": [
+        "Chỉ đổi tên mock",
+        "Chỉ clear mock.calls sau khi đã gửi thật",
+        "spy.mockResolvedValue(value) theo contract",
+        "Chỉ gọi jest.spyOn rồi mặc định an toàn"
+      ],
+      "correct": 2,
+      "explanation": "Việc chặn side effect phải xảy ra trước lời gọi."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Spy cleanup",
+      "question": "Sau test thay implementation qua spyOn, cleanup phù hợp thường là gì?",
+      "options": [
+        "Chỉ sửa expected",
+        "Chỉ thêm verbose",
+        "Chỉ tăng call count",
+        "mockRestore hoặc restoreAllMocks trong phạm vi phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Khôi phục method gốc giúp tránh ảnh hưởng test sau."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Fresh service old mock",
+      "question": "Mỗi test tạo service mới nhưng dùng lại mockDb có lịch sử cũ. Rủi ro còn gì?",
+      "options": [
+        "Call count/policy mock có thể rò rỉ giữa test",
+        "Constructor tự clear mọi mock",
+        "Service mới tạo DB thật",
+        "Jest tự đổi mọi mock thành immutable"
+      ],
+      "correct": 0,
+      "explanation": "Isolation cần bao phủ dependency, không chỉ đối tượng service."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "MockResolvedOnce",
+      "question": "Mock có resolvedValue defaultD và onceA, onceB; ba lần await lần lượt ra gì?",
+      "options": [
+        "B,A,undefined",
+        "A,B,D",
+        "D,D,D",
+        "A,A,A"
+      ],
+      "correct": 1,
+      "explanation": "Các hành vi Once được dùng theo hàng đợi trước default."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "RejectedOnce recovery",
+      "question": "Muốn mô phỏng save lần đầu lỗi rồi lần sau thành công, công cụ nào phù hợp?",
+      "options": [
+        "ToHaveLength trên service",
+        "Chỉ mockName",
+        "mockRejectedValueOnce rồi mockResolvedValue theo kịch bản",
+        "Một expected luôn true"
+      ],
+      "correct": 2,
+      "explanation": "Kịch bản nhiều lần gọi phải diễn đạt rõ thứ tự."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Mock not proof real DB",
+      "question": "Service test với db mock pass chứng minh trực tiếp gì?",
+      "options": [
+        "Query DB thật chắc chắn đúng schema",
+        "SMTP thật gửi thư thành công",
+        "Transaction production đã commit",
+        "Service tương tác đúng với contract mock được kiểm"
+      ],
+      "correct": 3,
+      "explanation": "Mock tests không tự kiểm adapter/dịch vụ thật."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Returned fixed fixture",
+      "question": "Mock save luôn resolve userAn nhưng gọi createUserX. Vì sao chỉ kiểm user.id có thể yếu?",
+      "options": [
+        "Fixture có thể che việc trả sai name/email theo yêu cầu",
+        "ID1 tự bảo đảm mọi field đúng",
+        "Jest tự map X vào fixture",
+        "Mock tự sửa response cho input"
+      ],
+      "correct": 0,
+      "explanation": "Cần expected và fixture phù hợp câu hỏi đang kiểm."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Argument mismatch",
+      "question": "Nếu implementation đảo name/email trong payload save, assertion nguồn nào bắt trực tiếp?",
+      "options": [
+        "beforeEach tạo instance",
+        "toHaveBeenCalledWith({name:\"An\",email:\"a@b.com\"})",
+        "user.id bằng 1 đơn lẻ",
+        "findById không được gọi đơn lẻ"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị fixture trả về không phụ thuộc payload nên chưa chắc bắt lỗi đó."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Email duplicate",
+      "question": "Nếu code vô tình gửi welcome hai lần, chỉ CalledWith có bảo đảm phát hiện không?",
+      "options": [
+        "Có, mocks luôn chỉ gọi được một lần",
+        "Không vì email không thể mock",
+        "Không, cần kiểm count nếu chỉ được gửi một lần",
+        "Có, CalledWith mặc định cấm lời gọi khác"
+      ],
+      "correct": 2,
+      "explanation": "Kỳ vọng số lần tương tác phải được nêu rõ."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Order observation",
+      "question": "CalledWith cho db và email có tự chứng minh email được gọi sau DB resolve không?",
+      "options": [
+        "Có, thứ tự dòng expect quyết định thứ tự gọi",
+        "Có, mọi mock tự chạy tuần tự",
+        "Có, call count bằng 1 suy ra thứ tự",
+        "Không, cần kịch bản điều khiển Promise/quan sát phù hợp nếu thứ tự là contract"
+      ],
+      "correct": 3,
+      "explanation": "Các assertion riêng về đối số không tự kiểm quan hệ thời gian."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "No implicit validation",
+      "question": "createUser có kiểm định dạng email trong source không?",
+      "options": [
+        "Không thấy validation như vậy",
+        "Có, mockResolvedValue luôn validate",
+        "Có, tên sendWelcome tự kiểm mọi domain",
+        "Có, constructor kiểm regex"
+      ],
+      "correct": 0,
+      "explanation": "Không dạy thêm contract chưa có trong source."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "DI mock contract",
+      "question": "Dependency mock cần có điều gì để test service có ý nghĩa?",
+      "options": [
+        "Mọi call đều bị bỏ qua",
+        "Method, kiểu trả và lỗi tương thích contract được sử dụng",
+        "Chỉ tên biến giống production",
+        "Mọi method đều luôn true"
+      ],
+      "correct": 1,
+      "explanation": "Double sai contract có thể tạo niềm tin sai."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Avoid mocking SUT",
+      "question": "Nếu mock luôn createUser trả user mẫu rồi gọi createUser trong unit test của chính logic đó, hạn chế gì?",
+      "options": [
+        "Kiểm được DB thật",
+        "Kiểm được SMTP thật",
+        "Không còn kiểm implementation createUser thật",
+        "Tự tăng coverage mọi nhánh"
+      ],
+      "correct": 2,
+      "explanation": "Mock dependency khác mock toàn bộ đối tượng hành vi đang cần bảo vệ."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "CJS ESM scope",
+      "question": "jest.mock theo pattern CJS có thể áp nguyên xi cho mọi ESM native chưa?",
+      "options": [
+        "Có, mọi import đều hoist giống nhau",
+        "Có, require và ESM luôn cùng loader",
+        "Không vì Jest cấm tất cả ESM",
+        "Không, cần xem cơ chế import/module mocking của môi trường"
+      ],
+      "correct": 3,
+      "explanation": "Version/module wiring phải được nêu khi hỏi API thay đổi theo môi trường."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Mock name",
+      "question": "Đặt mockName chủ yếu giúp gì?",
+      "options": [
+        "Làm thông báo lỗi dễ nhận diện",
+        "Thay implementation thật",
+        "Tự gửi email test",
+        "Thêm transaction"
+      ],
+      "correct": 0,
+      "explanation": "Tên chẩn đoán không thay tính đúng contract."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Error identity",
+      "question": "Muốn kiểm service truyền nguyên lỗi DB được reject, có thể kiểm gì?",
+      "options": [
+        "Chỉ tên constructor",
+        "Promise reject với cùng error object khi contract yêu cầu",
+        "Chỉ mọi lỗi là truthy",
+        "Chỉ email mock tồn tại"
+      ],
+      "correct": 1,
+      "explanation": "Source không wrap lỗi, nhưng contract cần phân biệt identity/text/type."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "No real side effects",
+      "question": "Test dependency mock không có implementation HTTP/SMTP. Điều gì vẫn cần tránh khi thêm spy?",
+      "options": [
+        "Mọi jest.fn tự mở network",
+        "Mock calls tự gửi email",
+        "Spy vô tình gọi implementation thật ở một biên chưa được thay",
+        "Chỉ code có await mới side effect"
+      ],
+      "correct": 2,
+      "explanation": "Phải xác định đúng nơi chặn hành vi ngoài."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Fixture có ID zero",
+      "question": "Mock save resolve {id:0}, mock email resolve; source không kiểm truthiness id. createUser dự kiến trả gì?",
+      "options": [
+        "Tự ném DB Error vì0 falsy",
+        "Tự đổi id thành1",
+        "Bỏ gọi email do id bằng0",
+        "Object {id:0} sau khi chờ email"
+      ],
+      "correct": 3,
+      "explanation": "Không suy source có validation ID chỉ từ fixture mặc định id1."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "DB failure strong test",
+      "question": "Muốn bảo vệ việc DB lỗi thì không gửi email và lỗi không bị nuốt, thiết kế nào đầy đủ?",
+      "options": [
+        "Cho save reject, await rejects assertion rồi kiểm email chưa được gọi",
+        "Chỉ kiểm service object truthy",
+        "Mock createUser luôn reject thay logic thật",
+        "Chỉ kiểm user.id sau happy path"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm cùng luồng lỗi và tác động bị ngăn."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Email failure semantics",
+      "question": "Save đã thành công nhưng email thất bại. Trước yêu cầu rollback tự động mới, cần làm gì?",
+      "options": [
+        "Bỏ test lỗi email vì DB đã thành công",
+        "Nêu contract mới, thiết kế compensation/transaction phù hợp và kiểm cả trạng thái lẫn lỗi",
+        "Coi await tự rollback mọi dịch vụ",
+        "Chỉ đổi expected thành true"
+      ],
+      "correct": 1,
+      "explanation": "Source hiện không có rollback; mock test không tạo giao dịch phân tán."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Sequence control",
+      "question": "Cần chứng minh email chưa gửi trước khi DB resolve. Test nào nhắm đúng contract thời gian?",
+      "options": [
+        "Chỉ kiểm cả hai count1 sau hoàn tất",
+        "Chỉ tăng timeout",
+        "Dùng Promise save điều khiển được, kiểm email chưa gọi trước resolve rồi sau đó await hoàn tất",
+        "Chỉ viết expect DB trước expect email"
+      ],
+      "correct": 2,
+      "explanation": "Điều khiển tiến trình bất đồng bộ kiểm được quan hệ mà assertion cuối đơn lẻ chưa đủ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Spy side-effect safety",
+      "question": "Được yêu cầu tuyệt đối không gửi mail thật. Phương án spy đúng là gì?",
+      "options": [
+        "Chỉ spyOn rồi tin mặc định chặn mail",
+        "Gửi một mail để biết spy hoạt động",
+        "Chỉ clear history sau khi gửi",
+        "Thay implementation trước khi gọi service và khôi phục sau test, hoặc inject mock hoàn toàn"
+      ],
+      "correct": 3,
+      "explanation": "Spy mặc định gọi method gốc nên cần chủ động chặn biên."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Manual assignment restore",
+      "question": "Suite A gán global.fetch=jest.fn(), suite B cần fetch thật; restoreAllMocks không phục hồi. Sửa căn nguyên là gì?",
+      "options": [
+        "Giữ reference ban đầu và restore thủ công hoặc dùng cơ chế spy phù hợp có cleanup",
+        "Gọi clearAllMocks thêm nhiều lần",
+        "Chỉ đổi tên global",
+        "Chỉ resetModules rồi mặc định mọi global đã restore"
+      ],
+      "correct": 0,
+      "explanation": "Clear/reset/restore có phạm vi khác nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Mock payload blind spot",
+      "question": "Mock save luôn trả user id1 dù payload sai. Để bắt lỗi service lưu nhầm email, cần kiểm gì?",
+      "options": [
+        "Chỉ tăng coverage threshold",
+        "Đối số save và kết quả có ý nghĩa theo contract, không chỉ fixed id",
+        "Chỉ đếm số test",
+        "Chỉ kiểm mockDb.save tồn tại"
+      ],
+      "correct": 1,
+      "explanation": "Fixture cố định không tự phản hồi mọi lỗi input."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Duplicate email bug",
+      "question": "Implementation save đúng nhưng gọi email hai lần với cùng args. Bộ assertion nào phát hiện trực tiếp?",
+      "options": [
+        "Chỉ returned user.id",
+        "Chỉ findById không được gọi",
+        "Args đúng cùng Times(1) cho email theo yêu cầu",
+        "Chỉ CalledWith đúng args"
+      ],
+      "correct": 2,
+      "explanation": "Đúng đối số không chứng minh số lần đúng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Reset fixture pitfall",
+      "question": "beforeEach resetAllMocks làm save mất resolved fixture, test sau nhận undefined. Hướng sửa đúng là gì?",
+      "options": [
+        "Bỏ await mọi nơi để undefined biến mất",
+        "Đổi expected user.id thành undefined bất kể contract",
+        "Coi reset là restore DB thật",
+        "Phối hợp reset với tái cấu hình fixture hoặc dùng clear nếu chỉ cần xóa lịch sử"
+      ],
+      "correct": 3,
+      "explanation": "Cleanup phải phù hợp loại trạng thái cần loại bỏ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Adapter gap",
+      "question": "Mọi UserService unit mock test pass nhưng DB adapter dùng sai column. Phạm vi kiểm bổ sung phù hợp là gì?",
+      "options": [
+        "Kiểm adapter/integration ở môi trường phù hợp, giữ unit test cho logic service",
+        "Nhân bản cùng mock test 100 lần",
+        "Coi mock đã xác minh schema thật",
+        "Mock thêm cả DB engine để chứng minh SQL đúng"
+      ],
+      "correct": 0,
+      "explanation": "Confidence cần các lớp bằng chứng theo biên trách nhiệm."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Over-specifying internals",
+      "question": "Refactor cách tạo payload nhưng giữ contract save và email. Test soi biến local gây giòn. Hướng cải thiện là gì?",
+      "options": [
+        "Chỉ snapshot toàn source",
+        "Assert output và tương tác dependency thuộc contract thay vì cấu trúc code nội bộ",
+        "Buộc source luôn cùng số dòng",
+        "Xóa mọi kiểm tương tác có ý nghĩa"
+      ],
+      "correct": 1,
+      "explanation": "Không phải mọi chi tiết triển khai cần là điều kiện pass."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Async assertion false confidence",
+      "question": "Test tạo rejects assertion nhưng không await/return rồi kết thúc. Hậu quả cần tránh là gì?",
+      "options": [
+        "Promise tự biến callback thành async",
+        "Tên test error tự bảo đảm đợi",
+        "Runner có thể hoàn tất trước assertion; lỗi không được gắn đúng vòng đời test",
+        "Jest tự await mọi Promise được tạo"
+      ],
+      "correct": 2,
+      "explanation": "Chính xác thời điểm hoàn tất là phần tính đúng của test."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Retry and call count",
+      "question": "Yêu cầu mới retry save một lần khi lỗi tạm thời. Cần thay gì trong test contract?",
+      "options": [
+        "Giữ Times(1) cho mọi trường hợp bất kể yêu cầu mới",
+        "Mock createUser luôn return để tránh retry",
+        "Chỉ thêm commentretry",
+        "Dựng chuỗi reject/resolve và kiểm số lần/payload cùng email chỉ sau thành công"
+      ],
+      "correct": 3,
+      "explanation": "Retry thay quan hệ tương tác và rủi ro side effect cần được kiểm rõ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Partial success retry",
+      "question": "Email lỗi sau DB save, client thử createUser lại. Source có bảo đảm không tạo user trùng hay mail trùng không?",
+      "options": [
+        "Không; cần contract idempotency và xử lý trạng thái để kiểm yêu cầu đó",
+        "Có, jest.fn tự giữ giao dịch toàn cầu",
+        "Có, await luôn exactly-once",
+        "Có, cùng name tự deduplicate"
+      ],
+      "correct": 0,
+      "explanation": "Không gán đặc tính phân tán cho chuỗi await đơn giản."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Error signal preservation",
+      "question": "Service đổi sang catch mọi lỗi và returnundefined. Test chỉ notCalled email có thể vẫn pass khi DB lỗi. Nên kiểm thêm gì?",
+      "options": [
+        "Chỉ user fixture tồn tại",
+        "Rejection/error contract được bảo tồn, không chỉ thiếu email",
+        "Chỉ mockName dài hơn",
+        "Chỉ log số test"
+      ],
+      "correct": 1,
+      "explanation": "Tác động bị ngăn không đủ chứng minh lỗi được báo đúng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Dependency shape mismatch",
+      "question": "Production sendWelcome nhận object nhưng mock/test giả định hai chuỗi theo source cũ. Cần hành động gì?",
+      "options": [
+        "Chỉ đổi type assertion để im lỗi",
+        "Bỏ email test hoàn toàn",
+        "Đối chiếu adapter contract thực, cập nhật wiring/test và thêm kiểm biên phù hợp",
+        "Tin mock là nguồn chân lý tuyệt đối"
+      ],
+      "correct": 2,
+      "explanation": "Double phải theo hợp đồng thật để unit evidence có giá trị."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Avoid SUT mock",
+      "question": "Test createUser pass vì chính createUser bị mock trả fixture. Cách phục hồi kiểm logic là gì?",
+      "options": [
+        "Mock sâu thêm cả constructor",
+        "Chỉ assert mock đã được gọi",
+        "Đổi test name thành integration",
+        "Dùng UserService thật với db/email doubles ở các biên"
+      ],
+      "correct": 3,
+      "explanation": "Phần hành vi cần kiểm phải được thực thi trong phạm vi đã chọn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "State leakage",
+      "question": "Test A dùng mockRejectedValue rồi test B vô tình dùng cùng mock, fail dù happy fixture đúng dự kiến. Sửa thiết kế nào phù hợp?",
+      "options": [
+        "Tạo mới hoặc reset/tái cấu hình mock mỗi test theo contract rõ",
+        "Chạy B trước A mãi",
+        "Nuốt mọi rejection",
+        "Đổi expected B thành lỗi DB"
+      ],
+      "correct": 0,
+      "explanation": "Isolation loại nguyên nhân phụ thuộc thứ tự."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "CJS ESM uncertainty",
+      "question": "Muốn viết câu hỏi jest.mock trong project ESM native, tại sao cần nêu môi trường?",
+      "options": [
+        "Vì mọi import chỉ là text",
+        "Cơ chế import và module mocking khác CJS; không áp mô tả hoisting chung vô điều kiện",
+        "Vì ESM không có function",
+        "Vì Jest luôn chuyển mọi code sangCJS"
+      ],
+      "correct": 1,
+      "explanation": "Câu hỏi version-sensitive phải tự đủ scope."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Call order within service",
+      "question": "Có hai mock đều được gọi một lần nhưng email bắt đầu trước save hoàn tất. Test nguồn chỉ CalledWith/Times có đủ bắt lỗi này không?",
+      "options": [
+        "Đủ vì Promise không thể song song",
+        "Đủ vì cùng describe",
+        "Chưa chắc; cần kiểm kịch bản thứ tự nếu đó là contract",
+        "Đủ vì thứ tự dòng assertion buộc thứ tự runtime"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm count/args và kiểm quan hệ thời gian là các chiều khác nhau."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Parallel hóa sai luồng lưu và gửi",
+      "question": "Refactor gọi save và sendWelcome trong Promise.all khiến email có thể gửi dù save reject. Bộ kiểm nào làm lộ vi phạm yêu cầu không gửi khi lưu lỗi?",
+      "options": [
+        "Chỉ kiểm cả hai mock có args đúng sau happy path",
+        "Chỉ kiểm returned id1",
+        "Chỉ đặt expected theo thứ tự các dòng assertion",
+        "Điều khiển Promise save để giữ trạng thái pending/reject, kiểm email chưa gọi trước thành công và vẫn không gọi khi save lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Đối số/count cuối happy path không thay kiểm quan hệ thời gian và nhánh lỗi."
+    }
+  ]
+}

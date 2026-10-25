@@ -16,9 +16,9 @@ const nhanXetDiem = (pt: number) => (pt >= 80 ? 'scoreExcellent' : pt >= 50 ? 's
 
 export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai: QuizBai; aiEnabled: boolean | undefined }) {
   const { t } = useT();
-  const { quiz, dangTao } = quizBai;
+  const { quiz, dangTao, tuNganHang } = quizBai;
   let thongBao = '';
-  if (dangTao) thongBao = t('generatingQuiz');
+  if (dangTao) thongBao = t(tuNganHang ? 'loadingBankQuiz' : 'generatingQuiz');
   else if (quiz?.submitted) {
     const diem = quiz.questions.filter((q, i) => quiz.answers[i] === q.correct).length;
     const pct = Math.round((diem / quiz.questions.length) * 100);
@@ -34,13 +34,13 @@ export function QuizTab({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quiz
 
 function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai: QuizBai; aiEnabled: boolean | undefined }) {
   const { t, translateTitle } = useT();
-  const { quiz, dangTao, loi, tao, chon, nop } = quizBai;
+  const { quiz, dangTao, loi, tao, chon, nop, tuNganHang } = quizBai;
   const [nhacThieu, datNhacThieu] = useState(false);
 
   if (dangTao) {
     return (
       <div aria-hidden="true" className="flex items-center gap-3 rounded-3xl bg-lavender p-6 font-medium text-lavender-ink">
-        <Loader2 className="size-5 motion-safe:animate-spin" aria-hidden="true" /> {t('generatingQuiz')}
+        <Loader2 className="size-5 motion-safe:animate-spin" aria-hidden="true" /> {t(tuNganHang ? 'loadingBankQuiz' : 'generatingQuiz')}
       </div>
     );
   }
@@ -61,14 +61,14 @@ function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai
             <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-pink text-pink-ink" aria-hidden="true"><ListChecks className="size-5" /></span>
             <div className="min-w-0">
               <h2 className="font-display text-xl font-extrabold tracking-tight">{t('knowledgeCheck')}</h2>
-              <p className="mt-1 text-muted-foreground">{t('quizIntro', { n: SO_CAU, title: translateTitle(lesson.title) })}</p>
+              <p className="mt-1 text-muted-foreground">{t(tuNganHang ? 'bankQuizIntro' : 'quizIntro', { n: SO_CAU, title: translateTitle(lesson.title) })}</p>
             </div>
           </div>
-          {aiEnabled === false
+          {!tuNganHang && aiEnabled === false
             ? <p className="mt-4 rounded-2xl bg-butter px-4 py-2.5 text-sm text-butter-ink">{t('aiDisabled')}</p>
             : !loi && (
               <Button className="mt-5 rounded-full bg-signal text-signal-foreground hover:bg-signal hover:brightness-105" onClick={tao}>
-                <Sparkles aria-hidden="true" /> {t('generateQuizAi')}
+                <Sparkles aria-hidden="true" /> {t(tuNganHang ? 'startBankQuiz' : 'generateQuizAi')}
               </Button>
             )}
         </div>
@@ -103,6 +103,7 @@ function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai
           <fieldset key={i} className="min-w-0 rounded-3xl bg-card p-5 shadow-soft">
             <legend className="float-left mb-3 w-full">
               <span className="rounded-full bg-sky px-2.5 py-0.5 text-xs font-semibold text-sky-ink">{t('quizQuestion', { n: i + 1 })}</span>
+              {q.difficulty && <span className="ml-2 text-xs font-medium text-muted-foreground">{t(`quizDifficulty_${q.difficulty}`)}</span>}
             </legend>
             <div className="clear-both font-medium leading-relaxed"><ChatMarkdown text={q.question} /></div>
             {q.code && <CodeBlock code={q.code} lang={lesson.lang} className="mt-3" />}

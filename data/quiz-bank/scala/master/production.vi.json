@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "scala",
+  "level": "master",
+  "lesson": "production",
+  "language": "vi",
+  "sourceHash": "db943b3e1f52335440ea6176f2ea1ddda63842a3d5d4152741a06cb9bc996d8e",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo comment ZIO.succeed(\"Microservice running with zero downtime!\") và yêu cầu hệ thống đơn hàng Actor. Đối chiếu Akka Typed/core docs hiển thị 2.10.24, ZIO 2.x và Cats Effect 3.x; các thư viện không dùng API thay thế tùy ý. Comment/effect giá trị không mở listener hay chứng minh uptime/throughput. Actor isolation, delivery/supervision, idempotency, resource/error/cancellation được phân biệt; không chạy framework/JVM/service/cluster.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Mã nguồn",
+      "question": "Ví dụ ZIO trong source hiện là gì?",
+      "options": [
+        "Một dòng comment minh họa",
+        "Microservice đã được triển khai",
+        "ActorSystem đang xử lý đơn thật",
+        "HTTP server đã bind cổng"
+      ],
+      "correct": 0,
+      "explanation": "Comment không thực hiện công việc khi chương trình chạy."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Giá trị mẫu",
+      "question": "Biểu thức được nhắc trong comment dùng constructor nào?",
+      "options": [
+        "JsonSerializable.apply",
+        "ZIO.succeed",
+        "Future.sequence",
+        "SparkSession.builder"
+      ],
+      "correct": 1,
+      "explanation": "Constructor minh họa tạo effect thành công chứa một String."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Thông điệp mẫu",
+      "question": "Chuỗi “Microservice running with zero downtime!” tự chứng minh điều gì?",
+      "options": [
+        "Chứng minh không có lần gián đoạn nào",
+        "Chứng minh dữ liệu đã được nhân bản",
+        "Không tự chứng minh microservice đang chạy hay uptime",
+        "Chứng minh có load balancer"
+      ],
+      "correct": 2,
+      "explanation": "Nội dung chuỗi là dữ liệu, không phải kết quả đo vận hành."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "ZIO value",
+      "question": "Theo ZIO 2, giá trị ZIO[R,E,A] mô tả gì?",
+      "options": [
+        "Một HTTP listener luôn tự chạy",
+        "Một thread hệ điều hành riêng",
+        "Một transaction database luôn đã commit",
+        "Workflow/effect có thể cần môi trường, có lỗi kiểu E hoặc thành công kiểu A"
+      ],
+      "correct": 3,
+      "explanation": "Giá trị mô tả công việc cần được thực thi bởi runtime phù hợp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "R",
+      "question": "R trong ZIO[R,E,A] biểu diễn gì?",
+      "options": [
+        "Môi trường yêu cầu",
+        "Số request tối đa chắc chắn",
+        "Mã HTTP mặc định",
+        "Số replica đã triển khai"
+      ],
+      "correct": 0,
+      "explanation": "Yêu cầu môi trường là phần của kiểu effect."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "E",
+      "question": "E trong ZIO[R,E,A] biểu diễn gì?",
+      "options": [
+        "Mọi defect đã được tự sửa",
+        "Kiểu lỗi trong kênh lỗi được mô hình hóa",
+        "Số executor Spark",
+        "Tên endpoint"
+      ],
+      "correct": 1,
+      "explanation": "Kênh lỗi có kiểu không đồng nghĩa mọi nguyên nhân lỗi đều nằm trong đó."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "A",
+      "question": "A trong ZIO[R,E,A] biểu diễn gì?",
+      "options": [
+        "Số actor sống",
+        "Chính sách retry tự có",
+        "Kiểu kết quả thành công",
+        "Kiểu mailbox bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "A không nói đến năng lực chịu tải."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Actor isolation",
+      "question": "Một actor instance Akka xử lý message của mình theo nguyên tắc nào?",
+      "options": [
+        "Mọi message trong cùng actor luôn chạy đồng thời",
+        "Mọi actor trong hệ thống phải dùng cùng một thứ tự toàn cục",
+        "Mỗi field là một thread",
+        "Từng message một qua hành vi actor"
+      ],
+      "correct": 3,
+      "explanation": "Isolation chỉ có ý nghĩa khi trạng thái không bị truy cập ngoài cơ chế đúng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Mailbox",
+      "question": "Mailbox của actor có vai trò gì?",
+      "options": [
+        "Giữ các message chờ xử lý theo cơ chế mailbox",
+        "Là bảng database bền vững bắt buộc",
+        "Là cache JSON toàn hệ thống",
+        "Là kiểu tiền tệ"
+      ],
+      "correct": 0,
+      "explanation": "Không giả định mọi mailbox đều bounded hay durable."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Message",
+      "question": "Thiết kế message cho xử lý đơn hàng nên ưu tiên gì?",
+      "options": [
+        "Một Thread cho từng field",
+        "Hợp đồng dữ liệu rõ và tránh chia sẻ trạng thái mutable tùy ý",
+        "Tham chiếu biến mutable cho mọi actor tự sửa",
+        "Chỉ String log không có định danh"
+      ],
+      "correct": 1,
+      "explanation": "Message protocol là ranh giới giao tiếp giữa các thành phần."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Akka và ZIO",
+      "question": "Akka Actor và ZIO có phải cùng một API đổi tên được không?",
+      "options": [
+        "Có, import nào cũng thay thế được",
+        "Không, vì ZIO không có concurrency",
+        "Không, là các thư viện/mô hình với API và phiên bản riêng",
+        "Có, ActorRef chính là ZIO ở mọi phiên bản"
+      ],
+      "correct": 2,
+      "explanation": "Cùng hỗ trợ concurrent systems không có nghĩa đồng nhất."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cats Effect",
+      "question": "Cats Effect được nhắc trong bài thuộc nhóm nào?",
+      "options": [
+        "Một tên khác của Spark DataFrame",
+        "Một JSON schema validator có sẵn trong Scala core",
+        "Một loại Option bắt buộc",
+        "Thư viện effect/runtime với các khái niệm như IO và fiber"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi tham chiếu ở đây là Cats Effect 3.x."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Fiber",
+      "question": "Fiber trong effect runtime có nên hiểu là gì?",
+      "options": [
+        "Đơn vị thực thi nhẹ do runtime quản lý, không mặc nhiên một OS thread riêng",
+        "Một OS thread vĩnh viễn cho mỗi effect",
+        "Một node database bắt buộc",
+        "Một tên khác của JSON field"
+      ],
+      "correct": 0,
+      "explanation": "Runtime và chính sách scheduling quyết định sử dụng thread."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Bài tập",
+      "question": "Bài tập production đề nghị xây dựng hệ thống nào?",
+      "options": [
+        "Chỉ thêm val message vào App",
+        "Xử lý đơn hàng theo Actor trong thời gian thực",
+        "Chỉ đổi kiểu String thành Int",
+        "Chỉ tính List(1,2,3).sum"
+      ],
+      "correct": 1,
+      "explanation": "Đây là yêu cầu thiết kế, chưa có implementation trong source."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Supervision",
+      "question": "Supervision trong actor hướng tới vấn đề gì?",
+      "options": [
+        "Tự xác thực mọi user",
+        "Tự bảo đảm mọi message đúng một lần",
+        "Cách phản ứng với thất bại của actor theo chiến lược",
+        "Tự hoàn tác mọi giao dịch ngoài"
+      ],
+      "correct": 2,
+      "explanation": "Phục hồi actor khác với tính nhất quán nghiệp vụ bên ngoài."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Resource lifecycle",
+      "question": "Tài nguyên như connection/file cần gì?",
+      "options": [
+        "Chỉ một chuỗi báo chạy tốt",
+        "Không cần đóng khi dùng effect",
+        "Đổi tên biến thành scoped là đủ",
+        "Cơ chế acquire/use/release theo vòng đời rõ ràng"
+      ],
+      "correct": 3,
+      "explanation": "Quản lý tài nguyên là hành vi thực tế, không chỉ tên biến."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Typed errors",
+      "question": "Lỗi có kiểu giúp gì?",
+      "options": [
+        "Làm rõ lỗi dự kiến để caller xử lý theo hợp đồng",
+        "Loại mọi defect và lỗi phần cứng",
+        "Tự retry mọi thao tác vô hạn",
+        "Tự rollback mọi side effect"
+      ],
+      "correct": 0,
+      "explanation": "Kiểu lỗi hỗ trợ reasoning nhưng có phạm vi bảo đảm."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Observability",
+      "question": "Để hiểu hệ thống đơn hàng có khỏe không, cần gì?",
+      "options": [
+        "Chỉ màu icon dashboard",
+        "Số liệu, log/tracing phù hợp và tiêu chí vận hành",
+        "Chỉ dòng String zero downtime",
+        "Chỉ số lượng trait trong mã"
+      ],
+      "correct": 1,
+      "explanation": "Quan sát cần tránh lộ dữ liệu nhạy cảm và gắn với mục tiêu cụ thể."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Throughput",
+      "question": "Tuyên bố triệu message mỗi giây cần bằng chứng nào?",
+      "options": [
+        "Chỉ import ZIO._",
+        "Chỉ có 80 câu quiz",
+        "Workload, cấu hình và phép đo thực tế",
+        "Chỉ tên Akka"
+      ],
+      "correct": 2,
+      "explanation": "Không suy từ lựa chọn thư viện thành năng lực đã chứng minh."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Đã triển khai chưa",
+      "question": "Source đã cung cấp server, cấu hình và deployment production chưa?",
+      "options": [
+        "Đã có HTTP server đầy đủ",
+        "Đã có cluster nhiều vùng",
+        "Đã có benchmark công khai",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Các nội dung đó không xuất hiện trong comment mẫu."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "ZIO lazy",
+      "question": "Tạo val p = ZIO.succeed(\"ok\") có tự gửi HTTP response không?",
+      "options": [
+        "Không, chỉ mô tả effect cho runtime sử dụng; không có server trong đó",
+        "Có, tự mở cổng 80",
+        "Có, tự tạo route /ok",
+        "Không, vì String không dùng trong ZIO"
+      ],
+      "correct": 0,
+      "explanation": "Ngay cả thực thi effect thành công cũng không đồng nghĩa đã có HTTP service."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "ZIO succeed error channel",
+      "question": "Với ZIO 2, ZIO.succeed(\"ok\") thông thường có kiểu lỗi nào?",
+      "options": [
+        "Option[Exception]",
+        "Nothing trong kênh lỗi có kiểu",
+        "Throwable bắt buộc",
+        "String lỗi \"ok\""
+      ],
+      "correct": 1,
+      "explanation": "Kênh Nothing không khẳng định hoàn toàn không thể có defect/interruption."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Succeed và throwing",
+      "question": "Để bọc phép tính đồng bộ có thể ném exception thành lỗi Throwable được mô hình hóa trong ZIO 2, nên xem constructor nào?",
+      "options": [
+        "ZIO.fromOption cho mọi mã tùy ý",
+        "ActorRef.tell",
+        "ZIO.attempt",
+        "ZIO.succeed rồi giả định mọi exception thành typed error"
+      ],
+      "correct": 2,
+      "explanation": "Constructor phải phù hợp khả năng thất bại của phép tính."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Defect",
+      "question": "Nếu code ném exception ngoài kênh lỗi dự kiến, nên hiểu gì?",
+      "options": [
+        "Mọi defect tự trở thành giá trị A",
+        "Không thể có defect vì E = Nothing",
+        "Defect luôn là HTTP 404",
+        "Có thể là defect cần cơ chế quan sát/xử lý phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không gộp mọi thất bại với một lỗi miền đã khai báo."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "ZIO chaining",
+      "question": "flatMap trên ZIO thường thể hiện điều gì?",
+      "options": [
+        "Bước sau có thể phụ thuộc kết quả thành công của bước trước",
+        "Mọi bước luôn chạy song song",
+        "Tự ghi kết quả ra database",
+        "Tự cấp OS thread cho mỗi bước"
+      ],
+      "correct": 0,
+      "explanation": "Composition và scheduling phải được phân biệt."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "ZIO map",
+      "question": "Nếu effect thành công với 2, map(_ + 3) thay đổi gì?",
+      "options": [
+        "Sửa mọi effect khác thành 5",
+        "Giá trị thành công thành 5 trong effect mới",
+        "Chạy server trên cổng 5",
+        "Đổi lỗi thành 5 trong mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Đây là biến đổi kết quả, không triển khai dịch vụ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Không tự memoize",
+      "question": "Cùng một effect mô tả ghi log được thực thi hai lần có mặc nhiên chỉ ghi một lần không?",
+      "options": [
+        "Có, vì String immutable",
+        "Không, vì effect không thể có side effect",
+        "Không, muốn cache/memoization phải chọn cơ chế phù hợp",
+        "Có, mọi val effect tự chạy đúng một lần"
+      ],
+      "correct": 2,
+      "explanation": "Tái sử dụng mô tả và memoization kết quả là hai khái niệm khác."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Acquire release",
+      "question": "ZIO.acquireRelease hướng đến gì?",
+      "options": [
+        "Chỉ cấp RAM không bao giờ giải phóng",
+        "Chỉ bắt lỗi kiểu String",
+        "Tự thay mọi transaction database",
+        "Đăng ký giải phóng tài nguyên theo scope tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Phải có acquire và release đúng hành vi theo tài nguyên."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Scope",
+      "question": "ZIO.scoped có mục đích nổi bật nào?",
+      "options": [
+        "Giới hạn vòng đời scoped resource và chạy finalizer khi scope kết thúc theo cơ chế runtime",
+        "Tự tăng số node cluster",
+        "Tự đóng mọi tài nguyên không đăng ký ở mọi process",
+        "Tự tạo HTTP route"
+      ],
+      "correct": 0,
+      "explanation": "Không mở rộng bảo đảm sang tài nguyên ngoài hợp đồng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Resource outside",
+      "question": "Mở connection trước khi tạo effect rồi quên đăng ký release có được tự sửa chỉ vì dùng ZIO không?",
+      "options": [
+        "Không, nhưng đổi tên connection thành resource là đủ",
+        "Không, cần bọc và quản lý acquire/release đúng cách",
+        "Có, runtime tự tìm mọi connection trong JVM",
+        "Có, String program tự đóng connection"
+      ],
+      "correct": 1,
+      "explanation": "Thư viện cung cấp công cụ, tác giả phải dùng đúng vòng đời."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Blocking effect",
+      "question": "I/O đồng bộ chặn trong effect nên được xem xét thế nào?",
+      "options": [
+        "Chỉ đổi succeed thành map sẽ hết chặn",
+        "Tạo vô hạn fiber làm tài nguyên vô hạn",
+        "Dùng cơ chế blocking thích hợp và kiểm giới hạn/cancellation theo API",
+        "Mọi code trong effect tự không chặn"
+      ],
+      "correct": 2,
+      "explanation": "Mô tả effect không xóa đặc tính I/O bên dưới."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Cancellation",
+      "question": "Trong effect runtime, cancellation có luôn là rollback nghiệp vụ ngoài không?",
+      "options": [
+        "Có, hủy fiber tự hoàn tiền mọi giao dịch",
+        "Có, chỉ cần finalizer tên rollback",
+        "Không, vì runtime không có cancellation",
+        "Không, cần phân biệt dừng computation/cleanup với hoàn tác side effect"
+      ],
+      "correct": 3,
+      "explanation": "Đặc tính giao dịch do hệ thống đích và thiết kế nghiệp vụ quyết định."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Cats cancellation",
+      "question": "Theo Cats Effect 3, hủy fiber có đặc tính gì cần lưu ý?",
+      "options": [
+        "Mang tính hợp tác, có vùng che hủy và finalizer theo cơ chế thư viện",
+        "Luôn giết OS thread ngay tại mọi lệnh",
+        "Luôn hoàn tác mọi HTTP request đã gửi",
+        "Chỉ tồn tại trong Spark"
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất với dừng cưỡng bức tức thì hoặc transaction."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Bounded resources",
+      "question": "Nhiều fiber rẻ có nghĩa được mở vô hạn connection database không?",
+      "options": [
+        "Không, vì fiber không gọi được I/O",
+        "Không, connection và dịch vụ đích có giới hạn riêng",
+        "Có, fiber làm mọi tài nguyên rẻ bằng nhau",
+        "Có, chỉ cần dùng ZIO.succeed"
+      ],
+      "correct": 1,
+      "explanation": "Giới hạn đồng thời phải theo tài nguyên khan hiếm thực tế."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Actor và thread",
+      "question": "Một actor có bắt buộc sở hữu một OS thread riêng suốt đời không?",
+      "options": [
+        "Có, kể cả actor đang nhàn rỗi",
+        "Không, vì actor không bao giờ được thực thi",
+        "Không, dispatcher có thể chia sẻ pool thực thi",
+        "Có, một actor luôn một thread riêng"
+      ],
+      "correct": 2,
+      "explanation": "Isolation logic không suy ra một-thread-mỗi-actor."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Trạng thái actor",
+      "question": "Cập nhật state của actor nên diễn ra theo cách nào?",
+      "options": [
+        "Từ mọi callback ngoài actor sửa trực tiếp field",
+        "Qua biến global cho mọi actor tự cập nhật",
+        "Bằng cách chia sẻ mutable Map rồi bỏ đồng bộ",
+        "Trong xử lý message/behavior và cơ chế an toàn theo API"
+      ],
+      "correct": 3,
+      "explanation": "Rò rỉ state khỏi actor có thể phá bảo đảm isolation."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Message immutable",
+      "question": "Vì sao tránh gửi đối tượng mutable chung giữa các actor?",
+      "options": [
+        "Sender có thể sửa sau khi gửi, làm bên nhận thấy thay đổi ngoài protocol",
+        "Vì actor chỉ nhận được Int",
+        "Vì mutable object tự tạo dead letter",
+        "Vì String luôn chứa thông tin xác thực"
+      ],
+      "correct": 0,
+      "explanation": "Message protocol nên có dữ liệu ổn định/ownership rõ."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Delivery mặc định",
+      "question": "Theo general rules của Akka tell, bảo đảm delivery cơ bản là gì?",
+      "options": [
+        "Mọi message đều bền vững trên đĩa",
+        "At-most-once, không bảo đảm nhận được",
+        "Exactly-once toàn nghiệp vụ",
+        "At-least-once với dedup tự động ở mọi tầng"
+      ],
+      "correct": 1,
+      "explanation": "Cần abstraction/protocol bổ sung khi yêu cầu delivery cao hơn."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Thứ tự message",
+      "question": "Akka nêu thứ tự message cơ bản theo phạm vi nào?",
+      "options": [
+        "Mọi Future callback luôn đứng trước message",
+        "Mọi message tự sắp theo timestamp nghiệp vụ",
+        "Cặp sender–receiver theo các điều kiện documented, không thứ tự toàn hệ thống",
+        "Mọi sender đến mọi receiver có cùng thứ tự global"
+      ],
+      "correct": 2,
+      "explanation": "Không mở rộng ordering cục bộ thành tổng thứ tự giữa nhiều nguồn."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Hai sender",
+      "question": "Hai actor A và B cùng gửi lệnh đến C thì C có tự biết thứ tự nghiệp vụ tuyệt đối không?",
+      "options": [
+        "Có, luôn ưu tiên A theo alphabet",
+        "Có, luôn ưu tiên actor tạo trước",
+        "Có, tell tự tạo transaction global",
+        "Không, cần protocol/sequence/version nếu nghiệp vụ yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự đến mailbox không tự là thứ tự sự kiện thực trong thế giới ngoài."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Supervision và DB",
+      "question": "Restart actor có tự rollback giao dịch database đã commit không?",
+      "options": [
+        "Không",
+        "Có, restart luôn quay mọi dữ liệu về trước message",
+        "Có, nếu actor dùng case class",
+        "Có, chỉ cần strategy tên restart"
+      ],
+      "correct": 0,
+      "explanation": "Phục hồi computation khác hoàn tác dữ liệu đã bền vững."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Restart state",
+      "question": "Nếu actor giữ state chỉ trong RAM, restart cần xem xét gì?",
+      "options": [
+        "Restart tự đọc đúng database mà không code",
+        "Cách khởi tạo/khôi phục state và các message/side effect liên quan",
+        "Mọi state RAM tự bền vững vĩnh viễn",
+        "Không có ảnh hưởng vì ActorRef còn tồn tại"
+      ],
+      "correct": 1,
+      "explanation": "Cơ chế khôi phục phải được thiết kế, không suy từ tên chiến lược."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Typed supervision",
+      "question": "Có nên coi mọi lỗi Akka Typed đều mặc định restart như một giả định phổ quát không?",
+      "options": [
+        "Có, kể cả message không hợp lệ theo type",
+        "Không, vì Typed không có supervision",
+        "Không, cần xem behavior/strategy và phiên bản; Typed có cơ chế supervision tường minh",
+        "Có, mọi actor mọi phiên bản luôn restart"
+      ],
+      "correct": 2,
+      "explanation": "Tránh lẫn mặc định Classic với Typed và các cấu hình cụ thể."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Mailbox overload",
+      "question": "Nếu producer nhanh hơn consumer trong thời gian dài, cần xem xét gì?",
+      "options": [
+        "Mailbox luôn có bộ nhớ vô hạn",
+        "Thêm chuỗi zero downtime giải quyết tải",
+        "Đổi mọi message thành String để không còn quá tải",
+        "Giới hạn hàng đợi, backpressure/admission và hành vi khi quá tải"
+      ],
+      "correct": 3,
+      "explanation": "Tải vượt năng lực cần chính sách rõ, không chỉ tăng số actor."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Bounded mailbox",
+      "question": "Chọn bounded mailbox có tự chứng minh không mất message không?",
+      "options": [
+        "Không, cần hợp đồng khi đầy và cơ chế xử lý ở producer/consumer",
+        "Có, đầy thì tự mở rộng vô hạn",
+        "Có, mọi message tự lưu database",
+        "Không, vì bounded mailbox luôn không dùng được"
+      ],
+      "correct": 0,
+      "explanation": "Giới hạn tài nguyên và độ tin cậy là yêu cầu cần phối hợp."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Order id",
+      "question": "Command xử lý đơn hàng nên có định danh nào để đối chiếu?",
+      "options": [
+        "Chỉ chuỗi “ok”",
+        "Order id/command id theo hợp đồng và yêu cầu idempotency",
+        "Chỉ tên thread hiện tại",
+        "Chỉ tên ngẫu nhiên của actor path"
+      ],
+      "correct": 1,
+      "explanation": "Định danh nghiệp vụ khác định danh thực thi tạm thời."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Idempotency",
+      "question": "Idempotency key hỗ trợ mục tiêu nào?",
+      "options": [
+        "Tự xác thực quyền người gửi",
+        "Tự mã hóa dữ liệu",
+        "Nhận biết yêu cầu lặp để tránh lặp tác dụng nghiệp vụ theo hợp đồng",
+        "Tự tăng tốc mọi message lên triệu mỗi giây"
+      ],
+      "correct": 2,
+      "explanation": "Cần lưu/kiểm key cùng tính nhất quán thích hợp, không chỉ thêm trường vào message."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Ack",
+      "question": "Nhận ack “đã nhận message” có luôn đồng nghĩa đơn đã thanh toán và commit không?",
+      "options": [
+        "Có, mọi ack là hoàn tất toàn quy trình",
+        "Có, vì actor không xử lý đồng thời hai message",
+        "Không, vì actor không thể trả lời",
+        "Không, cần định nghĩa ack của bước nào và trạng thái bền vững nào"
+      ],
+      "correct": 3,
+      "explanation": "Hợp đồng phản hồi phải gắn với milestone nghiệp vụ cụ thể."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Timeout request",
+      "question": "Ask timeout có tự chứng minh actor chưa xử lý lệnh không?",
+      "options": [
+        "Không, có thể phản hồi chậm/mất hoặc công việc còn đang chạy",
+        "Có, message bị xóa khỏi mọi mailbox",
+        "Có, side effect tự rollback",
+        "Không, nhưng gửi lại luôn an toàn mà không key"
+      ],
+      "correct": 0,
+      "explanation": "Timeout là điều người gọi quan sát, không là bằng chứng kết quả nghiệp vụ cuối."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Retry budget",
+      "question": "Retry đối với lỗi tạm thời nên có gì?",
+      "options": [
+        "Chỉ tăng số log để không còn lỗi",
+        "Giới hạn, backoff/deadline và xét an toàn lặp",
+        "Vòng lặp vô hạn ngay lập tức",
+        "Retry mọi lỗi validation giống nhau"
+      ],
+      "correct": 1,
+      "explanation": "Retry quá mức có thể khuếch đại quá tải hoặc lặp side effect."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Validation",
+      "question": "Đơn có số lượng âm nên thường được xử lý thế nào theo hợp đồng?",
+      "options": [
+        "Chỉ restart actor rồi bỏ kiểm tra",
+        "Đổi âm thành dương mà không thống nhất quy tắc",
+        "Từ chối như lỗi đầu vào trước side effect, không coi là lỗi hạ tầng để retry vô hạn",
+        "Retry đến khi số lượng tự dương"
+      ],
+      "correct": 2,
+      "explanation": "Phân loại lỗi miền giúp hành vi và phản hồi đúng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Ordering domain",
+      "question": "Command Cancel sau Ship cần chính sách gì?",
+      "options": [
+        "Luôn chấp nhận mọi command để tăng throughput",
+        "Dựa vào tên class để tự rollback vận chuyển",
+        "Chỉ gọi ZIO.succeed(\"cancelled\")",
+        "State machine/invariant xác định có được hủy và phản hồi thế nào"
+      ],
+      "correct": 3,
+      "explanation": "Đúng thứ tự xử lý vẫn chưa đủ nếu không có quy tắc trạng thái."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Outbox",
+      "question": "Transactional outbox thường nhằm giải quyết khoảng trống nào?",
+      "options": [
+        "Phối hợp thay đổi dữ liệu bền vững với việc phát sự kiện theo thiết kế",
+        "Biến mọi mạng thành exactly-once vô điều kiện",
+        "Thay mọi cơ chế idempotency consumer",
+        "Tăng tốc JSON bằng covariance"
+      ],
+      "correct": 0,
+      "explanation": "Outbox vẫn cần publisher/retry/dedup và vận hành phù hợp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Health",
+      "question": "Health check tốt cần gắn với điều gì?",
+      "options": [
+        "Kích thước chữ của log",
+        "Ý nghĩa liveness/readiness và phụ thuộc theo yêu cầu vận hành",
+        "Chỉ String do ZIO.succeed tạo",
+        "Số actor theo tên package"
+      ],
+      "correct": 1,
+      "explanation": "Readiness và liveness phục vụ quyết định khác nhau trong môi trường triển khai."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Graceful shutdown",
+      "question": "Dừng service đang có đơn xử lý cần xem xét gì?",
+      "options": [
+        "Chỉ in chuỗi stopped",
+        "Bỏ mọi ack để shutdown nhanh",
+        "Ngừng nhận tải mới, hoàn tất/handoff theo deadline và giải phóng tài nguyên",
+        "Kill ngay mọi worker rồi tuyên bố không mất đơn"
+      ],
+      "correct": 2,
+      "explanation": "Chính sách shutdown liên quan đến tính nhất quán và trải nghiệm caller."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Log privacy",
+      "question": "Log command đơn hàng nên lưu gì?",
+      "options": [
+        "Toàn token và password để debug mọi lỗi",
+        "Mọi body khách hàng vô hạn",
+        "Chỉ từ ok nên không đối chiếu được gì",
+        "Thông tin đối chiếu cần thiết, tránh secret/dữ liệu nhạy cảm không cần"
+      ],
+      "correct": 3,
+      "explanation": "Quan sát có ích cần cân bằng phạm vi dữ liệu được phép ghi."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Thư viện khác nhau",
+      "question": "Code Cats Effect IO có dùng trực tiếp mọi method ZIO với cùng kiểu lỗi môi trường không?",
+      "options": [
+        "Không, cần API/interop và hợp đồng đúng thư viện",
+        "Có, mọi effect có cùng type signature",
+        "Có, chỉ đổi import là luôn đủ",
+        "Không, vì Cats Effect không có resource management"
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm khái niệm tương tự với khả năng thay thế trực tiếp."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "HA",
+      "question": "Chọn Actor Model có tự làm hệ thống high availability hoàn chỉnh không?",
+      "options": [
+        "Có, chỉ cần khai báo supervisor",
+        "Không, còn state, topology, recovery, dependency và vận hành",
+        "Có, mọi actor tự nhân bản đa vùng",
+        "Có, mailbox mặc định là durable database"
+      ],
+      "correct": 1,
+      "explanation": "Mô hình concurrency là một phần của kiến trúc."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Đo latency",
+      "question": "Chỉ đo thời gian xử lý một message rỗng có đủ suy ra latency đơn hàng thật không?",
+      "options": [
+        "Có, bỏ database luôn đúng đại diện",
+        "Không, nhưng String zero downtime thay được benchmark",
+        "Không, cần workload đại diện gồm I/O, lỗi, tải và các percentile thích hợp",
+        "Có, tên actor giống nhau nên latency bằng nhau"
+      ],
+      "correct": 2,
+      "explanation": "Hiệu năng phụ thuộc công việc và điều kiện thực tế."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Giới hạn source",
+      "question": "Đâu là điều chưa xuất hiện trong comment mẫu?",
+      "options": [
+        "Một String mô tả trạng thái",
+        "Tên ZIO.succeed",
+        "Tên biến program",
+        "Route/listener, runtime entry point và cơ chế phục hồi dịch vụ hoàn chỉnh"
+      ],
+      "correct": 3,
+      "explanation": "Không gán các thành phần còn thiếu cho một giá trị mô tả."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Không có service từ String",
+      "question": "Đội bỏ comment và tạo val program = ZIO.succeed(\"Microservice running with zero downtime!\"). Có thể báo service đã hoạt động chưa?",
+      "options": [
+        "Chưa, cần entry point/runtime, giao thức phục vụ và triển khai/kiểm vận hành thực tế",
+        "Có, tên biến program tự tạo HTTP listener",
+        "Có, String chứa running là trạng thái thật",
+        "Chưa, nhưng thêm dấu chấm than sẽ làm effect chạy"
+      ],
+      "correct": 0,
+      "explanation": "Tạo hoặc thực thi một effect trả String đều không tự cung cấp hệ thống microservice."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Typed error không bao trùm",
+      "question": "Nhóm bọc legacyThrowingCall trong ZIO.succeed rồi chỉ catchAll lỗi miền, kỳ vọng mọi exception thành typed error. Sửa gì?",
+      "options": [
+        "Dùng actor mailbox để compiler tự chuyển exception",
+        "Dùng constructor phù hợp như attempt để mô hình hóa lỗi dự kiến và xử lý defect riêng theo chính sách",
+        "Giữ succeed vì E = Nothing chứng minh code không thể ném",
+        "Đổi tên exception thành domainError là đủ"
+      ],
+      "correct": 1,
+      "explanation": "Kênh lỗi có kiểu phụ thuộc cách đưa computation vào effect, không chỉ cách bắt ở cuối."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Hủy và thanh toán",
+      "question": "Fiber timeout sau khi lệnh thanh toán đã được gửi. Trước retry cần thiết kế gì?",
+      "options": [
+        "Gửi lại amount nhiều lần đến khi nhận ack",
+        "Chỉ gọi finalizer in cancelled để rollback ngân hàng",
+        "Idempotency/đối soát trạng thái vì interruption không chứng minh giao dịch ngoài chưa commit",
+        "Tin hủy fiber là hoàn tiền chắc chắn"
+      ],
+      "correct": 2,
+      "explanation": "Cleanup computation khác transaction đã tác động ra ngoài tiến trình."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Actor leak state",
+      "question": "Actor giữ mutable Map nhưng Future callback ngoài actor sửa map trực tiếp. Vì sao mất bảo đảm một-message-một-lần?",
+      "options": [
+        "Không mất vì mọi callback tự thành message",
+        "Không mất vì Map ở trong class actor",
+        "Chỉ mất nếu Map có hơn một triệu khóa",
+        "State bị truy cập ngoài xử lý message; nên đưa kết quả về actor qua protocol phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Encapsulation cần được duy trì ở mọi lối cập nhật state."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Command lặp",
+      "question": "Caller gửi CreateOrder, timeout rồi gửi lại; cả hai có thể được xử lý. Thiết kế nào đúng hướng?",
+      "options": [
+        "Command id/idempotency được kiểm cùng trạng thái bền vững phù hợp và phản hồi kết quả đã có",
+        "Mỗi lần dùng order id mới để tránh nhận biết trùng",
+        "Tin at-most-once của từng send nghĩa caller không thể gửi lặp",
+        "Dựa vào sleep 500 ms giữa hai lần để chống trùng"
+      ],
+      "correct": 0,
+      "explanation": "Delivery của một message khác với lặp thao tác nghiệp vụ do người gửi."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Restart sau commit",
+      "question": "Actor commit trừ kho rồi crash trước ack; restart và retry command có thể trừ kho lần nữa. Cần gì?",
+      "options": [
+        "Tăng mailbox vô hạn để tránh crash mọi loại",
+        "Liên kết idempotency/commit trạng thái và cơ chế khôi phục để nhận biết tác dụng đã làm",
+        "Chỉ bật restart strategy là đủ exactly-once",
+        "Xóa database khi restart để hết trùng"
+      ],
+      "correct": 1,
+      "explanation": "Supervision không tự đóng khoảng trống giữa side effect bền vững và phản hồi."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Nhiều sender và trạng thái",
+      "question": "Cancel và Ship đến từ hai sender khác nhau. Giữ đúng nghiệp vụ cần gì?",
+      "options": [
+        "Ưu tiên sender tên Cancel vì alphabet",
+        "Dùng String thay ADT để tự có ordering",
+        "State machine/version và quy tắc cạnh tranh, không dựa vào thứ tự global không có",
+        "Tin Akka sắp mọi command theo thời điểm người dùng bấm ở toàn cầu"
+      ],
+      "correct": 2,
+      "explanation": "Ordering truyền tin có phạm vi, còn hợp lệ trạng thái phải do hệ thống định nghĩa."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Quá tải mailbox",
+      "question": "Queue tăng mãi khi DB chậm, thêm actor cũng làm DB quá tải hơn. Cách xử lý gốc?",
+      "options": [
+        "Tạo vô hạn actor để DB có thêm connection vô hạn",
+        "Chỉ tăng timeout để queue tự hết",
+        "Bỏ log vì queue là đặc tính không thể quan sát",
+        "Admission/backpressure và giới hạn theo năng lực phụ thuộc, kèm số liệu và chính sách khi đầy"
+      ],
+      "correct": 3,
+      "explanation": "Cần điều phối tải đầu vào với bottleneck thực tế."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Acquisition dở dang",
+      "question": "Mở hai tài nguyên, tài nguyên thứ hai lỗi và tài nguyên thứ nhất bị rò. Thiết kế effect nên làm gì?",
+      "options": [
+        "Đăng ký release theo scope/acquire-release đúng cho từng tài nguyên ngay khi nhận được",
+        "Chỉ release ở nhánh thành công cuối",
+        "Đổi tài nguyên thành val để tự đóng",
+        "Catch lỗi rồi bỏ qua connection đầu"
+      ],
+      "correct": 0,
+      "explanation": "Quản lý vòng đời phải bao cả đường thất bại và interruption phù hợp."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Cancellation cooperative",
+      "question": "Cats Effect fiber đang trong vùng uncancelable hoặc foreign blocking call. Có nên hứa hủy luôn hoàn tất tức thì không?",
+      "options": [
+        "Không, nhưng đổi tên thành interrupt đảm bảo tức thì",
+        "Không, phải xét vùng che hủy, finalizer và khả năng của thao tác bên dưới",
+        "Có, cancel luôn giết thread lập tức",
+        "Có, vì fiber không có tài nguyên"
+      ],
+      "correct": 1,
+      "explanation": "Khả năng hủy có cơ chế và giới hạn, cần đánh giá theo API cụ thể."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Retry storm",
+      "question": "Phụ thuộc đang lỗi, mọi đơn retry tức thì vô hạn làm tải tăng. Cần sửa gì?",
+      "options": [
+        "Tăng message String size để chậm tự nhiên",
+        "Chỉ đổi thư viện Akka sang ZIO mà giữ chính sách cũ",
+        "Phân loại lỗi, giới hạn retry/backoff/deadline và kiểm soát đồng thời",
+        "Bật thêm retry vô hạn ở từng tầng"
+      ],
+      "correct": 2,
+      "explanation": "Mô hình runtime không tự sửa chính sách khuếch đại tải sai."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Business ack",
+      "question": "API trả “đã nhận” ngay khi message vào mailbox nhưng UI hiển thị “đã thanh toán”. Sửa hợp đồng thế nào?",
+      "options": [
+        "Giữ nguyên vì actor chắc chắn sẽ thành công",
+        "Dùng String succeeded ở ack để trạng thái thành thật",
+        "Bỏ mọi trạng thái lỗi để UI đơn giản",
+        "Tách trạng thái tiếp nhận/đang xử lý/hoàn tất và chỉ báo thanh toán khi có bằng chứng commit phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Ý nghĩa phản hồi phải khớp milestone đã được bảo đảm."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Zero downtime claim",
+      "question": "Source có chuỗi zero downtime, chưa topology/SLO/rollout/drain. Có thể kết luận kiến trúc sẵn sàng hàng triệu user không?",
+      "options": [
+        "Chưa, cần thiết kế và bằng chứng về phụ thuộc, khả năng phục hồi, tải và vận hành",
+        "Có, ZIO tự cấu hình multi-region",
+        "Có, Actor Model đồng nghĩa HA",
+        "Chỉ cần số lượng câu quiz đủ 80"
+      ],
+      "correct": 0,
+      "explanation": "Đọc mã và tên công nghệ không thay kiểm chứng mục tiêu vận hành."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Outbox chưa đủ hết",
+      "question": "Đội thêm outbox rồi tuyên bố consumer không cần dedup vì mọi event exactly-once end-to-end. Đánh giá nào đúng?",
+      "options": [
+        "Sai vì outbox không thể phối hợp dữ liệu và sự kiện trong bất kỳ thiết kế nào",
+        "Chưa đủ, cần xét publish/ack/retry và idempotency/commit ở consumer theo hợp đồng",
+        "Đúng, outbox tự khóa mọi hệ thống bên ngoài",
+        "Đúng, mỗi event String chỉ tồn tại một lần trên toàn mạng"
+      ],
+      "correct": 1,
+      "explanation": "Không mở rộng bảo đảm một thành phần thành toàn chuỗi nghiệp vụ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Effect tái thực thi",
+      "question": "val send = ZIO.attempt(sendOrder()) được chạy lại sau lỗi ở bước sau. Có thể tự coi send chỉ xảy ra một lần vì là val không?",
+      "options": [
+        "Có, attempt tự dedup theo tên method",
+        "Không, vì val luôn chạy ngay lúc khai báo",
+        "Không, val giữ mô tả; thực thi lại có thể lặp side effect nếu không có cơ chế khác",
+        "Có, val memoize mọi lần chạy effect"
+      ],
+      "correct": 2,
+      "explanation": "Cần hiểu thời điểm thực thi và bảo vệ lặp ở ranh giới nghiệp vụ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Actor path và business id",
+      "question": "Dùng actor path tạm thời làm khóa chống trùng đơn qua restart/deploy có vấn đề gì?",
+      "options": [
+        "Không, mọi path là order id vĩnh viễn",
+        "Chỉ sai nếu dùng Scala 3",
+        "Đổi path sang String đủ làm durable",
+        "Định danh thực thi có thể đổi và không thay thế định danh nghiệp vụ bền vững"
+      ],
+      "correct": 3,
+      "explanation": "Idempotency và đối soát cần khóa có vòng đời phù hợp với dữ liệu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Shutdown có công việc dở",
+      "question": "Rollout dừng process ngay sau khi nhận command nhưng trước khi ghi kết quả. Để tránh mất/nhầm trạng thái cần gì?",
+      "options": [
+        "Quy trình drain/handoff/recovery, deadline và hợp đồng phản hồi phù hợp với state bền vững",
+        "Chỉ in zero downtime trước kill",
+        "Tin mailbox RAM sống qua mọi process restart",
+        "Tăng số fiber để kill không ảnh hưởng"
+      ],
+      "correct": 0,
+      "explanation": "Zero downtime và bảo toàn xử lý cần cơ chế triển khai cùng tính nhất quán, không một log."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Hợp đồng protocol version",
+      "question": "Triển khai dần hai phiên bản actor dùng message schema khác nhau. Điều gì cần được kiểm?",
+      "options": [
+        "Dùng Any để mọi dữ liệu luôn hiểu đúng",
+        "Tương thích protocol/serialization và đường nâng cấp, không chỉ code từng node",
+        "Chỉ tên package giống nhau",
+        "Số actor luôn bằng nhau là đủ"
+      ],
+      "correct": 1,
+      "explanation": "Distributed rollout có thể tồn tại nhiều phiên bản đồng thời."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Isolation không transaction",
+      "question": "Hai actor cùng giữ bản sao tồn kho và tự quyết trừ, mỗi actor xử lý tuần tự. Điều đó có bảo đảm không oversell không?",
+      "options": [
+        "Có, vì message immutable",
+        "Không, nhưng thêm String success ở hai bên đủ đồng bộ",
+        "Không, cần nguồn sự thật và cơ chế phối hợp/invariant nhất quán phù hợp",
+        "Có, tuần tự trong từng actor tự thành transaction toàn cục"
+      ],
+      "correct": 2,
+      "explanation": "Isolation cục bộ không tự giải quyết cạnh tranh trên cùng tài nguyên nghiệp vụ toàn hệ thống."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Actor retry và idempotency",
+      "question": "Actor đơn hàng gửi yêu cầu trừ tiền rồi timeout chờ phản hồi; chưa biết bên thanh toán đã xử lý chưa. Gửi lại sau restart cần thiết kế nào để tránh trừ hai lần?",
+      "options": [
+        "Mỗi retry dùng ID mới vì tuần tự trong actor tự loại mọi thao tác lặp ở dịch vụ khác",
+        "Coi timeout là chắc chắn chưa trừ tiền và gửi lại không cần kiểm outcome",
+        "Chỉ đổi Future thành ZIO.succeed vì effect description tự tạo giao dịch toàn hệ thống",
+        "Dùng operation ID ổn định, lưu/dedup outcome ở biên thanh toán và khôi phục trạng thái chờ phù hợp khi restart"
+      ],
+      "correct": 3,
+      "explanation": "Timeout có thể là phản hồi bị mất sau thành công; tuần tự cục bộ không tạo exactly-once qua dịch vụ/restart. Identity, outcome bền và policy retry phải phối hợp tại ranh giới side effect."
+    }
+  ]
+}

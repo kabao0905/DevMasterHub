@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cybersecurity",
+  "level": "mid",
+  "lesson": "sql-injection",
+  "language": "vi",
+  "sourceHash": "a329cc96d09d3a1087d9d76ac900f3590bf9cb7737ed3d6e65276ff7a6b98898",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo SQLi source và OWASP parameterization/SQLi prevention. Sửa khẳng định an toàn100%, không coi payload malformed chắc chắn bypass. Placeholder và db.query phụ thuộc driver; code hai const là hai phương án minh họa. Không chạy SQL, DB, HTTP, payload hay đọc config/credential.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "SQLi",
+      "question": "SQL injection xảy ra khi nào theo bản chất?",
+      "options": [
+        "Dữ liệu không tin cậy có thể làm thay đổi cấu trúc câu SQL",
+        "Bất kỳ câu SQL nào có tham số",
+        "Mọi truy vấn trả về nhiều hàng",
+        "Mọi database dùng mật khẩu"
+      ],
+      "correct": 0,
+      "explanation": "Vấn đề là ranh giới giữa cú pháp truy vấn và dữ liệu."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Nguồn đầu vào",
+      "question": "req.body.user trong ví dụ thuộc nhóm dữ liệu nào?",
+      "options": [
+        "Một quyền admin do server cấp",
+        "Đầu vào client cần được xử lý theo contract",
+        "Một định danh DB đã được xác thực tự động",
+        "Một câu SQL do compiler tin cậy tạo"
+      ],
+      "correct": 1,
+      "explanation": "Không tin dữ liệu chỉ vì có một tên field quen thuộc."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Nối chuỗi",
+      "question": "Nhánh vulnerable trong source dùng thao tác nào?",
+      "options": [
+        "Chỉ đọc file report",
+        "Chỉ tính hash của username",
+        "Ghép đầu vào vào text truy vấn",
+        "Bind value qua API prepared statement đã xác định"
+      ],
+      "correct": 2,
+      "explanation": "Nối dữ liệu vào text SQL có thể làm lẫn hai ngữ cảnh."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Parameterized query",
+      "question": "Ý tưởng chính của truy vấn tham số hóa là gì?",
+      "options": [
+        "Đổi mọi dấu cách thành dấu gạch",
+        "Mã hóa toàn bộ database mỗi lần đọc",
+        "Tin mọi input đến từ HTTPS",
+        "Tách cấu trúc SQL khỏi các giá trị được bind bằng API phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần dùng đúng driver/API, không chỉ đặt tên biến là parameter."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Placeholder nguồn",
+      "question": "Ký hiệu ? trong truy vấn minh họa có ý định gì?",
+      "options": [
+        "Vị trí cho một giá trị qua API driver hỗ trợ",
+        "Một quyền truy cập mọi bảng",
+        "Một tên bảng tự chọn",
+        "Một lệnh xóa dữ liệu"
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp placeholder không giống nhau ở mọi hệ/driver."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Values array",
+      "question": "Mảng [req.body.user] trong source có vai trò dự kiến gì?",
+      "options": [
+        "Tự sửa tên cột SQL",
+        "Cung cấp giá trị riêng cho API query theo contract",
+        "Tạo danh sách mọi database user",
+        "Tự xác thực password"
+      ],
+      "correct": 1,
+      "explanation": "Cần xác định driver và cơ chế thực hiện của API."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Prepared statement",
+      "question": "Trong prepared statement đúng cách, input người dùng được xử lý như gì?",
+      "options": [
+        "Quyền owner mọi bản ghi",
+        "Một stored procedure mới",
+        "Dữ liệu giá trị, không phải cú pháp SQL mới",
+        "Các keyword được thực thi tùy ý"
+      ],
+      "correct": 2,
+      "explanation": "Ranh giới này phải được giữ cả khi code thay đổi."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Authorization riêng",
+      "question": "Truy vấn tham số hóa có tự quyết định user được đọc hàng nào không?",
+      "options": [
+        "Có, placeholder biết mọi owner",
+        "Có, binding tự cấp role chính xác",
+        "Chỉ nếu có WHERE",
+        "Không, cần policy authorization riêng"
+      ],
+      "correct": 3,
+      "explanation": "Ngăn injection không thay kiểm quyền tài nguyên."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Authentication riêng",
+      "question": "Truy vấn an toàn về injection có tự là hệ thống đăng nhập hoàn chỉnh không?",
+      "options": [
+        "Không, còn xác thực, password storage và session phù hợp",
+        "Có, SELECT tự tạo session",
+        "Có, username là admin thì được vào",
+        "Chỉ cần một dấu ?"
+      ],
+      "correct": 0,
+      "explanation": "Tính an toàn của một thao tác không bao toàn luồng auth."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "ORM",
+      "question": "ORM có thể giúp gì khi dùng đúng?",
+      "options": [
+        "Tự vá toàn bộ DB server",
+        "Cung cấp API query/binding phù hợp để giảm lỗi nối dữ liệu",
+        "Bảo đảm mọi raw SQL không thể injection",
+        "Tự biết mọi quyền nghiệp vụ"
+      ],
+      "correct": 1,
+      "explanation": "Cách dùng ORM và raw query vẫn cần review."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Input validation",
+      "question": "Validation theo nghiệp vụ nhằm gì ngoài binding?",
+      "options": [
+        "Tự xác thực server TLS",
+        "Tự sửa mọi SQL syntax",
+        "Kiểm kiểu, miền giá trị và ý nghĩa dữ liệu mong muốn",
+        "Thay mọi placeholder bằng chuỗi rỗng"
+      ],
+      "correct": 2,
+      "explanation": "Validation và parameterization là các lớp bổ sung."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Least privilege DB",
+      "question": "Tài khoản DB của app nên có quyền theo nguyên tắc nào?",
+      "options": [
+        "Luôn admin mọi database để dễ dùng",
+        "Luôn được ghi file hệ điều hành",
+        "Tự thừa hưởng quyền root của web user",
+        "Chỉ các quyền cần cho nhiệm vụ cụ thể"
+      ],
+      "correct": 3,
+      "explanation": "Giảm quyền giúp hạn chế tác động khi có lỗi."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Error disclosure",
+      "question": "Trả nguyên lỗi SQL chi tiết cho client có thể gây gì?",
+      "options": [
+        "Lộ thông tin schema, truy vấn hoặc cấu hình",
+        "Tự chống mọi injection",
+        "Tự tăng độ tin cậy của auth",
+        "Tự mã hóa dữ liệu trả về"
+      ],
+      "correct": 0,
+      "explanation": "Báo lỗi cần cân bằng chẩn đoán nội bộ và thông tin public."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Data vs identifiers",
+      "question": "Parameter markers thông thường dành cho gì?",
+      "options": [
+        "Mọi role database",
+        "Giá trị dữ liệu, không thay tùy ý tên bảng/cột hoặc keyword",
+        "Mọi phần cú pháp SQL không giới hạn",
+        "Chỉ tên bảng do client chọn"
+      ],
+      "correct": 1,
+      "explanation": "Cấu trúc động cần mapping/allowlist phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Sort direction",
+      "question": "Nếu client được chọn tăng/giảm, cấu trúc SQL nên lấy từ đâu?",
+      "options": [
+        "Header User-Agent",
+        "Một secret có tên sort",
+        "Mapping cố định sang ASC/DESC được ứng dụng cho phép",
+        "Nối nguyên text client bất kỳ"
+      ],
+      "correct": 2,
+      "explanation": "Đầu vào chọn option không nên trực tiếp trở thành cú pháp."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Stored procedure",
+      "question": "Stored procedure có tự an toàn nếu bên trong nối dynamic SQL không?",
+      "options": [
+        "Có, mọi procedure tự bind mọi chuỗi",
+        "Có, vì chạy ở DB thì mọi input tin cậy",
+        "Chỉ cần tên có prefix safe",
+        "Không, nội dung dynamic SQL vẫn cần được xử lý đúng"
+      ],
+      "correct": 3,
+      "explanation": "Vị trí code không thay bản chất ranh giới dữ liệu/cú pháp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Payload minh họa",
+      "question": "Một chuỗi nhìn như SQLi có bảo đảm vượt đăng nhập ở mọi app không?",
+      "options": [
+        "Không, phụ thuộc cú pháp, query, driver và logic cụ thể",
+        "Có, mọi app dùng SQL có cùng cú pháp",
+        "Có, tên admin tự có quyền",
+        "Chỉ cần URL có login"
+      ],
+      "correct": 0,
+      "explanation": "Không dạy payload malformed như kết quả đã xác minh."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "No universal secure label",
+      "question": "Comment an toàn 100% trong source cần hiểu lại thế nào?",
+      "options": [
+        "Không cần tests sau khi thêm parameter",
+        "Binding đúng xử lý một nhóm rủi ro SQLi, không chứng minh toàn app an toàn tuyệt đối",
+        "Mọi app có ? đều không còn lỗi",
+        "DB.query tự vá mọi CVE"
+      ],
+      "correct": 1,
+      "explanation": "Kết luận phải có phạm vi rõ."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Secret config",
+      "question": "Config chứa credential DB cần được quản lý thế nào?",
+      "options": [
+        "Đưa vào log để mọi người debug",
+        "Coi tên config.php tự mã hóa nội dung",
+        "Theo quyền và lifecycle secrets, không tự đọc/chia sẻ vì bài tập nhắc tên",
+        "Luôn public nếu file nằm trong web root"
+      ],
+      "correct": 2,
+      "explanation": "Không đọc config hay credential thật trong lần soạn này."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Scope lab",
+      "question": "SQLi examples trong bài có tự cho phép thử trên hệ thống thật không?",
+      "options": [
+        "Có, mọi login page là mục tiêu lab",
+        "Có, payload chỉ là text nên không có tác động",
+        "Chỉ cần không dùng tài khoản admin",
+        "Không, cần phạm vi được phép và môi trường phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung đang được soạn và kiểm dữ liệu, không thực thi truy vấn."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Quoted placeholder",
+      "question": "Nếu API driver mong bind marker ? nhưng code viết nó trong literal SQL như chuỗi cố định, cần kiểm gì?",
+      "options": [
+        "Marker có thật được API nhận làm parameter hay chỉ là text literal",
+        "Chỉ tên biến sql",
+        "Chỉ status HTTP 200",
+        "Không cần vì dấu ? luôn bind mọi nơi"
+      ],
+      "correct": 0,
+      "explanation": "Vị trí cú pháp của marker và contract driver phải đúng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Concat rồi prepare",
+      "question": "Code ghép input vào SQL trước, sau đó mới gọi prepare. Điều gì còn sai?",
+      "options": [
+        "Chỉ thiếu đổi filename",
+        "Input đã thành một phần cấu trúc text trước khi bind",
+        "Prepare tự tách lại mọi input đã ghép",
+        "Không vấn đề vì có tên prepare"
+      ],
+      "correct": 1,
+      "explanation": "Phải tách giá trị ngay từ cách xây query."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Bound value có dấu nháy",
+      "question": "Username chứa dấu nháy hợp lệ được bind đúng API. Có cần coi nó là SQL code không?",
+      "options": [
+        "Có, mọi username có nháy là attacker",
+        "Chỉ cần đổi charset",
+        "Không, nó là dữ liệu giá trị theo contract",
+        "Có, mọi dấu nháy phải thực thi"
+      ],
+      "correct": 2,
+      "explanation": "Không cấm dữ liệu hợp lệ chỉ để tránh sửa cơ chế query."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Column dynamic",
+      "question": "Client gửi tên cột sort. Có thể bind nó như value và mong tự trở thành identifier đúng không?",
+      "options": [
+        "Có, mọi parameter là một cột",
+        "Có, db tự chọn cột an toàn nhất",
+        "Chỉ cần bọc mọi tên cột bằng nháy đơn",
+        "Không thông thường; dùng mapping/allowlist cấu trúc được phép"
+      ],
+      "correct": 3,
+      "explanation": "Value binding và lựa chọn cấu trúc là hai việc khác nhau."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "ORM raw escape hatch",
+      "question": "App dùng ORM nhưng raw query vẫn nối req.body.user. Nhận định đúng?",
+      "options": [
+        "Vẫn có rủi ro ở đường raw query đó",
+        "ORM tự bảo vệ mọi chuỗi được nối ngoài API",
+        "Tên framework tự ngăn SQL parse",
+        "Chỉ cần model có schema"
+      ],
+      "correct": 0,
+      "explanation": "Review phải theo đường dữ liệu thật."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Table allowlist",
+      "question": "Một report cho chọn bảng trong hai nguồn được phép. Cách thiết kế phù hợp?",
+      "options": [
+        "Bind một value rồi coi nó luôn thành tên bảng",
+        "Map lựa chọn sang các identifier cố định được ứng dụng sở hữu và kiểm quyền",
+        "Nối nguyên input vì chỉ có hai nút UI",
+        "Tin mọi table name gửi từ browser"
+      ],
+      "correct": 1,
+      "explanation": "UI hạn chế không thay kiểm server."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "UI không boundary",
+      "question": "Frontend dropdown chỉ có username hợp lệ nhưng API nhận JSON trực tiếp. Server cần gì?",
+      "options": [
+        "Chỉ kiểm User-Agent",
+        "Chỉ giấu endpoint URL",
+        "Giữ validation/binding và authorization của server",
+        "Tin dropdown nên nối mọi JSON được gửi"
+      ],
+      "correct": 2,
+      "explanation": "Client có thể gửi dữ liệu khác giao diện."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Client validation bypass",
+      "question": "Chỉ validate bằng JavaScript phía browser có đủ cho SQL construction không?",
+      "options": [
+        "Có, browser luôn chạy đúng JS của app",
+        "Có, HTTPS ngăn thay body",
+        "Chỉ nếu form có required",
+        "Không, server phải thực hiện contract an toàn tại điểm query"
+      ],
+      "correct": 3,
+      "explanation": "Dữ liệu đến server vẫn không mặc định đáng tin."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Numeric input",
+      "question": "Field trông như số có được nối thẳng mà không parse/validate hay bind không?",
+      "options": [
+        "Không nên; giữ kiểu/miền và dùng API bind phù hợp",
+        "Có, tên age tự ép mọi chuỗi thành số",
+        "Có, JSON number tự cấp quyền record",
+        "Chỉ cần xóa dấu cách"
+      ],
+      "correct": 0,
+      "explanation": "Không suy tính an toàn từ tên field hoặc ý định."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Empty input",
+      "question": "Giá trị rỗng được bind đúng có tự đáp ứng quy tắc username không rỗng không?",
+      "options": [
+        "Chỉ cần một index",
+        "Không, cần validation nghiệp vụ riêng",
+        "Có, binding tự thay mọi rỗng bằng admin",
+        "Có, SQL tự hiểu quy tắc ứng dụng"
+      ],
+      "correct": 1,
+      "explanation": "Giữ ranh giới SQL không thay invariant dữ liệu."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Lookup owner",
+      "question": "Query user theo ID có parameter hợp lệ nhưng không kiểm owner/tenant. Rủi ro còn gì?",
+      "options": [
+        "Chỉ có lỗi SQL syntax",
+        "Chỉ có lỗi CSS",
+        "Đọc dữ liệu ngoài quyền nếu policy chưa enforce",
+        "Không còn vì ID là parameter"
+      ],
+      "correct": 2,
+      "explanation": "SQLi và object authorization là các vấn đề khác nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Tenant filter",
+      "question": "Một API đa tenant cần đảm bảo điều gì khi query?",
+      "options": [
+        "Tin tenantId bất kỳ từ client vì đã bind",
+        "Chỉ dùng SELECT thay DELETE",
+        "Chỉ hash tenantId trước query",
+        "Bind dữ liệu và ràng buộc tenant/quyền từ nguồn đáng tin theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Bound value vẫn có thể là lựa chọn trái quyền nếu không kiểm policy."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "LIKE wildcards",
+      "question": "Bind giá trị cho LIKE có tự làm % và _ thành literal tìm kiếm không?",
+      "options": [
+        "Không, wildcard semantics cần xử lý theo mục tiêu và DB/API",
+        "Có, mọi marker tự bỏ nghĩa pattern",
+        "Có, binding đổi LIKE thành equals",
+        "Chỉ nếu tên biến search"
+      ],
+      "correct": 0,
+      "explanation": "Ngăn injection không thay nghĩa toán tử tìm kiếm."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Bound pattern",
+      "question": "Nếu ứng dụng cố ý hỗ trợ pattern search, điều gì vẫn cần?",
+      "options": [
+        "Coi pattern không thể gây workload đắt",
+        "Giới hạn/validation nghiệp vụ và quyền, ngoài cơ chế query an toàn",
+        "Bỏ binding vì pattern luôn là SQL code",
+        "Cho phép chọn mọi bảng"
+      ],
+      "correct": 1,
+      "explanation": "Query an toàn về cú pháp vẫn cần mục tiêu và giới hạn tài nguyên."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Large page size",
+      "question": "Limit được bind đúng nhưng client gửi cực lớn. Vấn đề nào còn cần xử lý?",
+      "options": [
+        "Chỉ tăng quyền DB",
+        "Đổi tên parameter thành smallLimit",
+        "Miền giá trị và tài nguyên theo policy phân trang",
+        "Không có vì binding tự giới hạn10"
+      ],
+      "correct": 2,
+      "explanation": "Binding không là rate/cost limit."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Two const blocks",
+      "question": "Source trình bày hai const sql trong cùng đoạn để so trước/sau. Khi dùng thật cần gì?",
+      "options": [
+        "Dán cả hai const cùng scope rồi chắc chắn chạy",
+        "Đổi comment thành secure là đủ",
+        "Coi JSON source tự tạo module riêng",
+        "Tách hai phương án và hoàn thiện code hợp lệ đúng driver/module"
+      ],
+      "correct": 3,
+      "explanation": "Minh họa so sánh không tự là chương trình hoàn chỉnh."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Driver không nêu",
+      "question": "Source gọi db.query(sql,[value]) nhưng chưa nói driver. Có nên khẳng định server-side prepare luôn đã xảy ra không?",
+      "options": [
+        "Không, phải xem API/driver và cơ chế binding thực",
+        "Có, tên query luôn là prepare chuẩn",
+        "Có, mảng tự chứng minh mọi DB dùng binary prepare",
+        "Chỉ cần tên db"
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt ý định parameterized API với implementation cụ thể."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "MySQL2 example",
+      "question": "Theo docs MySQL2 được đối chiếu, helper nào trực tiếp prepare và query statement?",
+      "options": [
+        "JSON.stringify",
+        "execute",
+        "Mọi hàm tên query của mọi driver",
+        "Một comment SECURE"
+      ],
+      "correct": 1,
+      "explanation": "Đây là ví dụ driver cụ thể, không áp tên API lên nguồn chưa xác định driver."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Errors safe",
+      "question": "DB exception chứa query/credential có nên trả nguyên cho mọi client không?",
+      "options": [
+        "Có, vì API dùng HTTPS",
+        "Chỉ cần status 500",
+        "Không, dùng phản hồi phù hợp và log nội bộ được bảo vệ/redacted",
+        "Có, lỗi SQL không thể có dữ liệu nhạy cảm"
+      ],
+      "correct": 2,
+      "explanation": "Thông tin chẩn đoán có thể mở rộng exposure."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Least privilege read",
+      "question": "Tác vụ chỉ cần đọc một view có cần admin toàn server DB không?",
+      "options": [
+        "Có, SELECT bắt buộc admin",
+        "Có, binding cần root",
+        "Chỉ nếu app dùng ORM",
+        "Không, thiết kế quyền tối thiểu theo nhiệm vụ"
+      ],
+      "correct": 3,
+      "explanation": "Giảm quyền không thay sửa SQLi, nhưng giảm phạm vi tác động."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Password comparison",
+      "question": "Query username được bind có tự kiểm password đúng không?",
+      "options": [
+        "Không, còn quy trình verify password hash và auth theo thiết kế",
+        "Có, username tồn tại luôn đủ login",
+        "Có, db.query tự gọi bcrypt",
+        "Chỉ cần SELECT *"
+      ],
+      "correct": 0,
+      "explanation": "Không biến lookup thành cơ chế authentication hoàn chỉnh."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "SQL syntax invalid",
+      "question": "Payload trong theory bị trích dẫn không cân bằng. Có thể kết luận nó chắc chắn bypass không?",
+      "options": [
+        "Chỉ cần username admin",
+        "Không, cần phân biệt ví dụ sai cú pháp và một lỗ hổng được xác minh trong scope",
+        "Có, chỉ cần có OR là mọi query true",
+        "Có, dấu nháy dư được DB tự sửa"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện logic và chuỗi SQL thực tế phải được đánh giá đúng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "OR precedence",
+      "question": "Vì sao không nên suy mọi chuỗi có OR luôn bỏ qua mọi điều kiện password?",
+      "options": [
+        "Vì AND không có trong SQL",
+        "Chỉ vì HTTP method",
+        "Còn cú pháp, precedence, grouping và logic query cụ thể",
+        "Vì OR luôn bị DB bỏ qua"
+      ],
+      "correct": 2,
+      "explanation": "Không dạy cơ chế khai thác từ slogan thiếu ngữ cảnh."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Stored input later",
+      "question": "Input được lưu an toàn rồi sau đó được ghép vào SQL dynamic có thể tạo vấn đề gì?",
+      "options": [
+        "Không có vì đã nằm trong DB là trusted",
+        "Chỉ lỗi encoding UI",
+        "Chỉ cần thêm timestamp",
+        "SQLi ở lần sử dụng sau nếu dữ liệu lại trở thành cú pháp"
+      ],
+      "correct": 3,
+      "explanation": "Dữ liệu persisted không tự được nâng thành mã SQL đáng tin."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Stored procedure inside",
+      "question": "Procedure nhận bound argument rồi nối argument vào dynamic SQL bên trong. Cần xem gì?",
+      "options": [
+        "Cách xây và bind internal dynamic query, không chỉ lời gọi bên ngoài",
+        "Tên procedure có secure là đủ",
+        "Binding ngoài tự sửa mọi text bên trong",
+        "Chỉ quyền SELECT của web route"
+      ],
+      "correct": 0,
+      "explanation": "Ranh giới phải được giữ qua các tầng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Transaction",
+      "question": "Bọc query nối input trong transaction có tự ngăn SQLi không?",
+      "options": [
+        "Chỉ nếu dùng HTTPS",
+        "Không, transaction không tách cú pháp và dữ liệu",
+        "Có, transaction parser chỉ nhận dữ liệu an toàn",
+        "Có, rollback luôn xảy ra trước mọi tác động"
+      ],
+      "correct": 1,
+      "explanation": "Atomicity không thay cơ chế query an toàn."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "TLS DB",
+      "question": "Mã hóa kết nối tới DB có tự sửa lỗi ghép input thành SQL không?",
+      "options": [
+        "Có, certificate biết SQL grammar",
+        "Chỉ nếu DB remote",
+        "Không, bảo vệ kênh khác với cấu trúc truy vấn",
+        "Có, TLS tự thay input bằng parameter"
+      ],
+      "correct": 2,
+      "explanation": "Các lớp bảo vệ có nhiệm vụ riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "WAF limit",
+      "question": "WAF không báo payload có chứng minh đường query không injection không?",
+      "options": [
+        "Có, WAF biết mọi driver syntax",
+        "Có, zero alerts là secure 100%",
+        "Chỉ nếu app dùng JSON",
+        "Không, cần review/binding và kiểm phù hợp tại code/query boundary"
+      ],
+      "correct": 3,
+      "explanation": "Một lớp lọc không chứng minh toàn bộ correctness của query construction."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Escaping manual",
+      "question": "Tự thay dấu nháy bằng vài replace có nên là giải pháp chung cho mọi DB/context không?",
+      "options": [
+        "Không, ưu tiên binding đúng API và lựa chọn cấu trúc cố định phù hợp",
+        "Có, mọi SQL dialect cùng một escape rule",
+        "Có, xóa nháy đảm bảo mọi username hợp lệ",
+        "Chỉ cần đổi charset bất kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Escaping thủ công dễ sai và phụ thuộc ngữ cảnh."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Blacklists",
+      "question": "Chặn vài keyword như SELECT/OR có đủ thay parameterization không?",
+      "options": [
+        "Chỉ nếu uppercase input",
+        "Không, dễ sai/chặn dữ liệu hợp lệ và không giữ ranh giới chung",
+        "Có, SQLi chỉ có đúng hai keyword",
+        "Có, ORM tự thêm blacklist"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế query an toàn không dựa vào danh sách cấm mỏng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Identifier quoting",
+      "question": "Quote identifier đúng syntax có tự cho phép client chọn mọi bảng không?",
+      "options": [
+        "Có, mọi identifier là dữ liệu public",
+        "Chỉ cần tên cột ngắn",
+        "Không, còn policy cho phép/mapping và authorization",
+        "Có, quote tự chứng minh mọi bảng được phép"
+      ],
+      "correct": 2,
+      "explanation": "An toàn cú pháp và quyền lựa chọn là hai hợp đồng riêng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Bound null",
+      "question": "Parameter null có mặc định cùng semantics bằng chuỗi rỗng không?",
+      "options": [
+        "Có, mọi DB đổi null thành empty",
+        "Có, binding bỏ mọi null",
+        "Chỉ nếu field user",
+        "Không, cần hiểu kiểu/null semantics và nghiệp vụ của query"
+      ],
+      "correct": 3,
+      "explanation": "Dữ liệu hợp lệ về API vẫn cần đúng nghĩa mong muốn."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Raw SQL migration",
+      "question": "Thêm một raw report query sau khi phần login đã parameterized có cần review không?",
+      "options": [
+        "Có, mọi đường tạo SQL mới cần giữ nguyên tắc tương ứng",
+        "Không, một marker trong app bảo vệ toàn source",
+        "Không, report luôn read-only vô hại",
+        "Chỉ khi query dài"
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi bảo vệ nằm ở từng boundary và luồng dữ liệu."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "No delete permission",
+      "question": "Tài khoản DB không được DELETE có nghĩa SQLi không thể gây rò rỉ dữ liệu không?",
+      "options": [
+        "Chỉ nếu dùng port 3306",
+        "Không, quyền đọc vẫn có thể tạo exposure theo query/permission",
+        "Có, chỉ DELETE mới nguy hiểm",
+        "Có, read không liên quan confidentiality"
+      ],
+      "correct": 1,
+      "explanation": "Least privilege giảm tác động, không thay sửa injection."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Test useful",
+      "question": "Một kiểm thử phòng vệ có ý nghĩa nên xác nhận điều gì?",
+      "options": [
+        "Chỉ function tên safeQuery",
+        "Chỉ không có exception khi chạy một username",
+        "Input đặc biệt được xử lý như dữ liệu và policy quyền/nghiệp vụ vẫn đúng trong scope",
+        "Chỉ query string có dấu ?"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm cấu trúc text một mình không chứng minh behavior của driver/app."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Logging query",
+      "question": "Ghi nguyên mọi bound values có password/token vào log tạo rủi ro gì?",
+      "options": [
+        "Không có vì dữ liệu là parameter",
+        "Tự tăng mức bảo mật",
+        "Chỉ làm DB chậm",
+        "Lộ dữ liệu nhạy cảm dù query đã tách cú pháp đúng"
+      ],
+      "correct": 3,
+      "explanation": "Boundary SQL và lifecycle secrets cần được bảo vệ riêng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Connection setup missing",
+      "question": "Source không định nghĩa db/connection/route. Có đủ nói code đang phục vụ API an toàn không?",
+      "options": [
+        "Không, cần wiring/runtime/error/auth và kiểm chứng tương ứng",
+        "Có, const sql tự tạo DB",
+        "Có, query string là đủ khởi chạy server",
+        "Chỉ cần filename .js"
+      ],
+      "correct": 0,
+      "explanation": "Snippet minh họa một nguyên tắc, không toàn ứng dụng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Remediation scope",
+      "question": "Sửa query login không có nghĩa mọi query khác được sửa. Báo cáo nên nói gì?",
+      "options": [
+        "Chỉ ghi an toàn 100%",
+        "Nêu đúng các đường đã review/sửa và phần còn chưa kiểm",
+        "Công bố toàn DB không thể injection",
+        "Coi mọi endpoint cùng pattern đã pass"
+      ],
+      "correct": 1,
+      "explanation": "Kết luận cần bám scope bằng chứng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Client query params",
+      "question": "Dùng URL query parameter cho đầu vào thay JSON body có tự làm input an toàn hơn không?",
+      "options": [
+        "Có, browser ký mọi URL",
+        "Chỉ nếu request là GET",
+        "Không, nguồn truyền khác không thay binding/validation/authorization",
+        "Có, query string tự được SQL escape"
+      ],
+      "correct": 2,
+      "explanation": "Mọi nguồn dữ liệu ngoài boundary đều cần contract phù hợp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Stored data provenance",
+      "question": "Dữ liệu lấy từ service nội bộ có được coi là SQL syntax tin cậy tự động không?",
+      "options": [
+        "Có, nội bộ nghĩa không bao giờ bị thay",
+        "Có, chỉ input Internet mới SQLi",
+        "Chỉ nếu service có TLS",
+        "Không, vẫn giữ ranh giới dữ liệu/cú pháp theo threat model"
+      ],
+      "correct": 3,
+      "explanation": "Trust không nên được nâng chỉ do vị trí nguồn."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Hai rủi ro khác",
+      "question": "Query profile dùng binding đúng nhưng tin userId từ client để đọc bất kỳ hàng. App còn trả lỗi DB đầy đủ. Cần gì?",
+      "options": [
+        "Giữ binding, bổ sung authorization theo tài nguyên và xử lý lỗi/log không lộ thông tin",
+        "Bỏ binding vì authz mới quan trọng",
+        "Chỉ tăng độ dài placeholder",
+        "Coi đã an toàn 100% nhờ query có ?"
+      ],
+      "correct": 0,
+      "explanation": "Một control không giải quyết cả quyền dữ liệu và exposure chẩn đoán."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Dynamic sort",
+      "question": "Report bind search term nhưng nối trực tiếp tên cột và hướng sort từ client. Thiết kế hoàn thiện?",
+      "options": [
+        "Chỉ đổi HTTP thành HTTPS",
+        "Giữ binding values và map cấu trúc sort vào tập token được phép, kèm quyền chọn dữ liệu",
+        "Bind search đã bảo vệ toàn query nên giữ nguyên",
+        "Chỉ xóa chữ SELECT khỏi tên cột"
+      ],
+      "correct": 1,
+      "explanation": "Query có thể trộn boundary an toàn và không an toàn ở những phần khác nhau."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Prepare sau concat",
+      "question": "Team gọi prepare trên một query đã ghép input và khẳng định cơ chế prepare tự bảo vệ. Cần sửa gì?",
+      "options": [
+        "Chỉ thêm transaction",
+        "Chỉ nén request body",
+        "Cố định cấu trúc trước rồi bind values qua API đúng, kiểm behavior driver và các đường query",
+        "Chỉ đổi tên biến thành preparedSql"
+      ],
+      "correct": 2,
+      "explanation": "Chuẩn bị một text đã bị trộn không phục hồi ranh giới ban đầu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Source secure100%",
+      "question": "Nguồn có comment secure 100%, hai const sql trùng và db chưa rõ driver. Đánh giá đúng?",
+      "options": [
+        "Comment là chứng nhận runtime của mọi DB",
+        "Mọi query có mảng values đều server-side prepare chắc chắn",
+        "Chỉ cần bỏ comment vulnerable",
+        "Đây là so sánh minh họa; cần code hợp lệ, driver/API đúng và review các control khác, không bảo đảm toàn app"
+      ],
+      "correct": 3,
+      "explanation": "Không mở rộng nguyên tắc một phần thành chứng minh hệ thống hoàn chỉnh."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "ORM và raw path",
+      "question": "Model ORM dùng safe APIs nhưng report plugin nối tên filter vào raw SQL. Làm sao kiểm scope đúng?",
+      "options": [
+        "Theo đường dữ liệu/query thực, xử lý raw structural choices và bind values theo API phù hợp",
+        "Coi cả app an toàn vì có ORM",
+        "Chỉ scan file model chính",
+        "Chỉ đổi tên plugin thành trusted"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế framework không tự bảo vệ mọi escape hatch."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Stored procedure nested",
+      "question": "Caller bind đúng input nhưng procedure nối nó vào internal dynamic SQL, DB user còn quyền rộng. Cần gì?",
+      "options": [
+        "Chỉ thêm HTTPS",
+        "Sửa internal query boundary và giảm quyền theo nhiệm vụ, không chỉ nhìn caller",
+        "Chỉ giữ binding caller vì nó lan vào mọi SQL",
+        "Chỉ đổi tên procedure"
+      ],
+      "correct": 1,
+      "explanation": "Rủi ro có thể đi qua nhiều tầng và bị khuếch đại bởi quyền."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Second use",
+      "question": "Tên report được lưu bằng binding, rồi job nền dùng nó làm phần SQL text. Vì sao bản ghi đã lưu chưa là trusted code?",
+      "options": [
+        "Chỉ dữ liệu chưa lưu mới có injection",
+        "Chỉ cần hash tên report",
+        "Dữ liệu vẫn cần giữ vai trò value/allowlisted structure ở điểm sử dụng sau",
+        "DB tự làm mọi dữ liệu thành SQL an toàn"
+      ],
+      "correct": 2,
+      "explanation": "Origin/storage không tự thay semantics tại boundary mới."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Valid data và cost",
+      "question": "API bind limit/search đúng nhưng cho truy vấn rất đắt và không giới hạn số hàng. Vấn đề nào còn cần?",
+      "options": [
+        "Binding tự là rate limiter toàn hệ thống",
+        "Chỉ thêm một dấu ? nữa",
+        "Đổi username thành số",
+        "Validation/cost/pagination/rate policy theo mục tiêu, ngoài SQLi prevention"
+      ],
+      "correct": 3,
+      "explanation": "An toàn cú pháp không là bảo đảm availability."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Payload malformed",
+      "question": "Một payload trong tài liệu có dấu nháy không cân bằng nhưng được mô tả luôn login admin. Cách soạn/đánh giá đúng?",
+      "options": [
+        "Nêu giới hạn cú pháp/context và dạy ranh giới phòng vệ, không công bố bypass chưa xác minh",
+        "Lặp lại bảo đảm vì có OR",
+        "Tự áp payload vào máy thật để làm bằng chứng ngoài scope",
+        "Coi mọi SQL error là đăng nhập thành công"
+      ],
+      "correct": 0,
+      "explanation": "Bài học cần đúng semantics và phạm vi, không biến mô tả thành kết quả."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Least privilege không cure",
+      "question": "Tài khoản DB chỉ đọc vẫn cho người trái quyền lấy hồ sơ qua query injection. Nhận xét đúng?",
+      "options": [
+        "Chỉ cần hide Server header",
+        "Least privilege giới hạn một số tác động nhưng vẫn cần sửa query và enforce quyền dữ liệu",
+        "Read-only đồng nghĩa không thể có tác động bảo mật",
+        "Chỉ cần bỏ quyền DELETE để hết SQLi"
+      ],
+      "correct": 1,
+      "explanation": "Confidentiality có thể bị xâm phạm mà không ghi dữ liệu."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Pattern vs literal",
+      "question": "Tìm username theo LIKE với input bound chứa wildcard trả nhiều hàng, app dùng hàng đầu để login. Cần xét gì?",
+      "options": [
+        "Đây chắc chắn là SQL injection ở parser dù value được bind đúng",
+        "Chỉ cần đổi response status",
+        "Nghĩa tìm kiếm/uniqueness và auth contract, không chỉ ranh giới SQL syntax",
+        "Binding tự chuyển mọi wildcard thành dấu thường"
+      ],
+      "correct": 2,
+      "explanation": "Logic nghiệp vụ có thể sai dù injection boundary đúng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Client-only safety",
+      "question": "Frontend loại ký tự đặc biệt, backend nối raw user, route còn nhận request ngoài UI. Hướng sửa?",
+      "options": [
+        "Chỉ giấu nút developer tools",
+        "Chỉ thêm CSP để SQL tự an toàn",
+        "Chỉ đổi tên API",
+        "Dùng binding đúng ở backend và validation/policy thích hợp, không dựa vào client-only filter"
+      ],
+      "correct": 3,
+      "explanation": "Ranh giới tin cậy cần được giữ nơi thực thi truy vấn."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Identifier quyền",
+      "question": "Một query quote tên bảng đúng syntax nhưng client được chọn bảng chứa secrets. Điều gì còn thiếu?",
+      "options": [
+        "Allowlist/mapping và authorization cho tập dữ liệu được phép",
+        "Chỉ quote mạnh hơn",
+        "Chỉ parameterize một value khác",
+        "Coi cú pháp hợp lệ là quyền hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất injection safety với quyền chọn tài nguyên."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Kiểm hành vi binding ở biên driver",
+      "question": "Wrapper được thiết kế bind username như một value, nhưng mới có test kiểm text SQL chứa ?. Driver adapter vừa thay; API còn yêu cầu mỗi caller chỉ đọc tenant của mình. Kế hoạch nào kiểm được cả ý nghĩa binding lẫn quyền dữ liệu?",
+      "options": [
+        "Kiểm caller không đọc được tenant khác bằng mock repository; suy ra driver adapter cũng giữ username như value vì mock trả đúng",
+        "Trong môi trường kiểm thử được phép, dùng adapter thật với username hợp lệ chứa dấu nháy và dữ liệu hai tenant; kiểm đầu vào vẫn là một value và caller không đọc được tenant khác",
+        "Giữ snapshot text có ? rồi kiểm mọi username chứa nháy đều bị từ chối trước driver; không cần dữ liệu tenant khác",
+        "Dùng adapter thật kiểm username đơn giản trả đúng hàng trong cùng tenant; coi việc có marker là đủ cho các đầu vào còn lại"
+      ],
+      "correct": 1,
+      "explanation": "Một marker trong text không chứng minh cách adapter bind thực tế. Kiểm hành vi giá trị và ranh giới tenant là hai yêu cầu độc lập; dữ liệu kiểm thử phải cho phép phát hiện sai ở từng yêu cầu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Config exposure",
+      "question": "Source bài tập nhắc config chứa DB credential. Nếu credential thật lộ, sửa SQLi riêng có đủ xử lý sự cố đó không?",
+      "options": [
+        "Có, chỉ cần đổi tên config",
+        "Chỉ tăng password length trong comment",
+        "Không, cần quản lý/revoke/rotate và exposure scope phù hợp ngoài sửa query",
+        "Có, placeholder tự hủy mọi credential cũ"
+      ],
+      "correct": 2,
+      "explanation": "Các nhóm rủi ro liên quan nhưng có biện pháp xử lý riêng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Driver portability",
+      "question": "Code dùng ? được chuyển sang driver yêu cầu kiểu marker khác mà không đổi API. Cần gì?",
+      "options": [
+        "Giữ nguyên vì SQL chuẩn bắt buộc mọi driver dùng ?",
+        "Chỉ đổi tên db",
+        "Chỉ bọc query trong try/catch",
+        "Đối chiếu contract driver/version và chỉnh binding đúng, không giả mọi placeholder giống nhau"
+      ],
+      "correct": 3,
+      "explanation": "API cụ thể là phần quan trọng của bằng chứng an toàn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Transaction misconception",
+      "question": "Nhóm giữ query concat nhưng hứa rollback nếu có lỗi. Vì sao chưa ngăn SQLi?",
+      "options": [
+        "Input vẫn có thể thay cấu trúc và query có thể thành công ngoài ý định; rollback policy không thay parameterization",
+        "Transaction tự bỏ mọi keyword do người dùng gửi",
+        "Mọi injection đều gây syntax error trước tác động",
+        "Chỉ cần log câu SQL"
+      ],
+      "correct": 0,
+      "explanation": "Phải sửa nguyên nhân tại ranh giới xây query."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Read và tenant",
+      "question": "Report đa tenant bind tenantId từ client, DB app user đọc mọi tenant. Thiết kế nào phù hợp hơn?",
+      "options": [
+        "Chỉ thêm cache",
+        "Lấy/kiểm tenant scope từ identity/policy và bind values, kết hợp quyền dữ liệu thích hợp",
+        "Tin tenantId vì có type string",
+        "Chỉ đổi sort direction"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị được bind vẫn cần hợp lệ về quyền."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Security claims",
+      "question": "Một endpoint đã sửa SQLi nhưng chưa review các endpoint khác, session hoặc error logs. Báo cáo đúng?",
+      "options": [
+        "Coi mọi raw query cùng repository tự sửa",
+        "Chỉ cần đạt một test pass",
+        "Nêu đường query đã sửa/kiểm và giới hạn còn lại, không gọi toàn app an toàn tuyệt đối",
+        "Ghi secure 100% cho cả hệ thống"
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi kết luận phải theo phạm vi bằng chứng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Cấu trúc sort và tenant scope",
+      "question": "API report bind search và tenantId qua driver đúng cách, nhưng tenantId do client chọn; sortColumn được nối vào SQL. Hợp đồng chỉ cho sort theo name hoặc createdAt và caller chỉ được đọc tenant từ identity đã xác thực. Thay đổi nào đáp ứng cả hai ranh giới?",
+      "options": [
+        "Allowlist sortColumn đúng hai tên nhưng tiếp tục nhận mọi tenantId từ client vì tenantId đã được bind",
+        "Lấy tenant từ identity server nhưng chỉ HTML-escape sortColumn trước khi nối vào text SQL",
+        "Bind tenantId từ client và quote identifier sortColumn đúng dialect; coi cú pháp hợp lệ là quyền chọn dữ liệu hợp lệ",
+        "Map lựa chọn sort sang identifier cố định được phép, đồng thời lấy/kiểm tenant theo identity/policy server và bind các value"
+      ],
+      "correct": 3,
+      "explanation": "Binding values không quyết định quyền chọn tenant và không biến một value thành tên cột. Cấu trúc động cần tập lựa chọn do ứng dụng sở hữu; scope dữ liệu cần đến từ policy được kiểm soát."
+    }
+  ]
+}

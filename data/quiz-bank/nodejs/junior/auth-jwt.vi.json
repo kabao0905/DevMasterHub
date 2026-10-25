@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "junior",
+  "lesson": "auth-jwt",
+  "language": "vi",
+  "sourceHash": "605dd93822006ad1fabe3c21e386e5aa79390372ac4450835addcf26d710245d",
+  "status": "approved",
+  "review": "Tự viết không API sinh câu hỏi. Review source, jsonwebtoken/bcryptjs README và docs; thư viện chưa cài nên không tuyên bố chạy bcrypt/JWT integration. Snippet chỉ string/array/encoding/await models với dữ liệu giả, không đọc env hoặc tạo credential thật. Nêu duplicate-email race qua await hash, secret fallback yếu, validation/claim policy thiếu; ID length+1 đánh giá sau await không tự có race trùng ID trong append-only synchronous push của một process.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "JWT role",
+      "question": "JWT signed dạng JWS trong bài phục vụ gì?",
+      "options": [
+        "Mang claims có thể kiểm tra tính toàn vẹn bằng khóa tin cậy.",
+        "Tự che giấu mọi payload.",
+        "Tự tạo database.",
+        "Tự cấp quyền mọi tài nguyên."
+      ],
+      "correct": 0,
+      "explanation": "Authentication/authorization policy cần thêm validation và kiểm tra quyền."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Compact parts",
+      "question": "JWS compact thông thường có những phần nào?",
+      "options": [
+        "Port,path,CPU.",
+        "Header,payload,signature.",
+        "Username,password,SQL.",
+        "HTML,CSS,JS."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm JWS signed với JWE encrypted."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Password hash",
+      "question": "bcrypt.hash dùng nhằm gì?",
+      "options": [
+        "Tạo JWT từ email tự động.",
+        "Nén password cho ngắn.",
+        "Tạo password hash thích ứng có salt.",
+        "Mã hóa để luôn giải mã lại password."
+      ],
+      "correct": 2,
+      "explanation": "Password verification dùng hash contract, không giải mã password từ hash."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Hash cost",
+      "question": "Tham số10 trong bcrypt.hash(password,10) chủ yếu là gì?",
+      "options": [
+        "Đúng10 ký tự password.",
+        "Thời hạn10 giây.",
+        "Đúng10 lần so String.",
+        "Cost/work factor theo API."
+      ],
+      "correct": 3,
+      "explanation": "Cost ảnh hưởng chi phí tính toán, không tự là policy đủ mạnh mọi môi trường."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Password compare",
+      "question": "bcrypt.compare(password,storedHash) kiểm tra gì?",
+      "options": [
+        "Password có khớp hash lưu không.",
+        "Hash có bằng plaintext trực tiếp không.",
+        "User có quyền admin không.",
+        "JWT có đúng audience không."
+      ],
+      "correct": 0,
+      "explanation": "Kết quả match khác kiểm tra trạng thái tài khoản và quyền."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Salt purpose",
+      "question": "Salt trong password hashing giúp gì?",
+      "options": [
+        "Thay TLS.",
+        "Tránh cùng password mặc nhiên có cùng hash giữa các lần salt khác.",
+        "Làm password public an toàn.",
+        "Thay mọi cost."
+      ],
+      "correct": 1,
+      "explanation": "Salt không cần bí mật nhưng phải dùng đúng scheme/library."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Source secret fallback",
+      "question": "SECRET dự phòng your-secret trong nguồn nên được xem thế nào?",
+      "options": [
+        "Khóa tự rotate mỗi request.",
+        "Public key bất đối xứng.",
+        "Placeholder không phù hợp production.",
+        "Khóa mạnh vì tên có secret."
+      ],
+      "correct": 2,
+      "explanation": "Nên có key management và fail configuration rõ thay vì fallback yếu."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Bearer header",
+      "question": "Client nguồn gửi token theo mẫu nào?",
+      "options": [
+        "Content-Length: <token>.",
+        "Accept: <password>.",
+        "Host: <hash>.",
+        "Authorization: Bearer <token>."
+      ],
+      "correct": 3,
+      "explanation": "Bearer token là credential cần bảo vệ."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Sign function",
+      "question": "jwt.sign(payload,key,options) chủ yếu làm gì?",
+      "options": [
+        "Tạo token được ký theo cấu hình.",
+        "Tự kiểm tra password DB.",
+        "Tự tạo refresh-token rotation.",
+        "Tự lưu User."
+      ],
+      "correct": 0,
+      "explanation": "Issuer cần xác minh danh tính trước phát hành."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Verify function",
+      "question": "jwt.verify khác việc decode thô ở điểm nào?",
+      "options": [
+        "Tự đổi password.",
+        "Kiểm tra signature và validation theo claims/options phù hợp.",
+        "Chỉ Base64 decode không kiểm tra.",
+        "Tự check mọi quyền nghiệp vụ."
+      ],
+      "correct": 1,
+      "explanation": "Verify không tự biết toàn bộ policy ứng dụng."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Payload privacy",
+      "question": "Payload JWT signed có mặc định là thông tin bí mật không?",
+      "options": [
+        "Có vì có exp.",
+        "Có vì secret private.",
+        "Không.",
+        "Có vì Base64URL."
+      ],
+      "correct": 2,
+      "explanation": "Đừng đưa password/hash/secrets không cần thiết vào token."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Token source claims",
+      "question": "Payload tường minh nguồn dùng jwt.sign chứa gì?",
+      "options": [
+        "Password thô và role ADMIN bắt buộc.",
+        "Mọi users array.",
+        "Mọi process.env.",
+        "id và email."
+      ],
+      "correct": 3,
+      "explanation": "Library có thể thêm claims chuẩn như iat/exp theo options; không bịa role nguồn không có."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Expiration option",
+      "question": "expiresIn:\"24h\" của nguồn biểu đạt thời hạn xấp xỉ nào?",
+      "options": [
+        "24 giờ.",
+        "24 phút.",
+        "24 năm.",
+        "24 milliseconds."
+      ],
+      "correct": 0,
+      "explanation": "Đơn vị tường minh tránh nhầm chuỗi số không có unit."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Users storage",
+      "question": "users=[] trong demo lưu ở đâu?",
+      "options": [
+        "Mọi browser đồng bộ.",
+        "RAM process.",
+        "Database durable tự động.",
+        "Blockchain."
+      ],
+      "correct": 1,
+      "explanation": "Restart/multi-instance cần thiết kế khác nếu dùng thật."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Register success",
+      "question": "Đăng ký thành công trong nguồn trả status nào?",
+      "options": [
+        "409.",
+        "500 luôn.",
+        "201.",
+        "401."
+      ],
+      "correct": 2,
+      "explanation": "Response body chỉ báo Registered trong đường success."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Duplicate response",
+      "question": "Email đã tìm thấy trước hash trong nguồn trả gì?",
+      "options": [
+        "201 tạo bản sao luôn.",
+        "204 xóa user.",
+        "302 chuyển trang luôn.",
+        "409 Email taken."
+      ],
+      "correct": 3,
+      "explanation": "Đây là behavior demo, chưa đủ uniqueness dưới concurrency."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Login failure",
+      "question": "User không có hoặc password không match trong nguồn trả gì?",
+      "options": [
+        "401 Invalid credentials.",
+        "200 token rỗng luôn.",
+        "201 User mới.",
+        "409 mọi lúc."
+      ],
+      "correct": 0,
+      "explanation": "Thông báo login không phân biệt trực tiếp hai lý do trong body nguồn."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Auth continuation",
+      "question": "Auth middleware nguồn gọi next() sau khi nào?",
+      "options": [
+        "Chỉ sau res.json profile.",
+        "jwt.verify thành công và gán req.user.",
+        "Trước khi đọc header.",
+        "Sau mọi error kể cả token hỏng."
+      ],
+      "correct": 1,
+      "explanation": "Missing/invalid token đi đường401 thay vì tiếp tục như đã authenticated."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Transport protection",
+      "question": "Vì sao cần HTTPS cho bearer tokens?",
+      "options": [
+        "Thay ownership authorization.",
+        "Mã hóa JWT vĩnh viễn cho mọi người cầm token.",
+        "Giảm nguy cơ lộ/sửa credential trên đường truyền.",
+        "Thay signature check."
+      ],
+      "correct": 2,
+      "explanation": "TLS và token validation là các lớp khác nhau."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Logout nuance",
+      "question": "Xóa token ở client có tự vô hiệu mọi bản sao token còn hạn không?",
+      "options": [
+        "Có vì stateless.",
+        "Có vì User name.",
+        "Có vì token đã signed.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Cần expiration/revocation policy phù hợp nếu yêu cầu thu hồi."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Missing header",
+      "question": "Output là gì?",
+      "code": "const header=undefined;console.log(Boolean(header?.startsWith(\"Bearer \")));",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "TypeError."
+      ],
+      "correct": 0,
+      "explanation": "Optional chaining cho undefined, Boolean chuyển thành false."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Token extraction",
+      "question": "Output là gì?",
+      "code": "const header=\"Bearer abc\";console.log(header.split(\" \")[1]);",
+      "options": [
+        "abc Bearer",
+        "abc",
+        "Bearer",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Split theo một space và lấy index1."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Scheme source case",
+      "question": "Output là gì?",
+      "code": "console.log(\"bearer abc\".startsWith(\"Bearer \"));",
+      "options": [
+        "undefined",
+        "TypeError.",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn startsWith so String case-sensitive, khác việc scheme HTTP thường không phân biệt hoa thường."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Repeated space",
+      "question": "Output là gì?",
+      "code": "console.log(\"Bearer  abc\".split(\" \")[1]===\"\");",
+      "options": [
+        "false",
+        "abc",
+        "undefined",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Hai spaces tạo phần tử rỗng ở index1 khi split theo space literal."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Other scheme",
+      "question": "Output là gì?",
+      "code": "console.log(\"Basic abc\".startsWith(\"Bearer \"));",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "TypeError."
+      ],
+      "correct": 0,
+      "explanation": "Basic không khớp prefix Bearer theo nguồn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Extra words",
+      "question": "Output là gì?",
+      "code": "console.log(\"Bearer abc extra\".split(\" \")[1]);",
+      "options": [
+        "undefined",
+        "abc",
+        "abc extra",
+        "extra"
+      ],
+      "correct": 1,
+      "explanation": "Parser nguồn chỉ lấy phần tử index1, không validate đầy đủ format header."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Empty token",
+      "question": "Output là gì?",
+      "code": "console.log(\"Bearer \".split(\" \")[1].length);",
+      "options": [
+        "6",
+        "undefined",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Có prefix không đồng nghĩa có token nonempty."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Explicit payload keys",
+      "question": "Output là gì?",
+      "code": "console.log(Object.keys({id:7,email:\"a@example.test\"}).join(\",\"));",
+      "options": [
+        "id,email,password",
+        "roles,id",
+        "undefined",
+        "id,email"
+      ],
+      "correct": 3,
+      "explanation": "Object này chỉ chứa hai claims tường minh như sign source trước library processing."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Encoding is readable",
+      "question": "Output là gì?",
+      "code": "const s=Buffer.from(JSON.stringify({id:7})).toString(\"base64url\");console.log(JSON.parse(Buffer.from(s,\"base64url\").toString()).id);",
+      "options": [
+        "7",
+        "undefined",
+        "Một password hash.",
+        "Signature đã verify."
+      ],
+      "correct": 0,
+      "explanation": "Round-trip Base64URL đọc được dữ liệu nhưng không xác thực nội dung."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Claim type validation",
+      "question": "Output là gì?",
+      "code": "const payload={id:\"7\"};console.log(payload.id===7);",
+      "options": [
+        "undefined",
+        "false",
+        "true",
+        "7"
+      ],
+      "correct": 1,
+      "explanation": "ID string không strict-equal ID Number; verified token vẫn cần expected claim schema."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Present configuration",
+      "question": "Output là gì?",
+      "code": "const supplied=\"configured-key\";console.log(supplied||\"your-secret\");",
+      "options": [
+        "undefined",
+        "null",
+        "configured-key",
+        "your-secret"
+      ],
+      "correct": 2,
+      "explanation": "Đây là String giả mô phỏng logic ||, không đọc env thực."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Empty configuration fallback",
+      "question": "Output là gì?",
+      "code": "const supplied=\"\";console.log(supplied||\"your-secret\");",
+      "options": [
+        "undefined",
+        "null",
+        "Một khóa random.",
+        "your-secret"
+      ],
+      "correct": 3,
+      "explanation": "Chuỗi rỗng là falsy nên nguồn rơi vào placeholder."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Missing user short circuit",
+      "question": "Output là gì trong mô hình compare giả?",
+      "code": "let calls=0;const user=undefined;async function compare(){calls++;return true;}const bad=!user||!(await compare());console.log(bad,calls);",
+      "options": [
+        "true 0",
+        "true 1",
+        "false 0",
+        "false 1"
+      ],
+      "correct": 0,
+      "explanation": "|| short-circuit không gọi compare khi không có user."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Wrong password branch",
+      "question": "Output là gì trong mô hình compare giả?",
+      "code": "let calls=0;const user={id:1};async function compare(){calls++;return false;}const bad=!user||!(await compare());console.log(bad,calls);",
+      "options": [
+        "false 0",
+        "true 1",
+        "true 0",
+        "false 1"
+      ],
+      "correct": 1,
+      "explanation": "User tồn tại nhưng compare false nên bad=true."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Matched password branch",
+      "question": "Output là gì trong mô hình compare giả?",
+      "code": "const user={id:1};async function compare(){return true;}console.log(!user||!(await compare()));",
+      "options": [
+        "undefined",
+        "1",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Match làm phủ định false, không vào invalid-credentials branch."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Numeric date units",
+      "question": "Chuyển7200000 milliseconds sang seconds nguyên bằng đoạn này cho gì?",
+      "code": "console.log(Math.floor(7200000/1000));",
+      "options": [
+        "7200000",
+        "72",
+        "7.2",
+        "7200"
+      ],
+      "correct": 3,
+      "explanation": "JWT NumericDate dùng seconds; không nhầm đơn vị Date.now."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Lifetime seconds",
+      "question": "Output là gì?",
+      "code": "console.log(24*60*60);",
+      "options": [
+        "86400",
+        "86400000",
+        "1440",
+        "24"
+      ],
+      "correct": 0,
+      "explanation": "24 giờ có86400 seconds."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Expiration boundary model",
+      "question": "Với policy reject nếu now>=exp, output là gì?",
+      "code": "const now=1000,exp=1000;console.log(now>=exp);",
+      "options": [
+        "undefined",
+        "true",
+        "false",
+        "1000"
+      ],
+      "correct": 1,
+      "explanation": "Tại đúng exp đã tới ranh giới hết hạn theo model không clock tolerance."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "UTF8 password length",
+      "question": "Output là gì?",
+      "code": "const p=\"é\".repeat(37);const n=Buffer.byteLength(p,\"utf8\");console.log(n,n>72);",
+      "options": [
+        "74 false",
+        "37 true",
+        "74 true",
+        "37 false"
+      ],
+      "correct": 2,
+      "explanation": "37 ký tự é này chiếm74 UTF-8 bytes, vượt72 bytes của bcrypt input limit."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Register await race model",
+      "question": "Output là gì trong mô hình kiểm tra trước await dưới đây?",
+      "code": "const users=[];async function register(email){if(users.some(u=>u.email===email))return;await Promise.resolve();users.push({id:users.length+1,email});}await Promise.all([register(\"a@example.test\"),register(\"a@example.test\")]);console.log(users.length,new Set(users.map(u=>u.email)).size);",
+      "options": [
+        "1 1",
+        "2 2",
+        "0 0",
+        "2 1"
+      ],
+      "correct": 3,
+      "explanation": "Cả hai lời gọi đều thấy email chưa có trước yield; sau đó cùng push."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Await hash",
+      "question": "Vì sao nguồn await bcrypt.hash trước users.push?",
+      "options": [
+        "Cần kết quả hash thay vì lưu Promise như password.",
+        "Để tự khóa mọi registration.",
+        "Để database tự có unique constraint.",
+        "Để token tự rotate."
+      ],
+      "correct": 0,
+      "explanation": "Await hoàn tất thao tác nhưng không tạo transaction cho check trước đó."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Password field naming",
+      "question": "user.password trong nguồn được gán hash; có nên gọi đó là lưu plaintext chỉ vì tên field password không?",
+      "options": [
+        "Không vì mọi String là encrypted.",
+        "Không; xem giá trị gán thực tế, vẫn phải bảo vệ hash.",
+        "Có vì tên field quyết định thuật toán.",
+        "Có vì hash là String."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt tên biến với semantics dữ liệu."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Login representation",
+      "question": "Login response user trong nguồn có trực tiếp kèm password hash không?",
+      "options": [
+        "Có vì token chứa toàn users.",
+        "Chỉ khi password sai.",
+        "Không, chỉ chọn id và name trong user response.",
+        "Có vì res.json tự thêm mọi field."
+      ],
+      "correct": 2,
+      "explanation": "Đây là điểm chọn representation có chủ đích; log/endpoint khác vẫn cần review."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Token minimization",
+      "question": "Có nên thêm stored password hash vào JWT payload để tiện debug không?",
+      "options": [
+        "Có vì JWT signed che nội dung.",
+        "Có vì exp24h.",
+        "Có vì hash không nhạy cảm.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Hash vẫn là dữ liệu nhạy cảm không cần cho bearer claim."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Issuer audience policy",
+      "question": "Nguồn chỉ verify(token,SECRET) có chứng minh đã kiểm tra expected issuer/audience của hệ thống chưa?",
+      "options": [
+        "Chưa; cần cấu hình validation phù hợp contract.",
+        "Có vì mọi library tự biết app.",
+        "Có vì email có domain.",
+        "Có vì middleware tên auth."
+      ],
+      "correct": 0,
+      "explanation": "Option defaults không thay expected audience/issuer của từng deployment."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Algorithm policy",
+      "question": "App chỉ chấp nhận HS256 nên chọn cấu hình verify nào theo ý nghĩa?",
+      "options": [
+        "Dùng email làm secret.",
+        "Giới hạn algorithms phù hợp và khóa tin cậy.",
+        "Tin mọi alg client gửi.",
+        "Chấp nhận none để dễ test production."
+      ],
+      "correct": 1,
+      "explanation": "Không để token chưa xác minh tự quyết định trust policy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Expired token",
+      "question": "Signature đúng nhưng token hết hạn có nên chấp nhận khi policy yêu cầu expiration không?",
+      "options": [
+        "Có nếu id tồn tại.",
+        "Có nếu client gọi profile.",
+        "Không.",
+        "Có vì signature đủ."
+      ],
+      "correct": 2,
+      "explanation": "Không tắt ignoreExpiration để chữa lỗi đồng hồ một cách mù quáng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Future validity",
+      "question": "nbf tương lai ngoài tolerance cho phép nên được xử lý thế nào?",
+      "options": [
+        "Tự sửa payload không ký lại.",
+        "Luôn cho qua.",
+        "Tự cấp token admin.",
+        "Từ chối token chưa có hiệu lực."
+      ],
+      "correct": 3,
+      "explanation": "Time validation cần clock/tolerance rõ."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Refresh implementation gap",
+      "question": "Nguồn có triển khai refresh token rotation đầy đủ chưa?",
+      "options": [
+        "Chưa; đó là phần exercise.",
+        "Có vì expiresIn24h.",
+        "Có vì bcrypt.hash.",
+        "Có vì users array."
+      ],
+      "correct": 0,
+      "explanation": "Không đánh đồng mô tả bài tập với code đã có."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Scheme robustness",
+      "question": "Parser nguồn chỉ nhận Bearer viết hoa đúng mẫu; cải tiến phù hợp là gì?",
+      "options": [
+        "Thay verify bằng decode.",
+        "Parse scheme/token có validation và theo HTTP semantics, xử lý malformed rõ.",
+        "Lowercase cả token vì token không phân biệt hoa thường.",
+        "Xóa mọi spaces và tin phần còn lại."
+      ],
+      "correct": 1,
+      "explanation": "Scheme và token content có quy tắc khác nhau; không sửa tùy tiện token bytes."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Login message limits",
+      "question": "Cùng thông báo Invalid credentials có loại mọi account enumeration qua timing không?",
+      "options": [
+        "Có vì401.",
+        "Có vì không gửi password hash.",
+        "Không.",
+        "Có vì body giống nhau."
+      ],
+      "correct": 2,
+      "explanation": "Body là một kênh; timing/rate behavior và policy cũng cần xem xét."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Body validation",
+      "question": "Password từ req.body là object/null có được bcrypt dùng như String hợp lệ theo ý đồ tự động không?",
+      "options": [
+        "Có vì JSON parser luôn trả strings.",
+        "Có vì field tên password.",
+        "Có nếu name hợp lệ.",
+        "Không nên giả định; validate type/range trước."
+      ],
+      "correct": 3,
+      "explanation": "Không để lỗi type thư viện thành error path chưa kiểm soát."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Email equality",
+      "question": "users.find(u=>u.email===email) có tự chuẩn hóa hoa/thường/whitespace theo email policy không?",
+      "options": [
+        "Không.",
+        "Có vì strict equality.",
+        "Có vì bcrypt.",
+        "Có vì JWT."
+      ],
+      "correct": 0,
+      "explanation": "Canonicalization cần policy rõ và consistency ở lookup/unique storage."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Uniqueness race source",
+      "question": "Vì sao exists check trước await hash chưa bảo đảm email duy nhất?",
+      "options": [
+        "Vì nextId đã tăng trước check.",
+        "Request khác có thể đi qua check trước khi request đầu push.",
+        "Vì Array.find luôn async.",
+        "Vì bcrypt tự đổi email."
+      ],
+      "correct": 1,
+      "explanation": "Use storage uniqueness/atomic registration theo yêu cầu, không chỉ check-then-act."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "ID concurrency nuance",
+      "question": "Trong một process append-only, id=users.length+1 rồi push liền sau await có tự có interleaving JS giữa hai statement đồng bộ này không?",
+      "options": [
+        "Có vì bcrypt Promise.",
+        "Chỉ khi ID là Number.",
+        "Không trong cùng event-loop execution không yield.",
+        "Có ở từng instruction vì mọi async chạy song song JS."
+      ],
+      "correct": 2,
+      "explanation": "Race email vẫn có do check trước await; đừng giải thích sai vị trí race."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Fail closed config",
+      "question": "Khi production thiếu JWT signing key, policy phù hợp là gì?",
+      "options": [
+        "Âm thầm dùng secret public chung.",
+        "Bỏ signature.",
+        "Tin token decode được.",
+        "Từ chối khởi động/cấp token theo cấu hình an toàn có kiểm soát."
+      ],
+      "correct": 3,
+      "explanation": "Không che lỗi cấu hình bằng credential đoán được."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Key lifecycle gap",
+      "question": "Field SECRET lấy lúc khởi động có tự triển khai rotation/revocation không?",
+      "options": [
+        "Không.",
+        "Có vì env có thể đổi ở shell khác.",
+        "Có vì String immutable.",
+        "Có vì expiresIn."
+      ],
+      "correct": 0,
+      "explanation": "Key provisioning, trusted key set và token lifetime cần thiết kế riêng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Disabled account",
+      "question": "Middleware chỉ verify token rồi gán req.user có tự biết tài khoản vừa bị disable trong storage không?",
+      "options": [
+        "Có vì id là Number.",
+        "Không.",
+        "Có vì token tự sync.",
+        "Có vì bcrypt.compare lần login trước."
+      ],
+      "correct": 1,
+      "explanation": "Claim snapshot và current account policy cần cơ chế phù hợp SLA."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Protected route order",
+      "question": "app.get(\"/api/profile\",auth,handler) đặt auth trước handler nhằm gì?",
+      "options": [
+        "Chỉ log mọi token.",
+        "Tự xử lý mọi quyền ownership khác.",
+        "Chặn đường tới handler khi authentication không đạt.",
+        "Chỉ format response."
+      ],
+      "correct": 2,
+      "explanation": "Route-level auth là một boundary, không tự cover mọi route khác."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Express4 async failure",
+      "question": "bcrypt async reject trong route Express4 mà không wrapper/catch(next) cần xử lý gì?",
+      "options": [
+        "Tin error middleware sẽ bắt mọi Promise tự động như5.",
+        "Bỏ await và lưu Promise.",
+        "Trả201 ngay rồi bỏ lỗi.",
+        "Forward/catch lỗi ở async boundary để response và lifecycle rõ."
+      ],
+      "correct": 3,
+      "explanation": "Version framework quyết định error propagation support."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Refresh atomicity",
+      "question": "Refresh rotation hai request dùng cùng token cũ cần tính chất nào?",
+      "options": [
+        "Consume/rotate atomic cùng policy replay và token family phù hợp.",
+        "Cho cả hai tạo vô hạn token không state.",
+        "Chỉ verify JWT signature.",
+        "Chỉ đổi exp client."
+      ],
+      "correct": 0,
+      "explanation": "Concurrency/reuse detection không tự có nhờ token signed."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Revocation SLA",
+      "question": "Yêu cầu khóa user có hiệu lực tức thì nhưng access token24h tự chứa claims; phải đánh giá gì?",
+      "options": [
+        "Chỉ đổi name.",
+        "Revocation/state checks hoặc lifetime ngắn theo SLA và availability tradeoff.",
+        "Chỉ xóa user khỏi UI.",
+        "Chỉ giữ signature check cũ."
+      ],
+      "correct": 1,
+      "explanation": "Tính stateless có tradeoff với thay đổi quyền/tài khoản tức thì."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Key entropy",
+      "question": "Tăng your-secret thành chuỗi lặp dài có tự bảo đảm entropy mạnh không?",
+      "options": [
+        "Có vì HS256.",
+        "Có vì private const.",
+        "Không.",
+        "Có chỉ dựa số ký tự."
+      ],
+      "correct": 2,
+      "explanation": "Khóa cần nguồn ngẫu nhiên/chính sách phân phối phù hợp, không chỉ length."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Verification key selection",
+      "question": "JWT header tự khai kid là URL ngoài; có nên fetch tùy ý để tìm khóa không?",
+      "options": [
+        "Có vì kid nằm trong header.",
+        "Có nếu URL HTTPS.",
+        "Có vì token dài.",
+        "Không; chỉ dùng nguồn keys tin cậy/allowlist và validation thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không để untrusted token điều khiển network trust boundary."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Password byte policy",
+      "question": "Bcrypt giới hạn72 bytes có hệ quả gì cho password Unicode dài?",
+      "options": [
+        "Cần policy/validation rõ vì bytes khác số ký tự và phần vượt có thể bị truncate.",
+        "Mọi password72 ký tự luôn an toàn cùng semantics.",
+        "Thư viện luôn tự reject mọi chuỗi vượt72 ký tự.",
+        "String.length luôn là UTF-8 bytes."
+      ],
+      "correct": 0,
+      "explanation": "Không âm thầm làm người dùng tưởng toàn password dài được xét."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Hash CPU budget",
+      "question": "Bcryptjs async API có bảo đảm mọi hashing chạy trên worker thread riêng và không tốn JS CPU không?",
+      "options": [
+        "Có vì cost10.",
+        "Không; implementation JS chia work/yield, vẫn cần capacity controls.",
+        "Có vì await.",
+        "Có vì API trả Promise."
+      ],
+      "correct": 1,
+      "explanation": "Đo cost/concurrency/latency; asynchronous API không đồng nghĩa CPU work miễn phí."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Login capacity",
+      "question": "Tăng cost hash mà không giới hạn login concurrency có thể làm gì?",
+      "options": [
+        "Tự chống mọi brute force không tradeoff.",
+        "Tự thêm nhiều core.",
+        "Tăng áp lực CPU/latency và dễ resource exhaustion.",
+        "Luôn tăng throughput."
+      ],
+      "correct": 2,
+      "explanation": "Cân bằng password hashing cost với threat model và tài nguyên, không bỏ hash để tăng tốc."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Hash rehash comparison",
+      "question": "Vì sao hash lại password với salt mới rồi so hai hash String không là cách compare đúng?",
+      "options": [
+        "Vì bcrypt không bao giờ dùng salt.",
+        "Vì mọi hash phải ngắn hơn password.",
+        "Vì JWT mới kiểm tra password.",
+        "Salt mới có thể cho hash khác dù cùng password; dùng compare theo scheme."
+      ],
+      "correct": 3,
+      "explanation": "Để thư viện verify theo tham số/salt được mã hóa trong stored hash."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Duplicate registration persistence",
+      "question": "Chuyển users RAM sang database nhưng giữ exists-then-await-create có tự hết race chưa?",
+      "options": [
+        "Chưa; cần unique constraint/atomic behavior và xử lý conflict.",
+        "Có vì database luôn serialize mọi code app.",
+        "Có vì ORM typed.",
+        "Có vì async."
+      ],
+      "correct": 0,
+      "explanation": "App check hữu ích UX nhưng database constraint là hàng rào invariant quan trọng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "User identity after deletion",
+      "question": "Dùng users.length+1 lâu dài, sau này thêm xóa user có thể gặp gì?",
+      "options": [
+        "Không bao giờ nếu dùng Number.",
+        "Reuse/collision ID với records còn tồn tại hoặc token cũ.",
+        "Length luôn là maximum ID.",
+        "JWT tự cập nhật id khi array xóa."
+      ],
+      "correct": 1,
+      "explanation": "Identity cần chiến lược ổn định bền vững theo hệ thống."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Profile claim exposure",
+      "question": "Profile trả nguyên req.user đã verify cần xem gì?",
+      "options": [
+        "Tự thêm password hash.",
+        "Bỏ mọi authorization vì verify.",
+        "Chỉ xuất claims được phép và xử lý schema/current-state theo contract.",
+        "Tin mọi field trong signed payload đều nên public."
+      ],
+      "correct": 2,
+      "explanation": "Token validation và response minimization là các trách nhiệm riêng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Token storage browser",
+      "question": "Lưu access token localStorage trong app có XSS có rủi ro gì?",
+      "options": [
+        "Không vì signed JWT.",
+        "HttpOnly tự bảo vệ localStorage.",
+        "Không vì HTTPS.",
+        "Script cùng origin có thể đọc credential."
+      ],
+      "correct": 3,
+      "explanation": "Lựa chọn storage cần threat model và XSS defenses, không có vị trí tự giải mọi rủi ro."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Cookie CSRF",
+      "question": "Đưa JWT vào cookie browser tự gửi có loại CSRF vì không dùng server session không?",
+      "options": [
+        "Không.",
+        "Có mọi trường hợp.",
+        "Có vì JWT có exp.",
+        "Có vì user chỉ login một lần."
+      ],
+      "correct": 0,
+      "explanation": "CSRF liên quan credential tự đính kèm và request origin semantics."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Access refresh separation",
+      "question": "Verifier chấp nhận refresh token ở profile API chỉ vì cùng signing key có vấn đề gì?",
+      "options": [
+        "Chỉ ảnh hưởng UI.",
+        "Token substitution sai mục đích; cần validation purpose/audience và policy tách.",
+        "Luôn đúng vì mọi JWT cùng quyền.",
+        "Không vì token dài hơn."
+      ],
+      "correct": 1,
+      "explanation": "Dùng key/claims/validation phù hợp để ngăn nhầm loại credential."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Rotation shared state",
+      "question": "Refresh state chỉ ở RAM một instance trong hệ nhiều instance có giới hạn gì?",
+      "options": [
+        "Signature tự chia sẻ trạng thái đã dùng.",
+        "Không cần persistence nếu token signed.",
+        "Không nhất quán khi request sang instance khác hoặc restart.",
+        "Load balancer tự replicate mọi JS array."
+      ],
+      "correct": 2,
+      "explanation": "State store và atomicity cần scope toàn hệ theo contract."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Clock policy",
+      "question": "Đồng hồ lệch làm token hết hạn sai; hướng xử lý đúng là gì?",
+      "options": [
+        "ignoreExpiration:true cho mọi production token.",
+        "Sửa exp bằng client mà không ký lại.",
+        "Tin Date header tùy ý của caller.",
+        "Đồng bộ clock và tolerance bounded theo policy, không tắt validation vô điều kiện."
+      ],
+      "correct": 3,
+      "explanation": "Time validity là phần trust policy, cần đo/giám sát clock."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Bearer replay",
+      "question": "Token bị lấy cắp còn hạn có ngăn được replay chỉ bằng signature không?",
+      "options": [
+        "Không.",
+        "Có vì signature chỉ dùng một lần tự động.",
+        "Có vì id unique.",
+        "Có vì bcrypt có salt."
+      ],
+      "correct": 0,
+      "explanation": "Cần transport/storage protection và revocation/lifetime/binding theo nhu cầu."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Role ownership boundary",
+      "question": "User đã login có thể cập nhật bất kỳ user ID vì token verify đúng không?",
+      "options": [
+        "Chỉ cần ID khó đoán.",
+        "Không; phải authorize tài nguyên và hành động.",
+        "Có vì login nghĩa full quyền.",
+        "Có vì JWT có email."
+      ],
+      "correct": 1,
+      "explanation": "Authentication không thay object-level authorization."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Sensitive telemetry",
+      "question": "Ghi token/password/hash nguyên văn trong log login có nguy cơ gì?",
+      "options": [
+        "Không vì hash không có giá trị.",
+        "Chỉ làm file lớn.",
+        "Lộ credential hoặc dữ liệu cho tấn công offline; redact và giới hạn quyền log.",
+        "Không vì logs chỉ text."
+      ],
+      "correct": 2,
+      "explanation": "Quan sát cần dữ liệu tối thiểu và retention hợp lý."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Verifier test coverage",
+      "question": "Unit test mock jwt.verify luôn trả User có chứng minh token sai signature hoặc hết hạn bị chặn chưa?",
+      "options": [
+        "Có vì mock trả đúng object.",
+        "Có vì payload decode được.",
+        "Có vì route có tên auth.",
+        "Chưa; cần kiểm tra verifier/config thật với các ca token phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Mock hỗ trợ test control flow, không kiểm chứng thuật toán và policy validation của dependency thật."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "scala",
+  "level": "senior",
+  "lesson": "typesystem",
+  "language": "vi",
+  "sourceHash": "a8d3655202652d1f27c8c5705d8329af7e43a3111376ee83cff3104ca3bfdd71",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo trait JsonSerializable[T] chỉ khai báo toJson(value:T):String, invariant mặc định, chưa có instance/consumer. Đối chiếu Scala Tour variance và Scala 3 Book typeclass/context parameter, phân biệt implicit Scala 2 với given/using Scala 3. Variance được phân tích theo vị trí và subtype, không khẳng định String tự hợp lệ JSON. Bài formatter tiền tệ cần hợp đồng locale/currency/rounding; không chạy compiler/JVM.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Trait nguồn",
+      "question": "Tên trait trong source là gì?",
+      "options": [
+        "JsonSerializable",
+        "SparkSession",
+        "FutureDemo",
+        "UserRepository"
+      ],
+      "correct": 0,
+      "explanation": "Source chỉ định nghĩa hợp đồng serialization tổng quát."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Tham số kiểu",
+      "question": "T trong JsonSerializable[T] là gì?",
+      "options": [
+        "Một giá trị Int mặc định",
+        "Tham số kiểu của giá trị được serialize",
+        "Tên thread bắt buộc",
+        "Tên trường JSON luôn là T"
+      ],
+      "correct": 1,
+      "explanation": "Trait có thể mô tả hành vi cho nhiều kiểu khác nhau."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Phương thức",
+      "question": "Phương thức nào được khai báo trong trait?",
+      "options": [
+        "groupBy",
+        "recoverWith",
+        "toJson",
+        "findUser"
+      ],
+      "correct": 2,
+      "explanation": "Source chưa cung cấp thân phương thức."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Input",
+      "question": "toJson(value: T) nhận dữ liệu kiểu nào?",
+      "options": [
+        "String bắt buộc ở mọi instance",
+        "Future[T] bắt buộc",
+        "Option[Row]",
+        "T"
+      ],
+      "correct": 3,
+      "explanation": "Kiểu cụ thể phụ thuộc tham số hóa trait."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Output",
+      "question": "Kiểu trả về được khai báo của toJson là gì?",
+      "options": [
+        "String",
+        "Option[String]",
+        "Future[Row]",
+        "Unit"
+      ],
+      "correct": 0,
+      "explanation": "String là hợp đồng kiểu, chưa chứng minh định dạng đúng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Mặc định variance",
+      "question": "JsonSerializable[T] không có dấu + hoặc - thì T là gì?",
+      "options": [
+        "Không có type checking",
+        "Invariant",
+        "Covariant mặc định",
+        "Contravariant mặc định"
+      ],
+      "correct": 1,
+      "explanation": "Quan hệ subtype của T không tự truyền qua kiểu invariant."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Covariance ký hiệu",
+      "question": "Ký hiệu nào khai báo tham số kiểu covariant?",
+      "options": [
+        "T = null",
+        "T? trong mọi Scala version",
+        "+T",
+        "-T"
+      ],
+      "correct": 2,
+      "explanation": "Dấu cộng chỉ quan hệ kiểu, không phải phép cộng giá trị."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Contravariance ký hiệu",
+      "question": "Ký hiệu nào khai báo tham số kiểu contravariant?",
+      "options": [
+        "+T",
+        "var T",
+        "Some[T] luôn luôn",
+        "-T"
+      ],
+      "correct": 3,
+      "explanation": "Dấu trừ đánh dấu hướng quan hệ subtype đảo ngược."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Type class ý tưởng",
+      "question": "Type class pattern hỗ trợ điều gì?",
+      "options": [
+        "Cung cấp hành vi cho kiểu qua một instance riêng",
+        "Bắt mọi kiểu phải sửa source để kế thừa",
+        "Tự chạy reflection trên mọi field",
+        "Tự tạo database schema"
+      ],
+      "correct": 0,
+      "explanation": "Instance mô tả cách một kiểu thực hiện hành vi."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Source chưa có",
+      "question": "Thành phần nào chưa được cung cấp trong source?",
+      "options": [
+        "Khai báo kiểu trả String",
+        "Instance serialize cho một kiểu cụ thể",
+        "Khai báo tên trait",
+        "Khai báo tham số kiểu T"
+      ],
+      "correct": 1,
+      "explanation": "Trait riêng chưa là encoder hoàn chỉnh có thể dùng cho mọi dữ liệu."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Scala 3 given",
+      "question": "Trong Scala 3, từ khóa thường dùng để cung cấp instance ngữ cảnh là gì?",
+      "options": [
+        "yield-only",
+        "extends-only",
+        "given",
+        "await"
+      ],
+      "correct": 2,
+      "explanation": "Cú pháp được nêu rõ theo phiên bản."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Scala 3 using",
+      "question": "Trong Scala 3, danh sách tham số ngữ cảnh thường bắt đầu bằng gì?",
+      "options": [
+        "implicit-only là cú pháp duy nhất mới",
+        "private-only",
+        "case-only",
+        "using"
+      ],
+      "correct": 3,
+      "explanation": "Compiler có thể tìm đối số phù hợp cho tham số ngữ cảnh."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Scala 2 implicit",
+      "question": "Trong Scala 2, cơ chế thường dùng cho tham số/giá trị ngữ cảnh là gì?",
+      "options": [
+        "implicit",
+        "given bắt buộc ở mọi bản Scala 2",
+        "Spark SQL",
+        "ThreadLocal bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Không trộn cú pháp Scala 3 vào ví dụ Scala 2 mà thiếu phạm vi."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Bài tập",
+      "question": "Bài tập type system muốn mở rộng hành vi nào?",
+      "options": [
+        "Khởi tạo actor cluster bắt buộc",
+        "Định dạng tiền tệ bằng formatter/type class",
+        "Chỉ sleep 500 ms",
+        "Đọc mọi file JSON vào driver"
+      ],
+      "correct": 1,
+      "explanation": "Hợp đồng formatter cần được xác định rõ trước implementation."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Consumer",
+      "question": "Trong toJson(value:T):String, T xuất hiện chủ yếu ở vai trò nào?",
+      "options": [
+        "Tên package",
+        "Giá trị String literal",
+        "Input được tiêu thụ",
+        "Kết quả T được sản xuất"
+      ],
+      "correct": 2,
+      "explanation": "Vị trí sử dụng tham số kiểu liên quan đến variance hợp lệ."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Gọi tường minh",
+      "question": "Type class instance có nhất thiết chỉ được truyền ngầm không?",
+      "options": [
+        "Có, truyền tường minh luôn bị cấm",
+        "Có, chỉ reflection mới gọi được",
+        "Không, vì trait tự có mọi instance",
+        "Không, có thể truyền/gọi instance tường minh theo API"
+      ],
+      "correct": 3,
+      "explanation": "Contextual search là tiện ích, không phải điều kiện duy nhất để dùng pattern."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Không phải JSON validator",
+      "question": "Một hàm trả String có tự bảo đảm chuỗi đó hợp lệ JSON không?",
+      "options": [
+        "Không, phải có implementation và kiểm định hợp đồng serialization",
+        "Có, compiler kiểm mọi chuỗi String là JSON",
+        "Có, vì tên hàm bắt đầu bằng toJson",
+        "Có, nếu T invariant"
+      ],
+      "correct": 0,
+      "explanation": "Tên và kiểu trả về không bảo đảm ngữ nghĩa định dạng."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Kiểu ngoài sở hữu",
+      "question": "Muốn thêm formatter cho kiểu của thư viện ngoài, type class có lợi ở điểm nào?",
+      "options": [
+        "Tự biến kiểu ngoài thành String ở mọi nơi",
+        "Có thể viết instance mà không sửa định nghĩa kiểu gốc",
+        "Bắt buộc fork toàn bộ thư viện gốc",
+        "Tự xóa type checking của kiểu ngoài"
+      ],
+      "correct": 1,
+      "explanation": "Hành vi nằm trong instance riêng thay vì bắt kiểu gốc kế thừa trait."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Subtype",
+      "question": "Nếu Cat extends Animal, điều gì đúng trực tiếp?",
+      "options": [
+        "Mọi JsonSerializable tự covariant",
+        "String luôn là subtype của Cat",
+        "Cat là subtype của Animal",
+        "Animal luôn là subtype của Cat"
+      ],
+      "correct": 2,
+      "explanation": "Quan hệ trên tham số hóa còn phụ thuộc variance của constructor kiểu."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Giới hạn kiểm chứng",
+      "question": "Review source/docs ở đây có đồng nghĩa đã chạy compiler kiểm mọi ví dụ không?",
+      "options": [
+        "Có, đọc trait tự chạy compiler",
+        "Có, validator quiz là Scala compiler",
+        "Có, vì source chỉ có một method",
+        "Không, chưa chạy compiler/JVM"
+      ],
+      "correct": 3,
+      "explanation": "Phải phân biệt kiểm nội dung quiz với kiểm chương trình thực thi."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Invariant subtype",
+      "question": "Giả sử Cat <: Animal, với trait JsonSerializable[T] nguyên gốc, có suy ra JsonSerializable[Cat] <: JsonSerializable[Animal] không?",
+      "options": [
+        "Không, trait đang invariant",
+        "Có, mọi generic đều giữ subtype",
+        "Có, vì toJson trả String",
+        "Có, vì Cat là case class"
+      ],
+      "correct": 0,
+      "explanation": "Không có annotation variance nên quan hệ đó không tự phát sinh."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Covariant producer",
+      "question": "Nếu trait Producer[+T] chỉ có def get:T, Cat <: Animal cho quan hệ nào?",
+      "options": [
+        "Mọi Producer[T] thành String",
+        "Producer[Cat] <: Producer[Animal]",
+        "Producer[Animal] <: Producer[Cat]",
+        "Hai kiểu tự bằng nhau"
+      ],
+      "correct": 1,
+      "explanation": "Producer xuất dữ liệu nên ví dụ thể hiện covariance phù hợp."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Contravariant consumer",
+      "question": "Nếu trait Consumer[-T] chỉ có def accept(x:T):Unit, Cat <: Animal cho quan hệ nào?",
+      "options": [
+        "Hai kiểu luôn invariant dù có dấu -",
+        "Consumer không được nhận tham số",
+        "Consumer[Animal] <: Consumer[Cat]",
+        "Consumer[Cat] <: Consumer[Animal]"
+      ],
+      "correct": 2,
+      "explanation": "Một consumer nhận mọi Animal có thể nhận Cat."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Dấu cộng sai vị trí",
+      "question": "Chỉ đổi nguồn thành trait JsonSerializable[+T] { def toJson(value:T):String } có vấn đề gì?",
+      "options": [
+        "String không thể là kiểu trả về",
+        "Trait không thể có method trừu tượng",
+        "Dấu cộng tự chuyển input thành output",
+        "T covariant xuất hiện ở vị trí tham số method không phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không thể đổi variance tùy ý mà bỏ qua vị trí sử dụng kiểu."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Dấu trừ phù hợp giới hạn",
+      "question": "Với đúng method toJson(value:T):String và không thêm member khác dùng T, annotation nào có thể biểu đạt consumer?",
+      "options": [
+        "[-T]",
+        "[+T] giữ nguyên method luôn hợp lệ",
+        "[var T]",
+        "[T = Any] tự là contravariant"
+      ],
+      "correct": 0,
+      "explanation": "Nếu thêm member sau này vẫn phải kiểm tính hợp lệ của mọi vị trí."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Instance cụ thể",
+      "question": "Một giá trị JsonSerializable[Int] phải cung cấp hành vi nào?",
+      "options": [
+        "groupBy trả DataFrame",
+        "toJson nhận Int và trả String theo hợp đồng đã chọn",
+        "toJson nhận mọi Animal bắt buộc",
+        "findUser trả Option[Int]"
+      ],
+      "correct": 1,
+      "explanation": "Kiểu instance xác định loại dữ liệu nó biết serialize."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Thiếu instance",
+      "question": "Hàm yêu cầu using JsonSerializable[User] nhưng không có instance phù hợp trong ngữ cảnh Scala 3 thường gặp gì?",
+      "options": [
+        "Tự dùng serializer của Int",
+        "Chờ runtime tải instance từ mạng",
+        "Lỗi tìm đối số ngữ cảnh khi biên dịch",
+        "Tự sinh JSON encoder hoàn hảo từ tên trait"
+      ],
+      "correct": 2,
+      "explanation": "Cần cung cấp/import hoặc truyền instance phù hợp theo API."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Nhiều ứng viên",
+      "question": "Nếu có nhiều instance cùng phù hợp mà luật tìm kiếm không chọn được duy nhất, vấn đề nào có thể xuất hiện?",
+      "options": [
+        "Tự lấy instance có tên ngắn nhất luôn",
+        "Chạy đồng thời tất cả rồi ghép JSON",
+        "Tự chuyển T thành Any và bỏ kiểu",
+        "Ambiguous contextual/implicit argument"
+      ],
+      "correct": 3,
+      "explanation": "Cần quản lý phạm vi và lựa chọn instance rõ ràng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Không phải runtime service",
+      "question": "Compiler tìm given có phải là tự gọi service ngoài lúc request chạy không?",
+      "options": [
+        "Không, đó là cơ chế chọn/cung cấp đối số theo luật ngôn ngữ",
+        "Có, luôn gọi HTTP registry",
+        "Có, mỗi given là một actor từ xa",
+        "Không, vì given chỉ là comment"
+      ],
+      "correct": 0,
+      "explanation": "Implementation instance vẫn có thể có tác dụng phụ riêng nếu người viết đưa vào."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Chọn tường minh Scala 3",
+      "question": "Với def encode[T](v:T)(using enc:JsonSerializable[T]):String, cách chỉ rõ instance ở call site là gì?",
+      "options": [
+        "encode.getOrElse(chosen)",
+        "encode(v)(using chosen)",
+        "encode(v)(implicit chosen) là cú pháp bắt buộc Scala 3",
+        "encode[v, chosen]"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi câu hỏi là cú pháp using của Scala 3."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Chọn tường minh Scala 2",
+      "question": "Với def encode[T](v:T)(implicit enc:JsonSerializable[T]):String trong Scala 2, cách cung cấp instance rõ là gì?",
+      "options": [
+        "encode(v).given(chosen)",
+        "encode(v).await(chosen)",
+        "encode(v)(chosen)",
+        "encode(v)(using chosen) bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Đối số ngữ cảnh Scala 2 vẫn có thể được truyền tường minh theo danh sách tham số."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Consumer generic",
+      "question": "Trong encode[T](v:T)(enc:JsonSerializable[T]), thân hàm cần gọi gì để dùng hợp đồng?",
+      "options": [
+        "v.toJson bắt buộc có sẵn trên mọi T",
+        "JsonSerializable tự là object encode",
+        "v.getOrElse(enc)",
+        "enc.toJson(v)"
+      ],
+      "correct": 3,
+      "explanation": "Không giả định mọi T có method thành viên toJson."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Không có kế thừa bắt buộc",
+      "question": "User có phải extends JsonSerializable[User] để có instance JsonSerializable[User] không?",
+      "options": [
+        "Không, instance có thể là đối tượng riêng",
+        "Có, type class luôn là kế thừa trực tiếp",
+        "Có, trừ khi User là String",
+        "Không, vì User tự có encoder trong source"
+      ],
+      "correct": 0,
+      "explanation": "Tách hành vi khỏi kiểu là điểm của pattern."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "JSON string escaping",
+      "question": "Serialize một String chứa dấu nháy kép cần chú ý gì?",
+      "options": [
+        "toString luôn tự đúng JSON",
+        "Escape đúng quy tắc JSON hoặc dùng encoder phù hợp",
+        "Chỉ ghép dấu nháy ngoài là đủ với mọi input",
+        "Xóa mọi dấu nháy vì không ảnh hưởng dữ liệu"
+      ],
+      "correct": 1,
+      "explanation": "Nội dung chuỗi có thể làm JSON ghép tay sai cú pháp."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Case class toString",
+      "question": "User(...).toString có tự là JSON đúng chuẩn không?",
+      "options": [
+        "Có, nếu role là Admin",
+        "Không, vì String không thể chứa JSON",
+        "Không, định dạng debug của case class không phải hợp đồng JSON",
+        "Có, mọi case class luôn in JSON"
+      ],
+      "correct": 2,
+      "explanation": "Cần encoder tường minh và quy tắc field/escaping."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Bảo mật output",
+      "question": "Một serializer cho User cần đưa mọi field ra ngoài không?",
+      "options": [
+        "Có, type class bắt buộc serialize tất cả field",
+        "Có, compiler tự bỏ password an toàn",
+        "Không, chỉ được trả chuỗi rỗng",
+        "Không, cần chọn trường theo hợp đồng và quyền truy cập dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Tính đúng kiểu không tự là chính sách bảo vệ thông tin."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Formatter locale",
+      "question": "Hai locale có thể định dạng cùng số tiền khác nhau ở đâu?",
+      "options": [
+        "Dấu phân cách, vị trí ký hiệu và quy ước trình bày",
+        "Kiểu Long tự đổi thành ActorRef",
+        "Mọi locale luôn cùng chuỗi byte",
+        "Locale tự đổi tiền tệ theo tỷ giá thời gian thực"
+      ],
+      "correct": 0,
+      "explanation": "Định dạng và chuyển đổi tiền tệ là hai việc khác nhau."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Currency",
+      "question": "Chỉ có BigDecimal amount có luôn đủ xác định ký hiệu tiền tệ không?",
+      "options": [
+        "Không, vì BigDecimal không dùng được để biểu diễn số",
+        "Không, cần biết đơn vị tiền tệ theo hợp đồng",
+        "Có, mọi BigDecimal là USD",
+        "Có, số chữ số tự cho biết quốc gia"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị số và đơn vị là những thông tin khác nhau."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Làm tròn",
+      "question": "Formatter tiền tệ cần xác định gì khi phải làm tròn?",
+      "options": [
+        "Mặc định mọi phép làm tròn đều tương đương",
+        "Tên instance quyết định chính xác pháp lý tự động",
+        "Số chữ số và rounding mode theo yêu cầu",
+        "Chỉ màu chữ của ký hiệu"
+      ],
+      "correct": 2,
+      "explanation": "Quy tắc hiển thị có thể ảnh hưởng kỳ vọng nghiệp vụ."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Thay instance",
+      "question": "Hai formatter khác nhau cho cùng kiểu Money có thể phục vụ điều gì?",
+      "options": [
+        "Làm Money tự thay đổi giá trị ngầm",
+        "Bắt compiler bỏ kiểm kiểu",
+        "Tự bảo đảm cả hai luôn phù hợp cùng một endpoint",
+        "Các hợp đồng hiển thị khác nhau khi được chọn rõ"
+      ],
+      "correct": 3,
+      "explanation": "Nhiều chính sách cần phạm vi/lựa chọn để tránh mơ hồ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Coherent output",
+      "question": "Muốn output JSON của một endpoint ổn định, cần quản lý gì?",
+      "options": [
+        "Instance được chọn và hợp đồng phiên bản dữ liệu",
+        "Chỉ tên tham số T",
+        "Đổi mọi val thành var",
+        "Để mọi import ngẫu nhiên quyết định schema"
+      ],
+      "correct": 0,
+      "explanation": "Thay instance có thể thay đổi dữ liệu xuất dù chữ ký kiểu giữ nguyên."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Covariance List",
+      "question": "Với immutable List covariant, Cat <: Animal cho phép gì theo quan hệ kiểu?",
+      "options": [
+        "Mọi List tự mutable",
+        "List[Cat] được dùng ở nơi yêu cầu List[Animal]",
+        "List[Animal] luôn được dùng như List[Cat]",
+        "Mọi phần tử Animal tự trở thành Cat"
+      ],
+      "correct": 1,
+      "explanation": "Covariance không ép biến đổi giá trị thành subtype hẹp hơn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Mutable box",
+      "question": "Vì sao Box[A](var value:A) không thể tùy ý coi covariant?",
+      "options": [
+        "Vì var tự thành String",
+        "Vì compiler không hỗ trợ subtype",
+        "Quyền ghi có thể đưa giá trị rộng hơn vào box vốn chứa kiểu hẹp",
+        "Vì mọi class đều bị cấm generic"
+      ],
+      "correct": 2,
+      "explanation": "Variance bảo vệ an toàn kiểu trong cả khả năng đọc và ghi."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Consumer hướng dùng",
+      "question": "Nếu JsonSerializable[-T] và Animal là supertype của Cat, encoder Animal có thể dùng cho Cat về kiểu không?",
+      "options": [
+        "Không, contravariance chỉ cho chiều Cat sang Animal",
+        "Có, vì mọi encoder tự inspect mọi field Cat",
+        "Không, vì String không covariant",
+        "Có, nếu nó thực sự nhận mọi Animal theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng chấp nhận input rộng hơn phù hợp nơi chỉ đưa Cat."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Hướng ngược không an toàn",
+      "question": "Vì sao encoder chỉ biết Cat không đủ làm encoder mọi Animal?",
+      "options": [
+        "Có Animal khác Cat mà implementation không nhận đúng",
+        "Vì mọi Animal đều là Cat",
+        "Vì JSON không chứa String",
+        "Vì Scala cấm type class Animal"
+      ],
+      "correct": 0,
+      "explanation": "Subtype của input không có nghĩa consumer hẹp xử lý được mọi input rộng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Thêm producer",
+      "question": "Nếu trait contravariant [-T] được thêm def default:T, cần kiểm gì?",
+      "options": [
+        "Method trả T luôn hợp lệ trong mọi variance",
+        "Vị trí trả T xung đột với contravariance trong dạng đơn giản này",
+        "Không cần kiểm vì annotation khóa mọi member an toàn",
+        "Chỉ đổi tên default là đủ"
+      ],
+      "correct": 1,
+      "explanation": "Mọi vị trí xuất hiện T đều tham gia kiểm variance."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Invariant không cấm dùng",
+      "question": "Trait invariant có còn dùng được như type class không?",
+      "options": [
+        "Không, chỉ trait +T được làm type class",
+        "Có, nhưng phải gọi mạng để tìm instance",
+        "Có, variance không phải điều kiện bắt buộc để áp dụng pattern",
+        "Không, mọi type class phải contravariant"
+      ],
+      "correct": 2,
+      "explanation": "Pattern tập trung vào hợp đồng/instance/consumer, variance là lựa chọn kiểu riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Instance thuần",
+      "question": "Một method trong type class có tự là hàm thuần vì nằm trong trait không?",
+      "options": [
+        "Có, Scala cấm I/O trong trait",
+        "Có, String output tự loại I/O",
+        "Không, vì trait luôn chạy bất đồng bộ",
+        "Không, implementation vẫn có thể có side effect"
+      ],
+      "correct": 3,
+      "explanation": "Tính thuần phụ thuộc hành vi implementation và thiết kế."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Lỗi serialize",
+      "question": "Chữ ký toJson(value:T):String đã mô hình hóa lỗi trả về tường minh chưa?",
+      "options": [
+        "Chưa, không có Either/Try hay kiểu lỗi trong chữ ký này",
+        "Rồi, String luôn chứa lỗi có kiểu",
+        "Rồi, T chứa mọi exception mặc định",
+        "Chưa, vì String không có thể là kết quả thành công"
+      ],
+      "correct": 0,
+      "explanation": "Cần hợp đồng rõ cho dữ liệu không serialize được và ngoại lệ."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Null JSON",
+      "question": "Khi domain có giá trị vắng, encoder cần xác định gì?",
+      "options": [
+        "Type parameter tự chọn chính sách API",
+        "Bỏ field, xuất null hay biểu diễn khác theo hợp đồng",
+        "Mọi None tự thành cùng String trên mọi thư viện",
+        "Mọi Some tự là JSON hợp lệ"
+      ],
+      "correct": 1,
+      "explanation": "Biểu diễn vắng mặt là quyết định schema, không suy ra từ tên trait."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Generic container",
+      "question": "Muốn encode List[T] bằng encoder T theo type class, cần ý tưởng gì?",
+      "options": [
+        "Bỏ encoder T vì generic tự biết mọi kiểu",
+        "Đổi List[T] thành List[Any] rồi bỏ validation",
+        "Instance kết hợp encoder phần tử với quy tắc mảng JSON",
+        "Chỉ gọi List.toString là luôn JSON"
+      ],
+      "correct": 2,
+      "explanation": "Composition vẫn phải đảm bảo cú pháp, escaping và hợp đồng phần tử."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Import instance",
+      "question": "Một consumer không tìm thấy instance đã định nghĩa ở nơi khác cần xem gì?",
+      "options": [
+        "Số thread của Future global",
+        "Thời gian Await",
+        "Tên file JSON đầu vào Spark",
+        "Scope/import/implicit search theo phiên bản và tham số kiểu suy luận"
+      ],
+      "correct": 3,
+      "explanation": "Instance tồn tại trong repo không đồng nghĩa luôn có trong ngữ cảnh tìm kiếm."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Instance Any",
+      "question": "Định nghĩa encoder Any bằng toString có tự giải quyết đúng mọi JSON domain không?",
+      "options": [
+        "Không, mất hợp đồng cấu trúc và có thể xuất dữ liệu không hợp lệ",
+        "Có, Any biết mọi schema nghiệp vụ",
+        "Có, toString luôn escape JSON",
+        "Không, vì Any không là supertype của String"
+      ],
+      "correct": 0,
+      "explanation": "Tính tổng quát rộng không chứng minh tính đúng ngữ nghĩa."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "String representation",
+      "question": "Hai JSON object có thứ tự field khác nhau có nhất thiết khác ý nghĩa dữ liệu không?",
+      "options": [
+        "Có, vì String invariant",
+        "Không nhất thiết; cần phân biệt hợp đồng dữ liệu với yêu cầu byte/canonicalization",
+        "Có, mọi thứ tự field khác là dữ liệu khác",
+        "Không, nên chữ ký số luôn giống nhau"
+      ],
+      "correct": 1,
+      "explanation": "So sánh/chữ ký/cache theo byte có yêu cầu riêng ngoài nghĩa object thông thường."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Codec và roundtrip",
+      "question": "toJson chỉ một chiều có đủ cung cấp parser từ JSON về T chưa?",
+      "options": [
+        "Rồi, tên Serializable sinh parser",
+        "Chưa, vì type class không thể kết hợp decoder",
+        "Chưa, cần decoder và hợp đồng tương ứng",
+        "Rồi, Scala tự đảo mọi hàm String"
+      ],
+      "correct": 2,
+      "explanation": "Không suy ra phép nghịch đảo từ chữ ký encode đơn lẻ."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Extension syntax",
+      "question": "Thêm extension method thuận tiện quanh instance có thay thế instance implementation không?",
+      "options": [
+        "Có, extension tự sinh mọi nghiệp vụ",
+        "Có, không còn cần kiểu T",
+        "Không, vì Scala 3 không có extension",
+        "Không, nó có thể chỉ chuyển lời gọi đến instance"
+      ],
+      "correct": 3,
+      "explanation": "Cú pháp thuận tiện và hành vi thực tế là hai tầng khác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Đúng kiểu chưa đủ",
+      "question": "Một encoder Int luôn trả \"hello\" có thể đáp ứng chữ ký String nhưng sai gì?",
+      "options": [
+        "Sai hợp đồng JSON/số nếu yêu cầu encode số JSON",
+        "Không sai vì mọi String là JSON number",
+        "Sai chỉ vì Int invariant",
+        "Không thể viết implementation trả String literal"
+      ],
+      "correct": 0,
+      "explanation": "Type checking không chứng minh mọi invariant định dạng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Suy luận kiểu",
+      "question": "Nếu compiler suy luận T rộng hơn dự kiến khi gọi hàm generic, điều gì có thể bị ảnh hưởng?",
+      "options": [
+        "Luôn tạo thêm thread",
+        "Instance được yêu cầu/chọn và khả năng tìm thấy nó",
+        "Tự thay đổi dữ liệu runtime thành subtype khác",
+        "Chỉ màu syntax highlighting"
+      ],
+      "correct": 1,
+      "explanation": "Cần đọc kiểu suy luận và khai báo rõ khi hợp đồng yêu cầu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không tự derive",
+      "question": "Source có annotation/derive hoặc macro sinh encoder không?",
+      "options": [
+        "Có, T tự derive JSON",
+        "Không, vì Scala không hỗ trợ derive trong bất kỳ phiên bản nào",
+        "Không, chỉ có trait và method trừu tượng",
+        "Có, tên JsonSerializable luôn kích hoạt macro lõi"
+      ],
+      "correct": 2,
+      "explanation": "Không phủ nhận khả năng framework khác, chỉ nêu chính xác snippet hiện có."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Phạm vi chứng minh variance",
+      "question": "Kết luận vị trí variance ở đây dựa trên gì?",
+      "options": [
+        "Một benchmark cluster Spark",
+        "Số lượng câu quiz",
+        "Kết quả HTTP của service đã triển khai",
+        "Quy tắc kiểu từ docs và phân tích chữ ký, chưa chạy compiler"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi kiểm chứng cần được trình bày trung thực."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Đổi dấu không đổi hợp đồng",
+      "question": "Đội muốn “linh hoạt hơn” nên thêm +T vào trait nguồn mà giữ toJson(value:T). Review cần kết luận gì?",
+      "options": [
+        "Không hợp lệ với vị trí input này; xem xét invariant hoặc contravariant theo toàn hợp đồng",
+        "Hợp lệ vì JSON là output nên T luôn output",
+        "Hợp lệ vì mọi trait tự suy luận variance",
+        "Chỉ cần thêm given là hết lỗi vị trí kiểu"
+      ],
+      "correct": 0,
+      "explanation": "Phải xét nơi T xuất hiện, không suy từ tên hoặc mục đích tổng quát của method."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Thêm member và an toàn",
+      "question": "Một serializer [-T] đang chỉ nhận T được thêm val sample:T công khai. Vấn đề nào cần giải quyết?",
+      "options": [
+        "Đổi tên toJson thành encode sẽ tự sửa kiểu",
+        "T xuất hiện ở output, cần thiết kế lại variance/member thay vì giữ dấu trừ mù quáng",
+        "Không vấn đề vì val luôn bất biến sâu",
+        "Chỉ cần sample là private tên biến bất kỳ"
+      ],
+      "correct": 1,
+      "explanation": "Thay đổi API có thể phá tính hợp lệ của annotation trước đó."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Consumer tổng quát",
+      "question": "Dự án có encoder Animal nhận mọi Animal nhưng chỉ xuất field name; dùng nó cho Cat có thêm lives. Điều gì đúng?",
+      "options": [
+        "Tự xuất lives nhờ contravariance",
+        "Dùng được và chắc chắn đúng mọi schema Cat",
+        "Có thể hợp kiểu theo contravariance nhưng hợp đồng API có thể cần encoder Cat giữ field riêng",
+        "Sai kiểu trong mọi trường hợp vì Cat hẹp hơn"
+      ],
+      "correct": 2,
+      "explanation": "An toàn kiểu của input khác sự đầy đủ dữ liệu theo schema đích."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Instance mơ hồ theo môi trường",
+      "question": "Hai module export formatter Money khác locale, import cả hai gây ambiguity. Cách giải quyết rõ nghĩa?",
+      "options": [
+        "Đổi ngẫu nhiên thứ tự file để compiler chọn",
+        "Đổi Money thành Any để không cần hợp đồng",
+        "Giữ cả hai rồi hy vọng thứ tự load ổn định",
+        "Chọn/import hoặc truyền instance theo ngữ cảnh nghiệp vụ, giữ test hợp đồng output"
+      ],
+      "correct": 3,
+      "explanation": "Lựa chọn chính sách nên tường minh khi có nhiều cách định dạng hợp lệ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Hợp đồng dữ liệu nhạy cảm",
+      "question": "Encoder User dùng reflection xuất passwordHash vì field tồn tại. Type class có tự ngăn lộ không?",
+      "options": [
+        "Không, cần schema/allowlist và kiểm quyền dữ liệu ở thiết kế encoder/endpoint",
+        "Có, tên field passwordHash tự bị compiler xóa",
+        "Có, variance chặn field nhạy cảm",
+        "Không, nhưng đổi T thành +T sẽ che field"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế mở rộng hành vi không tự là rào bảo mật dữ liệu."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Escaping nhiều tầng",
+      "question": "Tên người dùng chứa dấu nháy và xuống dòng; encoder ghép chuỗi thủ công làm JSON hỏng. Sửa gốc nên là gì?",
+      "options": [
+        "Đổi return type thành Any để JSON tự đúng",
+        "Dùng cơ chế encode/escape đúng chuẩn và kiểm hợp đồng với input đặc biệt",
+        "Xóa toàn bộ ký tự đặc biệt mà không thống nhất quy tắc dữ liệu",
+        "Chỉ thêm dấu nháy ngoài lần nữa"
+      ],
+      "correct": 1,
+      "explanation": "Giữ dữ liệu đúng nghĩa và encode an toàn khác sửa ngầm nội dung người dùng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Formatter và tỷ giá",
+      "question": "Nhóm muốn formatter từ 100 USD thành chuỗi 100 EUR chỉ bằng đổi ký hiệu. Phân tích nào đúng?",
+      "options": [
+        "Đúng vì BigDecimal tự lấy tỷ giá mới nhất",
+        "Sai chỉ vì Scala 2 không có given",
+        "Định dạng không tự chuyển đổi giá trị; cần hợp đồng tỷ giá/đơn vị riêng trước trình bày",
+        "Đúng vì ký hiệu quyết định giá trị kinh tế"
+      ],
+      "correct": 2,
+      "explanation": "Currency là thành phần ý nghĩa, không chỉ trang trí output."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Làm tròn thống nhất",
+      "question": "Hai endpoint dùng cùng Money nhưng rounding khác nhau gây số hiển thị lệch. Cần gì?",
+      "options": [
+        "Tăng độ rộng kiểu T để tự thống nhất",
+        "Dùng toString ở mọi nơi là đúng mọi chính sách",
+        "Giữ sai lệch vì type checker không báo lỗi",
+        "Quy tắc rounding theo mục đích, instance được chọn rõ và kiểm tính nhất quán hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Policy khác nhau cần được chủ động quản lý và giải thích, không suy từ kiểu số."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Tách lỗi serialization",
+      "question": "Một encoder có thể thất bại do dữ liệu không hợp lệ, nhưng API toJson chỉ trả String. Muốn caller xử lý lỗi có kiểu, nên xem xét gì?",
+      "options": [
+        "Đổi/bổ sung hợp đồng kết quả tường minh như Either với lỗi miền theo thiết kế",
+        "Nhét mọi lỗi vào chuỗi trông giống dữ liệu thành công",
+        "Dựa vào tên JsonSerializable để caller biết lỗi",
+        "Dùng variance để biến exception thành None tự động"
+      ],
+      "correct": 0,
+      "explanation": "Kiểu lỗi phải là phần hợp đồng nếu caller cần phân nhánh đáng tin cậy."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Phiên bản và migration",
+      "question": "Ví dụ Scala 3 dùng given/using được dán vào module Scala 2.13 nguyên xi. Cần phản hồi gì?",
+      "options": [
+        "Thêm Future để compiler tự hiểu given",
+        "Chuyển cú pháp/cơ chế theo phiên bản hoặc migration có kiểm chứng, không coi hai syntax thay thế byte-for-byte",
+        "Chắc chắn chạy vì cùng JVM",
+        "Chỉ sửa tên file sang .scala3 mà không đổi build"
+      ],
+      "correct": 1,
+      "explanation": "JVM chung không xóa khác biệt cú pháp và luật ngôn ngữ."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Invariant và cast",
+      "question": "Để dùng JsonSerializable[Cat] nơi cần JsonSerializable[Animal], đội asInstanceOf rồi đưa Dog vào. Rủi ro là gì?",
+      "options": [
+        "Dog tự thành Cat khi truyền vào",
+        "String return làm mọi input an toàn",
+        "Cast bỏ qua bảo vệ kiểu, encoder Cat có thể không xử lý đúng Dog",
+        "Không rủi ro vì Cat <: Animal nên chiều nào cũng đúng"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng cast để giả mạo khả năng nhận input rộng hơn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "API thay instance",
+      "question": "Một import mới làm encoder User chọn schema khác mà chữ ký endpoint không đổi. Cần bảo vệ điều gì?",
+      "options": [
+        "Chỉ kiểm schema ngân hàng quiz",
+        "Chỉ kiểm code vẫn trả String",
+        "Không cần vì compiler luôn giữ byte output cũ",
+        "Kiểm hợp đồng output và quản lý instance/scope như phần hành vi công khai"
+      ],
+      "correct": 3,
+      "explanation": "Thay cách chọn instance có thể là thay đổi hành vi dù type signature ổn định."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Hai context khác nhau",
+      "question": "Cùng số tiền cần UI tiếng Việt và file máy đọc ổn định. Nên thiết kế thế nào?",
+      "options": [
+        "Tách hợp đồng trình bày theo locale khỏi định dạng trao đổi dữ liệu ổn định, chọn instance rõ",
+        "Dùng chuỗi UI có dấu phân cách làm định dạng máy đọc mặc định ở mọi nơi",
+        "Bỏ currency để mọi bên tự đoán",
+        "Cho compiler tự chọn locale từ tên biến"
+      ],
+      "correct": 0,
+      "explanation": "Nhu cầu người đọc và giao thức dữ liệu có thể khác, phải thể hiện trong API."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Generic container missing",
+      "question": "Đã có JsonSerializable[Int] nhưng encode List[Int] vẫn thiếu instance. Vì sao hợp lý?",
+      "options": [
+        "Chỉ cần đổi List thành var để tìm được instance",
+        "Instance phần tử không tự tạo instance container nếu chưa định nghĩa quy tắc kết hợp/derive",
+        "Compiler không hỗ trợ List",
+        "Int encoder bị mất khi nằm trong List ở mọi ngôn ngữ"
+      ],
+      "correct": 1,
+      "explanation": "Cần cầu nối biết tạo mảng JSON và sử dụng encoder phần tử."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Không bảo đảm thuần",
+      "question": "Encoder đọc thời gian hiện tại và ghi audit mỗi lần gọi. Dùng type class có chứng minh encode(x) luôn cùng output không?",
+      "options": [
+        "Có, String là immutable nên output luôn như nhau",
+        "Không, nhưng +T tự làm output ổn định",
+        "Không, hành vi phụ thuộc implementation và môi trường",
+        "Có, trait bắt mọi method referentially transparent"
+      ],
+      "correct": 2,
+      "explanation": "Bất biến của giá trị trả về khác tính quyết định/thuần của hàm."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "NULL và tùy chọn",
+      "question": "API cũ phân biệt field vắng với field null. Encoder Option mới gộp cả hai mà không trao đổi có rủi ro gì?",
+      "options": [
+        "Không rủi ro vì JSON luôn coi vắng và null giống hệt",
+        "Compiler tự khôi phục field đã bỏ",
+        "Chỉ ảnh hưởng thứ tự field, không nghĩa dữ liệu",
+        "Làm đổi hợp đồng dữ liệu và ý nghĩa cập nhật/đọc của client"
+      ],
+      "correct": 3,
+      "explanation": "Chính sách optional cần tương thích với schema và hành vi client."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Canonical bytes",
+      "question": "Hệ thống ký JSON theo byte, hai encoder xuất cùng object nhưng khác thứ tự/whitespace. Điều gì cần thêm?",
+      "options": [
+        "Quy tắc canonicalization/encoding thống nhất theo giao thức ký",
+        "Chỉ so sánh kiểu String là đủ",
+        "Dùng covariance để chữ ký tự giống nhau",
+        "Bỏ kiểm chữ ký vì nghĩa object giống"
+      ],
+      "correct": 0,
+      "explanation": "Tương đương dữ liệu không tự là tương đương chuỗi byte dùng trong chữ ký."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Producer và consumer",
+      "question": "Trait vừa def read:T vừa def write(x:T):Unit không nên tùy tiện chọn +T hoặc -T vì sao?",
+      "options": [
+        "Vì mọi generic có hai method phải dùng Any",
+        "T xuất hiện ở cả output và input, thường cần invariant hoặc thiết kế tách vai trò",
+        "Vì method names read/write là từ khóa cấm",
+        "Vì Unit không được dùng trong trait"
+      ],
+      "correct": 1,
+      "explanation": "Chia giao diện producer/consumer có thể làm rõ an toàn kiểu và nhu cầu sử dụng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Source không encoder",
+      "question": "Người học nói trait nguồn đủ serialize mọi case class vì chỉ cần gọi toJson. Phản hồi chính xác?",
+      "options": [
+        "Đúng nếu đổi User thành case class",
+        "Sai vì Scala không thể serialize JSON bằng thư viện nào",
+        "Trait chỉ là hợp đồng; cần instance/consumer và implementation đúng chuẩn cho kiểu được dùng",
+        "Đúng vì T suy ra mọi field tự động"
+      ],
+      "correct": 2,
+      "explanation": "Không gán khả năng tự sinh implementation cho đoạn code chưa có derive/macro/instance."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Contravariance và encoder có sẵn",
+      "question": "Theo Scala 2.13, đổi trait thành JsonSerializable[-T] chỉ có toJson(value: T): String. Với Dog <: Animal và một JsonSerializable[Animal], có thể dùng nó ở nơi cần JsonSerializable[Dog] không, và vì sao?",
+      "options": [
+        "Không, contravariance chỉ dùng cho kiểu trả về của toJson",
+        "Có, nhưng chỉ nếu Dog sửa kế thừa để Animal <: Dog",
+        "Không, dấu -T khiến encoder không được dùng T làm tham số phương thức",
+        "Có, encoder nhận mọi Animal cũng nhận Dog; contravariance đảo chiều subtype cho consumer"
+      ],
+      "correct": 3,
+      "explanation": "Consumer nhận kiểu rộng hơn có thể phục vụ kiểu hẹp hơn. Với chữ ký chỉ tiêu thụ T, vị trí tham số phù hợp -T; trait gốc không khai báo variance thì invariant."
+    }
+  ]
+}

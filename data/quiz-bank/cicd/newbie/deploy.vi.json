@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cicd",
+  "level": "newbie",
+  "lesson": "deploy",
+  "language": "vi",
+  "sourceHash": "db51c32b7e51e96f91b7e010469bc2cf26299f923117ef64973e03e129ad02de",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo chuỗi test–staging–production và docs GitHub Actions/Vercel CLI. Environment label không tự cấu hình reviewers hay target Vercel; job không tự truyền artifact. Không chạy pipeline, CLI, mạng hay triển khai.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Chuỗi triển khai",
+      "question": "Theo needs trong mẫu, thứ tự phụ thuộc là gì?",
+      "options": [
+        "test → deploy-staging → deploy-production",
+        "production → staging → test",
+        "Ba job luôn độc lập hoàn toàn",
+        "Chỉ có job production"
+      ],
+      "correct": 0,
+      "explanation": "needs tạo chuỗi phụ thuộc giữa các job."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Trigger phát hành",
+      "question": "Sự kiện nào được cấu hình cho workflow Deploy?",
+      "options": [
+        "Mỗi phút theo cron",
+        "Push vào main",
+        "Mọi lần mở issue",
+        "Chỉ push vào develop"
+      ],
+      "correct": 1,
+      "explanation": "on.push.branches của mẫu chỉ có main."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Cổng kiểm tra",
+      "question": "Job test chạy lệnh nào sau checkout?",
+      "options": [
+        "kubectl apply -f k8s/",
+        "git push --force",
+        "npm ci && npm test",
+        "npm run deploy --prod"
+      ],
+      "correct": 2,
+      "explanation": "Mẫu dùng phép && để chỉ chạy test sau khi cài dependency thành công."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "needs staging",
+      "question": "needs: test trong deploy-staging nhằm gì?",
+      "options": [
+        "Sao chép tự động mọi file từ job test",
+        "Tự tạo bộ test cho staging",
+        "Đổi tên job test thành staging",
+        "Yêu cầu job test thành công trước theo điều kiện mặc định"
+      ],
+      "correct": 3,
+      "explanation": "needs biểu diễn dependency, không chuyển filesystem."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "needs production",
+      "question": "Job production phụ thuộc trực tiếp vào job nào?",
+      "options": [
+        "deploy-staging",
+        "test duy nhất, bỏ qua staging",
+        "Một job rollback được định nghĩa sẵn",
+        "Không job nào"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu ghi needs: deploy-staging; dependency test nằm phía trước trong chuỗi."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Môi trường staging",
+      "question": "environment: staging gắn job với gì?",
+      "options": [
+        "Một Docker network tự tạo",
+        "Environment có tên staging trong GitHub",
+        "Mọi server có thư mục staging trên Internet",
+        "Một nhánh Git luôn tên staging"
+      ],
+      "correct": 1,
+      "explanation": "Environment là cấu hình triển khai/quyền trong GitHub, không tự tạo toàn bộ hạ tầng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Tên production",
+      "question": "environment.name: production mô tả gì?",
+      "options": [
+        "Một lệnh bắt buộc đổi DNS",
+        "Tên test runner",
+        "Tên environment job tham chiếu",
+        "Một secret tự sinh ra"
+      ],
+      "correct": 2,
+      "explanation": "Tên environment không tự cấu hình reviewers hoặc dịch vụ đích."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "URL môi trường",
+      "question": "environment.url: https://myapp.com có tác dụng nào phù hợp?",
+      "options": [
+        "Tự đăng ký và cấu hình DNS cho myapp.com",
+        "Tự kiểm tra mọi trang trên tên miền",
+        "Tự tạo token Vercel cho tên miền",
+        "Khai báo URL hiển thị/liên kết deployment environment"
+      ],
+      "correct": 3,
+      "explanation": "URL khai báo không chứng minh đích đã hoạt động."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Secrets",
+      "question": "secrets.VERCEL_TOKEN là tham chiếu tới gì?",
+      "options": [
+        "Một secret được cấu hình phù hợp cho workflow/job",
+        "Chuỗi token được ghi cố định trong source mẫu",
+        "Một biến luôn có sẵn cho mọi repository",
+        "Tên một action có tác dụng tạo tài khoản"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu tham chiếu secret, không cấp token hoặc chứng minh quyền sử dụng của nó."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Cờ token",
+      "question": "--token trong lệnh Vercel của mẫu phục vụ gì?",
+      "options": [
+        "Đổi branch Git thành main",
+        "Cung cấp thông tin xác thực cho CLI",
+        "Chọn Node.js phiên bản cần test",
+        "Tạo report coverage"
+      ],
+      "correct": 1,
+      "explanation": "Token không thay cấu hình project, target hoặc kiểm thử."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Cờ production",
+      "question": "Theo Vercel CLI, --prod yêu cầu loại triển khai nào?",
+      "options": [
+        "Chỉ kiểm tra cú pháp YAML",
+        "Chỉ tạo local build không upload",
+        "Triển khai production của project được chọn",
+        "Chỉ tạo bản preview không ảnh hưởng production"
+      ],
+      "correct": 2,
+      "explanation": "Cờ này là hành động phát hành thực tế nếu chạy đủ điều kiện; ở đây chỉ đọc source."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Vai trò checkout",
+      "question": "Vì sao mỗi job trong mẫu có checkout riêng?",
+      "options": [
+        "Checkout tự truyền trạng thái duyệt production",
+        "Checkout tự tạo mọi secret",
+        "Job sau bắt buộc sửa lịch sử Git",
+        "Job cần lấy source vào workspace thực thi của mình"
+      ],
+      "correct": 3,
+      "explanation": "Các job GitHub-hosted không mặc định dùng chung filesystem."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Phê duyệt",
+      "question": "Muốn environment yêu cầu người duyệt, cần cấu hình gì?",
+      "options": [
+        "Deployment protection rule như required reviewers khi repository/gói hỗ trợ",
+        "Chỉ đặt tên job là approved",
+        "Chỉ thêm comment Manual approval",
+        "Chỉ đặt environment.url thành HTTPS"
+      ],
+      "correct": 0,
+      "explanation": "Environment name không tự tạo yêu cầu phê duyệt."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Staging",
+      "question": "Staging thường dùng để làm gì?",
+      "options": [
+        "Bắt buộc phục vụ người dùng thật đầu tiên",
+        "Kiểm tra một bản triển khai trước khi đưa tới production",
+        "Lưu công khai toàn bộ secrets thật",
+        "Thay mọi bước test bằng tên môi trường"
+      ],
+      "correct": 1,
+      "explanation": "Độ giống production và dữ liệu dùng ở staging cần được thiết kế phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Lệnh echo",
+      "question": "echo \"Deploying to staging...\" chứng minh điều gì?",
+      "options": [
+        "Chứng minh mọi health check đã pass",
+        "Chứng minh đã có người duyệt production",
+        "Chỉ in thông báo nếu step đã chạy tới dòng đó",
+        "Chứng minh deployment thành công"
+      ],
+      "correct": 2,
+      "explanation": "Thông báo mô tả không phải kết quả kiểm tra dịch vụ."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Hỏng dependency",
+      "question": "Nếu test fail và không có điều kiện ghi đè, job staging mặc định thế nào?",
+      "options": [
+        "Luôn deploy để thử sửa lỗi",
+        "Tự sửa code test rồi chạy tiếp",
+        "Tự chuyển thành production",
+        "Bị skip"
+      ],
+      "correct": 3,
+      "explanation": "Dependency không thành công khiến job cần nó bị bỏ qua theo luồng mặc định."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Tham số CLI",
+      "question": "Hai lệnh Vercel trong mẫu khác nhau rõ nhất ở cờ nào?",
+      "options": [
+        "Lệnh production có --prod",
+        "Lệnh staging có --prod",
+        "Lệnh production có npm ci",
+        "Lệnh staging có kubectl"
+      ],
+      "correct": 0,
+      "explanation": "Không suy tên environment GitHub tự đổi cờ CLI."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Runtime chưa cố định",
+      "question": "Job test trong mẫu có setup-node chỉ định phiên bản không?",
+      "options": [
+        "Có, needs tự truyền Node từ staging",
+        "Không, source chưa có bước đó",
+        "Có, checkout@v4 chỉ định Node4 cho dự án",
+        "Có, environment production khóa Node20"
+      ],
+      "correct": 1,
+      "explanation": "Runner có thể có Node sẵn nhưng đó không phải cấu hình runtime tường minh của mẫu."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Bản build",
+      "question": "Mẫu có step upload/download artifact để truyền bundle giữa job không?",
+      "options": [
+        "Có, environment.url lưu bundle",
+        "Có, secrets.VERCEL_TOKEN chứa bundle",
+        "Không",
+        "Có, needs tự là upload artifact"
+      ],
+      "correct": 2,
+      "explanation": "Source chưa thiết kế luồng artifact giữa jobs."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Sau phát hành",
+      "question": "Health check có mục đích phù hợp nào?",
+      "options": [
+        "Chỉ đổi tên deployment thành healthy",
+        "Tự chứng minh không có mọi lỗi bảo mật",
+        "Tự viết lại migration khi dữ liệu sai",
+        "Kiểm tra khả năng phục vụ theo tiêu chí xác định sau triển khai"
+      ],
+      "correct": 3,
+      "explanation": "Cần tiêu chí và kết quả quan sát thực, không chỉ trạng thái job."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Push nhánh khác",
+      "question": "Chỉ xét mẫu, push feature/login không kèm push main có trigger Deploy không?",
+      "options": [
+        "Không, bộ lọc push chỉ main",
+        "Có, vì feature có thể merge trong tương lai",
+        "Có, mọi workflow Deploy bỏ qua bộ lọc",
+        "Không, vì Vercel cấm nhánh feature"
+      ],
+      "correct": 0,
+      "explanation": "Đây là giới hạn trigger mẫu, không phải giới hạn chung của Vercel."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Test cài lỗi",
+      "question": "npm ci thất bại trong lệnh npm ci && npm test. npm test có chạy theo phép && không?",
+      "options": [
+        "Chỉ nếu có token Vercel",
+        "Không",
+        "Có luôn sau một phút",
+        "Chỉ nếu production có URL"
+      ],
+      "correct": 1,
+      "explanation": "&& chỉ thực thi lệnh sau khi lệnh trước thành công."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Staging fail",
+      "question": "Job deploy-staging thất bại, production không có if đặc biệt. Hành vi mặc định là gì?",
+      "options": [
+        "Production tự dùng source cũ",
+        "Production tự xóa environment staging",
+        "Production bị skip",
+        "Production tự chạy để bỏ qua staging"
+      ],
+      "correct": 2,
+      "explanation": "needs nối trạng thái thành công trong chuỗi job."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Bảo vệ environment",
+      "question": "Production không chờ duyệt dù YAML có environment: production. Cần kiểm tra gì?",
+      "options": [
+        "Chỉ độ dài tên environment",
+        "Số lệnh echo trong job test",
+        "Màu giao diện GitHub",
+        "Protection rules và khả năng hỗ trợ của environment/repository, không chỉ tên YAML"
+      ],
+      "correct": 3,
+      "explanation": "Required reviewers là cấu hình riêng; tính khả dụng phụ thuộc repository/gói."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Secrets theo scope",
+      "question": "Token đặt ở environment production có mặc định sẵn cho job chỉ tham chiếu staging không?",
+      "options": [
+        "Không, cần xét đúng scope secret và environment job tham chiếu",
+        "Có, mọi environment luôn chia sẻ tất cả secret",
+        "Có, vì production đứng dưới staging",
+        "Không, GitHub cấm secrets trong deployment"
+      ],
+      "correct": 0,
+      "explanation": "Không nên coi secret môi trường này là biến chung mọi job."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Token thiếu",
+      "question": "CLI báo thiếu xác thực. Cách chẩn đoán phù hợp là gì?",
+      "options": [
+        "Bỏ qua lỗi rồi công bố deploy thành công",
+        "Kiểm tra tên/scope/quyền secret và cách tham chiếu mà không in giá trị token",
+        "In toàn bộ token để chụp màn hình",
+        "Commit token vào workflow"
+      ],
+      "correct": 1,
+      "explanation": "Có thể kiểm tra cấu hình và trạng thái mà không tiết lộ bí mật."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Target thật",
+      "question": "Job GitHub tên staging chạy npx vercel không có --target=staging. Nhận định nào an toàn?",
+      "options": [
+        "GitHub tự thêm --prod cho mọi environment",
+        "Tên staging tự tạo một project Vercel riêng",
+        "Tên GitHub environment không tự chọn custom environment staging của Vercel",
+        "Vercel luôn đọc tên job để chọn target staging"
+      ],
+      "correct": 2,
+      "explanation": "Hai nền tảng có cấu hình môi trường riêng; cần chọn target/project tường minh theo CLI/version."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Không tuyệt đối preview",
+      "question": "Theo docs Vercel CLI hiện được đối chiếu, vì sao không nên nói bỏ --prod luôn bảo đảm preview?",
+      "options": [
+        "Vì --prod thực chất chỉ là tên job",
+        "Vì mọi lệnh Vercel luôn là production",
+        "Vì environment.url thay mọi tùy chọn CLI",
+        "Có ngữ cảnh như deployment đầu tiên của project mới, cần xác minh target/project thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Cần phạm vi phiên bản và trạng thái project; không suy target chỉ từ tên job staging."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Chọn project",
+      "question": "Một token hợp lệ có đủ chứng minh CLI deploy đúng project mong muốn không?",
+      "options": [
+        "Không, còn project/team linking và cấu hình đích cần kiểm tra",
+        "Có, token tự biết mọi ý định người viết",
+        "Có, environment.url tự chọn project",
+        "Không, token không bao giờ dùng được ở CI"
+      ],
+      "correct": 0,
+      "explanation": "Xác thực và chọn tài nguyên đích là hai vấn đề riêng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Chế độ không tương tác",
+      "question": "CI bị treo ở câu hỏi thiết lập project của CLI. Cách sửa phù hợp là gì?",
+      "options": [
+        "Bỏ needs để CLI không cần cấu hình",
+        "Chuẩn bị project linking/cấu hình và chế độ không tương tác theo phiên bản CLI",
+        "Gửi token vào log để CLI tự đọc lại",
+        "Đổi tên runner thành yes"
+      ],
+      "correct": 1,
+      "explanation": "CI cần đầu vào tường minh; không nên dựa vào câu hỏi tương tác trên runner."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Phiên bản npx",
+      "question": "npx vercel không cố định phiên bản CLI đem lại vấn đề gì khi muốn tái lập?",
+      "options": [
+        "Nó bắt buộc dùng CLI phiên bản ghi trong environment.url",
+        "Nó không thể chạy ở runner Ubuntu",
+        "Phiên bản có thể thay đổi theo cách phân giải package, cần quản lý version phù hợp",
+        "Nó tự khóa CLI bằng hash của repository"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm soát toolchain, không suy binary cố định từ tên lệnh."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Setup Node",
+      "question": "Muốn test và CLI dùng dòng Node được chọn chủ động, bổ sung gì phù hợp?",
+      "options": [
+        "Chỉ đổi checkout@v4 thành checkout@20",
+        "Chỉ thêm environment.url",
+        "Chỉ đặt tên job là Node20",
+        "Bước setup runtime đúng phiên bản trong từng job cần nó"
+      ],
+      "correct": 3,
+      "explanation": "Action checkout và runtime dự án không cùng vai trò."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Chuỗi phụ thuộc gián tiếp",
+      "question": "Nếu test fail, vì sao production thường cũng bị skip dù needs chỉ ghi deploy-staging?",
+      "options": [
+        "Staging phụ thuộc test nên bị skip, rồi trạng thái đó lan theo chuỗi needs",
+        "Vì production tự đọc tên script npm test",
+        "Vì test tự xóa token Vercel",
+        "Vì URL production không hợp lệ khi test đỏ"
+      ],
+      "correct": 0,
+      "explanation": "Cần xét toàn dependency chain."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Files giữa jobs",
+      "question": "Test tạo dist/app.js. Job staging GitHub-hosted mới có mặc định file build đó từ test không?",
+      "options": [
+        "Có, token Vercel lưu file đó",
+        "Không, cần artifact hoặc build lại đúng cách",
+        "Có, needs sao chép mọi file tự động",
+        "Có, cùng repository là cùng ổ đĩa"
+      ],
+      "correct": 1,
+      "explanation": "Runner job riêng không tự nhận sản phẩm của job trước."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Build source",
+      "question": "Mẫu test chỉ npm ci và npm test. Kết luận nào đúng về build?",
+      "options": [
+        "npm test luôn là build production của mọi dự án",
+        "Checkout tự biên dịch app sau clone",
+        "Chưa có step npm run build tường minh trong job test; dịch vụ deploy có thể build theo cấu hình riêng",
+        "Mẫu chắc chắn không bao giờ build ở bất kỳ đâu"
+      ],
+      "correct": 2,
+      "explanation": "Phải phân biệt lệnh trong job và hành vi build của nền tảng triển khai."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Hiển thị URL",
+      "question": "Link https://myapp.com hiển thị trong deployment có chứng minh DNS/health đúng không?",
+      "options": [
+        "Có, GitHub tự đăng ký tên miền theo URL",
+        "Có, HTTPS trong chuỗi tạo chứng chỉ ngay",
+        "Có, URL hiển thị thay thế test nghiệp vụ",
+        "Không, đó là metadata cần xác minh bằng cấu hình và kiểm tra thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Metadata không chứng minh dịch vụ đang phục vụ đúng phiên bản."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Token staging riêng",
+      "question": "Tại sao nên cân nhắc credential/quyền tách giữa staging và production?",
+      "options": [
+        "Giảm phạm vi ảnh hưởng khi cấu hình hoặc mã staging gặp sự cố",
+        "Để bỏ mọi kiểm tra production",
+        "Vì GitHub bắt buộc mọi token phải có cùng giá trị",
+        "Để tự tăng tốc CPU runner"
+      ],
+      "correct": 0,
+      "explanation": "Phân quyền nên theo tài nguyên và nhiệm vụ thực tế."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Duyệt trước secrets",
+      "question": "Environment có required reviewers hợp lệ. Job được nhận environment secrets lúc nào theo cơ chế bảo vệ?",
+      "options": [
+        "Chỉ sau khi job đã deploy thành công",
+        "Sau khi các protection rules yêu cầu đã được đáp ứng và job được phép chạy",
+        "Ngay khi bất kỳ ai gõ tên environment vào PR",
+        "Luôn trước phê duyệt để thử token"
+      ],
+      "correct": 1,
+      "explanation": "Approval là ranh giới truy cập job/environment secrets, không chỉ nhãn trang trí."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Staging xanh",
+      "question": "Lệnh deploy staging exit0 nhưng chưa kiểm health hoặc nghiệp vụ. Có thể nói gì?",
+      "options": [
+        "Mọi database migration đều tương thích ngược",
+        "Production chắc chắn đã nhận cùng artifact",
+        "Lệnh hoàn tất theo tín hiệu CLI, chưa chứng minh đầy đủ hành vi ứng dụng",
+        "Mọi luồng người dùng đã được kiểm tra tự động"
+      ],
+      "correct": 2,
+      "explanation": "Mức chứng minh phụ thuộc bước kiểm tra thực sự đã thực hiện."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Giữ cùng bản phát hành",
+      "question": "Muốn production nhận đúng artifact đã kiểm ở staging, cần gì?",
+      "options": [
+        "Chỉ dùng cùng tên job",
+        "Chỉ cùng một token",
+        "Chỉ ghi URL staging trong comment",
+        "Ràng buộc artifact/digest/version và quy trình promotion rõ ràng"
+      ],
+      "correct": 3,
+      "explanation": "Hai lần build source có thể khác do môi trường hoặc đầu vào không cố định."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Bí mật trong repository",
+      "question": "Một người đề xuất thay secrets.VERCEL_TOKEN bằng chuỗi token thật trong YAML. Nhận xét đúng là gì?",
+      "options": [
+        "Không nên; cần giữ credential trong cơ chế secrets và giới hạn quyền phù hợp",
+        "Nên, vì YAML được checkout sẽ tự mã hóa mọi chuỗi",
+        "Nên, vì repository private không bao giờ có người khác truy cập",
+        "Không cần token thật vì comment tự xác thực"
+      ],
+      "correct": 0,
+      "explanation": "Secret store không thay quản lý quyền, nhưng commit token tạo rủi ro lộ qua lịch sử và người đọc."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Kiểm tra sau staging",
+      "question": "Nên thêm bước nào để production dựa vào kết quả triển khai staging thay vì chỉ hoàn tất upload?",
+      "options": [
+        "Chỉ tăng số ký tự token",
+        "Smoke/health check có tiêu chí và mã thoát phù hợp trên bản staging xác định",
+        "Chỉ thêm echo Staging healthy",
+        "Chỉ đổi name của step sang Verified"
+      ],
+      "correct": 1,
+      "explanation": "Tên step hay log thông báo không thay kiểm tra thực."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Tách môi trường dữ liệu",
+      "question": "Staging dùng cùng credential ghi DB production một cách không chủ ý. Vấn đề chính là gì?",
+      "options": [
+        "Tự an toàn vì job tên staging",
+        "Không thể xảy ra vì YAML chặn mọi DB write",
+        "Test staging có thể tác động dữ liệu thật; cần tách quyền/cấu hình và dữ liệu theo yêu cầu",
+        "Chỉ làm màu badge staging không đúng"
+      ],
+      "correct": 2,
+      "explanation": "Nhãn environment không tự cách ly backend hoặc credential."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Lỗi build deployment",
+      "question": "Deploy CLI thất bại vì dịch vụ build không thấy biến môi trường. Nên xét gì?",
+      "options": [
+        "In mọi secret vào artifact để dễ debug",
+        "Chỉ đổi needs sang environment",
+        "Suy rằng test xanh nên biến chắc chắn đúng",
+        "Phân biệt biến trong runner, build trên nền tảng và runtime đích, rồi cấu hình đúng scope"
+      ],
+      "correct": 3,
+      "explanation": "Các giai đoạn có môi trường riêng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Nhánh production",
+      "question": "Muốn environment production chỉ nhận nhánh được phép, cấu hình nào liên quan?",
+      "options": [
+        "Deployment branch/tag restrictions và trigger/policy phù hợp",
+        "Chỉ tiêu đề workflow Deploy",
+        "Chỉ cờ cache: npm",
+        "Chỉ tên file ci.yml"
+      ],
+      "correct": 0,
+      "explanation": "Trigger và restriction của environment đều là đầu vào của chính sách phát hành."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Lịch sử deploy",
+      "question": "Dữ liệu nào hữu ích để truy vết một lần deploy?",
+      "options": [
+        "Chỉ tên biến TOKEN không kèm ngữ cảnh",
+        "Commit/artifact, environment, kết quả, actor và deployment ID phù hợp",
+        "Chỉ màu giao diện trình duyệt",
+        "Chỉ thời gian mở editor trên máy cá nhân"
+      ],
+      "correct": 1,
+      "explanation": "Truy vết cần gắn đầu vào, đích và kết quả."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Lỗi staging không sửa test",
+      "question": "Staging deploy lỗi do token hết hạn nhưng test trước đó pass. Kết luận nào đúng?",
+      "options": [
+        "Code chắc chắn lỗi cú pháp",
+        "Dependency lockfile chắc chắn hỏng",
+        "Phân biệt lỗi xác thực triển khai với kết quả test đã pass của run đó",
+        "Mọi tests phải được coi là fail"
+      ],
+      "correct": 2,
+      "explanation": "Các bước cung cấp bằng chứng khác nhau; không gộp mọi nguyên nhân vào test."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Duyệt không thay kiểm thử",
+      "question": "Sau khi một reviewer đồng ý production, điều nào vẫn cần thiết?",
+      "options": [
+        "Bỏ mọi step test để tôn trọng reviewer",
+        "Coi mọi dữ liệu và artifact đều đúng vì có approval",
+        "Tự cho phép mọi nhánh còn lại deploy",
+        "Giữ các kiểm tra và điều kiện phát hành đã thiết kế"
+      ],
+      "correct": 3,
+      "explanation": "Phê duyệt và kiểm chứng kỹ thuật có vai trò bổ sung."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Thứ tự YAML",
+      "question": "Nếu đưa phần định nghĩa production lên trước staging nhưng giữ needs như cũ, dependency logic thế nào?",
+      "options": [
+        "Vẫn theo needs, không theo thứ tự viết các job",
+        "Production tự chạy đầu tiên",
+        "Workflow tự xóa test",
+        "Staging không còn environment"
+      ],
+      "correct": 0,
+      "explanation": "DAG dependency quyết định thứ tự giữa job."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Production bị bỏ qua",
+      "question": "Trong giao diện, production hiển thị skipped sau staging fail. Mô tả trung thực là gì?",
+      "options": [
+        "Production đã pass mọi kiểm tra",
+        "Production chưa chạy trong run đó",
+        "Production chạy nhưng lỗi HTTP500",
+        "Production được tự rollback thành công"
+      ],
+      "correct": 1,
+      "explanation": "Skip không phải một kết quả runtime của lệnh chưa thực thi."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Tách tên biến",
+      "question": "Dùng secret cùng tên VERCEL_TOKEN ở hai environment có bắt buộc cùng giá trị không?",
+      "options": [
+        "Có, YAML không hỗ trợ secrets khác nhau",
+        "Không, vì token không thể nằm ở environment",
+        "Không, giá trị có thể khác theo scope và cấu hình được áp dụng",
+        "Có, GitHub tự hợp nhất theo tên trên mọi environment"
+      ],
+      "correct": 2,
+      "explanation": "Cần hiểu scope và precedence của secrets thay vì suy từ tên."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Rollback",
+      "question": "Vì sao rollback cần được thiết kế thêm ngoài chuỗi test→staging→production?",
+      "options": [
+        "needs tự rollback toàn bộ database",
+        "--prod tự quay về mọi bản trước khi test fail",
+        "environment.url giữ sẵn snapshot dữ liệu",
+        "Mẫu chưa có bước khôi phục phiên bản hoặc dữ liệu khi phát hành gây sự cố"
+      ],
+      "correct": 3,
+      "explanation": "Dependency trước phát hành không thay quy trình phục hồi sau phát hành."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Cờ prod và target",
+      "question": "Muốn dùng custom Vercel environment tên staging, cần đối chiếu gì?",
+      "options": [
+        "Cách chọn target như --target=staging theo CLI/version và project đã cấu hình",
+        "Chỉ ID job GitHub là deploy-staging",
+        "Chỉ một comment staging trong source",
+        "Chỉ tên người duyệt production"
+      ],
+      "correct": 0,
+      "explanation": "GitHub environment và target Vercel là hai lớp cấu hình."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Không tạo secret tự động",
+      "question": "Việc viết secrets.VERCEL_TOKEN trong YAML có tạo token mới trên Vercel không?",
+      "options": [
+        "Có, nhưng chỉ khi job tên production",
+        "Không, credential phải được cấp/cấu hình phù hợp",
+        "Có, GitHub tự đăng ký tài khoản Vercel",
+        "Có, checkout tạo token cho mọi dịch vụ"
+      ],
+      "correct": 1,
+      "explanation": "Tham chiếu secret không phải thao tác cấp quyền dịch vụ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Đầu ra CLI",
+      "question": "Nên dùng gì để phân biệt bắt đầu deploy và deploy hoàn tất?",
+      "options": [
+        "Chỉ sự tồn tại file workflow",
+        "Chỉ việc secret có tên đúng",
+        "Trạng thái/mã thoát và output phù hợp CLI/version, cùng kiểm tra deployment khi cần",
+        "Chỉ dòng echo trước CLI"
+      ],
+      "correct": 2,
+      "explanation": "Bắt đầu một thao tác không bảo đảm nó hoàn thành."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Trùng lần phát hành",
+      "question": "Hai push main sát nhau tạo hai run deploy có thể gây vấn đề gì?",
+      "options": [
+        "GitHub tự chứng minh run cũ luôn phát hành trước run mới",
+        "Hai run tự dùng chung transaction DB",
+        "Mọi lệnh Vercel tự được bỏ qua khi có needs",
+        "Các lần phát hành có thể chồng/lệch thứ tự nếu thiếu chính sách concurrency/version"
+      ],
+      "correct": 3,
+      "explanation": "Cần quản lý đồng thời và quyền promotion theo yêu cầu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Test trước deploy",
+      "question": "Vì sao staging có needs: test thay vì chỉ lặp tên test trong comment?",
+      "options": [
+        "Dependency có thể chặn chạy khi kiểm tra thất bại, comment chỉ mô tả",
+        "Comment và needs luôn có cùng tác dụng runtime",
+        "needs tự viết thêm test còn thiếu",
+        "needs tự kiểm health production"
+      ],
+      "correct": 0,
+      "explanation": "Cấu hình có hiệu lực khác với mô tả ý định."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Không có secrets trong log",
+      "question": "Muốn debug token có được cung cấp, cách phù hợp là gì?",
+      "options": [
+        "Tạo artifact chứa mọi biến môi trường",
+        "Kiểm tra có/không và scope cấu hình mà không ghi giá trị token",
+        "Ghi token vào log rồi hứa xóa sau",
+        "Đưa token lên URL public để thử"
+      ],
+      "correct": 1,
+      "explanation": "Chẩn đoán nên bảo toàn ranh giới credential."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Dữ liệu kiểm thử",
+      "question": "Smoke test staging tạo đơn hàng thử. Cần kiểm soát gì?",
+      "options": [
+        "Chỉ dùng Node phiên bản chẵn",
+        "Chỉ số job trong workflow",
+        "Tài khoản/dữ liệu/side effect theo môi trường, tránh giao dịch thật ngoài ý muốn",
+        "Chỉ tên step bắt đầu bằng test"
+      ],
+      "correct": 2,
+      "explanation": "Tên staging không tự cách ly payment/email/dữ liệu."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Cấu hình chưa chạy",
+      "question": "Chỉ có YAML mẫu, chưa có log run/deployment. Có thể khẳng định gì?",
+      "options": [
+        "Production đang phục vụ đúng commit mới nhất",
+        "Token có quyền chính xác vì tham chiếu tồn tại",
+        "DNS và TLS đã được xác minh bởi URL",
+        "Đã mô tả chuỗi triển khai dự kiến, chưa chứng minh triển khai thành công"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình cần bằng chứng runtime riêng để công bố kết quả."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Hai hệ môi trường",
+      "question": "Environment GitHub staging được duyệt nhưng lệnh Vercel chọn project không mong muốn và không target tường minh. Cách sửa toàn diện phù hợp là gì?",
+      "options": [
+        "Ràng buộc project/team/target và credential scope đúng, kiểm deployment ID/đích thực tế; không dựa riêng vào nhãn GitHub",
+        "Chỉ đổi tên job thành staging-safe",
+        "Chỉ thêm echo đúng URL trước lệnh",
+        "Chỉ duyệt lại để Vercel tự chọn project theo ý reviewer"
+      ],
+      "correct": 0,
+      "explanation": "Approval cho một job không tự cấu hình tài nguyên đích trên dịch vụ khác."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Artifact đã kiểm",
+      "question": "Staging build từ dependency mới tải, production lại build sau vài giờ với CLI/dependency không cố định. Cần gì để chứng minh cùng sản phẩm được promotion?",
+      "options": [
+        "Chỉ cùng URL trong environment",
+        "Thiết kế artifact/version/digest bất biến và provenance hoặc quy trình build tái lập có kiểm chứng, thay vì chỉ cùng commit",
+        "Chỉ cùng tên file deploy.yml",
+        "Chỉ cùng token vì token chứa bundle"
+      ],
+      "correct": 1,
+      "explanation": "Source commit là đầu vào quan trọng nhưng không đồng nghĩa artifact của hai build luôn giống nhau."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Thứ tự giữa run",
+      "question": "Run A cho commit cũ bị chậm, run B cho commit mới deploy xong trước. A sau đó tiếp tục production. Thiết kế nào giải quyết nguy cơ đưa bản cũ trở lại?",
+      "options": [
+        "Chỉ đổi tên job A ngắn hơn",
+        "Coi main luôn đủ để chứng minh bản mới nhất",
+        "Quản lý concurrency/promotion theo environment và xác minh version hợp lệ trước phát hành, xử lý hủy dở dang theo side effect",
+        "Chỉ thêm needs trong từng run vì needs tự so mọi run"
+      ],
+      "correct": 2,
+      "explanation": "needs chỉ nối job trong run, không tự điều phối mọi lần phát hành."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Cổng kiểm health",
+      "question": "Staging CLI exit0 nhưng app trả lỗi khi kết nối DB. Production chỉ needs staging. Cần bổ sung gì?",
+      "options": [
+        "Thêm name Healthy vào step deploy",
+        "Bỏ step test để production chạy sớm",
+        "Coi exit0 của CLI là đủ chứng minh mọi phụ thuộc app",
+        "Kiểm health/nghiệp vụ thích hợp trên deployment xác định và làm thất bại cổng staging khi không đạt"
+      ],
+      "correct": 3,
+      "explanation": "Hoàn tất triển khai và khả năng phục vụ đúng là hai tiêu chí khác nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Approval và thay đổi đầu vào",
+      "question": "Một artifact đã được duyệt nhưng trước deploy, script lấy lại latest từ nguồn thay đổi. Vấn đề và cách sửa là gì?",
+      "options": [
+        "Đầu vào phát hành có thể khác thứ đã duyệt; cần ràng buộc revision/artifact và kiểm tra provenance",
+        "Không có vấn đề vì approval tự khóa mọi URL trên Internet",
+        "Chỉ đổi environment.url để GitHub nhận ra artifact",
+        "Chỉ thêm comment approved trước lệnh lấy latest"
+      ],
+      "correct": 0,
+      "explanation": "Phê duyệt phải gắn với đối tượng cụ thể, không chỉ tên environment."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Credential tối thiểu",
+      "question": "Staging token có quyền production, workflow có thể sửa bởi người chỉ cần chạy test. Cách giảm phạm vi ảnh hưởng phù hợp là gì?",
+      "options": [
+        "Đổi --prod thành biến public để token tự giảm quyền",
+        "Tách quyền/credential và bảo vệ thay đổi workflow cùng environment production theo vai trò cần thiết",
+        "Ẩn tên VERCEL_TOKEN bằng cách viết chữ thường",
+        "Chỉ giữ repository private rồi bỏ mọi gate"
+      ],
+      "correct": 1,
+      "explanation": "Ranh giới nằm ở quyền và luồng thực thi, không phải mức khó đoán của tên biến."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Không duyệt tự động",
+      "question": "Production không có reviewers được cấu hình, nhưng tài liệu nhóm ghi có manual approval vì YAML có environment. Phải kết luận gì?",
+      "options": [
+        "Chỉ cần một URL HTTPS để bật reviewers",
+        "GitHub bắt buộc mọi environment production có hai người duyệt",
+        "Chưa có bằng chứng gate đó tồn tại; cấu hình và kiểm tra rule thực tế theo hỗ trợ repository",
+        "Manual approval đã hoạt động vì tên production"
+      ],
+      "correct": 2,
+      "explanation": "Không được biến ý định/tên cấu hình thành bằng chứng kiểm soát đã hoạt động."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Failure sau promotion",
+      "question": "Production mới phát hành có lỗi dữ liệu; staging/test đều xanh. Phản ứng kiến trúc nào phù hợp?",
+      "options": [
+        "Chỉ deploy code cũ vì mọi migration tự đảo ngược",
+        "Xóa log vì pipeline trước đó xanh",
+        "Tự cho mọi users quyền admin để tránh lỗi",
+        "Dùng quy trình phục hồi đã thiết kế, xét tương thích dữ liệu/migration và xác minh kết quả; không giả định rollback app tự khôi phục DB"
+      ],
+      "correct": 3,
+      "explanation": "Phục hồi code và phục hồi dữ liệu cần hợp đồng riêng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Cùng tên secret",
+      "question": "Staging và production cùng tham chiếu VERCEL_TOKEN. Một người suy rằng đã tách quyền vì tên environment khác. Cần xác minh gì?",
+      "options": [
+        "Giá trị/scope và quyền credential thực tế cùng cấu hình đích, mà không tiết lộ token",
+        "Chỉ hai chuỗi environment khác nhau là đủ",
+        "Chỉ số dấu cách trong YAML",
+        "Chỉ tên file có chữ deploy"
+      ],
+      "correct": 0,
+      "explanation": "Tên scope khác nhau chưa chứng minh credential hay quyền tài nguyên đã khác."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Job chuẩn bị riêng",
+      "question": "Test có setup-node/npm ci, staging chỉ checkout và npx. Nhóm nói môi trường Node staging đã được test khóa lại. Vì sao chưa đúng?",
+      "options": [
+        "Environment tự đồng bộ binary Node giữa jobs",
+        "Job staging có môi trường riêng; cần thiết lập runtime/toolchain đích rõ nếu muốn cùng hợp đồng",
+        "needs tự truyền PATH và mọi package toàn cục",
+        "Checkout chứa snapshot toàn runner của job test"
+      ],
+      "correct": 1,
+      "explanation": "Dependency logic và môi trường thực thi không phải cùng một cơ chế."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Phân biệt label và thành công",
+      "question": "Deploy production đã tạo metadata URL nhưng CLI thất bại giữa chừng. Báo cáo nào trung thực?",
+      "options": [
+        "Mọi tác động tự rollback nên không cần kiểm tra",
+        "Staging đã xanh nên production được coi xanh",
+        "Job/deploy chưa thành công theo bằng chứng hiện có; metadata URL không thay kết quả phát hành/health",
+        "Website chắc chắn hoạt động vì URL tồn tại trong YAML"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm trạng thái và side effects thực tế, không suy kết quả từ nhãn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Kiểm tra không side effect thật",
+      "question": "Smoke test staging gửi email và thanh toán vào dịch vụ production. Cần sửa gì trước khi coi đó là môi trường thử an toàn?",
+      "options": [
+        "Chỉ đổi tiêu đề email thành Test",
+        "Chỉ thêm environment: staging, không đổi credential",
+        "Chỉ bật coverage trên npm test",
+        "Tách cấu hình/tài khoản/dữ liệu và kiểm soát side effects theo môi trường; rà credential và đích dịch vụ"
+      ],
+      "correct": 3,
+      "explanation": "Environment label không chặn side effect ra dịch vụ thật."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Phê duyệt đúng người",
+      "question": "Tổ chức muốn người khởi tạo không tự duyệt deployment của mình. Chỉ liệt kê reviewers đã đủ chưa?",
+      "options": [
+        "Cần cấu hình ngăn self-review và xác minh quyền/rule hỗ trợ theo nhu cầu",
+        "Đủ vì GitHub luôn cấm người khởi tạo duyệt ở mọi trường hợp",
+        "Chỉ đặt reviewer cùng tên environment",
+        "Chỉ chuyển production job xuống cuối YAML"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế ngăn tự duyệt là cấu hình cần xét riêng, không mặc định suy ra từ danh sách reviewers."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "CLI không chờ",
+      "question": "Nhóm thêm tùy chọn CLI không chờ deployment hoàn tất để CI nhanh hơn. Production gate nên thay đổi thế nào?",
+      "options": [
+        "Chỉ thêm echo Done sau lệnh",
+        "Phải quan sát/poll trạng thái deployment và health thích hợp trước khi coi hoàn tất, thay vì chỉ mã thoát lúc gửi yêu cầu",
+        "Có thể bỏ mọi kiểm tra vì lệnh đã trả nhanh",
+        "needs tự đợi mọi công việc từ xa dù CLI không chờ"
+      ],
+      "correct": 1,
+      "explanation": "Tín hiệu đã gửi yêu cầu khác với việc triển khai từ xa đã hoàn tất."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Ủy quyền sai mục tiêu",
+      "question": "Một PR fork yêu cầu mở secrets production để thử deploy staging. Cách giữ mục tiêu kiểm tra phù hợp là gì?",
+      "options": [
+        "Đổi trigger sang cơ chế quyền cao rồi chạy nguyên mã PR",
+        "Đăng token tạm vào comment PR rồi thu hồi sau",
+        "Dùng môi trường/credential thử có quyền hạn phù hợp và quy trình review, không cấp bí mật production cho mã PR không tin cậy",
+        "Cho token production vì job có tên staging"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm thử deployment không mặc định cho phép vượt ranh giới mã không tin cậy và secrets."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Đường dẫn artifact",
+      "question": "Nhóm thêm artifact nhưng production tải bundle của run khác cùng tên. Điều gì còn thiếu?",
+      "options": [
+        "Chỉ đặt file cùng tên là đủ",
+        "Chỉ upload thêm lần thứ hai vào cache npm",
+        "Chỉ kiểm tra file có phần mở rộng js",
+        "Ràng buộc artifact đúng run/revision/version và kiểm tra tính toàn vẹn/nguồn phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Tên artifact không chứng minh provenance của bản đang được phát hành."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "CD có duyệt",
+      "question": "Pipeline tự test và deploy staging, rồi chờ duyệt production đã cấu hình. Mô tả nào chính xác hơn?",
+      "options": [
+        "Có tự động hóa delivery với cổng duyệt production; không nên nói mọi thay đổi tự deploy production không cần người",
+        "Không phải CI/CD vì có bất kỳ approval nào",
+        "Là continuous deployment hoàn toàn không can thiệp người ở mọi giai đoạn",
+        "Chỉ là lint vì production chờ duyệt"
+      ],
+      "correct": 0,
+      "explanation": "Thuật ngữ cần phản ánh đúng mức tự động hóa và gate thực tế."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Đầu vào biến build",
+      "question": "Staging và production cùng commit nhưng dùng biến build khác nhau. Vì sao cần thiết kế kiểm tra phù hợp?",
+      "options": [
+        "Environment URL tự kiểm mọi khác biệt",
+        "Khác biệt có thể thay hành vi/artifact; cần kiểm tra cấu hình và tiêu chí theo đích, không suy staging pass bao phủ hết production",
+        "Commit giống nhau buộc mọi biến và artifact giống nhau",
+        "Biến build chỉ ảnh hưởng tên job"
+      ],
+      "correct": 1,
+      "explanation": "Cùng source không loại bỏ khác biệt môi trường."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Tín hiệu tổng hợp",
+      "question": "Dashboard chỉ hiển thị test pass trong khi staging fail và production skip. Nhóm muốn báo toàn pipeline thành công. Cách báo đúng là gì?",
+      "options": [
+        "Gộp thành production fail dù lệnh chưa chạy",
+        "Bỏ mọi trạng thái skip khỏi lịch sử",
+        "Phân biệt test pass, staging fail và production chưa chạy; pipeline phát hành chưa đạt",
+        "Gộp thành pass vì bước đầu tiên thành công"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả từng bước và kết quả mục tiêu phát hành cần được trình bày chính xác."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Bản mẫu và khả năng chạy",
+      "question": "Để biến source Deploy thành quy trình có thể kiểm chứng, nhóm cần hoàn thiện nhóm đầu vào nào?",
+      "options": [
+        "Chỉ URL và một comment manual approval",
+        "Chỉ tên branch main và tên job production",
+        "Chỉ giữ nguyên mọi version tag vì mẫu đảm bảo đúng mãi mãi",
+        "Runtime/scripts/lockfile, CLI/project/target, secrets/quyền, environment rules và kiểm tra kết quả/artifact theo mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Mẫu minh họa dependency chain; chưa tự cung cấp mọi cấu hình cần thiết hoặc bằng chứng thực thi."
+    }
+  ]
+}

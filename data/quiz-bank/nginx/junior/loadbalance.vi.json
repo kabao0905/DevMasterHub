@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "nginx",
+  "level": "junior",
+  "lesson": "loadbalance",
+  "language": "vi",
+  "sourceHash": "30ae40ff733dfd6e2dd3c251eaf35dfe228d3a95408621fc7e13dc4848bebc1c",
+  "status": "approved",
+  "review": "Biên soạn trực tiếp theo source và tài liệu HTTP upstream/proxy chính thức của Nginx. Đọc từng câu, đáp án và nhiễu; phân biệt cấu hình đang bật với comment, passive failure với active health check, retry với exactly-once. Không chạy Nginx, backend, HTTP hay lệnh triển khai.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Mục tiêu cân bằng tải",
+      "question": "Load balancing phân phối đối tượng nào trong bài?",
+      "options": [
+        "Lưu lượng tới nhiều backend",
+        "Mã nguồn tới trình biên dịch",
+        "Khóa TLS tới mọi client",
+        "File log tới DNS"
+      ],
+      "correct": 0,
+      "explanation": "Nginx nhận request rồi chọn một backend trong nhóm."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Nhóm upstream",
+      "question": "Tên nhóm backend trong cấu hình nguồn là gì?",
+      "options": [
+        "backup",
+        "backend",
+        "localhost",
+        "api"
+      ],
+      "correct": 1,
+      "explanation": "Tên sau upstream được proxy_pass tham chiếu."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Tham chiếu nhóm",
+      "question": "proxy_pass http://backend trỏ tới đâu khi có upstream backend?",
+      "options": [
+        "Tên process cần tự khởi động",
+        "File cấu hình backup",
+        "Nhóm upstream đã khai báo",
+        "Thư mục backend trên đĩa"
+      ],
+      "correct": 2,
+      "explanation": "Nó dùng nhóm server, không tạo process ứng dụng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Số primary",
+      "question": "Nguồn khai báo bao nhiêu server primary đang hoạt động về mặt cấu hình?",
+      "options": [
+        "2",
+        "4",
+        "5",
+        "3"
+      ],
+      "correct": 3,
+      "explanation": "Ba dòng port 3001, 3002, 3003 không có backup hay dấu comment."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Cổng dự phòng",
+      "question": "Server backup trong nguồn dùng port nào?",
+      "options": [
+        "3004",
+        "3001",
+        "3002",
+        "80"
+      ],
+      "correct": 0,
+      "explanation": "Dòng server 127.0.0.1:3004 có tham số backup."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Thuật toán mặc định",
+      "question": "Khi không bật thuật toán khác, nhóm dùng cách phân phối nào?",
+      "options": [
+        "Ngẫu nhiên theo tên file",
+        "Round-robin có xét trọng số",
+        "Luôn chọn IP nhỏ nhất",
+        "Luôn chọn server cuối"
+      ],
+      "correct": 1,
+      "explanation": "Các primary có trọng số mặc định bằng nhau."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Comment cấu hình",
+      "question": "Dòng bắt đầu bằng # server ... weight=3 có tác dụng hiện tại nào?",
+      "options": [
+        "Tạo ba bản sao process",
+        "Bật kiểm tra sức khỏe",
+        "Không tạo server vì đang là comment",
+        "Thêm một primary trọng số 3"
+      ],
+      "correct": 2,
+      "explanation": "Comment chỉ minh họa một lựa chọn cấu hình."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Trọng số",
+      "question": "weight trong khai báo upstream biểu đạt điều gì?",
+      "options": [
+        "Dung lượng RAM của server",
+        "Số CPU được cấp tự động",
+        "Thời hạn TLS",
+        "Tỷ lệ ưu tiên tương đối khi phân phối phù hợp thuật toán"
+      ],
+      "correct": 3,
+      "explanation": "Trọng số không tự tăng tài nguyên backend."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Least connections",
+      "question": "least_conn ưu tiên server theo đại lượng chính nào?",
+      "options": [
+        "Số kết nối đang hoạt động có xét trọng số",
+        "Dung lượng đĩa trống",
+        "Tên miền ngắn nhất",
+        "Số dòng mã nguồn"
+      ],
+      "correct": 0,
+      "explanation": "Số kết nối là tín hiệu khác với tải CPU."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "IP affinity",
+      "question": "ip_hash chủ yếu nhằm duy trì điều gì?",
+      "options": [
+        "Xác thực tài khoản",
+        "Ánh xạ client IP tới backend tương đối ổn định",
+        "Mã hóa địa chỉ IP",
+        "Sao chép session giữa backend"
+      ],
+      "correct": 1,
+      "explanation": "Affinity không phải cơ chế lưu trữ hay nhân bản session."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Vai trò backup",
+      "question": "Tham số backup đánh dấu server để làm gì?",
+      "options": [
+        "Sao lưu database định kỳ",
+        "Lưu file nginx.conf",
+        "Nhận request khi primary không khả dụng",
+        "Nhận đều một phần tư request bình thường"
+      ],
+      "correct": 2,
+      "explanation": "Backup là vai trò định tuyến trong upstream."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "HTTP listener",
+      "question": "Server frontend của ví dụ lắng nghe cổng nào?",
+      "options": [
+        "443",
+        "3001",
+        "3004",
+        "80"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn có listen 80, không cấu hình TLS."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Phạm vi location",
+      "question": "location / trong ví dụ cung cấp route proxy cho phạm vi nào theo cấu hình đơn giản này?",
+      "options": [
+        "Các URI được location này chọn",
+        "Chỉ file index.html",
+        "Chỉ request port 3004",
+        "Chỉ kết nối TLS"
+      ],
+      "correct": 0,
+      "explanation": "Việc chọn location có thể thay đổi nếu bổ sung location khác."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Connect timeout",
+      "question": "proxy_connect_timeout 5s giới hạn giai đoạn nào?",
+      "options": [
+        "Thời gian cache DNS vĩnh viễn",
+        "Thiết lập kết nối tới upstream",
+        "Toàn bộ đời request trong mọi trường hợp",
+        "Tuổi session người dùng"
+      ],
+      "correct": 1,
+      "explanation": "Đọc response và gửi request có các timeout khác."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Điều kiện retry",
+      "question": "Nguồn viết hai điều kiện nào cho proxy_next_upstream?",
+      "options": [
+        "off và backup",
+        "least_conn và ip_hash",
+        "error và timeout",
+        "http_404 và http_403"
+      ],
+      "correct": 2,
+      "explanation": "Không được suy ra mọi status HTTP đều được retry."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Địa chỉ loopback",
+      "question": "127.0.0.1 trong upstream là địa chỉ thuộc phạm vi nào?",
+      "options": [
+        "Máy bất kỳ trên Internet",
+        "Client gần nhất",
+        "DNS công cộng",
+        "Loopback của môi trường mạng nơi Nginx chạy"
+      ],
+      "correct": 3,
+      "explanation": "Container hoặc namespace khác có thể có loopback riêng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Thiếu backend runtime",
+      "question": "Khai báo server 127.0.0.1:3001 có tự chạy Node.js không?",
+      "options": [
+        "Không, ứng dụng phải được vận hành riêng",
+        "Có, Nginx tự chạy npm start",
+        "Có, server tạo process Node.js",
+        "Có, backup khởi động mọi primary"
+      ],
+      "correct": 0,
+      "explanation": "Khai báo upstream chỉ cung cấp địa chỉ và tham số chọn server."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Health check comment",
+      "question": "Dòng # Health check ngay trước backup chứng minh điều gì?",
+      "options": [
+        "Đã xác nhận cả bốn process khỏe",
+        "Chỉ là chú thích, chưa cấu hình probe chủ động",
+        "Đã có HTTP probe định kỳ",
+        "Đã kiểm tra database"
+      ],
+      "correct": 1,
+      "explanation": "Không có chỉ thị kiểm tra chủ động trong đoạn nguồn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Vị trí upstream HTTP",
+      "question": "Khối upstream HTTP thường được đặt trong context nào?",
+      "options": [
+        "location",
+        "types",
+        "http",
+        "events"
+      ],
+      "correct": 2,
+      "explanation": "Ví dụ là đoạn cấu hình cần được ghép vào context hợp lệ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Điểm lỗi tập trung",
+      "question": "Chỉ một máy Nginx phía trước nhiều backend vẫn có thể là gì?",
+      "options": [
+        "Bằng chứng hệ thống không thể lỗi",
+        "Cơ chế nhân bản database",
+        "Một CDN toàn cầu tự động",
+        "Một điểm lỗi tập trung ở tầng frontend"
+      ],
+      "correct": 3,
+      "explanation": "Tăng backend không tự tạo dự phòng cho load balancer."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Đọc trạng thái thuật toán",
+      "question": "Trong nguyên văn nguồn, least_conn đã được áp dụng chưa?",
+      "options": [
+        "Chưa, dòng đó đang bị comment",
+        "Đã, vì nằm trong upstream",
+        "Đã, vì có ba primary",
+        "Đã, vì proxy_next_upstream bật"
+      ],
+      "correct": 0,
+      "explanation": "Phải phân biệt code minh họa trong comment với chỉ thị đang có hiệu lực."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Loại trừ server dự phòng",
+      "question": "Khi ba primary đều khả dụng, nhận định nào đúng về port 3004?",
+      "options": [
+        "Nhận mọi request POST",
+        "Không tham gia phân phối bình thường với vai trò backup",
+        "Luôn nhận request thứ tư",
+        "Luôn nhận request đầu tiên"
+      ],
+      "correct": 1,
+      "explanation": "Không thể suy ra tỷ lệ 25% từ tổng số bốn dòng server."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Weighted giả định",
+      "question": "Một nhóm riêng chỉ có hai primary weight=3 và weight=1, đều khỏe, cùng thuật toán round-robin: tỷ lệ mục tiêu tương đối là gì?",
+      "options": [
+        "3:3",
+        "4:1",
+        "3:1",
+        "1:3"
+      ],
+      "correct": 2,
+      "explanation": "Đây là cấu hình giả định khác với các dòng weighted đang comment trong nguồn."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Không hứa chuỗi toàn cục",
+      "question": "Vì sao không nên khẳng định mọi bốn request ngoài thực tế luôn có đúng ba request tới A và một tới B?",
+      "options": [
+        "Trọng số là số byte response",
+        "Trọng số chỉ đổi tên server",
+        "Nginx bỏ qua mọi trọng số",
+        "Nhiều worker, lỗi và trạng thái xử lý ảnh hưởng quan sát"
+      ],
+      "correct": 3,
+      "explanation": "Tỷ lệ mục tiêu không phải cam kết thứ tự toàn cục của từng cửa sổ request."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Cổng phân biệt instance",
+      "question": "Ba địa chỉ cùng 127.0.0.1 nhưng khác port có thể đại diện cho gì?",
+      "options": [
+        "Ba instance ứng dụng riêng trên cùng phạm vi mạng",
+        "Ba địa chỉ IP công cộng khác nhau",
+        "Ba certificate TLS bắt buộc",
+        "Ba bản sao database do Nginx tự tạo"
+      ],
+      "correct": 0,
+      "explanation": "Port cho phép nhiều listener trên cùng địa chỉ."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Kết nối thất bại",
+      "question": "Nếu không có process lắng nghe port 3001, Nginx có thể gặp loại vấn đề nào khi chọn server đó?",
+      "options": [
+        "Lỗi DNS của tên backend dù đã khai báo nhóm",
+        "Lỗi thiết lập kết nối upstream",
+        "Lỗi cú pháp JavaScript do Nginx biên dịch",
+        "Lỗi certificate frontend bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Đây là lỗi runtime phụ thuộc listener, không tự chứng minh cấu hình upstream sai cú pháp."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Timeout tách giai đoạn",
+      "question": "Backend kết nối thành công nhanh nhưng chậm trả header: chỉ connect_timeout 5s có đủ mô tả giới hạn chờ header không?",
+      "options": [
+        "Có, weight là timeout header",
+        "Có, listen 80 áp thời hạn 80s",
+        "Không, cần xét timeout đọc upstream",
+        "Có, mọi chờ đợi kết thúc đúng 5s"
+      ],
+      "correct": 2,
+      "explanation": "Connect timeout không phải tổng thời gian phản hồi."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "HTTP 500 từ backend",
+      "question": "Với đúng error timeout trong nguồn, backend trả HTTP 500 hợp lệ có tự được retry vì status 500 không?",
+      "options": [
+        "Có, mọi mã 5xx luôn được retry",
+        "Có, vì backup có port lớn hơn",
+        "Có, chỉ cần có ba primary",
+        "Không, nguồn chưa thêm điều kiện http_500"
+      ],
+      "correct": 3,
+      "explanation": "Lỗi kết nối và response HTTP hợp lệ là hai trường hợp khác nhau."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "HTTP 404 hợp lệ",
+      "question": "Ứng dụng trả 404 do tài nguyên không tồn tại. Cách hiểu phù hợp nhất là gì?",
+      "options": [
+        "Một response ứng dụng, không tự đồng nghĩa lỗi kết nối",
+        "Primary chắc chắn đã chết",
+        "Cần chuyển mọi request sang backup mãi mãi",
+        "Nginx phải khởi động lại process"
+      ],
+      "correct": 0,
+      "explanation": "Routing failover không nên mặc định che mất lỗi nghiệp vụ."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Đổi thuật toán đúng chỗ",
+      "question": "Muốn dùng least_conn cho nhóm HTTP này, chỉ thị chọn thuật toán cần thuộc khối nào?",
+      "options": [
+        "server listen 80",
+        "upstream backend",
+        "location /",
+        "events"
+      ],
+      "correct": 1,
+      "explanation": "Các tùy chọn proxy và thuật toán upstream có context riêng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "IP hash với backup",
+      "question": "Chỉ bỏ comment ip_hash trong khi giữ server backup có vấn đề gì theo tài liệu HTTP upstream?",
+      "options": [
+        "Tự bỏ tất cả primary",
+        "Tự chuyển sang TLS",
+        "backup không tương thích với ip_hash",
+        "Tự bật session replication"
+      ],
+      "correct": 2,
+      "explanation": "Phải thiết kế lại phương án failover thay vì ghép mọi lựa chọn minh họa."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "NAT và affinity",
+      "question": "Nhiều người dùng cùng đi qua một IP NAT có thể gặp hạn chế gì với ip_hash?",
+      "options": [
+        "Được đảm bảo chia đều theo tài khoản",
+        "Mỗi người tự có IP mới do Nginx cấp",
+        "Session được sao chép sang mọi máy",
+        "Có thể bị gom về cùng backend gây lệch tải"
+      ],
+      "correct": 3,
+      "explanation": "IP không phải định danh duy nhất của người dùng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Session local và round-robin",
+      "question": "Login lưu session chỉ trong RAM từng backend dễ gặp vấn đề gì khi request được chia sang máy khác?",
+      "options": [
+        "Máy tiếp theo có thể không có session đó",
+        "Round-robin tự đồng bộ RAM",
+        "Nginx tự ghi session vào database",
+        "HTTP tự chuyển toàn bộ RAM qua cookie"
+      ],
+      "correct": 0,
+      "explanation": "Cần phương án trạng thái phù hợp như kho session dùng chung."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Client IP thay đổi",
+      "question": "Người dùng chuyển mạng Wi-Fi sang mạng di động có thể ảnh hưởng ip_hash thế nào?",
+      "options": [
+        "Tự vô hiệu TLS toàn hệ thống",
+        "Có thể đổi backend do khóa IP thay đổi",
+        "Luôn giữ backend nhờ tên tài khoản",
+        "Tự tạo bản sao session cũ"
+      ],
+      "correct": 1,
+      "explanation": "Affinity IP không thay cơ chế liên tục phiên bền vững."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Least_conn không đo CPU",
+      "question": "Hai backend có cùng số kết nối nhưng CPU rất khác nhau. least_conn có trực tiếp nhận biết chênh lệch CPU đó không?",
+      "options": [
+        "Có, weight tự là CPU tức thời",
+        "Có, proxy_connect_timeout đo CPU",
+        "Không, đó không phải tín hiệu trực tiếp của thuật toán",
+        "Có, nó đọc top trên từng máy"
+      ],
+      "correct": 2,
+      "explanation": "Cần telemetry riêng để đánh giá tải và nguyên nhân chậm."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Kết nối dài",
+      "question": "Một workload có request dài ngắn khác nhau có thể là lý do cân nhắc least_conn vì sao?",
+      "options": [
+        "Nó bảo đảm mọi request cùng thời lượng",
+        "Nó bỏ hết timeout",
+        "Nó tự tăng băng thông vật lý",
+        "Số kết nối đang hoạt động phản ánh phần nào việc đang xử lý"
+      ],
+      "correct": 3,
+      "explanation": "Lợi ích còn tùy workload, không thể khẳng định luôn nhanh hơn."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Thiếu TLS",
+      "question": "Chỉ dùng listen 80 và proxy_pass http://backend chứng minh điều gì về TLS trong đoạn này?",
+      "options": [
+        "Đoạn này chưa cấu hình HTTPS frontend hay TLS upstream",
+        "TLS tự bật nhờ upstream",
+        "Backup tự cấp certificate",
+        "Trọng số mã hóa request"
+      ],
+      "correct": 0,
+      "explanation": "TLS có thể nằm ở tầng khác nhưng không được chứng minh ở đây."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Giữ URI đơn giản",
+      "question": "Trong location / với proxy_pass http://backend không kèm URI và không rewrite, request /items?a=1 được chuyển theo ý nghĩa nào?",
+      "options": [
+        "Biến thành đường dẫn file tĩnh",
+        "Giữ đường dẫn và query cho upstream",
+        "Luôn đổi thành /backend",
+        "Bỏ toàn bộ query do round-robin"
+      ],
+      "correct": 1,
+      "explanation": "Tham chiếu nhóm không tự tạo prefix URI mới."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Backup không là bản sao dữ liệu",
+      "question": "Backup server được chọn nhưng chưa có dữ liệu phiên. Cấu hình backup đã tự giải quyết vấn đề đó chưa?",
+      "options": [
+        "Rồi, backup là backup database",
+        "Rồi, cổng 3004 chứa mọi session",
+        "Chưa, dự phòng định tuyến không đồng bộ trạng thái ứng dụng",
+        "Rồi, Nginx tự sao chép bộ nhớ"
+      ],
+      "correct": 2,
+      "explanation": "Failover phải xét cả sự sẵn sàng và trạng thái."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Khi mọi primary hỏng",
+      "question": "Khi không primary nào khả dụng nhưng backup khỏe, vai trò dự kiến của backup là gì?",
+      "options": [
+        "Chỉ ghi log rồi đóng mọi kết nối",
+        "Được biến thành file static",
+        "Tự sửa từng process primary",
+        "Phục vụ request thay primary"
+      ],
+      "correct": 3,
+      "explanation": "Backup giúp tiếp tục định tuyến nhưng không chữa nguyên nhân backend lỗi."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Khi toàn bộ server lỗi",
+      "question": "Nếu primary và backup đều không thể phục vụ, nhận định nào hợp lý?",
+      "options": [
+        "Request vẫn có thể thất bại dù có load balancing",
+        "Nginx bảo đảm tạo response nghiệp vụ đúng",
+        "Backup không bao giờ có thể lỗi",
+        "Trọng số tự tái tạo dữ liệu"
+      ],
+      "correct": 0,
+      "explanation": "Dự phòng giảm rủi ro, không loại bỏ mọi lỗi."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Phân biệt passive",
+      "question": "Passive failure detection dựa trên loại tín hiệu nào?",
+      "options": [
+        "Kết quả backup database hằng đêm",
+        "Kết quả các lần giao tiếp phục vụ request thực",
+        "Probe định kỳ chắc chắn có trong comment",
+        "CPU do Nginx tự SSH đo"
+      ],
+      "correct": 1,
+      "explanation": "Quan sát lỗi khi phục vụ không tương đương probe chủ động độc lập."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Giả định max_fails rõ ràng",
+      "question": "Trong cấu hình riêng server A max_fails=2 fail_timeout=10s, hai tham số phối hợp mô tả điều gì?",
+      "options": [
+        "Hai lần restart trong mười năm",
+        "Tỷ lệ trọng số 2:10",
+        "Ngưỡng thất bại trong khoảng xét và thời gian tạm không khả dụng",
+        "Số user và dung lượng cache"
+      ],
+      "correct": 2,
+      "explanation": "Ý nghĩa chi tiết lần thử thất bại còn phụ thuộc module và cấu hình retry."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Phân biệt down",
+      "question": "Đánh dấu một server là down khác backup ở điểm nào?",
+      "options": [
+        "down luôn nhận traffic trước",
+        "backup và down đều tạo cron",
+        "down chỉ giảm trọng số xuống một",
+        "down coi server không khả dụng, backup dành cho dự phòng"
+      ],
+      "correct": 3,
+      "explanation": "Cần chọn đúng trạng thái khi bảo trì hoặc dự phòng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Đổi proxy_pass sai tên",
+      "question": "Đổi proxy_pass thành http://backned nhưng upstream vẫn tên backend gây rủi ro nào?",
+      "options": [
+        "Tên không còn tham chiếu đúng nhóm đã định nghĩa",
+        "Nginx tự sửa mọi lỗi chính tả",
+        "Tự chuyển thành least_conn",
+        "Mọi session được giữ nguyên nhờ comment"
+      ],
+      "correct": 0,
+      "explanation": "Có thể phát sinh xử lý phân giải tên khác; không được coi là cùng upstream."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Một máy vật lý",
+      "question": "Ba process ở cùng máy bị mất điện đồng thời cho thấy điều gì?",
+      "options": [
+        "Các port có nguồn điện riêng",
+        "Ba instance không tạo ba miền lỗi vật lý độc lập",
+        "Round-robin chống được mất điện máy đó",
+        "Backup luôn nằm ở vùng khác vì tên backup"
+      ],
+      "correct": 1,
+      "explanation": "Dự phòng cần xét nơi chạy thực tế, không chỉ số dòng server."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Namespace container",
+      "question": "Nginx và Node chạy ở hai container tách biệt; localhost:3001 trong Nginx sẽ tìm ở đâu?",
+      "options": [
+        "Máy client bên ngoài",
+        "Registry chứa image",
+        "Namespace mạng của container Nginx",
+        "Tự tìm container Node bất kỳ"
+      ],
+      "correct": 2,
+      "explanation": "Cần địa chỉ dịch vụ hoặc kết nối mạng được cấu hình phù hợp."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Gửi response dở dang",
+      "question": "Upstream lỗi sau khi Nginx đã gửi một phần response cho client. Có thể luôn chuyển backend để trả lại nguyên response một cách trong suốt không?",
+      "options": [
+        "Có, proxy_next_upstream ghép mọi body đúng",
+        "Có, backup khôi phục TCP của client",
+        "Có, weight giữ bản sao byte đã gửi",
+        "Không, việc đã gửi dữ liệu giới hạn khả năng retry trong suốt"
+      ],
+      "correct": 3,
+      "explanation": "Không thể thu hồi dữ liệu client đã nhận."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Không hứa exactly-once",
+      "question": "Backend ghi đơn hàng rồi mất kết nối trước response. Retry đơn giản có rủi ro gì?",
+      "options": [
+        "Tạo thao tác ghi trùng nếu ứng dụng không chống lặp",
+        "Luôn rollback đơn hàng cũ",
+        "Chỉ đổi Host header",
+        "Luôn an toàn vì dùng HTTP"
+      ],
+      "correct": 0,
+      "explanation": "Kết quả mất kết nối không chứng minh thao tác chưa xảy ra."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "POST mặc định",
+      "question": "Theo proxy HTTP docs, POST đã gửi tới upstream thường có hạn chế retry nào nếu không bật non_idempotent?",
+      "options": [
+        "Được chuyển thành GET",
+        "Không chuyển sang server tiếp theo theo cơ chế đó sau khi đã gửi",
+        "Luôn retry vô hạn",
+        "Luôn được rollback trước retry"
+      ],
+      "correct": 1,
+      "explanation": "Tình trạng đã gửi request và chính sách retry phải được xét."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Dòng weighted minh họa",
+      "question": "Nếu muốn thay ba primary bằng hai primary trọng số khác nhau, cách sửa rõ ràng là gì?",
+      "options": [
+        "Đặt weight trong server_name",
+        "Đổi listen thành weight=3",
+        "Thay các dòng primary bằng danh sách mong muốn, không chỉ thêm bản trùng tùy tiện",
+        "Bỏ comment cả hai dòng và mặc định coi không có bản trùng"
+      ],
+      "correct": 2,
+      "explanation": "Đọc cấu hình cuối cùng theo mọi dòng có hiệu lực."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Trọng số không đồng nghĩa năng lực",
+      "question": "weight=3 có chứng minh backend chịu tải gấp ba lần không?",
+      "options": [
+        "Có, Nginx tự cấp thêm ba CPU",
+        "Có, bộ nhớ được nhân ba",
+        "Có, mọi endpoint nhanh gấp ba",
+        "Không, đó là cấu hình phân phối cần kiểm chứng với tải thực"
+      ],
+      "correct": 3,
+      "explanation": "Phân bổ nên dựa trên đo đạc và giới hạn backend."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Kiểm tra cú pháp có giới hạn",
+      "question": "Ngay cả khi một kiểm tra cú pháp Nginx thành công, điều gì vẫn chưa được chứng minh?",
+      "options": [
+        "Backend thật đang khỏe và đáp ứng đúng nghiệp vụ",
+        "Dấu ngoặc trong cấu hình đã parse được",
+        "Tên chỉ thị được parser nhận diện",
+        "Cấu hình được bộ kiểm tra đọc"
+      ],
+      "correct": 0,
+      "explanation": "Không dùng thành công cú pháp làm bằng chứng năng lực runtime."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Session và bảo trì",
+      "question": "Đưa backend có session local ra bảo trì có thể làm gì với phiên đang gắn vào nó?",
+      "options": [
+        "Không bao giờ ảnh hưởng ip_hash",
+        "Làm mất truy cập trạng thái nếu không có phương án chuyển hoặc dùng chung",
+        "Tự chuyển RAM sang backend mới",
+        "Tự đăng nhập lại mọi user"
+      ],
+      "correct": 1,
+      "explanation": "Cần kế hoạch trạng thái và chuyển tải phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Phân biệt client và upstream",
+      "question": "proxy_connect_timeout trong location này áp dụng cho kết nối Nginx tới ai?",
+      "options": [
+        "Người dùng tới kho Git",
+        "Nginx tới file cấu hình",
+        "Backend upstream",
+        "Trình duyệt tới DNS"
+      ],
+      "correct": 2,
+      "explanation": "Tên timeout thuộc module proxy, không áp toàn hệ thống mạng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Retry và quan sát log",
+      "question": "Muốn chẩn đoán một request qua nhiều upstream, thông tin nào có ích nhất?",
+      "options": [
+        "Chỉ màu terminal",
+        "Chỉ thứ tự comment trong file",
+        "Chỉ tên index.html",
+        "Các upstream đã thử, trạng thái và thời gian tương ứng trong log phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần quan sát request cụ thể thay vì suy diễn từ danh sách server."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Luồng lỗi và latency",
+      "question": "Retry sang backend khác có thể ảnh hưởng thời gian phản hồi thế nào?",
+      "options": [
+        "Có thể tăng độ trễ do thêm lần thử và thời gian chờ",
+        "Luôn làm tổng thời gian bằng không",
+        "Luôn giữ đúng 5s cho toàn request",
+        "Luôn giảm mọi latency một nửa"
+      ],
+      "correct": 0,
+      "explanation": "Failover có chi phí và phải được giới hạn phù hợp."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Địa chỉ và deploy",
+      "question": "Upstream đã khai báo đủ ba port, nhưng mới triển khai một process. Cần kết luận gì?",
+      "options": [
+        "Backup tự clone code",
+        "Danh sách cấu hình và số instance thực tế chưa khớp",
+        "Nginx tự tạo hai process còn thiếu",
+        "Comment weighted bù hai process"
+      ],
+      "correct": 1,
+      "explanation": "Tính sẵn sàng phụ thuộc cả vận hành ứng dụng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Thuật toán và bảo mật",
+      "question": "Đổi round-robin sang least_conn có tự thêm xác thực API không?",
+      "options": [
+        "Có, upstream tự tạo JWT",
+        "Có, backup kiểm tra mật khẩu",
+        "Không, chọn backend không thay cơ chế xác thực",
+        "Có, ít kết nối đồng nghĩa đúng quyền"
+      ],
+      "correct": 2,
+      "explanation": "Load balancing và kiểm soát truy cập là các trách nhiệm khác nhau."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Không thể suy ra SLO",
+      "question": "Chỉ từ cấu hình ba primary và một backup có thể suy ra chính xác số người dùng đồng thời an toàn không?",
+      "options": [
+        "Có, luôn là bốn triệu",
+        "Có, bằng tổng số port",
+        "Có, bằng 5s nhân bốn server",
+        "Không, cần workload, tài nguyên, giới hạn phụ thuộc và đo kiểm"
+      ],
+      "correct": 3,
+      "explanation": "Số server không phải chứng cứ năng lực của toàn hệ thống."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Thiết kế failover và trạng thái",
+      "question": "Hệ thống dùng session local, định bật ip_hash và giữ backup như nguồn. Cách đánh giá đầy đủ nhất là gì?",
+      "options": [
+        "Xử lý bất tương thích backup/ip_hash và thiết kế trạng thái phiên khi failover",
+        "Chỉ bỏ comment ip_hash là đủ",
+        "Chỉ tăng connect_timeout để session tự sao chép",
+        "Chỉ đổi backup sang port 443"
+      ],
+      "correct": 0,
+      "explanation": "Cần giải quyết cả hợp lệ cấu hình lẫn trạng thái, không chỉ độ bám backend."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Tác động ghi không chắc chắn",
+      "question": "POST thanh toán đã tới backend, kết nối mất trước header. Muốn cải thiện chịu lỗi, ưu tiên nào phù hợp?",
+      "options": [
+        "Đặt weight=100 để giao dịch tự rollback",
+        "Chính sách retry thận trọng cùng khóa chống lặp và trạng thái giao dịch ở ứng dụng",
+        "Bật retry vô hạn mọi POST và coi là exactly-once",
+        "Đổi mọi backend thành backup"
+      ],
+      "correct": 1,
+      "explanation": "Load balancer không biết chắc thao tác đã commit hay chưa."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Retry status có điều kiện",
+      "question": "Muốn retry lỗi 503 từ backend, điều gì cần được xem cùng việc thêm http_503?",
+      "options": [
+        "Chỉ quyền đọc nginx.conf",
+        "Chỉ tên header Server",
+        "Tính an toàn phương thức, thời gian/số lần thử và dữ liệu đã gửi client",
+        "Chỉ số chữ số của port"
+      ],
+      "correct": 2,
+      "explanation": "Thêm một status không loại bỏ các giới hạn retry và rủi ro nghiệp vụ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Phân tích hotspot",
+      "question": "Sau khi dùng ip_hash, một backend nóng do nhiều user chung NAT. Hướng phân tích nào đúng?",
+      "options": [
+        "Kết luận backend đó luôn có ít CPU nhất theo định nghĩa ip_hash",
+        "Tăng HSTS để chia lại request",
+        "Đổi tên upstream để tạo IP mới cho user",
+        "Xem phân bố khóa IP, trạng thái phiên và thuật toán phù hợp workload"
+      ],
+      "correct": 3,
+      "explanation": "Affinity dựa IP có thể gom nhiều user vào cùng nhánh."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Failure domain",
+      "question": "Ba primary và backup đều 127.0.0.1 trên một host. Cần bổ sung gì để chống mất host đó?",
+      "options": [
+        "Phân bố miền lỗi và dự phòng cả điểm vào, không chỉ thêm process cùng host",
+        "Tăng weight cho backup là đủ",
+        "Đổi port thành số lớn hơn",
+        "Bật least_conn là host không thể mất điện"
+      ],
+      "correct": 0,
+      "explanation": "Khả năng dự phòng phải xét host, mạng và frontend."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Health và nghiệp vụ",
+      "question": "Một backend nhận TCP được nhưng trả dữ liệu sai do mất kết nối database. Chỉ connect timeout có phát hiện đầy đủ không?",
+      "options": [
+        "Có, 5s là bài kiểm thử toàn ứng dụng",
+        "Không, khả năng kết nối không chứng minh sức khỏe nghiệp vụ",
+        "Có, TCP thành công đồng nghĩa query DB thành công",
+        "Có, backup tự kiểm mọi query"
+      ],
+      "correct": 1,
+      "explanation": "Cần tiêu chí sức khỏe và quan sát đúng phụ thuộc."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Read timeout và total deadline",
+      "question": "Request có nhiều lần đọc upstream, mỗi lần vẫn có dữ liệu trước timeout đọc. Vì sao không thể lấy connect_timeout 5s làm hạn chót toàn response?",
+      "options": [
+        "Vì round-robin bỏ qua đồng hồ",
+        "Vì backup luôn gửi cache",
+        "Thiết lập kết nối và chuỗi đọc là các giai đoạn khác nhau",
+        "Vì port 80 tự cộng thêm 80s"
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế thời gian chờ cần xét từng giai đoạn và hạn tổng nếu cần."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Sự cố giữa body",
+      "question": "Client đã nhận nửa JSON rồi backend ngắt. Vì sao tự ghép phần còn lại từ backend khác không phải bảo đảm của cấu hình nguồn?",
+      "options": [
+        "Vì mọi JSON phải có cùng kích thước",
+        "Vì backup chỉ hỗ trợ HTML",
+        "Vì least_conn cấm JSON",
+        "Response đã bắt đầu và backend khác có thể tạo nội dung/trạng thái khác"
+      ],
+      "correct": 3,
+      "explanation": "Retry không phải cơ chế nối stream tùy ý hoặc thu hồi byte đã gửi."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Capacity dưới failover",
+      "question": "Backup có cấu hình phần cứng nhỏ hơn từng primary. Trước khi coi failover đạt yêu cầu cần kiểm gì?",
+      "options": [
+        "Năng lực và chính sách suy giảm khi tải dồn vào backup",
+        "Chỉ việc có chữ backup trong file",
+        "Chỉ thứ tự dòng port 3004",
+        "Chỉ việc tên miền đã tồn tại"
+      ],
+      "correct": 0,
+      "explanation": "Tuyến dự phòng tồn tại không có nghĩa đủ năng lực cho toàn tải."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Đọc cấu hình hoạt động",
+      "question": "Một review kết luận nguồn đã dùng weighted least_conn ip_hash đồng thời. Sửa kết luận thế nào?",
+      "options": [
+        "Nguồn dùng ip_hash vì có địa chỉ IP",
+        "Nguồn chỉ chạy round-robin mặc định; các lựa chọn đó còn là comment",
+        "Nguồn tự chọn thuật toán theo tên request",
+        "Nguồn chạy cả ba theo thứ tự comment"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm chứng theo dòng có hiệu lực, không theo danh sách chủ đề."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Canary có giới hạn",
+      "question": "Nhóm hai primary dùng weight=9 và weight=1 để đưa khoảng một phần mười tải sang bản mới. Nhận định nào chuẩn?",
+      "options": [
+        "Bản mới luôn nhận đúng request thứ mười toàn hệ thống",
+        "Weight tự kiểm thử tương thích database",
+        "Đây là mục tiêu phân phối tương đối, cần quan sát và đường lui khi lỗi",
+        "Mỗi tài khoản chắc chắn chỉ thấy một phiên bản mãi mãi"
+      ],
+      "correct": 2,
+      "explanation": "Cân nặng không cung cấp mọi thuộc tính canary hoặc session routing."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Lựa chọn thuật toán không tuyệt đối",
+      "question": "Workload có WebSocket dài và HTTP ngắn. Vì sao không thể chỉ từ tên least_conn khẳng định tối ưu mọi endpoint?",
+      "options": [
+        "Vì least_conn chỉ đổi DNS",
+        "Vì round-robin luôn nhanh nhất theo định nghĩa",
+        "Vì backup tự cân bằng CPU",
+        "Kết nối và chi phí nghiệp vụ khác nhau nên cần đo theo loại workload"
+      ],
+      "correct": 3,
+      "explanation": "Một tín hiệu đếm kết nối không bao quát mọi chi phí xử lý."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Dự phòng và tái tạo process",
+      "question": "Primary chết liên tục vì lỗi code. Backup phục vụ được có phải nguyên nhân đã được sửa không?",
+      "options": [
+        "Không, failover che bớt tác động nhưng lỗi code vẫn cần xử lý",
+        "Có, backup tự vá source",
+        "Có, proxy_next_upstream biên dịch lại Node.js",
+        "Có, trọng số sửa exception"
+      ],
+      "correct": 0,
+      "explanation": "Phục hồi phục vụ và khắc phục căn nguyên là hai việc khác nhau."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Quan sát nhiều worker",
+      "question": "Bài đo đếm thấy phân bố ngắn hạn không đúng vòng 3001→3002→3003 lặp lại. Kết luận nào thận trọng?",
+      "options": [
+        "Chắc chắn Nginx không hỗ trợ round-robin",
+        "Xem worker, lỗi và phạm vi quan sát trước khi kết luận thuật toán hỏng",
+        "Chắc chắn mọi dòng server bị bỏ qua",
+        "Chắc chắn backup đã thành DNS"
+      ],
+      "correct": 1,
+      "explanation": "Từng request qua nhiều trạng thái không buộc tạo chuỗi toàn cục đơn giản."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Nhất quán dữ liệu",
+      "question": "Hai backend dùng hai database ghi độc lập, dữ liệu chưa đồng bộ. Thêm load balancing có tự tạo tính nhất quán không?",
+      "options": [
+        "Có, ip_hash biến hai database thành một",
+        "Có, backup đọc bộ nhớ các primary",
+        "Không, kiến trúc dữ liệu phải tự giải quyết nhất quán và nguồn dữ liệu",
+        "Có, upstream nhân bản mọi transaction"
+      ],
+      "correct": 2,
+      "explanation": "Chọn nơi xử lý request không phải giao thức đồng bộ dữ liệu."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Giới hạn retry",
+      "question": "Trong tình huống cả nhóm chập chờn, vì sao cần cân nhắc ngân sách retry?",
+      "options": [
+        "Để bảo đảm mọi lần ghi chỉ thực hiện một lần mà không cần ứng dụng",
+        "Để tăng số port tự động",
+        "Để vô hiệu mọi mã lỗi HTTP",
+        "Tránh khuếch đại tải và kéo dài độ trễ khi phụ thuộc đã lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Retry có thể làm sự cố nặng hơn nếu thiếu giới hạn và quan sát."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Mở rộng giữa namespace",
+      "question": "Chuyển backend sang host khác nhưng giữ nguyên 127.0.0.1 trong Nginx. Việc cần làm trước khi khẳng định mở rộng thành công là gì?",
+      "options": [
+        "Cập nhật đích có thể truy cập cùng mạng/quyền truy cập và kiểm chứng phục vụ",
+        "Chỉ tăng số dòng comment weighted",
+        "Chỉ thay server_name frontend",
+        "Chỉ đánh dấu tất cả server là backup"
+      ],
+      "correct": 0,
+      "explanation": "Loopback không đại diện tự động cho host mới."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Kiểm chứng hợp lệ và runtime",
+      "question": "Bộ kiểm tra JSON của ngân hàng câu hỏi thành công có chứng minh bốn backend đang chạy đúng cấu hình Nginx không?",
+      "options": [
+        "Có, status approved là trạng thái process",
+        "Không, đó chỉ là kiểm chứng dữ liệu câu hỏi, cần bằng chứng runtime riêng",
+        "Có, JSON đủ thay nginx -t và thử request",
+        "Có, 80 câu tự sinh traffic kiểm tải"
+      ],
+      "correct": 1,
+      "explanation": "Không đánh tráo bằng chứng nội dung với bằng chứng vận hành."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Lựa chọn đáp ứng bảo trì",
+      "question": "Cần thay phiên bản ứng dụng mà vẫn giữ các request đang xử lý ổn định. Cách tiếp cận phù hợp nhất là gì?",
+      "options": [
+        "Chỉ tăng weight rồi coi request đang chạy đã chuyển xong",
+        "Bật ip_hash để mọi request có thể bị ngắt an toàn",
+        "Lập kế hoạch rút tải, hoàn tất request và kiểm tra tương thích trạng thái",
+        "Xóa mọi backend cùng lúc vì có upstream"
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình cân bằng tải cần phối hợp vòng đời triển khai, không tự bảo đảm chuyển đổi an toàn."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Phạm vi kết luận sản xuất",
+      "question": "Sau khi đọc nguồn, kết luận nào có căn cứ nhất?",
+      "options": [
+        "Đã có active health check và dự phòng đa vùng hoàn chỉnh",
+        "Đã đạt năng lực hàng triệu user vì có round-robin",
+        "Đã bảo đảm mọi giao dịch exactly-once",
+        "Có mẫu nhóm ba primary và một backup; tính sẵn sàng, trạng thái và năng lực thực tế chưa được chứng minh"
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt điều cấu hình mô tả với điều cần triển khai và đo kiểm."
+    }
+  ]
+}

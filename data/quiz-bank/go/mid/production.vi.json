@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "mid",
+  "lesson": "production",
+  "language": "vi",
+  "sourceHash": "71d1d453e90d115bee723030feeb340708f5d471326e3a43fdc9f1022226e19a",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và local Go1.26.1 slog/net/http/os/signal docs. Selected fixtures logging buffers/JSON,handler recorder/config và shutdown server chưa listen; không mở port/gửi OS signals/đọc secrets/env thật. Timeout fields không là handler kill, Shutdown không chờ hijacked/all goroutines. Source health chỉ liveness tĩnh, thiếu config parsing và bỏ Shutdown error, startup fail vẫn đợi signal. Không khẳng định production readiness hoặc benchmark/load.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Structured logging",
+      "question": "slog chủ yếu cung cấp gì?",
+      "options": [
+        "API logging có cấu trúc với levels và attributes.",
+        "Database server tích hợp.",
+        "Một queue durable.",
+        "Một JWT validator tự động."
+      ],
+      "correct": 0,
+      "explanation": "Source dùng JSONHandler ghi ra os.Stdout."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Slog version",
+      "question": "log/slog được đưa vào thư viện chuẩn từ phiên bản nào?",
+      "options": [
+        "Chỉ Go1.27.",
+        "Go1.21.",
+        "Go1.0.",
+        "Go1.10."
+      ],
+      "correct": 1,
+      "explanation": "Các API cụ thể mới hơn vẫn cần kiểm tra version riêng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "JSON handler",
+      "question": "slog.NewJSONHandler trong source định dạng log thế nào?",
+      "options": [
+        "SQL statements được thực thi.",
+        "PNG images.",
+        "JSON records theo handler contract.",
+        "HTML pages."
+      ],
+      "correct": 2,
+      "explanation": "Structured output hỗ trợ xử lý bằng công cụ log."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Log level",
+      "question": "LevelInfo trong HandlerOptions chủ yếu xác định gì?",
+      "options": [
+        "Timeout mọi request.",
+        "Số connections tối đa.",
+        "Quyền admin của user.",
+        "Mức tối thiểu để records được ghi bởi handler này."
+      ],
+      "correct": 3,
+      "explanation": "Records mức thấp hơn bị filter theo level."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Default logger",
+      "question": "slog.SetDefault(logger) trong source làm gì?",
+      "options": [
+        "Đặt logger mặc định cho các lời gọi slog cấp package phù hợp.",
+        "Thay mọi logger object đã tạo bằng object mới tự động.",
+        "Tự gửi log ra cloud.",
+        "Tự mã hóa secrets."
+      ],
+      "correct": 0,
+      "explanation": "Default trong process không là cấu hình toàn cluster."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Log attributes",
+      "question": "slog.Info(\"Server starting\",\"addr\",\":8080\") ghi gì?",
+      "options": [
+        "Tự kiểm tra TLS.",
+        "Message cùng attribute addr.",
+        "Tự mở port bằng chính lời log.",
+        "Tự xác nhận server đã listen thành công."
+      ],
+      "correct": 1,
+      "explanation": "Log starting trước ListenAndServe không chứng minh đã sẵn sàng phục vụ."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Health route",
+      "question": "GET /health trong source trả body nào?",
+      "options": [
+        "Một database backup.",
+        "Một error chain.",
+        "{\"status\":\"ok\"}.",
+        "Danh sách mọi secrets."
+      ],
+      "correct": 2,
+      "explanation": "Đó là response tĩnh, chưa kiểm tra dependencies."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Liveness scope",
+      "question": "Health tĩnh200 chứng minh gì trong phạm vi hẹp?",
+      "options": [
+        "Mọi DB query luôn thành công.",
+        "Không còn memory leak.",
+        "Đủ capacity cho triệu users.",
+        "Handler có thể trả response khi được gọi, chưa chứng minh mọi dependency khỏe."
+      ],
+      "correct": 3,
+      "explanation": "Liveness và readiness có mục tiêu khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Server address",
+      "question": "Addr \":8080\" trong http.Server dùng cho gì?",
+      "options": [
+        "Địa chỉ listen khi server được bắt đầu phục vụ.",
+        "ID của health request.",
+        "Mật khẩu HTTP.",
+        "Timeout8080ms bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Tạo Server object chưa tự mở listener."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Server handler",
+      "question": "Handler:mux trong cấu hình có vai trò gì?",
+      "options": [
+        "Tự tạo Kubernetes deployment.",
+        "Chọn handler nhận requests của server.",
+        "Tự tạo DB pool.",
+        "Tự retry requests."
+      ],
+      "correct": 1,
+      "explanation": "Routing do mux và registration của ứng dụng quyết định."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Read timeout",
+      "question": "ReadTimeout trong source đặt thời lượng nào?",
+      "options": [
+        "60s.",
+        "0s.",
+        "10s.",
+        "30s."
+      ],
+      "correct": 2,
+      "explanation": "Đó là config đọc request, không phải toàn bộ business operation timeout."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Write timeout",
+      "question": "WriteTimeout nguồn đặt bao lâu?",
+      "options": [
+        "10s.",
+        "60s.",
+        "5ms.",
+        "30s."
+      ],
+      "correct": 3,
+      "explanation": "Deadline ghi response không tự kill mọi handler computation."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Idle timeout",
+      "question": "IdleTimeout nguồn đặt bao lâu?",
+      "options": [
+        "60s.",
+        "10s.",
+        "30s.",
+        "Vô hạn luôn."
+      ],
+      "correct": 0,
+      "explanation": "Chủ yếu giới hạn chờ request tiếp trên keep-alive."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Signal channel",
+      "question": "quit := make(chan os.Signal,1) tạo gì?",
+      "options": [
+        "Một database lock.",
+        "Channel buffer1 để nhận thông báo signals.",
+        "Một OS signal đã được phát ngay.",
+        "Một goroutine tự shutdown."
+      ],
+      "correct": 1,
+      "explanation": "Channel không tự nhận OS events nếu chưa đăng ký phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Signal notify",
+      "question": "signal.Notify(quit,SIGINT,SIGTERM) nhằm gì?",
+      "options": [
+        "Tự gọi Shutdown không cần receive.",
+        "Tự tạo listener.",
+        "Đăng ký relay các signals đó tới quit theo platform support.",
+        "Gửi hai signals tới mọi process ngay."
+      ],
+      "correct": 2,
+      "explanation": "Source chờ <-quit rồi mới bắt đầu shutdown."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Shutdown budget",
+      "question": "Context cho server.Shutdown trong source có timeout bao lâu?",
+      "options": [
+        "30s.",
+        "60s.",
+        "Không có timeout.",
+        "10s."
+      ],
+      "correct": 3,
+      "explanation": "Hàm vẫn cần kiểm tra error thay vì bỏ qua."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Shutdown role",
+      "question": "http.Server.Shutdown nhằm gì?",
+      "options": [
+        "Dừng nhận việc theo server lifecycle và chờ connections phù hợp về idle với context giới hạn.",
+        "Kill mọi goroutine bất kỳ.",
+        "Tự commit mọi DB transaction.",
+        "Tự lưu mọi RAM state durable."
+      ],
+      "correct": 0,
+      "explanation": "Cần quản lý riêng tài nguyên/job ngoài phạm vi HTTP server."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Expected serve return",
+      "question": "http.ErrServerClosed thường liên quan gì?",
+      "options": [
+        "Một signal OS đã bắt buộc gửi.",
+        "Serve/ListenAndServe trả sau khi server bị Shutdown hoặc Close theo contract.",
+        "Mọi request JSON bị sai.",
+        "Một database no rows error."
+      ],
+      "correct": 1,
+      "explanation": "Source không log nó như server failure thông thường."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Defer cancel",
+      "question": "defer cancel sau WithTimeout giúp gì?",
+      "options": [
+        "Tự flush mọi logger bất kỳ.",
+        "Tự restart service.",
+        "Giải phóng tài nguyên context khi xong.",
+        "Tự đọc tất cả request bodies."
+      ],
+      "correct": 2,
+      "explanation": "Context cleanup không thay cleanup mọi resource khác."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Config gap",
+      "question": "Source đã parse file/env config linh hoạt chưa?",
+      "options": [
+        "Có, os import tự load mọi config.",
+        "Có, slog đọc .env mặc định.",
+        "Chỉ cần comment config management là đủ.",
+        "Chưa; address và timeout đang hardcode trong snippet."
+      ],
+      "correct": 3,
+      "explanation": "Theory và bài tập không có nghĩa implementation đã đầy đủ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "JSON log fields",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));l.Info(\"ready\",\"port\",8080);var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"level\"],out[\"msg\"],out[\"port\"])}\n",
+      "options": [
+        "INFO ready 8080.",
+        "DEBUG ready 0.",
+        "INFO nil 8080.",
+        "Tự listen port8080."
+      ],
+      "correct": 0,
+      "explanation": "Log buffer được parse, không so timestamp không ổn định."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Debug filtered",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\")\n\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));l.Debug(\"hidden\");fmt.Println(b.Len()==0)}\n",
+      "options": [
+        "Panic vì log level thấp.",
+        "true.",
+        "false.",
+        "DEBUG luôn được ghi ở LevelInfo."
+      ],
+      "correct": 1,
+      "explanation": "Debug dưới Info nên buffer vẫn rỗng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Warning included",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));l.Warn(\"warning\");var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"level\"],out[\"msg\"])}\n",
+      "options": [
+        "DEBUG warning.",
+        "Warning bị bỏ vì không đúng Info.",
+        "WARN warning.",
+        "INFO warning."
+      ],
+      "correct": 2,
+      "explanation": "LevelInfo là minimum, không chỉ ghi đúng level Info."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Child logger attributes",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));child:=l.With(\"service\",\"api\");child.Info(\"ready\");var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"service\"])}\n",
+      "options": [
+        "nil.",
+        "worker.",
+        "With tự sửa message thành api.",
+        "api."
+      ],
+      "correct": 3,
+      "explanation": "With trả logger có thêm attributes."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Parent logger unchanged",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));_ = l.With(\"service\",\"api\");l.Info(\"ready\");var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};_,ok:=out[\"service\"];fmt.Println(ok)}\n",
+      "options": [
+        "false.",
+        "true.",
+        "Parent tự chứa service sau mọi With.",
+        "Panic vì chưa dùng child."
+      ],
+      "correct": 0,
+      "explanation": "Tạo child không thêm attribute vào l gốc."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Structured group",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));l.Info(\"ready\",slog.Group(\"request\",slog.Int(\"id\",7)));var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"request\"].(map[string]any)[\"id\"])}\n",
+      "options": [
+        "Group tự flatten bắt buộc.",
+        "7.",
+        "request.id.",
+        "nil."
+      ],
+      "correct": 1,
+      "explanation": "JSONHandler biểu diễn group như nested object."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Duration representation",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\";\"time\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,nil));l.Info(\"done\",slog.Duration(\"elapsed\",2*time.Millisecond));var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Printf(\"%.0f\\n\",out[\"elapsed\"])}\n",
+      "options": [
+        "2ms dạng string bắt buộc.",
+        "0.",
+        "2000000.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "JSONHandler encode duration theo integer nanoseconds; fixture parse JSON number rồi in %.0f."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Error attribute text",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\";\"errors\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,nil));l.Error(\"failed\",\"err\",errors.New(\"boom\"));var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"err\"])}\n",
+      "options": [
+        "Một stacktrace đầy đủ bắt buộc.",
+        "nil.",
+        "Không được log error trong slog.",
+        "boom."
+      ],
+      "correct": 3,
+      "explanation": "JSONHandler có xử lý error values thành Error string theo contract."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "ReplaceAttr omit time",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;h:=slog.NewJSONHandler(&b,&slog.HandlerOptions{ReplaceAttr:func(groups []string,a slog.Attr)slog.Attr{if a.Key==slog.TimeKey{return slog.Attr{}};return a}});slog.New(h).Info(\"ready\");var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};_,ok:=out[\"time\"];fmt.Println(ok,out[\"level\"])}\n",
+      "options": [
+        "false INFO.",
+        "true INFO.",
+        "false DEBUG.",
+        "Panic vì không có timestamp."
+      ],
+      "correct": 0,
+      "explanation": "Zero Attr từ ReplaceAttr bỏ field time trong fixture."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Dynamic minimum level",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\")\nfunc main(){var b bytes.Buffer;var level slog.LevelVar;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:&level}));l.Debug(\"hidden\");level.Set(slog.LevelDebug);l.Debug(\"shown\");fmt.Println(bytes.Count(b.Bytes(),[]byte(\"\\n\"))==1)}\n",
+      "options": [
+        "Set tự tạo thêm một log record.",
+        "true.",
+        "false.",
+        "LevelVar không thay đổi sau tạo handler."
+      ],
+      "correct": 1,
+      "explanation": "Info minimum bỏ Debug đầu; sau Set Debug thì Debug sau được ghi đúng một dòng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Static health handler",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\";\"encoding/json\")\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /health\",func(w http.ResponseWriter,r *http.Request){w.WriteHeader(200);w.Write([]byte(`{\"status\":\"ok\"}`))});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"GET\",\"/health\",nil));var out map[string]string;if e:=json.Unmarshal(w.Body.Bytes(),&out);e!=nil{panic(e)};fmt.Println(w.Code,out[\"status\"])}\n",
+      "options": [
+        "404 nil.",
+        "Tự kiểm tra DB thật.",
+        "200 ok.",
+        "503 failed."
+      ],
+      "correct": 2,
+      "explanation": "Gọi mux trong RAM, response chỉ chứa trạng thái tĩnh."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Health method routing",
+      "question": "Chương trình in mã nào với mux hiện đại?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"net/http/httptest\")\nfunc main(){m:=http.NewServeMux();m.HandleFunc(\"GET /health\",func(w http.ResponseWriter,r *http.Request){w.WriteHeader(200)});w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest(\"POST\",\"/health\",nil));fmt.Println(w.Code)}\n",
+      "options": [
+        "200.",
+        "201.",
+        "500.",
+        "405."
+      ],
+      "correct": 3,
+      "explanation": "POST không khớp GET/HEAD pattern dù path tồn tại."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Timeout configuration values",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"time\")\nfunc main(){s:=&http.Server{ReadTimeout:10*time.Second,WriteTimeout:30*time.Second,IdleTimeout:60*time.Second};fmt.Println(s.ReadTimeout/time.Second,s.WriteTimeout/time.Second,s.IdleTimeout/time.Second)}\n",
+      "options": [
+        "10ns 30ns 60ns.",
+        "10 30 60.",
+        "10s 30s 60s.",
+        "Server tự start khi khai báo."
+      ],
+      "correct": 0,
+      "explanation": "Thương của hai time.Duration ở đây vẫn có kiểu Duration, nên fmt gọi String và in giá trị10/30/60 như nanoseconds. Fields gốc vẫn là10s/30s/60s; muốn in số giây cần chuyển thương sang kiểu số phù hợp."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "No explicit header timeout",
+      "question": "Chương trình in field value nào?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"time\")\nfunc main(){s:=&http.Server{ReadTimeout:10*time.Second};fmt.Println(s.ReadHeaderTimeout)}\n",
+      "options": [
+        "-1s.",
+        "0s.",
+        "10s được tự gán vào field.",
+        "30s."
+      ],
+      "correct": 1,
+      "explanation": "Field ReadHeaderTimeout giữ zero; net/http áp dụng fallback khi vận hành, không rewrite field."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Header size config",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\")\nfunc main(){s:=&http.Server{MaxHeaderBytes:1<<20};fmt.Println(s.MaxHeaderBytes)}\n",
+      "options": [
+        "0.",
+        "Tự đặt body limit cùng số bytes chắc chắn.",
+        "1048576.",
+        "1024."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ đọc MaxHeaderBytes đã cấu hình, field này không giới hạn body."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Signal buffer model",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"os\")\nfunc main(){quit:=make(chan os.Signal,1);fmt.Println(len(quit),cap(quit))}\n",
+      "options": [
+        "1 1.",
+        "0 0.",
+        "Tự phát SIGTERM ngay.",
+        "0 1."
+      ],
+      "correct": 3,
+      "explanation": "Chỉ tạo channel os.Signal, không đăng ký hay gửi signal OS."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Shutdown never started server",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"context\")\nfunc main(){s:=&http.Server{};e:=s.Shutdown(context.Background());fmt.Println(e==nil)}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Luôn chờ10s vì không listener.",
+        "Tự mở listener trước shutdown."
+      ],
+      "correct": 0,
+      "explanation": "Server mới chưa có connections/listeners nên shutdown kết thúc không cần phục vụ network."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Close never started server",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\")\nfunc main(){s:=&http.Server{};fmt.Println(s.Close()==nil)}\n",
+      "options": [
+        "Tự bind8080 rồi close.",
+        "true.",
+        "false.",
+        "Panic vì server chưa start."
+      ],
+      "correct": 1,
+      "explanation": "Close server chưa có listener không phải một network integration test."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Shutdown context deadline presence",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\";\"time\")\nfunc main(){ctx,cancel:=context.WithTimeout(context.Background(),time.Hour);defer cancel();_,ok:=ctx.Deadline();fmt.Println(ok,ctx.Err()==nil)}\n",
+      "options": [
+        "true false.",
+        "WithTimeout luôn block tới deadline.",
+        "true true.",
+        "false true."
+      ],
+      "correct": 2,
+      "explanation": "Fixture chỉ kiểm tra có deadline và chưa lỗi; timeout1h tránh phụ thuộc millisecond timing."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Server closed error chain",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"net/http\";\"errors\")\nfunc main(){e:=fmt.Errorf(\"serve: %w\",http.ErrServerClosed);fmt.Println(errors.Is(e,http.ErrServerClosed))}\n",
+      "options": [
+        "false.",
+        "Tự gọi ListenAndServe.",
+        "ErrServerClosed luôn nil.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Error identity có thể được kiểm tra qua wrapping; không có listener được gọi."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Read timeout meaning",
+      "question": "ReadTimeout10s có phạm vi đọc gì theo docs?",
+      "options": [
+        "Toàn request gồm body, theo server transport semantics.",
+        "Chỉ CPU của handler.",
+        "Chỉ DB queries.",
+        "Tổng uptime process."
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất nó với request business deadline toàn stack."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Header timeout fallback",
+      "question": "ReadHeaderTimeout0 và ReadTimeout10s có nghĩa không có header deadline không?",
+      "options": [
+        "Chỉ nếu server dùng mux.",
+        "Không; docs dùng ReadTimeout làm fallback khi header timeout0.",
+        "Có, header luôn vô hạn dù ReadTimeout dương.",
+        "Có, zero field luôn nghĩa tắt mọi cơ chế."
+      ],
+      "correct": 1,
+      "explanation": "Đọc semantics hiệu lực khác giá trị field thô."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Write timeout not kill",
+      "question": "WriteTimeout30s có bảo đảm mọi handler computation bị kill ở giây30 không?",
+      "options": [
+        "Có, kể cả loop CPU không quan sát ctx.",
+        "Chỉ cần slog JSON.",
+        "Không; write deadline khác forced goroutine termination.",
+        "Có, runtime tự kill mọi child."
+      ],
+      "correct": 2,
+      "explanation": "Cần context/resource control phù hợp cho công việc."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Idle scope",
+      "question": "IdleTimeout60s có phải tổng thời gian mọi request được phép xử lý không?",
+      "options": [
+        "Có, mọi nghiệp vụ luôn chính xác60s.",
+        "Có, DB transaction tự timeout theo nó.",
+        "Chỉ áp dụng log writes.",
+        "Không; chủ yếu chờ request tiếp khi keep-alive."
+      ],
+      "correct": 3,
+      "explanation": "Chọn timeout theo mục tiêu transport và workload."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Health content type",
+      "question": "Health handler nguồn đã đặt application/json tường minh chưa?",
+      "options": [
+        "Chưa.",
+        "Có, dấu { luôn tự đặt JSON chắc chắn.",
+        "Có, WriteHeader200 chứa media type.",
+        "Chỉ cần route /health."
+      ],
+      "correct": 0,
+      "explanation": "Nên đặt đúng header trước commit nếu contract yêu cầu JSON."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Readiness dependency",
+      "question": "Health tĩnh có phát hiện DB/queue đang down không?",
+      "options": [
+        "Chỉ khi port8080.",
+        "Không có kiểm tra dependency trong source.",
+        "Có, mọi200 tự probe DB.",
+        "Có, runtime kiểm tra queue qua slog."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế readiness cần phản ánh dependencies thật sự cần để phục vụ."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Ignored shutdown error",
+      "question": "Source bỏ giá trị trả về Shutdown(ctx) có vấn đề gì?",
+      "options": [
+        "Error tự log bởi SetDefault chắc chắn.",
+        "Compiler luôn cấm bỏ error.",
+        "Không biết shutdown đã hết deadline hay gặp lỗi, khó quyết định cleanup/exit policy.",
+        "Không có vấn đề vì Shutdown không bao giờ error."
+      ],
+      "correct": 2,
+      "explanation": "Cần xử lý kết quả theo vòng đời ứng dụng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Startup failure wait",
+      "question": "Nếu ListenAndServe lỗi ngay vì bind thất bại, main nguồn có tự thoát theo error đó không?",
+      "options": [
+        "Có, slog.Error tự os.Exit.",
+        "Có, Error log tự close quit.",
+        "Chỉ cần Addr8080.",
+        "Không; goroutine log lỗi nhưng main vẫn chờ quit nếu không có signal."
+      ],
+      "correct": 3,
+      "explanation": "Cần truyền startup/serve error tới coordinator thay vì đợi signal vô hạn."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Info versus error log exit",
+      "question": "slog.Error có tự os.Exit như log.Fatal không?",
+      "options": [
+        "Không.",
+        "Có, mọi ERROR level tự exit.",
+        "Chỉ với JSONHandler.",
+        "Chỉ khi error attr non-nil."
+      ],
+      "correct": 0,
+      "explanation": "Logging và quyết định kết thúc process là hai hành động riêng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Signal notify buffering",
+      "question": "Vì sao signal docs khuyên buffer đủ cho channel Notify?",
+      "options": [
+        "Để tạo một process con.",
+        "Package signal không block để chờ gửi vào channel, nên buffer thiếu có thể mất notification.",
+        "Để signal được mã hóa.",
+        "Để mỗi signal tự retry vô hạn."
+      ],
+      "correct": 1,
+      "explanation": "Buffer1 đủ cho pattern chỉ cần một notification; không là durable event log."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Signal stop cleanup",
+      "question": "signal.Stop(quit) thường dùng khi nào?",
+      "options": [
+        "Để close mọi sockets tự động.",
+        "Để commit DB.",
+        "Khi không còn muốn relay các signals đã đăng ký vào channel đó.",
+        "Để gửi SIGKILL tới server."
+      ],
+      "correct": 2,
+      "explanation": "Stop không phải Close(quit) và không tự shutdown HTTP."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Notify context",
+      "question": "signal.NotifyContext hỗ trợ cách tổ chức nào?",
+      "options": [
+        "Tự tạo mọi handlers.",
+        "Tự bắt SIGKILL ở mọi OS.",
+        "Tự recover mọi panic.",
+        "Context bị cancel khi signal phù hợp/parent cancel/stop theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Vẫn cần gọi stop/cleanup và quản lý server/jobs."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Platform signals",
+      "question": "Có nên giả SIGTERM hoạt động giống hệt trên mọi OS như Linux không?",
+      "options": [
+        "Không; signal support/behavior phụ thuộc platform và môi trường chạy.",
+        "Có, mọi Windows/Linux signal giống tuyệt đối.",
+        "Có, Go tự cung cấp mọi POSIX semantics.",
+        "Chỉ cần syscall import."
+      ],
+      "correct": 0,
+      "explanation": "Không gửi OS signals trong fixtures để suy ra hành vi mọi deployment."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Graceful jobs scope",
+      "question": "Shutdown HTTP có tự join mọi goroutine nền của ứng dụng không?",
+      "options": [
+        "Chỉ cần context.Background.",
+        "Không; jobs ngoài server lifecycle cần điều phối riêng.",
+        "Có, runtime chờ mọi goroutine.",
+        "Có, mọi goroutine cùng package main tự bị join."
+      ],
+      "correct": 1,
+      "explanation": "Cần shutdown budget và completion acknowledgement cho tài nguyên riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Hijacked connections",
+      "question": "Shutdown có tự chờ/đóng mọi WebSocket đã hijack không?",
+      "options": [
+        "Có, WebSocket không dùng sockets.",
+        "Chỉ nếu timeout10s.",
+        "Không theo docs; caller cần cơ chế riêng cho loại connection đó.",
+        "Có, luôn đầy đủ không cần notification."
+      ],
+      "correct": 2,
+      "explanation": "Không tuyên bố graceful toàn hệ thống từ một lời gọi Shutdown."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Server reuse",
+      "question": "Sau khi Shutdown được gọi, có nên dùng lại chính http.Server để Serve tiếp không?",
+      "options": [
+        "Có, shutdown luôn reset cấu hình.",
+        "Có, chỉ đổi Addr.",
+        "Chỉ cần log starting lần nữa.",
+        "Không; docs nói server đó không được reuse cho phục vụ tiếp."
+      ],
+      "correct": 3,
+      "explanation": "Khởi tạo vòng đời server mới nếu kiến trúc cần restart trong process."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Config validation",
+      "question": "Đọc PORT/TIMEOUT từ env có đủ mà không validate không?",
+      "options": [
+        "Chưa; cần parse, kiểm tra miền giá trị và báo lỗi config rõ.",
+        "Có, env luôn type-safe và hợp lệ.",
+        "Có, os tự biến string thành Duration.",
+        "Chỉ cần đặt tên viết hoa."
+      ],
+      "correct": 0,
+      "explanation": "Các fixtures không đọc env thật hay secrets."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Secrets in logs",
+      "question": "Structured JSON có tự redact passwords/tokens không?",
+      "options": [
+        "Chỉ log Error mới chứa secrets.",
+        "Không; cần policy lọc/redact phù hợp.",
+        "Có, mọi key nhạy cảm tự bị xóa.",
+        "Có, JSON luôn mã hóa cryptographic."
+      ],
+      "correct": 1,
+      "explanation": "Không đưa credentials vào thông tin diagnostic không cần thiết."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Log volume",
+      "question": "Bật Debug mọi request có thể ảnh hưởng gì?",
+      "options": [
+        "Tự tăng throughput vô hạn.",
+        "Tự giảm memory mọi lúc.",
+        "Tăng chi phí format/I/O/storage và nguy cơ lộ dữ liệu nếu thiếu kiểm soát.",
+        "Không bao giờ có overhead."
+      ],
+      "correct": 2,
+      "explanation": "Chọn levels/sampling/fields theo nhu cầu quan sát và measurements."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Production claim",
+      "question": "Source có các timeout/logs/shutdown đã đủ khẳng định production-ready mọi tải chưa?",
+      "options": [
+        "Có, chỉ cần slogan all best practices.",
+        "Có, Go tự scale mọi code.",
+        "Chỉ cần health200.",
+        "Chưa; cần yêu cầu cụ thể, validation và bằng chứng vận hành đúng workload."
+      ],
+      "correct": 3,
+      "explanation": "Các patterns là nền tảng, không là chứng minh hoàn thiện hệ thống."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Redact attribute proof",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;h:=slog.NewJSONHandler(&b,&slog.HandlerOptions{ReplaceAttr:func(gs []string,a slog.Attr)slog.Attr{if a.Key==\"password\"{return slog.Attr{}};return a}});slog.New(h).Info(\"login\",\"password\",\"demo-only\",\"name\",\"user\");var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};_,ok:=out[\"password\"];fmt.Println(ok,out[\"name\"])}\n",
+      "options": [
+        "false user.",
+        "true user.",
+        "false nil.",
+        "JSONHandler tự bỏ password không cần callback."
+      ],
+      "correct": 0,
+      "explanation": "Fixture có ReplaceAttr chủ động bỏ key password, không suy thành policy bảo mật đầy đủ."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Logger group context",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelInfo}));l.WithGroup(\"req\").With(\"id\",7).Info(\"ready\");var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"req\"].(map[string]any)[\"id\"])}\n",
+      "options": [
+        "WithGroup tự đổi message.",
+        "7.",
+        "nil.",
+        "req.id dạng string."
+      ],
+      "correct": 1,
+      "explanation": "WithGroup đặt attributes sau đó trong group JSON tương ứng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Typed log attrs",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"encoding/json\";\"context\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,nil));l.LogAttrs(context.Background(),slog.LevelInfo,\"done\",slog.Int(\"n\",2));var out map[string]any;if e:=json.Unmarshal(b.Bytes(),&out);e!=nil{panic(e)};fmt.Println(out[\"n\"])}\n",
+      "options": [
+        "nil.",
+        "LogAttrs cần HTTP listener.",
+        "2.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "Typed attribute được ghi vào buffer; context không tự thêm secret/request values."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Enabled check levels",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"bytes\";\"log/slog\";\"context\")\nfunc main(){var b bytes.Buffer;l:=slog.New(slog.NewJSONHandler(&b,&slog.HandlerOptions{Level:slog.LevelError}));fmt.Println(l.Enabled(context.Background(),slog.LevelWarn),l.Enabled(context.Background(),slog.LevelError))}\n",
+      "options": [
+        "true true.",
+        "false false.",
+        "Enabled luôn tạo record.",
+        "false true."
+      ],
+      "correct": 3,
+      "explanation": "Handler minimum Error bỏ Warn và cho Error."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Canceled shutdown without work",
+      "question": "Chương trình in gì trên Go1.26.1?",
+      "code": "package main\nimport (\"fmt\";\"context\";\"net/http\")\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();s:=&http.Server{};fmt.Println(s.Shutdown(ctx)==nil)}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Luôn DeadlineExceeded dù không có listener/connection.",
+        "Panic vì context đã cancel."
+      ],
+      "correct": 0,
+      "explanation": "Server chưa có công việc có thể hoàn tất ngay trước nhánh kiểm tra ctx; không suy mọi canceled Shutdown đều trả error."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Wait shutdown completion",
+      "question": "Vì sao không nên để main return ngay khi goroutine Serve trả ErrServerClosed mà chưa chờ Shutdown xong?",
+      "options": [
+        "Chỉ để log nhiều hơn.",
+        "Serve có thể trả ngay khi Shutdown bắt đầu, trong khi drain connections vẫn đang diễn ra.",
+        "Vì ErrServerClosed luôn là crash.",
+        "Vì main tự join mọi goroutine nên không cần quan tâm."
+      ],
+      "correct": 1,
+      "explanation": "Docs yêu cầu chương trình chờ Shutdown return để giữ vòng đời drain."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Shutdown deadline policy",
+      "question": "Khi Shutdown hết budget, nên kết luận gì?",
+      "options": [
+        "Mọi transaction đã rollback toàn hệ thống.",
+        "Nên báo graceful success vô điều kiện.",
+        "Chưa hoàn tất drain theo budget; cần policy/log/cleanup/force-close phù hợp yêu cầu.",
+        "Mọi request chắc chắn thành công."
+      ],
+      "correct": 2,
+      "explanation": "Không che failure hoặc hứa mọi request hoàn tất khi context đã hết."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Readiness termination",
+      "question": "Trong hệ thống có load balancer, shutdown thường cần cân nhắc thêm gì?",
+      "options": [
+        "Chỉ close quit channel là mọi network route biến mất tức thì.",
+        "Health luôn200 tới cuối là đủ mọi deployment.",
+        "Tăng WriteTimeout vô hạn.",
+        "Ngừng nhận traffic mới/readiness và độ trễ routing, drain HTTP cùng các dependencies/jobs theo budget."
+      ],
+      "correct": 3,
+      "explanation": "HTTP server lifecycle và orchestration traffic lifecycle liên quan nhưng không đồng nhất."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Health probe load",
+      "question": "Readiness probe truy vấn mọi dependency nặng với tần suất cao có rủi ro gì?",
+      "options": [
+        "Tự tăng tải và tạo cascade khi dependency chậm; cần check/budget/cache phù hợp.",
+        "Không có chi phí vì chỉ probe.",
+        "Tự sửa dependency down.",
+        "Luôn tăng throughput."
+      ],
+      "correct": 0,
+      "explanation": "Probe design cần phản ánh readiness mà không gây hại workload."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Config and defaults",
+      "question": "Timeout bằng0 trong config đọc từ env có nên chấp nhận vô điều kiện như cấu hình an toàn không?",
+      "options": [
+        "Chỉ cần parse thành int thành công.",
+        "Không; phải hiểu semantics fallback/disable và validate theo ứng dụng.",
+        "Có,0 luôn là secure timeout ngắn nhất.",
+        "Có, mọi field0 luôn nghĩa1s."
+      ],
+      "correct": 1,
+      "explanation": "Syntactic parsing khác semantic config validation."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "AddSource information",
+      "question": "Bật AddSource có tự ghi mọi stacktrace và context values không?",
+      "options": [
+        "Có, tự trace phân tán hoàn chỉnh.",
+        "Chỉ với JSONHandler thì luôn.",
+        "Không; nguồn vị trí log và các values/stacktrace là thông tin khác nhau.",
+        "Có, tự dump mọi secret trong context."
+      ],
+      "correct": 2,
+      "explanation": "Không suy observability đầy đủ từ một HandlerOption."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Log error serialization",
+      "question": "Log một error string có đủ tự cung cấp retryability và loại lỗi có cấu trúc không?",
+      "options": [
+        "Có, mọi Error string tự thành schema chuẩn toàn hệ thống.",
+        "Có, slog tự quyết định mọi retry.",
+        "Chỉ cần message failed.",
+        "Chưa; cần fields/error classification theo contract khi hữu ích."
+      ],
+      "correct": 3,
+      "explanation": "Thông tin máy đọc được cần được thiết kế, không dựa mọi logic vào text."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Privacy log redaction scope",
+      "question": "Callback bỏ key password có chứng minh mọi secrets không thể lọt log không?",
+      "options": [
+        "Không; secrets có thể nằm trong nested data,message,URL hoặc key khác.",
+        "Có, một key filter chứng minh toàn bộ security.",
+        "Có, JSON không chứa token được.",
+        "Chỉ cần level Info."
+      ],
+      "correct": 0,
+      "explanation": "Kiểm tra đúng đường dữ liệu và policy, không khái quát fixture hẹp."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Signals and forced exit",
+      "question": "Có thể graceful cleanup khi OS forcibly kills process trong mọi tình huống không?",
+      "options": [
+        "Chỉ cần channel buffer1.",
+        "Không; tín hiệu/termination không thể bắt hoặc hạn chế platform có thể không cho cleanup.",
+        "Có, defer luôn chạy khi kill bất kỳ.",
+        "Có, signal.Notify bắt mọi loại termination."
+      ],
+      "correct": 1,
+      "explanation": "Cần durability/recovery thiết kế phù hợp bên cạnh graceful path."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Concurrent logger payload",
+      "question": "Logger safe concurrent use có làm map mutable được log qua Any tự an toàn nếu caller sửa cùng lúc không?",
+      "options": [
+        "Có, map tự immutable sau khi log.",
+        "Chỉ với JSON logs thì luôn.",
+        "Không; caller vẫn cần ownership/snapshot/synchronization của payload.",
+        "Có, Handler tự khóa mọi object toàn process."
+      ],
+      "correct": 2,
+      "explanation": "Concurrency guarantee API không bảo đảm dữ liệu caller truyền vào được sửa tùy ý."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Shutdown hooks wait",
+      "question": "RegisterOnShutdown callback có nên block để chờ toàn bộ protocol cleanup ngay trong callback không theo docs?",
+      "options": [
+        "Bắt buộc mọi callback sleep vô hạn.",
+        "Callbacks luôn synchronous nối tiếp và Shutdown tự join mọi callback.",
+        "Chỉ cần đổi tên callback thành graceful.",
+        "Docs khuyên callback bắt đầu shutdown riêng nhưng không chờ hoàn tất tại đó; ứng dụng quản lý chờ riêng."
+      ],
+      "correct": 3,
+      "explanation": "Không giả callback notification là completion acknowledgement."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Long request budget",
+      "question": "Một endpoint streaming hợp lệ có luôn phù hợp WriteTimeout30s hardcode không?",
+      "options": [
+        "Không; cần thiết kế timeout/per-request/streaming và giới hạn resource theo use case.",
+        "Có, mọi stream phải xong đúng30s theo Go spec.",
+        "Có, write timeout không có tác dụng với mọi stream.",
+        "Chỉ cần health route."
+      ],
+      "correct": 0,
+      "explanation": "Config mẫu không là công thức cho mọi workload."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Resource shutdown order",
+      "question": "DB pool nên đóng trước mọi in-flight handler còn đang dùng nó không?",
+      "options": [
+        "Chỉ cần slog Info.",
+        "Thường cần phối hợp thứ tự drain và dependencies để không phá công việc đang chạy.",
+        "Có, đóng pool đầu luôn đúng mọi kiến trúc.",
+        "Không cần close tài nguyên nào bao giờ."
+      ],
+      "correct": 1,
+      "explanation": "Thứ tự theo dependency graph và budget, không theo một checklist cứng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Capacity evidence",
+      "question": "JSON logging/health/config fixtures pass có chứng minh triệu người dùng đồng thời không?",
+      "options": [
+        "Có, chỉ cần timeout fields nonzero.",
+        "Chỉ cần25 fixtures.",
+        "Không; cần workload,load tests,storage/network/resources và failure evidence riêng.",
+        "Có, Go1.26 đảm bảo capacity đó."
+      ],
+      "correct": 2,
+      "explanation": "Selected content proof không là production capacity proof."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Source complete claim",
+      "question": "Nên mô tả source production hiện tại thế nào cho đúng?",
+      "options": [
+        "Một hệ thống hoàn chỉnh mọi best practices đã được chứng minh.",
+        "Một benchmark mạng đã chạy.",
+        "Một deployment production đã xuất bản.",
+        "Ví dụ patterns còn cần config/error/lifecycle/dependency validation trước khi tuyên bố đáp ứng hệ thống cụ thể."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt code minh họa, execution evidence và yêu cầu vận hành thật."
+    }
+  ]
+}

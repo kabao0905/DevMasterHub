@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cybersecurity",
+  "level": "master",
+  "lesson": "zero-trust-architecture",
+  "language": "vi",
+  "sourceHash": "514519b5dcfa695faa82bcad58565b663da3df089c0d0266086da852bd625b62",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo ZTA/DevSecOps/Trivy source và NIST SP 800-207, OWASP, Trivy action docs. Không implicit trust vì LAN/ownership; continuous evaluation không nghĩa bắt login/MFA lại mọi packet. fs scan không là toàn SAST/DAST/SCA và không tự vá. Không chạy scan/CI/network/policy/infrastructure commands.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Zero Trust",
+      "question": "Trọng tâm Zero Trust trong bài là gì?",
+      "options": [
+        "Không cấp implicit trust chỉ vì vị trí mạng hoặc quyền sở hữu thiết bị",
+        "Mặc định mọi request nội bộ là hợp lệ",
+        "Tự chặn mọi người dùng mãi mãi",
+        "Chỉ đổi tên firewall"
+      ],
+      "correct": 0,
+      "explanation": "Quyết định truy cập cần dựa trên policy và dữ liệu xác minh phù hợp."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Tài nguyên",
+      "question": "ZTA hướng bảo vệ đối tượng nào?",
+      "options": [
+        "Chỉ cổng Internet public",
+        "Users/assets/resources/services/workflows theo mục tiêu truy cập",
+        "Chỉ màu subnet trên sơ đồ",
+        "Chỉ tên file source"
+      ],
+      "correct": 1,
+      "explanation": "Không chỉ nhìn một vành đai mạng như toàn bộ mô hình tin cậy."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Authentication",
+      "question": "Authentication trong kiến trúc chủ yếu xác minh gì?",
+      "options": [
+        "Chỉ kiểm source IP",
+        "Chỉ đếm request",
+        "Danh tính/credential theo cơ chế phù hợp",
+        "Tự cấp quyền mọi record"
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt xác thực và phân quyền."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Authorization",
+      "question": "Authorization quyết định gì?",
+      "options": [
+        "Password có được viết đúng font không",
+        "Tên DNS có đủ dài không",
+        "Số byte của mọi request",
+        "Chủ thể có được thực hiện thao tác lên tài nguyên theo policy không"
+      ],
+      "correct": 3,
+      "explanation": "Identity hợp lệ không tự cho mọi capability."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Network location",
+      "question": "Request từ LAN có mặc định được phép mọi tài nguyên theo ZTA không?",
+      "options": [
+        "Không",
+        "Có, LAN là ranh giới tin cậy tuyệt đối",
+        "Có, nếu IP private",
+        "Chỉ cần cùng Wi-Fi"
+      ],
+      "correct": 0,
+      "explanation": "Vị trí có thể là một tín hiệu, không tự là toàn policy."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Managed device",
+      "question": "Thiết bị thuộc tổ chức có tự được quyền mọi dữ liệu không?",
+      "options": [
+        "Chỉ cần hostname công ty",
+        "Không, vẫn cần policy và posture/identity phù hợp",
+        "Có, ownership thay mọi authorization",
+        "Có, nếu cài VPN"
+      ],
+      "correct": 1,
+      "explanation": "Không cấp implicit trust chỉ vì ownership."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Least privilege",
+      "question": "Least privilege trong ZTA hướng tới gì?",
+      "options": [
+        "Chỉ đổi tên role",
+        "Chỉ ẩn port dịch vụ",
+        "Quyền theo nhiệm vụ/tài nguyên/thời gian phù hợp",
+        "Mọi user có admin để tránh friction"
+      ],
+      "correct": 2,
+      "explanation": "Quyền cần có phạm vi và lifecycle."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Continuous verification",
+      "question": "Đánh giá liên tục nên hiểu đúng hơn là gì?",
+      "options": [
+        "Mọi packet bắt buộc nhập password bằng tay",
+        "Một lần login cho trust vĩnh viễn",
+        "Chỉ kiểm vào ngày deploy",
+        "Theo dõi/đánh giá lại access theo policy và context, không mặc định tương tác login lại mỗi packet"
+      ],
+      "correct": 3,
+      "explanation": "Cơ chế thực thi cần hợp đồng và mức hạt phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Micro-segmentation",
+      "question": "Micro-segmentation hỗ trợ mục tiêu nào?",
+      "options": [
+        "Hạn chế các đường giao tiếp/phạm vi tác động theo policy",
+        "Tự vá mọi code bug",
+        "Tự mã hóa mọi password",
+        "Tự loại mọi quyền app"
+      ],
+      "correct": 0,
+      "explanation": "Chính sách mạng không tự thay authorization của ứng dụng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Lateral movement",
+      "question": "Lateral movement thường mô tả gì?",
+      "options": [
+        "Mọi lần backup thành công",
+        "Di chuyển/tác động sang các tài nguyên khác sau khi một thành phần bị chiếm",
+        "Chỉ đổi chiều màn hình",
+        "Mọi request load balancer hợp lệ"
+      ],
+      "correct": 1,
+      "explanation": "Giảm blast radius là một mục tiêu quan trọng."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "DevSecOps",
+      "question": "DevSecOps trong bài nhấn mạnh điều gì?",
+      "options": [
+        "Chỉ scan sau mọi incident",
+        "Chỉ chuyển tên DevOps thành Security",
+        "Tích hợp bảo mật vào vòng đời phát triển/vận hành và trách nhiệm liên quan",
+        "Chỉ mua một scanner rồi bỏ review"
+      ],
+      "correct": 2,
+      "explanation": "Công cụ cần quy trình xử lý và policy hiệu lực."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Shift left",
+      "question": "Shift left hướng tới gì?",
+      "options": [
+        "Bỏ mọi quan sát production",
+        "Tự sửa code không cần review",
+        "Chỉ đặt job ở bên trái màn hình",
+        "Đưa các kiểm soát/phản hồi thích hợp sớm hơn trong vòng phát triển"
+      ],
+      "correct": 3,
+      "explanation": "Sớm hơn không nghĩa chỉ kiểm đúng một lần trước phát hành."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "SAST",
+      "question": "SAST là loại đánh giá nào trong bài?",
+      "options": [
+        "Phân tích tĩnh code theo công cụ/quy tắc",
+        "Chỉ test dịch vụ đang chạy qua request",
+        "Chỉ đếm thư mục package",
+        "Chỉ ký Docker image"
+      ],
+      "correct": 0,
+      "explanation": "Mỗi loại kiểm có phạm vi riêng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "DAST",
+      "question": "DAST thường đánh giá gì?",
+      "options": [
+        "Chỉ đổi ACL file",
+        "Hành vi ứng dụng đang chạy từ góc nhìn kiểm động trong scope",
+        "Chỉ lint source không chạy app",
+        "Chỉ so hash lockfile"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất filesystem scan với mọi kiểm động."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "SCA",
+      "question": "SCA liên quan mục tiêu nào?",
+      "options": [
+        "Chỉ MFA của user",
+        "Chỉ phân quyền từng hồ sơ",
+        "Thành phần/dependency và các rủi ro thông tin liên quan",
+        "Chỉ gateway throughput"
+      ],
+      "correct": 2,
+      "explanation": "Dependency knowledge không thay mọi logic nghiệp vụ."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Action nguồn",
+      "question": "Snippet dùng action nào?",
+      "options": [
+        "actions/setup-node@v4",
+        "trstringer/manual-approval@v1",
+        "dorny/paths-filter@v3",
+        "aquasecurity/trivy-action@master"
+      ],
+      "correct": 3,
+      "explanation": "Ref master là một đầu vào có thể thay đổi."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Scan type",
+      "question": "scan-type trong source có giá trị gì?",
+      "options": [
+        "fs",
+        "image tường minh",
+        "config duy nhất",
+        "dast"
+      ],
+      "correct": 0,
+      "explanation": "Filesystem mode không có nghĩa mọi kiểu scan đều đã được thực hiện."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Severity",
+      "question": "Source chọn những severity nào?",
+      "options": [
+        "Không có filter",
+        "CRITICAL và HIGH",
+        "Chỉ LOW",
+        "Chỉ INFO"
+      ],
+      "correct": 1,
+      "explanation": "Đây là policy mẫu, không tuyên bố mức khác luôn vô hại."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Exit policy",
+      "question": "exit-code: 1 có ý định gì trong action scanner?",
+      "options": [
+        "Luôn bỏ qua kết quả scan",
+        "Tự tạo approval production",
+        "Trả mã lỗi khi có findings theo điều kiện được cấu hình của tool",
+        "Tự vá mọi finding"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt findings và lỗi thực thi công cụ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Snippet scope",
+      "question": "Đoạn bắt đầu - name: Run Trivy đã là workflow hoàn chỉnh chưa?",
+      "options": [
+        "Rồi, mọi step tự tạo workflow",
+        "Rồi, master tự thêm runner",
+        "Chỉ cần một comment DevSecOps",
+        "Chưa, cần đặt trong jobs/steps và cấu hình trigger/runner/source/quyền phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không suy runtime từ một fragment."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "LAN trust",
+      "question": "Một API nội bộ bỏ kiểm quyền vì chỉ nhận IP private có phù hợp nguyên tắc ZTA không?",
+      "options": [
+        "Không, network location không tự thay identity/resource policy",
+        "Có, mọi private IP luôn đáng tin",
+        "Chỉ cần VPN",
+        "Có, nếu có firewall ngoài"
+      ],
+      "correct": 0,
+      "explanation": "Cần đúng ranh giới với từng tài nguyên."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "VPN đủ chưa",
+      "question": "User đã vào VPN có nên tự được mọi quyền app không?",
+      "options": [
+        "Chỉ nếu thiết bị công ty",
+        "Không, VPN access và quyền tài nguyên là hai lớp",
+        "Có, VPN tự là role admin",
+        "Có, vì traffic được mã hóa"
+      ],
+      "correct": 1,
+      "explanation": "Kênh/vị trí không thay policy nghiệp vụ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "MFA không authz",
+      "question": "MFA thành công có tự cho user đọc mọi tenant không?",
+      "options": [
+        "Có, nếu token chưa hết hạn",
+        "Chỉ cần HTTPS",
+        "Không, còn authorization theo tenant/object/action",
+        "Có, hai yếu tố nghĩa hai quyền"
+      ],
+      "correct": 2,
+      "explanation": "Authentication mạnh không thay đúng scope dữ liệu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "mTLS không role",
+      "question": "mTLS xác thực workload có tự quyết định được sửa record nào không?",
+      "options": [
+        "Có, mọi certificate đều có admin role",
+        "Có, encryption tự kiểm owner",
+        "Chỉ cần domain nội bộ",
+        "Không, cần policy quyền tài nguyên/thao tác ở tầng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Workload identity và business authorization là các hợp đồng khác nhau."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Session granularity",
+      "question": "Zero Trust có bắt mọi user nhập MFA lại thủ công ở mỗi network packet không?",
+      "options": [
+        "Không, thiết kế session/token/context và reevaluation theo policy",
+        "Có, đó là định nghĩa duy nhất",
+        "Có, mọi request không được dùng session",
+        "Chỉ cần chuyển HTTP/2"
+      ],
+      "correct": 0,
+      "explanation": "Không biến slogan liên tục thành cơ chế tương tác không có trong chuẩn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Revoke lifecycle",
+      "question": "Quyền user bị thu hồi nhưng cache policy/token vẫn cho phép quá lâu cần xem gì?",
+      "options": [
+        "Chỉ thêm scanner source",
+        "TTL/revocation/reevaluation và enforcement lifecycle phù hợp",
+        "Chỉ đổi role name",
+        "Coi token hợp chữ ký là quyền vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "Policy thay đổi phải được nối tới nơi ra quyết định/thực thi."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Device posture",
+      "question": "Một máy được quản lý nhưng posture không đạt yêu cầu có cần được đánh giá lại không?",
+      "options": [
+        "Chỉ nếu user đổi password",
+        "Không, VPN che mọi posture",
+        "Có theo policy, ownership không tự là trust vĩnh viễn",
+        "Không, nhãn managed đủ mọi quyền"
+      ],
+      "correct": 2,
+      "explanation": "Context có thể thay đổi trong vòng đời access."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Policy enforcement",
+      "question": "Policy đúng trên giấy nhưng gateway/app không enforce thì sao?",
+      "options": [
+        "Tài liệu tự chặn mọi request",
+        "Chỉ thiếu logo",
+        "Không cần enforcement nếu có scanner",
+        "Chưa bảo đảm ranh giới truy cập thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Ý định và effective behavior cần được kiểm riêng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Decision vs enforcement",
+      "question": "Thành phần quyết định quyền và nơi chặn/cho request có cần thống nhất contract không?",
+      "options": [
+        "Có, decision phải được áp đúng tài nguyên/tác nhân và lifecycle",
+        "Không, decision chỉ để ghi log",
+        "Chỉ nếu tên service trùng",
+        "Không, mạng tự hiểu mọi policy"
+      ],
+      "correct": 0,
+      "explanation": "Các thành phần kiến trúc phải được nối đúng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Microseg limits",
+      "question": "Chia mạng thành nhiều đoạn có tự sửa lỗi owner check trong API không?",
+      "options": [
+        "Chỉ cần số zone bằng số user",
+        "Không, app authorization vẫn cần đúng",
+        "Có, mọi record theo subnet tự đúng owner",
+        "Có, nếu segment nhỏ"
+      ],
+      "correct": 1,
+      "explanation": "Network path control và quyền dữ liệu là hai lớp."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Segmentation actual",
+      "question": "Vẽ sơ đồ nhiều zone có chứng minh lateral movement đã bị hạn chế không?",
+      "options": [
+        "Chỉ cần zone tên secure",
+        "Có, nếu dùng màu khác",
+        "Không, cần policy/enforcement/kiểm hành vi phù hợp",
+        "Có, sơ đồ tự tạo firewall rules"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất tài liệu và hạ tầng thực."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Least privilege machine",
+      "question": "Service account chỉ cần đọc report có nên được cấp admin mọi database để dễ chạy không?",
+      "options": [
+        "Có, account máy không thể bị chiếm",
+        "Chỉ nếu tên bot",
+        "Có, có TLS là đủ",
+        "Không, cấp đúng quyền nhiệm vụ/phạm vi"
+      ],
+      "correct": 3,
+      "explanation": "Quyền tối thiểu áp cho cả người lẫn workload."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Context signals",
+      "question": "IP/location có thể được dùng thế nào đúng hơn?",
+      "options": [
+        "Là một tín hiệu trong policy/risk context, không nguồn quyền tuyệt đối",
+        "Luôn thay toàn bộ identity",
+        "Luôn bị cấm xem trong mọi policy",
+        "Chỉ quyết định độ dài password"
+      ],
+      "correct": 0,
+      "explanation": "Không biến một tín hiệu thành trust implicit."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Policy failure",
+      "question": "Policy service lỗi có nên tự cho mọi request nhạy cảm qua không?",
+      "options": [
+        "Có, nếu request LAN",
+        "Không mặc định, cần failure policy phù hợp cả security và availability",
+        "Có, availability luôn ưu tiên mọi quyền",
+        "Chỉ cần log lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế phải xem failure modes và mục tiêu."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Fail closed resilience",
+      "question": "Chọn fail-closed cho tài nguyên nhạy cảm có loại nhu cầu resilience/availability không?",
+      "options": [
+        "Chỉ cần tăng retries vô hạn",
+        "Có, policy lỗi không cần báo",
+        "Không, vẫn cần kiến trúc và phục hồi phù hợp",
+        "Có, deny tất cả mãi là hệ thống đúng"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng một quyết định failure để bỏ mục tiêu dịch vụ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Scan fs≠DAST",
+      "question": "Một Trivy fs scan có tự chứng minh endpoint auth đang chạy không có lỗi không?",
+      "options": [
+        "Có, fs tự gọi mọi endpoint",
+        "Có, severity HIGH kiểm mọi quyền",
+        "Chỉ cần action ở master",
+        "Không, filesystem/dependency scan không thay kiểm behavior/runtime theo mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Loại bằng chứng phải tương ứng câu hỏi."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Scanner không auto patch",
+      "question": "Snippet có finding high có tự áp bản sửa dependency/code không?",
+      "options": [
+        "Không, còn remediation/review/test và rollout theo policy",
+        "Có, exit-code 1 tự vá",
+        "Có, mọi scanner là compiler sửa lỗi",
+        "Chỉ nếu dùng GitHub Actions"
+      ],
+      "correct": 0,
+      "explanation": "Detection và remediation khác nhau."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Input source missing",
+      "question": "Step scan fs trong job mới chưa checkout/source input có giới hạn gì?",
+      "options": [
+        "Coi scan không thấy file là an toàn",
+        "Chưa chứng minh scanner có đúng nội dung cần đánh giá",
+        "Action tự lấy mọi source của mọi repo",
+        "Chỉ cần runner Ubuntu"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn/artifact cần được ràng buộc đúng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Ref master",
+      "question": "Dùng @master có đóng băng mã action theo full commit SHA không?",
+      "options": [
+        "Chỉ nếu action có nhiều stars",
+        "Có, GitHub tự ghim mọi branch",
+        "Không, branch ref có thể đổi, cần quản lý pin/update/review theo policy",
+        "Có, master luôn bất biến"
+      ],
+      "correct": 2,
+      "explanation": "Tool code là một đầu vào chuỗi cung ứng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Threshold subset",
+      "question": "Source chỉ high/critical có nghĩa low/moderate luôn vô hại không?",
+      "options": [
+        "Có, mọi mức dưới HIGH không có tác động",
+        "Chỉ cần report xanh",
+        "Có, ZTA tự xử lý mức khác",
+        "Không, đó là phạm vi/threshold policy cần đánh giá"
+      ],
+      "correct": 3,
+      "explanation": "Không biến bộ lọc thành kết luận rủi ro tuyệt đối."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Tool error≠no finding",
+      "question": "Scanner không tải/đọc được dữ liệu cần thiết có nên gọi scan sạch không?",
+      "options": [
+        "Không, phân loại failed/incomplete và giữ policy bằng chứng phù hợp",
+        "Có, không có report nghĩa zero",
+        "Chỉ cần đổi exit-code 0",
+        "Có, để không chặn dev"
+      ],
+      "correct": 0,
+      "explanation": "Thiếu kết quả khác kết quả không có phát hiện."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Report binding",
+      "question": "Scan source commitA nhưng release artifactB có đủ liên kết bằng chứng không?",
+      "options": [
+        "Có, action name giống nhau",
+        "Chưa, cần provenance đúng source/artifact/config theo mục tiêu",
+        "Có, cùng repository là cùng bytes",
+        "Chỉ cần tên branch main"
+      ],
+      "correct": 1,
+      "explanation": "Bằng chứng cần đúng đối tượng được dùng trong quyết định."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Runtime reassess",
+      "question": "Artifact không đổi nhưng advisory mới xuất hiện có thể cần đánh giá lại không?",
+      "options": [
+        "Chỉ nếu đổi filename",
+        "Không, ZTA chỉ trước deploy",
+        "Có, thông tin/risk context thay đổi theo lifecycle",
+        "Không, scan một lần là an toàn vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Shift left không loại bỏ kiểm soát vận hành."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "DevSecOps ownership",
+      "question": "Có scanner trong CI có nghĩa mọi remediation tự có owner/thời hạn không?",
+      "options": [
+        "Có, tool luôn biết đúng team",
+        "Chỉ cần label security",
+        "Có, mọi CVE tự tạo patch",
+        "Không, cần quy trình xử lý/findings và trách nhiệm rõ"
+      ],
+      "correct": 3,
+      "explanation": "Integration cần hành động quản lý ngoài execution tool."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Exceptions",
+      "question": "Finding được miễn tạm cần quản lý thế nào?",
+      "options": [
+        "Lý do/phạm vi/chủ sở hữu/thời hạn và biện pháp phù hợp",
+        "Ignore vĩnh viễn không review",
+        "Xóa report",
+        "Đổi severity mọi thứ thành LOW"
+      ],
+      "correct": 0,
+      "explanation": "Ngoại lệ không là trust vô điều kiện."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Token claims",
+      "question": "Token chữ ký hợp lệ có tự đủ cho mọi quyền nếu audience/scope/resource không được kiểm không?",
+      "options": [
+        "Có, JSON luôn có quyền đúng",
+        "Không, cần validation/policy đúng mục tiêu và lifecycle",
+        "Có, chữ ký hợp lệ tự là admin",
+        "Chỉ cần token dài"
+      ],
+      "correct": 1,
+      "explanation": "Tính xác thực token và quyền dùng tài nguyên phải được nối đúng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Service identity spoof",
+      "question": "Một header X-Service-Name do client tự đặt có đủ chứng minh workload identity không?",
+      "options": [
+        "Chỉ cần địa chỉ LAN",
+        "Có, nếu giá trị giống service thật",
+        "Không, cần cơ chế xác thực và trust chain phù hợp",
+        "Có, tên header chuẩn tự ký"
+      ],
+      "correct": 2,
+      "explanation": "Không nâng claim không xác minh thành quyền."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Negative tests",
+      "question": "Vì sao kiểm các request phải bị từ chối hữu ích trong policy review?",
+      "options": [
+        "Để tự cấp scope ngoài lab",
+        "Vì mọi deny luôn là lỗi",
+        "Chỉ để tăng số tests bất kỳ",
+        "Xác nhận enforcement không chỉ cho phép happy path"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm cần theo những ranh giới có ý nghĩa."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Deny all≠correct",
+      "question": "Chặn tất cả request có tự đáp ứng đầy đủ hệ thống ZTA không?",
+      "options": [
+        "Không, còn cần cho đúng access hợp lệ và mục tiêu dịch vụ",
+        "Có, zero trust nghĩa không ai bao giờ truy cập",
+        "Chỉ thiếu nhiều scanners",
+        "Có, availability không liên quan"
+      ],
+      "correct": 0,
+      "explanation": "Security policy phải phục vụ đúng yêu cầu."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Segmentation exceptions",
+      "question": "Một rule allow-all giữa mọi zone để dễ dùng ảnh hưởng mục tiêu gì?",
+      "options": [
+        "Không có vì vẫn có nhiều subnet",
+        "Có thể làm mất ranh giới lateral-movement mong muốn",
+        "Tự tăng micro-segmentation",
+        "Chỉ ảnh hưởng tên zone"
+      ],
+      "correct": 1,
+      "explanation": "Tên kiến trúc không thay effective policy."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Encryption alone",
+      "question": "Mã hóa traffic nội bộ có tự xác định workload nào được đọc dữ liệu nào không?",
+      "options": [
+        "Chỉ cần certificate cùng CA",
+        "Có, mã hóa thay least privilege",
+        "Không, còn identity/authorization và policy",
+        "Có, TLS tự biết mọi owner"
+      ],
+      "correct": 2,
+      "explanation": "Bảo vệ kênh là một thành phần."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Policy caches",
+      "question": "Cache decision access cần xét gì?",
+      "options": [
+        "Chỉ cache hit ratio",
+        "Mọi decision đã cache đều đúng mãi",
+        "Chỉ tên key secret",
+        "TTL/context/revocation và consistency với mục tiêu bảo vệ"
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu không được bỏ lifecycle quyền."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Visibility",
+      "question": "Log policy decisions hỗ trợ gì khi được bảo vệ phù hợp?",
+      "options": [
+        "Quan sát/correlate/truy vết và đánh giá enforcement theo scope",
+        "Tự thay authorization",
+        "Tự xác thực mọi log bất biến",
+        "Tự vá CVE"
+      ],
+      "correct": 0,
+      "explanation": "Observability hỗ trợ, không tự là control quyền."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Secret scanning scope",
+      "question": "Một fs scan có phát hiện secret theo scanner/config không có nghĩa gì tự động?",
+      "options": [
+        "Chứng minh không ai từng đọc token",
+        "Không tự revoke/rotate secret hoặc bảo vệ mọi bản sao",
+        "Tự vô hiệu mọi token",
+        "Tự sửa lịch sử Git"
+      ],
+      "correct": 1,
+      "explanation": "Phát hiện và xử lý credential lifecycle là các giai đoạn riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Build tooling privilege",
+      "question": "CI security step có cần mọi secrets production cho mọi PR không?",
+      "options": [
+        "Chỉ cần repository private",
+        "Có, scanner luôn sandbox mọi code",
+        "Không, giữ quyền tối thiểu và ranh giới mã không tin cậy",
+        "Có, tên security tự bảo vệ credential"
+      ],
+      "correct": 2,
+      "explanation": "Công cụ bảo mật cũng có supply-chain/execution context."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Finding result",
+      "question": "Scan không có finding trong cấu hình đó có thể kết luận gì?",
+      "options": [
+        "Hệ thống không thể bị chiếm",
+        "Mọi access policy đúng",
+        "Mọi runtime request đã được kiểm",
+        "Không thấy theo phạm vi/tool/data đã dùng, không bảo đảm toàn app không lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Kết luận hữu hạn cần giữ phạm vi."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Validation continuously",
+      "question": "Context device thay đổi sau lúc login có thể cần gì?",
+      "options": [
+        "Đánh giá/giới hạn lại access theo policy và session lifecycle",
+        "Tin lần login đầu mãi mãi",
+        "Chỉ đổi password hash cost",
+        "Bỏ mọi tokens ngay mọi lúc không policy"
+      ],
+      "correct": 0,
+      "explanation": "Cần cơ chế thay đổi quyền có thiết kế."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source fragment gap",
+      "question": "Source chỉ có step Trivy, chưa có identity/policy engine/segmentation rules. Có thể claim ZTA đã triển khai chưa?",
+      "options": [
+        "Có, fs mode tự tạo network policy",
+        "Không, scan snippet không hiện thực toàn kiến trúc",
+        "Có, Trivy chính là policy engine toàn doanh nghiệp",
+        "Chỉ cần tên job ZeroTrust"
+      ],
+      "correct": 1,
+      "explanation": "Không suy architecture implementation từ một tool example."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Versioning policy",
+      "question": "Thay đổi rule authorization cần quản lý gì?",
+      "options": [
+        "Không cần kiểm vì là YAML",
+        "Chỉ tăng scanner severity",
+        "Version/review/rollout/verification và phục hồi phù hợp theo ảnh hưởng",
+        "Chỉ tên người sửa"
+      ],
+      "correct": 2,
+      "explanation": "Policy là logic có thể gây security/functionality regression."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Studio exercise",
+      "question": "Exercise yêu cầu chạy công cụ phòng thủ có tự authorize mọi command trên host hiện tại không?",
+      "options": [
+        "Có, defense nghĩa mọi scan đều được phép",
+        "Chỉ cần không ghi file",
+        "Có, mọi target private là lab",
+        "Không, cần scope môi trường thực hành; ở đây chỉ soạn dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Không thực thi tác vụ scanner/OS/network trong phiên này."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "LAN plus MFA",
+      "question": "Ứng dụng tin request nội bộ hoàn toàn sau một lần MFA rồi cho đọc mọi tenant. Hai vấn đề cần sửa?",
+      "options": [
+        "Không implicit trust vì LAN và enforce authorization tenant/resource cùng lifecycle access phù hợp",
+        "Chỉ tăng số bước MFA",
+        "Chỉ mã hóa response",
+        "Chỉ bật thêm fs scanner"
+      ],
+      "correct": 0,
+      "explanation": "Identity mạnh và vị trí mạng không thay scope quyền."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Segmentation trên giấy",
+      "question": "Sơ đồ có nhiều zone nhưng rule allow-all và app không owner check. Cách đánh giá đúng?",
+      "options": [
+        "Chỉ thêm một scanner dependency",
+        "Ranh giới mạng chưa enforce mục tiêu và quyền dữ liệu vẫn thiếu; cần sửa cả effective policies",
+        "Có nhiều zone là đủ ZTA",
+        "Chỉ đổi tên allow-all thành trusted"
+      ],
+      "correct": 1,
+      "explanation": "Kiến trúc cần nối ý định tới behavior."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Token revoked cache",
+      "question": "User bị thu hồi quyền nhưng gateway dùng decision cache dài và backend chỉ tin header role. Cần gì?",
+      "options": [
+        "Token từng hợp lệ nghĩa quyền vĩnh viễn",
+        "Chỉ giảm log retention",
+        "Trust/validation đúng giữa các tầng và revocation/cache lifecycle theo policy",
+        "Chỉ đổi token name"
+      ],
+      "correct": 2,
+      "explanation": "Đồng bộ quyết định và enforcement là một hợp đồng đa tầng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Scanner all-in-one claim",
+      "question": "Source Trivy fs với high/critical được dùng để công bố đủ SAST/DAST/SCA và ZTA. Sai ở đâu?",
+      "options": [
+        "Mọi fs scan tự chạy browser và API",
+        "Chỉ thêm severity LOW là đủ ZTA",
+        "Một tool nổi tiếng luôn thay mọi control",
+        "Loại scan/phạm vi không chứng minh mọi kiểm động/code policy hay identity/segmentation; cần bằng chứng từng mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Không mở rộng tính năng mẫu thành kiến trúc hoàn chỉnh."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Tool failed but gate green",
+      "question": "Scanner lỗi setup, workflow nuốt exit code và báo zero findings để deploy. Thiết kế đúng hơn?",
+      "options": [
+        "Phân biệt failed/incomplete với kết quả sạch và áp gate/policy ngoại lệ có kiểm soát",
+        "Giữ xanh vì không có report",
+        "Chỉ in Scan OK",
+        "Chỉ đổi action sang master"
+      ],
+      "correct": 0,
+      "explanation": "Quyết định phát hành cần bằng chứng đáng tin."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Shift left only",
+      "question": "Một artifact scan sạch lúc build nhưng có advisory mới sau deploy. Team nói không cần kiểm nữa vì đã shift left. Nhận xét đúng?",
+      "options": [
+        "Chỉ đổi tag latest",
+        "Bảo mật có lifecycle; cần đánh giá thông tin mới/runtime và remediation theo rủi ro",
+        "Shift left nghĩa chỉ kiểm một lần",
+        "Không đổi source thì mọi kiến thức bất biến"
+      ],
+      "correct": 1,
+      "explanation": "Kiểm sớm bổ sung cho vận hành, không loại bỏ nó."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Identity không quyền data",
+      "question": "mTLS xác thực serviceA nhưng endpoint cho nó query mọi customer dù chỉ cần report một tenant. Cần gì?",
+      "options": [
+        "Coi cùng CA là mọi quyền",
+        "Chỉ microsegment sourceIP",
+        "Authorization/data scope theo nhiệm vụ ngoài workload authentication",
+        "Chỉ certificate dài hơn"
+      ],
+      "correct": 2,
+      "explanation": "Không đánh đồng danh tính được xác thực với mọi quyền."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Fail-open admin",
+      "question": "Policy service gián đoạn, hệ thống cho mọi request admin qua để giữ uptime. Đánh đổi cần sửa?",
+      "options": [
+        "Chỉ log mọi request rồi bỏ policy",
+        "Chỉ dùng VPN",
+        "Coi nội bộ không cần kiểm",
+        "Failure policy/resilience giữ ranh giới tài nguyên nhạy cảm và mục tiêu availability, không bypass mặc định"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế failure modes thay vì chọn một trụ cột rồi bỏ các phần khác."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Deny all outage",
+      "question": "Đội chứng minh policy chặn được mọi attacker bằng cách chặn cả users hợp lệ. Đã đạt mục tiêu hệ thống chưa?",
+      "options": [
+        "Chưa, cần đúng allow/deny theo yêu cầu và availability được thiết kế",
+        "Rồi, mọi deny là ZTA hoàn chỉnh",
+        "Chỉ thiếu logo NIST",
+        "Rồi, không cần chức năng nữa"
+      ],
+      "correct": 0,
+      "explanation": "Kiểm đúng ranh giới bao gồm cả quyền hợp lệ và quyền bị cấm."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "PR secrets rộng",
+      "question": "Để quét fs tiện, job PR được cấp production credentials và chạy scripts của PR chưa tin cậy. Hướng sửa?",
+      "options": [
+        "Chỉ bật severity HIGH",
+        "Tách trust/execution path và quyền tối thiểu, giữ scan/report và cổng review phù hợp",
+        "Tên security làm mọi scripts an toàn",
+        "Chỉ che token trong log là đủ mọi rủi ro"
+      ],
+      "correct": 1,
+      "explanation": "Scanner không xóa ranh giới mã được thực thi với secrets."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Policy decision không enforce",
+      "question": "Engine trả deny nhưng backend bỏ qua metadata từ gateway và tiếp tục thao tác. Cần gì?",
+      "options": [
+        "Policy engine đúng nghĩa cả hệ thống đúng",
+        "Chỉ tăng số subnet",
+        "Enforcement contract nhất quán và kiểm behavior tại boundary tài nguyên, không chỉ log engine",
+        "Chỉ đổi deny thành chữ đỏ"
+      ],
+      "correct": 2,
+      "explanation": "Một quyết định chỉ có tác dụng khi được áp dụng đúng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Mutable action supply chain",
+      "question": "Workflow đã review nhưng @master action đổi code và scanner DB đổi data. Muốn hiểu run mới cần gì?",
+      "options": [
+        "Chỉ tên action giống cũ",
+        "Mọi master ref bất biến",
+        "Chỉ thời gian chạy ngắn hơn",
+        "Ghi/kiểm revision/tool/config/data và artifact theo policy pin/update/provenance"
+      ],
+      "correct": 3,
+      "explanation": "Đầu vào thực thi và kiến thức scan đều có lifecycle."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Artifact mismatch",
+      "question": "SourceA scan pass, imageB khác deps được deploy, dashboard gắn cùng project. Kết luận đúng?",
+      "options": [
+        "Chưa có bằng chứng cho đúng release; cần nối source/build/artifact và checks theo mục tiêu",
+        "Cùng project nghĩa cùng bytes",
+        "Chỉ cần tag latest",
+        "Có scan xanh bất kỳ là đủ"
+      ],
+      "correct": 0,
+      "explanation": "Tính đúng của liên kết bằng chứng quan trọng ngoài kết quả từng tool."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Microsegment bypass path",
+      "question": "Policy chặn đường chính nhưng một endpoint quản trị khác vẫn mở rộng cho mọi workload cùng mạng. Cần đánh giá gì?",
+      "options": [
+        "Chỉ xóa Server header",
+        "Mọi đường tiếp cận tài nguyên và quyền effective theo scope, không chỉ sơ đồ chính",
+        "Một rule deny thay mọi đường khác",
+        "Chỉ tăng số zones"
+      ],
+      "correct": 1,
+      "explanation": "Control phải bao các đường thực tế theo mục tiêu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Device ownership",
+      "question": "Máy công ty bị chiếm nhưng được tin vĩnh viễn vì certificate/ownership cũ. Điều gì cần thêm?",
+      "options": [
+        "Chỉ đổi hostname",
+        "Chỉ kiểm scanner source một lần",
+        "Context/posture/credential lifecycle và reevaluation theo policy, cùng quyền tối thiểu",
+        "Tin managed label mãi"
+      ],
+      "correct": 2,
+      "explanation": "Ownership không tự cung cấp trust bất biến."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "MFA every packet slogan",
+      "question": "Nhóm diễn giải continuous verification thành bắt nhập MFA ở mọi packet, gây lỗi luồng hợp lệ. Cách hiểu đúng hơn?",
+      "options": [
+        "Zero Trust luôn cấm session",
+        "Chỉ tắt toàn bộ authentication để nhanh",
+        "Một lần login nghĩa trust vô hạn",
+        "Thiết kế auth/session và đánh giá context/access theo policy; không yêu cầu tương tác người dùng ở mọi enforcement point"
+      ],
+      "correct": 3,
+      "explanation": "Chuẩn nói về quản lý access, không một UI challenge cho mọi gói tin."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Exceptions forgotten",
+      "question": "High finding được ignore không owner/thời hạn và quyền service quá rộng, team gọi đó là risk acceptance hoàn chỉnh. Thiếu gì?",
+      "options": [
+        "Quy trình ngoại lệ có trách nhiệm/phạm vi/thời hạn và mitigation/review, cùng policy quyền đúng",
+        "Chỉ đổi ignore thành accepted",
+        "Chỉ tăng số scanners",
+        "Chỉ ký report"
+      ],
+      "correct": 0,
+      "explanation": "Quản lý rủi ro phải được hiện thực, không chỉ nhãn."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Network vs business",
+      "question": "Traffic giữa hai services được mã hóa và segment đúng nhưng API vẫn cho sửa object khác tenant. Cần sửa ở đâu?",
+      "options": [
+        "Chỉ nâng severity scan",
+        "Authorization/invariants dữ liệu tại boundary phù hợp ngoài các control mạng/kênh",
+        "Chỉ thêm encryption lần nữa",
+        "Chỉ đổi CIDR"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi lớp đáp ứng một nhóm yêu cầu riêng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Hoàn thiện source",
+      "question": "Để chuyển step Trivy nguồn thành quy trình DevSecOps có thể đánh giá, cần gì?",
+      "options": [
+        "Chỉ giữ master và exit 1",
+        "Chỉ scan nhiều lần cùng đầu vào không xem kết quả",
+        "Workflow/source/toolchain đúng, scan scope rõ, report/gate/remediation ownership và provenance theo release",
+        "Chỉ đặt tên workflow Zero Trust"
+      ],
+      "correct": 2,
+      "explanation": "Không có CI/scanner hay hạ tầng thật được chạy trong lần soạn."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Artifact scan và quyền tài nguyên",
+      "question": "Pipeline quét source A xanh nhưng deploy image B có dependency khác. Service có mTLS hợp lệ chỉ được phép tenant A, song backend tin mọi request nội bộ và nhận tenant B từ client. Kiểm soát nào đáp ứng cả DevSecOps lẫn quyền tài nguyên?",
+      "options": [
+        "Quét đúng image B rồi giữ nguyên backend vì certificate mTLS đã chứng minh service được truy cập mọi tenant",
+        "Enforce tenant theo policy nhưng tiếp tục dùng kết quả source A để bảo đảm dependency của image B, miễn cùng repository",
+        "Chỉ tách service thành subnet riêng và ghim action CI; coi network zone cùng tên project là đủ cho cả artifact identity và tenant authorization",
+        "Ràng buộc kết quả kiểm với đúng artifact/dependency được triển khai, đồng thời enforce quyền service và tenant ở đường truy cập tài nguyên thay vì tin vị trí mạng/mTLS đơn thuần"
+      ],
+      "correct": 3,
+      "explanation": "Scan phải gắn đúng đối tượng được triển khai; kết quả trên source khác không tự bao dependency của image. mTLS xác thực một identity, không tự cấp quyền mọi resource/tenant cho identity đó."
+    }
+  ]
+}

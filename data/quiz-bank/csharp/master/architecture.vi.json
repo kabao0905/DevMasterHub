@@ -1,0 +1,1142 @@
+{
+  "version": 1,
+  "tech": "csharp",
+  "level": "master",
+  "lesson": "architecture",
+  "language": "vi",
+  "sourceHash": "7f242895a4e9178f0f935b8f749d18f8b521ccbec9504a279a3e5e42f226b998",
+  "status": "approved",
+  "review": "Soạn trực tiếp không API. Microsoft DDD/domain-events/CQRS/event-sourcing contracts và actual snippet review. Selected C#5 finite state/list/event models không giả source Money/record/EF/message broker đã build. Source thiếu ctor/supporting types/status enum/Money operators+aggregation,không full runnable service. Confirm không guard repeated call;events RAM không là eventstore;IReadOnlyList view vẫn backing List. Không network hoặc scale claims.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "DDD role",
+      "question": "DDD trong bài chủ yếu hướng tới điều gì?",
+      "options": [
+        "Mô hình hóa domain concepts/rules bằng types và boundaries phù hợp.",
+        "Tự tạo mọi databases.",
+        "Tự chia mỗi class thành microservice.",
+        "Tự proof production capacity."
+      ],
+      "correct": 0,
+      "explanation": "Domain model cần phản ánh yêu cầu thực tế."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Aggregate root source",
+      "question": "Base class nguồn cho aggregate tên gì?",
+      "options": [
+        "JsonSerializerContext.",
+        "AggregateRoot.",
+        "DbContext.",
+        "Hub."
+      ],
+      "correct": 1,
+      "explanation": "Nó giữ collection domain events trong snippet."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Event storage source",
+      "question": "_events nguồn là dạng storage nào?",
+      "options": [
+        "Một SQL table tự động.",
+        "Một message broker.",
+        "List<IDomainEvent> trong RAM của instance.",
+        "Durable event store đã replicate."
+      ],
+      "correct": 2,
+      "explanation": "Collection nội bộ không tự persistence."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Event exposure",
+      "question": "DomainEvents property nguồn trả interface nào?",
+      "options": [
+        "IList<string> duy nhất.",
+        "Task<IDomainEvent>.",
+        "DbSet<Order>.",
+        "IReadOnlyList<IDomainEvent>."
+      ],
+      "correct": 3,
+      "explanation": "Read-only interface không tự deep immutable snapshot."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "AddEvent visibility",
+      "question": "AddEvent nguồn có visibility gì?",
+      "options": [
+        "protected.",
+        "public.",
+        "private duy nhất.",
+        "internal static."
+      ],
+      "correct": 0,
+      "explanation": "Derived aggregate có thể gọi để thêm event."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Clear events role",
+      "question": "ClearEvents nguồn làm gì trực tiếp?",
+      "options": [
+        "Xóa Order khỏi database.",
+        "Clear list events nội bộ.",
+        "Xóa mọi persisted events trong broker.",
+        "Rollback Order state tự động."
+      ],
+      "correct": 1,
+      "explanation": "Đây là operation trên collection hiện tại."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Order ID type",
+      "question": "Order.Id nguồn có kiểu gì?",
+      "options": [
+        "int luôn.",
+        "CustomerId.",
+        "OrderId.",
+        "string luôn."
+      ],
+      "correct": 2,
+      "explanation": "Strong type giúp phân biệt kinds of IDs theo API."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Status setter",
+      "question": "Order.Status nguồn được set từ bên ngoài tùy ý qua property setter công khai không?",
+      "options": [
+        "Có; mọi property public có public setter.",
+        "Có; record tự expose.",
+        "Chỉ cần using Linq.",
+        "Không; setter private."
+      ],
+      "correct": 3,
+      "explanation": "Methods bên trong class vẫn có thể thay state."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Items storage",
+      "question": "Order giữ items trong kiểu collection nào?",
+      "options": [
+        "List<OrderItem>.",
+        "Dictionary<int, User>.",
+        "DbSet<Post>.",
+        "Một immutable event stream duy nhất."
+      ],
+      "correct": 0,
+      "explanation": "Field reference readonly không tự freeze list."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Factory parameter",
+      "question": "Order.Create nguồn nhận ID loại nào?",
+      "options": [
+        "ConnectionId.",
+        "CustomerId.",
+        "ProductId.",
+        "OrderId duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Constructor/supporting CustomerId chưa có trong snippet."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Created event",
+      "question": "Order.Create thêm event nào?",
+      "options": [
+        "UserJoined.",
+        "ReceiveMessage.",
+        "OrderCreatedEvent.",
+        "OrderConfirmedEvent duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Event được add sau construction path bình thường."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Item mutation guard",
+      "question": "AddItem nguồn chỉ cho phép status nào?",
+      "options": [
+        "Confirmed.",
+        "Mọi status không giới hạn.",
+        "Chỉ Cancelled.",
+        "Draft."
+      ],
+      "correct": 3,
+      "explanation": "Guard kiểm Status!=Draft rồi throw."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Invalid add error",
+      "question": "AddItem khi status không Draft gặp gì theo source?",
+      "options": [
+        "DomainException.",
+        "Tự reset về Draft.",
+        "Âm thầm bỏ item và trảsuccess.",
+        "Tự gửiHTTP201."
+      ],
+      "correct": 0,
+      "explanation": "Actual DomainException definition chưa có."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Empty confirmation",
+      "question": "Confirm nguồn kiểm điều kiện nào trước?",
+      "options": [
+        "Email đã gửi.",
+        "Items không được rỗng.",
+        "OrderId không null trong mọi cases.",
+        "Customer đã login."
+      ],
+      "correct": 1,
+      "explanation": "Nếu !_items.Any() thì throw Empty order."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Confirmed state",
+      "question": "Confirm normal path đặt Status thành gì?",
+      "options": [
+        "Cancelled.",
+        "Unknown tự động.",
+        "Confirmed.",
+        "Draft."
+      ],
+      "correct": 2,
+      "explanation": "Assignment xảy ra trước AddEvent với Total."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Confirm event",
+      "question": "Confirm normal path thêm event nào?",
+      "options": [
+        "OrderCreatedEvent duy nhất.",
+        "UserJoined.",
+        "ProductDeleted.",
+        "OrderConfirmedEvent(Id, Total)."
+      ],
+      "correct": 3,
+      "explanation": "Total evaluation là một phần của bước tạo event."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Total formula",
+      "question": "Total nguồn nhằm tính gì?",
+      "options": [
+        "Tổng Price*Quantity của các items theo Money/arithmetic contract.",
+        "Chỉ số items.",
+        "Giá của item đầu duy nhất.",
+        "Một cached value không bao giờ tính lại."
+      ],
+      "correct": 0,
+      "explanation": "Money operators/aggregation cần supporting implementation phù hợp."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Typed ID representation",
+      "question": "OrderId record nguồn bọc value type nào?",
+      "options": [
+        "byte[].",
+        "Guid.",
+        "decimal.",
+        "DateTime."
+      ],
+      "correct": 1,
+      "explanation": "Wrapper type khác underlying Guid value."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "ID factory",
+      "question": "OrderId.New nguồn tạo value bằng gì?",
+      "options": [
+        "Một int counter local.",
+        "CustomerName.GetHashCode().",
+        "Guid.NewGuid().",
+        "Luôn Guid.Empty."
+      ],
+      "correct": 2,
+      "explanation": "Không suy cryptographic authority từ ID generation."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Event sourcing definition",
+      "question": "Event Sourcing dùng nguồn authoritative data nào theo pattern?",
+      "options": [
+        "Chỉ một List events chưa persist trong object.",
+        "Chỉ log text bất kỳ.",
+        "Chỉ public record ID.",
+        "Durable ordered event stream để reconstruct state theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Source hiện chưa triển khai event store/replay."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Finite add model",
+      "question": "Explicit state model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nenum Status{Draft,Confirmed}\nclass OrderModel{public Status Status=Status.Draft;public List<int> Items=new List<int>();public List<string> Events=new List<string>();public void Add(int n){if(Status!=Status.Draft)throw new InvalidOperationException(\"not draft\");Items.Add(n);}public void Confirm(){if(!Items.Any())throw new InvalidOperationException(\"empty\");Status=Status.Confirmed;Events.Add(\"Confirmed\");}}\nclass Program{static void Main(){var o=new OrderModel();o.Add(2);Console.WriteLine(o.Items.Count+\" \"+o.Status);}}\n",
+      "options": [
+        "1 Draft.",
+        "0 Confirmed.",
+        "1 Confirmed.",
+        "Add tự confirm."
+      ],
+      "correct": 0,
+      "explanation": "Model chọn enum Draft tường minh, không giả enum nguồn chưa được định nghĩa."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Finite confirm model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nenum Status{Draft,Confirmed}\nclass OrderModel{public Status Status=Status.Draft;public List<int> Items=new List<int>();public List<string> Events=new List<string>();public void Add(int n){if(Status!=Status.Draft)throw new InvalidOperationException(\"not draft\");Items.Add(n);}public void Confirm(){if(!Items.Any())throw new InvalidOperationException(\"empty\");Status=Status.Confirmed;Events.Add(\"Confirmed\");}}\nclass Program{static void Main(){var o=new OrderModel();o.Add(2);o.Confirm();Console.WriteLine(o.Status+\" \"+o.Events.Count);}}\n",
+      "options": [
+        "DomainException vì có mộtitem.",
+        "Confirmed 1.",
+        "Draft 0.",
+        "Confirmed 0."
+      ],
+      "correct": 1,
+      "explanation": "Một item cho phép confirm theo guard modeled."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Repeated confirm model",
+      "question": "Model không có repeat guard này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nenum Status{Draft,Confirmed}\nclass OrderModel{public Status Status=Status.Draft;public List<int> Items=new List<int>();public List<string> Events=new List<string>();public void Add(int n){if(Status!=Status.Draft)throw new InvalidOperationException(\"not draft\");Items.Add(n);}public void Confirm(){if(!Items.Any())throw new InvalidOperationException(\"empty\");Status=Status.Confirmed;Events.Add(\"Confirmed\");}}\nclass Program{static void Main(){var o=new OrderModel();o.Add(2);o.Confirm();o.Confirm();Console.WriteLine(o.Events.Count);}}\n",
+      "options": [
+        "0.",
+        "Lần hai tự idempotent.",
+        "2.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Không có status guard trong Confirm nên event được thêm hai lần."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Empty confirm state model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nenum Status{Draft,Confirmed}\nclass OrderModel{public Status Status=Status.Draft;public List<int> Items=new List<int>();public List<string> Events=new List<string>();public void Add(int n){if(Status!=Status.Draft)throw new InvalidOperationException(\"not draft\");Items.Add(n);}public void Confirm(){if(!Items.Any())throw new InvalidOperationException(\"empty\");Status=Status.Confirmed;Events.Add(\"Confirmed\");}}\nclass Program{static void Main(){var o=new OrderModel();try{o.Confirm();}catch(InvalidOperationException){Console.WriteLine(o.Status+\" \"+o.Events.Count);}}}\n",
+      "options": [
+        "Confirmed 1.",
+        "Draft 1.",
+        "Confirmed 0.",
+        "Draft 0."
+      ],
+      "correct": 3,
+      "explanation": "Throw trước status assignment, event không add; exception được bắt hữu hạn."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Add after confirm model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nenum Status{Draft,Confirmed}\nclass OrderModel{public Status Status=Status.Draft;public List<int> Items=new List<int>();public List<string> Events=new List<string>();public void Add(int n){if(Status!=Status.Draft)throw new InvalidOperationException(\"not draft\");Items.Add(n);}public void Confirm(){if(!Items.Any())throw new InvalidOperationException(\"empty\");Status=Status.Confirmed;Events.Add(\"Confirmed\");}}\nclass Program{static void Main(){var o=new OrderModel();o.Add(2);o.Confirm();try{o.Add(3);}catch(InvalidOperationException){Console.WriteLine(o.Items.Count);}}}\n",
+      "options": [
+        "1.",
+        "2.",
+        "0.",
+        "Add tự reopen Draft."
+      ],
+      "correct": 0,
+      "explanation": "Guard giữ không thêm item sau confirm theo modeled state."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Clear event state distinction",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nenum Status{Draft,Confirmed}\nclass OrderModel{public Status Status=Status.Draft;public List<int> Items=new List<int>();public List<string> Events=new List<string>();public void Add(int n){if(Status!=Status.Draft)throw new InvalidOperationException(\"not draft\");Items.Add(n);}public void Confirm(){if(!Items.Any())throw new InvalidOperationException(\"empty\");Status=Status.Confirmed;Events.Add(\"Confirmed\");}}\nclass Program{static void Main(){var o=new OrderModel();o.Add(2);o.Confirm();o.Events.Clear();Console.WriteLine(o.Status+\" \"+o.Events.Count);}}\n",
+      "options": [
+        "Clear events tự clear items.",
+        "Confirmed 0.",
+        "Draft 0.",
+        "Confirmed 1."
+      ],
+      "correct": 1,
+      "explanation": "Clear collection không rollback business status."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Readonly interface cast model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\n\nclass Program{static void Main(){var xs=new List<int>{1};IReadOnlyList<int> view=xs;((List<int>)view).Add(2);Console.WriteLine(xs.Count);}}\n",
+      "options": [
+        "Compile error vì không thể cast underlying List.",
+        "IReadOnlyList tự snapshot.",
+        "2.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Actual backing object vẫn List, read-only static interface không là ownership boundary."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Readonly live view model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\n\nclass Program{static void Main(){var xs=new List<int>{1};IReadOnlyList<int> view=xs;xs.Clear();Console.WriteLine(view.Count);}}\n",
+      "options": [
+        "1.",
+        "Snapshot vẫn có mộtitem.",
+        "Runtime không cho Clear.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Read-only interface quan sát cùng backing list."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Failure after status model",
+      "question": "Finite failure-order model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass State{public string Status=\"Draft\";public List<string> Events=new List<string>();public void Confirm(){Status=\"Confirmed\";int total=Fail();Events.Add(total.ToString());}static int Fail(){throw new OverflowException();}}\nclass Program{static void Main(){var o=new State();try{o.Confirm();}catch(OverflowException){Console.WriteLine(o.Status+\" \"+o.Events.Count);}}}\n",
+      "options": [
+        "Confirmed 0.",
+        "Draft 0.",
+        "Confirmed 1.",
+        "State assignment tự rollback khi throw."
+      ],
+      "correct": 0,
+      "explanation": "Model chỉ kiểm assignment-before-failing-step, không bịa actual Money exception."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Finite total arithmetic",
+      "question": "Decimal arithmetic model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\n\nclass Program{static void Main(){var lines=new[]{new{Price=10m,Qty=2},new{Price=2m,Qty=3}};Console.WriteLine(lines.Sum(i=>i.Price*i.Qty));}}\n",
+      "options": [
+        "23.",
+        "26.",
+        "15.",
+        "7."
+      ],
+      "correct": 1,
+      "explanation": "2*10+3*2=26; model dùng decimal, không chứng minh custom Money type đã build."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Missing constructor",
+      "question": "Source đã định nghĩa constructor Order(OrderId, CustomerId) được factory gọi chưa?",
+      "options": [
+        "Có; class Order là record positional tự động.",
+        "Chỉ cần AggregateRoot.",
+        "Chưa.",
+        "Có; private fields tự sinh constructor đó."
+      ],
+      "correct": 2,
+      "explanation": "Snippet cần supporting code để compile."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Missing status enum",
+      "question": "Có thể hứa new Order luôn Draft chỉ vì source có enum member name Draft chưa?",
+      "options": [
+        "Có; mọi enum default theo alphabet.",
+        "Có; property tên Status tự chọn Draft.",
+        "Chỉ cần private setter.",
+        "Chưa; enum/constructor initialization chưa được cung cấp."
+      ],
+      "correct": 3,
+      "explanation": "Native model khai báo state ban đầu tường minh."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Required quantity",
+      "question": "AddItem nguồn có explicit qty>0 guard chưa?",
+      "options": [
+        "Chưa.",
+        "Có; int type chỉ chứa số dương.",
+        "Có; OrderItem constructor chắc validate dù thiếu definition.",
+        "Chỉ cần status Draft."
+      ],
+      "correct": 0,
+      "explanation": "Không bịa checks trong supporting types chưa có."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Money validation gap",
+      "question": "Source đủ biết Money reject negative price/currency mismatch chưa?",
+      "options": [
+        "Chỉ cần decimal literal.",
+        "Chưa; Money implementation thiếu.",
+        "Đủ; type name Money tự enforce mọi currency rules.",
+        "Đủ; Sum tự validate domain."
+      ],
+      "correct": 1,
+      "explanation": "Value object cần actual invariants."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Total arithmetic compatibility",
+      "question": "_items.Sum(i=>i.Price*i.Quantity) cho Money custom cần gì?",
+      "options": [
+        "Chỉ property tên Price.",
+        "Chỉ using System.Linq.",
+        "Operators/conversions hoặc aggregation implementation phù hợp type và domain.",
+        "Enumerable.Sum mặc định cộng mọi arbitrary class tự động."
+      ],
+      "correct": 2,
+      "explanation": "Không khẳng định snippet compile khi Money contract chưa có."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Repeat guard source",
+      "question": "Confirm nguồn có kiểm Status==Draft hoặc đãConfirmed để ngăn repeat rõ chưa?",
+      "options": [
+        "Có; private setter tự ngăn calls.",
+        "Có; Any chỉ true lần đầu.",
+        "Chỉ cần AddEvent.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Nhiều calls với items vẫn có thể lặp event theo source control flow."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Read only events exposure",
+      "question": "DomainEvents=>_events có tự là immutable snapshot không?",
+      "options": [
+        "Không.",
+        "Có; IReadOnlyList deep clones mọi event.",
+        "Có; readonly field freeze list.",
+        "Chỉ cần protected AddEvent."
+      ],
+      "correct": 0,
+      "explanation": "Actual object và mutability của elements còn quan trọng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Public clear capability",
+      "question": "Public ClearEvents cho callers capability nào?",
+      "options": [
+        "Tự undo aggregate changes.",
+        "Xóa pending events trong instance theo code.",
+        "Chỉ dispatcher mới compile gọi được.",
+        "Tự persist events trước khi clear."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần hạn chế lifecycle phải thiết kế access/protocol phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Event collection not dispatch",
+      "question": "AddEvent(e) source có tự invoke handlers chưa?",
+      "options": [
+        "Có; protected method tự publish broker.",
+        "Chỉ cần async source khác.",
+        "Chưa; nó chỉ List.Add.",
+        "Có; event interface tự multicast."
+      ],
+      "correct": 2,
+      "explanation": "Raise/collect và dispatch là steps khác nhau."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Event collection not persist",
+      "question": "_events.Add có tự durable qua process crash không?",
+      "options": [
+        "Có; List tự ghi event log.",
+        "Có; record ID tự persist.",
+        "Chỉ cần Guid.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Source không có event storage."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Event clearing order",
+      "question": "Clear pending events trước khi persist/dispatch đáng tin theo requirement có risk gì?",
+      "options": [
+        "Có thể mất ý định/observation nếu không có durable recovery protocol.",
+        "Không risk vì Clear tự lưu trước.",
+        "Events tự xuất hiện lại sau crash.",
+        "Chỉ cần IReadOnlyList."
+      ],
+      "correct": 0,
+      "explanation": "Actual lifecycle phải giữ consistency semantics."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Domain versus integration event",
+      "question": "Domain event và integration event cần phân biệt chủ yếu ở đâu?",
+      "options": [
+        "Mọi integration event chạy trong same List.",
+        "Boundary/dispatch/durability/contracts theo domain và external communication.",
+        "Chỉ một cái có tên dài hơn.",
+        "Domain event luôn public broker message y hệt."
+      ],
+      "correct": 1,
+      "explanation": "Không gửi internal object graph ra ngoài thiếu explicit contract."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Event past fact",
+      "question": "Tên OrderConfirmedEvent thường thể hiện điều gì?",
+      "options": [
+        "Một raw SQL statement.",
+        "Một retry timer.",
+        "Một fact nghiệp vụ đã xảy ra theo successful transition contract.",
+        "Một command yêu cầu confirm chưa được xử lý."
+      ],
+      "correct": 2,
+      "explanation": "Commands và events có meanings khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Command event distinction",
+      "question": "Confirm command và OrderConfirmedEvent khác nhau thế nào?",
+      "options": [
+        "Hai thứ luôn cùng record không semantics.",
+        "Event luôn có quyền yêu cầu arbitrary writes.",
+        "Command tự durable mà event không thể.",
+        "Command yêu cầu hành động, event mô tả fact theo model."
+      ],
+      "correct": 3,
+      "explanation": "Delivery/storage là thiết kế riêng, không suy từ tên."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Value object semantics",
+      "question": "Money value object có ích khi giữ gì?",
+      "options": [
+        "Amount/currency/equality/validity rules phù hợp domain.",
+        "Chỉ một string bất kỳ với tên Money.",
+        "Tự tạo exchange rates chính xác.",
+        "Tự authorization payments."
+      ],
+      "correct": 0,
+      "explanation": "Không đưa financial policy thực tế vào quiz ngoài source."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Strongly typed identity",
+      "question": "OrderId và CustomerId separate types giúp tránh gì theo API?",
+      "options": [
+        "Mọi security attacks.",
+        "Vô tình truyền nhầm kinds of IDs khi signatures giữ distinction.",
+        "Mọi invalid Guid values trong mọi construction paths.",
+        "Mọi database collision tuyệt đối."
+      ],
+      "correct": 1,
+      "explanation": "Compile-time distinction không là toàn validation."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Guid empty wrapper",
+      "question": "Public record OrderId(Guid Value) có tự reject Guid.Empty theo source không?",
+      "options": [
+        "Có; Guid type không chứa Empty.",
+        "Chỉ cần New factory.",
+        "Không.",
+        "Có; record tự check empty."
+      ],
+      "correct": 2,
+      "explanation": "Factory tồn tại không cấm public constructor paths khác."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Guid uniqueness claim",
+      "question": "Guid.NewGuid có nên được mô tả là mathematical no-collision proof cho mọi executions không?",
+      "options": [
+        "Có; compiler chứng minh uniqueness toàn thời gian.",
+        "Có; mọi Guid chứa DB transaction ID.",
+        "Chỉ cần record.",
+        "Không; system vẫn cần identity/storage contract phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không biến practical identifier scheme thành absolute proof."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Identifier not secret",
+      "question": "OrderId random-looking có tự là authorization token để đọc mọi order không?",
+      "options": [
+        "Không; access policy vẫn cần enforced.",
+        "Có; biết ID là owner.",
+        "Có; Guid tự signed permission.",
+        "Chỉ cần HTTPS."
+      ],
+      "correct": 0,
+      "explanation": "Unpredictability không thay permission checks."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "CQRS scope",
+      "question": "CQRS có tự yêu cầu Event Sourcing không?",
+      "options": [
+        "Chỉ cần OrderId.",
+        "Không.",
+        "Có; mọi separated queries luôn event streams.",
+        "Có; MediatR tự event store."
+      ],
+      "correct": 1,
+      "explanation": "Có thể kết hợp nhưng khác concepts."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Aspire source",
+      "question": "Snippet có actual .NET Aspire app model/config rõ chưa?",
+      "options": [
+        "Có; theory keyword tự deploy.",
+        "Chỉ cần Task.",
+        "Chưa.",
+        "Có; Order aggregate tự orchestration services."
+      ],
+      "correct": 2,
+      "explanation": "Không suy implementation từ list chủ đề."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Distributed cache source",
+      "question": "Snippet có cache invalidation/storage implementation rõ chưa?",
+      "options": [
+        "Có; _items là distributedcache.",
+        "Có; Guid auto sync mọi replicas.",
+        "Chỉ cần IReadOnlyList.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Không gán features chưa có."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Message queue source",
+      "question": "Snippet có durable queue/outbox publish rõ chưa?",
+      "options": [
+        "Chưa.",
+        "Có; IDomainEvent tự broker.",
+        "Có; List.Add là queue toàncluster.",
+        "Chỉ cần ClearEvents."
+      ],
+      "correct": 0,
+      "explanation": "In-memory pending events khác message infrastructure."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Aggregate consistency boundary",
+      "question": "Aggregate root thường quản lý điều gì theo DDD design?",
+      "options": [
+        "Chỉ HTTP routes.",
+        "Invariants và operations trong consistency boundary được định nghĩa.",
+        "Mọi entities toàn thế giới trong một object.",
+        "Mọi distributed transaction tự động."
+      ],
+      "correct": 1,
+      "explanation": "Chọn boundary theo domain, không theo tên base class."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "External mutation paths",
+      "question": "Private _items có đủ bảo đảm mọi OrderItem immutable không nếu supporting type có mutable properties bị expose?",
+      "options": [
+        "Đủ; readonly reference tự deep clone.",
+        "Chỉ cần AggregateRoot.",
+        "Chưa; phải xét access paths và nested mutability.",
+        "Đủ; private list tự freeze elements."
+      ],
+      "correct": 2,
+      "explanation": "Encapsulation cần xuyên actual public API."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Computed total timing",
+      "question": "Expression-bodied Total source thường tính khi nào?",
+      "options": [
+        "Chỉ một lần tại compile time.",
+        "Tự cached vĩnh viễn.",
+        "Chỉ khi database save.",
+        "Khi property được evaluate theo code."
+      ],
+      "correct": 3,
+      "explanation": "Không thấy cache assignment trong source."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Confirm atomicity local",
+      "question": "Nếu bước tạo OrderConfirmedEvent/Total throw sau status assignment, có tự rollback state không?",
+      "options": [
+        "Không theo automatic C# assignment semantics.",
+        "Có; method throw undo mọi fields.",
+        "Có; AggregateRoot tự transaction.",
+        "Chỉ cần readonly items."
+      ],
+      "correct": 0,
+      "explanation": "Hard failure model cho thấy cần xét exception safety."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Event sourcing replay",
+      "question": "Rehydrate aggregate từ events có nghĩa gì?",
+      "options": [
+        "Đọc current Total rồi đoán history.",
+        "Áp ordered historical events theo contract để dựng state.",
+        "Gọi mọi external emails lại vô điều kiện.",
+        "Chỉ count events."
+      ],
+      "correct": 1,
+      "explanation": "Replay state khác phát side effects mới."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Event versioning",
+      "question": "Đổi schema của persisted events cần xem gì?",
+      "options": [
+        "Mọi clients tự hiểu fields mới.",
+        "Chỉ cần records compile.",
+        "Backward compatibility/upcasting/migration policy theo event store contract.",
+        "Xóa old events luôn không cần xét."
+      ],
+      "correct": 2,
+      "explanation": "Durable history tạo long-lived compatibility obligations."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Event sourcing tradeoff",
+      "question": "Event Sourcing có nên áp mặc định cho mọi simple CRUD chỉ vì hiện đại không?",
+      "options": [
+        "Có; mọi app cần event stream.",
+        "Có; tự nhanh hơn mọi database model.",
+        "Chỉ cần DomainEvents list.",
+        "Không; cần lợi ích audit/history bù complexity theo requirements."
+      ],
+      "correct": 3,
+      "explanation": "Pattern choice cần có problem cụ thể."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Confirm retry duplicates",
+      "question": "Retry Confirm sau outcome không rõ có thể gây gì với source guard hiện tại?",
+      "options": [
+        "Thêm repeated confirmation events nếu vẫn có items và không guard/idempotency.",
+        "Luôn no-op vì status private.",
+        "Luôn clear events trước lần hai.",
+        "Compiler tự dedupe events bằng type."
+      ],
+      "correct": 0,
+      "explanation": "Cần explicit transition/idempotency policy."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Confirm failure safety",
+      "question": "Muốn status và confirmation event cùng hợp lệ khi Total có thể fail, nên xem gì?",
+      "options": [
+        "Chỉ thêm readonly field.",
+        "Validate/compute trước mutation hoặc strategy giữ invariant theo failure paths.",
+        "Chỉ catch exception rồi hứa state rollback.",
+        "Đổi event name thành Safe."
+      ],
+      "correct": 1,
+      "explanation": "Method failure không tự là transaction local."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Read only list escape",
+      "question": "Trả underlying List qua IReadOnlyList có loại mọi khả năng caller mutate bằng cast không?",
+      "options": [
+        "Có; compiler xóa mutable methods runtime.",
+        "Chỉ cần property getter.",
+        "Không; actual runtime object vẫn là List.",
+        "Có; interface đổi actual type thành immutable."
+      ],
+      "correct": 2,
+      "explanation": "Cần wrapper/snapshot/immutable storage theo intended capability."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Read only wrapper elements",
+      "question": "Dùng wrapper read-only collection có tự deep-freeze mutable event objects không?",
+      "options": [
+        "Có; mọi referenced fields tự copied.",
+        "Có; IDomainEvent interface immutable tuyệt đối.",
+        "Chỉ cần private list.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Container và element immutability khác nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Event commit publish gap",
+      "question": "State commit thành công rồi process crash trước event publish cần xem gì?",
+      "options": [
+        "Durable intent/outbox hoặc consistency/recovery protocol phù hợp.",
+        "List.Add tự replay sau reboot.",
+        "Mọi domain events tự durable.",
+        "Chỉ cần Guid."
+      ],
+      "correct": 0,
+      "explanation": "Không có outbox implementation trong snippet."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Duplicate delivery",
+      "question": "Consumer nhận event nhiều lần có cần gì nếu muốn tránh duplicate business effects?",
+      "options": [
+        "Chỉ cần async.",
+        "Idempotency/deduplication theo event identity và operation contract.",
+        "Chỉ event name giống là framework tự skip.",
+        "Không thể có duplicate delivery."
+      ],
+      "correct": 1,
+      "explanation": "Delivery guarantees và effect uniqueness phải rõ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Stream concurrency",
+      "question": "Hai command handlers đọc cùng aggregate version rồi ghi events cần xem gì?",
+      "options": [
+        "Guid IDs làm updates atomic toàncluster.",
+        "Chỉ cần CQRS.",
+        "Expected version/optimistic concurrency và conflict handling theo event store.",
+        "Append-only tự loại mọi conflicts."
+      ],
+      "correct": 2,
+      "explanation": "Event storage không xóa domain concurrency problem."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Replay side effects",
+      "question": "Vì sao replay historical events không nên tự gửi lại mọi emails theo mặc định?",
+      "options": [
+        "Vì events không thể có handlers.",
+        "Vì emails không dùng strings.",
+        "Chỉ cần ClearEvents trước replay.",
+        "Reconstruction state khác xử lý side effects mới, cần mode/idempotency contract."
+      ],
+      "correct": 3,
+      "explanation": "Không tạo external side effects trong quiz fixtures."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Projection lag",
+      "question": "Read model tách khỏi write/event store cần contract gì cho query sau command?",
+      "options": [
+        "Consistency/lag và user expectations khi projection chưa cập nhật.",
+        "Luôn đồng bộ tức thì mọi deployment.",
+        "MediatR tự replicate mọi DB.",
+        "Chỉ cần OrderDto."
+      ],
+      "correct": 0,
+      "explanation": "CQRS không tự quy định zero-lag replication."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Snapshots in event sourcing",
+      "question": "Snapshot có tự thay authoritative event history trong mọi design không?",
+      "options": [
+        "Chỉ cần List.",
+        "Không; thường là optimization với version/replay contract cụ thể.",
+        "Có; mọi old events có thể xóa tùy ý không ảnh hưởng.",
+        "Có; snapshot là random current object clone."
+      ],
+      "correct": 1,
+      "explanation": "Snapshot correctness/compatibility cần kiểm."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Money currency invariant",
+      "question": "Sum nhiều items khác currencies có nên cộng như bare numbers không kiểm policy không?",
+      "options": [
+        "Có; LINQ tự đổi currencies.",
+        "Chỉ cần decimal.",
+        "Không; cần currency/conversion/domain rules phù hợp.",
+        "Có; Money name tự biết rates."
+      ],
+      "correct": 2,
+      "explanation": "Source thiếu Money implementation nên không giả invariants."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Typed ID bypasses",
+      "question": "Strong OrderId type có tự ngăn invalid values từ deserialization/public constructors không?",
+      "options": [
+        "Có; record luôn opaque không thể construct.",
+        "Có; Guid.Empty tự bị compiler reject.",
+        "Chỉ cần New factory.",
+        "Không; cần validation và construction boundaries phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Type distinctions và valid values khác nhau."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "AddItem status rule scope",
+      "question": "Guard Draft trong AddItem có tự enforce qty>0, valid Product và price hợp lệ không?",
+      "options": [
+        "Không; đó là các invariants khác cần actual implementation.",
+        "Có; mọi guard kiểm tất cả rules.",
+        "Có; OrderItem constructor chắc đã validate dù không thấy.",
+        "Chỉ cần Money type name."
+      ],
+      "correct": 0,
+      "explanation": "Review từng required invariant theo evidence."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Domain versus deployment",
+      "question": "Một aggregate đúng local state có tự chứng minh microservices network/storage failures được xử lý chưa?",
+      "options": [
+        "Chỉ cần Aspire keyword.",
+        "Chưa; cần integration/outcome/recovery contracts và tests phù hợp.",
+        "Rồi; DDD tự distributed transactions.",
+        "Rồi; private setters là global lock."
+      ],
+      "correct": 1,
+      "explanation": "Layer behavior proof không mở rộng tùy ý."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Event fact before persistence",
+      "question": "Thu thập domain event trong RAM có đồng nghĩa state đã commit thành công chưa?",
+      "options": [
+        "Có; Event name past tense là DBproof.",
+        "Chỉ cần CreatedEvent.",
+        "Không; cần dispatch/commit lifecycle rõ.",
+        "Có; AddEvent tự SaveChanges."
+      ],
+      "correct": 2,
+      "explanation": "Fact semantics trong model cần được nối đúng durable boundaries."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Clearing retry state",
+      "question": "Clear pending events sau publish nhưng trước durable acknowledgement có thể cần gì?",
+      "options": [
+        "Không cần vì mọi SendAsync exactly-once.",
+        "List.Clear tự tạo receipt.",
+        "Chỉ cần readonly field.",
+        "Delivery/retry/outcome policy để không mất hoặc lặp effects ngoài mong muốn."
+      ],
+      "correct": 3,
+      "explanation": "Không chọn lifecycle order chỉ theo dòng code ngắn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Aggregate model boundaries",
+      "question": "Đưa mọi entities vào một aggregate rất lớn có tradeoff gì?",
+      "options": [
+        "Contention/load/coupling và consistency scope có thể quá rộng.",
+        "Tự scale writes vô hạn.",
+        "Tự giảm mọi transactions về0.",
+        "Không ảnh hưởng vì List."
+      ],
+      "correct": 0,
+      "explanation": "Boundary phải theo domain và workload."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Missing supporting types proof",
+      "question": "Source thiếu OrderItem/Money/enum/constructors có cho phép báo full source build pass không?",
+      "options": [
+        "Chỉ cần bank schema pass.",
+        "Không; cần actual supporting implementation/toolchain evidence.",
+        "Có; tên types đủ cho compiler.",
+        "Có; LINQ tự tạo Money operators."
+      ],
+      "correct": 1,
+      "explanation": "Native models được ghi rõ là adaptations."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Architecture capacity claim",
+      "question": "CQRS+DDD+events names có đủ proof hệ thống chịu tải triệu users chưa?",
+      "options": [
+        "Có; Guid có128bits nghĩa vô hạn traffic.",
+        "Chỉ cần caches trong theory.",
+        "Không; cần requirements/workload/resource/latency/failure evidence.",
+        "Có; pattern names là capacity contract."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng architecture vocabulary thay measurement."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "End to end invariant verification",
+      "question": "Để kiểm Order confirmation đúng theo requirement, cần xét gì ngoài happy path?",
+      "options": [
+        "Chỉ một item được add thành công.",
+        "Chỉ property Id đúng type.",
+        "Chỉ number of classes.",
+        "Empty/invalid states, repeated calls, arithmetic/handler failures và durable concurrency outcomes phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Chọn verification theo behaviors và risks thực tế."
+    }
+  ]
+}

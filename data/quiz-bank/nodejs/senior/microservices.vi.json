@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "senior",
+  "lesson": "microservices",
+  "language": "vi",
+  "sourceHash": "4581ca47423c556ee4cd4359e8c7aeb31a7e59b514dcc304b270855b7835cdf3",
+  "status": "approved",
+  "review": "Tự viết không API. Review source gateway/cache và docs proxy v3 migration, express-rate-limit stores, ioredis5/Redis TTL, RabbitMQ acknowledgments. External libraries/services chưa cài/chạy. Snippets chỉ mô hình async/cache giả với Node24, không Redis/network thật. Không hứa path proxy khi chưa pin version; health source chỉ trả metadata, rate limiter trước health áp dụng theo middleware path.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Service boundary",
+      "question": "Microservice nên được phân chia chủ yếu theo gì?",
+      "options": [
+        "Trách nhiệm/domain boundary phù hợp.",
+        "Mỗi function thành một service bắt buộc.",
+        "Mỗi dòng code.",
+        "Mỗi CSS class."
+      ],
+      "correct": 0,
+      "explanation": "Boundary phải cân bằng cohesion,coupling và chi phí vận hành."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Gateway role",
+      "question": "API Gateway thường làm gì?",
+      "options": [
+        "Tự làm mạng không thể lỗi.",
+        "Điểm vào cho routing và các cross-cutting policies phù hợp.",
+        "Tự tạo mọi database.",
+        "Tự thay authorization theo đối tượng."
+      ],
+      "correct": 1,
+      "explanation": "Gateway không tự giải mọi tính chất của hệ phân tán."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Gateway user route",
+      "question": "Nguồn định tuyến /api/users tới service nào theo target cấu hình?",
+      "options": [
+        "product-service:3003.",
+        "Redis6379 luôn.",
+        "user-service:3001.",
+        "order-service:3002."
+      ],
+      "correct": 2,
+      "explanation": "Đây là target host/port nội bộ minh họa, cần network/DNS thật khi triển khai."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Gateway order route",
+      "question": "Nguồn target của /api/orders là gì?",
+      "options": [
+        "user-service:3001.",
+        "product-service:3003.",
+        "localhost8080 bắt buộc.",
+        "order-service:3002."
+      ],
+      "correct": 3,
+      "explanation": "Proxy path forwarding còn tùy version/mount/config."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Gateway product route",
+      "question": "Nguồn target của /api/products là gì?",
+      "options": [
+        "product-service:3003.",
+        "user-service:3001.",
+        "order-service:3002.",
+        "Một queue name luôn."
+      ],
+      "correct": 0,
+      "explanation": "Target string không chứng minh downstream đang healthy."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Rate window units",
+      "question": "windowMs:60000 thể hiện cửa sổ thời gian xấp xỉ nào?",
+      "options": [
+        "1 ngày.",
+        "60 giây.",
+        "60 phút.",
+        "60000 giây."
+      ],
+      "correct": 1,
+      "explanation": "Milliseconds khác seconds TTL của Redis setex."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Rate limit intent",
+      "question": "max:100 trong rate limiter nguồn chủ yếu diễn đạt ý đồ gì?",
+      "options": [
+        "100 CPU cores.",
+        "100 service instances.",
+        "Giới hạn số request theo key/window trong cấu hình tương ứng.",
+        "100 database rows toàn hệ."
+      ],
+      "correct": 2,
+      "explanation": "Library version/options/key/store cần khớp để policy thực tế đúng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Rate rejection",
+      "question": "HTTP status thường dùng báo client vượt rate policy là gì?",
+      "options": [
+        "201.",
+        "204.",
+        "101.",
+        "429."
+      ],
+      "correct": 3,
+      "explanation": "Response/retry guidance cần được định nghĩa phù hợp API."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Redis cache",
+      "question": "Redis trong nguồn được dùng chủ yếu làm gì?",
+      "options": [
+        "Cache dữ liệu User.",
+        "Tự thay mọi persistence durable.",
+        "Compile JavaScript.",
+        "Render browser."
+      ],
+      "correct": 0,
+      "explanation": "Cache có lifecycle,consistency và failure policy riêng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Cache aside",
+      "question": "Cache-aside read thường làm gì khi miss?",
+      "options": [
+        "Tự auth request.",
+        "Đọc nguồn dữ liệu rồi populate cache.",
+        "Luôn báo404 không đọc DB.",
+        "Tự xóa user."
+      ],
+      "correct": 1,
+      "explanation": "Nguồn minh họa get-cache rồi DB rồi setex."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Cache value",
+      "question": "JSON.stringify(user) trong setex phục vụ gì?",
+      "options": [
+        "Tự validate permission.",
+        "Tự sinh unique ID.",
+        "Serialize User thành String để cache.",
+        "Encrypt mọi user fields."
+      ],
+      "correct": 2,
+      "explanation": "JSON representation có thể khác kiểu dữ liệu gốc."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cache read decode",
+      "question": "JSON.parse(cached) nhằm gì?",
+      "options": [
+        "Kiểm tra signature.",
+        "Tự query DB.",
+        "Tự refresh TTL.",
+        "Khôi phục giá trị JSON đã serialize."
+      ],
+      "correct": 3,
+      "explanation": "Parse lỗi phải có policy; cache data cũng cần schema/version trust."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "TTL units",
+      "question": "setex(key,3600,value) dùng đơn vị TTL nào?",
+      "options": [
+        "Seconds.",
+        "Milliseconds.",
+        "Bytes.",
+        "Requests."
+      ],
+      "correct": 0,
+      "explanation": "TTL3600 seconds xấp xỉ1 giờ."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Expiration role",
+      "question": "TTL giúp gì?",
+      "options": [
+        "Thay mọi access control.",
+        "Giới hạn thời gian key tồn tại theo cơ chế expiry.",
+        "Bảo đảm dữ liệu luôn fresh từng millisecond.",
+        "Thay mọi invalidation."
+      ],
+      "correct": 1,
+      "explanation": "Staleness và eviction khác validity của dữ liệu."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Read source of truth",
+      "question": "Khi cache miss, nguồn lấy User ở đâu?",
+      "options": [
+        "Từ mọi browser localStorage.",
+        "Từ gateway health list.",
+        "db.user.findById(id) như abstraction minh họa.",
+        "Tự từ JWT payload luôn."
+      ],
+      "correct": 2,
+      "explanation": "db chưa được định nghĩa trong snippet; không suy đây là API Prisma đã chạy."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Queue role",
+      "question": "Message broker/queue thường hỗ trợ gì?",
+      "options": [
+        "Tự transaction mọi database và email toàn hệ.",
+        "Tự render UI.",
+        "Tự loại mọi duplicate.",
+        "Trao đổi công việc/events bất đồng bộ theo semantics cấu hình."
+      ],
+      "correct": 3,
+      "explanation": "Delivery và processing guarantees cần thiết kế rõ."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Consumer acknowledgement",
+      "question": "Consumer ack thường xác nhận gì theo application/protocol contract?",
+      "options": [
+        "Consumer đã nhận/xử lý delivery tại điểm ack được chọn.",
+        "Mọi publisher biết mọi nghiệp vụ đã durable tự động.",
+        "Mọi external payment đã rollback.",
+        "Mọi client đã đọc UI."
+      ],
+      "correct": 0,
+      "explanation": "Ack timing và persistence tạo semantics cụ thể."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Container purpose",
+      "question": "Container hóa bằng Docker chủ yếu giúp gì?",
+      "options": [
+        "Tự bỏ network failures.",
+        "Đóng gói process/runtime dependencies và isolation theo cấu hình.",
+        "Tự làm mọi data shared.",
+        "Tự đảm bảo triệu user."
+      ],
+      "correct": 1,
+      "explanation": "Container không thay design state,capacity và security boundaries."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Health source",
+      "question": "/health trong gateway nguồn trả gì?",
+      "options": [
+        "Mọi SQL counters.",
+        "Mọi secret của Redis.",
+        "Object status và danh sách tên services tĩnh.",
+        "Kết quả probe thật mọi downstream."
+      ],
+      "correct": 2,
+      "explanation": "Metadata tĩnh không chứng minh readiness dependencies."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Distributed failures",
+      "question": "Tách service qua network bổ sung điều cần xử lý nào?",
+      "options": [
+        "Mạng không bao giờ lỗi nữa.",
+        "Không cần observability.",
+        "Mọi function call trở nên atomic toàn hệ.",
+        "Timeouts,partial failures và tương thích contract."
+      ],
+      "correct": 3,
+      "explanation": "Network boundary thay đổi failure/lifecycle semantics."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Cache hit bypass",
+      "question": "Output của mô hình cache giả là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet calls=0;const redis={get:async()=>JSON.stringify({id:7})};const db={user:{findById:async()=>{calls++;return{id:9};}}};const u=await getCachedUser(7);console.log(u.id,calls);",
+      "options": [
+        "7 0",
+        "7 1",
+        "0 0",
+        "undefined 1"
+      ],
+      "correct": 0,
+      "explanation": "Hit trả parsed record, không gọi DB."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Miss write TTL",
+      "question": "Output của mô hình là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet ttl;const redis={get:async()=>null,setex:async(k,t,v)=>{ttl=t;}};const db={user:{findById:async id=>({id})}};console.log((await getCachedUser(7)).id,ttl);",
+      "options": [
+        "undefined 0",
+        "7 3600",
+        "7 60000",
+        "0 3600"
+      ],
+      "correct": 1,
+      "explanation": "Miss đọc DB rồi gọi setex với TTL nguồn3600."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Negative cache value",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet calls=0;const redis={get:async()=>\"null\"};const db={user:{findById:async()=>{calls++;return{id:7};}}};console.log((await getCachedUser(7))===null,calls);",
+      "options": [
+        "false 0",
+        "false 1",
+        "true 0",
+        "true 1"
+      ],
+      "correct": 2,
+      "explanation": "String null là truthy; parse trả null và bypass DB."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Falsy JSON value cached",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet calls=0;const redis={get:async()=>\"false\"};const db={user:{findById:async()=>{calls++;return{id:7};}}};console.log(await getCachedUser(7),calls);",
+      "options": [
+        "false 1",
+        "true 0",
+        "undefined 1",
+        "false 0"
+      ],
+      "correct": 3,
+      "explanation": "String false truthy nên parse boolean false, khác Redis miss null."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Malformed cache entry",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nconst redis={get:async()=>\"oops\"};const db={user:{findById:async()=>({id:7})}};try{await getCachedUser(7);}catch(e){if(e instanceof SyntaxError)console.log(\"bad\");else throw e;}",
+      "options": [
+        "bad",
+        "7",
+        "undefined",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn không catch JSON.parse; malformed cached String reject function."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Cache get failure",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet calls=0;const redis={get:async()=>{throw new Error(\"cache\");}};const db={user:{findById:async()=>{calls++;return{id:7};}}};try{await getCachedUser(7);}catch(e){console.log(e.message,calls);}",
+      "options": [
+        "undefined 0",
+        "cache 0",
+        "cache 1",
+        "7 1"
+      ],
+      "correct": 1,
+      "explanation": "Get reject trước DB; source chưa có cache-fallback policy."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Database failure",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet writes=0;const redis={get:async()=>null,setex:async()=>{writes++;}};const db={user:{findById:async()=>{throw new Error(\"db\");}}};try{await getCachedUser(7);}catch(e){console.log(e.message,writes);}",
+      "options": [
+        "7 1",
+        "undefined 0",
+        "db 0",
+        "db 1"
+      ],
+      "correct": 2,
+      "explanation": "DB reject trước setex; không có result để populate."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Cache write failure",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nconst redis={get:async()=>null,setex:async()=>{throw new Error(\"write\");}};const db={user:{findById:async()=>({id:7})}};try{await getCachedUser(7);}catch(e){console.log(e.message);}",
+      "options": [
+        "7",
+        "undefined",
+        "null",
+        "write"
+      ],
+      "correct": 3,
+      "explanation": "Source await cache write; write reject khiến function reject dù DB đã trả User."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cache key construction",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet key;const redis={get:async k=>{key=k;return JSON.stringify({id:7});}};const db={user:{findById:async()=>({id:9})}};await getCachedUser(7);console.log(key);",
+      "options": [
+        "user:7",
+        "7:user",
+        "users:7",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Key nguồn có prefix user: và identifier truyền vào."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Cache not shared object",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nconst redis={get:async()=>JSON.stringify({name:\"old\"})};const db={user:{findById:async()=>({name:\"db\"})}};const a=await getCachedUser(7);a.name=\"changed\";console.log((await getCachedUser(7)).name);",
+      "options": [
+        "TypeError.",
+        "old",
+        "changed",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Mutate parsed object không đổi cached String trong mô hình này."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Date on cached read",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nconst redis={get:async()=>JSON.stringify({createdAt:new Date(\"2020-01-01T00:00:00Z\")})};const db={user:{findById:async()=>null}};console.log(typeof(await getCachedUser(7)).createdAt);",
+      "options": [
+        "number",
+        "undefined",
+        "string",
+        "object"
+      ],
+      "correct": 2,
+      "explanation": "JSON Date representation làString, không Date instance."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Missing undefined field",
+      "question": "Output là gì?",
+      "code": "const x={id:7,extra:undefined};const y=JSON.parse(JSON.stringify(x));console.log(Object.hasOwn(y,\"extra\"));",
+      "options": [
+        "true",
+        "undefined",
+        "TypeError.",
+        "false"
+      ],
+      "correct": 3,
+      "explanation": "JSON serialization bỏ undefined object property."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Prototype roundtrip",
+      "question": "Output là gì?",
+      "code": "class User{constructor(){this.id=7;}}const y=JSON.parse(JSON.stringify(new User()));console.log(y instanceof User);",
+      "options": [
+        "false",
+        "true",
+        "undefined",
+        "TypeError."
+      ],
+      "correct": 0,
+      "explanation": "JSON roundtrip không giữ custom class prototype."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Stale hit",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nconst redis={get:async()=>JSON.stringify({name:\"old\"})};const db={user:{findById:async()=>({name:\"new\"})}};console.log((await getCachedUser(7)).name);",
+      "options": [
+        "null",
+        "old",
+        "new",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Cache hit không đọc User mới từ DB trong logic nguồn."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "No refresh write on hit",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet writes=0;const redis={get:async()=>JSON.stringify({id:7}),setex:async()=>{writes++;}};const db={user:{findById:async()=>({id:7})}};await getCachedUser(7);console.log(writes);",
+      "options": [
+        "2",
+        "undefined",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Source hit return trước setex, không tự refresh TTL bằng getCachedUser."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Concurrent cold reads",
+      "question": "Output của mô hình hai miss là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet calls=0;const redis={get:async()=>null,setex:async()=>{}};const db={user:{findById:async id=>{calls++;await Promise.resolve();return{id};}}};await Promise.all([getCachedUser(7),getCachedUser(7)]);console.log(calls);",
+      "options": [
+        "1",
+        "0",
+        "undefined",
+        "2"
+      ],
+      "correct": 3,
+      "explanation": "Hai calls cùng miss không được coalesce trong source."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Hit miss type mismatch",
+      "question": "Output là gì?",
+      "code": "async function getCachedUser(id){const cached=await redis.get(`user:${id}`);if(cached)return JSON.parse(cached);const user=await db.user.findById(id);await redis.setex(`user:${id}`,3600,JSON.stringify(user));return user;}\nlet stored=null;const redis={get:async()=>stored,setex:async(k,t,v)=>{stored=v;}};const db={user:{findById:async()=>({createdAt:new Date(\"2020-01-01T00:00:00Z\")})}};const a=await getCachedUser(7),b=await getCachedUser(7);console.log(typeof a.createdAt,typeof b.createdAt);",
+      "options": [
+        "object string",
+        "string string",
+        "object object",
+        "undefined string"
+      ],
+      "correct": 0,
+      "explanation": "Miss trả object DB gốc, hit sau JSON parse đổi Date thànhString."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Large numeric ID serialization",
+      "question": "Output là gì?",
+      "code": "console.log(JSON.parse(\"9007199254740993\"));",
+      "options": [
+        "SyntaxError.",
+        "9007199254740992",
+        "9007199254740993",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Number mất độ chính xác vượt safe integer; schema ID cần representation phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Same in flight work",
+      "question": "Output của mô hình coalescing đơn key là gì?",
+      "code": "let p;let calls=0;const get=()=>p??=(async()=>{calls++;await Promise.resolve();return 7;})();const[a,b]=await Promise.all([get(),get()]);console.log(a,b,calls);",
+      "options": [
+        "7 0 1",
+        "undefined undefined 0",
+        "7 7 1",
+        "7 7 2"
+      ],
+      "correct": 2,
+      "explanation": "Hai calls chia sẻ Promise đang có; đây chưa là cache tổng quát hoàn chỉnh."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Key input collision",
+      "question": "Output là gì?",
+      "code": "const a={},b={};console.log(`user:${a}`===`user:${b}`);",
+      "options": [
+        "false",
+        "undefined",
+        "TypeError.",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "String coercion của hai object thường tạo key giống nhau; validate ID trước tạo key."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "TTL duration",
+      "question": "TTL3600 seconds của nguồn tương đương xấp xỉ bao lâu?",
+      "options": [
+        "1 giờ.",
+        "1 phút.",
+        "1 ngày.",
+        "3600 milliseconds."
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm windowMs của rate limit và units setex."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "TTL on get",
+      "question": "GET thông thường có tự kéo dài TTL đã set như sliding session không?",
+      "options": [
+        "Có nếu key user.",
+        "Không.",
+        "Có mọi GET.",
+        "Có nếu trả JSON object."
+      ],
+      "correct": 1,
+      "explanation": "Muốn sliding expiry cần thao tác/policy khác, không suy từ read."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Memory rate store",
+      "question": "Ba gateway processes dùng memory rate store riêng có tự cùng counter global100/key/window chưa?",
+      "options": [
+        "Có vì cùng port.",
+        "Có vì Docker.",
+        "Chưa.",
+        "Có vì cùng max100."
+      ],
+      "correct": 2,
+      "explanation": "Cần shared store/strategy phù hợp nếu policy toàn deployment."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Health limiter order",
+      "question": "Rate limiter app.use đăng ký trước /health và không skip path; /health có tự miễn limiter không?",
+      "options": [
+        "Có vì health là special route.",
+        "Có vì GET luôn miễn.",
+        "Có vì response statusok.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Middleware path/order quyết định; health policy cần cấu hình rõ."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Health dependency check",
+      "question": "Danh sách strings services trong /health có xác minh từng downstream đang trả response đúng không?",
+      "options": [
+        "Không.",
+        "Có vì array gồm3 tên.",
+        "Có vì Express serializesJSON.",
+        "Có vì gateway đang listen."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt metadata,liveness,readiness và deep diagnostics."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Proxy version path",
+      "question": "Nguồn chưa pin http-proxy-middleware version; có nên hứa backend luôn nhận nguyên prefix /api/users không?",
+      "options": [
+        "Có vì không có query.",
+        "Không; kiểm tra mount/path/target và version, đặc biệt migrationv3.",
+        "Có vì target port3001.",
+        "Có vì gateway path."
+      ],
+      "correct": 1,
+      "explanation": "Path forwarding behavior đã có thay đổi giữa các thế hệ thư viện."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Backend DNS name",
+      "question": "user-service trong target URL thường cần gì để hoạt động?",
+      "options": [
+        "Npm tự tạo hostname toàn Internet.",
+        "Chỉ tên function getCachedUser.",
+        "Network/DNS/service discovery tương ứng môi trường triển khai.",
+        "Browser tự có entry trong mọi DNS công cộng."
+      ],
+      "correct": 2,
+      "explanation": "Target string không tự provision service."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Proxy timeout",
+      "question": "Downstream treo không response; gateway cần policy gì?",
+      "options": [
+        "Chờ vô hạn vì async không tốn tài nguyên.",
+        "Tự retry mọi POST vô hạn.",
+        "Trả200 ngay cho mọi lỗi.",
+        "Timeout/deadline và error response/cleanup rõ."
+      ],
+      "correct": 3,
+      "explanation": "Network wait vẫn chiếm connection/queue/memory theo đường request."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Cache invalidation",
+      "question": "User đổi name nhưng cache cũ chưa hết TTL, thiếu cơ chế gì để giảm stale theo yêu cầu?",
+      "options": [
+        "Invalidation/update/version strategy phù hợp.",
+        "Chỉ JSON.parse lại cùng value.",
+        "Chỉ gọiGET nhiều hơn.",
+        "Chỉ đổi gateway port."
+      ],
+      "correct": 0,
+      "explanation": "TTL không tự đồng bộ dữ liệu khi write."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Optional cache outage",
+      "question": "Nếu cache là tối ưu và DB còn khỏe, cache.get lỗi thì app có nên tự mặc định fail mọi request không?",
+      "options": [
+        "Luôn trả stale bất kể quyền.",
+        "Phải chọn fallback/fail policy theo SLO và bảo vệ DB, không mặc định từ source.",
+        "Luôn fail vì cache lànguồn truth duy nhất.",
+        "Luôn fallback vô hạn không giới hạn."
+      ],
+      "correct": 1,
+      "explanation": "Availability/consistency/resource budget quyết định policy."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Cache key authorization",
+      "question": "Key user:id có đủ scope nếu ID chỉ unique trong tenant không?",
+      "options": [
+        "Có vì JSON.",
+        "Có vì Redis dùngnetwork.",
+        "Không; key cần tenant/scope và authorization phù hợp.",
+        "Có vì prefixuser."
+      ],
+      "correct": 2,
+      "explanation": "Shared cache có thể làm lộ data chéo tenant nếu scope sai."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Negative caching tradeoff",
+      "question": "Cache kết quả user không tồn tại có tradeoff gì?",
+      "options": [
+        "Luôn bảo đảm fresh.",
+        "Tự tạo missing User.",
+        "Tự loại mọi invalid ID.",
+        "Giảm repeated misses nhưng có thể trì hoãn thấy user mới tới khi invalidate/expire."
+      ],
+      "correct": 3,
+      "explanation": "Negative TTL và invalidation cần khớp semantics tạo dữ liệu."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Queue versus sync",
+      "question": "Use case cần user nhận kết quả ngay có thể chuyển sang async queue mà không đổi API contract không?",
+      "options": [
+        "Không thể giả định; cần trạng thái pending/result polling/notification phù hợp.",
+        "Có vì queue luôn xử lý ngay.",
+        "Có vì HTTP200 tự biết kết quả.",
+        "Chỉ đổi method name."
+      ],
+      "correct": 0,
+      "explanation": "Asynchrony thay failure/completion semantics ở client."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Publisher versus consumer ack",
+      "question": "Publisher confirm trong RabbitMQ có đồng nghĩa consumer business action đã hoàn tất không?",
+      "options": [
+        "Có vì TCP.",
+        "Không.",
+        "Có vì cùng broker.",
+        "Có vì message có ID."
+      ],
+      "correct": 1,
+      "explanation": "Hai hướng acknowledgments độc lập; cần rõ điểm xác nhận."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Consumer ack timing",
+      "question": "Ack trước khi DB effect hoàn tất có rủi ro gì nếu consumer crash sau ack?",
+      "options": [
+        "Broker tự biết mọi business state.",
+        "Không rủi ro vì async.",
+        "Message có thể không được redeliver dù effect chưa xong.",
+        "DB tự commit thayconsumer."
+      ],
+      "correct": 2,
+      "explanation": "Định nghĩa processing/persistence boundary trước ack theo contract."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Duplicate consumption",
+      "question": "Broker redelivery có thể làm consumer xử lý cùng business event nhiều lần; cần gì?",
+      "options": [
+        "Tin mỗi message chỉ đếnmột lần tuyệt đối.",
+        "Chỉ dùngtimestamp đểbỏmọi event trùngthời gian.",
+        "Bỏ persistence.",
+        "Idempotency/deduplication theo effect."
+      ],
+      "correct": 3,
+      "explanation": "At-least-once processing attempts không tự exactly-once effects."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Schema contract",
+      "question": "Service A đổi field response mà B còn dùng schema cũ cần gì?",
+      "options": [
+        "Compatibility/version rollout và contract validation/tests phù hợp.",
+        "Chỉ restartB tùyý.",
+        "TinJSON tự migrate.",
+        "Không vì cùng Node."
+      ],
+      "correct": 0,
+      "explanation": "Independent deployability cần quản lý contracts thật."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Observability",
+      "question": "Request qua gateway và nhiều services nên liên kết bằng gì?",
+      "options": [
+        "Chỉ têncontainer.",
+        "Trace/correlation context được quản lý xuyên boundary.",
+        "Chỉ console logs không identifiers.",
+        "Mọi password/token được lograw."
+      ],
+      "correct": 1,
+      "explanation": "Cần metrics/log/traces có scope và bảo vệ dữ liệu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Gateway access control",
+      "question": "Gateway xác thực rồi backend được truy cập trực tiếp có thể cần gì?",
+      "options": [
+        "Chỉ đổi port khó đoán.",
+        "Chỉ publichealth list.",
+        "Trust boundary,network policy và authorization phù hợp tại service.",
+        "Tin mọi header caller tự gửi."
+      ],
+      "correct": 2,
+      "explanation": "Không để bỏ qua policy gateway bằng đường khác."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source DB abstraction",
+      "question": "Nếu db trong ví dụ là PrismaClient thật của bài trước, db.user.findById có nên được giả định là API chuẩn đã có không?",
+      "options": [
+        "Có vìmọi ORM đều có findById.",
+        "Có vìRedis.",
+        "Có vìasyncfunction.",
+        "Không; cần dùng API đúng như findUnique và cấu hình client tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Nguồn chưa định nghĩa db; không bịa dependency integration đã hoạt động."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Fixed window burst",
+      "question": "Policy fixed window100/phút có cho phép burst gần200 requests quanh ranh giới hai window không?",
+      "options": [
+        "Có thể, dù mỗi window riêng vẫn không vượt100.",
+        "Không,mọi window có nghĩa sliding exact.",
+        "Chỉ khi JSON.",
+        "Tự cấm bằng max100."
+      ],
+      "correct": 0,
+      "explanation": "Chọn thuật toán theo burst/smoothing yêu cầu, không suy quota window thành mọi khoảng trượt."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Proxy trust identity",
+      "question": "Rate limit dựa req.ip sau proxy cần tránh điều gì?",
+      "options": [
+        "Test network topology thật.",
+        "Tin tùy ý forwarded headers hoặc coi mọi clients chung IP proxy do cấu hình sai.",
+        "Định nghĩa proxy tin cậy.",
+        "Kiểm tra client identity policy."
+      ],
+      "correct": 1,
+      "explanation": "Trust proxy cần khớp topology, không đặt bừa toàn bộ requests làtrusted."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cache stampede",
+      "question": "Một hot key hết TTL và nghìn request cùng miss có thể gây gì?",
+      "options": [
+        "Redis tự gộp mọi DB calls ngoài nó.",
+        "Không vìsource cóawait.",
+        "DB spike; cân nhắc single-flight,TTL jitter hoặc refresh policy có budget.",
+        "Mỗirequest tự chỉ đọc cache."
+      ],
+      "correct": 2,
+      "explanation": "Cache expiry có thể đồng bộ tải, cần bảo vệ nguồn dữ liệu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Single flight cleanup",
+      "question": "Map giữ in-flight Promise bị reject mà không remove có nguy cơ gì?",
+      "options": [
+        "Tự retry đúngmọi trườnghợp.",
+        "Tự refreshTTL.",
+        "Không vìPromiseimmutable.",
+        "Các lần sau tái dùng rejection mãi hoặc leak entries theo thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Cleanup/finally và per-key lifetime là phần correctness của coalescing."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Stale fill race",
+      "question": "Reader lấy DB version cũ chậm rồi set cache sau writer đã cập nhật/invalidate có thể gây gì?",
+      "options": [
+        "Tái populate cache bằng dữ liệu cũ.",
+        "Invalidation một lần luôn loại race.",
+        "Redis tự biết DBversion.",
+        "JSON.stringify tự chọnlatest."
+      ],
+      "correct": 0,
+      "explanation": "Cần version/order/invalidation design theo consistency requirement."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Sensitive cached model",
+      "question": "Cache toàn User record rồi trả không lọc có thể gây vấn đề gì?",
+      "options": [
+        "TTL làm datakhôngnhạycảm.",
+        "Lộ field nội bộ nếu model có dữ liệu không dành client.",
+        "Cache tự whitelist mọisecret.",
+        "Redis tự validate quyềncaller."
+      ],
+      "correct": 1,
+      "explanation": "DTO/projection và key/access scope phải rõ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Outbox atomicity",
+      "question": "DB commit order và publish event là hai thao tác riêng; giải pháp cho crash gap có thể là gì?",
+      "options": [
+        "Chỉ đặtqueue tên reliable.",
+        "Chỉ thêmretry vô hạn.",
+        "Transactional outbox với dispatcher và consumer idempotency phù hợp.",
+        "Chỉ Promise.all cả hai là atomic."
+      ],
+      "correct": 2,
+      "explanation": "Ghi trạng thái và intent trong cùng transaction rồi phát có kiểm soát."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Consumer dedupe race",
+      "question": "Hai consumers cùng thấy event ID chưa xử lý rồi cùng apply effect; cần tính chất nào?",
+      "options": [
+        "Chỉ checkSet trong RAM mỗi process.",
+        "Chỉ delayed ack.",
+        "Chỉ logger.",
+        "Dedupe claim/effect atomic theo storage transaction/constraint phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Check-then-act tách rời không bảo vệ dưới concurrency."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Distributed transaction alternative",
+      "question": "Order/payment/inventory ở các services khác nhau cần xử lý partial success; có thể dùng gì?",
+      "options": [
+        "Workflow/saga compensation và idempotency theo nghiệp vụ.",
+        "Tin một JS try/catch rollback mọi DB.",
+        "Chỉ gộp endpoint names.",
+        "Chỉ tạo chungDocker network."
+      ],
+      "correct": 0,
+      "explanation": "Compensation không là undo hoàn hảo mọi effect, phải thiết kế states/recovery."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Retry amplification",
+      "question": "Gateway và mỗi downstream đều retry nhiều lần có thể gây gì?",
+      "options": [
+        "Tự giảm request count.",
+        "Khuếch đại tải và side effects trùng khi dependency lỗi.",
+        "Luôn tăngavailability khôngcost.",
+        "Tự giữdeadline khôngđổi."
+      ],
+      "correct": 1,
+      "explanation": "Quản lý retry budget,backoff,jitter,idempotency và deadline toàn tuyến."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Poison messages",
+      "question": "Consumer retry vô hạn message payload không bao giờ hợp lệ có nguy cơ gì?",
+      "options": [
+        "Tự thànhvalid sauN lần chắcchắn.",
+        "Không ảnh hưởng khiqueueasync.",
+        "Chiếm capacity/loop; cần phân loại lỗi,dead-letter/quarantine và quan sát phù hợp.",
+        "Tự sửa schema."
+      ],
+      "correct": 2,
+      "explanation": "Không đối xử validation failure như transient infrastructure error."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Availability cache fallback",
+      "question": "Redis outage khiến mọi cache request đổ sang DB có thể gây gì?",
+      "options": [
+        "Luôn safe vìDBlànguồn truth.",
+        "Redis outage tự tăng DB capacity.",
+        "Không vì Node async.",
+        "DB overload cascading; fallback cần giới hạn/degradation budget."
+      ],
+      "correct": 3,
+      "explanation": "Fallback availability không miễn tài nguyên hữu hạn."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Freshness contract",
+      "question": "TTL1h có đủ cam kết permission/account-state reads luôn cập nhật tức thì không?",
+      "options": [
+        "Không.",
+        "Có vìkey tựexpire.",
+        "Có vìgetJSON.",
+        "Có vìgatewayauthenticated."
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu quyền nhạy freshness cần invalidation/current-state policy phù hợp SLA."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Shared store failure",
+      "question": "Distributed rate-limit store mất kết nối cần quyết định gì?",
+      "options": [
+        "Coi counter bằng0 và chứng minh quota đúng.",
+        "Fail-open/closed/degrade policy theo rủi ro và capacity, có monitoring.",
+        "Luôn cho qua vô hạn không báo.",
+        "Luôn shutdown mọi hệ thống không xét."
+      ],
+      "correct": 1,
+      "explanation": "Policy ngoại lệ phải rõ và được thử, không coi store availability tuyệt đối."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Request deadline propagation",
+      "question": "Gateway timeout2s nhưng downstream tiếp tục30s sau client gone gây gì?",
+      "options": [
+        "Không ảnh hưởng vì async.",
+        "Chỉ mất log.",
+        "Lãng phí tài nguyên/side effects; cần propagate deadline/cancel theo API có hỗ trợ.",
+        "Tự rollbackmọi effect."
+      ],
+      "correct": 2,
+      "explanation": "Timeout trả response không tự hủy công việc đã khởi động."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Service boundary cost",
+      "question": "Tách mọi CRUD call nhỏ thành network hop có thể làm gì?",
+      "options": [
+        "Luôn nhanh hơn monolith.",
+        "Tự giảm cần transaction.",
+        "Không cần version contracts.",
+        "Tăng latency,coupling qua chatty calls và failure modes."
+      ],
+      "correct": 3,
+      "explanation": "Dùng ranh giới domain thực thay vì số service như mục tiêu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Health readiness semantics",
+      "question": "Gateway200 kèm danh sách service names có đủ để load balancer kết luận dependencies thiết yếu sẵn sàng không?",
+      "options": [
+        "Chưa;cần readiness contract/probes bounded thích hợp.",
+        "Đủ vìcó3 tên.",
+        "Đủ vì JSON.",
+        "Đủ vì rateLimit."
+      ],
+      "correct": 0,
+      "explanation": "Liveness và readiness có thể khác, tránh deep probes gây cascade."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Message ordering domain",
+      "question": "Có queue không tự bảo đảm các events cùng order được apply đúng thứ tự nếu xử lý parallel; cần gì?",
+      "options": [
+        "Chỉ DTO có type.",
+        "Partition/key sequencing hoặc version/conflict policy theo yêu cầu.",
+        "Chỉtimestamp từ mọi máy khác nhau.",
+        "Chỉ tăng consumer vô hạn."
+      ],
+      "correct": 1,
+      "explanation": "Ordering scope và concurrency phải khớp invariant của aggregate."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Scaling connection pools",
+      "question": "Tăng services/replicas mà mỗi process có DB/Redis pool riêng cần xét gì?",
+      "options": [
+        "Chỉ CPU server app.",
+        "Không vì container isolated.",
+        "Tổng connection/memory budget và downstream saturation.",
+        "Mọi pools tự dùng1 connection."
+      ],
+      "correct": 2,
+      "explanation": "Scale một tầng có thể vượt giới hạn tầng khác."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Capacity evidence",
+      "question": "Gateway có cache/queue/container có đủ để hứa triệu concurrent users không?",
+      "options": [
+        "Có vìmicroservices.",
+        "Có vìRedis.",
+        "Có vìmax100.",
+        "Không;cần workload/SLO/capacity tests và đo bottlenecks các tầng."
+      ],
+      "correct": 3,
+      "explanation": "Capacity là kết quả điều kiện cụ thể, không suy từ tên pattern."
+    }
+  ]
+}

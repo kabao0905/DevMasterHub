@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "csharp",
+  "level": "mid",
+  "lesson": "ef-core",
+  "language": "vi",
+  "sourceHash": "d0a9f75b739e82abf12b722e59b1324b704d7968b496a1b643fdacff44f55eb1",
+  "status": "approved",
+  "review": "Tự soạn không API. Microsoft EF Core docs review:relationship conventions,eager loading,tracking,DbContext unit-of-work/thread safety,migrations. Source Tag/context/provider/config thiếu;không EF package/SDK/DB integration. Không dùng LINQ-to-Objects hoặc SQLite fixture ngoài EF làm provider proof. Facts có qualifier theo conventions/config,không claim exact SQL/query count/performance hoặc schema đã apply.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "ORM purpose",
+      "question": "EF Core chủ yếu là loại công cụ gì?",
+      "options": [
+        "Object-relational mapper cho .NET.",
+        "Một browser CSS renderer.",
+        "Một HTTP load balancer.",
+        "Một C# keyword."
+      ],
+      "correct": 0,
+      "explanation": "ORM hỗ trợ làm việc với mapped data qua model/API."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Context role",
+      "question": "DbContext thường đóng vai trò gì trong EF Core?",
+      "options": [
+        "Một frontend component.",
+        "Phiên làm việc/unit-of-work cho model, queries và change tracking theo configuration.",
+        "Một database server độc lập bắt buộc.",
+        "Một singleton cache mọi users."
+      ],
+      "correct": 1,
+      "explanation": "Context object không đồng nghĩa toàn bộ database process."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Blog set",
+      "question": "AppDbContext nguồn expose tập Blogs qua kiểu nào?",
+      "options": [
+        "Task<Post>.",
+        "IEnumerable<Tag> duy nhất.",
+        "DbSet<Blog>.",
+        "List<string>."
+      ],
+      "correct": 2,
+      "explanation": "Set<Blog>() lấy DbSet tương ứng model."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Post set",
+      "question": "AppDbContext nguồn expose tập Posts qua kiểu nào?",
+      "options": [
+        "DbSet<Blog> cùng property.",
+        "List<int>.",
+        "Dictionary<string, bool>.",
+        "DbSet<Post>."
+      ],
+      "correct": 3,
+      "explanation": "Các sets đại diện entity types được map."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Blog fields",
+      "question": "Blog nguồn có collection navigation nào?",
+      "options": [
+        "Posts.",
+        "Tags trực tiếp duy nhất.",
+        "Users.",
+        "Comments đã implement."
+      ],
+      "correct": 0,
+      "explanation": "Blog.Posts là List<Post> được khởi tạo."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Post reference",
+      "question": "Post nguồn có reference navigation nào tới Blog?",
+      "options": [
+        "Title.",
+        "Blog.",
+        "Url.",
+        "Content."
+      ],
+      "correct": 1,
+      "explanation": "BlogId là scalar FK khác navigation reference."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Foreign key field",
+      "question": "Property nào được source chỉ rõ làm FK từ Post tới Blog?",
+      "options": [
+        "Title.",
+        "Post.Id luôn đồng thờiFK.",
+        "BlogId.",
+        "Content."
+      ],
+      "correct": 2,
+      "explanation": "HasForeignKey(p=>p.BlogId) cấu hình mapping đó."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "One to many shape",
+      "question": "HasMany(b=>b.Posts).WithOne(p=>p.Blog) mô tả gì?",
+      "options": [
+        "Mỗi Blog chỉ có một Post và mọi Post có nhiều Blogs.",
+        "Một many-to-many đã đủ cấu hình Tags.",
+        "Một HTTP relationship.",
+        "Một Blog liên quan nhiều Posts, mỗi Post thuộc một Blog theo mapping đó."
+      ],
+      "correct": 3,
+      "explanation": "Relationship shape cần tách khỏi actual database state."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Model configuration hook",
+      "question": "OnModelCreating nguồn dùng để làm gì?",
+      "options": [
+        "Cấu hình EF model qua ModelBuilder.",
+        "Tự xử lý mỗi HTTP request.",
+        "Tự render UI.",
+        "Tự chạy toàn bộ migrations khi class được khai báo."
+      ],
+      "correct": 0,
+      "explanation": "Model building không tự là database deployment."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Title default",
+      "question": "Blog.Title nguồn khởi tạo bằng gì?",
+      "options": [
+        "Một URL.",
+        "Chuỗi rỗng.",
+        "Tech bắt buộc.",
+        "null! trong source Blog.Title."
+      ],
+      "correct": 1,
+      "explanation": "Default initializer không là domain validation."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "URL default",
+      "question": "Blog.Url nguồn khởi tạo bằng gì?",
+      "options": [
+        "Một database connection string.",
+        "Một Uri object bắt buộc.",
+        "Chuỗi rỗng.",
+        "Một URL production được validate."
+      ],
+      "correct": 2,
+      "explanation": "Type string không tự validate URL semantics."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Tags navigation",
+      "question": "Post.Tags nguồn có kiểu gì?",
+      "options": [
+        "Tag duy nhất nonnullable int.",
+        "List<Blog>.",
+        "Dictionary<int, Post>.",
+        "List<Tag>."
+      ],
+      "correct": 3,
+      "explanation": "Tag definition chưa được cung cấp trong snippet."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Source filter",
+      "question": "Query nguồn lọc theo text nào trong Blog.Title?",
+      "options": [
+        "Tech.",
+        "News.",
+        "Post.",
+        "User."
+      ],
+      "correct": 0,
+      "explanation": "Predicate đọc p.Blog.Title.Contains(\"Tech\")."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Eager load source",
+      "question": "Include(p=>p.Tags) yêu cầu load related data nào?",
+      "options": [
+        "Mọi tables trong database.",
+        "Tags của Posts theo query/model contract.",
+        "Mọi Users trong hệ thống.",
+        "Mọi Blogs bất kể filter."
+      ],
+      "correct": 1,
+      "explanation": "Include không có nghĩa tải toàn bộ graph vô hạn."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Source ordering",
+      "question": "Query source sắp xếp theo gì?",
+      "options": [
+        "Tag.Name giảm dần.",
+        "Random.",
+        "Post.Id giảm dần.",
+        "Blog.Title tăng dần."
+      ],
+      "correct": 2,
+      "explanation": "Ordering explicit giúp xác định prefix lấy bởi Take."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Source result bound",
+      "question": "Take(10) nguồn nhắm giới hạn gì?",
+      "options": [
+        "Tổng mọi Tags tối đa10 bắt buộc.",
+        "Database chỉ còn10rows.",
+        "Mọi query trên context về sau10items.",
+        "Tối đa10 Post results của sequence theo semantics query."
+      ],
+      "correct": 3,
+      "explanation": "Related collection row volume có thể khác result entity count."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Materialization source",
+      "question": "ToListAsync nguồn nhằm làm gì?",
+      "options": [
+        "Thực thi/materialize query thành list bất đồng bộ theo provider.",
+        "Chỉ đổi tên query và không bao giờ chạy.",
+        "Tự ghi mọi tracked changes.",
+        "Tự tạo migration."
+      ],
+      "correct": 0,
+      "explanation": "Query execution khác SaveChanges."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Code first meaning",
+      "question": "Code-First trong bài chủ yếu khởi đầu từ gì?",
+      "options": [
+        "Một raw pointer.",
+        "Entity model/configuration trong code để quản lý schema qua tooling phù hợp.",
+        "Một database đã tạo tự từ mỗi property access.",
+        "Một HTML form."
+      ],
+      "correct": 1,
+      "explanation": "Migrations cần được tạo, review và áp dụng theo quy trình."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Save changes role",
+      "question": "SaveChanges/SaveChangesAsync thường dùng cho việc gì?",
+      "options": [
+        "Tự publish frontend.",
+        "Tự tạo auth tokens.",
+        "Persist các changes được context xử lý theo unit-of-work/provider contract.",
+        "Chỉ đọc list không bao giờ ghi."
+      ],
+      "correct": 2,
+      "explanation": "Source query snippet chưa gọi SaveChanges."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Source missing types",
+      "question": "Type nào được dùng trong Post nhưng chưa có definition trong snippet?",
+      "options": [
+        "Blog.",
+        "Post.",
+        "AppDbContext.",
+        "Tag."
+      ],
+      "correct": 3,
+      "explanation": "Snippet chưa là project EF đầy đủ runnable."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Primary key convention",
+      "question": "Theo EF key conventions thông thường, nếu không override, property Id trên Blog/Post thường được nhận diện thế nào?",
+      "options": [
+        "Primary key candidate tương ứng entity.",
+        "Luôn là foreign key tới Tag.",
+        "Một ignored property.",
+        "Một computed HTTP status."
+      ],
+      "correct": 0,
+      "explanation": "Explicit model configuration có thể thay conventions."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Key generation assumptions",
+      "question": "Id:int có đủ chứng minh mọi provider tạo IDs cùng cơ chế DB identity không?",
+      "options": [
+        "Chỉ cần DbSet.",
+        "Không; value generation phụ thuộc mapping/provider/configuration.",
+        "Có; mọi provider đều SQL Server identity.",
+        "Có; int tự unique global không cần storage."
+      ],
+      "correct": 1,
+      "explanation": "Không bịa exact DDL hoặc key allocator từ snippet."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "FK nullability",
+      "question": "Post.BlogId:int nonnullable gợi ý required relationship theo conventions như thế nào?",
+      "options": [
+        "FK tự enforce bằng C# field mà không cần DB constraints.",
+        "Mọi Blogs phải có ít nhất một Post.",
+        "FK không nullable tương ứng required relationship nếu configuration không đổi semantics.",
+        "Mọi Post luôn có Blog object loaded trong RAM."
+      ],
+      "correct": 2,
+      "explanation": "Required relationship không đồng nghĩa navigation luôn materialized."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Principal minimum children",
+      "question": "Required Post->Blog relationship có bắt buộc mọi Blog có ít nhất một Post không?",
+      "options": [
+        "Có; HasMany luôn min1.",
+        "Có; List initializer tự thêm một Post.",
+        "Chỉ cần int BlogId.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Required dependent-to-principal khác cardinality minimum của principal collection."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Null forgiving navigation",
+      "question": "Post.Blog=null! trong source làm gì ở runtime?",
+      "options": [
+        "Gán null reference; ! suppress nullable analysis, không tạo Blog object.",
+        "Tự new Blog.",
+        "Tự query DB ngay.",
+        "Tự bắt buộc lazy loading proxies."
+      ],
+      "correct": 0,
+      "explanation": "Actual navigation population tùy loading/fixup và usage."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Collection initializer meaning",
+      "question": "Posts/Tags=new() có chứng minh related entities đã được đọc từ database chưa?",
+      "options": [
+        "Chỉ cần DbContext.",
+        "Không; chỉ khởi tạo collection object rỗng.",
+        "Có; initializer tự query mọi children.",
+        "Có; List là lazy loading proxy bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Empty collection có thể là chưa load hoặc thực sự không có data tùy state/contract."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Include persistence confusion",
+      "question": "Include(p=>p.Tags) có tự insert các Tags chưa lưu không?",
+      "options": [
+        "Có; query tự create missing Tags.",
+        "Chỉ cần navigation public.",
+        "Không; nó liên quan loading query results.",
+        "Có; Include tự SaveChanges."
+      ],
+      "correct": 2,
+      "explanation": "Loading và saving là operations khác nhau."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Navigation filter versus include",
+      "question": "Filter p.Blog.Title có bắt buộc phải thêm Include(p=>p.Blog) để provider có thể dùng relationship trong SQL filter không?",
+      "options": [
+        "Có; mọi navigation access trong query luôn cần Include mới có SQL.",
+        "Có; nếu không compiler tự dereference null local.",
+        "Chỉ cần ToListAsync.",
+        "Không theo mô hình query thông thường; filter translation và eager loading result navigation là nhu cầu khác."
+      ],
+      "correct": 3,
+      "explanation": "Provider support vẫn cần actual integration verification."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Blog loaded inference",
+      "question": "Không Include Blog có cho phép khẳng định Blog navigation chắc chắn null trong mọi context state không?",
+      "options": [
+        "Không; fixup/previously tracked entities/loading configuration có thể ảnh hưởng.",
+        "Có; EF cấm populate navigation không Include.",
+        "Có; null! khóa field thành null vĩnh viễn.",
+        "Chỉ cần BlogId."
+      ],
+      "correct": 0,
+      "explanation": "Không suy object graph state mạnh hơn query/model contract."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Default tracking",
+      "question": "Với keyed entity query và tracking configuration mặc định chưa đổi, EF thường làm gì?",
+      "options": [
+        "Tự persist mọi assignments ngay không cần SaveChanges.",
+        "Track entities được materialize theo tracking query contract.",
+        "Không bao giờ track bất kỳ query nào.",
+        "Tự deep clone toàn DB."
+      ],
+      "correct": 1,
+      "explanation": "Context/global/query options có thể đổi behavior."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Source tracking opt out",
+      "question": "Query nguồn có AsNoTracking tường minh chưa?",
+      "options": [
+        "Có; Include tự no-tracking.",
+        "Chỉ cần async.",
+        "Chưa.",
+        "Có; Take(10) tự no-tracking."
+      ],
+      "correct": 2,
+      "explanation": "Không khẳng định actual config defaults khi project setup chưa có."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Tracking and save",
+      "question": "Sửa Title của tracked entity có tự đảm bảo đã durable ngay sau assignment không?",
+      "options": [
+        "Có; mọi property setter tự SQLUPDATE.",
+        "Có; change tracker là database.",
+        "Chỉ cần nullable enabled.",
+        "Không; persistence cần SaveChanges/transaction behavior phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Local change detection và commit khác nhau."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "No tracking use case",
+      "question": "AsNoTracking thường phù hợp khi nào?",
+      "options": [
+        "Read-only entity results không cần context theo dõi để update theo usage đó.",
+        "Mọi queries luôn phải nhanh hơn trong mọi data shapes.",
+        "Muốn bỏ authorization.",
+        "Muốn làm database read-only toàn server."
+      ],
+      "correct": 0,
+      "explanation": "Performance cần đo; identity resolution/tracking requirements có tradeoffs."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "No tracking mutability",
+      "question": "AsNoTracking có làm entity objects immutable không?",
+      "options": [
+        "Chỉ với Blog.",
+        "Không; nó đổi tracking behavior chứ không freeze object.",
+        "Có; mọi setters bị xóa runtime.",
+        "Có; data được mã hóa."
+      ],
+      "correct": 1,
+      "explanation": "Object mutability khác context tracking."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "No tracking save expectations",
+      "question": "Sửa entity từ no-tracking query rồi gọi SaveChanges có nên mặc định hứa changes tự được persist không?",
+      "options": [
+        "Có; entities tự biết connection string.",
+        "Chỉ cần Id.",
+        "Không; entity cần được context quản lý theo update/attach contract phù hợp.",
+        "Có; SaveChanges scan mọi objects trong process."
+      ],
+      "correct": 2,
+      "explanation": "Cần explicit state/ownership strategy."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Identity resolution purpose",
+      "question": "Tracking query identity resolution thường giúp gì?",
+      "options": [
+        "Tự enforce global business uniqueness mọi apps.",
+        "Tự tạo distributed cache.",
+        "Tự sort all query outputs.",
+        "Dùng cùng entity instance cho cùng key trong context theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Identity map trong context khác system-wide identity allocation."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "No tracking identity variant",
+      "question": "AsNoTrackingWithIdentityResolution hỗ trợ mục tiêu nào?",
+      "options": [
+        "Identity resolution cho query results mà không dùng normal persistent context tracking như tracking query.",
+        "Tự tạo singleton DbContext.",
+        "Tự updateDB khi object mutate.",
+        "Tự kiểm tenant permissions."
+      ],
+      "correct": 0,
+      "explanation": "Không lẫn scopes của tracking và identity resolution."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "N plus one meaning",
+      "question": "N+1 query problem thường mô tả gì?",
+      "options": [
+        "Một lỗi compiler generic.",
+        "Một query lấy entities rồi thêm queries liên quan lặp theo từng entity trong pattern không mong muốn.",
+        "Mọi Include luôn đúng một query bất kể config.",
+        "Mọi query trả N+1rows."
+      ],
+      "correct": 1,
+      "explanation": "Cần quan sát actual query behavior, không suy số queries từ một keyword."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Include performance limit",
+      "question": "Include Tags có tự giải quyết mọi performance issues của query không?",
+      "options": [
+        "Có; Include tự tạo indexes tối ưu.",
+        "Chỉ cần Take10.",
+        "Không; còn row volume, projection, indexes, queryshape/provider và workload.",
+        "Có; Include luôn optimal."
+      ],
+      "correct": 2,
+      "explanation": "Eager loading có thể tốn thêm dữ liệu hoặc cần split design."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Split versus single queries",
+      "question": "Chọn split query thay single query có tradeoff nào cần xét?",
+      "options": [
+        "Luôn ít network calls hơn.",
+        "Tự là distributed transaction.",
+        "Không bao giờ có latency cost.",
+        "Roundtrips, consistency, data duplication và query shape theo requirements."
+      ],
+      "correct": 3,
+      "explanation": "Không hứa một mode tối ưu cho mọi workloads."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Take root versus related rows",
+      "question": "10Posts mỗi Post có100Tags có nghĩa transport/storage phải xử lý tối đa10rows không?",
+      "options": [
+        "Không; related data volume có thể lớn hơn root entity count.",
+        "Có; Take tự xóa bớt Tags.",
+        "Có; Include chỉ lấy một Tag mỗi Post.",
+        "Chỉ cần List."
+      ],
+      "correct": 0,
+      "explanation": "Limit entity results không tự bound toàn graph bằng cùng con số."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Projection purpose",
+      "question": "Nếu UI chỉ cần Post.Id/Title, countTags, projection phù hợp có lợi ích gì?",
+      "options": [
+        "Tự bỏ domain validation.",
+        "Chỉ yêu cầu representation cần thiết theo provider translation/support.",
+        "Tự bảo đảm mọi query faster100lần.",
+        "Tự làm mọi mutation durable."
+      ],
+      "correct": 1,
+      "explanation": "Chọn data shape và đo actual costs khi cần."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Contains collation",
+      "question": "Title.Contains(\"Tech\") có luôn cùng case/accent behavior mọi database providers không?",
+      "options": [
+        "Có; EF tự normalize tiếng Việt.",
+        "Chỉ nếu string non-null.",
+        "Không; translation/collation/provider semantics cần xác nhận.",
+        "Có; mọi DB dùng ordinal case-sensitive C# như nhau."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng local string fixture thay provider evidence."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Index use assumption",
+      "question": "Dùng Contains có tự chứng minh database dùng index hiệu quả chưa?",
+      "options": [
+        "Rồi; method name tự là full-text index.",
+        "Rồi; EF luôn autoindex mọi expression.",
+        "Chỉ cần Take10.",
+        "Chưa; cần generated query, indices, plan và data/workload phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Query syntax không là execution-plan proof."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Query materialization timing",
+      "question": "Tạo IQueryable bằng Where/Include/OrderBy có tự chạy full SQL ngay ở mỗi operator không?",
+      "options": [
+        "Không thông thường; query được compose rồi thực thi khi consumption như ToListAsync.",
+        "Có; mỗi operator luôn roundtrip riêng.",
+        "Có; var tự eager materialize.",
+        "Chỉ cần using EF."
+      ],
+      "correct": 0,
+      "explanation": "Immediate terminal operations và provider behavior cần phân biệt."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Async concurrency misconception",
+      "question": "ToListAsync có nghĩa có thể chạy nhiều operations đồng thời trên cùng DbContext tùy ý không?",
+      "options": [
+        "Chỉ cần AsNoTracking.",
+        "Không; DbContext không hỗ trợ simultaneous operations theo contract.",
+        "Có; async tự lock context.",
+        "Có; mọi Task tạo context copy."
+      ],
+      "correct": 1,
+      "explanation": "Await operations hoặc dùng contexts phù hợp theo thiết kế."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Context thread safety",
+      "question": "DbContext thường được dùng với giả định nào?",
+      "options": [
+        "Mọi members thread-safe tuyệt đối.",
+        "Lifetime luôn một process.",
+        "Unit-of-work scope và không chia sẻ concurrent tùy ý giữa threads/tasks.",
+        "Singleton mutable global cho mọi users là mặc định an toàn."
+      ],
+      "correct": 2,
+      "explanation": "Context lifetime và disposal phải được thiết kế."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Migration generation apply",
+      "question": "Tạo migration có đồng nghĩa schema mọi environments đã được cập nhật chưa?",
+      "options": [
+        "Có; command tạo file tự chạy trên mọi DB.",
+        "Có; Git tự deploy migrations.",
+        "Chỉ cần model compile.",
+        "Không; còn review/apply và deployment state."
+      ],
+      "correct": 3,
+      "explanation": "Không áp migration hoặc truy cập DB trong task nội dung."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Model change persistence",
+      "question": "Thêm property vào Blog class có tự tạo database column trên production ngay không?",
+      "options": [
+        "Không.",
+        "Có; property reflection tự ALTERTABLE mỗi request.",
+        "Có; compiler sửa DB.",
+        "Chỉ cần public set."
+      ],
+      "correct": 0,
+      "explanation": "Schema evolution cần quy trình phù hợp."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Source provider setup gap",
+      "question": "Source đã thể hiện connection/provider configuration cụ thể chưa?",
+      "options": [
+        "Chỉ cần async.",
+        "Chưa.",
+        "Có; AppDbContext tên quyết định SQLServer.",
+        "Có; DbSet<Post> tự chọn SQLite."
+      ],
+      "correct": 1,
+      "explanation": "Không đọc secrets hoặc giả connection setup trong review này."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Source context variable",
+      "question": "Usage await context.Posts có context variable được tạo/wire rõ trong snippet không?",
+      "options": [
+        "Có; OnModelCreating tự khai báo local.",
+        "Chỉ cần DbContext base.",
+        "Chưa.",
+        "Có; C# tự tạo theo tên context."
+      ],
+      "correct": 2,
+      "explanation": "Snippet cần supporting setup để chạy thực tế."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Tag relationship completeness",
+      "question": "List<Tag> cùng Include có đủ xác định đầy đủ Tag schema/join relation khi Tag class thiếu không?",
+      "options": [
+        "Đủ; mọi Tags tự có Name/Id và many-to-many inverse.",
+        "Đủ; compiler tự sinh Tag.",
+        "Chỉ cần List initializer.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Không bịa supporting entity model."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Null suppression is not relation",
+      "question": "null! trên Post.Blog có tự tạo FK constraint ở DB không?",
+      "options": [
+        "Không.",
+        "Có; ! là relationship attribute.",
+        "Có; mọi null! tự migration.",
+        "Chỉ cần BlogId:int."
+      ],
+      "correct": 0,
+      "explanation": "EF model/database configuration và C# nullable suppression khác nhau."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Validation empty strings",
+      "question": "Title/Url mặc định empty có tự là meaningful valid values theo domain không?",
+      "options": [
+        "Chỉ need SaveChanges.",
+        "Không; cần rules tương ứng.",
+        "Có; non-nullable string tự hợp lệ mọi nghiệp vụ.",
+        "Có; EF luôn validate URL."
+      ],
+      "correct": 1,
+      "explanation": "Not-null shape không đủ cho content validity."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Foreign key database enforcement",
+      "question": "C# có BlogId field có đủ chứng minh orphan rows không thể có trong actual DB chưa?",
+      "options": [
+        "Đủ; navigation name tự protect mọi SQL clients.",
+        "Chỉ cần Include.",
+        "Chưa; cần actual schema/constraints/provider/application paths phù hợp.",
+        "Đủ; mọi int là validFK."
+      ],
+      "correct": 2,
+      "explanation": "Model intent và deployed schema phải khớp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Delete behavior explicitness",
+      "question": "Source HasMany/WithOne/FK đã ghi explicit OnDelete policy chưa?",
+      "options": [
+        "Rồi; luôn Restrict mọi database.",
+        "Rồi; luôn soft delete.",
+        "Chỉ cần intFK.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Conventions/config/provider có thể quyết định defaults; không bịa custom policy đã có."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Pagination implementation",
+      "question": "Take10 có đủ là API phân trang hoàn chỉnh chưa?",
+      "options": [
+        "Chưa; source chỉ lấy prefix, không cursor/offset contract rõ.",
+        "Đủ; tự tạo nextPageToken.",
+        "Đủ; clients luôn biết tổng số.",
+        "Chỉ cần Id descending."
+      ],
+      "correct": 0,
+      "explanation": "Pagination còn consistency/order/navigation requirements."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Ordering temporal meaning",
+      "question": "Id giảm dần có tự bảo đảm là created-time mới nhất theo business requirement không?",
+      "options": [
+        "Chỉ cần primarykey.",
+        "Không; chỉ order theo Id, semantics thời gian phụ thuộc ID scheme/data.",
+        "Có; mọi intID chứa timestamp.",
+        "Có; EF tự thêm CreatedAt."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất identifier với creation time khi chưa có contract."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Save source absent",
+      "question": "Query source có ghi Post/Blog changes xuống DB không?",
+      "options": [
+        "Có; Include ghi relations.",
+        "Chỉ cần tracking.",
+        "Không thấy write/SaveChanges trong snippet này.",
+        "Có; mọi ToListAsync là save."
+      ],
+      "correct": 2,
+      "explanation": "Tracking query không tự commit mọi data."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Data authorization",
+      "question": "Filter Blog.Title.Contains Tech có tự tách tenant/owner permissions không?",
+      "options": [
+        "Có; string filter là authorization.",
+        "Có; EF tự biết user session.",
+        "Chỉ need scopedcontext.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Data access predicates cần security requirements riêng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Tracked stale values",
+      "question": "Một query tracking trả entity đã có trong context có luôn overwrite mọi local modified properties bằng DB values không?",
+      "options": [
+        "Không; identity/tracking behavior có thể giữ current/original values theo contract.",
+        "Có; mọi query tự reload force.",
+        "Có; AsTracking nghĩa discard mọi local changes.",
+        "Chỉ cần Include."
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần refresh state phải dùng strategy/API phù hợp."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Filtered include fixup caveat",
+      "question": "Trong context tracking đã load related entities trước đó, filtered Include cần chú ý gì?",
+      "options": [
+        "Chỉ no-tracking mới có fixup từ tracker.",
+        "Navigation fixup có thể khiến observed navigation chứa tracked entities ngoài expectation filter nếu không xét context state.",
+        "Filtered Include tự xóa mọi tracked unrelated rows.",
+        "Mọi context luôn empty."
+      ],
+      "correct": 1,
+      "explanation": "Không giả mỗi query luôn bắt đầu với graph hoàn toàn sạch."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Multiple collections growth",
+      "question": "Nếu thêm nhiều collection Includes cùng cấp, single-query shape có thể gặp gì?",
+      "options": [
+        "Tự giảm network cost về0.",
+        "Không cần xem plan vì EF.",
+        "Row multiplication/data duplication theo joins, phải xem actual queryshape và strategy.",
+        "Luôn đúng một row mỗi root bất kể children."
+      ],
+      "correct": 2,
+      "explanation": "Source hiện chỉ Include Tags; đây là lưu ý cho mở rộng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Split consistency tradeoff",
+      "question": "Split query nhiều roundtrips có tự đọc một immutable snapshot trong mọi isolation levels không?",
+      "options": [
+        "Có; split tự serializable trên mọi providers.",
+        "Có; ToListAsync tự freeze database.",
+        "Chỉ cần tracking.",
+        "Không; cần isolation/transaction/data consistency policy phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không chọn strategy chỉ dựa query count."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Keyset pagination criteria",
+      "question": "Nếu muốn paging bền vững theo Id giảm dần, thiết kế cursor cần xem gì?",
+      "options": [
+        "Ordering unique/stable và điều kiện continuation/consistency theo data requirements.",
+        "Chỉ Take10 mọi lần.",
+        "Chỉ đổi List thành IEnumerable.",
+        "Một random offset không docs."
+      ],
+      "correct": 0,
+      "explanation": "Có index và plan phù hợp cũng cần actual verification."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Concurrent context failure",
+      "question": "Vì sao Task.WhenAll hai EF queries trên cùng context không tự là optimization an toàn?",
+      "options": [
+        "Vì AsNoTracking luôn thread-safe toàn context.",
+        "Nó có thể tạo overlapping operations mà DbContext không hỗ trợ.",
+        "Vì WhenAll luôn tuần tự.",
+        "Vì Task tự chạy SQL hai lần để dedupe."
+      ],
+      "correct": 1,
+      "explanation": "Parallel data work cần contexts/lifetimes/transactions phù hợp."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Provider testing selection",
+      "question": "LINQ-to-Objects test có thay integration test cho SQL collation/translation/constraints không?",
+      "options": [
+        "Có; sequence output đủ prove queryplan.",
+        "Chỉ nếu cùng C# version.",
+        "Không.",
+        "Có; tất cả LINQ providers identical."
+      ],
+      "correct": 2,
+      "explanation": "Chọn test backend theo behavior cần xác nhận."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Inmemory provider limits",
+      "question": "EF InMemory test có tự chứng minh relational FK/transaction/querytranslation behavior trên productionDB không?",
+      "options": [
+        "Có; mọi EFproviders cùng SQL engine.",
+        "Có; type signatures giống là đủ.",
+        "Chỉ cần SaveChanges.",
+        "Không; provider semantics khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Task không chạy EF InMemory hoặc productionDB."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Projection tracking nuance",
+      "question": "Projection anonymous object có chứa actual entity instances có tự bảo đảm no-tracking không?",
+      "options": [
+        "Không; entity instances trong projection vẫn có thể được tracked theo query config.",
+        "Có; anonymous luôn xóa tracker.",
+        "Có; mọi Select là AsNoTracking.",
+        "Chỉ cần DTO name."
+      ],
+      "correct": 0,
+      "explanation": "Projection scalar-only và entity-containing khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Relation loaded versus required",
+      "question": "Required BlogId có bảo đảm accessing Post.Blog.Title luôn an toàn trên entity mới new trong RAM không?",
+      "options": [
+        "Chỉ cần Include ở một query khác.",
+        "Không; navigation có thể chưa được set/load dù model relation required.",
+        "Có; FK tự allocate Blog.",
+        "Có; null! tự lazyload."
+      ],
+      "correct": 1,
+      "explanation": "Object lifecycle và deployed relationship constraint khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Migrations destructive changes",
+      "question": "Review migration drop/rename column cần xem điều gì?",
+      "options": [
+        "Chỉ count migrations tăng.",
+        "Tự assume mọi drop là rename an toàn.",
+        "Data preservation, actual intended change và deployment compatibility.",
+        "Chỉ file compile thành công."
+      ],
+      "correct": 2,
+      "explanation": "Không chạy destructive schema operations trong task này."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "SaveChanges atomicity scope",
+      "question": "Một SaveChanges có thể có transaction behavior theo provider có nghĩa mọi HTTP/email side effects cùng atomic không?",
+      "options": [
+        "Có; DbContext tự transaction mọi remote systems.",
+        "Có; async keyword tạo distributed transaction.",
+        "Chỉ need Include.",
+        "Không; external effects cần consistency protocol riêng."
+      ],
+      "correct": 3,
+      "explanation": "Đừng mở rộng DB transaction boundary sang arbitrary external actions."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Optimistic concurrency",
+      "question": "Muốn phát hiện lost updates trên entities cần xét gì?",
+      "options": [
+        "Concurrency token/version strategy và conflict handling phù hợp provider/domain.",
+        "Chỉ intId có key là đủ mọi updates.",
+        "Chỉ return200.",
+        "Tracking tự merge mọi concurrent changes hoàn hảo."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa cấu hình concurrency token."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "SQL inspection evidence",
+      "question": "Để biết query thực tế dùng efficient plan, cần gì ngoài EF LINQ compile?",
+      "options": [
+        "Chỉ usingMicrosoft.EntityFrameworkCore.",
+        "Generated SQL/parameters, DB execution plan và representative data/workload evidence.",
+        "Chỉ method Contains.",
+        "Chỉ Take10."
+      ],
+      "correct": 1,
+      "explanation": "Không báo benchmark hoặc plan chưa quan sát."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Context lifetime memory",
+      "question": "Giữ DbContext tracking lâu cho toàn app có thể làm gì?",
+      "options": [
+        "Tự là cache phân tán an toàn.",
+        "Không ảnh hưởng vìGC.",
+        "Tích lũy tracked state/staleness và lifetime/concurrency problems theo workload.",
+        "Tự tối ưu memory về0."
+      ],
+      "correct": 2,
+      "explanation": "Unit-of-work scope thường cần được giữ phù hợp."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Global filter boundaries",
+      "question": "Nếu thêm tenant global query filter, có nên coi đó là toàn bộ authorization cho mọi write/rawSQL paths không?",
+      "options": [
+        "Có; mọi storage operations tự secure bất kể code.",
+        "Có; EF không thể rawSQL.",
+        "Chỉ cần tenant field private.",
+        "Không; phải xét các paths có thể bypass và permission requirements."
+      ],
+      "correct": 3,
+      "explanation": "Review actual data access boundaries."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Projection versus eager load choice",
+      "question": "Chọn DTO projection thay Include nên dựa điều gì?",
+      "options": [
+        "Representation/data access requirements và provider support/cost, không chỉ sở thích cú pháp.",
+        "Projection luôn nhanh hơn mọi include bất kểdata.",
+        "Include luôn trả đúng mọi DTOfields tự động.",
+        "Chỉ chọn method ngắn nhất."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế query theo usage và kiểm chứng đúng behavior."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Schema nullability migration",
+      "question": "Bật nullable reference analysis hoặc đổi entity annotation có thể liên quan migration schema thế nào?",
+      "options": [
+        "Chỉ thay màu IDE.",
+        "Có thể ảnh hưởng model nullability conventions, cần review diff/data compatibility.",
+        "Không bao giờ ảnh hưởngEF model.",
+        "Tự sửa mọi existing null rows an toàn."
+      ],
+      "correct": 1,
+      "explanation": "Static analysis và EF conventions tương tác nhưng deployment cần review."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Validation versus constraint consistency",
+      "question": "Nếu endpoint validate BlogId tồn tại rồi mới save, có tự loại mọi race tạo orphan không?",
+      "options": [
+        "Có; EF tự ngăn mọi process khác ghiDB.",
+        "Chỉ cần typeint.",
+        "Không; check-then-write có race, DB constraints/transaction policy cần giữ invariant.",
+        "Có; mọi async checks là locks."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng precheck thay integrity enforcement cần thiết."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exercise completion scope",
+      "question": "Source models/one query đã đủ blog API posts/comments/tags/users theo bài tập chưa?",
+      "options": [
+        "Đủ; EF tự sinh toàn application.",
+        "Đủ; List<Tag> tự tạo auth.",
+        "Chỉ cần ToListAsync.",
+        "Chưa; comments/users, handlers, storage config, validation/auth/errors và tests phù hợp còn thiếu."
+      ],
+      "correct": 3,
+      "explanation": "Không coi mục tiêu exercise là features đã triển khai."
+    }
+  ]
+}

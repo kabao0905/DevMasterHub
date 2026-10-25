@@ -1,0 +1,1162 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "newbie",
+  "lesson": "fs-async",
+  "language": "vi",
+  "sourceHash": "a4e4906953139668ebdfbcbda075cbe0089d9e209866455555bfc7fe7558f263",
+  "status": "approved",
+  "review": "Tự viết không API sinh nội dung. Node24 fs/promises/streams và ECMAScript JSON; source analyzeDir không recursive, stat theo symlink, I/O trong loop tuần tự. Snippet chỉ dùng file tương đối riêng trong scratch, dữ liệu nhỏ hữu hạn; không đọc file người dùng, không delete recursive, không dự đoán chunk boundaries hoặc thời gian filesystem.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Promise API",
+      "question": "node:fs/promises cung cấp cơ chế kết quả nào?",
+      "options": [
+        "Promise cho các thao tác API tương ứng.",
+        "Chỉ SQL rows.",
+        "Chỉ callbacks kiểu cũ.",
+        "Chỉ bytecode."
+      ],
+      "correct": 0,
+      "explanation": "Node còn có callback/synchronous APIs, không phải mọi thao tác fs đều async mặc định."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Read text",
+      "question": "readFile(path,\"utf8\") thành công trả nội dung kiểu nào?",
+      "options": [
+        "Một ArrayList Java.",
+        "String.",
+        "Một HTTP Response.",
+        "Một Stats luôn."
+      ],
+      "correct": 1,
+      "explanation": "Encoding yêu cầu decode bytes thành text."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Read bytes",
+      "question": "readFile(path) không chỉ định encoding thông thường trả gì?",
+      "options": [
+        "JSON object đã parse luôn.",
+        "DirectoryEntry luôn.",
+        "Buffer.",
+        "String luôn."
+      ],
+      "correct": 2,
+      "explanation": "Buffer biểu diễn bytes; đọc file không tự parse JSON."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Write completion",
+      "question": "await writeFile(...) thành công cho biết điều gì?",
+      "options": [
+        "File đã upload cloud.",
+        "Mọi reader transaction đều commit.",
+        "Mọi process khác thấy snapshot atomic bắt buộc.",
+        "Thao tác ghi theo API đã hoàn thành, chưa tự chứng minh mọi yêu cầu durability."
+      ],
+      "correct": 3,
+      "explanation": "Completion, atomicity và power-loss durability là các thuộc tính khác nhau."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Overwrite default",
+      "question": "writeFile với default flag w trên file có sẵn thường làm gì?",
+      "options": [
+        "Thay nội dung, có thể truncate file cũ.",
+        "Luôn append.",
+        "Luôn từ chối vì file tồn tại.",
+        "Luôn tạo backup."
+      ],
+      "correct": 0,
+      "explanation": "Chọn flag theo contract, không thử trên file người dùng để minh họa."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "List entries",
+      "question": "readdir(dir) mặc định thông thường trả gì?",
+      "options": [
+        "Mọi process OS.",
+        "Các tên entry trong thư mục.",
+        "Mọi nội dung file.",
+        "Mọi file con đệ quy theo default."
+      ],
+      "correct": 1,
+      "explanation": "Options có thể đổi dạng/behavior; nguồn dùng readdir cơ bản."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "File metadata",
+      "question": "stat(fullPath) trong nguồn lấy gì?",
+      "options": [
+        "Tên user đăng nhập web.",
+        "Version npm.",
+        "Metadata của đối tượng filesystem tại path được resolve.",
+        "Nội dung text luôn."
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất metadata với read nội dung."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Symlink behavior",
+      "question": "stat khi gặp symbolic link thông thường xem metadata của gì?",
+      "options": [
+        "Chỉ link luôn.",
+        "Mọi thư mục cha.",
+        "Luôn bỏ qua entry không báo.",
+        "Đích mà link trỏ tới."
+      ],
+      "correct": 3,
+      "explanation": "Dùng lstat để xem link chính nó."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Lstat",
+      "question": "lstat khác stat nổi bật ở điểm nào?",
+      "options": [
+        "Kiểm tra symbolic link chính nó thay vì theo link.",
+        "Luôn đọc toàn file.",
+        "Luôn rename file.",
+        "Luôn parse JSON."
+      ],
+      "correct": 0,
+      "explanation": "Cần chọn theo policy xử lý symlink."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "File predicate",
+      "question": "info.isFile() dùng để gì?",
+      "options": [
+        "Kiểm tra file đã backup.",
+        "Kiểm tra Stats đại diện regular file.",
+        "Kiểm tra JSON hợp lệ.",
+        "Kiểm tra caller có role ADMIN."
+      ],
+      "correct": 1,
+      "explanation": "Loại file khác với format nội dung và quyền nghiệp vụ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Directory predicate",
+      "question": "Stats.isDirectory() kiểm tra gì?",
+      "options": [
+        "File chứa JSON array.",
+        "Directory luôn rỗng.",
+        "Đối tượng là directory.",
+        "File có extension .dir."
+      ],
+      "correct": 2,
+      "explanation": "Tên/extension không quyết định filesystem type."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "File size",
+      "question": "Với regular file, Stats.size thể hiện đơn vị nào?",
+      "options": [
+        "Số dòng luôn.",
+        "Số ký tự Unicode luôn.",
+        "Gigabytes luôn.",
+        "Bytes."
+      ],
+      "correct": 3,
+      "explanation": "Bytes và độ dài String không luôn bằng nhau."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Modification time",
+      "question": "info.mtime trong nguồn biểu diễn gì?",
+      "options": [
+        "Thời gian sửa dữ liệu theo metadata filesystem.",
+        "Mọi thời điểm user đã đọc file.",
+        "Token expiry.",
+        "Thời gian chạy Node."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng timestamp như bằng chứng toàn bộ lịch sử file."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Await semantics",
+      "question": "await promise trong async function chủ yếu làm gì?",
+      "options": [
+        "Tự retry mọi lỗi.",
+        "Tạm dừng phần async function chờ settlement mà không block JS thread theo kiểu busy wait.",
+        "Chặn toàn OS cho mọi process.",
+        "Tự tạo thread riêng cho mỗi dòng."
+      ],
+      "correct": 1,
+      "explanation": "Phần synchronous trước/sau await vẫn chạy JavaScript bình thường."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Sync FS",
+      "question": "readFileSync trong request handler có thể ảnh hưởng gì?",
+      "options": [
+        "Luôn trả Promise.",
+        "Tự không block vì Node.",
+        "Block thread đang chạy trong lúc thao tác đồng bộ.",
+        "Luôn offload CPU sang worker."
+      ],
+      "correct": 2,
+      "explanation": "Chọn sync/async theo lifecycle và yêu cầu, không theo tên runtime."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Readable stream",
+      "question": "createReadStream thường hữu ích khi nào?",
+      "options": [
+        "Muốn mọi file luôn nằm trọn RAM.",
+        "Muốn tự parse mọi format JSON.",
+        "Muốn bỏ xử lý lỗi.",
+        "Đọc dữ liệu theo chunks thay vì tự gom cả file một lần."
+      ],
+      "correct": 3,
+      "explanation": "Consumer vẫn có thể tự làm tăng RAM nếu tích lũy toàn bộ chunks."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Writable stream",
+      "question": "createWriteStream chủ yếu cung cấp gì?",
+      "options": [
+        "Ghi dữ liệu theo stream với lifecycle/backpressure.",
+        "Tự tạo SQL transaction.",
+        "Tự khóa mọi file trên mọi máy.",
+        "Tự nén mọi dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "Cần quan sát error/finish và đóng tài nguyên đúng."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Backpressure",
+      "question": "Backpressure giúp giải quyết vấn đề nào?",
+      "options": [
+        "Mọi expired JWT.",
+        "Bên sản xuất nhanh hơn bên tiêu thụ làm buffer tăng.",
+        "Mọi lỗi cú pháp JavaScript.",
+        "Mọi database constraint."
+      ],
+      "correct": 1,
+      "explanation": "Nó là cơ chế điều tiết tốc độ, không là cam kết giới hạn tổng RAM tuyệt đối."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "JSON serialization",
+      "question": "JSON.stringify(data,null,2) trong saveConfig nhằm gì?",
+      "options": [
+        "Clone sâu mọi kiểu JS không giới hạn.",
+        "Parse nội dung file.",
+        "Serialize JSON và thụt lề2 spaces.",
+        "Mã hóa bí mật data."
+      ],
+      "correct": 2,
+      "explanation": "JSON chỉ diễn đạt tập giá trị có semantics riêng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "JSON parsing",
+      "question": "JSON.parse(raw) nhằm gì?",
+      "options": [
+        "Thực thi raw như chương trình JavaScript.",
+        "Tự validate schema nghiệp vụ.",
+        "Tự ghi database.",
+        "Parse JSON text thành giá trị JavaScript tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Parse thành công không chứng minh cấu trúc/domain hợp lệ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Write and read text",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile}from\"node:fs/promises\";await writeFile(\"data.txt\",\"hello\");console.log(await readFile(\"data.txt\",\"utf8\"));",
+      "options": [
+        "hello",
+        "Buffer",
+        "undefined",
+        "ENOENT."
+      ],
+      "correct": 0,
+      "explanation": "Chờ ghi trước khi đọc chính file scratch."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Buffer read",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile}from\"node:fs/promises\";await writeFile(\"data.txt\",\"hi\");console.log(Buffer.isBuffer(await readFile(\"data.txt\")));",
+      "options": [
+        "undefined",
+        "true",
+        "false",
+        "hello"
+      ],
+      "correct": 1,
+      "explanation": "Không chỉ định encoding thì readFile trả Buffer."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "UTF8 bytes",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile,stat}from\"node:fs/promises\";await writeFile(\"data.txt\",\"é\",\"utf8\");console.log((await stat(\"data.txt\")).size,(await readFile(\"data.txt\",\"utf8\")).length);",
+      "options": [
+        "2 2",
+        "1 2",
+        "2 1",
+        "1 1"
+      ],
+      "correct": 2,
+      "explanation": "é này là một UTF-16 code unit nhưng UTF-8 dùng2 bytes."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Truncate overwrite",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile}from\"node:fs/promises\";await writeFile(\"data.txt\",\"abc\");await writeFile(\"data.txt\",\"x\");console.log(await readFile(\"data.txt\",\"utf8\"));",
+      "options": [
+        "abcx",
+        "xbc",
+        "abc",
+        "x"
+      ],
+      "correct": 3,
+      "explanation": "Write thứ hai với flag mặc định thay nội dung cũ."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Append",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile}from\"node:fs/promises\";await writeFile(\"data.txt\",\"a\");await writeFile(\"data.txt\",\"b\",{flag:\"a\"});console.log(await readFile(\"data.txt\",\"utf8\"));",
+      "options": [
+        "ab",
+        "b",
+        "a",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Flag a append sau nội dung có sẵn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Regular file type",
+      "question": "Output là gì?",
+      "code": "import{writeFile,stat}from\"node:fs/promises\";await writeFile(\"data.txt\",\"a\");console.log((await stat(\"data.txt\")).isFile());",
+      "options": [
+        "undefined",
+        "true",
+        "false",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "Fixture là regular file do script tạo."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Directory type",
+      "question": "Output là gì?",
+      "code": "import{mkdir,stat}from\"node:fs/promises\";await mkdir(\"fixture-dir\",{recursive:true});console.log((await stat(\"fixture-dir\")).isDirectory());",
+      "options": [
+        "0",
+        "undefined",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "Tạo thư mục fixture theo path tương đối trong scratch."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Filter filenames",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readdir}from\"node:fs/promises\";await writeFile(\"a.txt\",\"a\");await writeFile(\"b.log\",\"b\");console.log((await readdir(\".\")).filter(n=>n.endsWith(\".txt\")).sort().join(\",\"));",
+      "options": [
+        "b.log",
+        "quiz.mjs",
+        "Mọi file trong OS.",
+        "a.txt"
+      ],
+      "correct": 3,
+      "explanation": "Filter chọn đuôi .txt trong các fixture; không suy thứ tự readdir."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Descending sizes",
+      "question": "Output là gì?",
+      "code": "const r=[{name:\"a\",size:2},{name:\"b\",size:5},{name:\"c\",size:3}];console.log(r.sort((a,b)=>b.size-a.size).map(x=>x.name).join(\",\"));",
+      "options": [
+        "b,c,a",
+        "a,c,b",
+        "c,b,a",
+        "a,b,c"
+      ],
+      "correct": 0,
+      "explanation": "Comparator b.size-a.size xếp size lớn trước."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Sort mutates",
+      "question": "Output là gì?",
+      "code": "const a=[1,3,2];const b=a.sort((x,y)=>y-x);console.log(a===b,a[0]);",
+      "options": [
+        "false 3",
+        "true 3",
+        "false 1",
+        "true 1"
+      ],
+      "correct": 1,
+      "explanation": "Array.sort sắp tại chỗ và trả cùng array."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Config roundtrip",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile}from\"node:fs/promises\";await writeFile(\"config.json\",JSON.stringify({x:1},null,2));console.log(JSON.parse(await readFile(\"config.json\",\"utf8\")).x);",
+      "options": [
+        "undefined",
+        "config.json",
+        "1",
+        "2"
+      ],
+      "correct": 2,
+      "explanation": "Stringify rồi parse object dữ liệu JSON đơn giản."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Undefined property",
+      "question": "Output là gì?",
+      "code": "console.log(JSON.stringify({a:undefined,b:null}));",
+      "options": [
+        "{\"a\":undefined,\"b\":null}",
+        "{}",
+        "null",
+        "{\"b\":null}"
+      ],
+      "correct": 3,
+      "explanation": "Undefined-valued object property bị bỏ; null được giữ."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Undefined array slot",
+      "question": "Output là gì?",
+      "code": "console.log(JSON.stringify([undefined,null]));",
+      "options": [
+        "[null,null]",
+        "[]",
+        "[undefined,null]",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "Trong array JSON serialization, undefined ở đây thành null."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Nonfinite numbers",
+      "question": "Output là gì?",
+      "code": "console.log(JSON.stringify([NaN,Infinity]));",
+      "options": [
+        "TypeError luôn.",
+        "[null,null]",
+        "[NaN,Infinity]",
+        "[]"
+      ],
+      "correct": 1,
+      "explanation": "JSON không có literal NaN/Infinity; stringify trong array chuyển chúng thành null."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Date JSON representation",
+      "question": "Output là gì?",
+      "code": "console.log(typeof JSON.parse(JSON.stringify(new Date(\"2020-01-01T00:00:00.000Z\"))));",
+      "options": [
+        "number",
+        "undefined",
+        "string",
+        "object"
+      ],
+      "correct": 2,
+      "explanation": "Date.toJSON tiêu chuẩn tạo chuỗi ISO cho Date hợp lệ này."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "BigInt default serialization",
+      "question": "Output là gì khi không tùy biến BigInt.toJSON/replacer?",
+      "code": "try{JSON.stringify({x:1n});}catch(e){if(e instanceof TypeError)console.log(\"bigint\");else throw e;}",
+      "options": [
+        "1",
+        "\"1\"",
+        "null",
+        "bigint"
+      ],
+      "correct": 3,
+      "explanation": "Stringify BigInt mặc định ném TypeError."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Circular data",
+      "question": "Output là gì?",
+      "code": "const a={};a.self=a;try{JSON.stringify(a);}catch(e){if(e instanceof TypeError)console.log(\"cycle\");else throw e;}",
+      "options": [
+        "cycle",
+        "{}",
+        "null",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "JSON không diễn đạt vòng tham chiếu kiểu này mặc định."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Malformed JSON",
+      "question": "Output là gì?",
+      "code": "try{JSON.parse(\"{x:1}\");}catch(e){if(e instanceof SyntaxError)console.log(\"syntax\");else throw e;}",
+      "options": [
+        "undefined",
+        "syntax",
+        "x",
+        "null"
+      ],
+      "correct": 1,
+      "explanation": "Tên property JSON cần dấu ngoặc kép; đây không là object literal JS parser."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Missing file error",
+      "question": "Trong scratch không có missing-file.txt, output là gì?",
+      "code": "import{readFile}from\"node:fs/promises\";try{await readFile(\"missing-file.txt\",\"utf8\");}catch(e){console.log(e.code);}",
+      "options": [
+        "null",
+        "empty",
+        "ENOENT",
+        "undefined"
+      ],
+      "correct": 2,
+      "explanation": "Read file vắng mặt reject; catch quan sát code lỗi."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Await rejection",
+      "question": "Output là gì?",
+      "code": "try{await Promise.reject(new Error(\"bad\"));}catch(e){console.log(e.message);}",
+      "options": [
+        "undefined",
+        "Promise",
+        "0",
+        "bad"
+      ],
+      "correct": 3,
+      "explanation": "await đưa rejection vào catch ở async context này."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "All result order",
+      "question": "Output là gì?",
+      "code": "console.log((await Promise.all([Promise.resolve(2),Promise.resolve(1)])).join(\",\"));",
+      "options": [
+        "2,1",
+        "1,2",
+        "undefined",
+        "2"
+      ],
+      "correct": 0,
+      "explanation": "Promise.all giữ thứ tự input cho results, không sort giá trị."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Sequential await loop",
+      "question": "Output là gì?",
+      "code": "const a=[];for(const n of[1,2]){a.push(\"s\"+n);await Promise.resolve();a.push(\"e\"+n);}console.log(a.join(\",\"));",
+      "options": [
+        "s2,e2,s1,e1",
+        "s1,e1,s2,e2",
+        "s1,s2,e1,e2",
+        "e1,e2,s1,s2"
+      ],
+      "correct": 1,
+      "explanation": "Loop chờ mỗi await trước iteration tiếp theo."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Async foreach trap",
+      "question": "Output hai dòng là gì?",
+      "code": "const a=[];[1,2].forEach(async n=>{await Promise.resolve();a.push(n);});console.log(a.length);await Promise.resolve();console.log(a.length);",
+      "options": [
+        "0 rồi0.",
+        "2 rồi0.",
+        "0 rồi2.",
+        "2 rồi2."
+      ],
+      "correct": 2,
+      "explanation": "forEach không await các async callbacks; microtasks đẩy giá trị sau log đầu."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Pipeline success",
+      "question": "Output là gì?",
+      "code": "import{Readable,Writable}from\"node:stream\";import{pipeline}from\"node:stream/promises\";let s=\"\";await pipeline(Readable.from([\"a\",\"b\"]),new Writable({write(c,e,cb){s+=c.toString();cb();}}));console.log(s);",
+      "options": [
+        "a,b",
+        "undefined",
+        "0",
+        "ab"
+      ],
+      "correct": 3,
+      "explanation": "Pipeline chờ hoàn tất nối readable và writable hữu hạn."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Pipeline failure",
+      "question": "Output là gì?",
+      "code": "import{Readable,Writable}from\"node:stream\";import{pipeline}from\"node:stream/promises\";async function* gen(){yield \"a\";throw new Error(\"bad\");}try{await pipeline(Readable.from(gen()),new Writable({write(c,e,cb){cb();}}));}catch(e){console.log(e.message);}",
+      "options": [
+        "bad",
+        "ok",
+        "undefined",
+        "0"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi generator được pipeline Promise truyền thành rejection."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Stream text consumption",
+      "question": "Output là gì?",
+      "code": "import{writeFile}from\"node:fs/promises\";import{createReadStream}from\"node:fs\";await writeFile(\"data.txt\",\"hello\");let s=\"\";for await(const c of createReadStream(\"data.txt\",{encoding:\"utf8\"}))s+=c;console.log(s);",
+      "options": [
+        "Không xác định vì chunk.",
+        "hello",
+        "h,e,l,l,o",
+        "undefined"
+      ],
+      "correct": 1,
+      "explanation": "Kết quả nối text đúng không phụ thuộc cách file chia chunks."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "File pipeline copy",
+      "question": "Output là gì?",
+      "code": "import{writeFile,readFile}from\"node:fs/promises\";import{createReadStream,createWriteStream}from\"node:fs\";import{pipeline}from\"node:stream/promises\";await writeFile(\"source.txt\",\"copy\");await pipeline(createReadStream(\"source.txt\"),createWriteStream(\"target.txt\"));console.log(await readFile(\"target.txt\",\"utf8\"));",
+      "options": [
+        "0",
+        "ENOENT",
+        "copy",
+        "undefined"
+      ],
+      "correct": 2,
+      "explanation": "File nguồn/đích chỉ thuộc thư mục scratch riêng của câu."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Settled results",
+      "question": "Output là gì?",
+      "code": "const r=await Promise.allSettled([Promise.resolve(1),Promise.reject(new Error(\"x\"))]);console.log(r.map(x=>x.status).join(\",\"));",
+      "options": [
+        "fulfilled,fulfilled",
+        "rejected,fulfilled",
+        "Ném lỗi x ra ngoài luôn.",
+        "fulfilled,rejected"
+      ],
+      "correct": 3,
+      "explanation": "allSettled phản ánh trạng thái từng input và không fail-fast như all."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Mtime type",
+      "question": "Output là gì?",
+      "code": "import{writeFile,stat}from\"node:fs/promises\";await writeFile(\"data.txt\",\"a\");console.log((await stat(\"data.txt\")).mtime instanceof Date);",
+      "options": [
+        "true",
+        "false",
+        "0",
+        "undefined"
+      ],
+      "correct": 0,
+      "explanation": "Stats.mtime là Date trong chế độ Stats số thông thường này."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Empty file",
+      "question": "Output là gì?",
+      "code": "import{writeFile,stat}from\"node:fs/promises\";await writeFile(\"data.txt\",\"\");const s=await stat(\"data.txt\");console.log(s.size,s.isFile());",
+      "options": [
+        "null false",
+        "0 true",
+        "1 true",
+        "0 false"
+      ],
+      "correct": 1,
+      "explanation": "Regular file rỗng vẫn là file và có size0 bytes."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Top five count",
+      "question": "Nguồn files.slice(0,5) có luôn trả đúng5 bản ghi không?",
+      "options": [
+        "Có vì slice tự tạo entries.",
+        "Chỉ khi async.",
+        "Không; chỉ tối đa5 tùy số file phù hợp.",
+        "Có dù thư mục rỗng."
+      ],
+      "correct": 2,
+      "explanation": "Slice không bổ sung dữ liệu thiếu."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Recursion scope",
+      "question": "analyzeDir nguồn có tự đi vào mọi thư mục con để gom file không?",
+      "options": [
+        "Có vì stat.",
+        "Có vì path.join.",
+        "Có vì for of.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Nguồn chỉ liệt kê trực tiếp và lọc isFile, không gọi đệ quy."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Sort direction source",
+      "question": "Comparator b.size-a.size trong source xếp như thế nào?",
+      "options": [
+        "Size giảm dần.",
+        "Tên tăng dần.",
+        "Mtime tăng dần.",
+        "Random có seed."
+      ],
+      "correct": 0,
+      "explanation": "Tiêu chí sort chỉ size, không tự thêm tie-breaker tên."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Tie order",
+      "question": "Các file bằng size trong nguồn có thứ tự tên alphabet được bảo đảm không?",
+      "options": [
+        "Có nếu dùng await.",
+        "Không vì chưa có comparator tên và readdir order không cố định như vậy.",
+        "Có vì Array.sort luôn sort tên trước.",
+        "Có vì filesystem luôn alphabet."
+      ],
+      "correct": 1,
+      "explanation": "Sort stable giữ thứ tự input khi comparator bằng0, nhưng input không hứa alphabetical."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Sequential IO source",
+      "question": "for of có await stat mỗi iteration trong nguồn tạo kiểu concurrency nào?",
+      "options": [
+        "Tạo một OS thread cho mỗi file bằng syntax.",
+        "Không hề gọi stat.",
+        "Các stat được chờ tuần tự theo loop.",
+        "Tự chạy tất cả cùng lúc."
+      ],
+      "correct": 2,
+      "explanation": "Muốn concurrency cần thiết kế rõ và giới hạn phù hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Concurrent writes",
+      "question": "Hai writeFile cùng path không chờ settlement có được coi an toàn deterministic không?",
+      "options": [
+        "Có vì fs/promises.",
+        "Có vì file JSON nhỏ.",
+        "Có vì cùng event loop.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Promise API không tự serialize mọi thao tác filesystem cho cùng file."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "JSON CPU work",
+      "question": "JSON.parse dữ liệu rất lớn có tự trở thành non-blocking chỉ vì readFile trước đó có await không?",
+      "options": [
+        "Không.",
+        "Có vì toàn function async.",
+        "Có vì Node dùng event loop.",
+        "Chỉ cần đặt tên loadAsync."
+      ],
+      "correct": 0,
+      "explanation": "Parsing là công việc synchronous trên thread gọi theo API chuẩn."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Read whole file",
+      "question": "readFile cho file vài GB có tradeoff gì?",
+      "options": [
+        "Không bao giờ gây áp lực RAM.",
+        "Cần bộ nhớ cho toàn nội dung theo thao tác, nên cân nhắc stream/format và limits.",
+        "Luôn O(1) RAM bất kể file.",
+        "Luôn tự ghi tạm vào SQL."
+      ],
+      "correct": 1,
+      "explanation": "Streams chỉ giúp khi consumer không gom lại toàn bộ."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "UTF8 boundaries",
+      "question": "Giải mã riêng từng raw chunk Buffer bằng toString utf8 có thể làm hỏng text khi nào?",
+      "options": [
+        "Không bao giờ vì chunk là String luôn.",
+        "Chỉ khi file extension .json.",
+        "Khi ký tự nhiều byte bị chia qua chunk boundary.",
+        "Chỉ khi mọi ký tự ASCII."
+      ],
+      "correct": 2,
+      "explanation": "Dùng stream encoding/StringDecoder thích hợp để giữ phần byte chưa đủ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source error propagation",
+      "question": "Một stat trong analyzeDir reject và không có catch nội bộ; function trả gì?",
+      "options": [
+        "Luôn list đầy đủ.",
+        "Tự bỏ file lỗi không báo.",
+        "Luôn array rỗng.",
+        "Promise reject, không tự trả danh sách một phần thành công."
+      ],
+      "correct": 3,
+      "explanation": "Caller phải chọn fail-fast hay partial-results policy có chủ đích."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Bounded concurrency",
+      "question": "Thay loop bằng Promise.all hàng triệu stat cùng lúc có rủi ro gì?",
+      "options": [
+        "Tạo lượng in-flight work lớn và áp lực tài nguyên; nên có concurrency limit.",
+        "Luôn nhanh nhất và RAM cố định.",
+        "Tự chia thành nhóm nhỏ.",
+        "Tự bảo đảm file không đổi."
+      ],
+      "correct": 0,
+      "explanation": "Concurrency cần budget theo filesystem/workload, không chỉ bớt await."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Backpressure protocol",
+      "question": "Writable.write trả false; producer nên làm gì theo stream contract?",
+      "options": [
+        "Xóa stream ngay không xử lý lỗi.",
+        "Dừng gửi thêm và chờ drain/cơ chế pipeline phù hợp.",
+        "Tiếp tục đẩy vô hạn vì false là thành công đủ mọi mặt.",
+        "Gọi JSON.parse lên boolean."
+      ],
+      "correct": 1,
+      "explanation": "Write có thể đã nhận chunk; false báo cần backpressure, không đơn thuần là lỗi ghi."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "High water mark",
+      "question": "highWaterMark có bảo đảm tổng memory process không vượt con số đó không?",
+      "options": [
+        "Có nếu file JSON.",
+        "Có nếu writable final.",
+        "Không.",
+        "Có cho mọi stream graph."
+      ],
+      "correct": 2,
+      "explanation": "Đây là ngưỡng buffering theo stream/mode, không trần toàn process hay mọi consumer."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Atomic config write",
+      "question": "Ghi đè config.json trực tiếp có thể làm reader đồng thời gặp gì?",
+      "options": [
+        "Snapshot atomic hoàn hảo luôn.",
+        "Transaction SQL tự tạo.",
+        "Tự đọc version cũ đến commit.",
+        "File trung gian/rỗng/partial hoặc lỗi parse trong một số thời điểm."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế ghi temp + replace trong điều kiện phù hợp và phối hợp readers theo yêu cầu."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Rename guarantees",
+      "question": "Có nên hứa temp-file rename là atomic/durable y hệt trên mọi filesystem, OS và cross-device move không?",
+      "options": [
+        "Không.",
+        "Có vì tên method rename.",
+        "Có nếu path String.",
+        "Có nếu Node24."
+      ],
+      "correct": 0,
+      "explanation": "Atomic visibility, cross-device behavior và persistence khi mất điện cần xem nền tảng và sync policy."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Durability distinction",
+      "question": "writeFile Promise resolve có tự bảo đảm dữ liệu sống qua mất điện đột ngột không?",
+      "options": [
+        "Có nếu await hai lần.",
+        "Không.",
+        "Có trong mọi filesystem.",
+        "Có nếu JSON valid."
+      ],
+      "correct": 1,
+      "explanation": "Cần sync/flush và filesystem/storage guarantees phù hợp; không suy từ async completion."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "TOCTOU",
+      "question": "Check stat.isFile rồi readFile cùng path có loại mọi race thay file/symlink giữa hai thao tác không?",
+      "options": [
+        "Có vì path.join.",
+        "Có nếu file tên config.",
+        "Không.",
+        "Có vì await giữ path immutable trên disk."
+      ],
+      "correct": 2,
+      "explanation": "Path có thể đổi sau kiểm tra; handle-based và ownership/OS policy cần xét theo threat model."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Symlink containment",
+      "question": "Path string nằm dưới root cho phép nhưng symlink trỏ ra ngoài có thể gây gì?",
+      "options": [
+        "Luôn an toàn vì normalize.",
+        "Chỉ làm sai màu tên file.",
+        "Không thể vì stat không theo link.",
+        "Truy cập vượt ranh giới dự định nếu không có policy xử lý link phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra chuỗi path không tự chứng minh resolved filesystem target."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Partial result policy",
+      "question": "Công cụ phân tích folder cần hiển thị file thành công dù vài file mất; nên thay đổi gì?",
+      "options": [
+        "Thu lỗi theo từng file và thể hiện partial result rõ.",
+        "Catch mọi lỗi rồi trả list rỗng như thành công đầy đủ.",
+        "Tắt mọi log và validation.",
+        "Lặp vô hạn đến khi folder không đổi."
+      ],
+      "correct": 0,
+      "explanation": "Không che sự khác biệt giữa scan đầy đủ, partial và thất bại."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Directory snapshot",
+      "question": "readdir rồi stat từng entry có bảo đảm snapshot đồng nhất của directory đang thay đổi không?",
+      "options": [
+        "Có vì chỉ đọc.",
+        "Không.",
+        "Có vì một async function.",
+        "Có vì return sort."
+      ],
+      "correct": 1,
+      "explanation": "Files có thể xuất hiện/biến mất/thay đổi giữa các bước; contract phải chấp nhận hoặc dùng cơ chế khác."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Merge text files ordering",
+      "question": "Muốn merge .txt theo tên ổn định, cần gì ngoài readdir?",
+      "options": [
+        "Chỉ sort sizes sau khi merge.",
+        "Dùng Promise.race để chọn thứ tự.",
+        "Lọc/sort tên theo quy tắc rõ trước đọc và ghi.",
+        "Tin filesystem luôn alphabet."
+      ],
+      "correct": 2,
+      "explanation": "Concurrency đọc không nên vô tình quyết định thứ tự dữ liệu output."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Merge separators",
+      "question": "Merge nhiều .txt bằng nối raw contents có thể làm gì nếu file đầu không có newline cuối?",
+      "options": [
+        "Node tự thêm newline mỗi file.",
+        "JSON.stringify tự sửa văn bản.",
+        "Tự gây compile error.",
+        "Hai dòng cuối/đầu dính nhau nếu contract cần separator."
+      ],
+      "correct": 3,
+      "explanation": "Quy định separator/encoding và empty-file policy theo mục đích merge."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Output included in input",
+      "question": "Tool merge quét *.txt trong cùng folder chứa output.txt từ lần trước có rủi ro gì?",
+      "options": [
+        "Đọc lại output cũ và nhân dữ liệu nếu không loại trừ.",
+        "Luôn tự bỏ vì là output.",
+        "Không bao giờ khớp *.txt.",
+        "Chỉ làm tăng CPU count."
+      ],
+      "correct": 0,
+      "explanation": "Input/output sets và lifecycle file phải rõ, không vô tình ingest chính kết quả."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Resource ownership",
+      "question": "Tự mở FileHandle rồi gặp lỗi khi xử lý cần bảo đảm gì?",
+      "options": [
+        "Chỉ đặt handle null.",
+        "Close trong finally hoặc cơ chế disposal được hỗ trợ theo version.",
+        "Chờ GC đóng ngay.",
+        "Chỉ return khỏi function."
+      ],
+      "correct": 1,
+      "explanation": "Resource ngoài heap cần lifecycle rõ ngay cả error path."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Pipeline failure side effect",
+      "question": "Pipeline copy fail giữa chừng có tự xóa/rollback target file không?",
+      "options": [
+        "Có vì Promise reject.",
+        "Có nếu nguồn text.",
+        "Không thể giả định; xử lý partial output theo policy.",
+        "Có với mọi filesystem."
+      ],
+      "correct": 2,
+      "explanation": "Error propagation không tương đương transaction cho filesystem."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Abort write",
+      "question": "Abort writeFile đang chạy có bảo đảm file chưa hề bị sửa không?",
+      "options": [
+        "Có vì AbortSignal là rollback.",
+        "Có vì await chưa resolve.",
+        "Có nếu JSON pretty.",
+        "Không; cancellation best effort có thể đã ghi một phần."
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế output recovery/atomic publication nếu tính toàn vẹn yêu cầu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Large JSON streaming",
+      "question": "createReadStream rồi nối tất cả chunks thành String trước JSON.parse có còn O(1) memory theo file không?",
+      "options": [
+        "Không.",
+        "Có vì đã dùng stream.",
+        "Có nếu for await.",
+        "Có nếu UTF-8."
+      ],
+      "correct": 0,
+      "explanation": "Consumer vẫn giữ toàn nội dung; streaming parser/format giới hạn có thể phù hợp."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Schema validation",
+      "question": "loadConfig parse được {admin:true,port:\"oops\"}; có chứng minh config hợp lệ chưa?",
+      "options": [
+        "Đủ vì object có port.",
+        "Chưa; cần schema/type/range và quyền thay đổi config phù hợp.",
+        "Đủ vì JSON.parse không lỗi.",
+        "Đủ vì file .json."
+      ],
+      "correct": 1,
+      "explanation": "Syntactic JSON validity khác validation nghiệp vụ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Big integer JSON",
+      "question": "ID integer vượt Number.MAX_SAFE_INTEGER trong JSON numeric có rủi ro gì khi parse như Number?",
+      "options": [
+        "Luôn SyntaxError.",
+        "Không thể xuất hiện trong JSON.",
+        "Mất độ chính xác; cần representation/validation phù hợp như string ID.",
+        "Luôn trở thành BigInt tự động."
+      ],
+      "correct": 2,
+      "explanation": "Chọn schema duy trì identity, không dựa số học vượt miền an toàn."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "BigInt metadata JSON",
+      "question": "Stats lấy với bigint:true rồi JSON.stringify trực tiếp có thể gặp gì?",
+      "options": [
+        "Tự chuyển mọi BigInt thành Number chính xác.",
+        "Tự đọc nội dung file.",
+        "Tự xóa metadata lớn.",
+        "TypeError vì BigInt không serialize mặc định; cần schema/chuyển đổi giữ độ chính xác."
+      ],
+      "correct": 3,
+      "explanation": "Chọn representation như chuỗi số theo contract; không ép Number nếu vượt miền chính xác."
+    }
+  ]
+}

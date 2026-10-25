@@ -92,8 +92,8 @@ export function docJson(text: string): unknown {
 
 export const boThe = (html: string | undefined) => (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
-export type CauHoi = { question: string; code?: string; options: string[]; correct: number; explanation: string };
-export type TrangThaiQuiz = { questions: CauHoi[]; answers: Record<number, number>; submitted: boolean };
+export type CauHoi = { question: string; code?: string; options: string[]; correct: number; explanation: string; id?: string; difficulty?: 'easy' | 'medium' | 'hard' };
+export type TrangThaiQuiz = { questions: CauHoi[]; answers: Record<number, number>; submitted: boolean; bank?: { url: string; seen: string[] } };
 
 const chuoiCoChu = (x: unknown): x is string => typeof x === 'string' && x.trim() !== '';
 

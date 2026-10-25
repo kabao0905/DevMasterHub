@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cybersecurity",
+  "level": "senior",
+  "lesson": "cryptography-hashing",
+  "language": "vi",
+  "sourceHash": "aacd34bd6ef4d990710a10e93113754f92e909310bf05c86d423bdd89f42f048",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo AES/asymmetric/password hashing source và OWASP/bcrypt/Node docs. Không gọi hash là mã hóa giải mã được, không coi mọi ECC là public-key encryption. bcrypt cost 12 là work factor, 72 byte khác 72 ký tự; require + top-level await cần module context hợp lệ. Không chạy bcrypt/crypto, đọc shadow hay xác minh credential thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Đối xứng",
+      "question": "Mã hóa đối xứng dùng khóa theo mô hình nào?",
+      "options": [
+        "Khóa bí mật dùng cho các thao tác mã hóa/giải mã theo thuật toán",
+        "Chỉ một public key ai cũng dùng để giải mã",
+        "Không dùng khóa trong mọi mode",
+        "Mỗi byte tự là một khóa public"
+      ],
+      "correct": 0,
+      "explanation": "Quản lý bí mật và mode sử dụng vẫn cần đúng thiết kế."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "AES",
+      "question": "AES trong lý thuyết thuộc nhóm nào?",
+      "options": [
+        "Một dạng Base64",
+        "Mật mã đối xứng",
+        "Hàm băm mật khẩu chuyên dụng",
+        "Thuật toán chữ ký riêng của HTTP"
+      ],
+      "correct": 1,
+      "explanation": "Thuật toán và mode/protocol là các phần liên quan nhưng khác nhau."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Bất đối xứng",
+      "question": "Mật mã bất đối xứng dùng cấu trúc khóa nào?",
+      "options": [
+        "Một digest không có khóa",
+        "Chỉ tên tài khoản",
+        "Một cặp public/private theo scheme cụ thể",
+        "Một mật khẩu public duy nhất cho mọi user"
+      ],
+      "correct": 2,
+      "explanation": "Các schemes có vai trò encryption, signature hoặc key agreement khác nhau."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Public key",
+      "question": "Public key có cần được giữ bí mật như private key theo cách dùng thông thường không?",
+      "options": [
+        "Có, không ai ngoài owner được biết public key",
+        "Không, nên có thể tin mọi key không kiểm nguồn",
+        "Chỉ khi key ở JSON",
+        "Không, nhưng tính xác thực/liên kết danh tính vẫn cần bảo vệ"
+      ],
+      "correct": 3,
+      "explanation": "Public không có nghĩa mọi nguồn cung cấp key đều đáng tin."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Private key",
+      "question": "Private key cần được quản lý theo nguyên tắc nào?",
+      "options": [
+        "Giữ bí mật và giới hạn quyền dùng theo scheme/policy",
+        "Đăng công khai cùng public key",
+        "Đưa vào log để dễ đối chiếu",
+        "Coi tên file .key tự mã hóa nội dung"
+      ],
+      "correct": 0,
+      "explanation": "Khóa lộ có thể phá các mục tiêu bảo vệ tương ứng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Hash",
+      "question": "Hash mật mã khác encryption có giải mã ở điểm nào?",
+      "options": [
+        "Tự tạo quyền quản trị cho database",
+        "Không cung cấp thao tác giải mã để lấy lại đầu vào tùy ý",
+        "Luôn cần một private key để decrypt",
+        "Luôn chứa bản nén lossless của input"
+      ],
+      "correct": 1,
+      "explanation": "Có thể đoán đầu vào và kiểm hash, đó không là giải mã."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Password storage",
+      "question": "Mục tiêu lưu password verifier thường là gì?",
+      "options": [
+        "Gửi password tới mọi dịch vụ nội bộ",
+        "Đổi password thành Base64 rồi public",
+        "Xác minh password mà không lưu plaintext cần đọc lại",
+        "Luôn lấy lại plaintext mọi khi login"
+      ],
+      "correct": 2,
+      "explanation": "Cần password hashing/KDF phù hợp và các lớp auth khác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "bcrypt",
+      "question": "bcrypt trong code dùng để làm gì?",
+      "options": [
+        "Mã hóa file để giải mã bằng public key",
+        "Ký certificate HTTPS",
+        "Tạo SQL prepared statement",
+        "Tạo và so khớp password hash theo API"
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất password hash với generic encryption."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Hash source",
+      "question": "Hàm bcrypt nào được gọi để tạo hash trong mẫu?",
+      "options": [
+        "bcrypt.hash",
+        "bcrypt.decrypt",
+        "bcrypt.sign",
+        "bcrypt.publicKey"
+      ],
+      "correct": 0,
+      "explanation": "Đầu vào gồm password và work factor theo overload được dùng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Verify source",
+      "question": "Hàm nào dùng để kiểm password so với hash?",
+      "options": [
+        "bcrypt.restore",
+        "bcrypt.compare",
+        "bcrypt.decode",
+        "bcrypt.unhash"
+      ],
+      "correct": 1,
+      "explanation": "Compare không trả về password plaintext."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Work factor",
+      "question": "saltRounds trong source có giá trị gì?",
+      "options": [
+        "256",
+        "1",
+        "12",
+        "72"
+      ],
+      "correct": 2,
+      "explanation": "Đó là thông số ví dụ, không là sizing đã đo cho hệ thống hiện tại."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cost semantics",
+      "question": "bcrypt cost 12 có nghĩa đúng hơn là gì?",
+      "options": [
+        "Đúng 12 lần SHA-256 đơn giản",
+        "Độ dài password 12 ký tự bắt buộc",
+        "Số user tối đa trong database",
+        "Work factor theo cơ chế chi phí dạng lũy thừa của bcrypt"
+      ],
+      "correct": 3,
+      "explanation": "Không hiểu tên rounds như số lần lặp tuyến tính tùy ý."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Salt",
+      "question": "Salt theo password hashing có vai trò chính nào?",
+      "options": [
+        "Làm mỗi verifier có đầu vào riêng, giảm lợi ích bảng tính trước/chia sẻ tính toán",
+        "Giữ vai trò password thứ hai luôn phải bí mật",
+        "Mã hóa mọi log",
+        "Tự chứng minh password đủ mạnh"
+      ],
+      "correct": 0,
+      "explanation": "Salt không thay work factor hay chất lượng password."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Salt secrecy",
+      "question": "Salt có bắt buộc được giữ bí mật như pepper không?",
+      "options": [
+        "Chỉ khi dùng AES",
+        "Không, thường có thể lưu cùng verifier; pepper là bí mật nếu dùng",
+        "Có, không thể verify nếu salt nằm cùng hash",
+        "Không, nên password plaintext cũng public được"
+      ],
+      "correct": 1,
+      "explanation": "Vai trò và yêu cầu quản lý của salt/pepper khác nhau."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Random salt",
+      "question": "Hai user có cùng password nhưng salt khác có thể có hash khác không?",
+      "options": [
+        "Chỉ nếu username khác màu",
+        "Không, salt không ảnh hưởng đầu vào",
+        "Có",
+        "Không, mọi hash cùng password luôn giống chuỗi"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng so sánh hai hash mới tạo để xác định cùng password."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Fast hash limit",
+      "question": "SHA-256 thuần thường không là lựa chọn đủ cho password storage vì sao?",
+      "options": [
+        "Vì SHA-256 không thể băm string",
+        "Vì mọi digest SHA-256 luôn giải mã được",
+        "Vì chỉ hỗ trợ file rỗng",
+        "Tính nhanh làm đoán thử nhiều password rẻ hơn so với KDF được thiết kế phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Mục tiêu checksum và password verification khác nhau."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Argon2",
+      "question": "Argon2id thường được dùng vào mục tiêu nào?",
+      "options": [
+        "Password hashing có chi phí bộ nhớ/tính toán cấu hình được",
+        "Chỉ nén ảnh cho web",
+        "Chỉ tạo DNS record",
+        "Chỉ ký Git commit"
+      ],
+      "correct": 0,
+      "explanation": "Cần chọn cấu hình theo hướng dẫn và điều kiện đích, không có phép đo ở đây."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "72 byte limit",
+      "question": "Theo node.bcrypt docs được đọc, giới hạn đầu vào quan trọng là gì?",
+      "options": [
+        "Hash phải lưu trong 72 file",
+        "Chỉ 72 byte đầu của string được sử dụng theo implementation",
+        "Mọi password tối đa 72 ký tự Unicode đều chắc chắn tương đương giới hạn byte",
+        "Đúng 72 user được phép login"
+      ],
+      "correct": 1,
+      "explanation": "Byte khác ký tự, nhất là với UTF-8."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Async",
+      "question": "await trong mẫu nhằm làm gì về luồng JavaScript?",
+      "options": [
+        "Tự sửa mọi lỗi auth",
+        "Tự tạo salt bí mật toàn cục",
+        "Chờ Promise tương ứng hoàn tất theo ngữ cảnh async/module hợp lệ",
+        "Tự loại chi phí CPU của KDF"
+      ],
+      "correct": 2,
+      "explanation": "Async không có nghĩa công việc mật mã không tiêu thụ tài nguyên."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Module context",
+      "question": "Source vừa require vừa top-level await cần chú ý gì?",
+      "options": [
+        "Mọi file .js luôn chạy nguyên mẫu bất kể config",
+        "require tự bật top-level await mọi nơi",
+        "Chỉ thêm comment Node.js",
+        "Ngữ cảnh module/runtime phải hợp lệ, chẳng hạn async function trong CJS hoặc ESM import phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không thực thi snippet để đo hoặc verify password trong lần soạn này."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Compare đúng",
+      "question": "Giả sử bcrypt hoạt động đúng và hash được tạo từ password trong mẫu, compare cùng password có kết quả logic dự kiến gì?",
+      "options": [
+        "true",
+        "Chuỗi plaintext password",
+        "Private key của user",
+        "Một bản giải mã database"
+      ],
+      "correct": 0,
+      "explanation": "Đây là suy luận theo API, không kết quả chạy bcrypt thực tế trong phiên này."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Compare sai",
+      "question": "So một password khác với hash đã lưu nên được xử lý thế nào theo contract?",
+      "options": [
+        "Coi mọi compare error là login thành công",
+        "Dựa trên kết quả compare và auth policy, không giải mã hash",
+        "Luôn đổi hash đã lưu thành password mới",
+        "Trả private key để client tự kiểm"
+      ],
+      "correct": 1,
+      "explanation": "Sai password và lỗi hệ thống cũng cần được phân loại."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Rehash equality",
+      "question": "Mỗi lần login tạo hash mới với salt mới rồi so chuỗi với hash cũ có phù hợp không?",
+      "options": [
+        "Chỉ cần cắt prefix hash",
+        "Chỉ cần Base64 cả hai",
+        "Không, dùng verify/compare đúng API vì salt làm chuỗi có thể khác",
+        "Có, mọi cùng password luôn cùng chuỗi bất kể salt"
+      ],
+      "correct": 2,
+      "explanation": "Verifier chứa thông tin cần để API thực hiện kiểm đúng."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Salt tích hợp",
+      "question": "Gọi bcrypt.hash(password,12) theo API phổ biến có cần tự dùng một salt cố định chung không?",
+      "options": [
+        "Có, mọi user phải cùng một salt",
+        "Chỉ cần salt là username public",
+        "Có, không có salt tự tạo nào",
+        "Không, overload work factor có cơ chế tạo salt; cần dùng đúng thư viện/version"
+      ],
+      "correct": 3,
+      "explanation": "Không thêm một policy salt cố định làm suy yếu mục tiêu."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Password yếu",
+      "question": "Salt ngẫu nhiên có tự làm password dễ đoán trở nên không thể đoán không?",
+      "options": [
+        "Không, vẫn có thể thử các candidate với chi phí tương ứng",
+        "Có, salt tự tăng entropy của password người dùng",
+        "Có, mọi salted hash đều không thể tấn công offline",
+        "Chỉ nếu cost bằng 12"
+      ],
+      "correct": 0,
+      "explanation": "Salt giảm lợi ích tái sử dụng/precomputation, không loại mọi đoán thử."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "DB leak",
+      "question": "Hash password bị lộ nhưng không có plaintext có nghĩa không cần xử lý sự cố không?",
+      "options": [
+        "Chỉ cần đổi tên cột",
+        "Không, phải đánh giá exposure, thuật toán/cost và biện pháp ứng phó phù hợp",
+        "Có, hash không bao giờ có giá trị với đối thủ",
+        "Có, salt luôn là bí mật không thể lấy"
+      ],
+      "correct": 1,
+      "explanation": "Password hash vẫn là dữ liệu nhạy cảm."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Salt cùng hash",
+      "question": "Lưu salt và hash cùng record có mặc định phá thiết kế salted KDF không?",
+      "options": [
+        "Có, compare không thể chạy khi salt public",
+        "Chỉ khi record có ID",
+        "Không, salt không cần bí mật; vẫn cần bảo vệ verifier và thiết kế KDF đúng",
+        "Có, mọi salt phải ở máy riêng"
+      ],
+      "correct": 2,
+      "explanation": "Đừng nhầm salt với pepper/khóa mã hóa."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Pepper",
+      "question": "Nếu dùng pepper như lớp thêm, cần điều kiện nào?",
+      "options": [
+        "Công khai cạnh hash để mọi client kiểm",
+        "Thay hoàn toàn salt và cost",
+        "Dùng cùng tên field pepper là đủ",
+        "Bí mật ngoài verifier, quản lý truy cập/rotation theo thiết kế"
+      ],
+      "correct": 3,
+      "explanation": "Pepper không tự thay mọi yêu cầu password hashing."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cost tăng",
+      "question": "Tăng cost bcrypt thường có tác động nào cần xem?",
+      "options": [
+        "Tăng chi phí tính toán, cần cân bằng chống đoán và latency/capacity",
+        "Luôn làm login nhanh hơn",
+        "Tự thêm yếu tố 2FA",
+        "Tự tăng độ dài plaintext"
+      ],
+      "correct": 0,
+      "explanation": "Không lấy benchmark máy khác làm cam kết hiệu năng máy hiện tại."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Cost và iteration",
+      "question": "Nếu cost tăng từ 12 lên 13, mô hình work factor không phải chỉ thêm một lần lặp đơn giản. Vì sao?",
+      "options": [
+        "Vì hash tự bỏ salt khi số lẻ",
+        "Chi phí dùng tham số theo dạng 2^cost của bcrypt",
+        "Vì 13 là một thuật toán khác hoàn toàn",
+        "Vì cost là số user"
+      ],
+      "correct": 1,
+      "explanation": "Chi phí thực còn phụ thuộc implementation/hardware nhưng semantics không tuyến tính theo tên rounds."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Bytes vs chars",
+      "question": "Password chứa emoji có thể vượt 72 byte trước khi đạt 72 ký tự không?",
+      "options": [
+        "Chỉ nếu username admin",
+        "Không, bcrypt tự dùng mọi độ dài",
+        "Có, UTF-8 có ký tự nhiều byte",
+        "Không, Unicode luôn một byte mỗi ký tự"
+      ],
+      "correct": 2,
+      "explanation": "Policy cần hiểu giới hạn byte của implementation."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Truncation equivalence",
+      "question": "Hai password khác nhau chỉ sau byte 72 có thể không được bcrypt phân biệt theo implementation đó không?",
+      "options": [
+        "Không, bcrypt luôn đọc vô hạn",
+        "Chỉ nếu salt trùng",
+        "Không, compare tự kiểm toàn plaintext riêng",
+        "Có thể, cần policy độ dài/thuật toán phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không lặng lẽ chấp nhận giới hạn mà không thiết kế semantics mong muốn."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Salt không key encryption",
+      "question": "Salt có phải khóa dùng để decrypt bcrypt hash không?",
+      "options": [
+        "Không",
+        "Có, compare chỉ là decrypt bằng salt",
+        "Chỉ nếu cost 12",
+        "Có, public key nằm trong salt"
+      ],
+      "correct": 0,
+      "explanation": "Hash verification khác encryption/decryption."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Encryption need recover",
+      "question": "Dữ liệu cần được người hợp lệ đọc lại nguyên văn thường cần gì khác password verifier?",
+      "options": [
+        "Chỉ Base64 nếu dữ liệu private",
+        "Cơ chế mã hóa/giữ quyền phù hợp, không chỉ one-way hash",
+        "Chỉ bcrypt rồi unhash khi cần",
+        "Chỉ xóa salt"
+      ],
+      "correct": 1,
+      "explanation": "Chọn cơ chế theo mục tiêu giữ kín hay kiểm password."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "AES integrity",
+      "question": "Chỉ nói AES có đủ chứng minh ciphertext không bị thay đổi không?",
+      "options": [
+        "Có, tên thuật toán thay mọi kiểm tra",
+        "Chỉ cần key dài hơn",
+        "Không, cần mode/protocol authentication/integrity phù hợp",
+        "Có, mọi AES mode đều tự xác thực mọi metadata"
+      ],
+      "correct": 2,
+      "explanation": "Confidentiality và integrity cần được thiết kế đúng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Nonce IV",
+      "question": "Nonce/IV trong các mode có yêu cầu sử dụng cụ thể nên xử lý thế nào?",
+      "options": [
+        "Luôn dùng một hằng cho mọi mode",
+        "Coi chúng luôn là password thứ hai",
+        "Bỏ vì thuật toán nổi tiếng",
+        "Theo scheme/library contract, không tùy ý tái dùng hoặc tự phát minh quy tắc"
+      ],
+      "correct": 3,
+      "explanation": "Không có một quy tắc chung thay thế đặc tả từng mode."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Public key trust",
+      "question": "Nhận public key từ nguồn không xác thực có đủ chống man-in-the-middle theo mục tiêu danh tính không?",
+      "options": [
+        "Không, cần liên kết key với identity/trust theo protocol",
+        "Có, public nghĩa mọi key hợp lệ cho mọi người",
+        "Có, tên RSA tự chứng minh owner",
+        "Chỉ nếu key dài"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế mật mã cần trust model."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "ECC roles",
+      "question": "Mọi thuật toán dùng elliptic curves có cùng thao tác public encrypt/private decrypt không?",
+      "options": [
+        "Có, mọi public key encrypt mọi dữ liệu",
+        "Không, còn signature và key agreement với contract riêng",
+        "Có, ECC là một API duy nhất",
+        "Chỉ nếu dùng JSON"
+      ],
+      "correct": 1,
+      "explanation": "Không gom mọi bất đối xứng thành một công thức thao tác."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Digital signature",
+      "question": "Trong scheme chữ ký thông thường, cặp thao tác nào phù hợp?",
+      "options": [
+        "Salt ký và password kiểm",
+        "Hash tự cấp danh tính không key",
+        "Private key ký, public key kiểm chữ ký theo scheme",
+        "Public key ký như quyền private cho mọi người"
+      ],
+      "correct": 2,
+      "explanation": "Đừng gọi chữ ký là giải mã ngược một cách không đúng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Signature không secrecy",
+      "question": "Một file có chữ ký hợp lệ có tự được giữ bí mật khỏi mọi người đọc không?",
+      "options": [
+        "Có, ký là AES encryption",
+        "Chỉ nếu signature dài",
+        "Có, public key làm mọi file unreadable",
+        "Không, chữ ký không tự mã hóa nội dung"
+      ],
+      "correct": 3,
+      "explanation": "Thuộc tính nguồn gốc/toàn vẹn khác confidentiality."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Hash generic",
+      "question": "SHA-256 có ích cho checksum nhưng không thay password KDF vì khác mục tiêu nào?",
+      "options": [
+        "Password verification cần làm đoán thử đắt theo thiết kế, không chỉ tính digest nhanh",
+        "SHA-256 chỉ chạy trên Linux",
+        "Bcrypt chỉ đổi tên thuật toán SHA",
+        "Salt luôn làm SHA-256 chậm bằng Argon2id"
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt mục đích và cost model."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Error handling",
+      "question": "bcrypt.compare lỗi do dữ liệu hash hỏng có nên được coi là password đúng không?",
+      "options": [
+        "Chỉ nếu user nội bộ",
+        "Không, cần xử lý lỗi hệ thống/verification rõ và giữ policy phù hợp",
+        "Có, để giữ availability",
+        "Có, lỗi nghĩa không có password cần kiểm"
+      ],
+      "correct": 1,
+      "explanation": "Không biến lỗi verifier thành bypass."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Source hardcoded",
+      "question": "Password minh họa được hardcode trong code có nghĩa nên dùng nó cho tài khoản thật không?",
+      "options": [
+        "Có, bcrypt tự thay password khi deploy",
+        "Chỉ cần đổi username",
+        "Không, ví dụ không là credential production",
+        "Có, vì đã có ký tự đặc biệt"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng dữ liệu học liệu làm bí mật thật."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Module CJS",
+      "question": "Trong file CommonJS thông thường, top-level await trong mẫu cần thay đổi gì?",
+      "options": [
+        "Chỉ đổi const thành let",
+        "Chỉ thêm dấu chấm phẩy",
+        "require tự làm await hợp lệ mọi nơi",
+        "Đặt luồng await trong async function hoặc chuyển module context phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Đây là điều kiện JavaScript/module, không phải thuộc tính mật mã."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Module ESM",
+      "question": "Trong ESM thuần chưa tạo require, nguồn dùng require cần gì?",
+      "options": [
+        "Dùng import phù hợp hoặc createRequire có chủ đích theo môi trường",
+        "Tin require luôn là global ESM",
+        "Chỉ đổi password thành số",
+        "Chỉ tăng saltRounds"
+      ],
+      "correct": 0,
+      "explanation": "Không trộn các cơ chế module mà không wiring."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Async capacity",
+      "question": "Dùng bcrypt async có bảo đảm mọi tài nguyên không bị bão hòa không?",
+      "options": [
+        "Chỉ cần Node phiên bản mới",
+        "Không, CPU/worker resources và concurrency vẫn cần quản lý",
+        "Có, await xóa mọi chi phí hash",
+        "Có, Promise không bao giờ dùng CPU"
+      ],
+      "correct": 1,
+      "explanation": "Async hỗ trợ scheduling, không tạo tài nguyên vô hạn."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Login rate limit",
+      "question": "Password hashing tốt có thay rate limiting/anti-abuse cho endpoint login không?",
+      "options": [
+        "Chỉ nếu salt random",
+        "Có, mọi compare đều không thể bị spam",
+        "Không, cần các lớp phù hợp với threat model",
+        "Có, cost tự là rate limit theo user trên toàn hệ thống"
+      ],
+      "correct": 2,
+      "explanation": "Chi phí KDF và kiểm soát lưu lượng có vai trò khác nhau."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Hash logging",
+      "question": "Log hash verifier và plaintext password để debug có vấn đề gì?",
+      "options": [
+        "Không có vì hash là public",
+        "Chỉ plaintext ngắn mới nguy hiểm",
+        "Bcrypt tự xóa log sau compare",
+        "Tạo exposure dữ liệu nhạy cảm, nên tránh và redaction đúng scope"
+      ],
+      "correct": 3,
+      "explanation": "Lifecycle dữ liệu nhạy cảm nằm ngoài API hash riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Rehash upgrade",
+      "question": "Muốn tăng work factor cho account hiện có có thể thiết kế theo cách nào?",
+      "options": [
+        "Sau verification hợp lệ, cập nhật verifier theo policy và xử lý lifecycle an toàn",
+        "Giải mã mọi hash rồi hash lại tự động",
+        "Chỉ sửa số cost trong chuỗi hash cũ",
+        "Đổi tên cột cost mà không tính lại"
+      ],
+      "correct": 0,
+      "explanation": "Thay metadata không thay công việc đã tạo verifier."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Old verifier migration",
+      "question": "Có nên coi mọi bcrypt legacy đều không dùng được ngay chỉ vì guideline ưu tiên Argon2id cho app mới không?",
+      "options": [
+        "Chỉ cần đổi comment sang Argon2",
+        "Không, cần đánh giá cấu hình/rủi ro và kế hoạch nâng cấp theo yêu cầu",
+        "Có, tên legacy tự nghĩa mọi account bị lộ",
+        "Không bao giờ cần nâng cấp bcrypt"
+      ],
+      "correct": 1,
+      "explanation": "Hướng dẫn theo phiên bản cần được áp dụng có ngữ cảnh."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Salt uniqueness",
+      "question": "Một salt cố định dùng cho tất cả users làm giảm lợi ích nào?",
+      "options": [
+        "Tự cung cấp 2FA",
+        "Tự tạo thêm memory hardness",
+        "Khả năng ngăn chia sẻ/precompute cùng password giữa nhiều verifier",
+        "Tự làm plaintext dài hơn"
+      ],
+      "correct": 2,
+      "explanation": "Salt không nhất thiết bí mật nhưng cần cơ chế tạo phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Credential stuffing",
+      "question": "Hash storage tốt có tự ngăn kẻ dùng một password hợp lệ bị lộ ở dịch vụ khác đăng nhập không?",
+      "options": [
+        "Có, hash tự biết nguồn password",
+        "Chỉ nếu cost 12",
+        "Có, random salt làm user không thể dùng lại password",
+        "Không, cần xác thực/anti-abuse phù hợp ngoài storage hashing"
+      ],
+      "correct": 3,
+      "explanation": "Mô hình tấn công online và offline khác nhau."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Compare không authorization",
+      "question": "isMatch=true có tự cho phép mọi thao tác admin không?",
+      "options": [
+        "Không, còn session và authorization theo policy",
+        "Có, password đúng nghĩa mọi quyền",
+        "Chỉ nếu dùng AES",
+        "Có, compare tự trả role"
+      ],
+      "correct": 0,
+      "explanation": "Verification danh tính không thay quyền nghiệp vụ."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Backup crypto key",
+      "question": "Backup dữ liệu mã hóa mà mất khóa có thể ảnh hưởng thuộc tính nào?",
+      "options": [
+        "Chỉ tên file",
+        "Khả năng phục hồi/availability của dữ liệu hợp lệ",
+        "Chỉ màu dashboard",
+        "Không có vì AES tự lấy lại khóa"
+      ],
+      "correct": 1,
+      "explanation": "Quản lý khóa phải bao gồm lifecycle phục hồi được yêu cầu."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Plaintext recovery",
+      "question": "Một chức năng quên mật khẩu nên mặc định hiển thị lại password từ hash không?",
+      "options": [
+        "Chỉ cần salt",
+        "Có, SHA-256 có inverse key",
+        "Không, thiết kế reset/auth recovery phù hợp vì hash không có decrypt",
+        "Có, dùng bcrypt.compare để trả password"
+      ],
+      "correct": 2,
+      "explanation": "Không hứa khả năng mà cơ chế verifier không cung cấp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Password unicode policy",
+      "question": "Khi chọn policy password, vì sao cần xét encoding/normalization nhất quán?",
+      "options": [
+        "Mọi Unicode luôn cùng bytes",
+        "Chỉ font quyết định hash",
+        "Bcrypt tự chuẩn hóa mọi ngôn ngữ theo ý người dùng",
+        "Cùng trải nghiệm người dùng cần contract byte/string rõ ở đăng ký và verify"
+      ],
+      "correct": 3,
+      "explanation": "Không tự thay đổi dữ liệu bí mật theo quy tắc không được thiết kế."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Algorithm name claim",
+      "question": "Có tên AES/RSA/bcrypt trong source có đủ chứng minh implementation vận hành an toàn không?",
+      "options": [
+        "Không, còn scheme/parameters/keys/runtime và kiểm chứng theo mục tiêu",
+        "Có, tên thuật toán nổi tiếng thay mọi config",
+        "Chỉ cần ba thuật toán cùng xuất hiện",
+        "Có, nếu dùng Node.js"
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế và sử dụng đúng quan trọng ngoài tên công cụ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Không runtime proof",
+      "question": "Source bcrypt có await và compare có đủ chứng minh package hiện có và đã chạy thành công không?",
+      "options": [
+        "Chỉ cần file .js",
+        "Không, cần runtime/dependency context và bằng chứng thực thi riêng",
+        "Có, import text tự cài package",
+        "Có, password mẫu luôn tạo hash sẵn"
+      ],
+      "correct": 1,
+      "explanation": "Không cài hoặc chạy bcrypt trong phiên soạn."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Shadow exercise scope",
+      "question": "Bài tập nhắc /etc/shadow có cấp quyền đọc shadow thật trên máy không?",
+      "options": [
+        "Có, hash không phải dữ liệu nhạy cảm",
+        "Chỉ cần dùng tài khoản thường",
+        "Không, chỉ thực hành trong lab được phép; không đọc credential thật khi soạn",
+        "Có, tên file xuất hiện trong bài là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Quyền kỹ thuật và scope học liệu không đồng nhất."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Promise chưa chờ",
+      "question": "Nếu compare API trả Promise nhưng code kiểm if trên Promise trực tiếp, chưa await boolean, có vấn đề gì?",
+      "options": [
+        "Promise tự thành false cho mọi password sai",
+        "If tự await mọi Promise trong JavaScript",
+        "Chỉ ảnh hưởng màu log",
+        "Đang xét object Promise truthy thay vì kết quả verification, có thể làm sai cổng auth"
+      ],
+      "correct": 3,
+      "explanation": "Cần chờ/handle đúng kết quả và lỗi theo contract async."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Same password different hashes",
+      "question": "Hai lần hash cùng password bằng API tạo salt mới cho chuỗi khác nhau, nhóm định bỏ salt để so bằng ===. Sửa thế nào?",
+      "options": [
+        "Giữ salt/KDF và dùng verify/compare với verifier đã lưu, không thay mục tiêu bảo vệ bằng so chuỗi mới",
+        "Bỏ salt luôn là cách xác minh đúng",
+        "Chỉ cắt mọi salt khỏi hash",
+        "Đổi password thành Base64 rồi so"
+      ],
+      "correct": 0,
+      "explanation": "Cần phối hợp semantics API với mục tiêu chống tái sử dụng tính toán."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Long Unicode bcrypt",
+      "question": "App cho password Unicode dài nhưng bỏ qua giới hạn 72 byte, hai password khác phần đuôi có thể cùng verifier semantics. Cần gì?",
+      "options": [
+        "Chỉ thêm salt cố định",
+        "Policy độ dài/encoding và thuật toán phù hợp, không giả 72 ký tự là 72 byte",
+        "Chỉ đếm ký tự bằng UI mà bỏ backend",
+        "Chỉ tăng cost để bcrypt đọc nhiều byte hơn"
+      ],
+      "correct": 1,
+      "explanation": "Work factor không tự đổi giới hạn đầu vào của implementation."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cost và abuse",
+      "question": "App tăng cost rất cao rồi endpoint login bị bão hòa vì request không giới hạn. Thiết kế nào phù hợp?",
+      "options": [
+        "Tin await tạo CPU vô hạn",
+        "Chỉ đổi tên biến saltRounds",
+        "Đo/chọn cost theo mục tiêu cùng concurrency/rate/anti-abuse và capacity, không dùng cost như control duy nhất",
+        "Bỏ hashing để login nhanh"
+      ],
+      "correct": 2,
+      "explanation": "Bảo vệ offline guessing và availability online cần được phối hợp."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Hash leak",
+      "question": "DB chứa salted bcrypt bị lộ, team nói salt có trong record nên chỉ cần chuyển salt sang cột khác. Điều gì cần thật sự?",
+      "options": [
+        "Salt ở cột khác tự vô hiệu mọi bản sao hash",
+        "Chỉ đổi filename backup",
+        "Mọi salted hash đều vô giá trị với attacker",
+        "Đánh giá exposure/cost/password risk và ứng phó phù hợp; đổi vị trí public salt không khắc phục vụ lộ"
+      ],
+      "correct": 3,
+      "explanation": "Salt không là bí mật thay thế password hoặc pepper."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "AES key leaked",
+      "question": "Dữ liệu dùng AES nhưng key được ghi trong log có quyền đọc rộng. Tại sao tên thuật toán chưa đủ?",
+      "options": [
+        "Quản lý khóa/lifecycle dữ liệu có thể phá confidentiality dù thuật toán phù hợp",
+        "AES tự bảo vệ key đã lộ",
+        "Chỉ cần key có tên secret",
+        "Chỉ đổi hash password"
+      ],
+      "correct": 0,
+      "explanation": "Mật mã là một phần thiết kế, không che sai sót quản lý bí mật."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Public key substitution",
+      "question": "Client dùng public key do một nguồn không xác thực gửi rồi tin đang mã hóa cho đúng server. Cần gì?",
+      "options": [
+        "Chỉ đổi AES sang ECC",
+        "Trust binding giữa key và identity/protocol đúng, không chỉ key hợp định dạng",
+        "Mọi public key thuộc cùng một owner",
+        "Chỉ độ dài key quyết định danh tính"
+      ],
+      "correct": 1,
+      "explanation": "Tính xác thực khóa là phần của mục tiêu trao đổi an toàn."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "ECC description",
+      "question": "Nguồn gộp RSA/ECC thành public encrypt/private decrypt cho mọi trường hợp. Cách giải thích đúng hơn?",
+      "options": [
+        "Mọi bất đối xứng chỉ là một hash",
+        "Chỉ cần thuật ngữ public/private",
+        "Các schemes hỗ trợ encryption/signature/key agreement riêng; phải theo contract thuật toán/protocol cụ thể",
+        "Mọi ECC key làm mọi thao tác giống nhau"
+      ],
+      "correct": 2,
+      "explanation": "Không biến một mô tả đơn giản thành quy tắc sai cho mọi scheme."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Xác thực ciphertext và metadata",
+      "question": "Một giao thức hiện dùng mode AES không xác thực, cần giữ bí mật nội dung và phát hiện sửa cả ciphertext lẫn metadata định tuyến trước khi ứng dụng dùng chúng. Phương án nào đáp ứng đúng mục tiêu?",
+      "options": [
+        "Giữ mode cũ, dùng nonce không lặp và khóa dài hơn; coi confidentiality đã bao cả phát hiện sửa metadata",
+        "Giữ mode cũ, gửi SHA-256 không khóa của ciphertext và metadata bên cạnh để người nhận kiểm, dù đối thủ có thể thay cả gói",
+        "Mã hóa ciphertext lần nữa bằng AES với khóa khác rồi tin mọi thay đổi sẽ bị phát hiện vì có hai lớp confidentiality",
+        "Dùng thư viện/protocol authenticated encryption phù hợp, bảo vệ metadata cần thiết như associated data và kiểm tag trước khi chấp nhận dữ liệu, với nonce/key theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Confidentiality một mình không xác thực gói dữ liệu. Hash không khóa kèm gói cũng không chống đối thủ thay cả dữ liệu lẫn digest; cần authentication đúng scope và tuân thủ contract nonce/key/tag của cơ chế được chọn."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Source module mismatch",
+      "question": "File .cjs giữ require và top-level await; file ESM lại giữ require global chưa định nghĩa. Cần sửa gì?",
+      "options": [
+        "Dùng module/async wiring nhất quán theo môi trường rồi mới kiểm behavior bcrypt",
+        "Chỉ thêm comment async vào đầu file",
+        "Chỉ đổi password",
+        "Chỉ tăng cost"
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện code chạy đúng là riêng với tính đúng của thuật toán."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Pepper rotation",
+      "question": "Pepper bí mật bị lộ nhưng mọi verifier đang phụ thuộc nó. Tại sao cần kế hoạch riêng?",
+      "options": [
+        "Đổi tên pepper tự làm secret cũ hết hiệu lực",
+        "Quản lý version/rotation/reset hoặc rehash theo contract, không giả đổi một biến khôi phục mọi verifier cũ",
+        "Chỉ chuyển pepper vào cùng DB rồi gọi an toàn",
+        "Chỉ xóa salt"
+      ],
+      "correct": 1,
+      "explanation": "Lớp bảo vệ bổ sung có lifecycle và đánh đổi vận hành."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Hash versus recoverable data",
+      "question": "Ứng dụng cần hiển thị lại một API credential cho tác vụ được ủy quyền nhưng chỉ lưu bcrypt. Cần xem lại điều gì?",
+      "options": [
+        "Chỉ tăng hash length",
+        "Chỉ đổi compare sang decode",
+        "Mục tiêu dữ liệu cần phục hồi khác password verifier; thiết kế secrets/encryption/access phù hợp",
+        "Bcrypt có thể decrypt nếu biết salt"
+      ],
+      "correct": 2,
+      "explanation": "Chọn primitive theo yêu cầu, không dùng một cơ chế cho mọi dữ liệu."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Unsafe cost metadata edit",
+      "question": "Muốn nâng cost từ 10 lên 12, developer chỉ thay số trong chuỗi bcrypt đã lưu. Vì sao sai?",
+      "options": [
+        "Sửa số tự thêm công việc mật mã đã thiếu",
+        "Chỉ cần restart server",
+        "Đổi saltRounds ở source tự sửa mọi record cũ",
+        "Metadata phải khớp quá trình tạo verifier; cần rehash bằng API theo policy sau xác minh/luồng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không thay kết quả tính toán bằng sửa nhãn."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Log plaintext test",
+      "question": "Để debug compare false, app log cả plaintext lẫn verifier lên dashboard public. Cách sửa phù hợp?",
+      "options": [
+        "Chẩn đoán contract/encoding/runtime với log redacted và xử lý exposure, không công khai credential",
+        "Chỉ dùng log ngắn hơn",
+        "Coi hash public nên plaintext cũng public",
+        "Chỉ đổi dashboard sang HTTPS"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu debug không được bỏ khỏi threat model."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Fast hash salted",
+      "question": "Nhóm thay bcrypt bằng SHA-256+salt để tăng tốc rồi nói salt giữ cùng khả năng chống đoán. Đánh giá đúng?",
+      "options": [
+        "Chỉ cần salt dài hơn tên username",
+        "Salt không thay adaptive cost/memory của password KDF; cần chọn cơ chế theo threat model và hiệu năng đo",
+        "Mọi salted hash có chi phí như nhau",
+        "SHA-256 tự tạo Argon2 memory"
+      ],
+      "correct": 1,
+      "explanation": "Primitive và cost model khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Crypto không authz",
+      "question": "Password compare đúng và session được tạo nhưng API không kiểm quyền object. Cần gì thêm?",
+      "options": [
+        "Thêm AES vào password string",
+        "Đổi salt thành role",
+        "Authorization theo tài nguyên/thao tác và các invariant nghiệp vụ",
+        "Tăng cost bcrypt giải quyết object access"
+      ],
+      "correct": 2,
+      "explanation": "Mật mã trong authentication không tự bao mọi quyền ứng dụng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Verify error policy",
+      "question": "Hash record hỏng làm compare throw, app cho login để tránh mất khả dụng. Vấn đề chính?",
+      "options": [
+        "Mọi crypto error nghĩa password đúng",
+        "Chỉ cần ghi error vào log public",
+        "Chỉ đổi username thành số",
+        "Lỗi verifier bị biến thành bypass; cần failure/recovery policy giữ ranh giới truy cập"
+      ],
+      "correct": 3,
+      "explanation": "Availability phải được thiết kế cùng correctness/security."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Migration guideline",
+      "question": "Nguồn nói bắt buộc bcrypt hoặc Argon2, team xem đó là danh sách duy nhất cho mọi yêu cầu. Cách hiểu phù hợp?",
+      "options": [
+        "Dùng guideline hiện hành và constraints cụ thể, chọn modern password KDF/config thích hợp; không tuyệt đối hóa ví dụ nguồn",
+        "Mọi thuật toán không trong hai tên đều luôn sai ở mọi context",
+        "Chỉ dùng MD5 vì dễ triển khai",
+        "Bỏ salt nếu yêu cầu compliance"
+      ],
+      "correct": 0,
+      "explanation": "Có các cơ chế như PBKDF2/scrypt với ngữ cảnh và cấu hình được hướng dẫn riêng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Confidentiality và recovery",
+      "question": "Backup ciphertext còn nguyên nhưng team mất key và không có quy trình recovery. Cần đánh giá gì?",
+      "options": [
+        "Chỉ đổi extension backup",
+        "Cả bảo vệ khóa lẫn khả năng người hợp lệ phục hồi dữ liệu, không chỉ tính đúng thuật toán",
+        "Chỉ tên AES",
+        "Coi hash ciphertext là đủ đọc lại"
+      ],
+      "correct": 1,
+      "explanation": "Key lifecycle phải phục vụ mục tiêu availability được yêu cầu."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Same password entropy",
+      "question": "User dùng password dễ đoán, app có salt unique/cost phù hợp nhưng không anti-abuse và dùng lại password lộ nơi khác. Kết luận đúng?",
+      "options": [
+        "Cost 12 tự là 2FA",
+        "Không cần bảo vệ endpoint vì có hash",
+        "Storage hashing giúp một số rủi ro, còn online abuse/credential reuse và auth controls cần được xử lý",
+        "Salt làm password không thể đoán ở mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "Các mô hình tấn công và biện pháp không đồng nhất."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Verifier bị cắt đầu vào và migration",
+      "question": "Hệ thống cũ đã nhận password UTF-8 dài hơn 72 byte rồi lưu bcrypt. Hai chuỗi khác nhau chỉ sau byte 72 có thể cùng qua verify. Sản phẩm mới yêu cầu phân biệt toàn chuỗi; endpoint còn bị quá tải khi tăng cost. Kế hoạch nào đúng cả tính đúng xác thực và vận hành?",
+      "options": [
+        "Tăng cost bcrypt rồi giữ mọi password dài; số vòng nhiều hơn sẽ tự kiểm thêm các byte sau giới hạn",
+        "Chuyển trực tiếp chuỗi hash cũ vào Argon2 rồi coi đó là verifier của toàn password, không cần người dùng hoặc luồng xác minh",
+        "Cắt mọi password về 72 byte ở cả đăng ký và login để hết sai khác, sau đó bỏ giới hạn request vì hai phía đã nhất quán",
+        "Thừa nhận verifier cũ không chứng minh phần đuôi, thiết kế reset/xác minh bổ sung cho trường hợp ảnh hưởng rồi chuyển sang KDF/policy đầu vào phù hợp; đo cost và giới hạn tải/concurrency riêng"
+      ],
+      "correct": 3,
+      "explanation": "Tăng cost không khôi phục thông tin đầu vào đã bị bỏ qua. Băm lại verifier cũ cũng không xác nhận phần đuôi plaintext; migration cần hợp đồng xác thực/reset phù hợp. Chi phí chống đoán và giới hạn tài nguyên online cần được thiết kế cùng nhau."
+    }
+  ]
+}

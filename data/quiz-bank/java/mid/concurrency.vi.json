@@ -1,0 +1,1154 @@
+{
+  "version": 1,
+  "tech": "java",
+  "level": "mid",
+  "lesson": "concurrency",
+  "language": "vi",
+  "sourceHash": "67b9688b3994d7ed2b9484e767f7b96fdd779fab7652b1979d493921ba4ed482",
+  "status": "approved",
+  "review": "Tự viết, không API. Java21 cho virtual threads, các API khác theo semantics Java17/21. Đối chiếu Oracle JDK21 CompletableFuture và Virtual Threads docs. Không thực hiện downloader/network; không chạy data race/deadlock; không hứa virtual threads nhanh1000x.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Thread",
+      "question": "Thread.start() thường làm gì?",
+      "options": [
+        "Bắt đầu thực thi thread theo API.",
+        "Chỉ gọi run trên caller luôn.",
+        "Tự join mọi worker.",
+        "Tự khóa shared fields."
+      ],
+      "correct": 0,
+      "explanation": "Scheduling khác với direct method call."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Runnable",
+      "question": "Runnable.run trả kiểu gì?",
+      "options": [
+        "Thread luôn.",
+        "void.",
+        "Future<T> luôn.",
+        "int luôn."
+      ],
+      "correct": 1,
+      "explanation": "Runnable mô tả tác vụ không có giá trị trả thông thường."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Callable",
+      "question": "Callable<T>.call có khác Runnable ở điểm nào?",
+      "options": [
+        "Luôn không block.",
+        "Tự ghi file.",
+        "Có giá trị T và cho phép throws Exception.",
+        "Luôn tạo virtual thread."
+      ],
+      "correct": 2,
+      "explanation": "Executor có thể nhận Callable để trả Future."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Executor",
+      "question": "ExecutorService chủ yếu giúp gì?",
+      "options": [
+        "Tự làm task thread safe.",
+        "Tự limit mọi tài nguyên mạng.",
+        "Tự loại bỏ exception.",
+        "Quản lý thực thi task và lifecycle executor."
+      ],
+      "correct": 3,
+      "explanation": "Task ownership/synchronization vẫn cần thiết."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Fixed pool",
+      "question": "newFixedThreadPool(4) đặt giới hạn gì?",
+      "options": [
+        "Số worker hoạt động của pool theo contract.",
+        "Tổng task được submit chỉ4.",
+        "Mọi queue chỉ4 slot.",
+        "Tổng mọi thread trong JVM là4."
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm worker count với queue capacity."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Shutdown",
+      "question": "executor.shutdown() có ý nghĩa gì?",
+      "options": [
+        "Tự lấy mọi kết quả.",
+        "Ngừng nhận task mới, cho task đã nhận hoàn tất theo API.",
+        "Chắc chắn hủy ngay task đang chạy.",
+        "Tự restart executor."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nghĩa chờ mọi task đã xong."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Await termination",
+      "question": "awaitTermination thường dùng để làm gì?",
+      "options": [
+        "Tự tạo thêm worker.",
+        "Luôn hủy mọi task.",
+        "Chờ executor kết thúc trong giới hạn thời gian.",
+        "Submit task mới."
+      ],
+      "correct": 2,
+      "explanation": "Kiểm tra kết quả timeout và interruption theo contract."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Synchronized",
+      "question": "synchronized bảo vệ theo gì?",
+      "options": [
+        "Tên biến giống nhau.",
+        "Mọi object cùng class tự chung instance lock.",
+        "Tất cả Java code.",
+        "Monitor/lock của object/class được chọn."
+      ],
+      "correct": 3,
+      "explanation": "Các truy cập liên quan phải tuân cùng giao thức."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Instance lock",
+      "question": "Hai instance khác nhau có synchronized instance method có mặc định cùng monitor không?",
+      "options": [
+        "Không.",
+        "Có theo tên class.",
+        "Có nếu fields private.",
+        "Chỉ nếu method void."
+      ],
+      "correct": 0,
+      "explanation": "Instance synchronization gắn với receiver object."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Atomic integer",
+      "question": "AtomicInteger.incrementAndGet thực hiện gì?",
+      "options": [
+        "Luôn nhanh hơn mọi lock.",
+        "Tăng atomic và trả giá trị mới.",
+        "Chỉ đọc rồi ghi non-atomic.",
+        "Tự khóa mọi field khác."
+      ],
+      "correct": 1,
+      "explanation": "Atomic primitive không tự bảo vệ invariant nhiều field."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Volatile",
+      "question": "volatile có tự làm count++ thành atomic không?",
+      "options": [
+        "Chỉ khi count int.",
+        "Chỉ nếu value nhỏ.",
+        "Không.",
+        "Có luôn."
+      ],
+      "correct": 2,
+      "explanation": "Read-modify-write gồm nhiều bước cần operation phù hợp."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Thread join",
+      "question": "thread.join() phục vụ gì?",
+      "options": [
+        "Buộc dừng thread ngay.",
+        "Submit task vào pool.",
+        "Tự gom result vào List.",
+        "Chờ thread kết thúc theo API."
+      ],
+      "correct": 3,
+      "explanation": "Join giúp xác lập hoàn tất và visibility tương ứng."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Completable future",
+      "question": "CompletableFuture<T> biểu đạt gì?",
+      "options": [
+        "Kết quả/completion có thể nối các stage.",
+        "Chỉ một OS thread.",
+        "Một List<T> đồng bộ.",
+        "Một mutex recursive."
+      ],
+      "correct": 0,
+      "explanation": "Future/completion stage khác bản thân một thread."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Supply async",
+      "question": "supplyAsync thường nhận gì?",
+      "options": [
+        "Chỉ Runnable không kết quả.",
+        "Supplier tạo giá trị.",
+        "Consumer bắt buộc trả void.",
+        "Chỉ String URL."
+      ],
+      "correct": 1,
+      "explanation": "Có overload với executor tường minh."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Then apply",
+      "question": "thenApply thường làm gì?",
+      "options": [
+        "Luôn mở một OS thread mới.",
+        "Luôn xử lý lỗi thay success.",
+        "Biến đổi kết quả thành giá trị khác.",
+        "Tự flatten mọi nested future."
+      ],
+      "correct": 2,
+      "explanation": "Non-async stage không bảo đảm chạy một thread mới."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Then compose",
+      "question": "thenCompose phù hợp khi function trả gì?",
+      "options": [
+        "Chỉ primitive int.",
+        "Chỉ void.",
+        "Chỉ Exception.",
+        "CompletionStage cần được nối/flatten."
+      ],
+      "correct": 3,
+      "explanation": "Compose tránh nested stage trong async chaining phù hợp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Future get",
+      "question": "Future.get() có thể làm gì?",
+      "options": [
+        "Chờ và trả result hoặc báo lỗi theo API.",
+        "Luôn không block.",
+        "Tự reset task.",
+        "Tự retry vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "Phải xét interruption, execution failure và timeout overload."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Virtual threads version",
+      "question": "Virtual threads chính thức trong bài thuộc Java nào?",
+      "options": [
+        "Java17 không preview.",
+        "Java21.",
+        "Java8.",
+        "Java11."
+      ],
+      "correct": 1,
+      "explanation": "Bank dùng --release21 cho bài này để kiểm tra đúng API."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Virtual workload",
+      "question": "Virtual threads thường phù hợp nhóm task nào?",
+      "options": [
+        "Mọi phép tính tự nhanh1000x.",
+        "Chỉ UI animation.",
+        "Nhiều task chờ blocking I/O.",
+        "Luôn CPU-bound dài để tăng số core."
+      ],
+      "correct": 2,
+      "explanation": "Tăng concurrency không làm CPU có thêm năng lực xử lý."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Cancellation",
+      "question": "Task cancellation cần được hiểu thế nào?",
+      "options": [
+        "Luôn cưỡng bức dừng thread ngay.",
+        "Luôn rollback mọi side effect.",
+        "Tự retry bằng thread mới.",
+        "Theo API và khả năng hợp tác của công việc."
+      ],
+      "correct": 3,
+      "explanation": "Future state và tác vụ vật lý không luôn dừng đồng thời."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Run direct",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{Thread parent=Thread.currentThread();Runnable r=()->System.out.print(Thread.currentThread()==parent);r.run();}}\n",
+      "options": [
+        "true",
+        "false",
+        "Không xác định.",
+        "Compile error."
+      ],
+      "correct": 0,
+      "explanation": "Gọi run trực tiếp thực thi trên caller."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Start separate",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{Thread parent=Thread.currentThread();AtomicBoolean other=new AtomicBoolean();Thread t=new Thread(()->other.set(Thread.currentThread()!=parent));t.start();t.join();System.out.print(other.get());}}\n",
+      "options": [
+        "Thread không được join.",
+        "true",
+        "false",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Thread được start có identity khác caller; join trước đọc."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Join visibility",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{int[]x={0};Thread t=new Thread(()->x[0]=7);t.start();t.join();System.out.print(x[0]);}}\n",
+      "options": [
+        "Mọi số int.",
+        "Luôn data race dù join xong.",
+        "7",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Ghi trong worker được quan sát sau join hoàn tất."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Synchronized counter",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\nclass C{int n; synchronized void inc(){n++;}int get(){return n;}}\npublic class QuizCase{public static void main(String[]args)throws Exception{C c=new C();Thread a=new Thread(()->{for(int i=0;i<1000;i++)c.inc();});Thread b=new Thread(()->{for(int i=0;i<1000;i++)c.inc();});a.start();b.start();a.join();b.join();System.out.print(c.get());}}\n",
+      "options": [
+        "1000",
+        "0",
+        "Không có giá trị được bảo đảm vì inc synchronized.",
+        "2000"
+      ],
+      "correct": 3,
+      "explanation": "Hai worker dùng cùng object C, join trước get."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Atomic increment",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{AtomicInteger n=new AtomicInteger(3);int r=n.incrementAndGet();System.out.print(r+\" \"+n.get());}}\n",
+      "options": [
+        "4 4",
+        "3 4",
+        "4 3",
+        "3 3"
+      ],
+      "correct": 0,
+      "explanation": "incrementAndGet trả value mới."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Atomic old value",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{AtomicInteger n=new AtomicInteger(3);int r=n.getAndIncrement();System.out.print(r+\" \"+n.get());}}\n",
+      "options": [
+        "4 3",
+        "3 4",
+        "4 4",
+        "3 3"
+      ],
+      "correct": 1,
+      "explanation": "getAndIncrement trả value cũ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Submit callable",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{ExecutorService e=Executors.newSingleThreadExecutor();try{Future<Integer>f=e.submit(()->7);System.out.print(f.get());}finally{e.shutdown();}}}\n",
+      "options": [
+        "0",
+        "Compile error.",
+        "7",
+        "null"
+      ],
+      "correct": 2,
+      "explanation": "Future giữ result Callable, pool được shutdown trong finally."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Submit runnable result",
+      "question": "Future<?> từ submit(Runnable) hoàn tất thành công thông thường trả gì khi get?",
+      "options": [
+        "Thread object.",
+        "true luôn.",
+        "Số lệnh task.",
+        "null."
+      ],
+      "correct": 3,
+      "explanation": "Không có giá trị T riêng khi dùng overload Runnable không result."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Completed future chain",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{System.out.print(CompletableFuture.completedFuture(2).thenApply(x->x+1).join());}}\n",
+      "options": [
+        "3",
+        "2",
+        "null",
+        "Luôn cần pool explicit."
+      ],
+      "correct": 0,
+      "explanation": "Stage tăng value2 thành3."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Apply nested future",
+      "question": "Kiểu của completedFuture(2).thenApply(x->completedFuture(x+1)) là gì?",
+      "options": [
+        "Future<void>.",
+        "CompletableFuture<CompletableFuture<Integer>>.",
+        "CompletableFuture<Integer> tự flatten.",
+        "Integer."
+      ],
+      "correct": 1,
+      "explanation": "Apply giữ giá trị trả của function, gồm cả stage object."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Compose flattened",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{System.out.print(CompletableFuture.completedFuture(2).thenCompose(x->CompletableFuture.completedFuture(x+1)).join());}}\n",
+      "options": [
+        "null",
+        "Không dùng compose với completedFuture được.",
+        "3",
+        "2"
+      ],
+      "correct": 2,
+      "explanation": "Compose nối stage trả về và lấy kết quả cuối."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Then accept",
+      "question": "thenAccept khác thenApply ở điểm chính nào?",
+      "options": [
+        "Luôn trả cùng T.",
+        "Luôn tạo thread mới.",
+        "Chỉ chạy khi có exception.",
+        "Consumer xử lý result, stage kết quả là Void."
+      ],
+      "correct": 3,
+      "explanation": "Dùng cho action không có giá trị kết quả mới theo contract."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Explicit chain output",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{var f=CompletableFuture.completedFuture(\"Raw Data\").thenApply(s->s.toUpperCase(Locale.ROOT)).thenApply(s->\"Processed: \"+s);System.out.print(f.join());}}\n",
+      "options": [
+        "Processed: RAW DATA",
+        "Raw Data",
+        "Processed: Raw Data",
+        "Không có output."
+      ],
+      "correct": 0,
+      "explanation": "Chuỗi biến đổi text, không gửi request mạng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Default async executor",
+      "question": "supplyAsync(work,e).thenApplyAsync(next) có tự dùng e cho next không?",
+      "options": [
+        "Chỉ nếu work trả String.",
+        "Không; overload không executor dùng default async facility theo API.",
+        "Có; executor luôn sticky cho mọi stage.",
+        "Chỉ khi e có4 threads."
+      ],
+      "correct": 1,
+      "explanation": "Muốn dùng e cho next hãy truyền executor ở overload tương ứng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Non async thread",
+      "question": "thenApply có bảo đảm chuyển sang thread mới không?",
+      "options": [
+        "Chỉ khi value int.",
+        "Chỉ khi future đã xong.",
+        "Không.",
+        "Có luôn."
+      ],
+      "correct": 2,
+      "explanation": "Có thể thực thi bởi completer hoặc caller phù hợp, không dựa vào tên thread cố định."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Combine two values",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{var a=CompletableFuture.completedFuture(2);var b=CompletableFuture.completedFuture(3);System.out.print(a.thenCombine(b,Integer::sum).join());}}\n",
+      "options": [
+        "23",
+        "2",
+        "3",
+        "5"
+      ],
+      "correct": 3,
+      "explanation": "thenCombine kết hợp hai result khi đủ điều kiện completion."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "All of result type",
+      "question": "allOf(a,b) trả result kiểu nào?",
+      "options": [
+        "CompletableFuture<Void>.",
+        "List<Integer> luôn.",
+        "CompletableFuture<List<T>> tự gom.",
+        "Integer[] luôn."
+      ],
+      "correct": 0,
+      "explanation": "Chờ tất cả khác thu thập giá trị của từng future."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "All of completion",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{var a=CompletableFuture.completedFuture(2);var b=CompletableFuture.completedFuture(3);System.out.print(CompletableFuture.allOf(a,b).join());}}\n",
+      "options": [
+        "Không compile.",
+        "null",
+        "5",
+        "[2, 3]"
+      ],
+      "correct": 1,
+      "explanation": "allOf completed futures hoàn tất với Void value null."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Get now incomplete",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{CompletableFuture<Integer>f=new CompletableFuture<>();System.out.print(f.getNow(9)+\" \"+f.isDone());}}\n",
+      "options": [
+        "0 false",
+        "TimeoutException.",
+        "9 false",
+        "9 true"
+      ],
+      "correct": 2,
+      "explanation": "getNow fallback không tự hoàn tất future."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "First complete wins",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{CompletableFuture<Integer>f=new CompletableFuture<>();boolean a=f.complete(1),b=f.complete(2);System.out.print(a+\" \"+b+\" \"+f.join());}}\n",
+      "options": [
+        "true true 2",
+        "false true 2",
+        "true false 2",
+        "true false 1"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ lần completion đầu thành công thay trạng thái."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Join failure",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{var f=CompletableFuture.failedFuture(new IllegalArgumentException(\"bad\"));try{f.join();}catch(CompletionException e){System.out.print(e.getCause().getMessage());}}}\n",
+      "options": [
+        "bad",
+        "null",
+        "CompletionException không có cause.",
+        "Compile error."
+      ],
+      "correct": 0,
+      "explanation": "join wrap failure bằng CompletionException phù hợp và giữ cause."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Get failure",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{var f=CompletableFuture.failedFuture(new IllegalArgumentException(\"bad\"));try{f.get();}catch(ExecutionException e){System.out.print(e.getCause().getMessage());}}}\n",
+      "options": [
+        "0",
+        "bad",
+        "null",
+        "get chỉ ném RuntimeException không wrap."
+      ],
+      "correct": 1,
+      "explanation": "get báo ExecutionException với cause."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Exceptionally recovery",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{CompletableFuture<Integer>f=CompletableFuture.failedFuture(new IllegalArgumentException(\"bad\"));System.out.print(f.exceptionally(e->7).join());}}\n",
+      "options": [
+        "bad",
+        "Không recover được.",
+        "7",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "exceptionally cung cấp giá trị thay khi completion exceptional."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Handle success and error",
+      "question": "handle khác exceptionally chủ yếu thế nào?",
+      "options": [
+        "Chỉ log thread.",
+        "Chỉ chạy khi success.",
+        "Luôn tự retry.",
+        "Được gọi cho cả success/failure và có thể biến đổi result."
+      ],
+      "correct": 3,
+      "explanation": "Policy recovery phải có chủ đích."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "When complete purpose",
+      "question": "whenComplete thường dùng để gì?",
+      "options": [
+        "Quan sát completion/result/error với action theo semantics API.",
+        "Luôn thay failure bằng fallback.",
+        "Luôn flatten future.",
+        "Tự cancel parent."
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm observation stage với recovery policy."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Self cancellation",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{CompletableFuture<Integer>f=new CompletableFuture<>();f.cancel(true);try{f.join();}catch(CancellationException e){System.out.print(\"cancel\");}}}\n",
+      "options": [
+        "Cancel bị cấm trên CompletableFuture.",
+        "cancel",
+        "null",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Future bị cancel có completion cancellation theo API."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Range sum",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{System.out.print(java.util.stream.LongStream.rangeClosed(1,5).parallel().sum());}}\n",
+      "options": [
+        "5",
+        "0",
+        "15",
+        "10"
+      ],
+      "correct": 2,
+      "explanation": "rangeClosed gồm cả1 và5."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Interrupt flag cleared",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{Thread.currentThread().interrupt();boolean old=Thread.interrupted();System.out.print(old+\" \"+Thread.currentThread().isInterrupted());}}\n",
+      "options": [
+        "true true",
+        "false false",
+        "InterruptedException từ isInterrupted luôn.",
+        "true false"
+      ],
+      "correct": 3,
+      "explanation": "Thread.interrupted đọc và clear status của current thread."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Virtual start",
+      "question": "Output là gì trên JDK21?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{Thread t=Thread.startVirtualThread(()->System.out.print(\"V\"));t.join();}}\n",
+      "options": [
+        "V",
+        "null",
+        "Compile error vì Java21 chưa có virtual threads.",
+        "Không có output vì join bị cấm."
+      ],
+      "correct": 0,
+      "explanation": "Virtual thread được join trước kết thúc main."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Virtual identity",
+      "question": "Output là gì trên JDK21?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nimport java.util.concurrent.atomic.*;\n\npublic class QuizCase{public static void main(String[]args)throws Exception{AtomicBoolean v=new AtomicBoolean();Thread t=Thread.startVirtualThread(()->v.set(Thread.currentThread().isVirtual()));t.join();System.out.print(v.get());}}\n",
+      "options": [
+        "Thread không có isVirtual.",
+        "true",
+        "false",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Task chạy trong virtual thread theo factory đã chọn."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Virtual task scope",
+      "question": "Một triệu virtual threads có tự cho một triệu kết nối database an toàn không?",
+      "options": [
+        "Có vì JDBC tự vô hạn.",
+        "Chỉ cần shutdown pool.",
+        "Không; tài nguyên downstream vẫn cần giới hạn/backpressure.",
+        "Có vì thread nhẹ."
+      ],
+      "correct": 2,
+      "explanation": "Concurrency primitive không tăng capacity của DB/service."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Lost update",
+      "question": "volatile int n với nhiều thread cùng n++ đã đủ chống mất cập nhật chưa?",
+      "options": [
+        "Đủ vì volatile.",
+        "Đủ nếu n nhỏ.",
+        "Chỉ cần sleep trước print.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Cần atomic RMW hoặc lock đúng protocol."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Shutdown not wait",
+      "question": "Sau shutdown() có thể lập tức kết luận mọi task đã xong không?",
+      "options": [
+        "Không.",
+        "Có luôn.",
+        "Có nếu pool4.",
+        "Chỉ nếu task không trả value."
+      ],
+      "correct": 0,
+      "explanation": "Chờ completion bằng Future/awaitTermination/lifecycle đúng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Rejected new task",
+      "question": "Submit vào executor đã shutdown thường cần xử lý gì?",
+      "options": [
+        "Task được lưu vĩnh viễn.",
+        "RejectedExecutionException theo API/policy.",
+        "Tự tạo pool mới.",
+        "Tự chạy task trên main luôn."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế admission và failure rõ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Thread start twice",
+      "question": "Gọi start() lần hai trên cùng Thread instance có hợp lệ không?",
+      "options": [
+        "Có sau join.",
+        "Chỉ nếu virtual thread.",
+        "Không; có thể ném IllegalThreadStateException.",
+        "Có; reset thread."
+      ],
+      "correct": 2,
+      "explanation": "Thread object không được restart như task definition."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Task exception on submit",
+      "question": "Runnable/Callable ném lỗi trong task submit, caller thường lấy lỗi qua đâu?",
+      "options": [
+        "Chỉ tên thread.",
+        "Tự ném ở submit synchronously mọi trường hợp.",
+        "Không bao giờ biết được.",
+        "Future.get theo completion."
+      ],
+      "correct": 3,
+      "explanation": "Không bỏ Future khi cần biết task thành công/thất bại."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Future timeout",
+      "question": "get(timeout,unit) timeout có tự cancel task không?",
+      "options": [
+        "Không.",
+        "Có luôn.",
+        "Có nếu task CPU-bound.",
+        "Chỉ khi timeout0."
+      ],
+      "correct": 0,
+      "explanation": "Timeout chờ và cancellation tác vụ là quyết định khác nhau."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Blocking fixed worker",
+      "question": "Task trong pool hữu hạn chờ task khác cùng pool có thể gây gì?",
+      "options": [
+        "Chỉ làm value thành null.",
+        "Starvation/deadlock tùy dependency và capacity.",
+        "Tự tạo worker vô hạn.",
+        "Không bao giờ có vấn đề."
+      ],
+      "correct": 1,
+      "explanation": "Đồ thị phụ thuộc và resource limits cần xét cùng scheduling."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Parallel state",
+      "question": "Parallel streams có tự làm callbacks sửa shared ArrayList an toàn không?",
+      "options": [
+        "Có nếu ArrayList final.",
+        "Chỉ cần nhiều core.",
+        "Không.",
+        "Có mọi callback tự synchronized."
+      ],
+      "correct": 2,
+      "explanation": "Dùng collector/confinement/synchronization thích hợp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Lock release exception",
+      "question": "Ra khỏi synchronized block do exception có mở monitor theo quy tắc không?",
+      "options": [
+        "Không bao giờ.",
+        "Chỉ nếu catch ngay.",
+        "Chỉ nếu field volatile.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "Monitor exit được quản lý bởi ngôn ngữ; state nghiệp vụ vẫn có thể cần rollback rõ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Async executor source",
+      "question": "Vì sao source không chứng minh cả ba stage dùng fixed pool4?",
+      "options": [
+        "Hai thenApplyAsync sau không truyền executor.",
+        "thenApplyAsync không thực thi.",
+        "String không được truyền thread.",
+        "Executor tự shutdown trước stage1."
+      ],
+      "correct": 0,
+      "explanation": "Default async facility không tự kế thừa e từ supplyAsync."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Default facility exception",
+      "question": "Nói mọi async stage không executor luôn ở commonPool có thiếu điều kiện gì?",
+      "options": [
+        "Chỉ String mới dùng commonPool.",
+        "API có fallback khi common pool không đủ parallelism và subclass có thể override defaultExecutor cho non-static methods.",
+        "Common pool không tồn tại.",
+        "Mọi stage luôn main."
+      ],
+      "correct": 1,
+      "explanation": "Không khẳng định tên executor tuyệt đối ngoài contract."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cancellation physical task",
+      "question": "CompletableFuture.cancel(true) có bảo đảm interrupt computation đang chạy không?",
+      "options": [
+        "Có nếu task chờ I/O.",
+        "Chỉ cần mayInterruptIfRunning true.",
+        "Không; CF không trực tiếp điều khiển computation như FutureTask.",
+        "Có luôn."
+      ],
+      "correct": 2,
+      "explanation": "Exceptional future state không tự là lệnh dừng worker."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Timeout underlying work",
+      "question": "orTimeout làm future timeout có tự giải phóng mọi resource của task nền không?",
+      "options": [
+        "Có đóng mọi socket tự động.",
+        "Có nếu executor4.",
+        "Chỉ cần join bắt exception.",
+        "Không; cần cancellation/resource protocol riêng."
+      ],
+      "correct": 3,
+      "explanation": "Task có thể vẫn chạy hoặc có side effects sau timeout."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Interruption swallowed",
+      "question": "Source catch InterruptedException rỗng rồi trả Raw Data có vấn đề gì?",
+      "options": [
+        "Mất tín hiệu interruption/cancellation và báo success không đúng ý định.",
+        "Tự retry có backoff.",
+        "Tự restore interrupt flag.",
+        "Bảo đảm task được hủy."
+      ],
+      "correct": 0,
+      "explanation": "Chọn propagate/restore/status policy đúng contract."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Shutdown on failure",
+      "question": "Source shutdown chỉ ở cuối main. future.get ném lỗi trước đó có nguy cơ gì?",
+      "options": [
+        "Chỉ mất một String.",
+        "Bỏ cleanup executor trên đường lỗi.",
+        "JVM tự shutdown mọi executor immediately.",
+        "Không vì checked exception đã declare."
+      ],
+      "correct": 1,
+      "explanation": "Dùng finally/lifecycle phù hợp để quản lý tài nguyên."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Unbounded queue",
+      "question": "Fixed pool có queue không giới hạn phù hợp mọi tải request không?",
+      "options": [
+        "Có nếu Future generic.",
+        "Chỉ cần virtual threads.",
+        "Không; có thể backlog/memory tăng, cần admission/backpressure.",
+        "Có vì worker count4 đủ giới hạn mọi task."
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn worker khác giới hạn công việc đang chờ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Nested blocking pool",
+      "question": "Tất cả worker chờ Future của task mới cũng cần các worker đó. Rủi ro gì?",
+      "options": [
+        "Tự tăng CPU core.",
+        "CF tự phát hiện mọi cycle.",
+        "Không vì queue unbounded.",
+        "Thread starvation deadlock."
+      ],
+      "correct": 3,
+      "explanation": "Async composition và pool sizing không thay reasoning về dependencies."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Shared invariants",
+      "question": "Hai AtomicInteger riêng có đủ bảo đảm cập nhật cặp luôn được đọc cùng snapshot không?",
+      "options": [
+        "Không; cần protocol cho invariant nhiều biến.",
+        "Có vì từng biến atomic.",
+        "Có nếu seq-cst.",
+        "Chỉ cần final references."
+      ],
+      "correct": 0,
+      "explanation": "Atomic operations riêng không tự gộp thành transaction."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Safe publication",
+      "question": "Gán reference object mutable cho thread khác không đồng bộ có tự bảo đảm thấy mọi initialization đúng không?",
+      "options": [
+        "Chỉ cần field private.",
+        "Không; cần publication/happens-before phù hợp.",
+        "Có vì reference32/64bit.",
+        "Có nếu class có interface."
+      ],
+      "correct": 1,
+      "explanation": "Type access khác memory visibility protocol."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Get exception distinction",
+      "question": "Vì sao code catch ExecutionException quanh join có thể không xử lý failure như dự kiến?",
+      "options": [
+        "get không bao giờ wrap.",
+        "Mọi exception cùng một class.",
+        "join thường báo CompletionException, không checked ExecutionException của get.",
+        "join luôn trả null khi lỗi."
+      ],
+      "correct": 2,
+      "explanation": "Chọn handling theo method được dùng, giữ cause."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "All of failure",
+      "question": "allOf có tự trả toàn bộ success/failure values dưới một List không?",
+      "options": [
+        "Có luôn.",
+        "Có nếu cùng T.",
+        "Chỉ cần List.of(futures).",
+        "Không; phải thiết kế collection/error aggregation riêng."
+      ],
+      "correct": 3,
+      "explanation": "Completion barrier không thay contract tổng hợp kết quả."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Any of first success",
+      "question": "anyOf có bảo đảm bỏ qua future fail để chờ một success không?",
+      "options": [
+        "Không; completion đầu có thể là exceptional.",
+        "Có vì any nghĩa là success.",
+        "Có nếu có hai future.",
+        "Chỉ cần exceptionally ở caller."
+      ],
+      "correct": 0,
+      "explanation": "First completion và first successful result là hai policy khác nhau."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Recovery hides errors",
+      "question": "exceptionally(e->default) cho mọi lỗi có tự luôn đúng nghiệp vụ không?",
+      "options": [
+        "Chỉ cần log message.",
+        "Không; có thể che failure thành success giả.",
+        "Có vì API tồn tại.",
+        "Có nếu default0."
+      ],
+      "correct": 1,
+      "explanation": "Fallback cần policy có chủ đích và kiểm chứng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Virtual CPU claim",
+      "question": "Vì sao keypoint “virtual threads nhẹ hơn1000x” không đủ để hứa speedup1000x?",
+      "options": [
+        "Java21 không hỗ trợ virtual threads.",
+        "Chỉ cần nhiều RAM.",
+        "Footprint/concurrency không đồng nghĩa tốc độ, workload và downstream quyết định.",
+        "Virtual threads luôn chậm."
+      ],
+      "correct": 2,
+      "explanation": "Không bịa hệ số tối ưu từ tên công nghệ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Virtual thread pooling",
+      "question": "Có nên dùng pool nhỏ tái sử dụng virtual threads chỉ theo mô hình tiết kiệm platform threads?",
+      "options": [
+        "Luôn pool4 tốt nhất.",
+        "Luôn pool bằng số request vô hạn.",
+        "Virtual threads không được join.",
+        "Không mặc định; thường tạo virtual thread/task và giới hạn tài nguyên cần thiết riêng."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế concurrency theo resource, không sao chép pool policy máy móc."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Pinning scope21",
+      "question": "Với JDK21, blocking khi giữ monitor có thể ảnh hưởng scalability virtual threads thế nào?",
+      "options": [
+        "Có thể pin carrier; cần đo/giảm vùng blocking thích hợp.",
+        "Luôn không có ảnh hưởng mọi JDK.",
+        "Tự tăng số core.",
+        "Luôn compile error."
+      ],
+      "correct": 0,
+      "explanation": "Câu này giới hạn JDK21; không khái quát mọi phiên bản sau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Sleep not protocol",
+      "question": "Sleep cố định trước đọc counter có thay join/lock đúng không?",
+      "options": [
+        "Chỉ khi task không exception.",
+        "Không.",
+        "Có sau100ms mọi máy.",
+        "Có nếu volatile reference."
+      ],
+      "correct": 1,
+      "explanation": "Timing không tạo bảo đảm completion/happens-before cần thiết."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Failing download policy",
+      "question": "Downloader parallel cần gì ngoài tạo nhiều futures?",
+      "options": [
+        "Chỉ bỏ get.",
+        "Chỉ tăng thread vô hạn.",
+        "Giới hạn concurrency, timeout/cancel, kiểm tra kết quả và quản lý resource/lỗi.",
+        "Chỉ thenApply."
+      ],
+      "correct": 2,
+      "explanation": "Quiz không thực hiện tải mạng; thiết kế cần bounded resources và error policy."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Concurrency verification",
+      "question": "Bằng chứng tốt hơn một lượt counter đúng là gì?",
+      "options": [
+        "Chỉ thêm sleep.",
+        "Chỉ chạy thật nhanh.",
+        "Chỉ volatile mọi field.",
+        "Reasoning về lock/lifetime, test error/shutdown, stress có kiểm soát và công cụ phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không có lỗi trong một lịch chạy chưa chứng minh mọi lịch chạy đúng."
+    }
+  ]
+}

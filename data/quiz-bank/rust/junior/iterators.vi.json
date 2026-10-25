@@ -1,0 +1,1162 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "junior",
+  "lesson": "iterators",
+  "language": "vi",
+  "sourceHash": "6de25a2bd7a8b98cb8b5c8f71bd35ed0053807d2e7af3e5e0195c906148eb829",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và std Iterator/closure contracts; selected finite stdlib examples rustc1.93.1 ghi riêng. Phân biệt lazy adapters/consumers,iter/iter_mut/into_iter,Fn/FnMut/FnOnce,capture move không tự là FnOnce. Counter chỉ Iterator,không tự DoubleEnded/Fused marker;guard count<max tránh overflow tại max. Không coi zero-cost nghĩa0CPU/0allocation hay đo speedup;không chạy iterator vô hạn hoặc factorial lớn để đoán.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Iterator contract",
+      "question": "Iterator trait có method nền tảng nào?",
+      "options": [
+        "next(&mut self)->Option<Self::Item>.",
+        "read()->String bắt buộc.",
+        "push(item)->bool bắt buộc.",
+        "main()->Iterator."
+      ],
+      "correct": 0,
+      "explanation": "Các methods khác thường xây trên next hoặc có specialization theo type."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Associated item",
+      "question": "type Item trong implementation Iterator xác định gì?",
+      "options": [
+        "Một database table.",
+        "Kiểu phần tử được iterator tạo ra.",
+        "Số lượng phần tử luôn cố định.",
+        "Một global value."
+      ],
+      "correct": 1,
+      "explanation": "Counter nguồn dùng Item=u32."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Next some",
+      "question": "Some(value) từ next biểu đạt gì?",
+      "options": [
+        "Một error bắt buộc.",
+        "Một pointer luôn owned.",
+        "Có một item cho lần gọi đó.",
+        "Iterator chắc không bao giờ kết thúc."
+      ],
+      "correct": 2,
+      "explanation": "Ownership của item phụ thuộc Item type."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Next none",
+      "question": "None từ next thường báo gì?",
+      "options": [
+        "Một item zero tự tồn tại.",
+        "Một compiler error.",
+        "Một empty String bắt buộc.",
+        "Không có item cho lần gọi đó; các guarantees sau đó phụ thuộc iterator contract."
+      ],
+      "correct": 3,
+      "explanation": "Không assume mọi Iterator đều fused chỉ vì đã trả None một lần."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Lazy adapter",
+      "question": "map trên iterator thường làm gì?",
+      "options": [
+        "Tạo adapter biến đổi items khi được lấy/consume.",
+        "Tự luôn chạy hết ngay lúc khai báo.",
+        "Tự tạo Vec ở mọi call.",
+        "Tự mở OS threads."
+      ],
+      "correct": 0,
+      "explanation": "Tạo adapter và thực hiện mọi transforms là hai thời điểm khác nhau."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Filter",
+      "question": "filter giữ item khi nào?",
+      "options": [
+        "Chỉ kiểu int.",
+        "Predicate trả true.",
+        "Predicate trả false.",
+        "Chỉ item đầu."
+      ],
+      "correct": 1,
+      "explanation": "Predicate của filter nhận borrowed item theo API."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Collect",
+      "question": "collect thường làm gì?",
+      "options": [
+        "Luôn trả Vec bất kể type context.",
+        "Luôn sort items.",
+        "Consume iterator để xây kết quả có FromIterator phù hợp.",
+        "Tự chỉ đếm references không chạy adapters."
+      ],
+      "correct": 2,
+      "explanation": "Kết quả có thể là Vec,collection khác hoặc Result collection theo contract."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Sum",
+      "question": "sum trong source dùng để làm gì?",
+      "options": [
+        "Chỉ lấy phần tử cuối.",
+        "Tự nhân các items.",
+        "Tự tạo một async task.",
+        "Cộng các items theo Sum implementation được chọn."
+      ],
+      "correct": 3,
+      "explanation": "Type context xác định kết quả numeric trong ví dụ."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Fold",
+      "question": "fold(init,f) hoạt động cơ bản thế nào?",
+      "options": [
+        "Tích lũy từ init bằng callback qua items.",
+        "Luôn bắt đầu từ0 bất kể init.",
+        "Luôn chạy concurrent.",
+        "Luôn làm ngược thứ tự của source."
+      ],
+      "correct": 0,
+      "explanation": "Source dùng init1 cho product."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Closure capture",
+      "question": "Closure có thể làm gì với scope bên ngoài?",
+      "options": [
+        "Luôn chỉ là function pointer không capture.",
+        "Capture các values/references theo nhu cầu và rules.",
+        "Tự biến mọi variable thành global.",
+        "Tự clone sâu mọi payload."
+      ],
+      "correct": 1,
+      "explanation": "Capture mode và body behavior quyết định traits/lifetimes phù hợp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Threshold source",
+      "question": "Closure filter above trong source capture giá trị nào?",
+      "options": [
+        "sum=30.",
+        "Một HTTP token.",
+        "threshold=5.",
+        "max=100."
+      ],
+      "correct": 2,
+      "explanation": "Capture dùng để giữ các numbers lớn hơn5."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Iter shared",
+      "question": "numbers.iter() thường tạo items kiểu nào với Vec<i32>?",
+      "options": [
+        "i32 owned được move khỏi Vec bắt buộc.",
+        "String.",
+        "Một raw pointer.",
+        "&i32."
+      ],
+      "correct": 3,
+      "explanation": "Shared iteration không consume ownership Vec."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Iter mutable",
+      "question": "iter_mut() thường cung cấp gì?",
+      "options": [
+        "Mutable references tới elements theo iterator borrowing rules.",
+        "Owned clones của toàn Vec.",
+        "Một mutex tự động.",
+        "Một iterator chỉ đọc."
+      ],
+      "correct": 0,
+      "explanation": "Không tự cho phép arbitrary aliases còn sống cùng lúc."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Into iterator",
+      "question": "Vec<T>.into_iter() thường thể hiện gì?",
+      "options": [
+        "Tự clone mọi elements.",
+        "Consume Vec để iterate owned elements.",
+        "Luôn shared borrow Vec.",
+        "Tự sort Vec."
+      ],
+      "correct": 1,
+      "explanation": "Không áp một semantics duy nhất cho mọi type có IntoIterator."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Counter initial source",
+      "question": "Counter nguồn được tạo với count/max nào?",
+      "options": [
+        "count1,max10.",
+        "count0,max0.",
+        "count0,max5.",
+        "count5,max0."
+      ],
+      "correct": 2,
+      "explanation": "next tăng count trước khi trả Some."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Counter items",
+      "question": "Counter{count:0,max:5} tạo các values nào theo source?",
+      "options": [
+        "0,1,2,3,4.",
+        "1,3,5.",
+        "Chỉ5.",
+        "1,2,3,4,5."
+      ],
+      "correct": 3,
+      "explanation": "Guard count<max và increment xác định sequence."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Counter termination",
+      "question": "Khi count==max,next nguồn trả gì?",
+      "options": [
+        "None.",
+        "Some(max+1) bắt buộc.",
+        "Panic vì equality.",
+        "Tự reset count về0."
+      ],
+      "correct": 0,
+      "explanation": "Không increment trong nhánh else."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Source squared evens",
+      "question": "Source filter chẵn rồi map bình phương cho output nào?",
+      "options": [
+        "[1, 4, 9, 16, 25].",
+        "[4, 16, 36, 64, 100].",
+        "[2, 4, 6, 8, 10].",
+        "[1, 9, 25]."
+      ],
+      "correct": 1,
+      "explanation": "Chọn2,4,6,8,10 rồi bình phương."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Counter sum source",
+      "question": "Counter map x*2 rồi sum trong source bằng gì?",
+      "options": [
+        "10.",
+        "0.",
+        "30.",
+        "15."
+      ],
+      "correct": 2,
+      "explanation": "2+4+6+8+10=30."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "No implicit parallelism",
+      "question": "Iterator chain nguồn có tự chạy trên nhiều threads không?",
+      "options": [
+        "Có, map luôn tạo threads.",
+        "Có, collect tự dùng Rayon mặc định.",
+        "Chỉ nếu threshold5.",
+        "Không; đây là std sequential iteration."
+      ],
+      "correct": 3,
+      "explanation": "Không suy parallel execution từ tên adapter."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Square even chain",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let n:Vec<i32>=(1..=10).collect();let out:Vec<i32>=n.iter().filter(|&&x|x%2==0).map(|&x|x*x).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "[4, 16, 36, 64, 100].",
+        "[2, 4, 6, 8, 10].",
+        "[1, 9, 25, 49, 81].",
+        "[]."
+      ],
+      "correct": 0,
+      "explanation": "Filter predicate nhận &&i32 từ iter; map nhận &i32 của item được giữ."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Source sum",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let n:Vec<i32>=(1..=10).collect();let sum:i32=n.iter().sum();println!(\"{sum}\");}\n",
+      "options": [
+        "10.",
+        "55.",
+        "45.",
+        "30."
+      ],
+      "correct": 1,
+      "explanation": "Tổng1..=10 là55."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Source product",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let n:Vec<i32>=(1..=10).collect();let product=n.iter().fold(1,|acc,&x|acc*x);println!(\"{product}\");}\n",
+      "options": [
+        "30.",
+        "0.",
+        "3628800.",
+        "55."
+      ],
+      "correct": 2,
+      "explanation": "Fold bắt đầu1 rồi nhân1..10; kết quả này nằm trong i32."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Captured threshold",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let n:Vec<i32>=(1..=10).collect();let threshold=5;let out:Vec<_>=n.iter().filter(|&&x|x>threshold).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "[5, 6, 7, 8, 9, 10].",
+        "[1, 2, 3, 4, 5].",
+        "Closure không capture được int.",
+        "[6, 7, 8, 9, 10]."
+      ],
+      "correct": 3,
+      "explanation": "Predicate là x>threshold,không >=."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Counter next sequence",
+      "question": "Chương trình in gì?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let mut c=Counter{count:0,max:2};println!(\"{:?} {:?} {:?}\",c.next(),c.next(),c.next());}\n",
+      "options": [
+        "Some(1) Some(2) None.",
+        "Some(0) Some(1) Some(2).",
+        "None None None.",
+        "Counter tự reset."
+      ],
+      "correct": 0,
+      "explanation": "Guard và increment cho hai values rồi None."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Counter mapped sum",
+      "question": "Chương trình in gì?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let c=Counter{count:0,max:5};let sum:u32=c.map(|n|n*2).sum();println!(\"{sum}\");}\n",
+      "options": [
+        "5.",
+        "30.",
+        "15.",
+        "10."
+      ],
+      "correct": 1,
+      "explanation": "Map nhân2 rồi sum consume toàn Counter hữu hạn."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Unconsumed map laziness",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut calls=0;let it=[1,2,3].into_iter().map(|n|{calls+=1;n*2});drop(it);println!(\"{calls}\");}\n",
+      "options": [
+        "1.",
+        "Compiler bắt buộc chạy map ngay.",
+        "0.",
+        "3."
+      ],
+      "correct": 2,
+      "explanation": "Adapter bị drop trước khi consume nên callback chưa được gọi."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Take bounds computation",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut calls=0;let sum:i32=[1,2,3].into_iter().map(|n|{calls+=1;n*2}).take(2).sum();println!(\"{sum} {calls}\");}\n",
+      "options": [
+        "12 3.",
+        "6 3.",
+        "0 0.",
+        "6 2."
+      ],
+      "correct": 3,
+      "explanation": "take2 chỉ lấy hai transformed items2,4."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Find short circuit",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut calls=0;let found=[1,3,4,6].into_iter().find(|n|{calls+=1;n%2==0});println!(\"{found:?} {calls}\");}\n",
+      "options": [
+        "Some(4) 3.",
+        "Some(6) 4.",
+        "Some(4) 4.",
+        "None 0."
+      ],
+      "correct": 0,
+      "explanation": "Find dừng khi gặp4 sau ba predicate calls."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Borrow iteration preserves Vec",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let v=vec![1,2,3];let sum:i32=v.iter().sum();println!(\"{sum} {}\",v.len());}\n",
+      "options": [
+        "3 6.",
+        "6 3.",
+        "Compiler cấm dùng v sau iter().sum().",
+        "6 0."
+      ],
+      "correct": 1,
+      "explanation": "Shared iteration không consume Vec owner."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Owned iteration moves Vec",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let v=vec![1,2,3];let sum:i32=v.into_iter().sum();println!(\"{sum} {}\",v.len());}\n",
+      "options": [
+        "Có,Vec tự clone.",
+        "Chỉ panic runtime.",
+        "Không;v đã bị consume bởi into_iter.",
+        "Có,into_iter luôn borrow cho mọi type."
+      ],
+      "correct": 2,
+      "explanation": "Source carrier Vec có owned IntoIterator implementation trong lời gọi này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Mutable iteration",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut v=vec![1,2,3];for n in v.iter_mut(){*n+=1;}println!(\"{v:?}\");}\n",
+      "options": [
+        "[1, 2, 3].",
+        "[1, 2, 3, 1].",
+        "Compiler cấm mutable refs trong iterator.",
+        "[2, 3, 4]."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi element được increment qua &mut i32."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "FnMut counter",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut count=0;let mut inc=||{count+=1;count};println!(\"{} {}\",inc(),inc());}\n",
+      "options": [
+        "1 2.",
+        "1 1.",
+        "0 0.",
+        "Closure không được capture mutable int."
+      ],
+      "correct": 0,
+      "explanation": "Closure mutate captured count nên cần binding mutable để gọi theo FnMut."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "FnOnce consumed capture",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let s=String::from(\"hi\");let f=move||drop(s);f();f();}\n",
+      "options": [
+        "Chỉ lỗi nếu String dài.",
+        "Không;closure consume String khi call nên không gọi lần hai.",
+        "Có,mọi closure đều Fn.",
+        "Có,move luôn deep clone capture cho mỗi call."
+      ],
+      "correct": 1,
+      "explanation": "drop(s) trong body consume captured owned String."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Collect needs type context",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let out=(1..3).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "Có,Debug format tự quyết định collection type duy nhất.",
+        "Chỉ runtime panic.",
+        "Không;chưa xác định collection type cho collect.",
+        "Có,collect luôn mặc định Vec<i32>."
+      ],
+      "correct": 2,
+      "explanation": "Cần annotation hoặc turbofish/usage đủ thông tin."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Filter reference shape",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let v=vec![1,2,3,4];let out:Vec<i32>=v.iter().filter(|&&x|x%2==0).copied().collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "[1, 3].",
+        "Compiler cấm pattern &&x.",
+        "[].",
+        "[2, 4]."
+      ],
+      "correct": 3,
+      "explanation": "iter Item=&i32,filter predicate nhận reference tới item."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Filter map parse",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let out:Vec<i32>=[\"1\",\"x\",\"2\"].into_iter().filter_map(|s|s.parse().ok()).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "[1, 2].",
+        "[1, 0, 2].",
+        "Err được propagate tự động.",
+        "Compiler cấm Option trong filter_map."
+      ],
+      "correct": 0,
+      "explanation": "parse().ok() chuyển lỗi thành None nên filter_map bỏ x theo contract đã chọn."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Flat map owned vectors",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let out:Vec<i32>=[vec![1,2],vec![3]].into_iter().flat_map(|v|v).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "Compiler yêu cầu mọi Vec cùng length.",
+        "[1, 2, 3].",
+        "[[1, 2], [3]].",
+        "[3, 1, 2]."
+      ],
+      "correct": 1,
+      "explanation": "flat_map nối các inner iterables theo thứ tự ở đây."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Zip shorter input",
+      "question": "Chương trình in độ dài nào?",
+      "code": "\nfn main(){let pairs:Vec<_>=[1,2,3].into_iter().zip([10,20]).collect();println!(\"{}\",pairs.len());}\n",
+      "options": [
+        "5.",
+        "Zip tự thêm defaults tới input dài hơn.",
+        "2.",
+        "3."
+      ],
+      "correct": 2,
+      "explanation": "Zip dừng khi một bên hết."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Zero max Counter",
+      "question": "Chương trình in gì?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let mut c=Counter{count:0,max:0};println!(\"{:?}\",c.next());}\n",
+      "options": [
+        "Some(0).",
+        "Some(1).",
+        "Panic vì max0.",
+        "None."
+      ],
+      "correct": 3,
+      "explanation": "Guard0<0 false nên không increment."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Filter argument levels",
+      "question": "Vì sao source dùng |&&n| ở filter nhưng |&n| ở map sau đó?",
+      "options": [
+        "Filter predicate borrow item,&i32 item thành &&i32;map nhận item &i32 trực tiếp.",
+        "Vì filter luôn nhận hai numbers.",
+        "Vì map tự move Vec lần hai.",
+        "Chỉ là ký hiệu không được compiler kiểm."
+      ],
+      "correct": 0,
+      "explanation": "Cần đọc Item type và chữ ký từng adapter."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Above output ownership",
+      "question": "above collect từ numbers.iter().filter(...) trong source giữ items kiểu gì?",
+      "options": [
+        "Một raw pointer không lifetime.",
+        "References tới elements,không owned copies mặc định.",
+        "Luôn owned i32 và consume numbers.",
+        "Một Vec<String>."
+      ],
+      "correct": 1,
+      "explanation": "Type inference Vec<_> không tự bỏ reference layer."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Unused computations",
+      "question": "Source tính sum/product/above nhưng không in có đồng nghĩa compiler reject mặc định không?",
+      "options": [
+        "Chỉ nếu product lớn.",
+        "Không bao giờ có warning.",
+        "Không;thường warnings tùy lint/config.",
+        "Có,mọi unused binding là error như Go."
+      ],
+      "correct": 2,
+      "explanation": "Không suy output có các số này khi code không print chúng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Source sum shadow",
+      "question": "let sum:u32 ở cuối có được shadow sum:i32 trước đó không?",
+      "options": [
+        "Không,shadow luôn cấm đổi type.",
+        "Chỉ nếu sum trước là0.",
+        "Chỉ nếu có macro.",
+        "Có;let tạo binding mới theo scope rules."
+      ],
+      "correct": 3,
+      "explanation": "Không phải assignment vào binding i32 cũ."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Consumer necessity",
+      "question": "Adapter map chưa consume có bảo đảm transform đã chạy cho mọi item chưa?",
+      "options": [
+        "Không.",
+        "Có,mọi adapter eager.",
+        "Chỉ cần biến tên result.",
+        "Chỉ cần closure có side effects."
+      ],
+      "correct": 0,
+      "explanation": "Side effects trong callback chỉ xuất hiện khi callback được gọi."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Adapter construction side effects",
+      "question": "Laziness có nghĩa tạo iterator/closure không thể allocate hoặc capture dữ liệu ngay không?",
+      "options": [
+        "Chỉ nếu dùng into_iter.",
+        "Không;construction/capture có thể có chi phí riêng trước khi iteration.",
+        "Có,mọi lazy object0bytes.",
+        "Có,closure không chứa state."
+      ],
+      "correct": 1,
+      "explanation": "Lười tính items khác không có chi phí tạo adapter."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Fn hierarchy",
+      "question": "Closure gọi được như Fn thường có thể đáp ứng FnMut/FnOnce contracts phù hợp không?",
+      "options": [
+        "Chỉ khi không có captures.",
+        "Chỉ nếu return unit.",
+        "Có theo trait relationship,ràng buộc của usage vẫn áp dụng.",
+        "Không,ba traits hoàn toàn không liên quan."
+      ],
+      "correct": 2,
+      "explanation": "Body/capture usage quyết định trait implementations,không chỉ keyword move."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Move capture versus FnOnce",
+      "question": "move closure có bắt buộc chỉ gọi được đúng một lần không?",
+      "options": [
+        "Có,mọi move closure tự consume mọi capture ngay lần đầu.",
+        "Chỉ với int.",
+        "Chỉ với static strings.",
+        "Không;move nói cách capture,body có thể chỉ borrow/read captures nên gọi nhiều lần được."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt ownership đưa vào closure và consumption trong body."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Custom iterator extra traits",
+      "question": "Implement Iterator có tự có DoubleEndedIterator/ExactSizeIterator/FusedIterator không?",
+      "options": [
+        "Không;các traits này có contracts/implementations riêng.",
+        "Có,mọi Iterator tự có mọi marker.",
+        "Chỉ nếu Item=u32.",
+        "Chỉ nếu max field có tên max."
+      ],
+      "correct": 0,
+      "explanation": "Không derive capabilities từ tên Counter."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Counter finite behavior",
+      "question": "Với max5,count0 và không sửa fields,Counter nguồn có hữu hạn không?",
+      "options": [
+        "Chỉ nếu compiler optimize.",
+        "Có,năm Some rồi None theo code.",
+        "Không,mọi Iterator đều vô hạn.",
+        "Chỉ nếu collect Vec."
+      ],
+      "correct": 1,
+      "explanation": "Không suy mọi generic iterator đầu vào có cùng giới hạn."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Infinite iterator collection",
+      "question": "Có nên collect toàn bộ một iterator không có điểm kết thúc vào Vec mà không bound không?",
+      "options": [
+        "Có,Rust tự chuyển sang disk.",
+        "Chỉ nếu dùng map.",
+        "Không;nó có thể không kết thúc hoặc hết memory.",
+        "Có,collect tự giới hạn100."
+      ],
+      "correct": 2,
+      "explanation": "Dùng take/budget/streaming theo contract phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Fold initial value",
+      "question": "fold(1,...) trên empty iterator trả gì nếu callback chưa được gọi?",
+      "options": [
+        "0 luôn.",
+        "None.",
+        "Compiler cấm empty iterator.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "Fold giữ initial accumulator khi không có items."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Integer overflow",
+      "question": "Product trên i32 có bảo đảm đúng mọi input lớn không?",
+      "options": [
+        "Không;phụ thuộc representable range,operation và overflow policy/flags.",
+        "Có,Iterator dùng số vô hạn.",
+        "Có,fold tự big integer.",
+        "Chỉ cần collect trước."
+      ],
+      "correct": 0,
+      "explanation": "Source10! vừa i32 không chứng minh factorial lớn luôn hợp lệ."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Predicate side effects",
+      "question": "Filter có thể gọi predicate cả cho items cuối cùng bị bỏ không?",
+      "options": [
+        "Chỉ khi source là Vec.",
+        "Có;predicate cần được đánh giá để quyết định giữ/bỏ.",
+        "Không,chỉ chạy cho items sẽ giữ.",
+        "Chỉ nếu predicate pure."
+      ],
+      "correct": 1,
+      "explanation": "Số predicate calls không luôn bằng output length."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Take placement",
+      "question": "map(f).take(2) và take(2).map(f) có đủ để kết luận mọi adapter reorder đều giữ semantics không?",
+      "options": [
+        "Chỉ nếu tên biến ngắn.",
+        "Chỉ nếu collect Vec.",
+        "Không;phải xét từng adapter,side effects và short-circuit behavior.",
+        "Có,mọi iterator operations commute."
+      ],
+      "correct": 2,
+      "explanation": "Không suy một cặp tương đương đơn giản thành quy tắc đổi chỗ mọi chain."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Filter then take",
+      "question": "filter(even).take(2) có phải chỉ đọc hai input items đầu không?",
+      "options": [
+        "Có,take luôn giới hạn input gốc2 trước filter.",
+        "Chỉ nếu số đầu lẻ.",
+        "Không bao giờ kết thúc.",
+        "Không;có thể đọc thêm tới khi có hai matches hoặc input hết."
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn theo output của stage hiện tại,khác input budget toàn pipeline."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Enumeration meaning",
+      "question": "enumerate tạo index theo gì?",
+      "options": [
+        "Thứ tự items mà iterator tại vị trí đó phát ra.",
+        "Luôn index gốc trước mọi filters.",
+        "ID tự tăng database.",
+        "Địa chỉ memory."
+      ],
+      "correct": 0,
+      "explanation": "Đặt enumerate trước/sau filter có thể thay meaning của index."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Error omission policy",
+      "question": "filter_map(|s|s.parse().ok()) có giữ error details không?",
+      "options": [
+        "Chỉ nếu inputempty.",
+        "Không;chủ động bỏ parse errors thành None theo code.",
+        "Có,mọi errors được collect tự động.",
+        "Có,ok() luôn log stderr."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần fail/report,thiết kế Result collection hoặc record errors phù hợp."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Zero cost wording",
+      "question": "Zero-cost abstraction có nghĩa code iterator luôn0CPU/0allocations không?",
+      "options": [
+        "Có,closure không bao giờ có cost.",
+        "Chỉ nếu Rustnew.",
+        "Không;ý tưởng là abstraction không thêm chi phí bắt buộc so với cách tương đương,cần đo thực tế.",
+        "Có,mọi collect miễn memory."
+      ],
+      "correct": 2,
+      "explanation": "Không biến shorthand thành benchmark hay guarantee tuyệt đối."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Collection allocation",
+      "question": "collect::<Vec<_>>() có thể allocate output memory không?",
+      "options": [
+        "Không,zero-cost cấm mọi allocation.",
+        "Chỉ nếu iterator có error.",
+        "Chỉ nếu ItemString.",
+        "Có theo result size/implementation và input."
+      ],
+      "correct": 3,
+      "explanation": "Lazy adapters không làm materialized output trở thành miễn phí."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Reverse requires extra trait",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let _=Counter{count:0,max:5}.rev();}\n",
+      "options": [
+        "Không;Counter nguồn chưa implement DoubleEndedIterator cho rev.",
+        "Có,mọi Iterator tự biết reverse.",
+        "Có,max field tự sinh next_back.",
+        "Chỉ nếu max0 mới lỗi."
+      ],
+      "correct": 0,
+      "explanation": "Capability phải theo trait bounds thực tế."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "None then explicit state change",
+      "question": "Chương trình in gì?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let mut c=Counter{count:0,max:0};let empty=c.next().is_none();c.max=1;println!(\"{empty} {:?}\",c.next());}\n",
+      "options": [
+        "Compiler cấm sửa fields trong cùng module.",
+        "true Some(1).",
+        "true None.",
+        "false Some(0)."
+      ],
+      "correct": 1,
+      "explanation": "Code sửa max sau None nên Counter có thể phát item lại;không gọi nó fused vô điều kiện."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Fuse adapter",
+      "question": "Chương trình in gì?",
+      "code": "struct Blip(bool);impl Iterator for Blip{type Item=i32;fn next(&mut self)->Option<i32>{if !self.0{self.0=true;None}else{Some(1)}}}\nfn main(){let mut it=Blip(false).fuse();println!(\"{:?} {:?}\",it.next(),it.next());}\n",
+      "options": [
+        "Some(1) None.",
+        "Compiler cấm fuse trên custom iterator.",
+        "None None.",
+        "None Some(1)."
+      ],
+      "correct": 2,
+      "explanation": "fuse nhớ trạng thái exhausted sau None đầu trong model này;chỉ gọi next hai lần hữu hạn."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Maximum count guard",
+      "question": "Chương trình in gì?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let mut c=Counter{count:u32::MAX,max:u32::MAX};println!(\"{:?}\",c.next());}\n",
+      "options": [
+        "Some(0) do wrap.",
+        "Panic do count+=1 luôn chạy.",
+        "Some(u32::MAX).",
+        "None."
+      ],
+      "correct": 3,
+      "explanation": "count==max nên source không increment."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Last representable Counter item",
+      "question": "Chương trình in gì?",
+      "code": "struct Counter{count:u32,max:u32}impl Iterator for Counter{type Item=u32;fn next(&mut self)->Option<u32>{if self.count<self.max{self.count+=1;Some(self.count)}else{None}}}\nfn main(){let mut c=Counter{count:u32::MAX-1,max:u32::MAX};println!(\"{:?} {:?}\",c.next(),c.next());}\n",
+      "options": [
+        "Some(4294967295) None.",
+        "Some(0) Some(1).",
+        "Panic do source luôn vượt max.",
+        "None None."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ increment từMAX-1 tớiMAX rồi guard dừng;không iterate hàng tỷ lần."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Take while consumes failing item",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut it=[1,2,3,4].into_iter();let prefix:Vec<_>=it.by_ref().take_while(|n|*n<3).collect();println!(\"{prefix:?} {:?}\",it.next());}\n",
+      "options": [
+        "Iterator tự reset.",
+        "[1, 2] Some(4).",
+        "[1, 2] Some(3).",
+        "[1, 2, 3] Some(4)."
+      ],
+      "correct": 1,
+      "explanation": "take_while đã lấy item3 để kiểm predicatefalse nên item kế tiếp của underlying iterator là4."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Enumerate before filtering",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let out:Vec<_>=[1,2,3,4].into_iter().enumerate().filter(|(_,n)|n%2==0).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "[(2, 1), (4, 3)].",
+        "Compiler cấm filter tuple.",
+        "[(1, 2), (3, 4)].",
+        "[(0, 2), (1, 4)]."
+      ],
+      "correct": 2,
+      "explanation": "Enumeration trước filter giữ indices của stream gốc."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Move closure called twice",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let s=String::from(\"hi\");let length=move||s.len();println!(\"{} {}\",length(),length());}\n",
+      "options": [
+        "Compiler cấm mọi move closure call hai lần.",
+        "0 0.",
+        "Một String bị clone mỗi call theo contract.",
+        "2 2."
+      ],
+      "correct": 3,
+      "explanation": "Closure owns String nhưng body chỉ đọc len nên có thể gọi lại."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Captured mutable borrow conflict",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let mut v=vec![1];let mut push=||v.push(2);println!(\"{}\",v.len());push();}\n",
+      "options": [
+        "Không;closure giữ mutable borrow của v để dùng về sau,trong khi println borrow v trước đó.",
+        "Có,closure capture tự deep clone Vec.",
+        "Có,Rust cho mọi aliases vì chưa gọi closure.",
+        "Chỉ runtime panic."
+      ],
+      "correct": 0,
+      "explanation": "Capture lifetime được kiểm tra theo usage,không chỉ lúc callback thực thi."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Checked iterator arithmetic",
+      "question": "Với overflow-checks=yes,chương trình gặp gì?",
+      "code": "\nfn main(){let n=std::hint::black_box(255u8);let out:Vec<u8>=[n].into_iter().map(|x|x+1).collect();println!(\"{out:?}\");}\n",
+      "options": [
+        "Iterator tự bỏ itemoverflow.",
+        "Panic khi map cộng1 vào255u8.",
+        "Luôn in[0] bất kể flags.",
+        "Luôn in[256] bằngu8."
+      ],
+      "correct": 1,
+      "explanation": "Operation runtime được kiểm tra;không có automatic Result conversion."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Fused marker scope",
+      "question": "Counter nguồn không ghi impl FusedIterator có nghĩa generic consumer được phép assume marker đó không?",
+      "options": [
+        "Có;max field tự sinh marker.",
+        "Chỉ nếu count0.",
+        "Không;trait bound cần implementation thực tế,không chỉ nhìn một chuỗi sample.",
+        "Có;năm items đủ chứng minh mọi state."
+      ],
+      "correct": 2,
+      "explanation": "Behavior dưới invariant nhất định và trait guarantee là hai phạm vi khác nhau."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Iterator ownership API",
+      "question": "Muốn giữ Vec sau iteration cần chọn gì theo mục tiêu?",
+      "options": [
+        "Luôn dùng into_iter và giả Vec còn nguyên.",
+        "Chỉ đổi tên Vec.",
+        "Chỉ thêm move ở closure.",
+        "Borrow bằng iter/iter_mut phù hợp hoặc chủ động clone/copy data theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Không né ownership errors bằng clone tùy tiện nếu API borrow đã đủ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Iterator lifetime outputs",
+      "question": "Collect Vec<&T> có tự làm các referents sống tới khi Vec references drop không?",
+      "options": [
+        "Không;borrowed outputs vẫn bị ràng buộc bởi owner lifetimes.",
+        "Có;collect tự nâng mọi reference thành static.",
+        "Có;Vec references tự clone T.",
+        "Chỉ nếu T Copy."
+      ],
+      "correct": 0,
+      "explanation": "Materialization của references không tạo ownership của referents."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Resource boundedness",
+      "question": "take(100) sau một filter có thể vẫn thực hiện nhiều hơn100 predicate calls không?",
+      "options": [
+        "Chỉ nếu collect result.",
+        "Có;nếu ít matches,upstream work có thể lớn hoặc không kết thúc.",
+        "Không;take giới hạn mọi công việc gốc100 tuyệt đối.",
+        "Chỉ nếu predicate có captures."
+      ],
+      "correct": 1,
+      "explanation": "Output bound khác CPU/input/time budget;thiết kế thêm giới hạn khi cần."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Collect failures",
+      "question": "collect Result<Vec<T>,E> thành Err có tự rollback side effects đã thực hiện ở callbacks trước không?",
+      "options": [
+        "Có;Drop hoàn tác mọi network writes.",
+        "Chỉ nếu E String.",
+        "Không;propagation không tự transaction hóa mọi side effects.",
+        "Có;mỗi chain là ACID transaction."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế idempotency/transaction/compensation khi workflow cần."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Fn capture classification",
+      "question": "Closure capture by move nhưng body mutate captured state có thể cần FnMut thay vì chỉ Fn không?",
+      "options": [
+        "Không;move luôn đồng nghĩa FnOnce duy nhất.",
+        "Không;mọi move closure đều Fn bất biến.",
+        "Chỉ nếu Itembool.",
+        "Có;capture mode và cách body truy cập state đều ảnh hưởng traits."
+      ],
+      "correct": 3,
+      "explanation": "Đọc contract callable ở chỗ API yêu cầu Fn/FnMut/FnOnce."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Ordering cost tradeoff",
+      "question": "Thay sequential iterator bằng parallel framework có tự giữ mọi side effect order không?",
+      "options": [
+        "Không;cần contract và kiểm tra framework/workload riêng.",
+        "Có;mọi map tự theo thứ tự thời gian như loop.",
+        "Có;Rust compiler tự serialize mọi logs.",
+        "Chỉ nếu dùng Rayon comment."
+      ],
+      "correct": 0,
+      "explanation": "Source không dùng Rayon hoặc có bằng chứng parallel execution."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Source arithmetic limit",
+      "question": "Source10! trên i32 pass có chứng minh fold product cho input1..100 cũng đúng i32 không?",
+      "options": [
+        "Chỉ cần optimize-release.",
+        "Không;range vượt kiểu và overflow policy phải được xử lý.",
+        "Có;generic iterator dùng arbitrary precision.",
+        "Có;sum shadow tự tăng kiểu."
+      ],
+      "correct": 1,
+      "explanation": "Không chạy workload overflow rồi giả kết quả toán học chính xác."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Benchmark scope",
+      "question": "Có thể báo chain source nhanh hơn loop50% chỉ vì dùng iterator và từ zero-cost không?",
+      "options": [
+        "Có;collect tự tăng tốc CPU.",
+        "Chỉ cần output đúng.",
+        "Không;cần phép đo tương ứng,toolchain/flags/workload và phân tích.",
+        "Có;đó là guarantee của Iterator trait."
+      ],
+      "correct": 2,
+      "explanation": "Kiểm tra semantic output không là benchmark."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exercise completeness",
+      "question": "Source Counter có hoàn thành hai iterators Fibonacci/prime của bài tập chưa?",
+      "options": [
+        "Có;mọi Iterator tự phát Fibonacci hoặc primes.",
+        "Có;map nhân2 là prime generation.",
+        "Chỉ cần80 câu hỏi.",
+        "Chưa;source chỉ đếm tuần tự đến max."
+      ],
+      "correct": 3,
+      "explanation": "Không coi mục tiêu bài tập chưa viết là implementation đã có."
+    }
+  ]
+}

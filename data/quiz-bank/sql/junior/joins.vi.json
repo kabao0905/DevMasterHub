@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "junior",
+  "lesson": "joins",
+  "language": "vi",
+  "sourceHash": "c1a3f0876039207bdcf2f4c2cdd6606a3759a00a9827480f21ec4da5e9b3c677",
+  "status": "approved",
+  "review": "Tự soạn không API. Join semantics/source review và SQLite3.49.1 in-memory fixtures. Nêu rõ ON/WHERE outer-join khác nhau, COUNT(*)/COUNT(id), duplicate names, cardinality/fanout, historical item prices và metric granularity. RIGHT JOIN snippets dùng SQLite hiện đại có hỗ trợ; không giả mọi phiên bản cũ hỗ trợ. Không production DB/concurrency/load claims.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Join purpose",
+      "question": "JOIN chủ yếu dùng để làm gì?",
+      "options": [
+        "Kết hợp rows từ các quan hệ theo điều kiện.",
+        "Tự tạo mọi foreign keys.",
+        "Tự mã hóa dữ liệu.",
+        "Tự chuyển SQL thànhHTML."
+      ],
+      "correct": 0,
+      "explanation": "Cần xác định quan hệ và cardinality trước khi tổng hợp."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Inner matching",
+      "question": "INNER JOIN giữ các combinations nào?",
+      "options": [
+        "Chỉ rows không match.",
+        "Các cặp thỏa điều kiện join.",
+        "Mọi row trái bất kể match.",
+        "Mọi row phải bất kể match."
+      ],
+      "correct": 1,
+      "explanation": "Nhiều matches có thể tạo nhiều output rows."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Left preservation",
+      "question": "LEFT JOIN bảo toàn phía nào trước các filters sau join?",
+      "options": [
+        "Không bên nào.",
+        "Chỉ phía có nhiều rows hơn.",
+        "Phía trái.",
+        "Chỉ phía phải."
+      ],
+      "correct": 2,
+      "explanation": "Row trái không match được thêm các giá trịNULL cho phía phải."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Right preservation",
+      "question": "RIGHT JOIN bảo toàn phía nào trước các filters sau join?",
+      "options": [
+        "Chỉ phía trái.",
+        "Bảng có khóa lớn hơn.",
+        "Bảng có nhiều indexes hơn.",
+        "Phía phải."
+      ],
+      "correct": 3,
+      "explanation": "Support của syntax cần kiểm tra theo engine/version."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Join condition",
+      "question": "ON o.customer_id=c.id trong source liên kết gì?",
+      "options": [
+        "Đơn hàng với customer tương ứng.",
+        "Mọi sản phẩm với mọi customer.",
+        "Tên customer với status.",
+        "GPA với doanh thu."
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện dùng keys có ý nghĩa relationship."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Table alias",
+      "question": "orders o trong source dùng o làm gì?",
+      "options": [
+        "Một transaction ID.",
+        "Alias ngắn cho bảng orders trong query.",
+        "Tên bảng mới được lưu vàoDB.",
+        "Một column mới."
+      ],
+      "correct": 1,
+      "explanation": "Alias giúp viết qualified columns rõ ràng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Qualified columns",
+      "question": "o.id giúp phân biệt điều gì?",
+      "options": [
+        "Một API endpoint.",
+        "Một SQL user.",
+        "Cột id thuộc orders aliaso.",
+        "Số row thứid của output."
+      ],
+      "correct": 2,
+      "explanation": "Khi nhiều bảng có cùng tên cột, qualification tránh mơ hồ."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Missing match",
+      "question": "Trong LEFT JOIN, row trái không match có các cột phía phải thế nào?",
+      "options": [
+        "Mọi giá trị tự thành0.",
+        "Tự tạo parent record.",
+        "Tự xóa row trái.",
+        "NULL-extended."
+      ],
+      "correct": 3,
+      "explanation": "Có thể dùngCOALESCE khi cần giá trị báo cáo theo domain."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Coalesce role",
+      "question": "COALESCE(SUM(o.total), 0) nguồn làm gì?",
+      "options": [
+        "Dùng0 khiSUM trảNULL.",
+        "Xóa mọi ordertotalNULL khỏiDB.",
+        "Tự đổi currency.",
+        "Tự kiểm tra paid status."
+      ],
+      "correct": 0,
+      "explanation": "Fallback trongresult không sửa dữ liệu lưu trữ."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Source status",
+      "question": "INNER JOIN query đầu source lọc status nào?",
+      "options": [
+        "refunded.",
+        "shipped.",
+        "pending.",
+        "cancelled."
+      ],
+      "correct": 1,
+      "explanation": "WHERE lọc rows sau khi kết hợp theo mô hình logic query."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Source count",
+      "question": "Report customers nguồn dùngCOUNT(o.id) để đếm gì?",
+      "options": [
+        "Mọi columns của bảng.",
+        "Các products có giá lớn nhất.",
+        "Các order IDs không NULL trong mỗi nhóm.",
+        "Mọi customer names duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Nó tránh đếm null-extended row như một order."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Source grouping",
+      "question": "Report source nhóm theo những cột customer nào?",
+      "options": [
+        "Chỉc.name.",
+        "Chỉo.total.",
+        "Chỉo.status.",
+        "c.id vàc.name."
+      ],
+      "correct": 3,
+      "explanation": "ID tách hai customers cùng tên thành hai nhóm."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Source spending",
+      "question": "total_spent nguồn dựa vào biểu thức nào?",
+      "options": [
+        "COALESCE(SUM(o.total), 0).",
+        "AVG(c.id).",
+        "COUNT(c.name).",
+        "MAX(p.name)."
+      ],
+      "correct": 0,
+      "explanation": "Tênmetric chưa tự xác nhận cách xử lý refunds/status theo nghiệp vụ."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Source four tables",
+      "question": "Query nhiều JOIN của source kết hợp những bảng nào?",
+      "options": [
+        "events, logs, files, images.",
+        "orders, customers, order_items, products.",
+        "students, teachers, classes, grades.",
+        "users, roles, sessions, tokens."
+      ],
+      "correct": 1,
+      "explanation": "Mỗi relationship cần join predicate phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Line quantity",
+      "question": "oi.quantity trong query nhiều JOIN là gì?",
+      "options": [
+        "Một product name.",
+        "Một timestamp.",
+        "Số lượng trên order item.",
+        "Tổng số customers."
+      ],
+      "correct": 2,
+      "explanation": "Aliasoi chỉorder_items."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Line price",
+      "question": "oi.price nguồn lấy giá từ đâu?",
+      "options": [
+        "Luôn giá hiện tại từproducts.",
+        "Customer ID.",
+        "Ngày tạo order.",
+        "Order item."
+      ],
+      "correct": 3,
+      "explanation": "Giá lúc mua có thể khác catalog price hiện tại."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Date source",
+      "question": "Query nhiều JOIN nguồn lọc orders từ mốc nào?",
+      "options": [
+        "2025-01-01.",
+        "2024-01-01.",
+        "2026-12-31.",
+        "Không có mốc."
+      ],
+      "correct": 0,
+      "explanation": "Kiểu timestamp/timezone policy vẫn cần xác định."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "One to many",
+      "question": "Một customer có nhiềuorders thường là quan hệ gì?",
+      "options": [
+        "Luôn nhiều-nhiều không cóFK.",
+        "Một-nhiều từcustomer sangorders.",
+        "Luôn một-một.",
+        "Không thể biểu diễn bằngSQL."
+      ],
+      "correct": 1,
+      "explanation": "Một customer có thể xuất hiện nhiều lần trong join output."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Many to many bridge",
+      "question": "order_items thường giúp nối quan hệ nào?",
+      "options": [
+        "Timezones vớifonts.",
+        "Queries vớipermissions tự động.",
+        "Orders vớiproducts.",
+        "Customers vớiCSSclasses."
+      ],
+      "correct": 2,
+      "explanation": "Bảng trung gian còn lưuquantity vàtransaction price."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Join versus integrity",
+      "question": "ViếtJOIN có tự tạo FK constraint trong schema không?",
+      "options": [
+        "Có, mọiON đều làFK mới.",
+        "Có, nếu dùngid.",
+        "Chỉ nếu dùngLEFT.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Query relationship vàschema integrity là các cơ chế khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Inner row count",
+      "question": "Query cuối SQLite trả bao nhiêu combinations?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*) FROM orders o JOIN customers c ON o.customer_id=c.id;",
+      "options": [
+        "4.",
+        "3.",
+        "5.",
+        "16."
+      ],
+      "correct": 0,
+      "explanation": "Bốnorders đều cócustomer khớp trongfixture."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Shipped rows",
+      "question": "Query cuối trả order ID, name theo thứ tự nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT o.id,c.name FROM orders o INNER JOIN customers c ON o.customer_id=c.id WHERE o.status='shipped' ORDER BY o.id;",
+      "options": [
+        "Mọicustomer đúng một lần.",
+        "10 An; 12 Binh; 13 An.",
+        "10 An; 11 An; 12 Binh.",
+        "Chỉ10 An."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ baorders shipped; hai customers khác id có cùng tênAn."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Left counts",
+      "question": "Query cuối cho c.id, count nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT c.id,COUNT(o.id) FROM customers c LEFT JOIN orders o ON c.id=o.customer_id GROUP BY c.id ORDER BY c.id;",
+      "options": [
+        "1:1; 2:1; 3:0; 4:1.",
+        "Chỉ1:2.",
+        "1:2; 2:1; 3:0; 4:1.",
+        "1:2; 2:1; 3:1; 4:1."
+      ],
+      "correct": 2,
+      "explanation": "Customer3 chưa cóorder; COUNT(o.id) bỏNULL của phía phải."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Count star trap",
+      "question": "Cho customer 3, COUNT(*), COUNT(o.id) cuối là gì?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*),COUNT(o.id) FROM customers c LEFT JOIN orders o ON c.id=o.customer_id WHERE c.id=3;",
+      "options": [
+        "0, 0.",
+        "1, 1.",
+        "0, 1.",
+        "1, 0."
+      ],
+      "correct": 3,
+      "explanation": "LEFT JOIN tạo mộtnull-extended row nhưng không cóorder ID."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Coalesced spending",
+      "question": "Query cuối trả totalspend của customer 3 là gì?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COALESCE(SUM(o.total),0) FROM customers c LEFT JOIN orders o ON c.id=o.customer_id WHERE c.id=3;",
+      "options": [
+        "0.",
+        "NULL.",
+        "1.",
+        "100."
+      ],
+      "correct": 0,
+      "explanation": "SUM không có non-NULL input trảNULL rồiCOALESCE dùng0."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Where status removes rows",
+      "question": "Query cuối trảcustomer IDs nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT DISTINCT c.id FROM customers c LEFT JOIN orders o ON c.id=o.customer_id WHERE o.status='shipped' ORDER BY c.id;",
+      "options": [
+        "Chỉ1.",
+        "1, 2, 4.",
+        "1, 2, 3, 4.",
+        "Chỉ3."
+      ],
+      "correct": 1,
+      "explanation": "WHERE phía phải statusshipped loại null-extended row của customer 3."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Status in on",
+      "question": "Query cuối cho counts nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT c.id,COUNT(o.id) FROM customers c LEFT JOIN orders o ON c.id=o.customer_id AND o.status='shipped' GROUP BY c.id ORDER BY c.id;",
+      "options": [
+        "Chỉ1:1.",
+        "Mọicustomer đều0.",
+        "1:1; 2:1; 3:0; 4:1.",
+        "1:2; 2:1; 3:0; 4:1."
+      ],
+      "correct": 2,
+      "explanation": "Đặt status trongON vẫn giữcustomers chưa có shippedorder."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Four table rows",
+      "question": "Query cuối cho order/product/quantity/price nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT o.id,p.name,oi.quantity,oi.price FROM orders o JOIN customers c ON o.customer_id=c.id JOIN order_items oi ON o.id=oi.order_id JOIN products p ON oi.product_id=p.id WHERE o.created_at>='2025-01-01' ORDER BY o.id,p.id;",
+      "options": [
+        "Chỉ10 Book2×40.",
+        "12 Book2×40 làrowduy nhất.",
+        "Mọiorder đều chỉmộtproduct.",
+        "10 Book2×40; 10 Pen1×20; 11 Pen5×10; 13 Pen3×10."
+      ],
+      "correct": 3,
+      "explanation": "Order12 bịdatefilter loại; order 10 cóhaiitems."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Duplicated totals",
+      "question": "Query cuốiSUM(o.total) ra bao nhiêu?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT SUM(o.total) FROM orders o JOIN order_items oi ON o.id=oi.order_id;",
+      "options": [
+        "360.0.",
+        "260.0.",
+        "100.0.",
+        "5.0."
+      ],
+      "correct": 0,
+      "explanation": "Order10 xuất hiện hai lần nên total100 bị cộng hai lần."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Join count granularity",
+      "question": "Query cuốiCOUNT(*), COUNT(DISTINCTo.id) là gì?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*),COUNT(DISTINCT o.id) FROM orders o JOIN order_items oi ON o.id=oi.order_id;",
+      "options": [
+        "4, 5.",
+        "5, 4.",
+        "4, 4.",
+        "5, 5."
+      ],
+      "correct": 1,
+      "explanation": "Output có5items thuộc4orders."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Grouping duplicate names",
+      "question": "Query cuối gộp total theo tên cho An là bao nhiêu?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT SUM(o.total) FROM customers c JOIN orders o ON c.id=o.customer_id WHERE c.name='An' GROUP BY c.name;",
+      "options": [
+        "30.0.",
+        "100.0.",
+        "180.0.",
+        "150.0."
+      ],
+      "correct": 2,
+      "explanation": "Customers1 và4 cùng tênAn bị gộp; 150+30=180."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Anti join",
+      "question": "Query cuối tìmcustomer chưa cóorder trảid nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT c.id FROM customers c LEFT JOIN orders o ON c.id=o.customer_id WHERE o.id IS NULL ORDER BY c.id;",
+      "options": [
+        "1.",
+        "2.",
+        "4.",
+        "3."
+      ],
+      "correct": 3,
+      "explanation": "o.id không NULL cho matchedorder nên IS NULL nhận diện no-match trongschema này."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Exists customer count",
+      "question": "Query cuối đếm bao nhiêucustomers cóít nhất một shippedorder?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*) FROM customers c WHERE EXISTS(SELECT 1 FROM orders o WHERE o.customer_id=c.id AND o.status='shipped');",
+      "options": [
+        "3.",
+        "4.",
+        "2.",
+        "1."
+      ],
+      "correct": 0,
+      "explanation": "EXISTS không nhâncustomer theo sốorders."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Cartesian count",
+      "question": "Query cuối vớiCROSS JOIN không điều kiện có bao nhiêu rows?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*) FROM customers CROSS JOIN products;",
+      "options": [
+        "2.",
+        "8.",
+        "6.",
+        "4."
+      ],
+      "correct": 1,
+      "explanation": "4customers nhân2products bằng8combinations."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Self join duplicate names",
+      "question": "Query cuối cócặp ids nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT a.id,b.id FROM customers a JOIN customers b ON a.name=b.name AND a.id<b.id ORDER BY a.id,b.id;",
+      "options": [
+        "2, 3.",
+        "Không cócặp.",
+        "1, 4.",
+        "1, 1."
+      ],
+      "correct": 2,
+      "explanation": "Aliases tách hairoles; a.id<b.id tránh self-pair vàcặpđảo."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Null equality join",
+      "question": "Query cuốiINNER JOIN dùng= có bao nhiêu rows?",
+      "code": "CREATE TABLE a(k INTEGER);\nCREATE TABLE b(k INTEGER);\nINSERT INTO a VALUES(NULL);\nINSERT INTO b VALUES(NULL);\n-- result\nSELECT COUNT(*) FROM a JOIN b ON a.k=b.k;",
+      "options": [
+        "1.",
+        "2.",
+        "NULL.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "NULL=NULL làunknown nên không tạo true match."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "SQLite null safe is",
+      "question": "SQLite query cuối dùngIS cho haiNULL cóCOUNT bằng gì?",
+      "code": "CREATE TABLE a(k INTEGER);\nCREATE TABLE b(k INTEGER);\nINSERT INTO a VALUES(NULL);\nINSERT INTO b VALUES(NULL);\n-- result\nSELECT COUNT(*) FROM a JOIN b ON a.k IS b.k;",
+      "options": [
+        "1.",
+        "0.",
+        "2.",
+        "Lỗi vìIS khôngdùngtrongON."
+      ],
+      "correct": 0,
+      "explanation": "SQLiteIS cónull-safecomparison trong trường hợp này; khôngcopy nguyênsyntax cho mọi DB."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Modern right join",
+      "question": "TrênSQLite3.49.1, query cuốiRIGHT JOIN cóCOUNT(*) bằng gì?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*) FROM orders o RIGHT JOIN customers c ON o.customer_id=c.id;",
+      "options": [
+        "16.",
+        "5.",
+        "4.",
+        "3."
+      ],
+      "correct": 1,
+      "explanation": "Bốnmatchedorders cộng một row cho customer 3 chưa cóorder."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Missing predicate effect",
+      "question": "INNER JOIN ON1=1 cuối cóCOUNT bằng bao nhiêu?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(*) FROM orders o JOIN customers c ON 1=1;",
+      "options": [
+        "5.",
+        "0.",
+        "16.",
+        "4."
+      ],
+      "correct": 2,
+      "explanation": "Mọiorder khớp mọi customer:4×4. Đây không phải relationship mong muốn."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Filter preserved side",
+      "question": "Query cuối đếmorders của customer 1 bằng gì?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(o.id) FROM customers c LEFT JOIN orders o ON c.id=o.customer_id WHERE c.id=1;",
+      "options": [
+        "1.",
+        "4.",
+        "0.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "WHERE lọc phía customer được bảo toàn, rồiCOUNTorder IDs."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "On versus where scope",
+      "question": "Có thể chuyển mọi điều kiện từON sangWHERE mà giữ meaningLEFT JOIN không?",
+      "options": [
+        "Không.",
+        "Có trong mọiouterjoin.",
+        "Có nếu cóalias.",
+        "Chỉ cần thêmLIMIT."
+      ],
+      "correct": 0,
+      "explanation": "Outerjoin thêmNULL rows sauON trướcWHERE tronglogical model."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Inner move condition",
+      "question": "VớiINNER JOIN và predicates thuần tương đương, đặt joincondition ởON hayWHERE có thể cho cùng kết quả không?",
+      "options": [
+        "Chỉ nếu thiếuFK.",
+        "Có, dùON thường rõ relationship hơn.",
+        "Không bao giờ.",
+        "Chỉ nếucondition làstring."
+      ],
+      "correct": 1,
+      "explanation": "Không mở rộng quy tắc đó cho mọiouterjoin/volatileexpression."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Nullable right test",
+      "question": "Vì sao dùngo.id IS NULL thường rõ hơno.total IS NULL để tìmno order ởsource?",
+      "options": [
+        "VìIS NULL chỉdùngđượcvớiid.",
+        "VìCOUNT tựbỏWHERE.",
+        "id không NULL choorder thật, còn total có thể nullable tùy schema.",
+        "Vìtotal luôn làPK."
+      ],
+      "correct": 2,
+      "explanation": "No-match marker cần mộtcolumn được bảo đảm không NULL trongmatchedrow."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Name grouping correctness",
+      "question": "Vì sao sourceGROUP BY c.id, c.name tốt hơnchỉname khi report theo từngcustomer?",
+      "options": [
+        "Tênkhông được lưuTEXT.",
+        "IDlàmetric doanhthu.",
+        "GROUP BY hai cột luôn nhanhhơn 100lần.",
+        "Táchcustomers cùng tên theo identity."
+      ],
+      "correct": 3,
+      "explanation": "Correct granularity không được đánh đổi vì tên hiển thị trùng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Multiple match",
+      "question": "Nếu một row trái khớp3rows phải, INNER JOIN thường tạo bao nhiêu combinations cho row đó?",
+      "options": [
+        "3.",
+        "1 bắtbuộc.",
+        "0.",
+        "9 bắtbuộc."
+      ],
+      "correct": 0,
+      "explanation": "Join không tựdeduplicate theoentity."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Right left equivalence",
+      "question": "A RIGHT JOINB có thể viết lại theo hướng nào nếu giữprojection vàcondition đúng?",
+      "options": [
+        "A CROSS JOINB khôngcondition.",
+        "B LEFT JOINA.",
+        "A LEFT JOINB luôn giữ nguyênmọi columnorder.",
+        "A INNER JOINB."
+      ],
+      "correct": 1,
+      "explanation": "Đổi phía bảo toàn cần giữđúng column references vàsemantics."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Full outer goal",
+      "question": "FULL OUTERJOIN nhằm giữ gì trướcfilters saujoin?",
+      "options": [
+        "Chỉ matchedpairs.",
+        "Chỉrows trùngname.",
+        "Matchedpairs vàunmatchedrows của cả hai phía.",
+        "Chỉ phía trái."
+      ],
+      "correct": 2,
+      "explanation": "Engine/version support cần được kiểm tra riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Natural join fragility",
+      "question": "NATURALJOIN có thể mong manh khi schema đổi vì sao?",
+      "options": [
+        "VìNATURALJOIN luônmãhóa dữ liệu.",
+        "VìkhôngDBnàohỗtrợ.",
+        "VìORDER BY khôngdùngđược.",
+        "Các têncột chung mới có thể thay implicitjoincondition."
+      ],
+      "correct": 3,
+      "explanation": "Explicit keys thường làm relationship contract rõ hơn."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Ambiguous id",
+      "question": "SELECT id trong query cóorders vàcustomers đều cóid có vấn đề gì?",
+      "options": [
+        "Có thể mơhồ; nênqualify o.id hoặc c.id theo ýđịnh.",
+        "Tựchọn cột lớnnhất.",
+        "Luônlấyidcustomer.",
+        "Luônlấyidorder."
+      ],
+      "correct": 0,
+      "explanation": "Không dựa vào têncột trùng mà bỏ nguồn tham chiếu."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Historical pricing",
+      "question": "Tại sao report lineitems thường dùngoi.price thay vì catalogprice hiện tại?",
+      "options": [
+        "VìJOIN tựđóngbăngmọicột.",
+        "Để phản ánh giá ghi nhận ởgiao dịch theo mô hình thiết kế.",
+        "Vìproduct không thểcóprice.",
+        "Vìoi.price luôncóthuếtheomọidomain."
+      ],
+      "correct": 1,
+      "explanation": "Cần policy currency/tax/discount vàhistorical data rõ ràng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Source ordering ties",
+      "question": "ORDER BYo.id của query multi-items có xác định thứ tựitems trong cùngorder chưa?",
+      "options": [
+        "Rồi, quantity quyếtđịnhngầm.",
+        "Chỉ nếuidSERIAL.",
+        "Chưa; cần tie-breaker/itemkey nếu thứ tựđó quantrọng.",
+        "Rồi, mọiitem tự sorttheoproduct name."
+      ],
+      "correct": 2,
+      "explanation": "Ordering theoorderkey không phải totalorder của outputitems."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Projection dedup",
+      "question": "ThêmDISTINCT có phải luôn sửa đúng mọi join bị nhân dòng không?",
+      "options": [
+        "Có, DISTINCT biếtmọi business entity.",
+        "Có, vàluôn nhanhhơn.",
+        "Chỉ nếuSELECT*.",
+        "Không; có thể chỉche lỗi hoặc bỏrows cómeaningriêng."
+      ],
+      "correct": 3,
+      "explanation": "Sửa predicate/cardinality/granularity thay vì áp dụngdedup máy móc."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Exists intent",
+      "question": "Muốn kiểm tra customercóít nhất một order mà không lấyordercolumns, cách nào thường biểuđạt intent rõ?",
+      "options": [
+        "EXISTS với correlatedpredicate phù hợp.",
+        "CROSS JOIN mọi order.",
+        "SUM(customer ID) khôngWHERE.",
+        "DROP bảngorders."
+      ],
+      "correct": 0,
+      "explanation": "Không hứaEXISTS luôn nhanhhơn; planner/workload cần kiểm tra."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Filter money statuses",
+      "question": "SUM(o.total) sourceLEFT JOIN có tựloại pendingorders không?",
+      "options": [
+        "Chỉ nếuORDER BYDESC.",
+        "Không; sourcekhông lọcstatus ởreport đó.",
+        "Có, SUM tựbiếtpaidstatus.",
+        "Có, alias total_spent tự lọc."
+      ],
+      "correct": 1,
+      "explanation": "Metric spending cần định nghĩa domain vàpredicate phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Missing fk integrity",
+      "question": "Nếu khôngFK vàordercustomer_id khôngtồn tại, INNER JOINcustomers sẽ làm gì vớiorder đó?",
+      "options": [
+        "Luônbáo lỗiFK ởSELECT.",
+        "Tựsửa customer_id.",
+        "Không tạo matchedrow theo equalityjoin này.",
+        "Tựtạo customer mới."
+      ],
+      "correct": 2,
+      "explanation": "Query có thể che orphanrows; không thay schema integrity."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Null keys business policy",
+      "question": "Có nên tựCOALESCE mọiNULL joinkeys thành0 đểmatch không?",
+      "options": [
+        "Có, luôn sửamọiNULL.",
+        "Có, 0không bao giờlàID.",
+        "Chỉ cầnthêmindex.",
+        "Không; có thể tạo falsematches nếu0cómeaning hoặc nhiềumissingkeys bị gộp."
+      ],
+      "correct": 3,
+      "explanation": "Null-safe matching phải theo domain chứ không thayNULL tùy tiện."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Index matching",
+      "question": "Index trênorders.customer_id có thể hữu ích choJOINnhưng có bảo đảm luôn được chọn không?",
+      "options": [
+        "Không; planner dựaquery, statistics vàcost.",
+        "Có, mọiindexluôn được dùng.",
+        "Có, nếuindexname cócustomer.",
+        "Không, indexchỉdùngINSERT."
+      ],
+      "correct": 0,
+      "explanation": "Chứng minh bằngplan/workload chứkhông từsựtồntạiindex."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Foreign key cardinality",
+      "question": "FKorders.customer_id một mình có giới hạn mỗi customer chỉmột order không?",
+      "options": [
+        "Chỉ khiLEFT JOIN.",
+        "Không; cầnUNIQUE trênreferencingkey nếu domainthực sựmột-một.",
+        "Có, mọiFKlàmột-một.",
+        "Có, nếu cộtINTEGER."
+      ],
+      "correct": 1,
+      "explanation": "FK ràngbuộc existence, không tựuniqueness ởphía child."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source distinct groups",
+      "question": "Hai customers cùng tên nhưngkhác id trongGROUP BY c.id, c.name có bị gộp không?",
+      "options": [
+        "Chỉ nếuSUMtotalbằngnhau.",
+        "Chỉ nếuCOUNTlớnhơn 1.",
+        "Không.",
+        "Có vìnamequyếtđịnhmọiGROUP BY."
+      ],
+      "correct": 2,
+      "explanation": "Grouping so cảkeytuple, khôngchỉcộthiểnthị."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Evidence scope",
+      "question": "FixtureSQLite nhỏ có xác nhận productionjoinqueries nhanhởtriệu rows không?",
+      "options": [
+        "Có, nếu cófourJOINs.",
+        "Có, vì SQLkhôngtốnCPU.",
+        "Chỉ cầnLIMIT20.",
+        "Không; cầnengine, plans, datadistribution, volume vàconcurrency đại diện."
+      ],
+      "correct": 3,
+      "explanation": "Kiểmtra semantics chọnlọc khácđánh giásức chịu tải."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Double one to many",
+      "question": "Joinorders vớiitems vàpayments đềumột-nhiều có thể làm gì vớitổng?",
+      "options": [
+        "Nhânchéo cácchildrows, làmSUMbịđếm lặp nếu khôngkiểmsoátgranularity.",
+        "Luôntựpreaggregate từngbảng.",
+        "Chỉ đổitêncột.",
+        "Tựxóaduplicates theoID."
+      ],
+      "correct": 0,
+      "explanation": "Cầnaggregatetừngnhánh hoặc cấu trúcquery đápứng metric."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Sum distinct trap",
+      "question": "Vì saoSUM(DISTINCTo.total) không phải cáchsửa tổngordersbị lặp doJOIN?",
+      "options": [
+        "Vìtotalphảiluôn unique.",
+        "Haiorderskhác nhau có thể cùngtotal vàbị gộp nhầm.",
+        "VìDISTINCTchỉdùngTEXT.",
+        "VìSUMkhông nhậnDISTINCT."
+      ],
+      "correct": 1,
+      "explanation": "Dedup theoentitykey khácdedup theoamount."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Filter all orders shipped",
+      "question": "Muốncócustomerschưa cóshippedorder, vì saoLEFT JOINordersrồiWHEREstatus<>shipped có thểsai?",
+      "options": [
+        "VìLEFT JOINkhông hỗ trợWHERE.",
+        "Chỉ cầnORDER BY name.",
+        "Cóthểgiữcustomer đãcảshippedlẫnotherorders vàloại no order doNULL; anti-existence predicate rõhơn.",
+        "Vì<>luôn nghĩalà=."
+      ],
+      "correct": 2,
+      "explanation": "Yêu cầu none-matching khác cómột row không matching."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Distinct count scope",
+      "question": "COUNT(DISTINCTo.id) cósửamọi monetaryaggregate bịfanout không?",
+      "options": [
+        "Có, mọi aggregatecùng querytựđược dedup.",
+        "Có, nếuidINTEGER.",
+        "Chỉ nếu cóCOALESCE.",
+        "Không; nóchỉ sửametricordercount theoID, không tự sửaSUM amounts."
+      ],
+      "correct": 3,
+      "explanation": "Mỗimetric cầnđúng inputgranularity."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Outer then inner loss",
+      "question": "Kháchchưa cóorder có thểbiếnmất khiLEFT JOINordersrồiINNER JOINorder_items vì sao?",
+      "options": [
+        "NULLorder ID không matchitem, nênINNER JOINsau loạirowbảo toàn trước.",
+        "VìLEFT JOINtự xóacustomer.",
+        "VìCOUNTtự đổi thànhDELETE.",
+        "Vìproduct namekhông unique."
+      ],
+      "correct": 0,
+      "explanation": "Cầnxéttoàn bộjoinchain, khôngchỉkeywordLEFTđầu tiên."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nullable marker trap",
+      "question": "DùngWHEREo.totalISNULLđểtìmno order có thểtrảsai khi nào?",
+      "options": [
+        "Khôngbaogiờvìtotalluôn non-NULLởmọischema.",
+        "Matchedorderthật cótotalNULL.",
+        "Chỉ khi cóindexcustomer.",
+        "Chỉ khi mọi ordercóPK."
+      ],
+      "correct": 1,
+      "explanation": "Chọn markerkey không NULLđã đảm bảo, hoặcNOT EXISTS."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Group stage correctness",
+      "question": "Preaggregateitems theoorder_id trước khijoincustomers có phảiluôn giữmọi business meaning không?",
+      "options": [
+        "Có, nếu cóSUM.",
+        "Chỉ cầnaliasđúng.",
+        "Không; phảigiữđúngfilters, keys, metric vàcardinality cần thiết.",
+        "Có, mọiGROUP BY đềuhoánđổi tựdo."
+      ],
+      "correct": 2,
+      "explanation": "Preaggregation làkỹthuật có điều kiện, khôngcôngthức thaythếmáymóc."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Top customers consistency",
+      "question": "Report topcustomers thayđổi trongkhidữ liệu đangghi. ORDER BYtotalDESC, id cóđóngbăng dataset không?",
+      "options": [
+        "Có, vìtie-breaker làlock.",
+        "Có, vìDESC làtransaction.",
+        "Chỉ cần thêmDISTINCT.",
+        "Không; cầnconsistency/snapshotstrategy nếu yêu cầuđóquantrọng."
+      ],
+      "correct": 3,
+      "explanation": "Deterministic sorting vàconsistent read làhaivấnđềkhác nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Join permission leak",
+      "question": "MộtJOINcustomer đúngFK có đủchứng minh ngườiđọccóquyền xemcustomer email không?",
+      "options": [
+        "Không; cầnscoping/authorization vàprojection phù hợp.",
+        "Có, vì FK làpermission.",
+        "Có, nếudùngINNER.",
+        "Chỉ cầnparameterbinding."
+      ],
+      "correct": 0,
+      "explanation": "Relationshipcorrectness khôngthayaccesscontrol."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Dimension duplicates",
+      "question": "Joinfact với một bảngdimension cókey không unique có thể làm báo cáo lỗi thế nào?",
+      "options": [
+        "Luônthrowambiguouscolumn.",
+        "Mộtfact khớpnhiềudimensionrows rồi bị nhân đếm.",
+        "Chỉ đổicollation.",
+        "Tựchọnrowmới nhấtchắcchắn."
+      ],
+      "correct": 1,
+      "explanation": "Kiểmtraschema, keys vàversionedeffective-timeconditions nếu dùnghistory."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Explicit fanout example",
+      "question": "Query cuối choCOUNT, SUMitem, SUMpayment là gì?",
+      "code": "CREATE TABLE items(order_id INTEGER,amount INTEGER);\nCREATE TABLE payments(order_id INTEGER,amount INTEGER);\nINSERT INTO items VALUES(1,10),(1,20);\nINSERT INTO payments VALUES(1,1),(1,2),(1,3);\n-- result\nSELECT COUNT(*),SUM(i.amount),SUM(p.amount) FROM items i JOIN payments p ON i.order_id=p.order_id;",
+      "options": [
+        "5, 30, 6.",
+        "6, 30, 6.",
+        "6, 90, 12.",
+        "1, 30, 6."
+      ],
+      "correct": 2,
+      "explanation": "2items×3payments tạo6rows; itemsum30bị lặp3lần, paymentsum6bị lặp2lần."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Distinct amount example",
+      "question": "Query cuốiSUMtotal, SUMDISTINCTtotal là gì?",
+      "code": "CREATE TABLE orders(id INTEGER PRIMARY KEY,total INTEGER);\nINSERT INTO orders VALUES(1,100),(2,100);\n-- result\nSELECT SUM(total),SUM(DISTINCT total) FROM orders;",
+      "options": [
+        "200, 200.",
+        "100, 100.",
+        "100, 200.",
+        "200, 100."
+      ],
+      "correct": 3,
+      "explanation": "Haiorderskhác nhau cùng100; dedupamount bỏnhầmmột order."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Join chain example",
+      "question": "Query cuốiCOUNT DISTINCTcustomer làbao nhiêu?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL,status TEXT,created_at TEXT);\nCREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT);\nCREATE TABLE order_items(order_id INTEGER,product_id INTEGER,quantity INTEGER,price REAL);\nINSERT INTO customers VALUES(1,'An'),(2,'Binh'),(3,'Chi'),(4,'An');\nINSERT INTO orders VALUES(10,1,100,'shipped','2025-01-02'),(11,1,50,'pending','2025-01-03'),(12,2,80,'shipped','2024-12-31'),(13,4,30,'shipped','2025-02-01');\nINSERT INTO products VALUES(7,'Book'),(8,'Pen');\nINSERT INTO order_items VALUES(10,7,2,40),(10,8,1,20),(11,8,5,10),(12,7,2,40),(13,8,3,10);\n-- result\nSELECT COUNT(DISTINCT c.id) FROM customers c LEFT JOIN orders o ON c.id=o.customer_id JOIN order_items oi ON o.id=oi.order_id;",
+      "options": [
+        "3.",
+        "4.",
+        "5.",
+        "2."
+      ],
+      "correct": 0,
+      "explanation": "Customer3 cóNULLorder ID, không matchinneritems nênbiếnmất."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Nullable marker example",
+      "question": "Query cuối trảnhữngcustomer IDs nào?",
+      "code": "CREATE TABLE customers(id INTEGER PRIMARY KEY);\nCREATE TABLE orders(id INTEGER PRIMARY KEY,customer_id INTEGER,total REAL);\nINSERT INTO customers VALUES(1),(2);\nINSERT INTO orders VALUES(10,1,NULL);\n-- result\nSELECT c.id FROM customers c LEFT JOIN orders o ON c.id=o.customer_id WHERE o.total IS NULL ORDER BY c.id;",
+      "options": [
+        "Không có row.",
+        "1, 2.",
+        "Chỉ2.",
+        "Chỉ1."
+      ],
+      "correct": 1,
+      "explanation": "Customer1 cóorderthật totalNULL; customer2 khôngorder, cả haiqualifytotalISNULL."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Independent preaggregation",
+      "question": "Query cuối saupreaggregate mỗinhánh choamounts nào?",
+      "code": "CREATE TABLE items(order_id INTEGER,amount INTEGER);\nCREATE TABLE payments(order_id INTEGER,amount INTEGER);\nINSERT INTO items VALUES(1,10),(1,20);\nINSERT INTO payments VALUES(1,1),(1,2),(1,3);\n-- result\nWITH i AS(SELECT order_id,SUM(amount) AS total FROM items GROUP BY order_id),p AS(SELECT order_id,SUM(amount) AS total FROM payments GROUP BY order_id) SELECT i.total,p.total FROM i JOIN p ON i.order_id=p.order_id;",
+      "options": [
+        "10, 1.",
+        "6, 30.",
+        "30, 6.",
+        "90, 12."
+      ],
+      "correct": 2,
+      "explanation": "MỗiCTE cònmột row/order, nên khôngnhân chéo cácchildrows."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Date filter preserved side",
+      "question": "Muốn giữmọi customers vàđếmorders từ2025, đặtdatepredicate phía orders trongONthường phù hợp vì sao?",
+      "options": [
+        "Vìnóbắtbuộcmọi ordernăm2024 bị xóa.",
+        "Vìnótự tạodateindex.",
+        "Vìnókhóa mọi transactions.",
+        "Nógiớihạn matchedorders màvẫn giữcustomers không match sauON."
+      ],
+      "correct": 3,
+      "explanation": "Vẫnphảikiểm tra filters saujoin khônglàm mấtrowsbảo toàn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Orphan diagnostics",
+      "question": "ReportINNER JOIN khônghiệnorphanorders có đủbằngchứng DBkhông cóorphans không?",
+      "options": [
+        "Không; cầnquery/audit integrity thíchhợp, khôngsuy từoutput đãlọc.",
+        "Có, JOINtự sửamọiFK.",
+        "Có, vìWHEREstatusshipped đủ.",
+        "Chỉ cầnSUMtotal."
+      ],
+      "correct": 0,
+      "explanation": "Mộtquerykhônghiệnrecord khôngchứng minhrecord khôngtồntại."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Null coalesce metric risk",
+      "question": "COALESCESUMtotal0 có thểchephânbiệt nào trongreport?",
+      "options": [
+        "Nótự đổiNULLởdatabase.",
+        "Khôngorders vàorderscótoànNULLtotals đềucó thểra0 nếu khôngthêmmộtmetric/phân loại.",
+        "Chỉkhácfont.",
+        "Không bao giờcóNULLtrongSUM."
+      ],
+      "correct": 1,
+      "explanation": "Missingdata vàzero thực sự có thểcần biểuđạt khác nhau."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Join algorithm versus semantics",
+      "question": "Planner đổi nestedloop sanghashjoin có được đổi logical result củaquery hợp lệ không?",
+      "options": [
+        "Có, vìnestedloop luônthêmrows.",
+        "Chỉ nếualiasngắn.",
+        "Không; physical plan phảibảo toànsemantics, cònoutputorderchỉtheoORDER BY contract.",
+        "Có, vìhashjoin tựbỏduplicates."
+      ],
+      "correct": 2,
+      "explanation": "Khôngsuy semantics từtênalgorithm haythứ tự thực thi vật lý."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Source report assessment",
+      "question": "Reportcustomer source đãđủđịnh nghĩa total_spentthực tế chưa?",
+      "options": [
+        "Rồi, vìaliasđãghi spent.",
+        "Rồi, vìCOALESCE xác nhậnđãthanhtoán.",
+        "Chỉ cầnCOUNT(*).",
+        "Chưa; cần chốtstatus, refunds, currency, discounts vàgranularity theo domain."
+      ],
+      "correct": 3,
+      "explanation": "Cúphápaggregate đúng khôngthayđịnh nghĩametric."
+    }
+  ]
+}

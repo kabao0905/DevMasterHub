@@ -1,0 +1,1135 @@
+{
+  "version": 1,
+  "tech": "python",
+  "level": "senior",
+  "lesson": "async",
+  "language": "vi",
+  "sourceHash": "949254c30ddb13b825162e674f1bda2de83fed19fae070762e79155c82208a91",
+  "status": "approved",
+  "review": "Tự biên soạn, không gọi API sinh nội dung. Đối chiếu docstring thư viện asyncio và kiểm chứng cục bộ theo Python 3.12: coroutine, task, gather, timeout, cancellation, giới hạn concurrency; ví dụ chỉ mô phỏng I/O.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Async function",
+      "question": "async def chủ yếu định nghĩa loại hàm nào khi không có yield?",
+      "options": [
+        "Coroutine function",
+        "Generator đồng bộ luôn",
+        "Một thread hệ điều hành mới",
+        "Một process mới"
+      ],
+      "correct": 0,
+      "explanation": "Coroutine function tạo coroutine object khi được gọi."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Gọi coroutine function",
+      "question": "Trong asyncio thông thường, chỉ gọi async_fn() có tự chạy xong thân hàm không?",
+      "options": [
+        "Chỉ khi tên hàm có fetch.",
+        "Không; nó tạo coroutine object cần được await hoặc schedule phù hợp.",
+        "Có, luôn chạy xong ngay.",
+        "Có, luôn tạo process mới."
+      ],
+      "correct": 1,
+      "explanation": "Tạo coroutine khác với thực thi nó."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Await",
+      "question": "await expression thường dùng để làm gì?",
+      "options": [
+        "Biến mọi phép tính CPU thành song song đa lõi.",
+        "Chặn mọi task khác đến khi xong theo định nghĩa.",
+        "Đợi kết quả awaitable, có thể cho event loop chạy việc khác khi phải chờ.",
+        "Tạo thread mới bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Asyncio dùng scheduling hợp tác; await không tự tạo multiprocessing."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Event loop",
+      "question": "Event loop trong asyncio chủ yếu điều phối gì?",
+      "options": [
+        "Mọi CPU core của máy tự động.",
+        "Mọi tiến trình hệ điều hành.",
+        "Chỉ việc import module.",
+        "Các callback và task bất đồng bộ theo cơ chế của loop."
+      ],
+      "correct": 3,
+      "explanation": "Loop là bộ điều phối chứ không phải bảo đảm tận dụng mọi lõi CPU."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Chạy entrypoint",
+      "question": "Cách thông thường nào chạy main() là coroutine từ script đồng bộ?",
+      "options": [
+        "asyncio.run(main())",
+        "main() rồi bỏ kết quả",
+        "await main() trực tiếp trong mọi tệp Python đồng bộ",
+        "asyncio.start_thread(main) bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "asyncio.run quản lý vòng đời loop ở entrypoint theo cách sử dụng được hỗ trợ."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Sleep không chặn loop",
+      "question": "Trong coroutine, cách mô phỏng chờ mà không dùng sleep đồng bộ là gì?",
+      "options": [
+        "while True: pass",
+        "await asyncio.sleep(delay)",
+        "time.sleep(delay) luôn không chặn loop",
+        "asyncio.sleep(delay) rồi bỏ coroutine"
+      ],
+      "correct": 1,
+      "explanation": "await asyncio.sleep tạm nhường điều khiển theo cơ chế asyncio."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Tạo task",
+      "question": "asyncio.create_task(coro) dùng để làm gì?",
+      "options": [
+        "Chuyển coro thành list.",
+        "Chỉ lấy tên coro.",
+        "Lập lịch coroutine chạy thành một Task trong loop đang chạy.",
+        "Chạy coro ngay trên process khác."
+      ],
+      "correct": 2,
+      "explanation": "Task đại diện cho một coroutine được loop điều phối."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Gather",
+      "question": "asyncio.gather(a(),b()) hỗ trợ việc gì?",
+      "options": [
+        "Bắt buộc chạy a xong rồi mới tạo b.",
+        "Luôn chạy trên hai CPU core khác nhau.",
+        "Chỉ gom hai chuỗi tên hàm.",
+        "Chờ nhiều awaitable với khả năng chạy đồng thời theo loop."
+      ],
+      "correct": 3,
+      "explanation": "Concurrency ở đây không đồng nghĩa parallelism CPU."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "I/O bound",
+      "question": "Tác vụ nào thường hưởng lợi từ concurrency asyncio nếu dùng thư viện I/O phù hợp?",
+      "options": [
+        "Chờ nhiều kết nối mạng độc lập",
+        "Vòng tính toán Python thuần dài không nhường điều khiển",
+        "Đổi tên biến trong source",
+        "Một phép cộng số nguyên duy nhất"
+      ],
+      "correct": 0,
+      "explanation": "Khi một thao tác chờ I/O, loop có thể xử lý thao tác khác."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "CPU bound",
+      "question": "Một vòng tính toán Python thuần rất nặng đặt trong async def có tự không chặn loop không?",
+      "options": [
+        "Chỉ chặn nếu có return.",
+        "Không, nếu không nhường điều khiển nó vẫn chiếm luồng loop.",
+        "Có, async tự chia vòng thành nhiều core.",
+        "Có, mỗi câu lệnh async tự await."
+      ],
+      "correct": 1,
+      "explanation": "Cú pháp async không tự chuyển công việc CPU ra ngoài luồng loop."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Kết quả gather",
+      "question": "Khi mọi awaitable thành công, gather trả các kết quả theo thứ tự nào?",
+      "options": [
+        "Thứ tự tên hàm theo bảng chữ cái.",
+        "Thứ tự ngẫu nhiên không có hợp đồng.",
+        "Thứ tự đầu vào, không nhất thiết thứ tự hoàn thành.",
+        "Luôn thứ tự hoàn thành."
+      ],
+      "correct": 2,
+      "explanation": "Đây là hợp đồng được docstring gather của asyncio nêu rõ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Task có thể await",
+      "question": "Một Task có thể được await để nhận kết quả hoặc lỗi của nó không?",
+      "options": [
+        "Không, chỉ coroutine object mới await được",
+        "Chỉ Task không có kết quả",
+        "Chỉ nếu Task đã bị hủy",
+        "Có"
+      ],
+      "correct": 3,
+      "explanation": "Task là awaitable theo giao thức của asyncio."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Giới hạn số việc cùng lúc",
+      "question": "Primitive nào phù hợp để giới hạn tối đa N coroutine vào vùng tải dữ liệu?",
+      "options": [
+        "asyncio.Semaphore(N)",
+        "Một biến bool tên async",
+        "len(tasks) mà không chặn gì",
+        "time.sleep(N) ở đầu loop"
+      ],
+      "correct": 0,
+      "explanation": "Semaphore điều khiển số lượt vào vùng được giới hạn."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Lock async",
+      "question": "Muốn bảo vệ vùng cập nhật trạng thái dùng chung giữa task trong cùng loop, công cụ nào phù hợp?",
+      "options": [
+        "print trước mỗi phép gán",
+        "asyncio.Lock",
+        "Chỉ thêm type hint cho biến",
+        "Một list rỗng"
+      ],
+      "correct": 1,
+      "explanation": "Lock của asyncio dùng cơ chế await cho task chờ quyền vào vùng."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Cancellation",
+      "question": "task.cancel() thông thường có ý nghĩa gì?",
+      "options": [
+        "Kill ngay toàn bộ tiến trình.",
+        "Tự trả kết quả thành công mặc định.",
+        "Yêu cầu hủy bằng cơ chế đưa CancelledError vào coroutine ở điểm có thể xử lý.",
+        "Bảo đảm mọi tác dụng phụ bên ngoài được rollback."
+      ],
+      "correct": 2,
+      "explanation": "Cancellation là yêu cầu hợp tác, không phải hoàn tác giao dịch."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "To thread",
+      "question": "asyncio.to_thread(fn,...) chủ yếu giúp gì?",
+      "options": [
+        "Chạy mọi hàm trên process mới.",
+        "Tự biến mọi công việc thành CPU parallel hiệu quả.",
+        "Chỉ đổi tên fn.",
+        "Chạy hàm đồng bộ ở thread khác để tránh chặn luồng loop trong trường hợp phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "to_thread không phải lựa chọn bảo đảm tăng tốc CPU Python thuần dưới GIL."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Queue",
+      "question": "asyncio.Queue hỗ trợ kiểu mô hình nào?",
+      "options": [
+        "Producer-consumer giữa các task",
+        "Chỉ sắp xếp kết quả theo alphabet",
+        "Tự tạo cache HTTP",
+        "Chỉ lưu object bất biến"
+      ],
+      "correct": 0,
+      "explanation": "Queue hỗ trợ trao đổi dữ liệu với put/get bất đồng bộ."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Timeout",
+      "question": "Timeout của một thao tác bất đồng bộ chủ yếu giới hạn điều gì?",
+      "options": [
+        "Tự hoàn tác mọi yêu cầu từ xa.",
+        "Thời gian chờ theo cơ chế và phạm vi timeout được cấu hình.",
+        "Bảo đảm mọi tác vụ đã xong trước hạn.",
+        "Số dòng trong coroutine."
+      ],
+      "correct": 1,
+      "explanation": "Timeout không chứng minh phía ngoài chưa thực hiện tác dụng phụ."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "TaskGroup",
+      "question": "Trong Python 3.12, asyncio.TaskGroup là gì?",
+      "options": [
+        "Một list không có cơ chế chờ.",
+        "Một trình nạp module thay cho import.",
+        "Async context manager quản lý một nhóm task với vòng đời có cấu trúc.",
+        "Một thread pool chỉ xử lý CPU."
+      ],
+      "correct": 2,
+      "explanation": "Ra khỏi context có hợp đồng chờ các task của nhóm hoàn tất/kết thúc phù hợp."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Giữ tài nguyên async",
+      "question": "Thư viện async hỗ trợ async context manager thì cú pháp quản lý tài nguyên là gì?",
+      "options": [
+        "with awaitable: luôn tương đương",
+        "await with ...:",
+        "using async ...:",
+        "async with ...:"
+      ],
+      "correct": 3,
+      "explanation": "async with dùng các hook vào/ra context bất đồng bộ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Coroutine trả kết quả",
+      "question": "Đoạn code in gì?",
+      "code": "import asyncio\nasync def add(a, b): return a + b\nasync def main(): print(await add(1, 2))\nasyncio.run(main())",
+      "options": [
+        "3",
+        "None",
+        "Một coroutine repr",
+        "RuntimeError"
+      ],
+      "correct": 0,
+      "explanation": "asyncio.run chạy main; await add nhận số 3."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Await tuần tự",
+      "question": "Hai thao tác chỉ chờ I/O lần lượt 1s và 2s, được await tuần tự và bỏ qua overhead. Tổng chờ xấp xỉ bao nhiêu?",
+      "options": [
+        "0 giây",
+        "3 giây",
+        "2 giây",
+        "1 giây"
+      ],
+      "correct": 1,
+      "explanation": "Await thao tác sau chỉ bắt đầu sau khi thao tác trước hoàn tất trong cách gọi tuần tự này."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Gather chờ đồng thời",
+      "question": "Hai thao tác độc lập chỉ chờ 1s và 2s, được chạy cùng gather, bỏ qua overhead. Tổng chờ xấp xỉ bao nhiêu?",
+      "options": [
+        "1 giây",
+        "0 giây",
+        "2 giây",
+        "3 giây"
+      ],
+      "correct": 2,
+      "explanation": "Khi chờ chồng lấp đúng cách, thời gian gần với thao tác lâu nhất."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Gọi không await",
+      "question": "Trong main, dòng f() chỉ tạo coroutine rồi bỏ qua. Vì sao công việc trong f không được bảo đảm chạy?",
+      "options": [
+        "Hàm async không được có thân.",
+        "Return trong f tự bị xóa.",
+        "Loop chỉ chạy hàm tên main.",
+        "Coroutine chưa được await hay schedule."
+      ],
+      "correct": 3,
+      "explanation": "Có thể kèm cảnh báo coroutine chưa được await; tạo object không tự chạy."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Gắn task rồi await",
+      "question": "Đoạn code in gì?",
+      "code": "import asyncio\nasync def f(): return 4\nasync def main():\n    task = asyncio.create_task(f())\n    print(await task)\nasyncio.run(main())",
+      "options": [
+        "4",
+        "None",
+        "Task",
+        "2"
+      ],
+      "correct": 0,
+      "explanation": "create_task schedule f, await task lấy kết quả."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Kết quả gather theo đầu vào",
+      "question": "Dòng print cuối in gì?",
+      "code": "import asyncio\nasync def f(name, ticks):\n    for _ in range(ticks): await asyncio.sleep(0)\n    return name\nasync def main():\n    print(await asyncio.gather(f(\"A\", 2), f(\"B\", 0)))\nasyncio.run(main())",
+      "options": [
+        "None",
+        "['A', 'B']",
+        "['B', 'A']",
+        "A B dưới dạng set"
+      ],
+      "correct": 1,
+      "explanation": "Dù B có thể hoàn thành trước, danh sách kết quả theo thứ tự awaitable đầu vào."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Chặn loop bằng time.sleep",
+      "question": "Một coroutine gọi time.sleep(2) trực tiếp trên luồng event loop. Điều gì có thể xảy ra?",
+      "options": [
+        "Các task khác luôn không bị ảnh hưởng.",
+        "Python tự đổi thành asyncio.sleep.",
+        "Các task khác trên loop đó bị trì hoãn trong lúc sleep chặn.",
+        "Loop tự chuyển sleep sang thread."
+      ],
+      "correct": 2,
+      "explanation": "Cần dùng awaitable phù hợp hoặc chuyển công việc đồng bộ sang cơ chế ngoài loop."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Return exceptions",
+      "question": "gather(...,return_exceptions=True) thường làm gì với exception của một awaitable con?",
+      "options": [
+        "Tự biến exception thành kết quả thành công thật.",
+        "Xóa awaitable đó khỏi danh sách kết quả.",
+        "Luôn kill loop.",
+        "Đặt exception vào danh sách kết quả tương ứng thay vì ném ngay theo mặc định."
+      ],
+      "correct": 3,
+      "explanation": "Bên gọi phải kiểm tra từng kết quả, không được coi mọi phần tử là thành công."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Lock phải dùng đúng vùng",
+      "question": "Muốn tăng biến chung qua một đoạn có await mà không mất cập nhật, lock phải bao quanh gì?",
+      "options": [
+        "Cả đoạn đọc, chờ và ghi cần được bảo vệ theo thiết kế.",
+        "Chỉ tên biến trong annotation.",
+        "Chỉ print sau khi đã ghi sai.",
+        "Chỉ việc tạo list task ngoài main."
+      ],
+      "correct": 0,
+      "explanation": "Khóa chỉ hữu ích nếu các đường truy cập cạnh tranh cùng tuân thủ vùng bảo vệ."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Semaphore đặt quanh request",
+      "question": "Cách nào giữ tối đa 3 thao tác fetch đang ở vùng giới hạn?",
+      "options": [
+        "Chỉ sleep(3) sau khi mọi request đã bắt đầu.",
+        "Dùng chung Semaphore(3), mỗi fetch vào async with sem trước công việc cần giới hạn.",
+        "Tạo Semaphore(3) mới trong mỗi fetch.",
+        "Chỉ tạo 100 task rồi không dùng semaphore."
+      ],
+      "correct": 1,
+      "explanation": "Semaphore cần được chia sẻ giữa các task muốn phối hợp giới hạn."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Tạo semaphore riêng từng lượt",
+      "question": "Vì sao tạo một Semaphore(3) riêng trong mỗi request không giới hạn tổng concurrency của 100 request?",
+      "options": [
+        "Số 3 tự đổi thành 100.",
+        "Async with luôn bị bỏ qua.",
+        "Mỗi task có bộ đếm riêng nên không tranh cùng một hạn mức.",
+        "Semaphore chỉ dùng được với process."
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn nhóm cần một đối tượng điều phối chung theo phạm vi đó."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "asyncio.run trong loop đang chạy",
+      "question": "Trên cùng thread đã có event loop đang chạy, gọi asyncio.run(coro()) trực tiếp có phù hợp không?",
+      "options": [
+        "Có, tự lồng loop không giới hạn.",
+        "Có, tự chuyển sang process.",
+        "Chỉ cần đặt tên coro là main.",
+        "Không, asyncio.run không được dùng như vậy; thường cần await hoặc schedule trong loop hiện có."
+      ],
+      "correct": 3,
+      "explanation": "asyncio.run phục vụ entrypoint đồng bộ, không thay await trong môi trường loop đang hoạt động."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Chờ task đã xong",
+      "question": "Nếu task hoàn tất thành công với 7, await task sau đó trả gì?",
+      "options": [
+        "7",
+        "Luôn None",
+        "Tự chạy lại coroutine từ đầu",
+        "StopIteration"
+      ],
+      "correct": 0,
+      "explanation": "Task giữ kết quả hoàn tất để bên chờ lấy, không tự thực thi lại."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Task exception qua await",
+      "question": "Một task ném ValueError mà chưa được xử lý, await task thường có hành vi nào?",
+      "options": [
+        "Tự chạy lại task.",
+        "Ném ValueError tới nơi await.",
+        "Luôn trả None.",
+        "Tự đổi ValueError thành str."
+      ],
+      "correct": 1,
+      "explanation": "Await lấy kết quả hoặc chuyển tiếp lỗi của task."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Gather không bắt buộc thread",
+      "question": "Chạy 10 coroutine I/O bằng gather có đồng nghĩa tạo 10 thread không?",
+      "options": [
+        "Có, luôn đúng 20",
+        "Chỉ khi kết quả là dict",
+        "Không",
+        "Có, luôn đúng 10"
+      ],
+      "correct": 2,
+      "explanation": "Asyncio có thể điều phối các task I/O trên một luồng loop."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Giữ tham chiếu task",
+      "question": "Vì sao nên quản lý tham chiếu và vòng đời các task nền do mình tạo?",
+      "options": [
+        "Vì tên biến task tự có quyền truy cập mạng.",
+        "Để task tự lưu vào database.",
+        "Để tránh mọi coroutine có return.",
+        "Để chờ, xử lý lỗi hoặc hủy chúng đúng lúc, tránh công việc/lỗi bị bỏ rơi."
+      ],
+      "correct": 3,
+      "explanation": "Task nền cần chủ sở hữu và chính sách kết thúc rõ ràng."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Sleep zero",
+      "question": "await asyncio.sleep(0) thường dùng để làm gì?",
+      "options": [
+        "Nhường cơ hội điều phối mà không yêu cầu chờ một khoảng dương.",
+        "Chặn luồng 0 giây và cấm mọi task khác chạy.",
+        "Xóa task hiện tại.",
+        "Tự tạo một thread."
+      ],
+      "correct": 0,
+      "explanation": "Nó là một điểm nhường điều khiển, không phải bộ lập lịch thời gian thực bảo đảm thứ tự toàn cục."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Queue bounded",
+      "question": "Queue(maxsize=N) có thể giúp gì trong producer-consumer?",
+      "options": [
+        "Tự tăng số worker vô hạn.",
+        "Tạo backpressure khi producer tạo dữ liệu nhanh hơn consumer.",
+        "Tự lưu mọi phần tử ra đĩa.",
+        "Bảo đảm dữ liệu không bao giờ mất dù process chết."
+      ],
+      "correct": 1,
+      "explanation": "Producer có thể phải chờ khi queue đầy, hạn chế tích lũy trong RAM."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Queue task_done",
+      "question": "Trong mô hình dùng Queue.join(), consumer cần gọi task_done() cho mục đã lấy khi nào?",
+      "options": [
+        "Không bao giờ vì join tự đoán.",
+        "Đúng hai lần cho mọi mục.",
+        "Khi đã kết thúc xử lý mục theo hợp đồng, với cleanup phù hợp khi lỗi.",
+        "Trước mọi get dù chưa có mục."
+      ],
+      "correct": 2,
+      "explanation": "Join dựa vào bộ đếm công việc chưa hoàn tất; task_done sai số lượng gây treo hoặc lỗi."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Bắt cancellation rồi kết thúc",
+      "question": "Khi nhận CancelledError, coroutine thường nên làm gì nếu không có lý do đặc biệt để nuốt?",
+      "options": [
+        "Luôn đổi thành thành công.",
+        "Tự tạo vô hạn task thay thế.",
+        "Xóa mọi trạng thái mà không theo hợp đồng.",
+        "Cleanup cần thiết rồi cho cancellation tiếp tục lan."
+      ],
+      "correct": 3,
+      "explanation": "Nuốt cancellation có thể làm hỏng vòng đời của nhóm task hoặc timeout."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "TaskGroup đợi các task",
+      "question": "Khi ra khỏi async with TaskGroup bình thường, có thể giả định điều gì về các task thuộc nhóm?",
+      "options": [
+        "Nhóm đã chờ chúng hoàn tất theo hợp đồng context.",
+        "Chúng luôn còn chạy nền không ai quản lý.",
+        "Chúng chưa từng được schedule.",
+        "Mỗi task tự chạy trong một process."
+      ],
+      "correct": 0,
+      "explanation": "TaskGroup quản lý vòng đời các task thuộc phạm vi của nó."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Await coroutine hai lần",
+      "question": "Một coroutine object đã được await xong có dùng await lại để chạy lần hai như một coroutine mới không?",
+      "options": [
+        "Có, nếu gán object sang tên khác.",
+        "Không, tái sử dụng coroutine đã hoàn tất thường gây RuntimeError.",
+        "Có, luôn chạy lại từ đầu.",
+        "Có, nhưng chỉ khi kết quả là int."
+      ],
+      "correct": 1,
+      "explanation": "Muốn một lần thực thi mới cần gọi coroutine function lại; khác việc await lại một Task hoàn tất."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Thu kết quả có thứ tự hoàn thành",
+      "question": "Nếu cần xử lý kết quả ngay khi từng awaitable xong thay vì theo thứ tự đầu vào, công cụ asyncio nào phù hợp?",
+      "options": [
+        "list(coroutines) tự chạy chúng",
+        "sorted(coroutines) tự đợi",
+        "as_completed",
+        "Chỉ gather rồi giả định danh sách theo tốc độ"
+      ],
+      "correct": 2,
+      "explanation": "as_completed hỗ trợ tiêu thụ kết quả theo tiến độ hoàn tất qua giao diện được phiên bản hỗ trợ."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Không gọi hàm sync bằng await trực tiếp",
+      "question": "Hàm calculate() đồng bộ trả int. await calculate() thông thường gây gì?",
+      "options": [
+        "Tự chuyển calculate sang thread.",
+        "Tự chuyển int thành Task.",
+        "Luôn trả int bình thường.",
+        "TypeError vì kết quả int không awaitable."
+      ],
+      "correct": 3,
+      "explanation": "Hàm được gọi trước, rồi await cố áp dụng lên kết quả; async không tự thích nghi mọi giá trị."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Gọi to_thread cần await",
+      "question": "asyncio.to_thread(fn) trả một coroutine. Để lấy kết quả theo cách thông thường trong coroutine, làm gì?",
+      "options": [
+        "await asyncio.to_thread(fn)",
+        "Chỉ gọi rồi bỏ object luôn đủ",
+        "print(fn.__name__) thay cho thực thi",
+        "len(asyncio.to_thread(fn))"
+      ],
+      "correct": 0,
+      "explanation": "Cần await/schedule coroutine trả về để tiến việc thực thi."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Giới hạn tổng thời gian",
+      "question": "Muốn toàn bộ nhóm công việc cùng chịu một deadline, timeout nên bao quanh gì?",
+      "options": [
+        "Chỉ thời điểm import asyncio.",
+        "Phạm vi chờ nhóm theo yêu cầu, không chỉ từng phần riêng lẻ nếu cần trần tổng.",
+        "Chỉ lệnh print cuối.",
+        "Chỉ tên biến chứa nhóm."
+      ],
+      "correct": 1,
+      "explanation": "Timeout từng bước riêng có thể cộng dồn vượt thời gian tổng được phép."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Timeout không phải bằng chứng chưa chạy",
+      "question": "Một thao tác từ xa bị timeout. Có thể kết luận nó chưa thực hiện tác dụng phụ không?",
+      "options": [
+        "Có, gather bảo đảm điều đó",
+        "Chỉ cần đặt timeout nhỏ hơn 1 giây là đủ",
+        "Không",
+        "Có, timeout tự rollback phía ngoài"
+      ],
+      "correct": 2,
+      "explanation": "Bên ngoài có thể xử lý thành công nhưng phản hồi đến muộn/mất; cần cơ chế đối chiếu theo hợp đồng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Không spawn rồi bỏ trong entrypoint",
+      "question": "Nếu main tạo task nền rồi kết thúc ngay mà không quản lý, điều gì cần lưu ý với asyncio.run?",
+      "options": [
+        "Mọi task sống vĩnh viễn sau khi process kết thúc.",
+        "Runner tự lưu task để lần chạy sau làm tiếp.",
+        "Task luôn hoàn tất trước dòng kế dù không await.",
+        "Vòng đời runner kết thúc có thể hủy các task còn pending; công việc không được bảo đảm hoàn tất."
+      ],
+      "correct": 3,
+      "explanation": "Cần chủ động chờ hoặc quản lý vòng đời task theo mục tiêu."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "CancelledError và Exception",
+      "question": "Trong Python 3.12, except Exception có mặc định bắt asyncio.CancelledError không?",
+      "options": [
+        "Không, CancelledError kế thừa BaseException.",
+        "Có, luôn là ValueError.",
+        "Chỉ khi có return_exceptions=True trong mọi code.",
+        "Chỉ khi tên task là main."
+      ],
+      "correct": 0,
+      "explanation": "Việc xử lý cancellation cần có chủ đích, khác phần lớn lỗi ứng dụng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "TaskGroup lỗi con",
+      "question": "Theo TaskGroup Python 3.12, khi một task con ném lỗi khác CancelledError, nhóm thường làm gì với task con còn lại?",
+      "options": [
+        "Tự retry mọi task vô hạn.",
+        "Yêu cầu hủy chúng và chờ kết thúc trước khi đưa các lỗi lên phù hợp.",
+        "Luôn để mọi task khác chạy nền vô thời hạn.",
+        "Luôn trả danh sách None như thành công."
+      ],
+      "correct": 1,
+      "explanation": "TaskGroup cung cấp semantics lỗi/vòng đời khác gather mặc định."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Gather return_exceptions không đổi schema thành công",
+      "question": "Sau await gather(...,return_exceptions=True), nên làm gì trước khi dùng từng phần tử như dict?",
+      "options": [
+        "Gọi str toàn danh sách rồi báo thành công.",
+        "Giả định mọi exception đã biến thành dict hợp lệ.",
+        "Kiểm tra/phân loại phần tử lỗi theo hợp đồng kết quả.",
+        "Đọc result[\"data\"] cho mọi phần tử ngay."
+      ],
+      "correct": 2,
+      "explanation": "Exception object trong kết quả không tự có schema thành công."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Queue consumer cleanup",
+      "question": "Nếu consumer lấy một mục bằng get rồi xử lý có thể lỗi, task_done thường nên được đặt thế nào khi mọi mục lấy ra phải được đánh dấu xong?",
+      "options": [
+        "Chỉ trong nhánh thành công dù lỗi cũng phải đánh dấu.",
+        "Trước get để dự phòng.",
+        "Gọi lặp đến khi queue rỗng bất kể đã lấy mục nào.",
+        "Trong finally bao quanh xử lý mục đã lấy."
+      ],
+      "correct": 3,
+      "explanation": "Cần giữ cân bằng giữa get và task_done theo hợp đồng xác nhận xử lý."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Kết quả task không đồng nghĩa thứ tự log",
+      "question": "gather trả kết quả [A,B]. Có thể kết luận mọi log của A đều xuất hiện trước B không?",
+      "options": [
+        "Không, log có thể xen kẽ do điều phối.",
+        "Có, danh sách kết quả quyết định mọi thứ tự thực thi.",
+        "Chỉ nếu A và B có cùng kiểu dữ liệu.",
+        "Chỉ nếu dùng sleep."
+      ],
+      "correct": 0,
+      "explanation": "Thứ tự lưu kết quả khác thứ tự hoàn thành và log."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Lock không dùng xuyên mọi hệ thống",
+      "question": "asyncio.Lock có tự đồng bộ các process độc lập cùng cập nhật một database không?",
+      "options": [
+        "Chỉ cần import asyncio ở mọi process.",
+        "Không, nó chỉ có phạm vi cơ chế asyncio thích hợp; database/process cần kiểm soát riêng.",
+        "Có, tự khóa toàn bộ database trên Internet.",
+        "Có, miễn biến lock có cùng tên."
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi đồng bộ phải khớp các bên thực sự chia sẻ tài nguyên."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Dùng chung client session",
+      "question": "Trong scraper async, vì sao thường nên quản lý client/session có vòng đời rõ thay vì tạo bỏ không kiểm soát ở mọi lượt?",
+      "options": [
+        "Vì nó tự bỏ giới hạn máy chủ.",
+        "Vì session tự lưu mọi dữ liệu vào database.",
+        "Để quản lý kết nối/tài nguyên và đóng chúng đúng lúc theo thư viện.",
+        "Vì session tự làm mọi request thành công."
+      ],
+      "correct": 2,
+      "explanation": "Quản lý tài nguyên và giới hạn concurrency vẫn cần, dù dùng client có pooling."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Kiểm thử không phụ thuộc sleep dài",
+      "question": "Để test logic async không phải chờ mạng thật hàng chục giây, cách nào phù hợp?",
+      "options": [
+        "Luôn gọi dịch vụ thật có phí.",
+        "Bỏ toàn bộ assertions.",
+        "Dùng while True để đợi chắc chắn.",
+        "Thay dependency bằng fake/mock awaitable có kết quả/lỗi kiểm soát."
+      ],
+      "correct": 3,
+      "explanation": "Có thể kiểm tra logic điều phối và lỗi mà không phụ thuộc độ trễ/dịch vụ ngoài."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Task hiện tại",
+      "question": "asyncio.current_task() trong một task đang chạy thường cho gì?",
+      "options": [
+        "Task hiện tại của loop/ngữ cảnh tương ứng.",
+        "Luôn tất cả task dưới dạng list.",
+        "PID của tiến trình.",
+        "Tên file nguồn."
+      ],
+      "correct": 0,
+      "explanation": "Nó phục vụ quan sát task hiện hành, không phải công cụ lấy mọi process."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Semantics concurrency hợp tác",
+      "question": "Task có thể bị chuyển sang task khác ở mọi phép gán Python tùy ý chỉ vì nó nằm trong async def không?",
+      "options": [
+        "Không task async nào có thể nhường.",
+        "Không theo cơ chế điều phối coroutine thông thường; cần điểm nhường/await phù hợp.",
+        "Có, mọi dấu = là một await.",
+        "Có, mọi task là thread riêng."
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt coroutine scheduling với preemption của thread."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Cancel rồi chờ",
+      "question": "Sau task.cancel(), vì sao thường cần await task với xử lý cancellation phù hợp?",
+      "options": [
+        "Để chạy task lại từ đầu.",
+        "Để đổi CancelledError thành giá trị ngẫu nhiên.",
+        "Để quan sát việc kết thúc và cho cleanup chạy theo hợp đồng.",
+        "Để tự rollback mọi thay đổi bên ngoài."
+      ],
+      "correct": 2,
+      "explanation": "Gửi yêu cầu hủy chưa đồng nghĩa mọi cleanup đã hoàn tất."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Tác vụ cần hoàn tất trước return",
+      "question": "main cần trả chỉ sau khi ba thao tác quan trọng xong. Cách nào rõ ràng?",
+      "options": [
+        "create_task cả ba rồi return ngay.",
+        "Chỉ print số 3.",
+        "Đặt biến done=True ngay khi tạo task.",
+        "Await nhóm task hoặc dùng TaskGroup theo semantics mong muốn."
+      ],
+      "correct": 3,
+      "explanation": "Trạng thái thành công nên theo việc thực sự hoàn tất, không chỉ đã schedule."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Race qua await trong cùng thread",
+      "question": "Vì sao hai coroutine có thể cùng đọc count=0 rồi ghi 1 thay vì tổng 2?",
+      "options": [
+        "Có await giữa đọc và ghi, nên các task có thể xen kẽ dù dùng một loop thread.",
+        "Một loop thread bảo đảm mọi thao tác nhiều bước tự atomic.",
+        "Python tự đổi count về 0 sau await.",
+        "Task không bao giờ chia sẻ biến."
+      ],
+      "correct": 0,
+      "explanation": "Trạng thái đọc-sửa-ghi qua điểm nhường cần kiểm soát hoặc thiết kế khác."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Giữ lock qua I/O dài",
+      "question": "Một lock bảo vệ dict nhỏ nhưng bị giữ trong suốt request mạng dài. Trade-off nào cần xét?",
+      "options": [
+        "Bỏ lock luôn an toàn dù có phụ thuộc trạng thái.",
+        "Có thể làm mọi task tranh lock bị tuần tự hóa không cần thiết; tách vùng bảo vệ nếu vẫn giữ đúng invariant.",
+        "Lock luôn làm mạng nhanh hơn.",
+        "Giữ lock không ảnh hưởng task khác."
+      ],
+      "correct": 1,
+      "explanation": "Thu hẹp vùng khóa cần đi cùng phân tích tính đúng, không chỉ xóa await tùy tiện."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Hạn mức đồng thời khác hạn mức tốc độ",
+      "question": "Semaphore(10) có tự bảo đảm không quá 10 request mỗi giây không?",
+      "options": [
+        "Có, asyncio tự đo giây cho semaphore.",
+        "Chỉ cần await sleep(0) là thành rate limit chuẩn.",
+        "Không; nó giới hạn số việc cùng trong vùng, không trực tiếp giới hạn số lần theo thời gian.",
+        "Có, concurrency và rate luôn bằng nhau."
+      ],
+      "correct": 2,
+      "explanation": "Tốc độ yêu cầu còn phụ thuộc thời lượng; rate limit cần cơ chế thời gian riêng nếu hợp đồng yêu cầu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Task hủy không hoàn tác request",
+      "question": "Scraper/hàm ghi dữ liệu bị cancel khi request đã gửi. Điều gì không được giả định?",
+      "options": [
+        "Rằng coroutine có thể cleanup tài nguyên tại máy.",
+        "Rằng cần quan sát trạng thái cuối.",
+        "Rằng cancellation cần hợp đồng rõ.",
+        "Rằng server bên kia chắc chắn chưa xử lý tác dụng phụ."
+      ],
+      "correct": 3,
+      "explanation": "Hủy bên gọi và kết quả thực tế phía ngoài là hai trạng thái khác nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Timeout tổng với retry",
+      "question": "Mỗi lượt retry có timeout 5s và tối đa 3 lượt. Vì sao tổng thao tác có thể vượt 5s?",
+      "options": [
+        "Timeout theo từng lượt có thể cộng dồn với các khoảng chờ và overhead.",
+        "Timeout luôn tự chia đều thành 1.67s.",
+        "Retry bỏ qua mọi thời gian đã trôi qua.",
+        "Một coroutine chỉ có thể chờ đúng một lần."
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần deadline tổng, phải quản lý ngân sách thời gian cho cả chuỗi."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Gather lỗi mặc định không phải TaskGroup",
+      "question": "Trong Python 3.12, một awaitable của gather ném exception đầu tiên và gather đã báo lỗi. Có nên giả định mọi task con khác tự động bị hủy như TaskGroup không?",
+      "options": [
+        "Không task nào từng được schedule.",
+        "Không; gather mặc định có semantics khác và các task khác có thể tiếp tục.",
+        "Có, hoàn toàn giống TaskGroup.",
+        "Có, mọi awaitable đều được rollback."
+      ],
+      "correct": 1,
+      "explanation": "Cần chủ động quản lý phần việc còn lại hoặc chọn cấu trúc đúng mục tiêu."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Hủy gather sau khi đã done",
+      "question": "Theo docstring Python 3.12, gọi gather.cancel() sau khi gather đã được đánh dấu done do báo lỗi có chắc hủy các awaitable còn lại không?",
+      "options": [
+        "Chỉ khi kết quả có dict",
+        "Chỉ cần gọi cancel hai lần là chắc chắn",
+        "Không",
+        "Có, luôn hủy toàn bộ dù đã done"
+      ],
+      "correct": 2,
+      "explanation": "Nếu cần quyền quản lý từng task, nên giữ tham chiếu và thiết kế cleanup rõ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Unbounded task creation",
+      "question": "Tạo một task cho từng URL trong hàng triệu URL rồi chỉ dùng semaphore quanh request có giải quyết mọi áp lực bộ nhớ không?",
+      "options": [
+        "Có, semaphore xóa mọi task chưa chạy.",
+        "Có, task chưa vào semaphore không tồn tại trong RAM.",
+        "Không cần giữ danh sách URL ở đâu.",
+        "Không; bản thân hàng triệu task vẫn có thể tốn bộ nhớ, nên cân nhắc queue/worker hữu hạn."
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn vùng I/O và giới hạn số object công việc là hai vấn đề khác nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "CPU và to_thread dưới GIL",
+      "question": "Trên CPython 3.12 build có GIL, to_thread có bảo đảm tăng tốc vòng lặp Python thuần CPU-bound trên nhiều core không?",
+      "options": [
+        "Không; nó có thể giúp loop đỡ bị chặn nhưng không tự bảo đảm CPU parallel cho bytecode thuần.",
+        "Có, mỗi thread tự có GIL riêng.",
+        "Có, cứ async def là bỏ qua GIL.",
+        "Chỉ cần đặt thread tên CPU."
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt khả năng phản hồi của loop và tốc độ tính toán đa lõi."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Test theo thứ tự có bảo đảm",
+      "question": "Test gather nên kiểm tra điều gì thay vì yêu cầu thứ tự mọi print giữa task?",
+      "options": [
+        "Luôn đủ đúng ba lần chuyển task.",
+        "Kết quả theo hợp đồng và các quan hệ thứ tự thực sự được bảo đảm.",
+        "Mọi log của task đầu luôn trước log task sau.",
+        "Thời gian phải đúng tuyệt đối đến từng microsecond."
+      ],
+      "correct": 1,
+      "explanation": "Scheduling và độ trễ có thể thay đổi; test không nên dựa vào thứ tự ngẫu nhiên ngoài hợp đồng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Structured lifecycle",
+      "question": "Một hàm tạo nhiều task phụ cần chắc không bỏ rơi task khi gặp lỗi. Lợi ích chính của TaskGroup là gì?",
+      "options": [
+        "Tự lưu task bền vững sau process crash.",
+        "Tự bảo đảm mọi tác dụng phụ idempotent.",
+        "Gom vòng đời, chờ kết thúc và xử lý lỗi của các task con trong phạm vi có cấu trúc.",
+        "Tự biến mọi hàm sync thành async."
+      ],
+      "correct": 2,
+      "explanation": "Structured concurrency quản lý vòng đời, không thay persistence hay ngữ nghĩa nghiệp vụ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Không await khi giữ threading lock sai cách",
+      "question": "Vì sao dùng lock đồng bộ chặn luồng event loop có thể gây vấn đề khi nhiều coroutine tranh chấp?",
+      "options": [
+        "Threading lock tự trở thành asyncio.Lock.",
+        "Mọi lock đồng bộ đều không có tác dụng.",
+        "Await luôn tự thả mọi lock bất kỳ.",
+        "Task bị chặn ở cấp thread có thể ngăn loop chạy task đang cần để giải phóng tài nguyên."
+      ],
+      "correct": 3,
+      "explanation": "Primitive chờ cần tương thích mô hình điều phối; async lock dành cho phối hợp task theo cách được hỗ trợ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Phân biệt async với background durable job",
+      "question": "create_task cho công việc cần sống qua việc process khởi động lại có đủ không?",
+      "options": [
+        "Không; task trong RAM không tự bền vững, cần thiết kế lưu/queue phù hợp nếu yêu cầu.",
+        "Có, loop tự khôi phục từ đĩa.",
+        "Có, await tự ghi snapshot.",
+        "Chỉ cần đặt tên task là durable."
+      ],
+      "correct": 0,
+      "explanation": "Scheduling trong tiến trình không thay cơ chế công việc bền vững."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Backpressure có nguồn phù hợp",
+      "question": "Queue có maxsize nhưng producer vẫn gom toàn bộ dữ liệu vào list trước khi put. Vì sao chưa giải quyết hoàn toàn RAM?",
+      "options": [
+        "Producer không bao giờ có trạng thái riêng.",
+        "List nguồn đã giữ tất cả dữ liệu trước khi queue áp giới hạn.",
+        "Maxsize tự xóa mọi list ngoài queue.",
+        "Queue luôn dùng file thay RAM."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm soát bộ nhớ cần xét cả nguồn, hàng đợi và bên tiêu thụ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Cleanup khi consumer lỗi",
+      "question": "Nếu consumer crash và không còn ai rút queue, producer đang chờ put có thể ra sao nếu không có quản lý lỗi/vòng đời?",
+      "options": [
+        "Queue tự chạy consumer mới mặc định.",
+        "Mọi put tự bỏ phần tử để thành công.",
+        "Bị chờ lâu hoặc treo cùng pipeline.",
+        "Tự nhận toàn bộ kết quả xử lý thành công."
+      ],
+      "correct": 2,
+      "explanation": "Cần truyền lỗi, hủy các bên liên quan hoặc khôi phục theo thiết kế, không chỉ giới hạn queue."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Số lượng thất bại và kết quả",
+      "question": "Với nhiều fetch, muốn trả thành công một phần có kiểm soát thay vì làm mọi kết quả thành OK, cần gì?",
+      "options": [
+        "Chuyển mọi exception thành dict rỗng và báo 100%.",
+        "Chỉ đếm số task đã schedule.",
+        "Chỉ đọc phần tử đầu của gather.",
+        "Schema phân biệt thành công/thất bại theo từng mục và tổng hợp theo quy tắc rõ."
+      ],
+      "correct": 3,
+      "explanation": "Concurrency không tự quyết định semantics thành công của ứng dụng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Không đồng nhất thời gian lý thuyết với đo được",
+      "question": "Ví dụ sleep 1s,2s,1.5s cùng gather gợi ý khoảng 2s. Có thể dùng đó để cam kết mọi hệ thống thật luôn đúng 2.000s không?",
+      "options": [
+        "Không; overhead, tải và I/O thật có thể thay đổi thời gian.",
+        "Có, gather bảo đảm thời gian thực tuyệt đối.",
+        "Có, perf_counter làm mạng nhanh chính xác.",
+        "Chỉ cần return dict để bảo đảm."
+      ],
+      "correct": 0,
+      "explanation": "Ước tính cơ chế và bằng chứng hiệu năng trong môi trường thật là hai việc khác nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Session và context đóng quá sớm",
+      "question": "Một hàm tạo task dùng session trong async with rồi trả mà không chờ task. Rủi ro gì?",
+      "options": [
+        "Python tự chuyển session thành bản sao độc lập.",
+        "Task có thể sử dụng session sau khi context đã đóng nó.",
+        "Session tự sống mãi chỉ vì từng được truyền vào task.",
+        "Task luôn chạy xong trước dòng return."
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi tài nguyên cần bao phủ thời gian sử dụng thật của task."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Giữ cancellation làm tín hiệu",
+      "question": "Một thư viện bắt BaseException rồi trả None cho mọi trường hợp có thể ảnh hưởng timeout/TaskGroup thế nào?",
+      "options": [
+        "Bảo đảm group kết thúc nhanh hơn.",
+        "Biến timeout thành kết quả thành công có xác thực.",
+        "Có thể nuốt CancelledError và làm sai cơ chế vòng đời/hủy được kỳ vọng.",
+        "Tự tăng độ an toàn của mọi task."
+      ],
+      "correct": 2,
+      "explanation": "Tín hiệu điều khiển cần được xử lý có chủ đích, khác lỗi dữ liệu thông thường."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Kiểm chứng scraper không gửi request thật",
+      "question": "Để kiểm tra giới hạn tối đa 3 fetch cùng lúc mà không gọi mạng, thiết kế test nào hữu ích?",
+      "options": [
+        "Chỉ kiểm tra tên biến sem.",
+        "Gọi dịch vụ thật càng nhiều càng tốt dù không được phép.",
+        "Chỉ assert số URL bằng 3.",
+        "Fake fetch tăng bộ đếm đang chạy, await điểm điều phối, giảm trong finally và kiểm tra đỉnh không vượt 3."
+      ],
+      "correct": 3,
+      "explanation": "Có thể kiểm chứng invariant concurrency bằng dependency giả tại máy mà không phát sinh request ngoài."
+    }
+  ]
+}

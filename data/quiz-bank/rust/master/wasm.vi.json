@@ -1,0 +1,1149 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "master",
+  "lesson": "wasm",
+  "language": "vi",
+  "sourceHash": "1e9459a05ddd83f807ce66725881260a7338be71aa8498b48f3fe5c28ea0abd1",
+  "status": "approved",
+  "review": "Tự soạn không API. wasm-bindgen guide về target web initialization/raw pointers và Rust numeric contracts; source chưa có Cargo manifest/version. Native fixture chuyển thuật toán thuần sang std, không chạy wasm-bindgen, wasm-pack, browser hoặc dereference pointer. Chỉ native target được cài; không tải thêm. Fib chỉ inputs nhỏ, overflow/buffer math dùng model hữu hạn không huge allocation.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Wasm purpose",
+      "question": "WebAssembly trong bài chủ yếu dùng vào mục đích nào?",
+      "options": [
+        "Chạy module được biên dịch trong môi trường hỗ trợ WASM với cơ chế interop phù hợp.",
+        "Tự thay mọi database.",
+        "Tự loại mọi network latency.",
+        "Tự cấp mọi quyền hệ điều hành."
+      ],
+      "correct": 0,
+      "explanation": "Khả năng host phụ thuộc môi trường và APIs được cung cấp."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Bindgen role",
+      "question": "wasm-bindgen hỗ trợ điều gì?",
+      "options": [
+        "Tự xử lý mọi validation domain.",
+        "Bindings/interoperability giữa Rust WASM và JavaScript theo supported contracts.",
+        "Tự tối ưu mọi thuật toán thành O(1).",
+        "Tự làm mọi Rust type public trong JS."
+      ],
+      "correct": 1,
+      "explanation": "Codegen/interop không thay thiết kế ứng dụng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Export annotation",
+      "question": "#[wasm_bindgen] trên fibonacci nguồn nhằm gì?",
+      "options": [
+        "Tự cache mọi kết quả.",
+        "Tự tạo worker thread.",
+        "Đánh dấu function cho binding/export theo công cụ.",
+        "Tự gọi fibonacci ở compile time."
+      ],
+      "correct": 2,
+      "explanation": "Cần toolchain và setup phù hợp để build artifact."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Fibonacci zero",
+      "question": "fibonacci nguồn trả gì khi n=0?",
+      "options": [
+        "1.",
+        "2.",
+        "Panic bắt buộc.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Đây là base case tường minh."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Fibonacci one",
+      "question": "fibonacci nguồn trả gì khi n=1?",
+      "options": [
+        "1.",
+        "0.",
+        "2.",
+        "Một pointer."
+      ],
+      "correct": 0,
+      "explanation": "Base case ngăn recursion tiếp với input này."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Fibonacci recursive case",
+      "question": "Với n>1, source dùng công thức nào?",
+      "options": [
+        "Một lookup table đã có sẵn.",
+        "fibonacci(n-1)+fibonacci(n-2).",
+        "n*n.",
+        "n+1."
+      ],
+      "correct": 1,
+      "explanation": "Source chưa có memoization."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Fibonacci types",
+      "question": "Input và output của fibonacci nguồn là gì?",
+      "options": [
+        "f64 và f64.",
+        "usize và Vec<u8>.",
+        "u32 và u32.",
+        "i64 và String."
+      ],
+      "correct": 2,
+      "explanation": "Integer bounds là một phần cần xem xét."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Image fields",
+      "question": "ImageProcessor nguồn giữ dữ liệu nào?",
+      "options": [
+        "Một HTTP connection pool.",
+        "Một database transaction.",
+        "Một JWT secret.",
+        "width, height và pixels."
+      ],
+      "correct": 3,
+      "explanation": "Source tập trung vào buffer ảnh."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Pixel storage",
+      "question": "pixels có kiểu gì?",
+      "options": [
+        "Vec<u8>.",
+        "Vec<String>.",
+        "HashMap<u32,bool>.",
+        "Một DOM Canvas tự động."
+      ],
+      "correct": 0,
+      "explanation": "Bytes chưa tự mang đủ metadata về format/ownership phía JS."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Channels per pixel",
+      "question": "Source dự kiến bao nhiêu bytes cho mỗi pixel?",
+      "options": [
+        "8.",
+        "4.",
+        "1.",
+        "3."
+      ],
+      "correct": 1,
+      "explanation": "Width*height*4 và chunks_exact_mut(4) tương ứng layout bốn channels."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Constructor initial values",
+      "question": "ImageProcessor::new khởi tạo pixels với values nào?",
+      "options": [
+        "Random.",
+        "Dữ liệu ảnh browser tự tải.",
+        "0.",
+        "255 cho mọi channels."
+      ],
+      "correct": 2,
+      "explanation": "Không có bước upload ảnh trong constructor."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Grayscale operation",
+      "question": "grayscale nguồn thay đổi những channels nào trong mỗi chunk?",
+      "options": [
+        "Chỉ channel thứ tư.",
+        "Tự đổi dimensions.",
+        "Xóa toàn bộ Vec.",
+        "Ba channels đầu được đặt cùng gray, channel thứ tư giữ nguyên."
+      ],
+      "correct": 3,
+      "explanation": "Các assignments chỉ ghi indices0,1,2."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Luma coefficient red",
+      "question": "Hệ số source nhân red channel là bao nhiêu?",
+      "options": [
+        "0.299.",
+        "0.587.",
+        "0.114.",
+        "4.0."
+      ],
+      "correct": 0,
+      "explanation": "Đó là công thức số học cụ thể trong snippet."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Luma coefficient green",
+      "question": "Hệ số source nhân green channel là bao nhiêu?",
+      "options": [
+        "1.0.",
+        "0.587.",
+        "0.299.",
+        "0.114."
+      ],
+      "correct": 1,
+      "explanation": "Không suy ra mọi color spaces đều dùng đúng mô hình này."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Luma coefficient blue",
+      "question": "Hệ số source nhân blue channel là bao nhiêu?",
+      "options": [
+        "0.587.",
+        "255.0.",
+        "0.114.",
+        "0.299."
+      ],
+      "correct": 2,
+      "explanation": "Source cộng ba thành phần rồi cast sang u8."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Pointer accessor",
+      "question": "pixels_ptr nguồn trả gì?",
+      "options": [
+        "Một owned JavaScript array tự động.",
+        "Một Vec clone tự động.",
+        "Một Rust String.",
+        "*const u8 tới storage pixels theo lifetime của storage."
+      ],
+      "correct": 3,
+      "explanation": "Pointer không tự chuyển ownership của buffer."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Build command intent",
+      "question": "Comment wasm-pack build --target web mô tả việc gì?",
+      "options": [
+        "Build package cho kiểu sử dụng web theo công cụ.",
+        "Tự deploy production.",
+        "Tự mở mọi browser.",
+        "Tự viết image upload UI."
+      ],
+      "correct": 0,
+      "explanation": "Comment không chứng minh lệnh đã chạy."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Constructor attribute",
+      "question": "#[wasm_bindgen(constructor)] trên new nhằm gì?",
+      "options": [
+        "Tự gọi new mỗi frame.",
+        "Expose constructor semantics cho binding được sinh.",
+        "Tự làm mọi fields mutable public trong JS.",
+        "Tự cấp bộ nhớ không giới hạn."
+      ],
+      "correct": 1,
+      "explanation": "Binding vẫn cần các điều kiện toolchain/API tương ứng."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "JS import source",
+      "question": "Comment JavaScript import từ ./pkg/mylib.js có chứng minh file đó đã tồn tại không?",
+      "options": [
+        "Có; rustc native luôn tạo JavaScript.",
+        "Chỉ cần fibonacci compile.",
+        "Không; cần build/package thực tế.",
+        "Có; comment tự sinh file."
+      ],
+      "correct": 2,
+      "explanation": "Không coi hướng dẫn thành artifact thực thi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Proof environment",
+      "question": "Nếu chỉ có native MSVC target, native algorithm test có phải WASM browser integration test không?",
+      "options": [
+        "Có; mọi Rust targets tương đương mọi runtime.",
+        "Có; output số giống là đủ.",
+        "Chỉ cần tên file wasm.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Tách algorithm behavior khỏi target/bindings/host integration."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Finite fib two",
+      "question": "Native algorithm adaptation này in gì?",
+      "code": "fn fibonacci(n:u32)->u32{match n{0=>0,1=>1,_=>fibonacci(n-1)+fibonacci(n-2)}}\nfn main(){println!(\"{}\",fibonacci(2));}\n",
+      "options": [
+        "1.",
+        "2.",
+        "0.",
+        "3."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ hai base cases được cộng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Finite fib ten",
+      "question": "Native adaptation này in gì?",
+      "code": "fn fibonacci(n:u32)->u32{match n{0=>0,1=>1,_=>fibonacci(n-1)+fibonacci(n-2)}}\nfn main(){println!(\"{}\",fibonacci(10));}\n",
+      "options": [
+        "10.",
+        "55.",
+        "89.",
+        "34."
+      ],
+      "correct": 1,
+      "explanation": "Input nhỏ để kiểm tra thuật toán, không là benchmark."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Finite fib sum",
+      "question": "Đoạn này in gì?",
+      "code": "fn fibonacci(n:u32)->u32{match n{0=>0,1=>1,_=>fibonacci(n-1)+fibonacci(n-2)}}\nfn main(){println!(\"{} {} {}\",fibonacci(0),fibonacci(1),fibonacci(6));}\n",
+      "options": [
+        "0 0 6.",
+        "Một pointer address.",
+        "0 1 8.",
+        "1 1 13."
+      ],
+      "correct": 2,
+      "explanation": "F6=8 theo base cases source."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Image initial buffer",
+      "question": "Native adaptation này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let p=ImageProcessor::new(2,3);println!(\"{} {}\",p.pixels.len(),p.pixels.iter().all(|&b|b==0));}\n",
+      "options": [
+        "6 true.",
+        "24 false.",
+        "8 true.",
+        "24 true."
+      ],
+      "correct": 3,
+      "explanation": "2*3*4 bytes đều zero, không gọi wasm-bindgen."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Zero dimension image",
+      "question": "Đoạn này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let p=ImageProcessor::new(0,5);println!(\"{}\",p.pixels.len());}\n",
+      "options": [
+        "0.",
+        "4.",
+        "5.",
+        "Panic bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Width0 làm kích thước buffer bằng0 trong input nhỏ này."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Red pixel model",
+      "question": "Native adaptation này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(1,1);p.pixels=vec![255,0,0,255];p.grayscale();println!(\"{:?}\",p.pixels);}\n",
+      "options": [
+        "[76, 76, 76, 76].",
+        "[76, 76, 76, 255].",
+        "[77, 77, 77, 255].",
+        "[255, 0, 0, 255]."
+      ],
+      "correct": 1,
+      "explanation": "0.299*255=76.245 rồi cast truncate; alpha giữ nguyên."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Green pixel model",
+      "question": "Đoạn này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(1,1);p.pixels=vec![0,255,0,128];p.grayscale();println!(\"{:?}\",p.pixels);}\n",
+      "options": [
+        "[0, 255, 0, 128].",
+        "[149, 149, 149, 149].",
+        "[149, 149, 149, 128].",
+        "[150, 150, 150, 128]."
+      ],
+      "correct": 2,
+      "explanation": "0.587*255=149.685; model thay data bằng safe native access trong cùng module."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Blue pixel model",
+      "question": "Đoạn này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(1,1);p.pixels=vec![0,0,255,64];p.grayscale();println!(\"{:?}\",p.pixels);}\n",
+      "options": [
+        "[30, 30, 30, 64].",
+        "[0, 0, 255, 64].",
+        "[29, 29, 29, 29].",
+        "[29, 29, 29, 64]."
+      ],
+      "correct": 3,
+      "explanation": "0.114*255=29.07 rồi truncate."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Black with alpha",
+      "question": "Đoạn này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(1,1);p.pixels=vec![0,0,0,7];p.grayscale();println!(\"{:?}\",p.pixels);}\n",
+      "options": [
+        "[0, 0, 0, 7].",
+        "[7, 7, 7, 7].",
+        "[0, 0, 0, 0].",
+        "[255, 255, 255, 7]."
+      ],
+      "correct": 0,
+      "explanation": "Không tính alpha trong gray và không ghi channel thứ tư."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Partial chunk model",
+      "question": "Native buffer model này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(1,1);p.pixels=vec![255,0,0,9,8,7];p.grayscale();println!(\"{:?}\",p.pixels);}\n",
+      "options": [
+        "Panic vì chunks_exact_mut luôn reject remainder.",
+        "[76, 76, 76, 9, 8, 7].",
+        "[76, 76, 76, 76, 8, 7].",
+        "[76, 76, 76, 9, 0, 0]."
+      ],
+      "correct": 1,
+      "explanation": "Remainder hai bytes không nằm trong complete chunks. Đây là modified buffer model."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Dimension fields preserved",
+      "question": "Đoạn này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(2,1);p.grayscale();println!(\"{} {} {}\",p.width,p.height,p.pixels.len());}\n",
+      "options": [
+        "0 0 0.",
+        "Grayscale tự resize width.",
+        "2 1 8.",
+        "1 2 8."
+      ],
+      "correct": 2,
+      "explanation": "Method không thay dimensions hoặc Vec length."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Truncating cast",
+      "question": "Finite numeric model này in gì?",
+      "code": "\nfn main(){println!(\"{}\",76.9f64 as u8);}\n",
+      "options": [
+        "77.",
+        "255.",
+        "Panic vì phần thập phân.",
+        "76."
+      ],
+      "correct": 3,
+      "explanation": "Float-to-int as cast rounds toward zero theo contract."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Checked size model",
+      "question": "Finite checked arithmetic này in gì?",
+      "code": "\nfn main(){let w=std::hint::black_box(u32::MAX);println!(\"{}\",w.checked_mul(2).and_then(|n|n.checked_mul(4)).is_none());}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Tự allocate 16GB.",
+        "Tự đổi u32 thành u64."
+      ],
+      "correct": 0,
+      "explanation": "Model chỉ kiểm phép nhân, không allocate buffer lớn."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Cast after overflow",
+      "question": "Với overflow-checks=yes, model này gặp gì?",
+      "code": "\nfn main(){let w=std::hint::black_box(u32::MAX);let h=std::hint::black_box(2u32);let n=(w*h*4)as usize;println!(\"{n}\");}\n",
+      "options": [
+        "Chỉ có allocation failure.",
+        "Panic ở phép nhân u32 trước cast usize.",
+        "Luôn có kết quả usize chính xác.",
+        "Compiler tự promote multiplication."
+      ],
+      "correct": 1,
+      "explanation": "Không allocate; phép nhân xảy ra trước as usize."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Widen before arithmetic",
+      "question": "Trên native64bit, model này in gì?",
+      "code": "\nfn main(){let w=u32::MAX;let n=u64::from(w)*2*4;println!(\"{n}\");}\n",
+      "options": [
+        "0.",
+        "Panic như u32 multiplication.",
+        "34359738360.",
+        "4294967295."
+      ],
+      "correct": 2,
+      "explanation": "Cast operands lên u64 trước nhân; đây chỉ math model không allocation."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Recursive complexity",
+      "question": "Fibonacci đệ quy nguồn chưa memoization có đặc điểm gì?",
+      "options": [
+        "Luôn O(1).",
+        "Luôn O(log n) chỉ vì WASM.",
+        "Tự vectorize thành lookup table.",
+        "Lặp lại nhiều subproblems, số calls tăng theo hàm mũ."
+      ],
+      "correct": 3,
+      "explanation": "Không chạy inputs rất lớn để minh họa chi phí."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Depth concern",
+      "question": "Ngoài số calls, recursion với n lớn còn cần xem xét gì?",
+      "options": [
+        "Stack depth và resource bounds của môi trường.",
+        "Chỉ số dấu phẩy.",
+        "WASM tự biến mọi recursion thành loop.",
+        "Không có tài nguyên nào được dùng."
+      ],
+      "correct": 0,
+      "explanation": "Host/target có giới hạn thực tế."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Fib u32 bounds",
+      "question": "F47=2971215073 và F48=4807526976 cho thấy điều gì?",
+      "options": [
+        "WASM tự đổi return type thành BigInt.",
+        "F48 không biểu diễn được bằng u32.",
+        "Cả hai đều vừa u32.",
+        "F47 âm."
+      ],
+      "correct": 1,
+      "explanation": "Không chạy recursive F48; dùng toán và finite checked model."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Overflow flags",
+      "question": "Khi integer arithmetic overflow, có nên hứa mọi build đều trả cùng wrapped value không?",
+      "options": [
+        "Có; WASM tự chuyển u32 thành arbitrary precision.",
+        "Chỉ cần thêm wasm_bindgen.",
+        "Không; behavior liên quan phép toán/flags, checked APIs biểu diễn lỗi rõ hơn.",
+        "Có; Rust luôn wrap mọi build."
+      ],
+      "correct": 2,
+      "explanation": "Fixtures bật overflow checks và ghi đúng configuration."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Size validation missing",
+      "question": "Constructor nguồn đã có validation image size/resource budget rõ chưa?",
+      "options": [
+        "Có; Vec tự chọn business limit hợp lý.",
+        "Có; width:u32 nghĩa tối đa1KB.",
+        "Chỉ cần constructor attribute.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Numeric type không đủ cho allocation limits phù hợp sản phẩm."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Cast placement",
+      "question": "(width*height*4) as usize có chống u32 overflow trước cast không?",
+      "options": [
+        "Không; phép nhân operands u32 xảy ra trước.",
+        "Có; result cast làm mọi operands thành usize từ đầu.",
+        "Có; compiler tự checked_mul.",
+        "Chỉ nếu target web."
+      ],
+      "correct": 0,
+      "explanation": "Cần widen/check theo thiết kế và giới hạn tài nguyên."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Zero initialized alpha",
+      "question": "Buffer mới toàn0 có alpha ban đầu là gì nếu coi layout RGBA?",
+      "options": [
+        "Không có alpha byte.",
+        "0, thường tương ứng hoàn toàn trong suốt theo RGBA contract đó.",
+        "255 tự động.",
+        "Random."
+      ],
+      "correct": 1,
+      "explanation": "Source không đặt alpha=255."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Source upload path",
+      "question": "Source có public method rõ để upload pixels từ JavaScript chưa?",
+      "options": [
+        "Có; fields private tự làm JS setters.",
+        "Chỉ cần Vec<u8>.",
+        "Chưa; chỉ thấy constructor, grayscale và pointer accessor.",
+        "Có; grayscale tự fetch ảnh."
+      ],
+      "correct": 2,
+      "explanation": "Native fixtures gán pixels trong model không chứng minh JS API tồn tại."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Private fields export",
+      "question": "#[wasm_bindgen] trên struct có tự expose mọi private fields làm JS setters không?",
+      "options": [
+        "Có; mọi Rust privacy bị bỏ.",
+        "Có; mọi Vec thành writable JS property.",
+        "Chỉ cần tên ImageProcessor.",
+        "Không nên giả định như vậy; phải xem supported fields/binding API cụ thể."
+      ],
+      "correct": 3,
+      "explanation": "Bindings cần API được thiết kế và build kiểm tra."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Init ordering",
+      "question": "Theo ví dụ target web của guide, khi nào gọi exported function sau import init?",
+      "options": [
+        "Sau khi await init() hoàn tất theo generated module contract.",
+        "Luôn trước init để tăng tốc.",
+        "Chỉ cần file có extension js.",
+        "Không bao giờ cần load WASM bytes."
+      ],
+      "correct": 0,
+      "explanation": "Source chỉ import trong comment chưa có init call thực thi."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Asynchronous init failure",
+      "question": "Nếu init() tải/khởi tạo thất bại, ứng dụng nên làm gì theo contract?",
+      "options": [
+        "Đổi tên import để bỏ lỗi.",
+        "Xử lý failure và không dùng exports như thể đã sẵn sàng.",
+        "Bỏ qua và luôn trả đáp án đúng.",
+        "Tự gọi fibonacci với mọi inputs."
+      ],
+      "correct": 1,
+      "explanation": "Task không chạy network initialization."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Linear memory view",
+      "question": "Để đọc pixels qua pointer từ JS, còn cần gì ngoài con số pointer?",
+      "options": [
+        "Chỉ width field name.",
+        "Không cần biết channel format.",
+        "Đúng memory buffer, byte length, lifetime và ownership/update protocol.",
+        "Chỉ console.log(pointer)."
+      ],
+      "correct": 2,
+      "explanation": "Pointer không tự là safe owned array."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Owner release",
+      "question": "Sau khi ImageProcessor bị giải phóng, view tới storage cũ có còn được coi hợp lệ để đọc tùy ý không?",
+      "options": [
+        "Có; JS GC tự giữ Rust Vec bằng pointer number.",
+        "Có; raw pointer tự refcount.",
+        "Chỉ cần giữ width.",
+        "Không; cần tuân lifetime và ownership protocol."
+      ],
+      "correct": 3,
+      "explanation": "Không chạy dangling pointer trials."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Buffer reallocation",
+      "question": "Nếu thêm method resize làm Vec reallocate, điều gì có thể xảy ra với pointer cũ?",
+      "options": [
+        "Pointer cũ có thể không còn trỏ storage hiện hành hợp lệ.",
+        "Luôn tự cập nhật number trong JS.",
+        "Tự copy mọi old views sang storage mới.",
+        "Không bao giờ thay đổi allocation."
+      ],
+      "correct": 0,
+      "explanation": "API phải thông báo/recreate views theo contract."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Memory grow view",
+      "question": "Khi WASM memory thay đổi/grow, tại sao cần xem lại JS typed-array views?",
+      "options": [
+        "Chỉ vì u8 không hỗ trợ JS.",
+        "Views/buffers có thể cần tạo lại theo memory mode và host contract.",
+        "Mọi view tự đổi length và address luôn.",
+        "Grow luôn không thể xảy ra với Vec."
+      ],
+      "correct": 1,
+      "explanation": "Không khẳng định một behavior cho mọi shared/unshared memory mode."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Remainder handling",
+      "question": "chunks_exact_mut(4) xử lý bytes lẻ còn lại như thế nào?",
+      "options": [
+        "Tự đổi channels thành3.",
+        "Luôn panic bất kể input.",
+        "Không đưa chúng vào complete chunks của vòng lặp.",
+        "Tự padding thành pixel mới."
+      ],
+      "correct": 2,
+      "explanation": "Source constructor dự kiến length bội4, API mở rộng cần giữ invariant."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Alpha preservation reason",
+      "question": "Vì sao alpha không bị grayscale nguồn thay đổi?",
+      "options": [
+        "Compiler biết alpha không được phép thay đổi.",
+        "wasm-bindgen tự khôi phục alpha.",
+        "Vec<u8> có metadata alpha riêng.",
+        "Không có assignment vào chunk[3]."
+      ],
+      "correct": 3,
+      "explanation": "Quan sát theo đúng code, không gán cho công cụ semantics không có."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Color space assumptions",
+      "question": "Công thức weighted RGB trong source có tự bảo đảm chuyển màu chính xác mọi color spaces không?",
+      "options": [
+        "Không; cần biết encoding, transfer function và mục tiêu chuyển đổi.",
+        "Có; ba coefficients giải quyết mọi color model.",
+        "Có; Rust type safety suy ra color profile.",
+        "Chỉ cần alpha255."
+      ],
+      "correct": 0,
+      "explanation": "Đó là phép biến đổi số cụ thể, không full color management."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Interop overhead",
+      "question": "Chuyển dữ liệu lớn qua boundary JS/WASM có thể có chi phí gì?",
+      "options": [
+        "Không bao giờ cần memory.",
+        "Copying/conversion/calls hoặc quản lý views tùy API và workload.",
+        "Luôn zero cost mọi trường hợp.",
+        "Luôn nhanh hơn giữ data tại JS."
+      ],
+      "correct": 1,
+      "explanation": "Cần đo theo cách truyền dữ liệu thực tế."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Batch calls",
+      "question": "Vì sao một bulk image operation có thể hợp lý hơn gọi mỗi pixel qua boundary?",
+      "options": [
+        "Tự làm allocation không giới hạn.",
+        "Tự xóa mọi validation.",
+        "Giảm số boundary calls tùy workload, vẫn phải đo và giữ contract.",
+        "Tự chứng minh mọi pipeline nhanh gấp100."
+      ],
+      "correct": 2,
+      "explanation": "Không đưa con số hiệu năng khi chưa có benchmark."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "UI responsiveness",
+      "question": "Chạy CPU-heavy WASM trên main thread có tự giữ UI mượt không?",
+      "options": [
+        "Có; WASM tự chạy trên background thread.",
+        "Có; Rust ownership tự tách threads.",
+        "Chỉ cần return u32.",
+        "Không; có thể block main thread, cần thiết kế scheduling/worker phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Runtime location và workload là yếu tố riêng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "No native target equivalence",
+      "question": "Native compiler pass có tự chứng minh wasm-bindgen supported export signatures không?",
+      "options": [
+        "Không; cần build với target/dependencies/bindings thực tế.",
+        "Có; native rustc tự chạy wasm-pack.",
+        "Có; mọi Rust type đều supported.",
+        "Chỉ cần macro trong comment."
+      ],
+      "correct": 0,
+      "explanation": "Native model bỏ attributes phải được ghi rõ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source dependency provenance",
+      "question": "Source có đủ pinned wasm-bindgen version và lockfile để tái lập build chưa?",
+      "options": [
+        "Chỉ cần Vec<u8>.",
+        "Chưa được thể hiện trong snippet.",
+        "Có; import tự pin version.",
+        "Có; comment target web là lockfile."
+      ],
+      "correct": 1,
+      "explanation": "Docs review không là resolved dependency proof."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Broader claims",
+      "question": "Nhắc Embedded/IoT trong theory có nghĩa source đã triển khai thiết bị thật chưa?",
+      "options": [
+        "Có; WASM luôn có GPIO.",
+        "Chỉ cần u32.",
+        "Không.",
+        "Có; mọi Rust binary tự chạy trên mọi board."
+      ],
+      "correct": 2,
+      "explanation": "Không suy implementation từ danh sách chủ đề."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Current scope",
+      "question": "Bằng chứng native pixels/fibonacci nên được mô tả thế nào?",
+      "options": [
+        "Đã chạy wasm-pack và browser render.",
+        "Đã đo FPS production.",
+        "Đã kiểm chứng mọi exported pointer lifetime.",
+        "Thuật toán thuần chọn lọc trên native target, không là browser/WASM integration."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi claim cần loại bằng chứng tương ứng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Two pixel independence",
+      "question": "Native adaptation này in gì?",
+      "code": "struct ImageProcessor{width:u32,height:u32,pixels:Vec<u8>}\nimpl ImageProcessor{fn new(width:u32,height:u32)->Self{Self{width,height,pixels:vec![0;(width*height*4)as usize]}}\nfn grayscale(&mut self){for chunk in self.pixels.chunks_exact_mut(4){let gray=(0.299*chunk[0]as f64+0.587*chunk[1]as f64+0.114*chunk[2]as f64)as u8;chunk[0]=gray;chunk[1]=gray;chunk[2]=gray;}}}\nfn main(){let mut p=ImageProcessor::new(2,1);p.pixels=vec![255,0,0,1,0,0,255,2];p.grayscale();println!(\"{:?}\",p.pixels);}\n",
+      "options": [
+        "[76, 76, 76, 1, 29, 29, 29, 2].",
+        "[76, 76, 76, 76, 29, 29, 29, 29].",
+        "[255, 0, 0, 1, 0, 0, 255, 2].",
+        "[29, 29, 29, 1, 76, 76, 76, 2]."
+      ],
+      "correct": 0,
+      "explanation": "Mỗi complete chunk được tính riêng và alpha giữ nguyên."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Finite fib bound check",
+      "question": "Model checked arithmetic này in gì?",
+      "code": "\nfn main(){let f47=2971215073u32;let f46=1836311903u32;println!(\"{}\",f47.checked_add(f46).is_none());}\n",
+      "options": [
+        "Allocation failure.",
+        "true.",
+        "false.",
+        "Tự thực thi recursive fibonacci48."
+      ],
+      "correct": 1,
+      "explanation": "Hai số F47 và F46 cộng vượt u32; model chỉ một checked_add."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Widened but budgeted",
+      "question": "Đổi size math sang u64 checked có tự làm allocation mọi image hợp lý không?",
+      "options": [
+        "Có; mọi host có ít nhất2^64bytes.",
+        "Chỉ cần bỏ overflow checks.",
+        "Không; còn conversion vào usize và resource budget thực tế.",
+        "Có; u64 đồng nghĩa RAM vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Numeric correctness khác capacity/resource policy."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Pixel ptr contract",
+      "question": "API chỉ trả *const u8 và không length/ownership docs thiếu điều gì cho JS caller?",
+      "options": [
+        "Chỉ thiếu màu icon.",
+        "Không thiếu vì pointer chứa toàn bộ Vec metadata.",
+        "Chỉ cần coi pointer là JS Array.",
+        "Cách xác định vùng hợp lệ và thời gian truy cập, cùng protocol khi owner đổi/drop."
+      ],
+      "correct": 3,
+      "explanation": "Pointer đơn không mang length của Vec."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Read pointer mutation",
+      "question": "Việc JS có thể tạo writable view vào linear memory có nghĩa mọi mutation qua pointer read-only đều hợp contract Rust không?",
+      "options": [
+        "Không; phải tuân aliasing, mutability và API synchronization/ownership.",
+        "Có; JS view làm mọi Rust rules vô hiệu.",
+        "Có; *const tự chuyển &mut khi sang JS.",
+        "Chỉ cần alpha không đổi."
+      ],
+      "correct": 0,
+      "explanation": "Không thử writes vi phạm contract để chứng minh."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Boundary atomicity",
+      "question": "Gọi grayscale có tự bảo đảm toàn pipeline upload/process/render là atomic transaction không?",
+      "options": [
+        "Chỉ cần constructor.",
+        "Không; cần protocol state/lifetime và scheduling phù hợp.",
+        "Có; một method Rust là distributed transaction.",
+        "Có; wasm-bindgen tự khóa DOM."
+      ],
+      "correct": 1,
+      "explanation": "Method behavior không tự mở rộng sang mọi host steps."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Error API design",
+      "question": "Nếu nhận dimensions/pixels từ user, API nào biểu diễn failure rõ hơn unwrap ở mọi bước?",
+      "options": [
+        "Đổi tất cả failures thành pointer0 và không docs.",
+        "Chỉ đổi tên new thành safe_new.",
+        "Result hoặc error contract phù hợp cho invalid sizes/data/resource limits.",
+        "Luôn allocate trước rồi bỏ qua lỗi."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế failure path để caller xử lý được."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Huge fib verification",
+      "question": "Để dạy overflow F48, cách kiểm nào tránh billions recursive calls?",
+      "options": [
+        "Chạy source F48 nhiều lần không giới hạn.",
+        "Tắt timeout và chờ.",
+        "Dùng output đoán rồi ghi đã test.",
+        "Dùng finite checked arithmetic/iterative model ghi rõ scope."
+      ],
+      "correct": 3,
+      "explanation": "Model và source execution phải được phân biệt."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Memoization tradeoff",
+      "question": "Thay Fibonacci bằng memoization có nghĩa mọi tradeoff biến mất không?",
+      "options": [
+        "Không; đổi time/memory behavior và cần bounds/cache policy phù hợp.",
+        "Có; luôn O(1) cả time và memory mọi n.",
+        "Có; tự mở rộng u32.",
+        "Chỉ cần WASM target."
+      ],
+      "correct": 0,
+      "explanation": "Algorithm improvement vẫn cần correctness/resource design."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Iterative arithmetic range",
+      "question": "Đổi recursion sang loop có tự giải quyết u32 result overflow không?",
+      "options": [
+        "Chỉ cần n:u32.",
+        "Không; range output không đổi chỉ vì control flow khác.",
+        "Có; loops tự thành arbitrary precision.",
+        "Có; compiler tự dùng BigInt."
+      ],
+      "correct": 1,
+      "explanation": "Cần checked/wider/arbitrary precision contract nếu muốn mở rộng input."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Dimension arithmetic cast",
+      "question": "Vì sao cast cuối expression sang usize trên64bit không cứu phép nhân u32 đã overflow?",
+      "options": [
+        "WASM không hỗ trợ multiplication.",
+        "Vec tự chia dimensions trước.",
+        "Phép nhân được đánh giá với operand types trước khi cast result.",
+        "usize luôn là8bit."
+      ],
+      "correct": 2,
+      "explanation": "Cần sửa đúng vị trí conversion/check."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Memory growth assumptions",
+      "question": "Có nên giữ một typed-array view vĩnh viễn rồi hứa mọi allocations sau đều an toàn không?",
+      "options": [
+        "Có; WASM không bao giờ grow memory.",
+        "Có; JS giữ address nên Rust không thể realloc.",
+        "Chỉ cần view readonly trong tên biến.",
+        "Không; phải theo current memory buffer và storage/lifetime protocol."
+      ],
+      "correct": 3,
+      "explanation": "Host buffer và Rust Vec storage là các lớp cần xem xét."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Source opaque buffer usability",
+      "question": "Vì sao source demo chưa là image editor hoàn chỉnh?",
+      "options": [
+        "Thiếu input transfer, output/render contract, validation và lifecycle/UI integration.",
+        "Vì Rust không thể xử lý pixels.",
+        "Vì Vec luôn immutable.",
+        "Vì grayscale không thể được export."
+      ],
+      "correct": 0,
+      "explanation": "Đánh giá theo implementation có thật."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "No blanket performance claim",
+      "question": "Cần gì để kết luận WASM cải thiện latency hơn phiên bản JS cụ thể?",
+      "options": [
+        "Chỉ file wasm nhỏ hơn1MB.",
+        "Đo cùng workload, dữ liệu, boundary/setup costs và môi trường phù hợp.",
+        "Chỉ có từ Rust trong source.",
+        "Chỉ native fixture in đúng55."
+      ],
+      "correct": 1,
+      "explanation": "Correctness proof không thay benchmark."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Deployment readiness",
+      "question": "Build package target web thành công có tự đủ production readiness không?",
+      "options": [
+        "Có; wasm-pack tự deploy CDN và auth.",
+        "Chỉ cần console.log.",
+        "Chưa; cần delivery/init failure/cache/version/resource/security behavior theo yêu cầu.",
+        "Có; build luôn proof triệu users."
+      ],
+      "correct": 2,
+      "explanation": "Không tuyên bố deployment đã làm trong task nội dung."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Exposed constructor domain",
+      "question": "Constructor binding có tự ngăn user truyền dimensions vượt resource budget không?",
+      "options": [
+        "Có; wasm_bindgen biết RAM mọi thiết bị.",
+        "Có; u32 tự giới hạn image vào256pixels.",
+        "Chỉ cần private fields.",
+        "Không; API cần validation/bounds rõ theo binding conversion và domain."
+      ],
+      "correct": 3,
+      "explanation": "Structural type conversion không là full domain validation."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Alpha and transparent output",
+      "question": "Vì sao grayscale trên buffer mới vẫn chưa tạo ảnh nhìn thấy được theo RGBA thông thường?",
+      "options": [
+        "Pixels vẫn zero và alpha0; không có image input/render path.",
+        "Grayscale tự đặt alpha255.",
+        "WASM tự render black canvas.",
+        "u8 không chứa được zero."
+      ],
+      "correct": 0,
+      "explanation": "Không quy việc không thấy ảnh cho CSS khi data/API chưa được cấp."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Concurrency contract future",
+      "question": "Nếu sau này shared memory/worker cùng sửa pixels, cần bổ sung gì?",
+      "options": [
+        "Tự coi mỗi JS call là mutex.",
+        "Synchronization/ownership protocol phù hợp, không chỉ raw pointer export.",
+        "Chỉ clone pointer number.",
+        "Chỉ đánh dấu struct wasm_bindgen."
+      ],
+      "correct": 1,
+      "explanation": "Task chưa triển khai hoặc test shared-memory concurrency."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Artifact proof distinction",
+      "question": "Có native executable của adapted algorithm cho phép báo đã có .wasm output không?",
+      "options": [
+        "Có; chỉ cần đổi extension.",
+        "Chỉ cần docs của wasm-pack.",
+        "Không; phải có artifact và build đúng target để claim điều đó.",
+        "Có; mọi executable tự là WASM."
+      ],
+      "correct": 2,
+      "explanation": "Không giả tạo target/integration evidence."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Frame budget design",
+      "question": "Với xử lý ảnh lặp mỗi frame, thiết kế nào giúp đánh giá resource budget có cơ sở?",
+      "options": [
+        "Chỉ đo một lần native fibonacci10.",
+        "Cho phép dimensions bất kỳ vì u32 là safe.",
+        "Luôn gọi một WASM function cho mỗi byte và hứa nhanh nhất.",
+        "Giới hạn dimensions/bytes và đo toàn pipeline transfer, compute, render trên thiết bị mục tiêu."
+      ],
+      "correct": 3,
+      "explanation": "Correctness, memory budget và latency cần được xét cùng workload thực tế."
+    }
+  ]
+}

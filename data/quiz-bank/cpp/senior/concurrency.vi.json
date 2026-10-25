@@ -1,0 +1,1153 @@
+{
+  "version": 1,
+  "tech": "cpp",
+  "level": "senior",
+  "lesson": "concurrency",
+  "language": "vi",
+  "sourceHash": "73cf3da70a4627a1f866621b1c5def0c2fb50ddb37bf8f31a363c26cac28f950",
+  "status": "approved",
+  "review": "Tự biên soạn, không API. C++17 thread/join, mutex RAII, atomic, condition_variable và future/promise. Chỉ chạy ví dụ hữu hạn có đồng bộ, không suy đoán output data race/deadlock. Không khẳng định atomic luôn lock-free hoặc nhanh hơn mutex.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Thread header",
+      "question": "Header trực tiếp cho std::thread là gì?",
+      "options": [
+        "<thread>",
+        "<threads> luôn là C++ header duy nhất",
+        "<mutex> thay mọi thread declaration",
+        "<future> chỉ để gọi join"
+      ],
+      "correct": 0,
+      "explanation": "Include <thread> cho std::thread."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Thread start",
+      "question": "std::thread t(work); thông thường làm gì khi tạo thành công?",
+      "options": [
+        "Tự khóa mọi biến global.",
+        "Bắt đầu một thread thực thi callable work.",
+        "Chỉ khai báo kiểu, không bao giờ chạy work.",
+        "Luôn chạy work sau main kết thúc."
+      ],
+      "correct": 1,
+      "explanation": "Việc lên lịch giữa các thread không có thứ tự cố định nếu chưa đồng bộ."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Join",
+      "question": "t.join() khi t joinable có vai trò gì?",
+      "options": [
+        "Tạo thêm một bản sao thread.",
+        "Chuyển mọi member thành atomic.",
+        "Chờ thread đó kết thúc và hoàn tất quan hệ đồng bộ tương ứng.",
+        "Tự dừng thread ngay lập tức."
+      ],
+      "correct": 2,
+      "explanation": "Join là chờ hoàn tất, không phải cơ chế yêu cầu hủy tác vụ."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Detach",
+      "question": "t.detach() khác join ở điểm nào?",
+      "options": [
+        "Luôn buộc thread dừng.",
+        "Tự kéo dài đời mọi reference thread dùng.",
+        "Tự chuyển output về future.",
+        "Tách handle khỏi thread đang chạy, không chờ hoàn tất như join."
+      ],
+      "correct": 3,
+      "explanation": "Tách thread làm quản lý lifetime/cleanup khó hơn nếu thiết kế không rõ."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Mutex",
+      "question": "std::mutex chủ yếu dùng để làm gì?",
+      "options": [
+        "Loại trừ tương hỗ cho vùng dữ liệu theo giao thức khóa.",
+        "Tự copy dữ liệu riêng cho mỗi thread.",
+        "Tự sắp xếp thứ tự mọi lệnh toàn chương trình.",
+        "Luôn làm chương trình nhanh hơn."
+      ],
+      "correct": 0,
+      "explanation": "Mọi đường truy cập liên quan cần tuân thủ cùng giao thức đồng bộ."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Lock guard",
+      "question": "lock_guard<mutex> lock(m); thông thường làm gì?",
+      "options": [
+        "Luôn gọi unlock ngay trước thân scope.",
+        "Khóa m khi dựng và mở khóa khi guard hết vòng đời.",
+        "Chỉ kiểm tra m có null hay không.",
+        "Tạo thread giữ mutex vĩnh viễn."
+      ],
+      "correct": 1,
+      "explanation": "RAII giảm nguy cơ quên mở khóa trên đường return/exception phù hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Unique lock",
+      "question": "unique_lock thường linh hoạt hơn lock_guard thế nào?",
+      "options": [
+        "Tự làm mọi biến atomic.",
+        "Không bao giờ có overhead.",
+        "Có thể quản lý lock/unlock và dùng với condition_variable theo API.",
+        "Luôn không cần mutex."
+      ],
+      "correct": 2,
+      "explanation": "Linh hoạt có ích khi cần wait hoặc điều khiển phạm vi khóa; không cần dùng cho mọi vùng đơn giản."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Atomic purpose",
+      "question": "std::atomic<int> giúp gì cho thao tác atomic được API cung cấp?",
+      "options": [
+        "Tự bảo vệ invariant của mọi object xung quanh.",
+        "Tự khiến mọi phép đọc rồi ghi ghép lại thành transaction.",
+        "Luôn dùng đúng một instruction trên mọi hệ thống.",
+        "Truy cập/cập nhật int theo semantics atomic và memory ordering đã chọn."
+      ],
+      "correct": 3,
+      "explanation": "Một biến atomic không thay thế thiết kế đồng bộ nhiều trường."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Data race condition",
+      "question": "Trường hợp nào có thể là data race theo C++?",
+      "options": [
+        "Hai truy cập xung đột cùng vùng nhớ, ít nhất một ghi non-atomic, không được sắp thứ tự happens-before phù hợp.",
+        "Hai thread chỉ đọc cùng int bất biến.",
+        "Hai thread sửa hai biến riêng không chia sẻ.",
+        "Mọi chương trình có hơn một thread."
+      ],
+      "correct": 0,
+      "explanation": "Data race có hậu quả undefined behavior; không đồng nhất với mọi dạng concurrency."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Condition variable",
+      "question": "condition_variable thường phối hợp với gì để chờ một điều kiện chia sẻ?",
+      "options": [
+        "Một cout thay thế mutex.",
+        "Mutex, unique_lock và predicate trên trạng thái được bảo vệ.",
+        "Một vòng sleep cố định là đủ.",
+        "Chỉ một raw pointer mà không trạng thái."
+      ],
+      "correct": 1,
+      "explanation": "Predicate mô tả điều kiện thực sự; notification chỉ đánh thức để kiểm tra lại."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Producer consumer",
+      "question": "Trong producer-consumer, producer thường làm gì?",
+      "options": [
+        "Chỉ tạo thread rồi bỏ mọi dữ liệu.",
+        "Tự làm queue thread safe không cần khóa.",
+        "Đưa dữ liệu vào hàng đợi rồi thông báo cho consumer theo giao thức đồng bộ.",
+        "Luôn lấy dữ liệu khỏi hàng đợi."
+      ],
+      "correct": 2,
+      "explanation": "Queue thường cần khóa và điều kiện không rỗng, cùng chính sách dừng."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Spurious wakeup",
+      "question": "Spurious wakeup yêu cầu code wait phải làm gì?",
+      "options": [
+        "Luôn bỏ mutex khỏi wait.",
+        "Chỉ wait một lần rồi đọc dữ liệu bất kể rỗng.",
+        "Tự coi hàng đợi có phần tử0.",
+        "Kiểm tra lại predicate thay vì cho rằng được đánh thức là điều kiện đã đúng."
+      ],
+      "correct": 3,
+      "explanation": "Overload wait(lock,pred) hỗ trợ vòng kiểm tra điều kiện."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Notify one",
+      "question": "notify_one() thường tác động thế nào?",
+      "options": [
+        "Đánh thức một thread đang chờ phù hợp, nếu có.",
+        "Bảo đảm mọi thread đã chạy xong.",
+        "Ghi một item vào queue tự động.",
+        "Giữ notification như một item đếm vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng notify thay cho trạng thái/predicate."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Notify all",
+      "question": "notify_all() chủ yếu dùng để làm gì?",
+      "options": [
+        "Tự join mọi thread.",
+        "Đánh thức các thread đang chờ để họ kiểm tra lại điều kiện.",
+        "Đảm bảo tất cả cùng giữ mutex đồng thời.",
+        "Tự đặt done=true."
+      ],
+      "correct": 1,
+      "explanation": "Thread vẫn phải lấy lại mutex và thỏa predicate mới tiếp tục."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Future",
+      "question": "std::future<T> thường biểu đạt gì?",
+      "options": [
+        "Một vector T thread safe.",
+        "Một mutex recursive.",
+        "Một kết quả bất đồng bộ hoặc ngoại lệ được chia sẻ qua state tương ứng.",
+        "Luôn một thread mới đang chạy."
+      ],
+      "correct": 2,
+      "explanation": "Future có thể đến từ promise/async; không phải mọi future đều tạo thread riêng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Promise",
+      "question": "std::promise<T> thường có vai trò gì?",
+      "options": [
+        "Tự đọc mọi dữ liệu từ thread bất kỳ.",
+        "Tự làm T bất biến toàn cục.",
+        "Thay thế destructor thread.",
+        "Cung cấp giá trị hoặc exception cho shared state mà future đọc."
+      ],
+      "correct": 3,
+      "explanation": "Promise và future là hai phía của kênh kết quả một lần phù hợp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Get future result",
+      "question": "future.get() thông thường làm gì?",
+      "options": [
+        "Chờ kết quả nếu cần, lấy giá trị hoặc ném exception đã lưu.",
+        "Luôn không block.",
+        "Tự tạo một promise mới.",
+        "Luôn cho gọi lặp vô hạn như shared_future."
+      ],
+      "correct": 0,
+      "explanation": "std::future thông thường tiêu thụ trạng thái khi get; shared_future có semantics khác."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Joinable destruction",
+      "question": "std::thread còn joinable bị hủy thì sao?",
+      "options": [
+        "Tự ném exception cho caller catch như runtime_error.",
+        "Gọi std::terminate theo quy tắc std::thread.",
+        "Tự join an toàn theo mọi C++17 implementation.",
+        "Tự detach và kéo dài mọi lifetime."
+      ],
+      "correct": 1,
+      "explanation": "Chủ động join/detach đúng thiết kế trước khi thread handle bị hủy."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Reference arguments",
+      "question": "std::thread nhận một đối số int& cho callable thường cần dùng gì để truyền reference tới biến caller?",
+      "options": [
+        "reinterpret_cast<void*>(x) để bỏ kiểu.",
+        "delete &x trước khi start.",
+        "std::ref(x) khi phù hợp và bảo đảm lifetime.",
+        "Chỉ truyền x rồi mọi argument luôn reference."
+      ],
+      "correct": 2,
+      "explanation": "std::thread lưu các đối số theo semantics decay/copy/move thông thường; std::ref diễn đạt tham chiếu."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Concurrency performance",
+      "question": "atomic<int> có luôn nhanh hơn mutex cho mọi tác vụ/hệ thống không?",
+      "options": [
+        "Có; tên atomic bảo đảm speedup cố định.",
+        "Có; atomic luôn lock-free.",
+        "Có; atomic luôn loại bỏ mọi cache traffic.",
+        "Không; phụ thuộc workload, contention, triển khai và invariant cần bảo vệ."
+      ],
+      "correct": 3,
+      "explanation": "Đo trên workload đúng; chọn primitive theo tính đúng trước khi so hiệu năng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Join visibility",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nint n=0;std::thread t([&n](){n=7;});t.join();std::cout<<n;\n}\n",
+      "options": [
+        "7",
+        "0",
+        "Ngẫu nhiên giữa0 và7 vì có thread.",
+        "Data race dù đã join trước đọc."
+      ],
+      "correct": 0,
+      "explanation": "Ghi trong worker hoàn tất trước join trả về; main đọc sau join."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Mutex counter sample",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::mutex m;int counter=0;std::vector<std::thread>ts;for(int i=0;i<4;++i)ts.emplace_back([&](){for(int j=0;j<10000;++j){std::lock_guard<std::mutex>g(m);++counter;}});for(auto& t:ts)t.join();std::cout<<counter;\n}\n",
+      "options": [
+        "4",
+        "40000",
+        "10000",
+        "Một số bất kỳ do data race trong ++."
+      ],
+      "correct": 1,
+      "explanation": "Mọi ++ cùng khóa m và main chỉ đọc sau khi đã join đủ4 thread."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Atomic increments",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::atomic<int>n{0};std::thread a([&](){for(int i=0;i<1000;++i)++n;});std::thread b([&](){for(int i=0;i<1000;++i)++n;});a.join();b.join();std::cout<<n.load();\n}\n",
+      "options": [
+        "0",
+        "Không thể biết vì ++ không atomic trên atomic<int>.",
+        "2000",
+        "1000"
+      ],
+      "correct": 2,
+      "explanation": "Operator++ trên atomic<int> là read-modify-write atomic; join đủ hai worker."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Copy argument isolation",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\nvoid set(int x){x=9;}\nint main(){\nint n=3;std::thread t(set,n);t.join();std::cout<<n;\n}\n",
+      "options": [
+        "9",
+        "0",
+        "Dangling reference luôn xảy ra.",
+        "3"
+      ],
+      "correct": 3,
+      "explanation": "Thread nhận int bản sao nên chỉ thay đổi x local của callable."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Reference wrapped argument",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\nvoid set(int& x){x=9;}\nint main(){\nint n=3;std::thread t(set,std::ref(n));t.join();std::cout<<n;\n}\n",
+      "options": [
+        "9",
+        "3",
+        "0",
+        "Thread không được dùng reference."
+      ],
+      "correct": 0,
+      "explanation": "std::ref nối tham số int& với n còn sống; main đọc sau join."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Default thread state",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::thread t;std::cout<<t.joinable();\n}\n",
+      "options": [
+        "Không khai báo thread mặc định được.",
+        "0",
+        "1",
+        "Một thread chạy ngầm in0."
+      ],
+      "correct": 1,
+      "explanation": "Handle mặc định chưa đại diện thread joinable nào."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "After join state",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::thread t([](){});t.join();std::cout<<t.joinable();\n}\n",
+      "options": [
+        "Thread mới được tạo tự động.",
+        "Không có output vì join luôn terminate.",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Join thành công làm handle không còn joinable."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Move thread handle",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::thread a([](){});std::thread b=std::move(a);std::cout<<a.joinable()<<\" \"<<b.joinable();b.join();\n}\n",
+      "options": [
+        "1 1",
+        "0 0",
+        "Thread không move được.",
+        "0 1"
+      ],
+      "correct": 3,
+      "explanation": "Move chuyển association sang b; worker có thể đã xong nhưng b vẫn joinable cho tới join."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Finished but joinable",
+      "question": "Worker đã return nhưng std::thread handle chưa join/detach. joinable() có nhất thiết false không?",
+      "options": [
+        "Không; hoàn tất công việc không tự bỏ association của handle.",
+        "Có; worker return tự join.",
+        "Có; thread đã xóa object handle.",
+        "Chỉ false nếu worker đọc int."
+      ],
+      "correct": 0,
+      "explanation": "joinable không phải câu trả lời worker còn đang chạy hay đã hoàn tất."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Promise value",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::promise<int>p;auto f=p.get_future();p.set_value(7);std::cout<<f.get();\n}\n",
+      "options": [
+        "Get không được gọi trong cùng thread.",
+        "7",
+        "0",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "Promise đã đặt giá trị trước nên future lấy7."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Future waits worker",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::promise<int>p;auto f=p.get_future();std::thread t([&p](){p.set_value(12);});int n=f.get();t.join();std::cout<<n;\n}\n",
+      "options": [
+        "1",
+        "Data race trong shared state của promise/future.",
+        "12",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Promise/future đồng bộ kết quả; worker được join trước kết thúc scope."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Future invalid after get",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::promise<int>p;auto f=p.get_future();p.set_value(5);int n=f.get();std::cout<<n<<\" \"<<f.valid();\n}\n",
+      "options": [
+        "5 1",
+        "0 1",
+        "Future get luôn xóa cả int vừa trả.",
+        "5 0"
+      ],
+      "correct": 3,
+      "explanation": "std::future thường bị tiêu thụ state bởi get thành công, nên valid false."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Shared future repeated get",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::promise<int>p;auto f=p.get_future().share();p.set_value(5);std::cout<<f.get()<<f.get();\n}\n",
+      "options": [
+        "55",
+        "5 rồi lỗi vì như future.",
+        "00",
+        "Không thể share future của int."
+      ],
+      "correct": 0,
+      "explanation": "shared_future cho phép đọc kết quả nhiều lần khi state phù hợp."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Promise exception",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::promise<int>p;auto f=p.get_future();p.set_exception(std::make_exception_ptr(std::runtime_error(\"x\")));try{std::cout<<f.get();}catch(const std::runtime_error&){std::cout<<\"caught\";}\n}\n",
+      "options": [
+        "Không thể đưa exception vào shared state.",
+        "caught",
+        "0",
+        "bad_alloc bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "get ném lại exception được set_exception lưu."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Broken promise",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::future<int>f;{std::promise<int>p;f=p.get_future();}try{std::cout<<f.get();}catch(const std::future_error&){std::cout<<\"broken\";}\n}\n",
+      "options": [
+        "Deadlock vô hạn bắt buộc.",
+        "Future tự tạo giá trị mặc định.",
+        "broken",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Promise bị hủy chưa có value/exception làm shared state ready với broken_promise."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Deferred execution",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nint calls=0;auto f=std::async(std::launch::deferred,[&calls](){++calls;return 5;});std::cout<<calls<<\" \";int n=f.get();std::cout<<n<<\" \"<<calls;\n}\n",
+      "options": [
+        "1 5 1",
+        "0 5 0",
+        "Thread mới luôn chạy trước cout.",
+        "0 5 1"
+      ],
+      "correct": 3,
+      "explanation": "launch::deferred trì hoãn callable cho đến get/wait phù hợp; không chạy ngay lúc tạo."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Async launch explicit",
+      "question": "std::async(std::launch::async,work) và future.get() thường cung cấp gì?",
+      "options": [
+        "Thực thi bất đồng bộ theo policy async và kênh nhận kết quả/ngoại lệ.",
+        "Bảo đảm work chạy ngay trên main thread.",
+        "Tự bỏ mọi exception của work.",
+        "Luôn nhanh hơn gọi trực tiếp."
+      ],
+      "correct": 0,
+      "explanation": "Policy và semantics kết quả không phải cam kết speedup."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Async default policy",
+      "question": "std::async(work) không chỉ rõ launch policy có bảo đảm luôn tạo thread mới không?",
+      "options": [
+        "Có nếu work trả int.",
+        "Không; có thể chọn deferred hoặc async theo policy mặc định cho phép.",
+        "Có; luôn tạo đúng một OS thread mới.",
+        "Không; luôn deferred."
+      ],
+      "correct": 1,
+      "explanation": "Nêu policy khi thuật toán cần biết cách thực thi."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Lock guard early return",
+      "question": "Nếu return sớm khi lock_guard local còn sở hữu mutex, điều gì xảy ra?",
+      "options": [
+        "Return tự detach mọi thread.",
+        "Lock được chuyển tới caller tự động.",
+        "Destructor guard mở khóa khi scope kết thúc bình thường.",
+        "Mutex bị khóa vĩnh viễn dù guard RAII."
+      ],
+      "correct": 2,
+      "explanation": "RAII xử lý các đường rời scope theo vòng đời ngôn ngữ phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Unique lock ownership",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::mutex m;std::unique_lock<std::mutex>l(m);std::cout<<l.owns_lock();l.unlock();std::cout<<l.owns_lock();l.lock();std::cout<<l.owns_lock();\n}\n",
+      "options": [
+        "111",
+        "100",
+        "Không được unlock rồi lock lại unique_lock.",
+        "101"
+      ],
+      "correct": 3,
+      "explanation": "Guard giữ khóa ban đầu, sau unlock không giữ, rồi lock lại có giữ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Deferred lock",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::mutex m;std::unique_lock<std::mutex>l(m,std::defer_lock);std::cout<<l.owns_lock();l.lock();std::cout<<l.owns_lock();\n}\n",
+      "options": [
+        "01",
+        "10",
+        "11",
+        "00"
+      ],
+      "correct": 0,
+      "explanation": "defer_lock tạo guard chưa khóa; lock() mới khóa mutex."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Scoped pair locking",
+      "question": "std::scoped_lock l(m1,m2) C++17 thường dùng để làm gì?",
+      "options": [
+        "Chỉ dùng để chờ future.",
+        "Quản lý khóa nhiều mutex theo cơ chế tránh deadlock của thao tác lock phù hợp.",
+        "Cho hai thread cùng giữ một mutex.",
+        "Tự loại bỏ mọi deadlock của toàn chương trình."
+      ],
+      "correct": 1,
+      "explanation": "Nó giúp khóa tập mutex ở lời gọi đó, không chứng minh mọi giao thức khóa khác đều đúng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Condition wait unlock",
+      "question": "cv.wait(lock,pred) làm gì với mutex khi thực sự phải chờ?",
+      "options": [
+        "Hủy mutex.",
+        "Tự copy mutex vào thread mới.",
+        "Nhả khóa trong khi chờ rồi lấy lại khóa trước khi tiếp tục kiểm tra/return.",
+        "Giữ khóa suốt để producer không sửa được trạng thái."
+      ],
+      "correct": 2,
+      "explanation": "Producer cần có thể lấy cùng mutex để làm predicate thành true."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Predicate already true",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::mutex m;std::condition_variable cv;bool ready=true;std::unique_lock<std::mutex>l(m);cv.wait(l,[&](){return ready;});std::cout<<\"ready\";\n}\n",
+      "options": [
+        "Deadlock vì chưa notify.",
+        "false",
+        "Lỗi vì wait luôn cần thread khác.",
+        "ready"
+      ],
+      "correct": 3,
+      "explanation": "wait(lock,pred) kiểm tra predicate trước; true thì không cần chờ notification."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Producer consumer one item",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::mutex m;std::condition_variable cv;bool ready=false;int value=0;std::thread producer([&](){{std::lock_guard<std::mutex>g(m);value=7;ready=true;}cv.notify_one();});int result;{std::unique_lock<std::mutex>l(m);cv.wait(l,[&](){return ready;});result=value;}producer.join();std::cout<<result;\n}\n",
+      "options": [
+        "7",
+        "0",
+        "Ngẫu nhiên vì notify không có tác dụng.",
+        "Deadlock dù predicate đúng."
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu và ready bảo vệ cùng mutex; wait predicate xử lý cả producer chạy trước."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Notify state",
+      "question": "notify_one() có tự đặt ready=true hoặc thêm item vào queue không?",
+      "options": [
+        "Chỉ nếu mutex là recursive_mutex.",
+        "Không; ứng dụng phải cập nhật trạng thái đúng giao thức.",
+        "Có; ready được suy từ tên biến.",
+        "Có; queue tự thêm0."
+      ],
+      "correct": 1,
+      "explanation": "Thông báo không thay cho dữ liệu bền mô tả điều kiện."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Wait predicate queue",
+      "question": "Consumer lấy item từ queue với condition_variable nên chờ predicate nào trong thiết kế có shutdown?",
+      "options": [
+        "true luôn rồi pop ngay.",
+        "Chỉ số thứ tự thread bằng0.",
+        "!queue.empty() || done theo hợp đồng dừng.",
+        "queue.capacity()>0 bất kể có item."
+      ],
+      "correct": 2,
+      "explanation": "Sau tỉnh cần phân biệt có item để xử lý hay đã dừng và queue rỗng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Mutex consistent access",
+      "question": "Writer khóa m khi sửa x nhưng reader đọc x đồng thời không khóa/không atomic. Đã an toàn chưa?",
+      "options": [
+        "Rồi; chỉ writer cần biết mutex.",
+        "Rồi; int luôn atomic.",
+        "Rồi nếu reader dùng const int&.",
+        "Chưa; một phía khóa không tự bảo vệ phía truy cập bỏ qua giao thức."
+      ],
+      "correct": 3,
+      "explanation": "Mọi truy cập xung đột cần đồng bộ theo thiết kế chung."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Read only shared data",
+      "question": "Hai thread chỉ đọc vector const đã khởi tạo xong và không thread nào sửa/làm hết vòng đời có cần mutex chỉ vì cùng đọc không?",
+      "options": [
+        "Không chỉ vì các phép đọc đó, khi lifetime/publication hợp lệ.",
+        "Có; mọi đọc chung đều data race.",
+        "Có; const tự khóa nên không cần nghĩ lifetime.",
+        "Không và vì thế writer khác cũng được sửa tùy ý."
+      ],
+      "correct": 0,
+      "explanation": "Read-read không là truy cập xung đột; vẫn phải bảo đảm object tồn tại và được công bố đúng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Atomic load store versus RMW",
+      "question": "atomic<int> n; n.store(n.load()+1); có tương đương ++n về chống mất cập nhật khi nhiều thread tăng không?",
+      "options": [
+        "Không vì atomic cấm load/store.",
+        "Không; load và store riêng không là một read-modify-write duy nhất.",
+        "Có; từng thao tác atomic tự gộp thành transaction.",
+        "Có nếu giá trị nhỏ."
+      ],
+      "correct": 1,
+      "explanation": "Dùng fetch_add hoặc ++ cho phép tăng atomic phù hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Fetch add old value",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::atomic<int>n{3};int old=n.fetch_add(2);std::cout<<old<<\" \"<<n.load();\n}\n",
+      "options": [
+        "3 3",
+        "2 5",
+        "3 5",
+        "5 5"
+      ],
+      "correct": 2,
+      "explanation": "fetch_add trả giá trị cũ3 và cập nhật n thành5."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Atomic exchange",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <thread>\n#include <mutex>\n#include <condition_variable>\n#include <atomic>\n#include <future>\n#include <vector>\n#include <queue>\n#include <stdexcept>\n#include <functional>\n#include <utility>\n#include <exception>\n\nint main(){\nstd::atomic<int>n{3};int old=n.exchange(8);std::cout<<old<<\" \"<<n.load();\n}\n",
+      "options": [
+        "8 8",
+        "3 3",
+        "0 8",
+        "3 8"
+      ],
+      "correct": 3,
+      "explanation": "exchange trả giá trị trước và thay bằng8 trong một thao tác atomic."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Join all before report",
+      "question": "Vì sao main join mọi worker trước cout counter trong ví dụ giáo trình?",
+      "options": [
+        "Đảm bảo các worker hoàn tất và lần đọc cuối được sắp thứ tự sau cập nhật.",
+        "Vì cout tự sửa counter thành40000.",
+        "Vì join tự tăng counter.",
+        "Chỉ để thay sleep cho đẹp code, không liên quan correctness."
+      ],
+      "correct": 0,
+      "explanation": "Mutex bảo vệ cập nhật giữa worker; join giải quyết hoàn tất và quan hệ với lần đọc main."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Stop flag plain bool",
+      "question": "bool stop non-atomic được một thread ghi và thread khác đọc lặp không đồng bộ có an toàn chỉ vì kiểu nhỏ không?",
+      "options": [
+        "Có nếu đặt tên stop.",
+        "Không; có thể là data race.",
+        "Có; bool luôn atomic theo C++.",
+        "Có nếu thêm volatile."
+      ],
+      "correct": 1,
+      "explanation": "Dùng atomic hoặc mutex/condition variable theo giao thức phù hợp; volatile không thay đồng bộ thread."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Thread callable exception",
+      "question": "Ngoại lệ không được catch thoát ra khỏi callable của std::thread có tự ném lại ở join không?",
+      "options": [
+        "Có; main tự catch mọi thread.",
+        "Không; thread tự bỏ exception và tiếp tục.",
+        "Không; nó dẫn tới std::terminate.",
+        "Có; join luôn rethrow."
+      ],
+      "correct": 2,
+      "explanation": "Muốn chuyển lỗi dùng promise/future hoặc cơ chế lưu/truyền exception chủ động."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Future wait versus get",
+      "question": "future.wait() khác get() về kết quả thế nào?",
+      "options": [
+        "wait luôn lấy và xóa giá trị.",
+        "get luôn không chờ.",
+        "wait tự đổi future thành thread.",
+        "wait chờ ready, get mới lấy giá trị hoặc ném lỗi đã lưu theo API."
+      ],
+      "correct": 3,
+      "explanation": "Không coi wait là xử lý xong kết quả/lỗi; caller vẫn cần quyết định lấy kết quả."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Mutex copy",
+      "question": "std::mutex có được copy bằng auto m2=m1 không?",
+      "options": [
+        "Không; mutex không copy được.",
+        "Có; hai bản copy tự bảo vệ cùng dữ liệu.",
+        "Có; mỗi lần copy tự mở khóa.",
+        "Chỉ nếu chưa lock."
+      ],
+      "correct": 0,
+      "explanation": "Mutex nhận diện một đối tượng đồng bộ; copy không là cách chia sẻ cùng lock."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Lock contention scope",
+      "question": "Giữ mutex trong lúc làm I/O lâu khi không cần bảo vệ invariant có hệ quả thường gặp gì?",
+      "options": [
+        "Tự loại bỏ mọi race ngoài vùng khóa.",
+        "Tăng thời gian thread khác chờ; nên thu hẹp vùng khóa khi giữ đúng correctness.",
+        "Tự làm tất cả lock-free.",
+        "Bảo đảm nhanh hơn atomic mọi lúc."
+      ],
+      "correct": 1,
+      "explanation": "Đo và giữ critical section đủ ngắn mà không tách rời cập nhật cần nguyên tử về logic."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Producer queue ownership",
+      "question": "Sau lấy một item ra queue dưới khóa, consumer có thể xử lý item riêng bên ngoài khóa khi lifetime/ownership đã tách phù hợp không?",
+      "options": [
+        "Có và vì thế được đọc queue ngoài khóa luôn.",
+        "Chỉ nếu item bằng0.",
+        "Có; giúp không giữ khóa queue suốt xử lý dài.",
+        "Không; mọi dữ liệu từng ở queue phải giữ mutex mãi."
+      ],
+      "correct": 2,
+      "explanation": "Tách dữ liệu xử lý riêng khác việc truy cập cấu trúc queue chia sẻ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Atomic default order",
+      "question": "Các thao tác atomic không truyền memory_order riêng thường mặc định dùng gì?",
+      "options": [
+        "memory_order_relaxed.",
+        "Không có ordering nào theo chuẩn.",
+        "Một mutex bắt buộc do người viết cấp.",
+        "memory_order_seq_cst."
+      ],
+      "correct": 3,
+      "explanation": "Có thể chọn order khác khi có lập luận đồng bộ đúng; đừng tự tối ưu order trước khi hiểu invariant."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Lost notification versus state",
+      "question": "Producer notify trước khi consumer thực sự chờ. Vì sao wait(lock,pred) trên trạng thái được cập nhật dưới cùng mutex vẫn xử lý được?",
+      "options": [
+        "Predicate kiểm tra trạng thái đã đúng nên không cần notification được lưu lại.",
+        "Condition_variable luôn lưu vô hạn notification như queue.",
+        "Mutex tự tạo một notification thay thế.",
+        "Consumer luôn chạy trước producer theo thứ tự source."
+      ],
+      "correct": 0,
+      "explanation": "State là nguồn sự thật; thông báo chỉ hỗ trợ đánh thức. Cần cập nhật state và kiểm tra cùng giao thức."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Unprotected wait predicate",
+      "question": "Consumer kiểm tra ready non-atomic dưới mutex m, producer ghi ready ngoài m. notify_one có tự làm mọi truy cập ready an toàn không?",
+      "options": [
+        "Chỉ cần thêm sleep trước notify.",
+        "Không; notification không thay giao thức bảo vệ state.",
+        "Có; notify_one tự khóa mọi mutex liên quan.",
+        "Có; bool không thể data race."
+      ],
+      "correct": 1,
+      "explanation": "Kết hợp state, mutex và predicate đúng; đừng dựa vào timing để che truy cập xung đột."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Shutdown wake everyone",
+      "question": "Nhiều consumer chờ queue rỗng, cần shutdown toàn bộ sau done=true dưới khóa. Vì sao thường notify_all?",
+      "options": [
+        "Vì notify_one luôn ném lỗi khi shutdown.",
+        "Vì done không cần nằm trong predicate nữa.",
+        "Để mọi waiter có cơ hội thấy done và thoát theo predicate, không chỉ một waiter.",
+        "Vì notify_all tự join mọi thread."
+      ],
+      "correct": 2,
+      "explanation": "Thông báo đủ waiter và join họ trước hủy queue/mutex/cv; chính sách xử lý item còn lại cần rõ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Drain shutdown logic",
+      "question": "Muốn consumer xử lý hết queue rồi thoát khi done, sau wait(!q.empty()||done) nên quyết định thế nào?",
+      "options": [
+        "Nếu done true luôn bỏ mọi item dù hợp đồng drain.",
+        "Luôn pop ngay cả khi q rỗng.",
+        "Thoát chỉ khi q.capacity()==0.",
+        "Nếu q rỗng và done thì thoát; nếu còn item thì lấy để xử lý."
+      ],
+      "correct": 3,
+      "explanation": "Predicate báo có việc hoặc dừng; điều kiện thoát phải phù hợp semantics drain."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Deadlock lock order",
+      "question": "Thread A khóa m1 rồi m2, thread B khóa m2 rồi m1. Nguyên nhân deadlock có thể là gì?",
+      "options": [
+        "Mỗi thread giữ một khóa và chờ khóa kia; cần thứ tự chung hoặc cơ chế khóa đồng thời phù hợp.",
+        "Mutex tự cho cùng giữ nên không có vấn đề.",
+        "Chỉ do counter chưa atomic.",
+        "Thêm volatile vào mutex là đủ."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy deadlock để đoán output; xem toàn bộ giao thức lấy nhiều khóa."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Transaction split",
+      "question": "Chuyển tiền khóa tài khoản nguồn để trừ rồi mở khóa, sau đó khóa đích để cộng. Hai số dư riêng có mutex đã đủ bảo đảm chuyển tiền là một transaction chưa?",
+      "options": [
+        "Chỉ cần dùng int thay long long.",
+        "Chưa; invariant liên quan hai tài khoản và thất bại giữa các bước cần thiết kế thao tác nguyên tử về logic.",
+        "Rồi; mỗi biến có mutex thì mọi nghiệp vụ tự atomic.",
+        "Rồi nếu dùng cout sau mỗi bước."
+      ],
+      "correct": 1,
+      "explanation": "Data-race freedom chưa đủ chứng minh tính đúng của nghiệp vụ nhiều trạng thái."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Atomic logical lost update",
+      "question": "Hai thread cùng load n=0 từ atomic<int>, rồi mỗi thread store1. Dù không data race trên n, kết quả có thể mất một lần tăng không?",
+      "options": [
+        "Không; seq_cst tự gộp mọi statement thành transaction.",
+        "Có và vì thế mọi atomic đều undefined behavior.",
+        "Có; chuỗi load+store tách rời không là phép tăng atomic.",
+        "Không; atomic tự biết ý định cộng1."
+      ],
+      "correct": 2,
+      "explanation": "Đây là race về logic dù các thao tác riêng atomic; dùng RMW phù hợp."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Relaxed counter after joins",
+      "question": "Chỉ cần tổng số lần tăng, không công bố dữ liệu khác. fetch_add(1,relaxed) từ hai worker rồi join cả hai trước đọc có thể cho tổng đúng không?",
+      "options": [
+        "Không; relaxed luôn làm mất cập nhật.",
+        "Có và vì thế mọi dữ liệu khác tự được publish bằng relaxed.",
+        "Không; join không dùng cùng atomic được.",
+        "Có cho counter này; atomic RMW không mất cập nhật và join hoàn tất worker."
+      ],
+      "correct": 3,
+      "explanation": "Chọn order theo mục đích, không suy rộng counter độc lập sang giao thức publication phức tạp."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Release acquire publication",
+      "question": "Writer ghi data=42 rồi flag.store(true,release). Reader load(acquire) thấy true từ store đó rồi đọc data, không có ghi khác và lifetime đúng. Quan hệ nào cho phép đọc?",
+      "options": [
+        "Synchronizes-with qua release/acquire tạo happens-before cho ghi data trước đó.",
+        "Tên flag tự khóa data.",
+        "Data int luôn atomic nên không cần quan hệ.",
+        "Acquire chỉ bảo vệ chính thread writer, không có tác dụng với data."
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện thấy đúng release và không có truy cập xung đột khác là phần thiết yếu của lập luận."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Relaxed publication insufficiency",
+      "question": "Thay flag release/acquire bằng relaxed mà vẫn dùng data non-atomic để publish kết quả có tự giữ lập luận happens-before trên không?",
+      "options": [
+        "Có nếu thêm volatile vào data.",
+        "Không; relaxed không tự tạo quan hệ đồng bộ đó cho data.",
+        "Có vì flag là atomic bất kể order.",
+        "Có nếu data=42 nhỏ."
+      ],
+      "correct": 1,
+      "explanation": "Không dùng một lần chạy đúng trên máy làm bằng chứng cho mô hình bộ nhớ thiếu đồng bộ."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Detached reference lifetime",
+      "question": "Hàm tạo local vector v, detach thread capture &v rồi return. Rủi ro chính là gì?",
+      "options": [
+        "Vector local tự trở thành static khi được capture.",
+        "Chỉ lỗi nếu vector có trên100 phần tử.",
+        "Thread có thể dùng v sau khi v đã bị hủy.",
+        "Detach tự copy v nên không nguy cơ."
+      ],
+      "correct": 2,
+      "explanation": "Quản lý lifetime/ownership hoặc join theo scope; tách thread không kéo dài đời object được mượn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Exception during thread creation",
+      "question": "Tạo nhiều std::thread trong vector; tạo thread tiếp theo ném lỗi, các handle trước còn joinable khi stack unwind. Rủi ro gì?",
+      "options": [
+        "Vector tự join mọi thread member.",
+        "Exception tự detach mọi handle.",
+        "Chỉ cần reserve vector là xử lý mọi lỗi tạo OS thread.",
+        "Destructor các std::thread joinable có thể terminate; cần quản lý join RAII/đường lỗi ngay từ thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Reserve giảm tái cấp phát nhưng không bảo đảm tạo thread không lỗi hoặc cleanup tự đúng."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Async temporary serialization",
+      "question": "Gọi std::async(launch::async,work1); rồi std::async(launch::async,work2); và bỏ ngay temporary futures có chắc chạy song song không?",
+      "options": [
+        "Không; destructor future từ async trong trường hợp phù hợp có thể chờ, khiến cách viết này tuần tự hóa.",
+        "Có; async luôn không có blocking destructor.",
+        "Có nếu không gọi get.",
+        "Không vì async luôn deferred kể cả explicit async."
+      ],
+      "correct": 0,
+      "explanation": "Giữ các future cần thiết rồi đợi/lấy kết quả có chủ đích; đo hành vi theo cấu trúc lifetime thật."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Atomic lock free claim",
+      "question": "std::atomic<long long> có được bảo đảm lock-free trên mọi target chỉ vì là atomic không?",
+      "options": [
+        "Chỉ cần volatile để bảo đảm lock-free.",
+        "Không; cần xem khả năng của implementation/target như is_lock_free theo API.",
+        "Có; mọi atomic bắt buộc một instruction.",
+        "Có nếu dùng relaxed."
+      ],
+      "correct": 1,
+      "explanation": "Tính atomic và lock-free là hai thuộc tính khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "False sharing",
+      "question": "Hai counter atomic độc lập được hai thread cập nhật, vẫn chậm dù không cùng biến. Nguyên nhân hiệu năng nào có thể có?",
+      "options": [
+        "Atomic luôn chậm đúng100 lần.",
+        "C++ tự cho hai counter cùng địa chỉ.",
+        "False sharing nếu các counter nằm cùng cache line, cần đo và bố trí dữ liệu phù hợp.",
+        "Chắc chắn data race trên hai counter atomic độc lập."
+      ],
+      "correct": 2,
+      "explanation": "Không đóng đinh kích thước cache line cho mọi CPU; benchmark phải phản ánh target thực."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Sleep not synchronization",
+      "question": "Thêm sleep_for(100ms) trước reader đọc data non-atomic có thay join/mutex/publication đúng không?",
+      "options": [
+        "Có;100ms là bảo đảm mọi máy đã xong.",
+        "Có nếu chỉ có hai thread.",
+        "Có nếu reader dùng const reference.",
+        "Không; timing không tạo quan hệ đồng bộ cần thiết."
+      ],
+      "correct": 3,
+      "explanation": "Scheduler/workload khác có thể thay đổi timing; correctness không dựa vào đoán thời gian."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Object destruction waiters",
+      "question": "Có thể hủy condition_variable/mutex/queue khi consumer còn có thể đang chờ hoặc truy cập không?",
+      "options": [
+        "Không; cần shutdown, đánh thức và đợi các thread kết thúc theo thiết kế.",
+        "Có; destructor tự hủy mọi thread dùng nó.",
+        "Có nếu done là bool.",
+        "Chỉ cần detach để không phải chờ."
+      ],
+      "correct": 0,
+      "explanation": "Vòng đời primitive và dữ liệu phải bao phủ mọi truy cập của thread."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Counter output race misconception",
+      "question": "Chương trình non-atomic ++counter từ nhiều thread không khóa có nên có đáp án “một số từ0 đến40000” không?",
+      "options": [
+        "Chỉ có thể trả đúng40000.",
+        "Không; data race là undefined behavior, không chỉ một khoảng kết quả nhỏ dự đoán được.",
+        "Có; luôn nằm trong khoảng toán học đó.",
+        "Có; compiler bắt buộc giữ mọi phép tăng riêng."
+      ],
+      "correct": 1,
+      "explanation": "Câu hỏi phải nêu thiếu đồng bộ thay vì biến undefined behavior thành bài đoán output."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Thread count scalability",
+      "question": "Vì sao tạo một OS thread cho mỗi request ở hệ thống tải lớn không mặc định tối ưu?",
+      "options": [
+        "Vì mutex chỉ dùng tối đa2 thread.",
+        "Vì future tự giới hạn tài nguyên thay mọi thiết kế.",
+        "Chi phí stack/scheduling và số thread có thể tăng quá mức; cần giới hạn concurrency theo workload.",
+        "Vì C++ cấm tạo hơn4 thread."
+      ],
+      "correct": 2,
+      "explanation": "Thread pool/backpressure là lựa chọn cần xem; không đưa số worker cố định phù hợp mọi máy."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Concurrency verification strategy",
+      "question": "Bộ kiểm chứng nào tốt hơn chỉ chạy counter đúng một lần?",
+      "options": [
+        "Chỉ thêm sleep tới khi output đúng.",
+        "Chỉ so elapsed time rồi kết luận không race.",
+        "Chỉ dùng volatile mọi biến.",
+        "Lập luận synchronization/lifetime, test shutdown/empty/error paths, stress có kiểm soát và dùng công cụ phát hiện race phù hợp khi có."
+      ],
+      "correct": 3,
+      "explanation": "Test không tự chứng minh không có race; sanitizer có giới hạn và phải kết hợp reasoning về giao thức."
+    }
+  ]
+}

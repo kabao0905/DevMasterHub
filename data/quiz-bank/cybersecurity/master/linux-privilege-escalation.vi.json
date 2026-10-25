@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cybersecurity",
+  "level": "master",
+  "lesson": "linux-privilege-escalation",
+  "language": "vi",
+  "sourceHash": "6bc5f3a5e1151df39fbd6d657126aa8552d4e9d933a2f9b3e6bd4f237da5c145",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo sudo/SUID/cron/process/CVE source và Linux execve/Qualys/RedHat docs. PwnKit là pkexec/polkit userspace, không kernel; SUID theo file owner và chịu mount/no_new_privs, không mặc định exploit. Không chạy sudo/find/ps/GTFOBins/exploit hoặc lệnh OS nào.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "PrivEsc",
+      "question": "Privilege escalation mô tả điều gì trong bài?",
+      "options": [
+        "Có được khả năng/quyền cao hơn mức được cấp ban đầu",
+        "Mọi hoạt động đăng nhập hợp lệ",
+        "Mọi lần đổi tên file",
+        "Mọi kết nối HTTPS"
+      ],
+      "correct": 0,
+      "explanation": "Trong phòng vệ cần hiểu đường vượt ranh giới quyền và cách giảm thiểu."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Least privilege",
+      "question": "Nguyên tắc quyền tối thiểu nhằm gì?",
+      "options": [
+        "Chỉ giấu username",
+        "Chỉ cấp khả năng cần thiết cho nhiệm vụ và phạm vi",
+        "Mặc định mọi user đều root",
+        "Tắt mọi kiểm tra để giảm lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Giảm quyền thừa giúp hạn chế tác động khi một thành phần gặp sự cố."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Sudo policy",
+      "question": "sudo policy có liên quan việc gì?",
+      "options": [
+        "Đặt password cho mọi tài khoản giống nhau",
+        "Tự quản lý DNS",
+        "Ai được chạy những thao tác nào dưới identity nào theo điều kiện",
+        "Tự mã hóa mọi file"
+      ],
+      "correct": 2,
+      "explanation": "Cần đọc quyền hiệu lực, không chỉ thấy tên sudo."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "sudo list",
+      "question": "sudo -l trong source có ý định gì?",
+      "options": [
+        "Tự thực thi mọi lệnh với root",
+        "Xóa lịch sử shell",
+        "Tự sửa mọi sudoers lỗi",
+        "Hiển thị các quyền/lệnh được cho phép theo policy và ngữ cảnh"
+      ],
+      "correct": 3,
+      "explanation": "Không có lệnh sudo nào được thực thi trong lần soạn."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "NOPASSWD",
+      "question": "NOPASSWD trong policy thường điều chỉnh điều kiện nào?",
+      "options": [
+        "Yêu cầu xác thực password cho các rule phù hợp",
+        "Tự cho phép mọi command toàn hệ thống",
+        "Mã hóa output lệnh",
+        "Tự thay user thành root trong mọi process"
+      ],
+      "correct": 0,
+      "explanation": "Nó không tự thay tập command/run-as được phép."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "SUID",
+      "question": "Set-user-ID bit trên executable phù hợp có vai trò gì theo exec semantics?",
+      "options": [
+        "Tự cho mọi user ghi mọi file",
+        "Có thể đặt effective UID theo owner file khi các điều kiện áp dụng",
+        "Luôn đặt real UID của mọi process thành root",
+        "Tự tạo password admin"
+      ],
+      "correct": 1,
+      "explanation": "Cần xét file type, owner và các điều kiện hệ thống."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Owner SUID",
+      "question": "File SUID owner là user app, không root, có mặc định chuyển effective UID sang root không?",
+      "options": [
+        "Chỉ nếu tên file có su",
+        "Có, bất kể ownership",
+        "Không, SUID liên quan owner file theo semantics áp dụng",
+        "Có, mọi SUID đều nghĩa root"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn đơn giản hóa SUID root, nhưng không phải mọi trường hợp."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Find mode",
+      "question": "-perm -4000 trong find nguồn nhằm tìm gì?",
+      "options": [
+        "Mọi file có đúng 4.000 byte",
+        "Mọi process root",
+        "Mọi file world-writable",
+        "File có set-user-ID bit theo phép kiểm mode đó"
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất số mode với kích thước hay danh tính process."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "File type filter",
+      "question": "-type f trong find nguồn lọc theo gì?",
+      "options": [
+        "File thường",
+        "Mọi directory",
+        "Mọi socket",
+        "Chỉ symlink"
+      ],
+      "correct": 0,
+      "explanation": "Filter mode và loại tài nguyên cần được hiểu riêng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Stderr redirect",
+      "question": "2>/dev/null trong nguồn có ý định gì?",
+      "options": [
+        "Đảm bảo kết quả đầy đủ",
+        "Bỏ output stderr của thao tác đó",
+        "Tự cấp quyền vào mọi directory",
+        "Tự sửa lỗi permission"
+      ],
+      "correct": 1,
+      "explanation": "Ẩn lỗi không đồng nghĩa đã quan sát hết filesystem."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Process list",
+      "question": "ps aux trong đoạn mẫu nhằm xem loại dữ liệu nào?",
+      "options": [
+        "Mọi sudoers rule",
+        "Mọi mật khẩu plaintext",
+        "Thông tin processes theo format/options",
+        "Mọi file SUID"
+      ],
+      "correct": 2,
+      "explanation": "Danh sách process không tự là một audit đầy đủ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "grep root",
+      "question": "grep root sau ps có bản chất gì?",
+      "options": [
+        "Tự xác minh mọi process do root chạy",
+        "Tự loại process grep",
+        "Tự chứng minh không có process đặc quyền khác",
+        "Lọc text khớp root, không tự là bộ kiểm UID chính xác theo cột"
+      ],
+      "correct": 3,
+      "explanation": "Pattern có thể khớp cả arguments hoặc các dòng khác."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Cron",
+      "question": "Cron trong lý thuyết là cơ chế gì?",
+      "options": [
+        "Lập lịch chạy công việc theo cấu hình",
+        "Một thuật toán hash mật khẩu",
+        "Một DNS resolver",
+        "Một permission bit"
+      ],
+      "correct": 0,
+      "explanation": "Quyền và đầu vào của job cần được quản lý."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Root job input",
+      "question": "Script được job đặc quyền dùng nhưng user thấp quyền sửa được tạo rủi ro gì?",
+      "options": [
+        "Không liên quan nếu binary owner root",
+        "Đầu vào có thể ảnh hưởng hành vi thực thi đặc quyền",
+        "Tự an toàn vì file là text",
+        "Chỉ ảnh hưởng tên log"
+      ],
+      "correct": 1,
+      "explanation": "Phải bảo vệ cả scripts/config/path mà thành phần tin dùng."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Dirty COW",
+      "question": "Theo advisory được đối chiếu, Dirty COW liên quan tầng nào?",
+      "options": [
+        "Một password hash format",
+        "Một header HTTP",
+        "Linux kernel memory/copy-on-write",
+        "Một lỗi chỉ ở EJS template"
+      ],
+      "correct": 2,
+      "explanation": "Cần xem bản kernel/build và advisory, không chỉ tên CVE."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "PwnKit",
+      "question": "PwnKit CVE-2021-4034 liên quan thành phần nào?",
+      "options": [
+        "Linux kernel TCP stack nói chung",
+        "Nginx gzip",
+        "MySQL query planner",
+        "polkit pkexec ở userspace"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn gộp PwnKit vào kernel là không chính xác."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Patch assessment",
+      "question": "Biết tên CVE có tự chứng minh máy hiện tại dễ bị khai thác không?",
+      "options": [
+        "Không, cần phiên bản/build/config và điều kiện áp dụng",
+        "Có, mọi Linux đều cùng trạng thái",
+        "Có, chỉ cần hostname là Ubuntu",
+        "Chỉ nếu chạy ps"
+      ],
+      "correct": 0,
+      "explanation": "Không thực hiện kiểm khai thác trong phiên này."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "SUID không exploit proof",
+      "question": "Tìm thấy SUID file có nghĩa gì phù hợp nhất?",
+      "options": [
+        "Cần tự động xóa file ngay",
+        "Một đặc tính cần đánh giá theo mục đích/cấu hình/hành vi",
+        "Chắc chắn có root shell khả dụng",
+        "Mọi owner đã bị lộ password"
+      ],
+      "correct": 1,
+      "explanation": "Inventory findings không tự là tác động đã xác minh."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Privilege context",
+      "question": "Quyền hiệu lực của một process cần đọc cùng gì?",
+      "options": [
+        "Chỉ màu terminal",
+        "Chỉ extension executable",
+        "Identity, groups, capabilities và policy/ngữ cảnh hệ thống áp dụng",
+        "Chỉ tên chương trình"
+      ],
+      "correct": 2,
+      "explanation": "Không quyết định toàn quyền từ một dấu hiệu duy nhất."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Scope lab",
+      "question": "Các lệnh whoami/id/uname trong bài tập có tự là quyền kiểm mọi máy thật không?",
+      "options": [
+        "Có, mọi lệnh chỉ đọc đều ngoài ranh giới",
+        "Có, biết tên lệnh là đủ",
+        "Chỉ cần target không public",
+        "Không, bài lab không cấp scope ngoài môi trường được phép"
+      ],
+      "correct": 3,
+      "explanation": "Trong lần soạn, các lệnh đều giữ là dữ liệu."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Sudo rule full",
+      "question": "Một rule cho chạy một command cụ thể có tự cho chạy mọi command không?",
+      "options": [
+        "Không, cần xét command, arguments, run-as và điều kiện policy",
+        "Có, chỉ cần thấy sudo trong output",
+        "Có, nếu có NOPASSWD ở một rule",
+        "Chỉ cần username root xuất hiện"
+      ],
+      "correct": 0,
+      "explanation": "Quyền cụ thể không mở rộng tự động thành quyền toàn cục."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Editor privilege",
+      "question": "Cho một công cụ có khả năng gọi chương trình/đọc ghi mạnh chạy đặc quyền cần đánh giá gì?",
+      "options": [
+        "Coi mọi công cụ biên tập là read-only",
+        "Toàn khả năng và giới hạn của công cụ dưới quyền đó, không chỉ tên chức năng chính",
+        "Chỉ đường dẫn executable",
+        "Chỉ tên editor"
+      ],
+      "correct": 1,
+      "explanation": "Không trình bày chuỗi khai thác; câu hỏi kiểm ranh giới năng lực."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Password gate≠scope",
+      "question": "Thêm yêu cầu nhập password cho một lệnh quá rộng có tự sửa toàn bộ policy quyền không?",
+      "options": [
+        "Chỉ cần 2FA thì mọi argument đúng",
+        "Có, sudo tự kiểm nghiệp vụ",
+        "Không, authentication prompt khác giới hạn thao tác/quyền được cấp",
+        "Có, password prompt làm mọi command an toàn"
+      ],
+      "correct": 2,
+      "explanation": "Cần cấp quyền đúng nhiệm vụ, không chỉ thêm một bước xác thực."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Absolute path inputs",
+      "question": "Rule nhắm binary path cố định nhưng binary đọc config user có thể sửa. Cần xem gì?",
+      "options": [
+        "Chỉ path binary là đủ",
+        "Chỉ file extension",
+        "Chỉ số process chạy",
+        "Các đầu vào/config/dependency mà binary tin dùng"
+      ],
+      "correct": 3,
+      "explanation": "Executable trust phụ thuộc cả dữ liệu điều khiển của nó."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Root file writable parent",
+      "question": "Script root-owned nằm trong parent mà user khác có thể thay entries. Còn rủi ro gì?",
+      "options": [
+        "Đường dẫn có thể bị thay đối tượng theo điều kiện, cần bảo vệ parent/path",
+        "Owner root làm mọi parent bất biến",
+        "Chỉ cần bit executable",
+        "Không ảnh hưởng vì filename giữ nguyên"
+      ],
+      "correct": 0,
+      "explanation": "Ownership file riêng không bảo vệ toàn đường dẫn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Cron definition vs run",
+      "question": "Có file script được đề cập trong tài liệu có chứng minh job root đang chạy nó không?",
+      "options": [
+        "Chỉ cần file tồn tại",
+        "Không, cần cấu hình scheduling/identity và bằng chứng phù hợp",
+        "Có, comment cron tự thực thi",
+        "Có, tên script root.sh đủ"
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt ý tưởng, cấu hình và thực thi thật."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Cron identity",
+      "question": "Mọi cron job có mặc định chạy root không?",
+      "options": [
+        "Chỉ nếu lệnh có dấu *",
+        "Có, mọi script định kỳ đặc quyền",
+        "Không, phụ thuộc nơi/config và user thực thi",
+        "Có, cron luôn bỏ mọi user policy"
+      ],
+      "correct": 2,
+      "explanation": "Cần xác định đúng tác nhân dùng đầu vào."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "SUID conditions",
+      "question": "no_new_privs hoặc nosuid có thể ảnh hưởng SUID transform không?",
+      "options": [
+        "Không, mode bit luôn thắng mọi policy",
+        "Chỉ nếu file không có tên su",
+        "Không, owner root là đủ",
+        "Có, Linux exec semantics có các điều kiện bỏ qua biến đổi đó"
+      ],
+      "correct": 3,
+      "explanation": "Không áp mô hình một bit lên mọi môi trường."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "SUID scripts",
+      "question": "Theo Linux execve docs, SUID bit trên interpreter scripts có giống ordinary native executable tuyệt đối không?",
+      "options": [
+        "Không, Linux bỏ qua set-ID bits trên scripts theo cơ chế đó",
+        "Có, mọi shell script SUID luôn thành root",
+        "Chỉ nếu script ở /tmp",
+        "Có, shebang tự thêm capabilities"
+      ],
+      "correct": 0,
+      "explanation": "Không suy behavior một loại file cho mọi loại khác."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Effective vs real",
+      "question": "Exec SUID phù hợp có tự luôn đổi cả real UID và supplementary groups không?",
+      "options": [
+        "Có, file type không ảnh hưởng",
+        "Không, cần phân biệt effective/saved/real IDs và groups theo semantics",
+        "Có, mọi identity đồng loạt thành owner",
+        "Chỉ nếu dùng Bash"
+      ],
+      "correct": 1,
+      "explanation": "Credential state có nhiều thành phần."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "SUID legitimate",
+      "question": "Một công cụ hệ thống có SUID để thực hiện nhiệm vụ hẹp có luôn là cấu hình sai không?",
+      "options": [
+        "Chỉ file tên passwd mới hợp lệ ở mọi distro",
+        "Có, SUID tự là CVE",
+        "Không, cần đánh giá nhu cầu/hành vi/patching và scope",
+        "Có, mọi SUID phải bị xóa không review"
+      ],
+      "correct": 2,
+      "explanation": "Hardening cần giữ chức năng hợp lệ và đúng policy."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Permission errors hidden",
+      "question": "Find suppress stderr rồi không thấy file nào có đủ chứng minh không có mọi SUID file không?",
+      "options": [
+        "Có, output rỗng là audit sạch",
+        "Chỉ cần sort output",
+        "Có, find tự vượt mọi quyền",
+        "Không, phạm vi/permission/mount và lỗi bị ẩn có thể làm thiếu dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Không biến thiếu quan sát thành kết luận đầy đủ."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Find root scope",
+      "question": "Path / trong lệnh nguồn có đủ thể hiện các mount namespaces/remote hosts khác không?",
+      "options": [
+        "Không, đó là filesystem view/ngữ cảnh của tiến trình thực thi",
+        "Có, slash nghĩa toàn Internet",
+        "Có, mọi container share cùng view",
+        "Chỉ cần chạy bằng root"
+      ],
+      "correct": 0,
+      "explanation": "Scope quan sát hệ thống phải rõ."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Text process filter",
+      "question": "Process có argument chứa root nhưng UID không phải root có thể bị grep root khớp không?",
+      "options": [
+        "Không, ps output đã được ký",
+        "Có",
+        "Không, grep tự hiểu cột UID",
+        "Chỉ nếu file SUID"
+      ],
+      "correct": 1,
+      "explanation": "Text match không thay parsing identity có cấu trúc."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Grep self match",
+      "question": "Pipeline ps rồi grep root có thể gồm chính process grep không?",
+      "options": [
+        "Chỉ khi kernel dễ lỗi",
+        "Chỉ khi cổng 22 mở",
+        "Có thể, tùy thời điểm/commandline",
+        "Không bao giờ"
+      ],
+      "correct": 2,
+      "explanation": "Không nên gọi kết quả text filter là inventory chính xác tuyệt đối."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "No root name",
+      "question": "Không có chuỗi root trong một output hẹp có chứng minh không có khả năng đặc quyền khác không?",
+      "options": [
+        "Có, mọi quyền đặc biệt bắt buộc in root",
+        "Chỉ nếu hostname private",
+        "Có, grep không báo lỗi",
+        "Không, còn IDs/capabilities/namespaces và scope dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Quyền có nhiều biểu diễn và lớp policy."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Kernel version",
+      "question": "uname version string có đủ quyết định trạng thái patch CVE không?",
+      "options": [
+        "Không, cần build/vendor advisory và điều kiện áp dụng",
+        "Có, mọi version cũ đều chưa vá",
+        "Chỉ cần tên Linux",
+        "Có, version mới luôn hết mọi CVE"
+      ],
+      "correct": 0,
+      "explanation": "Backport và cấu hình cần được xét."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "PwnKit correction",
+      "question": "Nguồn liệt kê PwnKit như kernel bug. Sửa thế nào?",
+      "options": [
+        "Coi mọi userspace bug không thể nâng quyền",
+        "Phân biệt pkexec/polkit userspace với Dirty COW kernel flaw",
+        "Gộp mọi root escalation thành kernel",
+        "Chỉ đổi CVE name"
+      ],
+      "correct": 1,
+      "explanation": "Tầng có lỗi ảnh hưởng hướng kiểm kê và remediation."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Patch source",
+      "question": "Một lỗ hổng local privilege escalation có thể được đánh giá bằng thông tin nào?",
+      "options": [
+        "Chỉ tuổi máy tính",
+        "Chỉ số lượng log lines",
+        "Package/kernel build, vendor fix và điều kiện cấu hình/phơi lộ liên quan",
+        "Chỉ tên công cụ có trên PATH"
+      ],
+      "correct": 2,
+      "explanation": "Không chạy exploit để suy diễn trong phiên soạn."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Local vs remote",
+      "question": "Local privilege escalation có mặc định nghĩa attacker từ Internet chưa có foothold có thể dùng ngay không?",
+      "options": [
+        "Có, local nghĩa mọi remote request",
+        "Chỉ nếu IP private",
+        "Có, nếu có SSH installed",
+        "Không, cần prerequisites/access theo lỗ hổng cụ thể"
+      ],
+      "correct": 3,
+      "explanation": "Threat model cần đầu vào và quyền ban đầu rõ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Container root",
+      "question": "UID root bên trong container có luôn đồng nghĩa root toàn host bất kể namespaces/capabilities/mounts không?",
+      "options": [
+        "Không, cần đánh giá boundary cụ thể",
+        "Có, chữ root tự xóa mọi isolation",
+        "Chỉ nếu app dùng Node",
+        "Không, container luôn an toàn tuyệt đối"
+      ],
+      "correct": 0,
+      "explanation": "Không tuyệt đối hóa cả quyền lẫn isolation."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Remove all SUID",
+      "question": "Tự động bỏ mọi SUID trên hệ thống production có thể có vấn đề gì?",
+      "options": [
+        "Chỉ đổi hiển thị ls",
+        "Phá chức năng hợp lệ; cần review nhu cầu và rollout/verification có scope",
+        "Luôn là sửa đúng không cần kiểm",
+        "Tự vá kernel"
+      ],
+      "correct": 1,
+      "explanation": "Hardening có tác động vận hành cần hiểu."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Writable dependency",
+      "question": "Binary được bảo vệ nhưng library/plugin/config do user thấp quyền kiểm soát có đáng xem không?",
+      "options": [
+        "Chỉ nếu file tên exploit",
+        "Không, mọi text file vô hại",
+        "Có, đường nạp đầu vào có thể ảnh hưởng hành vi đặc quyền",
+        "Không, chỉ binary bytes quan trọng"
+      ],
+      "correct": 2,
+      "explanation": "Trust graph cần bao các thành phần được sử dụng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "File capability",
+      "question": "Không tìm SUID có đủ audit mọi cơ chế quyền bổ sung trên Linux không?",
+      "options": [
+        "Có, SUID là cơ chế duy nhất",
+        "Chỉ cần grep root",
+        "Có, nếu find bắt đầu từ /",
+        "Không, còn capabilities/policy và các đường cấp quyền khác"
+      ],
+      "correct": 3,
+      "explanation": "Source chỉ minh họa một số góc nhìn."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Service account",
+      "question": "Service chỉ cần đọc dữ liệu riêng nhưng chạy với quyền rất rộng có rủi ro gì?",
+      "options": [
+        "Một lỗi trong service có thể gây tác động rộng hơn nhiệm vụ cần thiết",
+        "Không có vì service không phải người",
+        "Chỉ ảnh hưởng latency",
+        "Tự tăng tính toàn vẹn"
+      ],
+      "correct": 0,
+      "explanation": "Least privilege áp cho cả process/tác nhân máy."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Cron relative paths",
+      "question": "Job đặc quyền dùng command/path không kiểm soát đầy đủ có thể cần review gì?",
+      "options": [
+        "Chỉ số stars",
+        "Cách resolve executable và quyền trên môi trường/đường phụ thuộc",
+        "Chỉ tên cron file",
+        "Chỉ thời gian chạy"
+      ],
+      "correct": 1,
+      "explanation": "Không cung cấp chuỗi khai thác, chỉ xác định yêu cầu bảo vệ đầu vào."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Permissions vs exploit",
+      "question": "Writable file trong thư mục bất kỳ có tự chứng minh có đường nâng quyền không?",
+      "options": [
+        "Chỉ cần file có đuôi sh",
+        "Có, mọi process sẽ tự đọc nó",
+        "Không, cần liên kết với tác nhân đặc quyền sử dụng và điều kiện cụ thể",
+        "Có, mọi writable file cấp root"
+      ],
+      "correct": 2,
+      "explanation": "Inventory và exploitable path không đồng nhất."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Cron race assumptions",
+      "question": "Phát hiện script writable có nghĩa nó chắc chắn đã được job chạy sau lần sửa nào đó không?",
+      "options": [
+        "Có, quyền writable tự chạy script",
+        "Chỉ nếu owner root",
+        "Có, tên backup.sh là đủ",
+        "Không, cần scheduling/state/evidence phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Tính có thể ảnh hưởng và hành vi đã xảy ra là hai mức khác nhau."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Sudo command args",
+      "question": "Giới hạn command nhưng cho phép arguments quá rộng có thể cần xem gì?",
+      "options": [
+        "Khả năng thực tế của công cụ với argument được phép và các kiểm soát liên quan",
+        "Chỉ đường dẫn command là đủ",
+        "Chỉ tên user",
+        "Coi mọi argument là dữ liệu vô hại"
+      ],
+      "correct": 0,
+      "explanation": "Interface quyền phải theo năng lực có thể thực hiện."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Patch không policy",
+      "question": "Vá PwnKit có tự sửa sudoers quá rộng không?",
+      "options": [
+        "Có, cùng mục tiêu root",
+        "Không, package flaw và policy misconfiguration là hai vấn đề riêng",
+        "Có, mọi bản vá reset toàn sudoers",
+        "Chỉ nếu reboot"
+      ],
+      "correct": 1,
+      "explanation": "Các hướng remediation cần gắn đúng nguyên nhân."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Policy không kernel patch",
+      "question": "Giảm quyền sudo có tự vá một kernel flaw đã tồn tại không?",
+      "options": [
+        "Chỉ cần đổi password root",
+        "Có, nếu user không có shell",
+        "Không, cần quản lý version/fix và các control phù hợp riêng",
+        "Có, mọi kernel lỗi đều do sudo"
+      ],
+      "correct": 2,
+      "explanation": "Một lớp bảo vệ có thể giảm một số đường tiếp cận nhưng không sửa code kernel."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Identity proof",
+      "question": "whoami có tự mô tả toàn bộ effective capabilities và namespace context không?",
+      "options": [
+        "Có, một tên user là mọi policy",
+        "Chỉ nếu output root",
+        "Có, nếu terminal local",
+        "Không, cần dữ liệu phù hợp với câu hỏi quyền cụ thể"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn lệnh cơ bản không là audit đầy đủ."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Audit report",
+      "question": "Một phát hiện cấu hình quyền nên ghi gì?",
+      "options": [
+        "Tài nguyên/identity/policy hiệu lực, tác động có căn cứ và giới hạn đã kiểm",
+        "Chỉ từ root",
+        "Chỉ số file tìm thấy",
+        "Chỉ tên scanner"
+      ],
+      "correct": 0,
+      "explanation": "Người đọc cần đánh giá được quan hệ quyền thực."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "No exploitable finding",
+      "question": "Không thấy một đường nâng quyền trong một lượt review có thể kết luận gì?",
+      "options": [
+        "Chỉ cần cài tool khác",
+        "Chưa thấy trong scope được review, không bảo đảm mọi đường đã loại",
+        "Toàn host không thể có lỗi",
+        "Mọi CVE đều không áp dụng"
+      ],
+      "correct": 1,
+      "explanation": "Không mở rộng kết luận vượt bằng chứng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Unsafe training transfer",
+      "question": "Mẫu CTF có lệnh nguy hiểm có nên áp nguyên lên máy thật chỉ vì tên bài là ethical không?",
+      "options": [
+        "Chỉ cần user thường",
+        "Có, source luôn biết host hiện tại",
+        "Không, cần scope và hiểu tác động, giữ học liệu không là chỉ thị thực thi",
+        "Có, ethical nghĩa mọi target được phép"
+      ],
+      "correct": 2,
+      "explanation": "Lần soạn không có thao tác quản trị hay khai thác."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Root-owned log trust",
+      "question": "Một log root-owned có tự chứng minh mọi dòng là đúng lịch sử không?",
+      "options": [
+        "Có, owner root thay mọi chữ ký",
+        "Chỉ cần mode 600",
+        "Có, nếu file ở /var/log",
+        "Không, cần trust/collection/integrity và context"
+      ],
+      "correct": 3,
+      "explanation": "Ownership là một thuộc tính, không toàn bộ provenance."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Reboot effects",
+      "question": "Cài một bản vá có cần xem phần runtime đang chạy thay vì chỉ package metadata không?",
+      "options": [
+        "Có, tùy thành phần có thể cần lifecycle/restart/reboot phù hợp để fix có hiệu lực",
+        "Không, mọi file mới tự là mọi process mới",
+        "Chỉ tên CVE",
+        "Có nghĩa phải reboot mọi host vô điều kiện"
+      ],
+      "correct": 0,
+      "explanation": "Không đưa thao tác cụ thể lên máy hiện tại; nêu yêu cầu xác minh hiệu lực."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Least privilege tradeoff",
+      "question": "Giảm quyền không cần thiết nên được thực hiện theo cách nào?",
+      "options": [
+        "Coi mọi quyền đều không cần",
+        "Gắn với nhiệm vụ/đầu vào và kiểm chức năng sau thay đổi trong scope",
+        "Xóa mọi tài khoản bất kể yêu cầu",
+        "Chỉ đổi tên role admin"
+      ],
+      "correct": 1,
+      "explanation": "Mục tiêu là quyền vừa đủ, không phá mọi chức năng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Remediation evidence",
+      "question": "Có patch/script hardening trong tài liệu có đủ chứng minh hệ thống đã được bảo vệ không?",
+      "options": [
+        "Chỉ cần filename secure.sh",
+        "Có, nếu docs có logo vendor",
+        "Không, cần deployment/effective state và kiểm chứng phù hợp",
+        "Có, comment đã là state thật"
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt đề xuất và kết quả."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Data confidentiality",
+      "question": "Leo quyền không cần sửa dữ liệu có vẫn gây tác động bảo mật không?",
+      "options": [
+        "Không, chỉ xóa file mới nguy hiểm",
+        "Chỉ nếu attacker chạy kernel exploit",
+        "Không, read-only không liên quan CIA",
+        "Có, quyền đọc/lộ dữ liệu và các khả năng khác cũng có thể gây tác động"
+      ],
+      "correct": 3,
+      "explanation": "Tác động không chỉ là phá hủy."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "SUID owner không root",
+      "question": "Reviewer tìm SUID file owner appuser rồi báo root escalation đã xác nhận, không xem hành vi/mount policy. Thiếu gì?",
+      "options": [
+        "Owner/effective identity, loại file, điều kiện exec và năng lực thực tế, không chỉ mode bit",
+        "Mọi SUID luôn root nên không thiếu",
+        "Chỉ cần username dài hơn",
+        "Chỉ chạy find thêm lần nữa"
+      ],
+      "correct": 0,
+      "explanation": "SUID là một phần của đường quyền, không phải kết luận tác động."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Root script parent mutable",
+      "question": "Job root dùng script root-owned nhưng parent cho user thấp quyền thay entries; script không writable trực tiếp. Vì sao vẫn cần kiểm?",
+      "options": [
+        "Chỉ extension sh quyết định",
+        "An toàn đường dẫn/đối tượng có thể bị ảnh hưởng ngoài file mode, cần bảo vệ cả parent và chuỗi phụ thuộc",
+        "Owner root làm mọi parent bất biến",
+        "File readonly loại mọi cách thay đường dẫn"
+      ],
+      "correct": 1,
+      "explanation": "Không đánh giá trust path bằng một metadata đơn lẻ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "NOPASSWD và capabilities tool",
+      "question": "Policy không hỏi password cho công cụ có năng lực rộng và arguments lỏng. Tăng password prompt đã đủ chưa?",
+      "options": [
+        "Chỉ đổi tên binary",
+        "Chỉ có 2FA thì mọi quyền hợp lệ",
+        "Chưa, cần thu hẹp capability/command/args/run-as và đầu vào theo nhiệm vụ",
+        "Rồi, password prompt tự chặn mọi thao tác ngoài ý định"
+      ],
+      "correct": 2,
+      "explanation": "Authentication và authorization scope cần đúng cùng nhau."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "PwnKit kernel nhầm",
+      "question": "Inventory chỉ kiểm kernel version để kết luận đã vá PwnKit. Sai ở đâu?",
+      "options": [
+        "Mọi root bug đều kernel",
+        "Chỉ cần uname mới nhất",
+        "PwnKit chỉ là một SUID mode không có code flaw",
+        "PwnKit liên quan pkexec/polkit userspace nên phải xem package/fix/điều kiện đúng thành phần"
+      ],
+      "correct": 3,
+      "explanation": "Xác định đúng lớp phần mềm là bước cần cho remediation có căn cứ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Dirty COW build evidence",
+      "question": "Kernel version string nhìn cũ nhưng vendor có backport. Cách đánh giá phù hợp?",
+      "options": [
+        "Đối chiếu build/advisory/effective runtime và điều kiện, không suy từ số version đơn lẻ",
+        "Mọi version cũ chắc chắn exploitable",
+        "Owner nói đã vá là đủ mọi bằng chứng",
+        "Chỉ đổi hostname"
+      ],
+      "correct": 0,
+      "explanation": "Thông tin sản phẩm phải gắn với implementation và trạng thái chạy thật."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Find thiếu dữ liệu",
+      "question": "find bắt đầu từ / và ẩn stderr, không có kết quả; reviewer nói toàn host/container khác không có SUID. Vấn đề?",
+      "options": [
+        "Chỉ cần grep root",
+        "Scope filesystem/namespace/permissions và lỗi bị ẩn chưa chứng minh coverage đó",
+        "Slash nghĩa mọi filesystem ở mọi namespace",
+        "No output luôn là zero findings toàn hệ thống"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất phạm vi mong muốn với phạm vi thật đã quan sát."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "ps grep false positives",
+      "question": "Process user web có args chứa /root/help; grep root khớp rồi report nó chạy root. Cần sửa gì?",
+      "options": [
+        "Chỉ xóa dòng grep khỏi output là đủ mọi case",
+        "Chỉ đổi process name",
+        "Parse đúng identity/cột và context thay text match đơn giản",
+        "Giữ report vì chuỗi root là UID"
+      ],
+      "correct": 2,
+      "explanation": "Một chuỗi trong command line không xác định quyền hiệu lực."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Cron hiện diện chưa execution",
+      "question": "Có script writable và comment root cron nhưng chưa có job/config thực. Có thể claim exploit đã chạy không?",
+      "options": [
+        "Có, comment cron tự chạy",
+        "Có, writable file tự có root context",
+        "Chỉ cần script tên backup",
+        "Không, cần liên kết scheduling/identity/đầu vào và bằng chứng; hiện chỉ có nguy cơ có điều kiện"
+      ],
+      "correct": 3,
+      "explanation": "Suy luận khả năng không là kết quả thực thi."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Mount/privs conditions",
+      "question": "Native executable có SUID nhưng no_new_privs hoặc nosuid đang áp dụng. Vì sao không hứa nó luôn nâng quyền?",
+      "options": [
+        "Exec semantics có thể bỏ qua biến đổi ID theo điều kiện; cần policy hiệu lực",
+        "Mode bit luôn cao hơn mọi policy",
+        "Chỉ xóa đuôi file là nâng được",
+        "Owner root tự vô hiệu mọi mount flag"
+      ],
+      "correct": 0,
+      "explanation": "Phải nêu giả định khi giải thích cơ chế quyền."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Script setID misconception",
+      "question": "Team đặt SUID lên shell script rồi nói mọi Linux user sẽ chạy nó như owner. Đánh giá đúng?",
+      "options": [
+        "Chỉ vì script có shebang",
+        "Linux bỏ qua set-ID bits trên interpreter scripts theo cơ chế exec đó; vẫn cần xem cách script được gọi bởi tác nhân khác",
+        "Mọi script SUID đều root trên Linux",
+        "Chỉ cần chmod có output"
+      ],
+      "correct": 1,
+      "explanation": "Không gộp scripts với native executable semantics."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Container boundary",
+      "question": "Một app bị chiếm có UID 0 trong container, report lập tức ghi root host. Cần gì?",
+      "options": [
+        "Container luôn không thể tác động host nên bỏ qua",
+        "Chỉ đổi image tag",
+        "Xác định namespaces/capabilities/mounts và đường vượt boundary thật; không suy từ UID label đơn lẻ",
+        "UID 0 luôn tương đương mọi host"
+      ],
+      "correct": 2,
+      "explanation": "Cả quyền lẫn isolation cần scope cụ thể."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Policy input graph",
+      "question": "Sudo rule hạn chế binary cố định nhưng config/plugin/path lookup do user thấp quyền kiểm soát. Cách review đầy đủ?",
+      "options": [
+        "Chỉ hash binary rồi bỏ mọi input",
+        "Chỉ thêm password prompt",
+        "Chỉ đổi tên config",
+        "Theo các đầu vào và dependency ảnh hưởng hành vi đặc quyền, không chỉ binary path"
+      ],
+      "correct": 3,
+      "explanation": "Một tác nhân đặc quyền có thể tin dùng nhiều thành phần."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Hardening theo nhu cầu và trust path",
+      "question": "Inventory có SUID executable được package dùng cho chức năng hợp lệ; đồng thời root job đọc script root-owned nhưng parent không có sticky bit và cho user thấp quyền thay entries. Cần giữ chức năng dịch vụ. Phương án remediation nào xử lý đúng cả hai nhóm?",
+      "options": [
+        "Đánh giá nhu cầu/patch/hành vi từng executable trước khi thu hẹp quyền, bảo vệ cả script lẫn parent/dependency của root job và kiểm chức năng sau thay đổi có phạm vi",
+        "Gỡ mọi SUID rồi chỉ giữ nguyên ownership của script root job; coi việc owner là root đã bảo vệ toàn đường dẫn",
+        "Chỉ cập nhật package chứa executable và kiểm hash binary; bỏ quyền parent vì bản thân script không cho user thấp quyền ghi",
+        "Đặt toàn filesystem chứa công cụ ở nosuid mà không kiểm yêu cầu chức năng; giữ parent root job vì mode SUID mới là nguyên nhân mọi PrivEsc"
+      ],
+      "correct": 0,
+      "explanation": "SUID hợp lệ cần được đánh giá theo khả năng và nhu cầu; xóa blanket có thể phá chức năng. Root-owned file không bảo vệ entry ở parent mutable; cần sửa trust path thay vì chỉ một metadata của file."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Patch và config độc lập",
+      "question": "Host đã vá kernel nhưng sudoers còn cấp quyền rộng và root job dùng input writable. Kết luận nào đúng?",
+      "options": [
+        "Mọi lỗ hổng root đều cùng nguyên nhân",
+        "Còn các đường policy/input cần sửa riêng, patch một lớp không chứng minh toàn host an toàn",
+        "Vá kernel tự sửa mọi sudo/cron",
+        "Chỉ cần một scanner báo xanh"
+      ],
+      "correct": 1,
+      "explanation": "Phòng vệ cần theo từng nguyên nhân và đường tác động."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Local prerequisites",
+      "question": "Một CVE local được đọc từ advisory, chưa biết package có trên host hay quyền ban đầu. Có thể báo remote compromise chắc chắn không?",
+      "options": [
+        "Chỉ cần IP public",
+        "Chỉ cần có SSH",
+        "Không, cần asset/build/prerequisites và scope đúng; không mở rộng loại tác động",
+        "Có, mọi local root bug là remote root"
+      ],
+      "correct": 2,
+      "explanation": "Không công bố tác động vượt bằng chứng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Least privilege service",
+      "question": "Service chỉ cần ghi cache nhưng chạy root và nạp config writable bởi nhiều users. Hướng giảm rủi ro phối hợp?",
+      "options": [
+        "Chỉ đổi tên service thành nonroot",
+        "Chỉ ẩn ps output",
+        "Chỉ thêm checksum vào log",
+        "Chọn identity/quyền vừa đủ và bảo vệ config/path/vùng ghi theo nhiệm vụ, kiểm ứng dụng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần tác động effective state, không chỉ nhãn."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Root-owned không authenticity",
+      "question": "Binary root-owned xuất hiện trên host bị chiếm, team coi ownership đủ chứng minh file gốc đáng tin. Cần gì?",
+      "options": [
+        "Provenance/integrity theo nguồn tin cậy và context, ngoài ownership hiện tại",
+        "Root owner tự ký mọi bytes",
+        "Chỉ xem mode 755",
+        "Chỉ chạy grep root"
+      ],
+      "correct": 0,
+      "explanation": "Metadata có thể không xác minh lịch sử nội dung."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Runtime patch hiệu lực",
+      "question": "Package fix đã cài nhưng process/kernel cũ vẫn chạy theo lifecycle của thành phần. Báo đã xử lý hoàn toàn có đủ chưa?",
+      "options": [
+        "Chỉ hash source code",
+        "Cần xác minh fix có hiệu lực trên runtime và phạm vi đích theo hướng dẫn, không chỉ file/package mới",
+        "Cài file mới luôn thay mọi process tức thì",
+        "Chỉ đổi ngày report"
+      ],
+      "correct": 1,
+      "explanation": "Remediation đề xuất, áp dụng và hiệu lực là các mốc khác nhau."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Scope quyền kỹ thuật",
+      "question": "Học viên có tài khoản trên máy công ty và biết lệnh trong CTF. Điều đó tự cho phép tìm/chạy đường nâng quyền không?",
+      "options": [
+        "Có, nguồn dùng từ ethical là đủ",
+        "Chỉ cần không xóa dữ liệu",
+        "Không, quyền đăng nhập không tự là authorization cho mọi hành động kiểm tra/khai thác",
+        "Có, tài khoản thường tự cấp scope pentest"
+      ],
+      "correct": 2,
+      "explanation": "Giữ học liệu trong môi trường được cấp phạm vi."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exec SUID và root job qua đường dẫn",
+      "question": "Một native executable có SUID, owner appuser và nằm trên mount nosuid. Riêng root cron job gọi theo path một script root-owned, không cho user thấp quyền ghi file, nhưng parent không sticky và cho họ thay entries. Kết luận nào phù hợp?",
+      "options": [
+        "SUID luôn cho root dù owner appuser và nosuid; chỉ cần gỡ bit SUID, parent của root job không còn quan trọng",
+        "Nosuid ngăn mọi process root chạy script trên mount nên root cron job cũng không còn rủi ro từ parent mutable",
+        "Script root-owned và không writable trực tiếp bảo đảm đường root job an toàn; chỉ native executable mới cần kiểm parent",
+        "Không suy ra root từ SUID: owner là appuser và nosuid có thể bỏ biến đổi ID; vẫn phải sửa trust path của root job vì script được thực thi bởi tác nhân root qua parent mutable"
+      ],
+      "correct": 3,
+      "explanation": "Biến đổi ID khi exec khác việc một tác nhân vốn có quyền root đọc/thực thi file. Owner, mount policy và loại file giới hạn kết luận SUID; quyền thay entry trên đường root job là một ranh giới khác cần bảo vệ."
+    }
+  ]
+}

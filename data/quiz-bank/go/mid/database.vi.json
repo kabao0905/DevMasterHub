@@ -1,0 +1,1147 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "mid",
+  "lesson": "database",
+  "language": "vi",
+  "sourceHash": "846d5c162cf780b8021ea1417b2dfaa53f81920a6d19f2bf9b252a41e78a510c",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source/local Go1.26.1 database/sql,driver docs; PostgreSQL source/spec-only, không có pq/server để integration. Selected stdlib NULL/driver-value/error fixtures không thực hiện SQL/network. Nêu đúng Open không bảo đảm kết nối, Scan positional không đọc db tags, thiếu rows.Err và bỏ err cuối, log.Fatal bỏ defer, DSN demo không dùng thật. Không khẳng định pool25/5 là tối ưu chung.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Database interface",
+      "question": "database/sql cung cấp gì?",
+      "options": [
+        "API chuẩn làm việc với database qua driver.",
+        "Một PostgreSQL server tích hợp.",
+        "ORM tự map mọi struct bằng reflection.",
+        "Một model tạo SQL qua API có phí."
+      ],
+      "correct": 0,
+      "explanation": "Thư viện chuẩn không kèm mọi database driver."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Driver role",
+      "question": "Import _ \"github.com/lib/pq\" trong source nhằm gì?",
+      "options": [
+        "Tự xác thực mọi request web.",
+        "Đăng ký PostgreSQL driver qua side effects khởi tạo package.",
+        "Dùng identifier pq trực tiếp trong mọi query.",
+        "Tự tạo database users."
+      ],
+      "correct": 1,
+      "explanation": "Blank import vẫn thực hiện initialization của package."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Open handle",
+      "question": "sql.Open trả về thành phần chính nào?",
+      "options": [
+        "Một PostgreSQL process mới.",
+        "Một slice User duy nhất.",
+        "*sql.DB và error.",
+        "Một bảng users và JWT."
+      ],
+      "correct": 2,
+      "explanation": "DB handle quản lý pool, không đồng nghĩa một connection cố định."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Connection pool",
+      "question": "*sql.DB về bản chất đại diện gì?",
+      "options": [
+        "Luôn đúng một TCP connection.",
+        "Một transaction duy nhất suốt process.",
+        "Một file JSON của từng user.",
+        "Pool gồm zero hoặc nhiều kết nối nền."
+      ],
+      "correct": 3,
+      "explanation": "DB handle được thiết kế để dùng lại và safe concurrent API use."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Open limit",
+      "question": "SetMaxOpenConns(25) đặt gì?",
+      "options": [
+        "Giới hạn số kết nối mở cho DB handle đó.",
+        "Số query tối đa suốt đời25.",
+        "Số rows trả về tối đa25.",
+        "Số goroutine tối đa toàn process."
+      ],
+      "correct": 0,
+      "explanation": "Không tự tạo ngay25 connections."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Idle limit",
+      "question": "SetMaxIdleConns(5) điều chỉnh gì?",
+      "options": [
+        "Độ dài tối đa của string.",
+        "Số connections idle tối đa được giữ trong pool.",
+        "Số query được phép sai.",
+        "Số users tối đa."
+      ],
+      "correct": 1,
+      "explanation": "Idle khác connections đang được dùng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Query result",
+      "question": "db.Query thường trả gì?",
+      "options": [
+        "Một ID duy nhất không error.",
+        "Một middleware HTTP.",
+        "*sql.Rows và error.",
+        "Một struct User tự map hoàn chỉnh."
+      ],
+      "correct": 2,
+      "explanation": "Caller cần iterate, Scan và kiểm tra errors."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Rows Next",
+      "question": "rows.Next() chủ yếu làm gì?",
+      "options": [
+        "Tự append User vào slice.",
+        "Tự commit transaction.",
+        "Tự kiểm tra password.",
+        "Chuyển tới row tiếp theo và báo có row để Scan không."
+      ],
+      "correct": 3,
+      "explanation": "Next=false có thể do hết dữ liệu hoặc lỗi; kiểm tra rows.Err."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Rows Scan",
+      "question": "rows.Scan(&u.ID,&u.Name,&u.Email) trong bài làm gì?",
+      "options": [
+        "Chép/chuyển các cột theo thứ tự vào destinations.",
+        "Tự tìm field theo db tags.",
+        "Tự tạo index.",
+        "Tự lưu User ngược vào DB."
+      ],
+      "correct": 0,
+      "explanation": "Số destinations phải khớp số cột trả về."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Rows close",
+      "question": "defer rows.Close() giúp gì?",
+      "options": [
+        "Tự đọc thành slice Users.",
+        "Giải phóng tài nguyên result set khi phù hợp vòng đời hàm.",
+        "Tự xóa rows khỏi database.",
+        "Tự commit mọi writes."
+      ],
+      "correct": 1,
+      "explanation": "Không thay việc kiểm tra iteration errors."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Query row",
+      "question": "QueryRow(...).Scan(&id) nguồn nhằm gì?",
+      "options": [
+        "Tạo pool khác.",
+        "Chỉ in SQL ra terminal.",
+        "Lấy một row với id từ INSERT ... RETURNING.",
+        "Lấy toàn bộ users tự động."
+      ],
+      "correct": 2,
+      "explanation": "Lỗi QueryRow thường được trả khi Scan."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Placeholders",
+      "question": "Trong PostgreSQL source, $1 và $2 là gì?",
+      "options": [
+        "Biến Go toàn cục.",
+        "Lệnh thay tên bảng tùy ý an toàn.",
+        "Một shell expansion.",
+        "Placeholders cho các argument values."
+      ],
+      "correct": 3,
+      "explanation": "Placeholder syntax phụ thuộc driver/dialect."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Arguments separate",
+      "question": "Vì sao truyền \"%An%\" như argument riêng?",
+      "options": [
+        "Giữ dữ liệu tách khỏi SQL statement thay vì nối raw input vào câu SQL.",
+        "Để tự tạo database mới.",
+        "Để LIKE luôn dùng B-tree hiệu quả.",
+        "Để mọi quyền truy cập tự đúng."
+      ],
+      "correct": 0,
+      "explanation": "Binding bảo vệ value boundary, không thay authorization hoặc query design."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "SQL LIKE meaning",
+      "question": "LIKE \"%An%\" theo ý định source tìm gì?",
+      "options": [
+        "Chỉ tên kết thúc bằng chữ Z.",
+        "Tên chứa chuỗi An theo semantics/collation của DB.",
+        "Chỉ ID bằng An.",
+        "Mọi tên chính xác An duy nhất bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Chi tiết case/collation là contract DB cụ thể."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Struct tags scope",
+      "question": "db:\"name\" có tự được database/sql.Scan đọc để map field không?",
+      "options": [
+        "Chỉ nếu field export.",
+        "Chỉ khi gọi QueryRow.",
+        "Không.",
+        "Có, mọi tag db là chuẩn bắt buộc của sql."
+      ],
+      "correct": 2,
+      "explanation": "Tag mapping có thể do thư viện khác cung cấp; source dùng Scan tường minh."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "NULL wrapper",
+      "question": "sql.NullString giúp biểu diễn điều gì?",
+      "options": [
+        "Một string luôn mã hóa.",
+        "Một error bắt buộc.",
+        "Một connection pool.",
+        "String cùng trạng thái có giá trị SQL non-NULL hay không."
+      ],
+      "correct": 3,
+      "explanation": "Valid phân biệt NULL với chuỗi rỗng hợp lệ."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "No row error",
+      "question": "QueryRow.Scan khi không có row thường trả error nào?",
+      "options": [
+        "sql.ErrNoRows.",
+        "Luôn nil với mọi destination bằng0.",
+        "context.Canceled trong mọi trường hợp.",
+        "http.ErrServerClosed."
+      ],
+      "correct": 0,
+      "explanation": "Không thấy dữ liệu khác lỗi parse hay lỗi network."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Execution versus query",
+      "question": "Exec thường phù hợp trường hợp nào?",
+      "options": [
+        "Bắt buộc cho mọi RETURNING row.",
+        "Statement không cần result rows.",
+        "Mọi SELECT cần iterate nhiều rows.",
+        "Chỉ ghi log, không chạy SQL."
+      ],
+      "correct": 1,
+      "explanation": "Chọn API theo contract của statement và driver."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Transactions",
+      "question": "*sql.Tx thường biểu diễn gì?",
+      "options": [
+        "Một struct JSON user.",
+        "Một goroutine tự chạy.",
+        "Một transaction gắn với connection cụ thể.",
+        "Toàn bộ DB cluster."
+      ],
+      "correct": 2,
+      "explanation": "Commit/Rollback kết thúc transaction; không dùng như DB global vô hạn."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Last error source",
+      "question": "Source sau INSERT đã làm gì với err từ Scan?",
+      "options": [
+        "Tự retry ba lần.",
+        "Log thành công chắc chắn.",
+        "Tự rollback mọi query trước.",
+        "Gán err nhưng chưa kiểm tra hoặc trả nó."
+      ],
+      "correct": 3,
+      "explanation": "Bỏ error có thể làm ứng dụng coi write thất bại là thành công."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Unknown driver local",
+      "question": "Chương trình in gì trong executable chỉ import các package này?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){db,e:=sql.Open(\"quiz-driver-not-registered\",\"unused\");fmt.Println(db==nil,e!=nil)}\n",
+      "options": [
+        "true true.",
+        "false true.",
+        "true false.",
+        "Tự kết nối PostgreSQL ngoài mạng."
+      ],
+      "correct": 0,
+      "explanation": "Driver tên này chưa được đăng ký nên Open báo lỗi trước khi có DB handle."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "NullString zero",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var v sql.NullString;fmt.Println(v.String==\"\",v.Valid)}\n",
+      "options": [
+        "Panic vì chưa Scan.",
+        "true false.",
+        "true true.",
+        "false false."
+      ],
+      "correct": 1,
+      "explanation": "Zero value có String rỗng và Valid=false."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "NullString SQL NULL",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){v:=sql.NullString{String:\"old\",Valid:true};e:=v.Scan(nil);fmt.Println(e==nil,v.Valid)}\n",
+      "options": [
+        "true true.",
+        "Scan(nil) luôn panic.",
+        "true false.",
+        "false false."
+      ],
+      "correct": 2,
+      "explanation": "Scan(nil) biểu diễn SQL NULL, không phải string hợp lệ."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "NullString empty value",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var v sql.NullString;e:=v.Scan(\"\");fmt.Println(e==nil,v.Valid,v.String==\"\")}\n",
+      "options": [
+        "true false true.",
+        "false false false.",
+        "String rỗng luôn bị coi NULL.",
+        "true true true."
+      ],
+      "correct": 3,
+      "explanation": "Chuỗi rỗng non-NULL vẫn có Valid=true."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "NullString driver value",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){v:=sql.NullString{String:\"ignored\",Valid:false};x,e:=v.Value();fmt.Println(x==nil,e==nil)}\n",
+      "options": [
+        "true true.",
+        "false true.",
+        "true false.",
+        "Value tự mở connection."
+      ],
+      "correct": 0,
+      "explanation": "Valid=false tạo driver.Value nil dù String field chứa gì."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "NullInt parse",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var v sql.NullInt64;e:=v.Scan(\"42\");fmt.Println(v.Int64,v.Valid,e==nil)}\n",
+      "options": [
+        "Compiler cấm Scan string vào NullInt64.",
+        "42 true true.",
+        "0 false false.",
+        "42 false true."
+      ],
+      "correct": 1,
+      "explanation": "Scan hỗ trợ một số conversion theo database/sql contract."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "NullInt invalid input",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var v sql.NullInt64;e:=v.Scan(\"not-a-number\");fmt.Println(e!=nil)}\n",
+      "options": [
+        "Tự chuyển mọi string sai thành0,nil.",
+        "Tự gọi database server.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Không nên bỏ error Scan khi dữ liệu không chuyển được."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "NullBool conversion failure",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var v sql.NullBool;e:=v.Scan(int64(2));fmt.Println(e!=nil)}\n",
+      "options": [
+        "false.",
+        "Tự đổi mọi số nonzero thành true không lỗi.",
+        "Compiler cấm kiểu NullBool.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Conversion bool của driver/sql không là truthiness mọi số."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "NullTime NULL",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var v sql.NullTime;e:=v.Scan(nil);fmt.Println(e==nil,v.Valid)}\n",
+      "options": [
+        "true false.",
+        "false false.",
+        "true true.",
+        "NULL tự thành thời gian hiện tại hợp lệ."
+      ],
+      "correct": 0,
+      "explanation": "SQL NULL khác một timestamp có giá trị zero hay now."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Named argument",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){a:=sql.Named(\"id\",7);fmt.Println(a.Name,a.Value)}\n",
+      "options": [
+        "Named tự tạo SQL statement.",
+        "id 7.",
+        "@id 7.",
+        "id 0."
+      ],
+      "correct": 1,
+      "explanation": "Tên NamedArg không gồm ký hiệu placeholder; driver phải hỗ trợ syntax sử dụng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Open not connectivity",
+      "question": "sql.Open không lỗi có chứng minh DB đã kết nối khỏe chưa?",
+      "options": [
+        "Có, vì handle non-nil.",
+        "Chỉ cần SetMaxIdleConns.",
+        "Chưa; Open có thể chỉ validate và chuẩn bị handle, dùng PingContext khi cần kiểm tra kết nối.",
+        "Có, luôn xác thực một TCP roundtrip thành công."
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt handle creation với connectivity và readiness đầy đủ."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Ping context",
+      "question": "Vì sao PingContext hữu ích hơn kiểm tra err của Open đơn thuần?",
+      "options": [
+        "Tự tạo mọi table thiếu.",
+        "Tự rollback migrations.",
+        "Tự chứng minh mọi query tương lai thành công.",
+        "Có thể xác minh kết nối với budget/cancellation được truyền."
+      ],
+      "correct": 3,
+      "explanation": "Ping chỉ kiểm tra tại thời điểm đó, không là guarantee cho tương lai."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Pool shared handle",
+      "question": "Có nên sql.Open một DB mới cho mỗi HTTP request như thói quen mặc định không?",
+      "options": [
+        "Thường nên dùng lại DB handle/pool theo vòng đời ứng dụng.",
+        "Có, càng nhiều pools càng luôn nhanh.",
+        "Có, DB handle không safe concurrent API use.",
+        "Chỉ với GET phải tạo mới."
+      ],
+      "correct": 0,
+      "explanation": "Tạo nhiều pools có thể tăng connections/tài nguyên và phá budget DB."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Positional column mismatch",
+      "question": "Nếu SELECT id,email,name nhưng Scan(&ID,&Name,&Email), điều gì có thể xảy ra?",
+      "options": [
+        "Go tự hỏi user mỗi row.",
+        "Email/name bị gán nhầm nếu types vẫn tương thích, không có db-tag mapping tự sửa.",
+        "SQL tự đọc tags rồi reorder.",
+        "Compiler luôn phát hiện tên cột khác."
+      ],
+      "correct": 1,
+      "explanation": "Explicit column order và destinations phải được kiểm tra cùng nhau."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Scan arity",
+      "question": "SELECT ba cột nhưng Scan chỉ hai destinations thường thế nào?",
+      "options": [
+        "Tự append destination thứ ba.",
+        "Compiler tự thêm biến.",
+        "Scan trả error do số destinations không khớp.",
+        "Tự bỏ cột cuối không lỗi trong mọi trường hợp."
+      ],
+      "correct": 2,
+      "explanation": "Phải kiểm tra error Scan, không chỉ rows.Next."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Iteration error",
+      "question": "Sau loop rows.Next, source còn thiếu kiểm tra quan trọng nào?",
+      "options": [
+        "len(users)>0 thay cho mọi error.",
+        "fmt.Printf tên package.",
+        "sql.Open lần nữa.",
+        "rows.Err()."
+      ],
+      "correct": 3,
+      "explanation": "Next=false không phân biệt hết dữ liệu bình thường với lỗi nếu bỏ Err."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "QueryRow deferred errors",
+      "question": "Vì sao QueryRow trả *Row chứ không trực tiếp một error cùng lúc?",
+      "options": [
+        "API trì hoãn báo một số query errors tới Scan.",
+        "Vì QueryRow không bao giờ lỗi.",
+        "Vì error tự được log.Fatal.",
+        "Vì chỉ chạy SELECT constants."
+      ],
+      "correct": 0,
+      "explanation": "Caller cần kiểm tra Scan error ngay cả khi đã có *Row."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Multiple matching rows",
+      "question": "QueryRow query ra nhiều rows có bảo đảm báo lỗi cardinality không?",
+      "options": [
+        "Tự chọn row ID lớn nhất.",
+        "Không; API Scan dùng row đầu và bỏ phần còn lại theo contract.",
+        "Có, luôn lỗi nếu hơn1.",
+        "Tự trả slice mọi rows."
+      ],
+      "correct": 1,
+      "explanation": "Muốn uniqueness cần schema/query invariant và ORDER BY khi ý định cần thứ tự."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "NULL to plain string",
+      "question": "Cột nullable quét vào *string có phù hợp mọi row không?",
+      "options": [
+        "Có, string chứa được nil.",
+        "Chỉ cần thêm db tag.",
+        "Không; SQL NULL cần destination/handling phù hợp như NullString hoặc thiết kế khác.",
+        "Có, NULL luôn tự thành string \"NULL\"."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế type theo nullability và kiểm tra conversion error."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Wildcard escaping",
+      "question": "Binding \"%\"+input+\"%\" có làm ký tự %/_ trong input mất wildcard meaning không?",
+      "options": [
+        "Có, parameter binding tự escape mọi LIKE wildcard về literal.",
+        "Có, mọi string bind chỉ dùng equality.",
+        "Chỉ cần QueryContext.",
+        "Không; nếu muốn tìm literal pattern cần escape theo SQL dialect/contract."
+      ],
+      "correct": 3,
+      "explanation": "Injection protection và LIKE pattern semantics là hai vấn đề khác nhau."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Dynamic identifiers",
+      "question": "Có thể dùng $1 như tên bảng tùy ý trong mọi query PostgreSQL không?",
+      "options": [
+        "Không; value placeholders không thay identifier syntax.",
+        "Có, mọi phần SQL đều là parameter values.",
+        "Có, nếu dùng fmt.Sprintf thêm raw input.",
+        "Chỉ cần đặt tên biến table."
+      ],
+      "correct": 0,
+      "explanation": "Dynamic identifiers cần allowlist/quoting phù hợp; không nối input không kiểm soát."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Driver placeholder differences",
+      "question": "Dùng $1 có portable nguyên trạng sang mọi driver không?",
+      "options": [
+        "Chỉ khác trên Windows.",
+        "Không; placeholder conventions phụ thuộc driver/dialect.",
+        "Có, database/sql tự viết lại mọi syntax SQL.",
+        "Có, ORM bắt buộc đứng sau mọi DB."
+      ],
+      "correct": 1,
+      "explanation": "Driver-agnostic API không nghĩa mọi SQL text portable."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Contextless source",
+      "question": "db.Query trong source có nhận request ctx tường minh không?",
+      "options": [
+        "Có, log.Fatal mang deadline.",
+        "Chỉ cần db tag.",
+        "Không; nên cân nhắc QueryContext với budget request.",
+        "Có, tự lấy context của HTTP request global."
+      ],
+      "correct": 2,
+      "explanation": "API có Context giúp propagation, còn driver/DB hỗ trợ thực tế cần kiểm tra."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Rows resources",
+      "question": "Giữ rows chưa close khi xử lý công việc lâu có thể gây gì?",
+      "options": [
+        "Tự tăng pool vô hạn chắc chắn.",
+        "Không bao giờ ảnh hưởng query khác.",
+        "Tự cache mọi result durable.",
+        "Giữ connection/tài nguyên pool lâu hơn cần thiết."
+      ],
+      "correct": 3,
+      "explanation": "Vòng đời rows nên ngắn và explicit khi phù hợp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Deferred closes in loop",
+      "question": "Đặt defer rows.Close trong loop xử lý rất nhiều queries có rủi ro gì?",
+      "options": [
+        "Tài nguyên có thể được giữ tới khi hàm ngoài kết thúc, nên scope/close sớm phù hợp.",
+        "Defer luôn chạy ngay sau từng statement.",
+        "Compiler tự tạo scope hàm mới mỗi iteration.",
+        "Mọi Close đều miễn phí và không liên quan pool."
+      ],
+      "correct": 0,
+      "explanation": "Defer theo vòng đời hàm, không theo block loop thường."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Idle versus open",
+      "question": "Nếu max idle5 và max open25, có nghĩa25+5=30 connections không?",
+      "options": [
+        "Chỉ nếu DB tên postgres.",
+        "Không; idle là một phần của connections mở trong pool.",
+        "Có, hai nhóm luôn cộng thành30.",
+        "Có, max open chỉ đếm busy và không liên quan idle."
+      ],
+      "correct": 1,
+      "explanation": "Đọc đúng metrics InUse/Idle/OpenConnections."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Pool zero max",
+      "question": "SetMaxOpenConns(0) có nghĩa gì theo API?",
+      "options": [
+        "Luôn đúng một connection.",
+        "Reset database schema.",
+        "Không giới hạn max open bởi setting đó.",
+        "Không bao giờ cho mở connection nào."
+      ],
+      "correct": 2,
+      "explanation": "Không giới hạn không đồng nghĩa an toàn cho tải hoặc DB server."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Connection lifetime",
+      "question": "SetConnMaxLifetime thường nhằm giới hạn gì?",
+      "options": [
+        "Timeout tuyệt đối của từng SQL statement.",
+        "Tuổi thọ mọi row trong table.",
+        "Thời gian tối đa process Go tồn tại.",
+        "Thời gian tối đa một connection có thể được tái sử dụng theo pool rules."
+      ],
+      "correct": 3,
+      "explanation": "Connection recycling khác query deadline."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Transactions handle choice",
+      "question": "Trong transaction, query cần cùng transaction nên gọi trên gì?",
+      "options": [
+        "tx.QueryContext/tx.ExecContext tương ứng.",
+        "db.Query tùy ý và mặc định cùng transaction.",
+        "Một DB mới cho mỗi statement.",
+        "Chỉ QueryRow là tự vào transaction."
+      ],
+      "correct": 0,
+      "explanation": "DB pool có thể chọn connection khác; không trộn handle ngoài ý định."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Commit error",
+      "question": "tx.Commit trả error có nên bỏ qua và báo thành công không?",
+      "options": [
+        "Chỉ cần defer Rollback.",
+        "Không; phải xử lý theo contract và khả năng outcome chưa rõ.",
+        "Có, mọi statements trước không lỗi thì commit chắc thành công.",
+        "Có, Commit chỉ ghi log."
+      ],
+      "correct": 1,
+      "explanation": "Transaction chỉ thành công khi outcome được xác nhận phù hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Rollback cleanup",
+      "question": "defer tx.Rollback sau BeginTx thành công thường giúp gì?",
+      "options": [
+        "Tự retry mọi query.",
+        "Tự biến DB query ngoài tx thành atomic.",
+        "Cleanup nếu luồng trả sớm trước khi commit thành công, với error handling phù hợp.",
+        "Bảo đảm commit sẽ luôn rollback dù đã thành công."
+      ],
+      "correct": 2,
+      "explanation": "Sau commit/rollback transaction kết thúc; xử lý ErrTxDone theo scope."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Result rows affected",
+      "question": "RowsAffected dùng để biết gì?",
+      "options": [
+        "Mọi rows trong database.",
+        "Số users concurrent.",
+        "Số conexiones idle.",
+        "Số rows affected mà driver/result hỗ trợ, cần kiểm tra error."
+      ],
+      "correct": 3,
+      "explanation": "Có thể cần kiểm tra count để enforce update đúng đối tượng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Last insert portability",
+      "question": "Có nên giả Result.LastInsertId hỗ trợ giống nhau ở mọi DB driver không?",
+      "options": [
+        "Không; PostgreSQL thường dùng RETURNING phù hợp thay vì giả support chung.",
+        "Có, database/sql buộc mọi driver sinh ID int64 như nhau.",
+        "Có, query name tự quyết định.",
+        "Chỉ cần ExecContext."
+      ],
+      "correct": 0,
+      "explanation": "API có method không đồng nghĩa mọi driver đều hỗ trợ feature đó."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "ORM scope",
+      "question": "Source hiện thực sự dùng GORM/sqlx cho query mapping chưa?",
+      "options": [
+        "Chỉ khi query có RETURNING.",
+        "Chưa; code dùng database/sql và Scan tường minh.",
+        "Có, chỉ cần nhắc ORM trong theory là code tự dùng.",
+        "Có, mọi db tag tự import sqlx."
+      ],
+      "correct": 1,
+      "explanation": "Không suy integration từ mô tả lý thuyết hoặc struct tags."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Migrations missing",
+      "question": "Source đã có migration tạo users/schema chưa?",
+      "options": [
+        "Có, User struct tự thành PostgreSQL table.",
+        "Có, QueryRow tự tạo mọi missing table.",
+        "Chưa được thể hiện.",
+        "Có, sql.Open tự CREATE TABLE."
+      ],
+      "correct": 2,
+      "explanation": "Cần quản lý schema/version ngoài snippet query."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "DSN demo",
+      "question": "DSN user:pass@localhost trong source nên được hiểu thế nào?",
+      "options": [
+        "Một credential production được xác nhận.",
+        "Một lệnh cần chạy ngay để deploy.",
+        "Một mock database stdlib tự tạo.",
+        "Giá trị minh họa, không bằng chứng có DB/credentials thật hoạt động."
+      ],
+      "correct": 3,
+      "explanation": "Không đọc hoặc dùng credentials thật để soạn câu hỏi."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Fatal skips defer",
+      "question": "Nếu log.Fatal chạy sau defer rows.Close/db.Close, defer có chạy bình thường không?",
+      "options": [
+        "Không; Fatal gọi os.Exit, không unwind defer như return.",
+        "Có, mọi log function đều return bình thường.",
+        "Chỉ db.Close chạy, rows.Close không.",
+        "Chỉ nếu error string rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế tầng thư viện nên trả error thay vì exit process bất ngờ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "DB stats",
+      "question": "DB.Stats có thể giúp theo dõi gì?",
+      "options": [
+        "Latency HTTP toàn hệ thống chính xác từ một số duy nhất.",
+        "InUse,Idle,OpenConnections,WaitCount/WaitDuration cùng counters khác.",
+        "Mọi row SQL không cần query.",
+        "Password của mọi client."
+      ],
+      "correct": 1,
+      "explanation": "Pool metrics giúp chẩn đoán nhưng cần workload/context phù hợp."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "SQL driver missing",
+      "question": "Muốn gọi source PostgreSQL là integration đã pass cần có gì?",
+      "options": [
+        "Chỉ code có RETURNING.",
+        "Chỉ screenshot source.",
+        "Driver/server/schema/config thật phù hợp và lần chạy được ghi nhận; hiện chưa có bằng chứng đó.",
+        "Chỉ stdlib NullString.Scan pass."
+      ],
+      "correct": 2,
+      "explanation": "Các fixture stdlib không thay thế integration với PostgreSQL."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Safe API versus rows",
+      "question": "DB safe concurrent API use có nghĩa chia sẻ một Rows giữa goroutines tùy ý an toàn không?",
+      "options": [
+        "Có, mọi object database/sql tự transaction-safe tùy ý.",
+        "Chỉ cần field export.",
+        "Rows.Next tự clone result cho mọi caller.",
+        "Không; không suy guarantee DB sang mọi object và protocol iteration."
+      ],
+      "correct": 3,
+      "explanation": "Đọc contract đúng từng type và thiết kế ownership."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "RowsAffected value",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\";\"database/sql/driver\")\nfunc main(){r:=driver.RowsAffected(3);n,e:=r.RowsAffected();fmt.Println(n,e==nil);_ = sql.ErrNoRows}\n",
+      "options": [
+        "3 true.",
+        "0 false.",
+        "3 false.",
+        "Tự gọi database server."
+      ],
+      "correct": 0,
+      "explanation": "driver.RowsAffected là implementation Result hữu hạn, không thực thi SQL."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Unsupported last ID",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\";\"database/sql/driver\")\nfunc main(){r:=driver.RowsAffected(3);_,e:=r.LastInsertId();fmt.Println(e!=nil);_ = sql.ErrNoRows}\n",
+      "options": [
+        "Panic vì Result không có LastInsertId.",
+        "true.",
+        "false.",
+        "Tự sinh ID3."
+      ],
+      "correct": 1,
+      "explanation": "driver.RowsAffected không hỗ trợ LastInsertId, method trả error."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Default parameter conversion",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\";\"database/sql/driver\")\nfunc main(){v,e:=driver.DefaultParameterConverter.ConvertValue(int8(7));fmt.Printf(\"%T %v %v\\n\",v,v,e==nil);_ = sql.ErrNoRows}\n",
+      "options": [
+        "string 7 false.",
+        "Compiler cấm converter trong stdlib.",
+        "int64 7 true.",
+        "int8 7 true."
+      ],
+      "correct": 2,
+      "explanation": "DefaultParameterConverter chuyển kiểu số nguyên này thành driver int64, không gọi DB."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Err identity wrapping",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\";\"errors\")\nfunc main(){e:=fmt.Errorf(\"lookup: %w\",sql.ErrNoRows);fmt.Println(errors.Is(e,sql.ErrNoRows),e==sql.ErrNoRows)}\n",
+      "options": [
+        "false false.",
+        "true true.",
+        "ErrNoRows không được wrap.",
+        "true false."
+      ],
+      "correct": 3,
+      "explanation": "errors.Is nhận diện chain, == không unwrap."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Generic SQL null",
+      "question": "Chương trình in gì trên Go1.26?",
+      "code": "package main\nimport (\"fmt\";\"database/sql\")\nfunc main(){var n sql.Null[string];e:=n.Scan(nil);v,ve:=n.Value();fmt.Println(e==nil,n.Valid,v==nil&&ve==nil)}\n",
+      "options": [
+        "true false true.",
+        "true true false.",
+        "false false false.",
+        "Không có sql.Null generic từ mọi version hiện đại."
+      ],
+      "correct": 0,
+      "explanation": "sql.Null[T] có từ Go1.22; NULL khiến Valid=false và Value trả nil."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Pool nested acquisition",
+      "question": "MaxOpenConns1, giữ transaction rồi gọi db.Query cần connection khác có rủi ro gì?",
+      "options": [
+        "Compiler luôn từ chối.",
+        "Có thể chờ pool và tự gây kẹt nếu connection đang bị chính transaction giữ.",
+        "DB tự cho mọi query vào tx.",
+        "Pool tự bỏ giới hạn trong mọi trường hợp."
+      ],
+      "correct": 1,
+      "explanation": "Dùng đúng tx handle và context, không chạy deadlock để đoán đáp án."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Rows then insert budget",
+      "question": "Source defer rows.Close tới hết main rồi QueryRow INSERT có thể gặp gì khi pool rất nhỏ và rows chưa giải phóng?",
+      "options": [
+        "Close chỉ là comment.",
+        "SetMaxIdleConns tự drain rows.",
+        "Có thể chờ connection nếu result set còn giữ tài nguyên; cần kết thúc/close đúng scope trước query khác.",
+        "Không bao giờ, QueryRow luôn chạy ngoài pool."
+      ],
+      "correct": 2,
+      "explanation": "Không khẳng định deadlock cho mọi driver khi rows đã iterate EOF; vòng đời thực tế quan trọng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Rows next error loss",
+      "question": "Nếu Next false do lỗi sau khi đã đọc được một số users, bỏ rows.Err có thể làm gì?",
+      "options": [
+        "Compiler tự báo lỗi.",
+        "Tự retry phần còn lại không trùng.",
+        "Không có khả năng lỗi sau row đầu.",
+        "Trả dữ liệu không đầy đủ như thành công."
+      ],
+      "correct": 3,
+      "explanation": "Cần quyết định partial results/error contract rõ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Query args and auth",
+      "question": "Bind values đúng có bảo đảm user được phép đọc row đó không?",
+      "options": [
+        "Không; authorization/ownership filtering là invariant riêng.",
+        "Có, SQL injection prevention tự là authorization.",
+        "Có, PreparedStmt tự đọc role user.",
+        "Chỉ cần HTTPS."
+      ],
+      "correct": 0,
+      "explanation": "Không đánh đồng các ranh giới bảo vệ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Search performance",
+      "question": "LIKE %An% có chắc tận dụng index B-tree thông thường hiệu quả không?",
+      "options": [
+        "Chỉ cần field db:name.",
+        "Không; leading wildcard và dialect/index/operator/collation ảnh hưởng plan.",
+        "Có, mọi placeholder luôn có index lookup O1.",
+        "Có, đặt pool25 tự tạo index."
+      ],
+      "correct": 1,
+      "explanation": "Cần EXPLAIN/workload/index phù hợp, không suy tốc độ từ binding."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Pool across replicas",
+      "question": "10 replicas mỗi replica max25 connections có nghĩa tổng budget tối đa chỉ25 không?",
+      "options": [
+        "Có, module path giống nhau nên một pool.",
+        "Chỉ có5 idle toàn hệ thống.",
+        "Không; phải tính các pools/processes và clients khác, có thể tới250 cho nhóm đó.",
+        "Có, sql.DB tự chia sẻ global pool toàn cluster."
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn local không là connection budget toàn hệ thống."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Pool config tuning",
+      "question": "25 open/5 idle có phải công thức chuẩn cho mọi hệ thống triệu users không?",
+      "options": [
+        "Có, mọi PostgreSQL tối ưu25.",
+        "Có, Go tự scale query vô hạn.",
+        "Chỉ tăng buffer HTTP là đủ.",
+        "Không; cần ngân sách DB, query duration, concurrency và measurements."
+      ],
+      "correct": 3,
+      "explanation": "Tránh hứa scale dựa trên các số demo."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Transaction context failure",
+      "question": "BeginTx gắn context bị hủy có thể ảnh hưởng transaction thế nào?",
+      "options": [
+        "database/sql dùng context tới commit/rollback và có thể rollback khi context bị hủy; phải kiểm tra errors.",
+        "Context chỉ dùng lúc tạo biến và không bao giờ ảnh hưởng Tx.",
+        "Tự commit mọi pending writes.",
+        "Tự đảm bảo retry không duplicate."
+      ],
+      "correct": 0,
+      "explanation": "Driver/database và timing/outcome cần được xử lý đúng, không suy exactly-once."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Retry commit uncertain",
+      "question": "Connection mất khi commit không được xác nhận, retry INSERT vô điều kiện có an toàn không?",
+      "options": [
+        "Chỉ cần log.Fatal.",
+        "Không chắc; outcome có thể chưa rõ, cần idempotency/constraints/reconciliation phù hợp.",
+        "Có, error luôn nghĩa server chưa làm gì.",
+        "Có, QueryRow tự chống mọi duplicate."
+      ],
+      "correct": 1,
+      "explanation": "Transport error và durable business outcome không luôn tương đương."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Constraints race",
+      "question": "SELECT kiểm tra email chưa có rồi INSERT có tự bảo đảm unique khi nhiều writers không?",
+      "options": [
+        "Có, struct tag db:email là unique index.",
+        "Chỉ cần pool max25.",
+        "Không; cần unique constraint và xử lý conflict phù hợp.",
+        "Có, hai statements tự thành transaction serializable."
+      ],
+      "correct": 2,
+      "explanation": "Application precheck không thay invariant ở database."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "SQL credentials",
+      "question": "Có nên log toàn bộ DSN kèm mật khẩu khi query lỗi để debug nhanh không?",
+      "options": [
+        "Có, mọi DSN đều công khai như module path.",
+        "Có, JSON log tự mã hóa secrets.",
+        "Chỉ cần đổi log level.",
+        "Không; redact thông tin nhạy cảm và log context hữu ích phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không đưa credentials vào diagnostics hay câu hỏi thực tế."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Scanner mapping mismatch",
+      "question": "Có hai cột string bị đảo mà Scan vẫn nil error, nên kiểm thử gì?",
+      "options": [
+        "Giá trị/field semantics theo schema/query order, không chỉ kiểm tra error nil.",
+        "Chỉ compile source là đủ.",
+        "Chỉ xem db tags.",
+        "Chỉ đo query latency."
+      ],
+      "correct": 0,
+      "explanation": "Conversion thành công chưa chứng minh mapping đúng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Close not business rollback",
+      "question": "db.Close hoặc rows.Close có tự rollback mọi operations thành công trước đó ngoài Tx không?",
+      "options": [
+        "Chỉ nếu có defer.",
+        "Không; resource cleanup không là transaction rollback toàn bộ workflow.",
+        "Có, Close hoàn tác mọi query.",
+        "Chỉ nếu variable tên db."
+      ],
+      "correct": 1,
+      "explanation": "Atomic workflow cần transaction/invariant phù hợp."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Migration versioning",
+      "question": "Thêm field vào User struct có tự cập nhật production schema an toàn không?",
+      "options": [
+        "Có, go build tự migration DB.",
+        "Chỉ cần restart server.",
+        "Không; source không có ORM automigration, cần migration/backfill/compatibility theo thiết kế.",
+        "Có, db tag tự ALTER TABLE."
+      ],
+      "correct": 2,
+      "explanation": "Code model và database schema cần quản lý thay đổi rõ ràng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Proof scope",
+      "question": "Các fixture NullString/driver.Results pass có cho phép báo PostgreSQL integration đã đạt không?",
+      "options": [
+        "Có, database/sql đủ thay mọi PostgreSQL server.",
+        "Có, có15 ví dụ thì mọi query đúng.",
+        "Chỉ cần report tên database.",
+        "Không; chỉ stdlib conversion/error semantics được chạy, DB/driver source/spec vẫn chưa integration."
+      ],
+      "correct": 3,
+      "explanation": "Bằng chứng phải ghi đúng backend, source và phạm vi đã thực thi."
+    }
+  ]
+}

@@ -1,0 +1,1167 @@
+{
+  "version": 1,
+  "tech": "java",
+  "level": "junior",
+  "lesson": "collections-streams",
+  "language": "vi",
+  "sourceHash": "33ef82d8f098fef6689fa7586b09eb811ef7f261dc1f2090c5c736a8ae0e147d",
+  "status": "approved",
+  "review": "Tự biên soạn trực tiếp, không API. Java17 List/Set/Map/Queue, Streams/Collectors và records theo Student, thêm tổng đơn hàng theo tháng. Không dựa vào thứ tự HashMap, tính mutable cụ thể của Collectors.toList hay side effect peek; record chỉ shallow immutable.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "List intent",
+      "question": "List thường cung cấp đặc tính nào?",
+      "options": [
+        "Dãy có vị trí/thứ tự và có thể chứa phần tử trùng theo implementation.",
+        "Luôn không trùng và sort tự động.",
+        "Luôn key-value.",
+        "Mọi implementation mutable vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "Interface không làm mọi implementation có cùng mutability hay performance."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Set intent",
+      "question": "Set thường mô tả tập phần tử theo tiêu chí nào?",
+      "options": [
+        "Luôn sort giảm dần.",
+        "Không có phần tử trùng theo equality contract phù hợp.",
+        "Luôn có index từ0 như List.",
+        "Luôn giữ insertion order."
+      ],
+      "correct": 1,
+      "explanation": "Ordering/null support tùy implementation."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Map intent",
+      "question": "Map mô hình hóa gì?",
+      "options": [
+        "Luôn một queue FIFO.",
+        "Một Stream được tiêu thụ vô hạn.",
+        "Liên kết key với value theo hợp đồng map.",
+        "Chỉ một dãy int liên tiếp."
+      ],
+      "correct": 2,
+      "explanation": "Key uniqueness và equality/hash/order phụ thuộc loại map và contract."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Queue intent",
+      "question": "Queue thường dùng cho gì?",
+      "options": [
+        "Mọi phần tử tự sort alphabet.",
+        "Tự tạo một thread cho mỗi item.",
+        "Luôn một stack LIFO bất kể loại.",
+        "Các phần tử chờ xử lý theo chính sách của implementation."
+      ],
+      "correct": 3,
+      "explanation": "FIFO thường gặp nhưng PriorityQueue có chính sách khác."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Stream versus storage",
+      "question": "Stream API thường biểu đạt gì?",
+      "options": [
+        "Pipeline xử lý dữ liệu, không thay container lưu trữ nguồn.",
+        "Một ArrayList luôn copy sẵn mọi phần tử.",
+        "Luồng OS thread bắt buộc.",
+        "Một socket mạng bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Java Stream khác thread và khác I/O stream trong ngữ cảnh này."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Stream version",
+      "question": "Stream API trong bài có từ Java nào?",
+      "options": [
+        "Chỉ Java21 preview.",
+        "Java8.",
+        "Java14.",
+        "Java17 duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Các API bổ sung về sau có mốc phiên bản riêng; ngân hàng này dùng Java17."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Filter",
+      "question": "filter(predicate) thường giữ phần tử nào?",
+      "options": [
+        "Luôn phần tử đầu.",
+        "Tự chuyển mọi phần tử thành String.",
+        "Phần tử thỏa predicate.",
+        "Chỉ phần tử không thỏa."
+      ],
+      "correct": 2,
+      "explanation": "Filter là intermediate operation tạo pipeline kết quả."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Map operation",
+      "question": "map(function) trong Stream thường làm gì?",
+      "options": [
+        "Tự group key-value bắt buộc.",
+        "Luôn xóa duplicates.",
+        "Chỉ chạy trên Map container.",
+        "Biến đổi mỗi phần tử được xử lý thành kết quả theo function."
+      ],
+      "correct": 3,
+      "explanation": "Tên map operation không có nghĩa nguồn phải là java.util.Map."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Terminal collect",
+      "question": "collect thường dùng để làm gì?",
+      "options": [
+        "Thu thập/reduce kết quả theo Collector hoặc giao thức collect phù hợp.",
+        "Chỉ khai báo pipeline không bao giờ xử lý.",
+        "Luôn sort trước.",
+        "Luôn tạo một thread mới."
+      ],
+      "correct": 0,
+      "explanation": "Collect là terminal operation; loại kết quả tùy collector."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Sorted",
+      "question": "sorted(comparator) nhằm gì?",
+      "options": [
+        "Tự kiểm tra mọi nghiệp vụ của phần tử.",
+        "Sắp thứ tự phần tử pipeline theo comparator phù hợp.",
+        "Luôn sort tại chỗ nguồn List.",
+        "Luôn khử trùng."
+      ],
+      "correct": 1,
+      "explanation": "Stream sorted không đồng nghĩa Collections.sort trên nguồn."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Method reference",
+      "question": "Student::name trong map có thể diễn đạt gì?",
+      "options": [
+        "Một field toàn cục thay đổi.",
+        "Constructor bắt buộc.",
+        "Method reference tới accessor name tương ứng.",
+        "Một String literal tên name."
+      ],
+      "correct": 2,
+      "explanation": "Functional context xác định kiểu callable phù hợp."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Grouping collector",
+      "question": "Collectors.groupingBy(Student::major) thường nhóm theo gì?",
+      "options": [
+        "Tên biến list.",
+        "Index phần tử cuối.",
+        "Chỉ gpa lớn nhất.",
+        "Kết quả major của từng Student."
+      ],
+      "correct": 3,
+      "explanation": "Downstream mặc định thu phần tử mỗi nhóm, không mặc định sort key."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Map to double",
+      "question": "mapToDouble(Student::gpa) thường trả loại stream nào?",
+      "options": [
+        "DoubleStream.",
+        "Map<Double,Student> bắt buộc.",
+        "Stream<String>.",
+        "List<double> hợp lệ."
+      ],
+      "correct": 0,
+      "explanation": "Primitive stream cung cấp các terminal số như sum/average/summaryStatistics."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Record version",
+      "question": "Records không preview có từ phiên bản nào theo bài?",
+      "options": [
+        "Chỉ Java21.",
+        "Java16.",
+        "Java8.",
+        "Java10."
+      ],
+      "correct": 1,
+      "explanation": "Source kiểm tra với Java17 hỗ trợ record không preview."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Record accessor",
+      "question": "Với record Student(String name,double gpa), accessor tự sinh cho name thường có tên gì?",
+      "options": [
+        "Name[]",
+        "read_name()",
+        "name()",
+        "getName() bắt buộc tự sinh"
+      ],
+      "correct": 2,
+      "explanation": "Record accessor theo tên component, không tự tuân tên getter JavaBeans getX."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Record equality",
+      "question": "Record tự sinh equals/hashCode dựa trên gì theo contract phù hợp?",
+      "options": [
+        "Chỉ identity như mọi class thường.",
+        "Chỉ component đầu tiên bất kể còn lại.",
+        "Chỉ tên biến caller.",
+        "Các record components và kiểu record tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Không suy rằng record với cùng tên nhưng gpa khác vẫn bằng nhau."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Comparator reversed",
+      "question": "Comparator.comparingDouble(Student::gpa).reversed() thường chọn thứ tự nào cho GPA hữu hạn?",
+      "options": [
+        "Giảm dần theo GPA.",
+        "Tăng dần theo tên.",
+        "Giữ source order mọi lúc.",
+        "Chỉ giữ student đầu."
+      ],
+      "correct": 0,
+      "explanation": "Tie-breaking có thể cần điều kiện bổ sung theo contract."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Count",
+      "question": "stream.count() trả kiểu gì?",
+      "options": [
+        "String.",
+        "long.",
+        "int luôn.",
+        "Optional<Integer>."
+      ],
+      "correct": 1,
+      "explanation": "Số phần tử của kết quả pipeline có thể khác size nguồn do filter/flatMap."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Distinct",
+      "question": "distinct() thường loại trùng dựa trên gì ở reference Stream?",
+      "options": [
+        "Chỉ tên field có chữ id.",
+        "Luôn mọi phần tử bằng gpa.",
+        "Equality của phần tử theo contract.",
+        "Chỉ địa chỉ RAM in ra."
+      ],
+      "correct": 2,
+      "explanation": "Nếu muốn distinct theo một field, cần thiết kế key/pipeline phù hợp."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Reduce identity",
+      "question": "reduce(identity,op) dùng identity như gì?",
+      "options": [
+        "Một phần tử ngẫu nhiên của nguồn.",
+        "Chỉ tên biến toàn cục.",
+        "Một mutex.",
+        "Giá trị đơn vị phù hợp với operation theo contract reduction."
+      ],
+      "correct": 3,
+      "explanation": "Identity và tính kết hợp quan trọng khi reduction có thể phân chia/chạy song song."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Top CS source",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord Student(String name,double gpa,String major){}\npublic class QuizCase{public static void main(String[]args){\nvar xs=List.of(new Student(\"An\",8.5,\"CS\"),new Student(\"Binh\",9.2,\"CS\"),new Student(\"Chi\",7.8,\"Math\"),new Student(\"Dung\",6.5,\"CS\"),new Student(\"Em\",9.0,\"Math\"));var out=xs.stream().filter(s->s.major().equals(\"CS\")).filter(s->s.gpa()>=8).sorted(Comparator.comparingDouble(Student::gpa).reversed()).map(Student::name).collect(Collectors.toList());System.out.print(out);\n}}\n",
+      "options": [
+        "[Binh, An]",
+        "[An, Binh]",
+        "[Em, Binh, An]",
+        "[Dung]"
+      ],
+      "correct": 0,
+      "explanation": "Lọc majorCS và GPA>=8; sort giảm GPA rồi lấy tên."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Filter even",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,2,3,4).stream().filter(x->x%2==0).collect(Collectors.toList()));\n}}\n",
+      "options": [
+        "[]",
+        "[2, 4]",
+        "[1, 3]",
+        "[1, 2, 3, 4]"
+      ],
+      "correct": 1,
+      "explanation": "Giữ các số chia hết2."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Map doubled",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,2,3).stream().map(x->x*2).collect(Collectors.toList()));\n}}\n",
+      "options": [
+        "[1, 4, 9]",
+        "6",
+        "[2, 4, 6]",
+        "[1, 2, 3]"
+      ],
+      "correct": 2,
+      "explanation": "Map nhân2 từng phần tử."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Grouping count",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord S(String major){}\npublic class QuizCase{public static void main(String[]args){\nvar m=List.of(new S(\"CS\"),new S(\"Math\"),new S(\"CS\")).stream().collect(Collectors.groupingBy(S::major,Collectors.counting()));System.out.print(m.get(\"CS\")+\" \"+m.get(\"Math\"));\n}}\n",
+      "options": [
+        "1 2",
+        "3 0",
+        "Không thể biết vì thứ tự HashMap không cố định.",
+        "2 1"
+      ],
+      "correct": 3,
+      "explanation": "Đọc count bằng key cụ thể nên không phụ thuộc iteration order của map."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Statistics source",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar s=DoubleStream.of(8.5,9.2,7.8,6.5,9.0).summaryStatistics();System.out.printf(Locale.ROOT,\"%.2f %.1f\",s.getAverage(),s.getMax());\n}}\n",
+      "options": [
+        "8.20 9.2",
+        "8.00 9.2",
+        "8.20 9.0",
+        "41.00 9.2"
+      ],
+      "correct": 0,
+      "explanation": "Tổng GPA41 cho5 học sinh, trung bình8.2; max9.2. Locale.ROOT định dạng dấu chấm."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Lazy intermediate",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar s=Stream.of(1,2).map(x->{System.out.print(\"X\");return x*2;});System.out.print(\"A\");\n}}\n",
+      "options": [
+        "Không được lưu Stream vào biến.",
+        "A",
+        "XXA",
+        "AXX"
+      ],
+      "correct": 1,
+      "explanation": "Không terminal nên map không được thực thi để tạo side effect."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Single use stream",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar s=Stream.of(1,2);s.count();try{s.count();System.out.print(\"again\");}catch(IllegalStateException e){System.out.print(\"used\");}\n}}\n",
+      "options": [
+        "0",
+        "Terminal count tự reset stream.",
+        "used",
+        "2"
+      ],
+      "correct": 2,
+      "explanation": "Sau terminal stream đã được tiêu thụ, tái dùng như dưới ném IllegalStateException."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Sorted source unchanged",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar src=new ArrayList<>(List.of(3,1,2));var out=src.stream().sorted().collect(Collectors.toList());System.out.print(src+\" \"+out);\n}}\n",
+      "options": [
+        "[1, 2, 3] [1, 2, 3]",
+        "[3, 1, 2] []",
+        "Sorted luôn sửa list gốc.",
+        "[3, 1, 2] [1, 2, 3]"
+      ],
+      "correct": 3,
+      "explanation": "Stream sorted tạo pipeline kết quả không sort tại chỗ source list."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Distinct ordered",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(3,1,3,2).stream().distinct().collect(Collectors.toList()));\n}}\n",
+      "options": [
+        "[3, 1, 2]",
+        "[1, 2, 3]",
+        "[3, 1, 3, 2]",
+        "[2, 1, 3]"
+      ],
+      "correct": 0,
+      "explanation": "Distinct trên ordered stream giữ lần xuất hiện đầu theo encounter order."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Joining",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(Stream.of(\"An\",\"Binh\").collect(Collectors.joining(\",\")));\n}}\n",
+      "options": [
+        "An Binh,",
+        "An,Binh",
+        "AnBinh",
+        "[An, Binh]"
+      ],
+      "correct": 1,
+      "explanation": "Joining dùng delimiter dấu phẩy giữa các phần tử."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Integer sum primitive stream",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,2,3).stream().mapToInt(Integer::intValue).sum());\n}}\n",
+      "options": [
+        "3",
+        "Optional6.",
+        "6",
+        "123"
+      ],
+      "correct": 2,
+      "explanation": "mapToInt tạo IntStream rồi sum1+2+3."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Empty average",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(DoubleStream.empty().average().isPresent());\n}}\n",
+      "options": [
+        "0.0",
+        "NaN luôn.",
+        "ArithmeticException.",
+        "false"
+      ],
+      "correct": 3,
+      "explanation": "DoubleStream.average trả OptionalDouble rỗng khi không có phần tử."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Empty count sum",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(Stream.empty().count()+\" \"+IntStream.empty().sum());\n}}\n",
+      "options": [
+        "0 0",
+        "1 0",
+        "0 1",
+        "Exception vì stream rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Count và sum có kết quả đơn vị0 cho các stream rỗng tương ứng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "First filtered value",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(5,8,2).stream().filter(x->x%2==0).findFirst().orElse(-1));\n}}\n",
+      "options": [
+        "9",
+        "8",
+        "2",
+        "-1"
+      ],
+      "correct": 1,
+      "explanation": "Encounter order của source list là5,8,2; số chẵn đầu là8."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Find none",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,3).stream().filter(x->x%2==0).map(Object::toString).findFirst().orElse(\"none\"));\n}}\n",
+      "options": [
+        "1",
+        "NullPointerException bắt buộc.",
+        "none",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "findFirst sau filter không khớp trả Optional rỗng và dùng fallback."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Limit order",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,2,3,4).stream().limit(2).collect(Collectors.toList()));\n}}\n",
+      "options": [
+        "[3, 4]",
+        "[1, 2, 3, 4]",
+        "[]",
+        "[1, 2]"
+      ],
+      "correct": 3,
+      "explanation": "Limit2 trên ordered source giữ hai phần tử đầu."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Skip",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,2,3,4).stream().skip(2).collect(Collectors.toList()));\n}}\n",
+      "options": [
+        "[3, 4]",
+        "[1, 2]",
+        "[2, 3, 4]",
+        "[]"
+      ],
+      "correct": 0,
+      "explanation": "Skip2 bỏ hai phần tử đầu ordered stream."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Flatmap",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar xs=List.of(List.of(1,2),List.of(3));System.out.print(xs.stream().flatMap(List::stream).collect(Collectors.toList()));\n}}\n",
+      "options": [
+        "[]",
+        "[1, 2, 3]",
+        "[[1, 2], [3]]",
+        "[3]"
+      ],
+      "correct": 1,
+      "explanation": "FlatMap nối các stream con thành stream phần tử int boxed."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Map not flatmap",
+      "question": "xs là List<List<Integer>>, xs.stream().map(List::stream) tạo gì?",
+      "options": [
+        "Một Map<Integer,Integer>.",
+        "Không thể map bằng method reference.",
+        "Stream chứa các Stream<Integer>.",
+        "Stream<Integer> đã flatten luôn."
+      ],
+      "correct": 2,
+      "explanation": "Map giữ một kết quả cho mỗi phần tử; flatMap mới flatten các stream con."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Empty all match",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(Stream.<Integer>empty().allMatch(x->x>0)+\" \"+Stream.<Integer>empty().anyMatch(x->x>0));\n}}\n",
+      "options": [
+        "false false",
+        "true true",
+        "Exception vì không có phần tử.",
+        "true false"
+      ],
+      "correct": 3,
+      "explanation": "allMatch trên rỗng true theo vacuous truth; anyMatch false."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Reduce sum",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(List.of(1,2,3).stream().reduce(0,Integer::sum));\n}}\n",
+      "options": [
+        "6",
+        "3",
+        "0",
+        "123"
+      ],
+      "correct": 0,
+      "explanation": "Identity0 và phép cộng là reduction cộng các int nhỏ này."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Record accessors",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord Student(String name,double gpa){}\npublic class QuizCase{public static void main(String[]args){\nvar s=new Student(\"An\",8.5);System.out.print(s.name()+\" \"+s.gpa());\n}}\n",
+      "options": [
+        "Record không có accessor.",
+        "An 8.5",
+        "name gpa",
+        "An"
+      ],
+      "correct": 1,
+      "explanation": "Accessors sinh theo tên component."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Record value equality",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord S(String name,int score){}\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(new S(\"An\",8).equals(new S(\"An\",8)));\n}}\n",
+      "options": [
+        "Lỗi vì record không có equals.",
+        "Địa chỉ object.",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "Hai record cùng kiểu và component values phù hợp equals cho true."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Record different component",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord S(String name,int score){}\npublic class QuizCase{public static void main(String[]args){\nSystem.out.print(new S(\"An\",8).equals(new S(\"An\",9)));\n}}\n",
+      "options": [
+        "true",
+        "Lỗi vì cùng name không được tạo hai record.",
+        "8",
+        "false"
+      ],
+      "correct": 3,
+      "explanation": "Score khác nên không equal theo record components."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "List of mutation",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar xs=List.of(1,2);try{xs.add(3);System.out.print(xs);}catch(UnsupportedOperationException e){System.out.print(\"fixed\");}\n}}\n",
+      "options": [
+        "fixed",
+        "[1, 2, 3]",
+        "[1, 2]",
+        "List.of tự tạo ArrayList mutable."
+      ],
+      "correct": 0,
+      "explanation": "List.of không hỗ trợ add; ở đây bắt UnsupportedOperationException."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Stream to list mutation",
+      "question": "Output là gì trong Java17?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar xs=Stream.of(1,2).toList();try{xs.add(3);System.out.print(xs);}catch(UnsupportedOperationException e){System.out.print(\"fixed\");}\n}}\n",
+      "options": [
+        "Stream.toList chưa có trong Java17.",
+        "fixed",
+        "[1, 2, 3]",
+        "[1, 2]"
+      ],
+      "correct": 1,
+      "explanation": "Stream.toList trả list không sửa được theo API này."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Explicit ArrayList collector",
+      "question": "Nếu cần kết quả chắc là ArrayList mutable, cách nào diễn đạt rõ hơn Collectors.toList()?",
+      "options": [
+        "collect(Collectors.joining()) cho Integer",
+        "map(ArrayList::new) cho mọi phần tử",
+        "collect(Collectors.toCollection(ArrayList::new))",
+        "toList() rồi mặc định mọi Java version đều ArrayList"
+      ],
+      "correct": 2,
+      "explanation": "Chọn factory collection rõ thay vì phụ thuộc concrete implementation không được contract hứa."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Map put same key",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nMap<String,Integer>m=new HashMap<>();m.put(\"a\",3);m.put(\"a\",7);System.out.print(m.size()+\" \"+m.get(\"a\"));\n}}\n",
+      "options": [
+        "2 7",
+        "1 3",
+        "Map không cho cập nhật value.",
+        "1 7"
+      ],
+      "correct": 3,
+      "explanation": "Put cùng key thay value, không tạo thêm key distinct."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Map lookup absent",
+      "question": "HashMap.get(key) trả null có luôn chứng minh key không tồn tại không?",
+      "options": [
+        "Không; HashMap có thể lưu key với value null, cần containsKey nếu phải phân biệt.",
+        "Có; Map cấm null values trong mọi implementation.",
+        "Có nếu key String.",
+        "Chỉ cần get lần hai."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt absence và present-null theo implementation và hợp đồng dữ liệu."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Map encounter order",
+      "question": "Có nên đặt một thứ tự key cố định cho output byMajor.forEach trên groupingBy mặc định chỉ từ source list không?",
+      "options": [
+        "Chỉ cần gọi parallelStream.",
+        "Không; không dựa vào iteration order không được map implementation hứa.",
+        "Có; mọi map giữ source order.",
+        "Có; key tự sort alphabet."
+      ],
+      "correct": 1,
+      "explanation": "Dùng map supplier/order/sort rõ ràng nếu output cần ổn định."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Queue empty poll",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nQueue<Integer>q=new ArrayDeque<>();System.out.print(q.poll()==null);\n}}\n",
+      "options": [
+        "NoSuchElementException vì poll luôn ném.",
+        "0",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "Queue.poll trả null khi ArrayDeque rỗng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Queue FIFO",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nQueue<Integer>q=new ArrayDeque<>();q.add(1);q.add(2);System.out.print(\"\"+q.poll()+q.poll());\n}}\n",
+      "options": [
+        "21",
+        "11",
+        "Queue tự sắp int giảm dần.",
+        "12"
+      ],
+      "correct": 3,
+      "explanation": "ArrayDeque dùng add/poll như queue FIFO."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Deque stack",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nDeque<Integer>q=new ArrayDeque<>();q.push(1);q.push(2);System.out.print(\"\"+q.pop()+q.pop());\n}}\n",
+      "options": [
+        "21",
+        "12",
+        "22",
+        "Không có push/pop trong ArrayDeque."
+      ],
+      "correct": 0,
+      "explanation": "Push/pop trên cùng đầu biểu đạt LIFO."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Duplicate toMap key",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\ntry{var m=Stream.of(\"a\",\"a\").collect(Collectors.toMap(x->x,x->1));System.out.print(m);}catch(IllegalStateException e){System.out.print(\"duplicate\");}\n}}\n",
+      "options": [
+        "ToMap không merge luôn tự lấy phần tử cuối.",
+        "duplicate",
+        "2",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "toMap không merge function từ chối duplicate key ở dữ liệu mẫu."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "ToMap merge sum",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nvar m=Stream.of(\"a\",\"a\").collect(Collectors.toMap(x->x,x->1,Integer::sum));System.out.print(m.get(\"a\"));\n}}\n",
+      "options": [
+        "0",
+        "Không được truyền merge function.",
+        "2",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Merge Integer::sum cộng hai value cho key a."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Monthly sum",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord Order(String month,long amount){}\npublic class QuizCase{public static void main(String[]args){\nvar m=List.of(new Order(\"2026-01\",30),new Order(\"2026-01\",20),new Order(\"2026-02\",7)).stream().collect(Collectors.groupingBy(Order::month,Collectors.summingLong(Order::amount)));System.out.print(m.get(\"2026-01\")+\" \"+m.get(\"2026-02\"));\n}}\n",
+      "options": [
+        "30 7",
+        "20 7",
+        "Map luôn sort tháng nên không đọc key được.",
+        "50 7"
+      ],
+      "correct": 3,
+      "explanation": "Grouping theo key tháng đầy đủ và summingLong theo amount."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Null safe major filter",
+      "question": "Student.major có thể null, predicate nào kiểm tra CS mà không NPE chỉ vì major null?",
+      "options": [
+        "s -> \"CS\".equals(s.major()) với s không null.",
+        "s -> s.major().equals(\"CS\") luôn an toàn",
+        "s -> s.major()==new String(\"CS\") để so value",
+        "s -> s.major().length()>0 tự null-safe"
+      ],
+      "correct": 0,
+      "explanation": "Guard null element riêng nếu cả Student cũng có thể null; predicate này chỉ xử lý major nullable."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Comparator tie breaker",
+      "question": "Khi GPA bằng nhau nhưng yêu cầu tên tăng dần, nên làm gì?",
+      "options": [
+        "Chỉ tăng số thread.",
+        "Thêm thenComparing theo tên phù hợp vào comparator.",
+        "Giả định HashMap tự sắp tên.",
+        "Chỉ gọi distinct để sort."
+      ],
+      "correct": 1,
+      "explanation": "Ordering contract cần biểu đạt cả tie-break, không phụ thuộc tình cờ của dữ liệu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Parallel ordered action",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\n\npublic class QuizCase{public static void main(String[]args){\nList.of(1,2,3).parallelStream().forEachOrdered(System.out::print);\n}}\n",
+      "options": [
+        "321 luôn.",
+        "Không được print trong terminal operation.",
+        "123",
+        "Mọi hoán vị đều được kể cả forEachOrdered này."
+      ],
+      "correct": 2,
+      "explanation": "forEachOrdered giữ encounter order cho các action của ordered stream này."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Fresh stream per query",
+      "question": "Muốn chạy hai truy vấn độc lập trên cùng List, cách nào phù hợp?",
+      "options": [
+        "Tái dùng stream đã terminal mà không tạo lại.",
+        "Gọi clear trên stream.",
+        "Đổi stream thành static để reset.",
+        "Tạo list.stream() mới cho từng pipeline."
+      ],
+      "correct": 3,
+      "explanation": "Container có thể dùng lại để mở pipeline mới, Stream instance thường chỉ dùng một lần."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Record shallow immutability",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord Box(List<Integer>values){}\npublic class QuizCase{public static void main(String[]args){\nvar xs=new ArrayList<>(List.of(1));var b=new Box(xs);xs.add(2);System.out.print(b.values().size());\n}}\n",
+      "options": [
+        "2",
+        "1",
+        "Compile error vì record components không được List.",
+        "UnsupportedOperationException vì record tự đóng băng list."
+      ],
+      "correct": 0,
+      "explanation": "Reference component final nhưng list bên trong vẫn mutable theo owner/alias."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Record defensive copy depth",
+      "question": "Record constructor copy List bằng List.copyOf có tự deep-copy mọi object mutable trong list không?",
+      "options": [
+        "Chỉ cần override toString.",
+        "Không; bảo vệ cấu trúc list không tự clone sâu mọi element.",
+        "Có; record luôn deep immutable.",
+        "Có nếu field private final."
+      ],
+      "correct": 1,
+      "explanation": "Muốn snapshot sâu cần semantics copy/immutability của element theo contract."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Collectors toList unspecified concrete type",
+      "question": "Vì sao không nên cast kết quả Collectors.toList() sang ArrayList chỉ vì một JVM đang trả ArrayList?",
+      "options": [
+        "Vì mọi list luôn linked list.",
+        "Chỉ vì var làm mất dữ liệu.",
+        "API không cam kết concrete implementation/mutability đó cho mọi trường hợp.",
+        "Vì collect không được trả List."
+      ],
+      "correct": 2,
+      "explanation": "Nếu cần loại cụ thể, dùng collector với supplier rõ ràng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Peek audit unreliable",
+      "question": "Vì sao peek(log).count() không là cách bảo đảm một log cho mọi phần tử trong mọi pipeline?",
+      "options": [
+        "Vì peek luôn tự tạo thread mất log.",
+        "Vì count không bao giờ terminal.",
+        "Vì System.out chỉ dùng được trong main.",
+        "Implementation có thể tối ưu bỏ traversal/operation khi terminal tính được kết quả; side effects trong peek không là audit contract."
+      ],
+      "correct": 3,
+      "explanation": "Dùng cơ chế xử lý/audit tường minh với semantics cần thiết; không dựa vào một lần test thấy log."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Noninterference source mutation",
+      "question": "Pipeline duyệt ArrayList và callback thêm/xóa trực tiếp cùng nguồn không đồng bộ có phù hợp non-interference contract không?",
+      "options": [
+        "Không; có thể lỗi/kết quả không như mong muốn, cần tách nguồn/đích hoặc mutation được API hỗ trợ ngoài pipeline đó.",
+        "Có; Stream tự snapshot mọi nguồn.",
+        "Có nếu dùng parallelStream.",
+        "Chỉ cần catch ConcurrentModificationException rồi tin kết quả."
+      ],
+      "correct": 0,
+      "explanation": "Không mặc định fail-fast sẽ phát hiện mọi vi phạm, hoặc không ném thì đúng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Parallel mutable sink",
+      "question": "parallelStream().forEach(out::add) với out là ArrayList dùng chung có tự an toàn không?",
+      "options": [
+        "Chỉ cần reserve capacity.",
+        "Không; mutation đích chung cần cơ chế đúng, thường dùng collect phù hợp.",
+        "Có; parallelStream tự khóa mọi callback target.",
+        "Có nếu out final."
+      ],
+      "correct": 1,
+      "explanation": "Avoid data races/unsafe collection mutations; chọn terminal collector với contract concurrency phù hợp."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Reduce wrong identity",
+      "question": "Muốn tổng số, reduce(1,Integer::sum) có identity đúng cho phép cộng không?",
+      "options": [
+        "Có; parallel tự trừ identity dư.",
+        "Chỉ cần list không rỗng.",
+        "Không;1 không là phần tử đơn vị của phép cộng và chia partition có thể làm sai thêm.",
+        "Có; identity nào cũng dùng được nếu int."
+      ],
+      "correct": 2,
+      "explanation": "Identity phải trung hòa operation; dùng0 cho tổng theo hợp đồng số nguyên phù hợp."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Reduce nonassociative",
+      "question": "reduce với phép trừ có thể được coi tương đương mọi cách phân nhóm/parallel reduction không?",
+      "options": [
+        "Có; mọi BinaryOperator đều kết hợp.",
+        "Có nếu dùng int.",
+        "Chỉ cần đổi identity thành1.",
+        "Không; phép trừ không kết hợp nên grouping khác có thể đổi kết quả."
+      ],
+      "correct": 3,
+      "explanation": "Contract reduction yêu cầu operation phù hợp; không dùng parallel như thay loop trái sang phải bất kỳ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Mutable identity trap",
+      "question": "Parallel reduce dùng cùng identity ArrayList mutable rồi sửa nó trong accumulator có vấn đề gì?",
+      "options": [
+        "Có thể chia sẻ/mutation cùng identity không đúng reduction contract; dùng collect với supplier/combiner đúng.",
+        "Mỗi partition luôn tự clone sâu identity bất kỳ.",
+        "ArrayList tự thread safe khi nằm trong reduce.",
+        "Chỉ cần đặt tên identity là local."
+      ],
+      "correct": 0,
+      "explanation": "Mutable reduction có API collect riêng với yêu cầu cần tuân thủ, không phải mọi reduce đều thay thế được."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Parallel floating reproducibility",
+      "question": "Cùng dữ liệu double, sequential và parallel sum có luôn bảo đảm từng bit giống nhau chỉ vì đều Java17 không?",
+      "options": [
+        "Chỉ cần printf ít chữ số để chứng minh equality.",
+        "Không; thứ tự/phân nhóm phép cộng floating-point có thể đổi làm khác làm tròn.",
+        "Có; phép cộng double có tính kết hợp toán học tuyệt đối.",
+        "Có nếu dùng var."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần reproducibility/độ chính xác cụ thể, thiết kế và kiểm tra theo yêu cầu đó."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Distinct before projection",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.stream.*;\nrecord S(String name,int score){}\npublic class QuizCase{public static void main(String[]args){\nvar xs=List.of(new S(\"An\",8),new S(\"An\",9));long a=xs.stream().distinct().count();long b=xs.stream().map(S::name).distinct().count();System.out.print(a+\" \"+b);\n}}\n",
+      "options": [
+        "2 2",
+        "Record equality chỉ xét name nên luôn1.",
+        "2 1",
+        "1 1"
+      ],
+      "correct": 2,
+      "explanation": "Hai record khác score là distinct, nhưng sau map name cả hai cùng An."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Sort tie contract",
+      "question": "Yêu cầu GPA giảm dần, tên tăng dần khi bằng GPA. comparingDouble(gpa).thenComparing(name).reversed() có tự đúng không?",
+      "options": [
+        "Có; reversed chỉ tác động comparator đầu tiên bất kể vị trí.",
+        "Có nếu source List.of.",
+        "Chỉ cần parallelStream.",
+        "Không; reversed cuối đảo cả comparator gồm tie-break, làm tên giảm trong nhóm bằng GPA."
+      ],
+      "correct": 3,
+      "explanation": "Đảo comparator GPA trước rồi thenComparing tên tăng theo hợp đồng."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Any versus first",
+      "question": "findAny trên parallel ordered stream có được coi bảo đảm cùng phần tử như findFirst không?",
+      "options": [
+        "Không; findAny cho phép chọn phần tử bất kỳ phù hợp.",
+        "Có; tên any chỉ là alias của first.",
+        "Có nếu có ít hơn10 phần tử.",
+        "Chỉ cần sorted trước để buộc findAny lấy đầu."
+      ],
+      "correct": 0,
+      "explanation": "Chọn operation theo ordering contract; không suy từ một JVM luôn trả cùng ví dụ nhỏ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Parallel forEach order",
+      "question": "parallelStream().forEach(action) có giữ encounter order của List theo bảo đảm như forEachOrdered không?",
+      "options": [
+        "Chỉ cần state final.",
+        "Không.",
+        "Có; List tự buộc mọi callback tuần tự.",
+        "Có nếu action print."
+      ],
+      "correct": 1,
+      "explanation": "Nếu thứ tự effect quan trọng, dùng API/order/synchronization phù hợp và xét chi phí."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Grouping null assumption",
+      "question": "Vì HashMap cho null key, có nên tự giả định groupingBy luôn nhận classifier null và tạo nhóm null không?",
+      "options": [
+        "Có nếu student là record.",
+        "Chỉ cần map supplier HashMap.",
+        "Không; collector có contract/kiểm tra riêng, cần chính sách null rõ.",
+        "Có; mọi collector chỉ là alias của HashMap.put."
+      ],
+      "correct": 2,
+      "explanation": "Đừng suy API cấp cao chấp nhận mọi thứ implementation nền tảng có thể chứa; validate/biểu diễn nhóm thiếu dữ liệu rõ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Year month grouping",
+      "question": "Đơn hàng trải nhiều năm, group chỉ theo tháng1..12 có rủi ro gì?",
+      "options": [
+        "Không rủi ro vì groupingBy tự biết năm.",
+        "Chỉ gộp nhầm nếu amount0.",
+        "Chỉ cần sort theo amount.",
+        "Gộp nhầm tháng cùng số ở các năm khác; dùng key năm-tháng và quy tắc thời gian phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Key grouping phải phản ánh chiều dữ liệu; timestamp còn cần timezone theo hợp đồng trước lấy tháng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Revenue status policy",
+      "question": "Tổng đơn hàng theo tháng có tự đúng nghiệp vụ nếu sum mọi record bất kể canceled/refunded/currency không?",
+      "options": [
+        "Không; cần quy tắc lọc/trạng thái/đơn vị và key grouping rõ.",
+        "Có; summingLong tự hiểu hủy/hoàn tiền.",
+        "Có nếu Order là record.",
+        "Chỉ cần đổi collect thành reduce."
+      ],
+      "correct": 0,
+      "explanation": "Đây là câu hỏi về mô hình dữ liệu của chương trình; phép tổng không tự suy nghiệp vụ từ tên amount."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Long sum overflow",
+      "question": "Collectors.summingLong có tự ném lỗi khi tổng long vượt phạm vi không?",
+      "options": [
+        "Chỉ cần đổi Map value thành Long.",
+        "Không; cần kiểm tra/kiểu số/chính sách giới hạn phù hợp nếu miền dữ liệu có thể vượt.",
+        "Có; mọi phép cộng long Java tự checked.",
+        "Có nếu chạy parallel."
+      ],
+      "correct": 1,
+      "explanation": "Boxing kết quả không ngăn tràn ở phép tích lũy."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Parallel performance evidence",
+      "question": "parallelStream có tự nhanh hơn sequential trên mọi danh sách không?",
+      "options": [
+        "Có nếu dùng record.",
+        "Chỉ cần forEach.",
+        "Không; overhead, kích thước, workload, blocking và môi trường ảnh hưởng.",
+        "Có; số core luôn được nhân thành speedup đúng bằng số core."
+      ],
+      "correct": 2,
+      "explanation": "Đo trên workload đại diện; tính đúng của callback và resource contention phải được xét trước claim hiệu năng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Order pipeline tests",
+      "question": "Bộ kiểm thử nào phù hợp tổng đơn hàng theo tháng?",
+      "options": [
+        "Chỉ một đơn hàng hợp lệ.",
+        "Chỉ count số key.",
+        "Chỉ chương trình compile.",
+        "Rỗng, nhiều tháng/năm, trạng thái hủy/hoàn theo contract, đơn vị tiền/giá trị biên và kiểm tra null/order khi API yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra cả dữ liệu đầu vào, grouping key và phép tích lũy theo chính sách đã chọn."
+    }
+  ]
+}

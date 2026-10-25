@@ -1,0 +1,1142 @@
+{
+  "version": 1,
+  "tech": "csharp",
+  "level": "senior",
+  "lesson": "performance",
+  "language": "vi",
+  "sourceHash": "fe781e959713482dd2b1af8bd16c63e376e758186998f182340f938a4d1df817",
+  "status": "approved",
+  "review": "Tự soạn không API. Microsoft Span/Memory/ranges/ValueTask và pinned ArrayPool source, BenchmarkDotNet docs review. Không có modern SDK nên không chạy Span/ValueTask/pool/benchmark; selected legacy arithmetic/copy/cache models ghi rõ phạm vi. Source array range rồi ToArray thêm copies,size>0; rented data không hứa zero,processing placeholder chưa ghi;cache không được populate trên miss. Không benchmark/savings hoặc80%claim.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Span role",
+      "question": "Span<T> chủ yếu cung cấp abstraction nào?",
+      "options": [
+        "View tới vùng elements liên tiếp với các lifetime/ref-safety rules.",
+        "Một owned database table.",
+        "Một deep copy bắt buộc mọi lúc.",
+        "Một HTTP stream tự động."
+      ],
+      "correct": 0,
+      "explanation": "View không tự sở hữu hoặc cấp phát backing data."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "ReadOnlySpan access",
+      "question": "ReadOnlySpan<int> giới hạn điều gì qua view đó?",
+      "options": [
+        "Data tự encrypted.",
+        "Không ghi elements qua interface của view này.",
+        "Mọi aliases khác không thể mutate backing array.",
+        "Backing memory luôn ở stack."
+      ],
+      "correct": 1,
+      "explanation": "Read-only view không đồng nghĩa storage bất biến toàn cục."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Span source sum",
+      "question": "SumWithSpan nguồn trả gì?",
+      "options": [
+        "Một Task<int>.",
+        "Một pooled buffer.",
+        "Tổng int được tính từ các elements.",
+        "Một span clone."
+      ],
+      "correct": 2,
+      "explanation": "Method duyệt foreach và cộng vào local sum."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Initial accumulator",
+      "question": "sum trong SumWithSpan nguồn được khởi tạo bằng gì?",
+      "options": [
+        "1.",
+        "int.MaxValue.",
+        "null.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Empty input vì thế có tổng0 theo code."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Array pool role",
+      "question": "ArrayPool<T> chủ yếu nhằm gì?",
+      "options": [
+        "Tái sử dụng arrays theo pool contract để giảm một số allocation pressure.",
+        "Bảo đảm không bao giờ có allocation/GC.",
+        "Tự làm mọi returned bytes bằng0.",
+        "Tự persist arrays qua process restart."
+      ],
+      "correct": 0,
+      "explanation": "Pooling có chi phí và yêu cầu ownership riêng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Rent call",
+      "question": "pool.Rent(size) nhằm lấy gì?",
+      "options": [
+        "Một String.",
+        "Array có capacity ít nhất yêu cầu theo contract.",
+        "Array length bắt buộc bằng size chính xác.",
+        "Một Span stackalloc."
+      ],
+      "correct": 1,
+      "explanation": "Actual rented array có thể lớn hơn logical data size."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Return call",
+      "question": "pool.Return(buffer) chủ yếu làm gì?",
+      "options": [
+        "Tự lưu buffer vào DB.",
+        "Tự clone buffer rồi giữ original riêng.",
+        "Trả quyền sử dụng array lại cho pool theo contract.",
+        "Trả response HTTP cho client."
+      ],
+      "correct": 2,
+      "explanation": "Sau Return không còn được dùng array như owner riêng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Return location",
+      "question": "Source Return nằm trong block nào?",
+      "options": [
+        "catch duy nhất.",
+        "Constructor.",
+        "Một background thread riêng.",
+        "finally."
+      ],
+      "correct": 3,
+      "explanation": "Cleanup path bao đoạn try theo structured control flow."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Buffer result type",
+      "question": "ProcessData source trả kiểu nào?",
+      "options": [
+        "byte[].",
+        "Span<byte> giữ trực tiếp pooled array.",
+        "Task<User>.",
+        "MemoryOwner<byte> tự động."
+      ],
+      "correct": 0,
+      "explanation": "Expression range/ToArray tạo kết quả theo array APIs."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Source logical range",
+      "question": "buffer[..size] chọn range nào?",
+      "options": [
+        "Toàn buffer bất kể size.",
+        "Từ index0 tới trước index size.",
+        "Từ size tới hết buffer.",
+        "Chỉ byte size."
+      ],
+      "correct": 1,
+      "explanation": "Range end exclusive."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Cache type",
+      "question": "_cache nguồn là collection nào?",
+      "options": [
+        "List<User>.",
+        "DbSet<User>.",
+        "Dictionary<int, User>.",
+        "ConcurrentDictionary<int, User> trong source."
+      ],
+      "correct": 2,
+      "explanation": "Plain Dictionary không tự là concurrent cache an toàn cho writes tùy ý."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cache lookup",
+      "question": "TryGetValue(id, out user) true có nghĩa gì ở lookup này?",
+      "options": [
+        "User chắc hợp lệ domain/auth.",
+        "Database chắc không đổi.",
+        "Entry tự có TTL.",
+        "Dictionary hiện có entry cho key id."
+      ],
+      "correct": 3,
+      "explanation": "Cache existence không tự là freshness/permission proof."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Cached return",
+      "question": "Cache hit source trả kiểu awaitable nào?",
+      "options": [
+        "ValueTask<User> từ value sẵn có.",
+        "Một OS thread mới.",
+        "Một SQL query bắt buộc.",
+        "Một HttpResponseMessage."
+      ],
+      "correct": 0,
+      "explanation": "Synchronous result có thể tránh allocation Task riêng trong path phù hợp."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Cache miss path",
+      "question": "Cache miss nguồn gọi helper nào?",
+      "options": [
+        "SendEmailAsync(id).",
+        "LoadFromDbAsync(id).",
+        "SaveChangesAsync(id).",
+        "ClearPool(id)."
+      ],
+      "correct": 1,
+      "explanation": "Helper definition chưa có trong snippet."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Benchmark annotation",
+      "question": "[Benchmark] source nhằm công cụ nào?",
+      "options": [
+        "ASP.NET authentication.",
+        "SignalR routing.",
+        "BenchmarkDotNet.",
+        "Entity Framework migrations."
+      ],
+      "correct": 2,
+      "explanation": "Attribute không tự là kết quả benchmark đã chạy."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Benchmark input creation",
+      "question": "SpanBenchmark tạo data bằng gì?",
+      "options": [
+        "Một pooled array đã có sẵn ở GlobalSetup trong source.",
+        "Một database query.",
+        "stackalloc int[1000] trong source.",
+        "Enumerable.Range(0, 1000).ToArray()."
+      ],
+      "correct": 3,
+      "explanation": "Allocation/input generation nằm trong benchmark method được thể hiện."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "AsSpan role",
+      "question": "data.AsSpan() trong source thường tạo gì?",
+      "options": [
+        "View trên data array theo contract, không tự deep-copy elements.",
+        "Một new int[] clone bắt buộc.",
+        "Một database index.",
+        "Một task."
+      ],
+      "correct": 0,
+      "explanation": "Backing array vẫn là allocation được tạo trước đó."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Memory distinction",
+      "question": "Memory<T> so với Span<T> có khác biệt quan trọng nào?",
+      "options": [
+        "Hai types chỉ khác tên không rules.",
+        "Memory<T> là struct có usage/lifetime capabilities khác ref struct Span<T>.",
+        "Memory<T> tự là database.",
+        "Span<T> luôn owned heap array."
+      ],
+      "correct": 1,
+      "explanation": "Chọn API theo lifecycle và async/storage needs."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Source processing placeholder",
+      "question": "Comment Process buffer... có chứng minh buffer đã được ghi data đúng chưa?",
+      "options": [
+        "Có; Rent luôn trả zero.",
+        "Chỉ cần finally.",
+        "Chưa.",
+        "Có; comment tự initialize bytes."
+      ],
+      "correct": 2,
+      "explanation": "Snippet chưa triển khai bước xử lý thực tế."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Optimization target evidence",
+      "question": "Exercise giảm allocations80% có tự là thành tích đã đo trong source không?",
+      "options": [
+        "Có; con số trong exercise là benchmark result.",
+        "Có; dùng Span mặc định giảm đúng80%.",
+        "Chỉ cần pool.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Mục tiêu cần baseline và measurements phù hợp để xác nhận."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Finite sum model",
+      "question": "Legacy array-loop model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int sum=0;foreach(int n in new[]{1,2,3})sum+=n;Console.WriteLine(sum);}}\n",
+      "options": [
+        "6.",
+        "3.",
+        "0.",
+        "Một Span pointer."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ arithmetic của loop được kiểm, native model không có Span API."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Empty sum model",
+      "question": "Finite model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int sum=0;foreach(int n in new int[0])sum+=n;Console.WriteLine(sum);}}\n",
+      "options": [
+        "null.",
+        "0.",
+        "1.",
+        "InvalidOperationException."
+      ],
+      "correct": 1,
+      "explanation": "Accumulator0 không đổi nếu không có elements."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Unchecked int sum model",
+      "question": "Model explicit unchecked này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int sum=int.MaxValue;sum=unchecked(sum+1);Console.WriteLine(sum);}}\n",
+      "options": [
+        "0.",
+        "Tự đổi return type long.",
+        "-2147483648.",
+        "2147483648."
+      ],
+      "correct": 2,
+      "explanation": "Finite int arithmetic không tự mở rộng range."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Checked int sum model",
+      "question": "Model explicit checked này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int sum=int.MaxValue;try{sum=checked(sum+1);}catch(OverflowException){Console.WriteLine(\"OverflowException\");}}}\n",
+      "options": [
+        "-2147483648.",
+        "2147483648.",
+        "Tự trả Result.",
+        "OverflowException."
+      ],
+      "correct": 3,
+      "explanation": "Exception được bắt hữu hạn, không giả source build flags đã biết."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Copy ownership model",
+      "question": "Finite array-copy model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new byte[]{1,2};var b=a.ToArray();b[0]=9;Console.WriteLine(a[0]+\" \"+b[0]);}}\n",
+      "options": [
+        "1 9.",
+        "9 9.",
+        "1 1.",
+        "Copy tự giữ shared elements vì byte là reference."
+      ],
+      "correct": 0,
+      "explanation": "Byte values được copy vào array độc lập; không chạy actual pool."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Two arrays copy model",
+      "question": "Model explicit two copies này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new byte[]{1,2};var first=new byte[1];Array.Copy(a,first,1);var second=first.ToArray();Console.WriteLine(ReferenceEquals(a,first)+\" \"+ReferenceEquals(first,second));}}\n",
+      "options": [
+        "ToArray luôn trả original array.",
+        "False False.",
+        "True True.",
+        "True False."
+      ],
+      "correct": 1,
+      "explanation": "Hai nonempty array copies riêng; đây là copy model, chưa biên dịch range syntax."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Logical capacity model",
+      "question": "ArraySegment model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new byte[8];var s=new ArraySegment<byte>(a,0,2);Console.WriteLine(s.Count+\" \"+s.Array.Length);}}\n",
+      "options": [
+        "2 2.",
+        "0 8.",
+        "2 8.",
+        "8 8."
+      ],
+      "correct": 2,
+      "explanation": "Logical slice length và backing array length khác nhau; không giả đây là actual Rent result."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Shared view model",
+      "question": "ArraySegment view model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new[]{1,2};var v=new ArraySegment<int>(a,0,1);a[0]=9;Console.WriteLine(v.Array[v.Offset]);}}\n",
+      "options": [
+        "1.",
+        "0.",
+        "ArraySegment tự deep-copy.",
+        "9."
+      ],
+      "correct": 3,
+      "explanation": "View chia sẻ array; model giúp phân biệt view/copy, không là Span execution proof."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cache not populated model",
+      "question": "Finite dictionary model này in gì?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var cache=new Dictionary<int,string>();int loads=0;string value;for(int i=0;i<2;i++){if(!cache.TryGetValue(1,out value)){loads++;value=\"loaded\";}}Console.WriteLine(loads+\" \"+cache.Count);}}\n",
+      "options": [
+        "2 0.",
+        "1 1.",
+        "0 2.",
+        "TryGetValue tự cache result helper."
+      ],
+      "correct": 0,
+      "explanation": "Không có assignment vào cache trên miss nên hai calls đều load trong model."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Sum of benchmark input",
+      "question": "Finite arithmetic model cho0..999 có tổng nào?",
+      "code": "using System;using System.Linq;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int sum=0;foreach(int n in Enumerable.Range(0,1000))sum+=n;Console.WriteLine(sum);}}\n",
+      "options": [
+        "0.",
+        "499500.",
+        "500500.",
+        "1000."
+      ],
+      "correct": 1,
+      "explanation": "Đây là correctness arithmetic, không latency benchmark."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Span backing storage",
+      "question": "Một Span<T> có thể view array trên managed heap không?",
+      "options": [
+        "Không; Span luôn copy array lên stack.",
+        "Chỉ khi dùng unsafe.",
+        "Có.",
+        "Không; mọi backing bytes bắt buộc stackalloc."
+      ],
+      "correct": 2,
+      "explanation": "Ref struct lifetime rules của view không xác định mọi backing data nằm ở stack."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Readonly view aliasing",
+      "question": "ReadOnlySpan trỏ array có bảo đảm alias khác không sửa array không?",
+      "options": [
+        "Có; constructor freeze heap.",
+        "Có; runtime tự clone mọi aliases.",
+        "Chỉ cần nameofSpan.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Read-only capability qua một view khác global immutability."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Range on array",
+      "question": "Với byte[] buffer và size>0 hợp lệ, buffer[..size] thông thường tạo gì?",
+      "options": [
+        "Array chứa copy của range theo array slicing semantics.",
+        "Span view tự động chỉ vì cú pháp range.",
+        "Một raw pointer.",
+        "Một Task<byte[]>."
+      ],
+      "correct": 0,
+      "explanation": "Muốn span slicing cần view/API phù hợp, chứ không suy từ dấu..đơn lẻ."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Source extra copy",
+      "question": "Sau array range source còn gọi ToArray có thể dẫn đến gì với nonempty range?",
+      "options": [
+        "Tự giảm size về0.",
+        "Thêm một array copy thay vì chỉ một zero-copy view.",
+        "Không copy vì mọi ToArray là alias.",
+        "Tự pool-owned Memory cho caller."
+      ],
+      "correct": 1,
+      "explanation": "Không hứa zero allocation cho ProcessData hiện tại."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Rent minimum length",
+      "question": "Nếu Rent(100) trả array length128, code nên coi phần data yêu cầu là gì?",
+      "options": [
+        "Pool contract bị vi phạm vì khác100.",
+        "Cần return array khác length100 vào pool.",
+        "Logical range đã định, không tự gửi128bytes nếu chỉ100bytes hợp lệ.",
+        "Mọi128bytes đều business data hợp lệ."
+      ],
+      "correct": 2,
+      "explanation": "Capacity và initialized data length cần được quản lý riêng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Rent contents",
+      "question": "Rented byte array có được hứa luôn zero-initialized cho caller không?",
+      "options": [
+        "Có; pool luôn new array cho mọi Rent.",
+        "Có; Return luôn clear bất kể options.",
+        "Chỉ với byte.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Phải initialize/read chỉ data có contract hợp lệ; task không đọc arbitrary pooled contents."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "ProcessData output privacy",
+      "question": "Source chưa ghi buffer trước copy nên có vấn đề gì cần review?",
+      "options": [
+        "Có thể xuất bytes chưa được caller khởi tạo theo intended contract.",
+        "Chắc trả image đã xử lý đúng vì comment.",
+        "Chắc mọi output bằng0 theo pool guarantee.",
+        "Compiler tự bổ sung processing loop."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy/đọc pooled data người dùng để thử."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Return to same pool",
+      "question": "Array lấy từ một pool cần được trả theo nguyên tắc nào?",
+      "options": [
+        "Giữ pointer dùng tiếp rồi Return cũng luôn an toàn.",
+        "Đúng pool và ownership contract, không return tùy tiện array đang còn dùng.",
+        "Trả bất kỳ pool nào cũng tương đương.",
+        "Return hai lần cho tối ưu."
+      ],
+      "correct": 1,
+      "explanation": "Pool reuse cần lifetime discipline."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "After Return ownership",
+      "question": "Sau pool.Return(buffer), caller có nên tiếp tục đọc/ghi buffer như của riêng không?",
+      "options": [
+        "Có; GC chưa thu hồi là đủ.",
+        "Chỉ cần readonly field.",
+        "Không.",
+        "Có; local variable còn sống nghĩa exclusive owner."
+      ],
+      "correct": 2,
+      "explanation": "Pool có thể cấp lại cùng storage cho consumer khác."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Source returned array safety",
+      "question": "Source copy data thành array riêng trước Return có lợi ích ownership nào?",
+      "options": [
+        "Tự chứng minh content đã initialized đúng.",
+        "Tự bảo đảm không allocation.",
+        "Tự hoàn thành cache.",
+        "Caller giữ array riêng thay vì giữ pooled buffer đã trả."
+      ],
+      "correct": 3,
+      "explanation": "Ownership tốt của result không sửa missing processing hoặc extra copies."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Finally allocation failure",
+      "question": "Nếu copy trong try throw, finally Return có vai trò gì theo ordinary control flow?",
+      "options": [
+        "Cố trả buffer đã thuê khi unwinding theo contract.",
+        "Tự làm allocation luôn thành công.",
+        "Tự retry copy vô hạn.",
+        "Tự biến exception thành empty array."
+      ],
+      "correct": 0,
+      "explanation": "Không hứa cleanup được khi process termination bất thường."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Rent before try",
+      "question": "Nếu Rent(size) throw trước khi vào try, có buffer hợp lệ nào trong local đó để finally Return không?",
+      "options": [
+        "Chỉ nếu size âm.",
+        "Không; acquisition chưa hoàn tất và finally block đó chưa được vào.",
+        "Có; pool luôn đưa array dù throw.",
+        "Có; compiler tự tạo default array để Return."
+      ],
+      "correct": 1,
+      "explanation": "Acquisition và cleanup scope cần được thiết kế đúng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Negative size",
+      "question": "Size âm có nên được chấp nhận như length hợp lệ chỉ vì int type không?",
+      "options": [
+        "Có; pool tự chọn business size.",
+        "Chỉ cần finally.",
+        "Không; API/domain contract cần reject/handle phù hợp.",
+        "Có; negative tự là0 mọi APIs."
+      ],
+      "correct": 2,
+      "explanation": "Input structural type không đủ cho resource limits."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Shared pool allocation",
+      "question": "ArrayPool.Shared có nghĩa pool không bao giờ allocate mới khi thiếu buffers không?",
+      "options": [
+        "Có; mọi arrays đã tồn tại từ compile time.",
+        "Có; GC bị tắt.",
+        "Chỉ cần Rent.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Pooling giảm một số allocations theo workloads, không xóa chi phí tổng quát."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Cache miss insertion source",
+      "question": "GetUserAsync source có code ghi loaded User trở lại _cache chưa?",
+      "options": [
+        "Chưa.",
+        "Có; ValueTask constructor tự cache theo id.",
+        "Có; TryGetValue tự memoize helper.",
+        "Chỉ cần Dictionary readonly."
+      ],
+      "correct": 0,
+      "explanation": "Không gọi helper hai lần trong actual app; review theo source."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Cache concurrency",
+      "question": "Dictionary field có tự hỗ trợ concurrent writes/reads tùy ý không?",
+      "options": [
+        "Chỉ cần int keys.",
+        "Không; cần synchronization/data design theo contract.",
+        "Có; readonly field làm mọi Dictionary operations thread-safe.",
+        "Có; ValueTask tự lock dictionary."
+      ],
+      "correct": 1,
+      "explanation": "Async API không tự bảo vệ shared mutable state."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Cache stampede",
+      "question": "Ngay cả cache thread-safe, nhiều concurrent misses cùng key có thể cần gì nếu muốn một load?",
+      "options": [
+        "Chỉ return ValueTask.",
+        "Không có cache miss nào chạy đồng thời.",
+        "Coalescing/single-flight policy phù hợp cùng cancellation/error handling.",
+        "Chỉ dùng dictionary và hứa one load."
+      ],
+      "correct": 2,
+      "explanation": "Thread safety khác deduplicating work."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "ValueTask sync benefit",
+      "question": "ValueTask có thể hữu ích khi nào theo performance contract?",
+      "options": [
+        "Mọi async API mặc định phải đổi sang ValueTask để nhanh hơn.",
+        "Muốn bỏ mọi errors.",
+        "Muốn tự tạo cache.",
+        "Path hoàn tất đồng bộ thường xuyên và đo cho thấy tiết kiệm đáng giá."
+      ],
+      "correct": 3,
+      "explanation": "Có tradeoffs về consumption/copy/state machine/API complexity."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "ValueTask consumption",
+      "question": "Với ValueTask nguồn có thể backing bởi IValueTaskSource, consumer nên theo rule nào?",
+      "options": [
+        "Consume đúng một lần theo contract hoặc chuyển AsTask một lần khi cần Task semantics.",
+        "Await vô hạn luôn hợp lệ như mọi Task.",
+        "Gọi AsTask nhiều lần tùy ý.",
+        "Đọc Result trước completion để khỏi await."
+      ],
+      "correct": 0,
+      "explanation": "Không giả mọi ValueTask instance có cùng repeatability như completed Task."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "AsTask reuse",
+      "question": "Nếu cần await nhiều lần, một hướng theo contract là gì?",
+      "options": [
+        "Copy ValueTask struct để tạo independent operations.",
+        "Convert một lần sang Task rồi reuse Task đó phù hợp.",
+        "Gọi AsTask lại cho mỗi consumer trên cùng ValueTask.",
+        "Bỏ await rồi đọc field ngẫu nhiên."
+      ],
+      "correct": 1,
+      "explanation": "Struct copy không tự tạo operation mới."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "No total zero allocation claim",
+      "question": "Cache hit dùng ValueTask.FromResult có đủ chứng minh toàn API path zero allocations chưa?",
+      "options": [
+        "Đủ; User không thể chứa references.",
+        "Chỉ cần method không async keyword.",
+        "Chưa; còn code/measurement boundaries khác.",
+        "Đủ; comment no allocation là benchmark."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ nói benefit cụ thể có cơ sở."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "ValueTask task-backed miss",
+      "question": "new ValueTask<User>(LoadFromDbAsync(id)) có tự xóa allocations của helper Task không?",
+      "options": [
+        "Có; wrapper retroactively xóa Task object.",
+        "Có; database result tự stackalloc.",
+        "Chỉ cần cache miss.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Wrapper không thay internals của operation đã được gọi."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Benchmark measured region",
+      "question": "Enumerable.Range().ToArray() trong Benchmark method có thuộc work được đo của method không?",
+      "options": [
+        "Có; method hiện bao cả tạo data và sum.",
+        "Không; BenchmarkDotNet tự chuyển mọi setup statements ra ngoài.",
+        "Không; ToArray luôn compile-time.",
+        "Chỉ foreach được đo bất kể methodbody."
+      ],
+      "correct": 0,
+      "explanation": "Nếu chỉ muốn sum, cần setup/measurement design phù hợp."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Global setup intent",
+      "question": "GlobalSetup có thể giúp benchmark mục tiêu nào?",
+      "options": [
+        "Tự xóa mọi runtime allocations bên trong method.",
+        "Chuẩn bị dữ liệu ngoài các lần invocation được đo theo công cụ contract.",
+        "Tự làm mọi input immutable.",
+        "Tự chứng minh benchmark không noise."
+      ],
+      "correct": 1,
+      "explanation": "Setup placement phải phù hợp câu hỏi đo."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Ignored benchmark return",
+      "question": "Gọi SumWithSpan rồi bỏ result có cần xem xét validity benchmark không?",
+      "options": [
+        "Chắc toàn loop bị xóa trong mọi JIT.",
+        "Chỉ cần attribute.",
+        "Có; cần bảo đảm work/result được quan sát/consumed phù hợp, không đoán JIT behavior chưa đo.",
+        "Không; mọi code không thể bị optimized."
+      ],
+      "correct": 2,
+      "explanation": "Không tuyên bố elimination hoặc speedup khi chưa inspect/measure."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Allocation diagnostics",
+      "question": "Muốn xác nhận allocation reduction, cần evidence nào?",
+      "options": [
+        "Chỉ tên Span.",
+        "Chỉ count comments.",
+        "Chỉ method compile.",
+        "Baseline/candidate cùng workload và allocation diagnostics phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không biến target80% thành kết quả đã đạt."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Input size benchmark",
+      "question": "Một benchmark input1000ints có tự đại diện mọi input sizes không?",
+      "options": [
+        "Không.",
+        "Có; algorithm performance linear đồng nghĩa constantcost.",
+        "Có; 1000 luôn lớn nhất.",
+        "Chỉ needGC."
+      ],
+      "correct": 0,
+      "explanation": "Cần representative distributions và mục tiêu runtime."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Array range type importance",
+      "question": "Cùng cú pháp range trên array và Span có thể khác gì?",
+      "options": [
+        "Không có bounds rules.",
+        "Array slice có thể copy, Span slice tạo view; type/API quyết định semantics.",
+        "Luôn zero-copy mọitype.",
+        "Luôn deep copy mọitype."
+      ],
+      "correct": 1,
+      "explanation": "Đọc receiver type thay suy từ syntax ngắn."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Resource cleanup privacy",
+      "question": "Return(buffer, clearArray:true) theo pool contract có phải lúc nào cũng hoàn thành mọi secret-erasure requirement không?",
+      "options": [
+        "Có; clears toàn disk.",
+        "Chỉ cần dùng Shared.",
+        "Không nên hứa blanketguarantee; cần hiểu pool/retention/ownership và security requirements.",
+        "Có; xóa mọi copies trong process."
+      ],
+      "correct": 2,
+      "explanation": "Các copies trước đó vẫn là vấn đề riêng; task không xử lý secrets thật."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Modern dependencies absent",
+      "question": "Source đã có đủ User/LoadFromDbAsync/SDK/packages để xác nhận benchmark chạy chưa?",
+      "options": [
+        "Có; attributes tự install tools.",
+        "Có; runtime luôn có fullSDK.",
+        "Chỉ needusingSystemBuffers.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Không chạy download hoặc package restore trong task."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "ReadOnlySpan global immutability",
+      "question": "Một thread khác mutate backing array trong khi SumWithSpan đọc có được ngăn chỉ bằng ReadOnlySpan parameter không?",
+      "options": [
+        "Không; ownership/synchronization cần được bảo đảm riêng.",
+        "Có; readonlyview là global mutex.",
+        "Có; Span tự clone mọi input.",
+        "Chỉ needint."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy uncontrolled race để đoán result."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Span heap ownership confusion",
+      "question": "Tại sao ref struct Span không đồng nghĩa backing array nằm trên stack?",
+      "options": [
+        "Chỉ needMemory<T>.",
+        "Ref-safety giới hạn view lifetime/storage, còn data có thể thuộc managed heap hoặc vùng khác hợp lệ.",
+        "Vì Span luôn ownedHeapclass.",
+        "Vì mọi stackalloc tự chuyển lên heap."
+      ],
+      "correct": 1,
+      "explanation": "Tách nơi lưu view và nơi lưu data."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Async boundary span",
+      "question": "Nếu muốn giữ dữ liệu qua await boundary, cần xem gì ngoài tạo Span local?",
+      "options": [
+        "Chỉ đổi biến tên memory.",
+        "Async bỏ mọi lifetimechecks.",
+        "Ref-safety/language-version rules và ownership/lifetime phù hợp, có thể cần Memory/owned buffer theo contract.",
+        "Mọi Span tự giữ stackframe sống vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Không áp blanketrules của versions mới cho source chưa có manifest."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Pool copy cost tradeoff",
+      "question": "Vì sao pooling không tự có lợi nếu ngay sau đó vẫn allocate/copy toàn output hai lần?",
+      "options": [
+        "Vì pool không bao giờ hoạt động.",
+        "Vì byte[] không thể copy.",
+        "Vì GC bị tắt khi Rent.",
+        "Chi phí copies/allocations còn lại có thể chi phối, cần đo và sửa đúng mục tiêu."
+      ],
+      "correct": 3,
+      "explanation": "Không đưa speedup khi chưa có measurements."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Return buffer before await consumer",
+      "question": "Trả pooled buffer trước khi asynchronous consumer dùng xong có nguy cơ gì?",
+      "options": [
+        "Consumer có thể đọc/ghi storage đã được pool cấp lại.",
+        "Pool giữ exclusivelease theo local variable name.",
+        "Return tự chờ mọi future consumer.",
+        "Chỉ strings mới có lifetime."
+      ],
+      "correct": 0,
+      "explanation": "Lease phải bao toàn thời gian sử dụng theo API contract."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Logical length confidentiality",
+      "question": "Gửi cả buffer.Length khi chỉ sizebytes đã được initialize có thể sai ở đâu?",
+      "options": [
+        "Chỉ fail nếu array là int.",
+        "Lộ hoặc gửi data ngoài logicalrange được định nghĩa.",
+        "Pool tự biết networkpayload size.",
+        "Length luôn bằng size."
+      ],
+      "correct": 1,
+      "explanation": "Capacity không là initializedvaliddata length."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "ValueTask struct copying",
+      "question": "Copy một ValueTask sang nhiều biến có tự cho phép consume underlyingoperation nhiều lần an toàn không?",
+      "options": [
+        "Có; mọi IValueTaskSource tựclone.",
+        "Chỉ needreadonly.",
+        "Không; consumption contract của underlyingoperation vẫn áp dụng.",
+        "Có; mỗi structcopy là task mới độc lập."
+      ],
+      "correct": 2,
+      "explanation": "Value type representation không đồng nghĩa independent resource ownership."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "ValueTask aggregate operations",
+      "question": "Nếu API consumers thường dùng WhenAll và cần Task, promise ValueTask luôn giảm allocations có chắc không?",
+      "options": [
+        "Có; ValueTask luôn nhỏ hơn một reference mọi trườnghợp.",
+        "Có; AsTask luôn allocation-free mọi backing.",
+        "Chỉ needgenericT.",
+        "Không; conversion/usage patterns có thể đổi costs, cần đo."
+      ],
+      "correct": 3,
+      "explanation": "Chọn return type dựa actualworkload và API contract."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Cache freshness policy",
+      "question": "Cached User lookup nhanh có tự bảo đảm data mới nhất và đúng quyền caller không?",
+      "options": [
+        "Không; cần invalidation/TTL/version/authorization policies phù hợp.",
+        "Có; dictionary auto sync mọi DBwrites.",
+        "Có; ValueTask tự refresh permissions.",
+        "Chỉ needid."
+      ],
+      "correct": 0,
+      "explanation": "Latency cache và correctness/freshness là yêu cầu riêng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Cache hit nullable value",
+      "question": "Dictionary có key nhưng stored User null có thể ảnh hưởng gì nếu API hứa non-null?",
+      "options": [
+        "ReadonlyDictionaryfield tự validate.",
+        "Vi phạm payload invariant nếu không ngăn/handle theo contract.",
+        "TryGetValue tự reject mọi nullvalues.",
+        "ValueTask tự new User."
+      ],
+      "correct": 1,
+      "explanation": "Cache existence và valid value khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Sum overflow contract",
+      "question": "Muốn SumWithSpan có behavior overflow rõ, nên xác định gì?",
+      "options": [
+        "Chỉ tăng poolcapacity.",
+        "Chỉ đổi benchmarkname.",
+        "Numeric result range và checked/wider/error policy phù hợp inputs.",
+        "Chỉ dùng Span để mọi intsum tự arbitraryprecision."
+      ],
+      "correct": 2,
+      "explanation": "Storage optimization không thay arithmetic correctness."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Benchmark allocation target",
+      "question": "Nếu baseline đo sum-only còn candidate đo allocate+sum, có so trực tiếp speedup hợp lệ không?",
+      "options": [
+        "Có; method names giống là đủ.",
+        "Có; BenchmarkDotNet tự chuẩn hóa mọi differences.",
+        "Chỉ need1000ints.",
+        "Không; cần matched measured work và conditions."
+      ],
+      "correct": 3,
+      "explanation": "So sánh phải trả lời cùng câu hỏi."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Benchmark state setup tradeoff",
+      "question": "GlobalSetup dùng cùng mutableinput giữa invocations cần xem gì?",
+      "options": [
+        "State reset/isolation để mỗi invocation còn đại diện workload mong muốn.",
+        "Mọi setupdata luôn immutable.",
+        "Benchmarktool tự rollback mọi mutation.",
+        "Chỉ needreadonlyfield."
+      ],
+      "correct": 0,
+      "explanation": "Không chuyển setup ra ngoài rồi bỏ qua state effects."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Cold versus warm behavior",
+      "question": "Một warm benchmark có tự phản ánh startup/coldcache requests không?",
+      "options": [
+        "Chỉ needmedian.",
+        "Không; cần tách scenarios theo requirement và đo đúng.",
+        "Có; mọi JITs cùng warm/coldcost.",
+        "Có; pool luôn warm trên firstrequest."
+      ],
+      "correct": 1,
+      "explanation": "Không suy latency ngoài measurement scope."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Arraypool GC claim",
+      "question": "Comment reuse arrays(noGC) có đủ căn cứ kết luận không có GC trong ProcessData không?",
+      "options": [
+        "Đủ; finally vôhiệu hóa GC.",
+        "Chỉ needArrayPoolShared.",
+        "Không; source còn copies/allocations và pool cũng có thể allocate.",
+        "Đủ; comments là runtimeguarantee."
+      ],
+      "correct": 2,
+      "explanation": "Review theo actualcode/API và diagnostics."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Uninitialized processing output",
+      "question": "Cách sửa đúng hướng nếu intended output phải là processed bytes là gì?",
+      "options": [
+        "Chỉ đổi comment thành processed.",
+        "Chỉ trustpoolzero.",
+        "Trả buffer ngay sau Rent để tiếtkiệm.",
+        "Initialize/write đúng logicalrange trước khi đọc/copy và giữ ownership/resource bounds."
+      ],
+      "correct": 3,
+      "explanation": "Không đọc arbitrary pool contents làm validation."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Pooled array identity reuse",
+      "question": "Có nên test correctness bằng giả định lần Rent sau luôn trả chính array vừa Return không?",
+      "options": [
+        "Không; identity reuse không được hứa như contract tổng quát.",
+        "Có; pool là biến global mộtarray.",
+        "Có; size giống nghĩa referencegiống.",
+        "Chỉ needShared."
+      ],
+      "correct": 0,
+      "explanation": "Test nên theo lease/length/data behavior được bảo đảm."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Optimization proof scope",
+      "question": "Legacy array/cache models đúng có chứng minh Span/ValueTask/pool benchmark của source đã chạy không?",
+      "options": [
+        "Chỉ needcsc.",
+        "Không; đó là finite models với scope rõ.",
+        "Có; mọi APIs tương đương runtime.",
+        "Có; outputsum đúng nghĩa speedup80%."
+      ],
+      "correct": 1,
+      "explanation": "Chọn evidence theo actualAPI và measurableclaim."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Performance change safety",
+      "question": "Khi đổi từ ownedarray sang pooledview để bớt copies, cần ưu tiên gì?",
+      "options": [
+        "Hứa caller giữbuffer mãi.",
+        "Chỉ xem allocationcount.",
+        "Giữ correctness/lifetime/ownership và API consumercontract trước khi claim tiếtkiệm.",
+        "Bỏ lifetimechecks để đạt target."
+      ],
+      "correct": 2,
+      "explanation": "Không trao lease hết hạn cho consumer để lấy số đẹp."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exercise completion evidence",
+      "question": "Muốn nói đã giảm allocations80% cho hotpath, cần gì?",
+      "options": [
+        "Chỉ hoàn thành ngân hàng80câu.",
+        "Chỉ [Benchmark]attribute.",
+        "Chỉ source có Span.",
+        "Matched baseline/candidate usage measurements và behavior checks chứng minh target."
+      ],
+      "correct": 3,
+      "explanation": "Bank này không đưa ra savingsclaim chưa đo."
+    }
+  ]
+}

@@ -46,6 +46,7 @@ export function timBaiHoc(ds: MucTimKiem[], q: string, gioiHan = 50): MucTimKiem
 export type BaiTapCoSan = { title: string; description: string; starter?: string };
 
 export type BaiDayDu = BaiTomTat & {
+  quizBanks?: Record<string, { url: string; sourceHash: string; count: number }>;
   theory?: string; code?: string; lang?: string; keyPoints?: string[]; exercise?: string;
   output?: string;
   exercises?: BaiTapCoSan[];

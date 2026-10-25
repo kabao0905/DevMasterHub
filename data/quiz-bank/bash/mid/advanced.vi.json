@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "bash",
+  "level": "mid",
+  "lesson": "advanced",
+  "language": "vi",
+  "sourceHash": "04113161488c97283c2ed8ee691611c4dc5e17f9feccb415cfb130a2dee1802a",
+  "status": "approved",
+  "review": "Tự soạn theo arrays/SSH/trap/heredoc/process substitution/background jobs và GNU Bash manual. running++ từ0 trả1 dưới errexit; deploy_to chưa định nghĩa; wait không tham số không tự tổng hợp lỗi mọi job. Trap không bảo đảm mọi signal/failure, TMPDIR mẫu không được dùng cho helper kiểm tra. Không SSH/deploy/xóa thư mục thực.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Server array",
+      "question": "SERVERS trong source là cấu trúc nào?",
+      "options": [
+        "Indexed array Bash",
+        "Một JSON object tự parse",
+        "Một process pool đã chạy",
+        "Một associative array khai báo bằng -A"
+      ],
+      "correct": 0,
+      "explanation": "Các phần tử là tên máy chủ minh họa."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Server count",
+      "question": "Array SERVERS ban đầu có bao nhiêu phần tử?",
+      "options": [
+        "0",
+        "4",
+        "3",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "web1, web2, web3 và db1 là bốn entry."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "First array element",
+      "question": "Indexed array Bash thông thường bắt đầu từ index nào?",
+      "options": [
+        "-1 luôn là phần tử đầu",
+        "Tên host bắt buộc",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Quy ước này khác dense table Lua trong nhiều ví dụ."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Quoted all elements",
+      "question": "Mở rộng array bằng @ trong double quotes nhằm giữ điều gì?",
+      "options": [
+        "Mọi phần tử luôn gộp thành một string",
+        "Chỉ phần tử đầu",
+        "Chỉ các key có dấu cách",
+        "Mỗi phần tử thành một argument riêng"
+      ],
+      "correct": 3,
+      "explanation": "Đây là cách lặp an toàn khi phần tử chứa khoảng trắng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Associative declaration",
+      "question": "declare -A CONFIG khai báo gì?",
+      "options": [
+        "Associative array có key chuỗi",
+        "Một hằng số số nguyên",
+        "Một thư mục CONFIG",
+        "Một class có constructor"
+      ],
+      "correct": 0,
+      "explanation": "Khả năng này cần phiên bản Bash hỗ trợ."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Config host",
+      "question": "CONFIG[host] trong mẫu nhận giá trị gì?",
+      "options": [
+        "5432",
+        "localhost",
+        "web1",
+        "production"
+      ],
+      "correct": 1,
+      "explanation": "Host và port là hai key riêng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Config port",
+      "question": "CONFIG[port] được gán text nào?",
+      "options": [
+        "22",
+        "80",
+        "5432",
+        "3000"
+      ],
+      "correct": 2,
+      "explanation": "Giá trị shell ở đây là dữ liệu chuỗi; cần kiểm số/miền nếu dùng theo ngữ cảnh khác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Config database",
+      "question": "CONFIG[db] trong mẫu là gì?",
+      "options": [
+        "postgres bắt buộc",
+        "CONFIG",
+        "web3",
+        "myapp"
+      ],
+      "correct": 3,
+      "explanation": "Không có kết nối database được thực hiện chỉ vì có key db."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Array key iteration",
+      "question": "Phép mở rộng có ! và @ cho CONFIG nhằm liệt kê gì?",
+      "options": [
+        "Các key của associative array",
+        "Mọi process đang đọc config",
+        "Chỉ các value số",
+        "Mọi biến môi trường"
+      ],
+      "correct": 0,
+      "explanation": "Key enumeration không tự có thứ tự nghiệp vụ ổn định."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Ssh uptime command",
+      "question": "Source gửi command đơn giản nào tới mỗi server ở vòng đầu?",
+      "options": [
+        "docker build",
+        "uptime",
+        "deploy_to tự động",
+        "rm -rf /"
+      ],
+      "correct": 1,
+      "explanation": "Không có thực thi SSH nào được thực hiện để trả lời quiz."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Ssh stderr redirect",
+      "question": "2>/dev/null ở lời gọi ssh bỏ luồng nào?",
+      "options": [
+        "Status của process",
+        "Mọi dữ liệu từ mạng trước khi giải mã",
+        "Stderr",
+        "Stdout"
+      ],
+      "correct": 2,
+      "explanation": "Bỏ stderr không làm command thành công."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Or failure message",
+      "question": "ssh ... || echo unreachable dùng || để làm gì?",
+      "options": [
+        "Chạy echo đồng thời trong mọi trường hợp",
+        "Tự retry SSH vô hạn",
+        "Luôn dừng trước khi ssh chạy",
+        "Chạy echo nếu ssh trả status khác0"
+      ],
+      "correct": 3,
+      "explanation": "Message không xác định đầy đủ nguyên nhân lỗi."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Temporary directory tool",
+      "question": "mktemp -d có ý định tạo gì?",
+      "options": [
+        "Một thư mục tạm với tên do công cụ chọn",
+        "Một file log thường duy nhất",
+        "Một network listener",
+        "Một Docker volume"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm thành công và ownership trước khi dùng/cleanup."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Trap role",
+      "question": "trap trong source dùng để đăng ký gì?",
+      "options": [
+        "Một lock phân tán",
+        "Hành động khi các sự kiện/signal được chọn xảy ra",
+        "Một cron job chạy mỗi phút",
+        "Một callback HTTP"
+      ],
+      "correct": 1,
+      "explanation": "Trap chạy trong môi trường shell theo quy tắc signal và exit."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Exit event",
+      "question": "EXIT trong danh sách trap biểu thị gì?",
+      "options": [
+        "Một OS signal luôn có số9",
+        "Một command chỉ chạy lúc khởi động",
+        "Sự kiện shell kết thúc theo cơ chế trap hỗ trợ",
+        "Mọi file được đóng bởi kernel"
+      ],
+      "correct": 2,
+      "explanation": "EXIT không bảo đảm chạy sau mất điện hay SIGKILL."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Here document purpose",
+      "question": "Here document trong bài phục vụ gì?",
+      "options": [
+        "Tự gửi email",
+        "Tự tạo parser YAML hoàn chỉnh",
+        "Tự chặn mọi parameter expansion",
+        "Cấp nội dung nhiều dòng cho stdin của cat"
+      ],
+      "correct": 3,
+      "explanation": "cat rồi ghi nội dung vào file config được chọn."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Here document output",
+      "question": "File được source ghi trong thư mục tạm tên gì?",
+      "options": [
+        "config.yml",
+        "config.json",
+        "Dockerfile",
+        "known_hosts"
+      ],
+      "correct": 0,
+      "explanation": "Đường dẫn output được quote trong command cat."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Process substitution syntax",
+      "question": "Cấu trúc <(command) trong Bash có ý định gì?",
+      "options": [
+        "Chỉ quote một dấu nhỏ hơn",
+        "Cung cấp output command qua một đường dẫn/descriptor cho command khác",
+        "Lấy exit status như chuỗi luôn luôn",
+        "Chạy command thành SQL"
+      ],
+      "correct": 1,
+      "explanation": "Mẫu đưa hai nguồn dữ liệu cho diff."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Background marker",
+      "question": "Dấu & sau deploy_to \"$server\" có ý nghĩa gì?",
+      "options": [
+        "Gộp stderr vào stdout",
+        "Chỉ in tên server",
+        "Khởi chạy command bất đồng bộ trong background",
+        "Tự kiểm mọi status thành công"
+      ],
+      "correct": 2,
+      "explanation": "Parent phải theo dõi kết quả các job nếu cần."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Parallel cap variable",
+      "question": "max_parallel được đặt bằng bao nhiêu?",
+      "options": [
+        "0",
+        "1",
+        "8",
+        "4"
+      ],
+      "correct": 3,
+      "explanation": "Biến này chưa đủ bảo đảm pool hoạt động đúng nếu các bước điều phối có lỗi."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Array index lookup",
+      "question": "Với SERVERS như bài, phần tử index3 là gì?",
+      "options": [
+        "db1",
+        "web3",
+        "web1",
+        "Không tồn tại vì chỉ có3 phần tử"
+      ],
+      "correct": 0,
+      "explanation": "Index0..3 tương ứng bốn entry."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Array length versus max index",
+      "question": "Nếu array chỉ có phần tử ở index0 và10, số phần tử có phải luôn11 không?",
+      "options": [
+        "Không thể có indexed array thưa",
+        "Không, có2 phần tử được đặt",
+        "Có, index lớn nhất luôn là length-1",
+        "Có, Bash tự lấp mọi lỗ bằng string0"
+      ],
+      "correct": 1,
+      "explanation": "Số phần tử khác chỉ số lớn nhất."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Element whitespace",
+      "question": "Một array entry là \"web east\". Mở rộng @ được quote giữ entry đó thế nào?",
+      "options": [
+        "Một command web chạy trên host east",
+        "Một chuỗi rỗng",
+        "Một argument chứa dấu cách",
+        "Hai argument web và east"
+      ],
+      "correct": 2,
+      "explanation": "Quoting giữ ranh giới từng phần tử."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Star versus at",
+      "question": "Trong double quotes, mở rộng array bằng * thường khác @ theo hướng nào?",
+      "options": [
+        "* luôn tạo nhiều argument hơn @",
+        "@ chỉ giữ key còn * chỉ giữ value",
+        "Hai dạng giống nhau trong mọi ngữ cảnh",
+        "* gộp phần tử thành một từ theo separator, @ giữ từng phần tử"
+      ],
+      "correct": 3,
+      "explanation": "Cần chọn đúng cách chuyển danh sách argument."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Associative order",
+      "question": "Vòng lặp các key CONFIG có nên dựa vào thứ tự khai báo host,port,db không?",
+      "options": [
+        "Không, cần sắp/chọn thứ tự chủ động nếu output yêu cầu",
+        "Có, mọi associative array là ordered map",
+        "Có, declare -A tự sort alphabet",
+        "Chỉ khi có set -u"
+      ],
+      "correct": 0,
+      "explanation": "Không coi thứ tự quan sát trong một lần chạy là hợp đồng thứ tự."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Associative overwritten key",
+      "question": "Gán CONFIG[port]=6000 sau giá trị5432 tạo gì?",
+      "options": [
+        "Tự đổi host thành6000",
+        "Thay value của cùng key port",
+        "Tạo key port thứ hai song song",
+        "Tự cộng hai port"
+      ],
+      "correct": 1,
+      "explanation": "Associative key định danh một slot dữ liệu."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Associative version support",
+      "question": "Có thể mặc định declare -A chạy trên Bash3.2 không?",
+      "options": [
+        "Có, chỉ cần shebang",
+        "Có, SSH tự nâng version shell",
+        "Không, associative arrays cần Bash4 trở lên",
+        "Có, mọi Bash có từ bản đầu"
+      ],
+      "correct": 2,
+      "explanation": "Phiên bản interpreter là dependency thực."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Ssh message accuracy",
+      "question": "SSH trả lỗi xác thực rồi source echo unreachable. Có thể kết luận host chắc chắn mất mạng không?",
+      "options": [
+        "Có, mọi SSH failure đều là mất mạng",
+        "Có, bỏ stderr đã phân loại nguyên nhân",
+        "Chỉ nếu host tên web1",
+        "Không, status lỗi có thể do xác thực hoặc nguyên nhân khác"
+      ],
+      "correct": 3,
+      "explanation": "Thông báo cần phản ánh đúng mức thông tin đã biết."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Or handler status mask",
+      "question": "Nếu ssh trả1 nhưng echo unreachable trả0, OR list có thể có status cuối nào?",
+      "options": [
+        "0",
+        "1 luôn giữ nguyên",
+        "255 bắt buộc",
+        "Số ký tự hostname"
+      ],
+      "correct": 0,
+      "explanation": "Xử lý lỗi bằng echo có thể làm mất status thất bại nếu không lưu."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Ssh no timeout explicit",
+      "question": "Source có đặt ConnectTimeout hoặc deadline cho từng SSH call chưa?",
+      "options": [
+        "Có, array chỉ4 phần tử nên không thể chờ lâu",
+        "Chưa",
+        "Có,2>/dev/null là timeout2 giây",
+        "Có, uptime tự giới hạn SSH handshake"
+      ],
+      "correct": 1,
+      "explanation": "Giới hạn số host không là giới hạn thời gian mỗi tác vụ."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Ssh batch prompts",
+      "question": "Để tránh chờ prompt password/host confirmation trong automation, OpenSSH option nào liên quan?",
+      "options": [
+        "Thêm echo sau SSH là đủ",
+        "Chỉ dùng set -u",
+        "BatchMode=yes theo chính sách xác thực/host key phù hợp",
+        "Bỏ mọi quote quanh hostname"
+      ],
+      "correct": 2,
+      "explanation": "Batch mode tắt tương tác, không thay thiết kế tin cậy và provisioning host keys."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Temp path ownership",
+      "question": "Sau mktemp thất bại, có nên tiếp tục dựng path/cleanup như thể thư mục hợp lệ không?",
+      "options": [
+        "Có, biến rỗng luôn trỏ thư mục an toàn",
+        "Có, trap tự tìm đúng thư mục thay thế",
+        "Có, local shell luôn có quyền tạo",
+        "Không, phải xử lý lỗi tạo trước khi dùng"
+      ],
+      "correct": 3,
+      "explanation": "Tài nguyên tạm cần state/ownership rõ ràng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Trap double quote timing",
+      "question": "Trong trap dùng double quotes chứa biến đường dẫn, parameter expansion thường xảy ra khi nào?",
+      "options": [
+        "Khi đăng ký handler, trước lúc sự kiện xảy ra",
+        "Chỉ sau khi process đã bị SIGKILL",
+        "Không bao giờ expand",
+        "Tự expand hai lần thành cùng object bất biến"
+      ],
+      "correct": 0,
+      "explanation": "Command text được lưu có thể chứa giá trị đã được chèn lúc đăng ký."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Trap path quoting",
+      "question": "Vì sao đường dẫn tạm có khoảng trắng cần được quote đúng bên trong command cleanup sẽ chạy?",
+      "options": [
+        "Vì quote ngoài lúc đăng ký luôn đủ cho mọi lần parse lại",
+        "Nếu không, handler có thể chia thành nhiều operand",
+        "Vì trap tự loại toàn bộ khoảng trắng",
+        "Vì path tạm luôn cấm mọi dấu cách"
+      ],
+      "correct": 1,
+      "explanation": "Trap text được shell diễn giải lúc thực thi; có nhiều lớp quoting."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Signal handler continuation",
+      "question": "Handler cho TERM chỉ cleanup và echo, không exit. Có thể mặc định script luôn dừng ngay sau handler không?",
+      "options": [
+        "Có, echo tự kết thúc process",
+        "Có, EXIT event đã xảy ra đồng thời bắt buộc",
+        "Không, cần thiết kế rõ luồng kết thúc và status",
+        "Có, mọi TERM trap tự exit0"
+      ],
+      "correct": 2,
+      "explanation": "Bắt signal thay đổi hành vi mặc định; không giả handler là cleanup-and-exit hoàn chỉnh."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Multiple cleanup events",
+      "question": "Đăng ký cùng cleanup cho INT,TERM,EXIT có thể cần tính điều gì?",
+      "options": [
+        "Mỗi tên event tự có thư mục riêng",
+        "Bash luôn bảo đảm chỉ một lần cho mọi tổ hợp",
+        "EXIT tự loại INT và TERM khỏi danh sách",
+        "Handler có thể được gọi hơn một lần theo luồng kết thúc"
+      ],
+      "correct": 3,
+      "explanation": "Cleanup nên có tính lặp an toàn theo tài nguyên."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Uncatchable termination",
+      "question": "Trap có bắt được SIGKILL để cleanup theo cách thông thường không?",
+      "options": [
+        "Không",
+        "Có, nếu thêm EXIT",
+        "Có, nếu biến viết hoa",
+        "Có, Bash tự đổi KILL thành TERM"
+      ],
+      "correct": 0,
+      "explanation": "Cần cơ chế phục hồi tài nguyên ngoài process nếu yêu cầu chịu gián đoạn."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Heredoc unquoted delimiter",
+      "question": "Delimiter EOF không quote khiến body có thể expand gì?",
+      "options": [
+        "Không có expansion nào",
+        "Parameter và command substitution theo quy tắc heredoc",
+        "Tự parse mọi key YAML thành biến Bash",
+        "Chỉ số nguyên"
+      ],
+      "correct": 1,
+      "explanation": "Không dùng để chứa source/data không muốn expansion nếu chưa xử lý phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Heredoc quoted delimiter",
+      "question": "Đổi thành delimiter được quote có tác dụng chính nào?",
+      "options": [
+        "Tự kiểm YAML hợp lệ",
+        "Tự tạo thư mục cha",
+        "Giữ body literal thay vì thực hiện các expansion đó",
+        "Tự mã hóa file output"
+      ],
+      "correct": 2,
+      "explanation": "Quote delimiter thay đổi cách shell xử lý body, không xác thực cấu trúc dữ liệu."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Heredoc ENV default",
+      "question": "Trong body unquoted, ENV unset và expression default development trong source tạo env text nào?",
+      "options": [
+        "Chuỗi literal expression trong mọi trường hợp",
+        "production",
+        "Tên file config.yml",
+        "development"
+      ],
+      "correct": 3,
+      "explanation": "Hợp đồng default có colon áp dụng cả chuỗi rỗng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Heredoc terminating line",
+      "question": "Delimiter kết thúc heredoc thông thường phải xuất hiện thế nào?",
+      "options": [
+        "Một dòng chứa đúng delimiter, không thêm khoảng trắng theo cú pháp thường",
+        "Có thể nhúng giữa mọi dòng text",
+        "Luôn cần dấu chấm phẩy đứng trước",
+        "Chỉ cần là substring bất kỳ"
+      ],
+      "correct": 0,
+      "explanation": "<<- có quy tắc riêng cho leading tabs."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Heredoc tabs option",
+      "question": "Toán tử <<- khác << ở khả năng nào?",
+      "options": [
+        "Tự tạo indentation YAML chuẩn",
+        "Loại leading tab theo quy tắc heredoc đó",
+        "Loại mọi dấu cách ở mọi nơi",
+        "Tắt mọi expansion bất kể delimiter"
+      ],
+      "correct": 1,
+      "explanation": "Tab stripping không tự đồng nghĩa strip spaces."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Diff equal status",
+      "question": "diff hai nguồn dữ liệu giống nhau thường trả status nào?",
+      "options": [
+        "2 bắt buộc",
+        "Số dòng giống nhau",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Khác dữ liệu thường1; lỗi vận hành thường lớn hơn1 theo công cụ."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Diff difference not execution error",
+      "question": "Vì sao status1 của diff không nên tự được gọi là lỗi kết nối SSH?",
+      "options": [
+        "Vì diff không có status",
+        "Vì SSH luôn thành công khi có diff",
+        "Vì process substitution luôn bảo đảm network",
+        "Nó có thể chỉ biểu thị nội dung hai đầu vào khác nhau"
+      ],
+      "correct": 3,
+      "explanation": "Cần phân loại kết quả so sánh và lỗi producer riêng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Process substitution producer failure",
+      "question": "Nếu hai producer trong process substitution đều lỗi và không có stdout, diff có thể báo gì?",
+      "options": [
+        "Hai luồng rỗng giống nhau, không tự chứng minh producer thành công",
+        "Luôn kế thừa cả hai error status thành1",
+        "Luôn phát hiện host nào unreachable",
+        "Tự retry hai producer"
+      ],
+      "correct": 0,
+      "explanation": "Status command tiêu thụ không mặc định tổng hợp status producer."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Pipefail process substitution scope",
+      "question": "Bật pipefail có tự biến lỗi của mọi process substitution thành status diff không?",
+      "options": [
+        "Có, chỉ cần set -u",
+        "Không, process substitution không phải cùng một pipeline status như vậy",
+        "Có, pipefail bắt mọi process ở mọi cú pháp",
+        "Có, mọi <(...) tự tạo một OR list"
+      ],
+      "correct": 1,
+      "explanation": "Cần thiết kế thu thập status producer nếu đó là điều kiện thành công."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Deploy helper missing",
+      "question": "Source đã định nghĩa function deploy_to chưa?",
+      "options": [
+        "Có, max_parallel là function",
+        "Có, Bash built-in tên deploy_to",
+        "Chưa",
+        "Có, SSH uptime tự tạo nó"
+      ],
+      "correct": 2,
+      "explanation": "Bài tập cần bổ sung implementation theo hợp đồng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Background parent progress",
+      "question": "deploy_to \"$server\" & có bắt parent chờ tác vụ đó xong ngay tại lệnh launch không?",
+      "options": [
+        "Có, & nghĩa await",
+        "Có, mọi shell function luôn đồng bộ dù có &",
+        "Chỉ nếu server là db1",
+        "Không, parent có thể tiếp tục điều phối"
+      ],
+      "correct": 3,
+      "explanation": "Kết quả cần được lấy bằng cơ chế wait/theo dõi phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Postincrement value",
+      "question": "Với running=0, expression running++ có giá trị số học nào trước khi cập nhật?",
+      "options": [
+        "0",
+        "1",
+        "-1",
+        "true như kiểu boolean riêng"
+      ],
+      "correct": 0,
+      "explanation": "Post-increment trả giá trị cũ của biến."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Arithmetic command status",
+      "question": "Với running=0, ((running++)) cập nhật running thành1 nhưng command status thường là gì?",
+      "options": [
+        "Giá trị1 luôn có nghĩa thành công trong shell",
+        "1",
+        "0",
+        "127"
+      ],
+      "correct": 1,
+      "explanation": "Arithmetic command trả0 nếu expression khác0, trả1 nếu expression bằng0."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Errexit first increment",
+      "question": "Ở luồng source thông thường có -e, lần ((running++)) đầu từ0 có thể gây gì?",
+      "options": [
+        "Chỉ đổi output của echo",
+        "Tự gọi deploy_to cho cả4 host",
+        "Dừng script trước khi pool chạy đầy đủ",
+        "Tự bỏ qua vì biến đã tăng thành1"
+      ],
+      "correct": 2,
+      "explanation": "Errexit dùng command status, không dùng giá trị biến sau cập nhật."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Assignment increment alternative",
+      "question": "Muốn tăng count mà không dùng truth status của arithmetic command, cách nào phù hợp?",
+      "options": [
+        "Chỉ đổi tên running thành COUNT",
+        "Luôn bỏ quote ở mọi biến",
+        "Dùng exit \"$running\" mỗi lượt",
+        "running=$((running+1)) với dữ liệu hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Phép gán thông thường không mang cùng quy tắc truth của ((expression))."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Wait any role",
+      "question": "wait -n trong Bash hỗ trợ option này nhằm gì?",
+      "options": [
+        "Chờ một child phù hợp hoàn tất rồi trả status của nó",
+        "Luôn chờ mọi child và cộng status",
+        "Chỉ kiểm số CPU",
+        "Tự khởi chạy thêm4 job"
+      ],
+      "correct": 0,
+      "explanation": "Option này có yêu cầu phiên bản và tập child hợp lệ."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Wait n failure",
+      "question": "Một child được wait -n trả status lỗi trong ngữ cảnh -e hoạt động có thể làm gì?",
+      "options": [
+        "Tự chọn lại child đã pass",
+        "Parent dừng nếu chưa xử lý status theo contract",
+        "Luôn bỏ qua vì child chạy background",
+        "Tự đặt running về0 và retry"
+      ],
+      "correct": 1,
+      "explanation": "Cần bảo toàn kết quả của từng tác vụ và chính sách tiếp tục/dừng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Wait no arguments",
+      "question": "wait không options/IDs có tự trả lỗi nếu bất kỳ child nào trước đó thất bại không?",
+      "options": [
+        "Có, luôn trả status child thất bại đầu",
+        "Có, luôn trả status lớn nhất",
+        "Không, Bash quy định dạng không đối số này trả0 sau khi chờ",
+        "Có, luôn OR mọi status"
+      ],
+      "correct": 2,
+      "explanation": "Muốn tổng hợp failure cần theo dõi và wait/kiểm status theo thiết kế."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Child exit visibility",
+      "question": "Background child gọi exit7 có tự làm parent lập tức exit7 mà không wait/kiểm không?",
+      "options": [
+        "Có, child luôn quyết định status cha trực tiếp",
+        "Có, mọi & đều là pipefail",
+        "Có, local variables tự lan exit",
+        "Không, hai luồng status cần được phối hợp"
+      ],
+      "correct": 3,
+      "explanation": "Parent phải định nghĩa cách thu thập kết quả."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Parallel output interleaving",
+      "question": "Nhiều job cùng echo có thể tạo điều gì?",
+      "options": [
+        "Output theo thứ tự/xen kẽ không bảo đảm theo danh sách SERVERS",
+        "Luôn in đúng thứ tự array",
+        "Bash tự buffer theo host đầy đủ",
+        "Tự tạo file log riêng mỗi host"
+      ],
+      "correct": 0,
+      "explanation": "Cần framing/định danh và log riêng nếu muốn dễ đọc."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "No scheduler from array",
+      "question": "Array4 host và max_parallel4 đã đủ chứng minh triển khai song song đúng chưa?",
+      "options": [
+        "Rồi, Bash tự sửa postincrement",
+        "Chưa, cần helper, launch/wait/status và cleanup hoạt động đúng",
+        "Rồi, số4 tự sinh job pool chuẩn",
+        "Rồi, trap thay toàn bộ wait"
+      ],
+      "correct": 1,
+      "explanation": "Dữ liệu cấu hình không thay implementation điều phối."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Common environment name",
+      "question": "Vì sao nên dùng tên biến thư mục tạm riêng của script thay vì tùy tiện ghi đè TMPDIR?",
+      "options": [
+        "Vì tên dài luôn tăng tốc",
+        "Vì mọi biến viết hoa đều readonly",
+        "TMPDIR có thể có ý nghĩa môi trường cho công cụ con",
+        "Vì Bash cấm mọi biến kết thúc DIR"
+      ],
+      "correct": 2,
+      "explanation": "Tránh thay đổi ngoài ý muốn hợp đồng môi trường của dependency."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Config data escaping",
+      "question": "ENV chứa newline hoặc ký tự đặc biệt YAML. Heredoc có tự escape thành một YAML scalar an toàn không?",
+      "options": [
+        "Có, cat tự parse YAML",
+        "Có, quote đường dẫn output xác thực mọi field",
+        "Có, default development tự lọc mọi giá trị",
+        "Không, expansion text không tự serialize YAML đúng schema"
+      ],
+      "correct": 3,
+      "explanation": "Cần validate hoặc serialize giá trị theo định dạng cấu hình."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Parallel loop repair",
+      "question": "Muốn sửa cả lỗi running++ và thiếu kết quả job trong mẫu, cần gì?",
+      "options": [
+        "Cập nhật counter không gây errexit ngoài ý muốn và theo dõi PID/status từng job",
+        "Chỉ thêm một echo sau running++",
+        "Chỉ tăng max_parallel lên100",
+        "Chỉ bỏ toàn bộ wait"
+      ],
+      "correct": 0,
+      "explanation": "Một sửa cú pháp số học chưa giải quyết giao thức hoàn tất và lỗi."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Pool failure policy",
+      "question": "Khi một deploy_to thất bại trong pool, quy trình cần quyết định điều gì?",
+      "options": [
+        "Luôn retry vô hạn mọi host",
+        "Tiếp tục hay dừng job mới, xử lý job đang chạy và tổng hợp kết quả",
+        "Luôn coi toàn bộ thành công vì launch đã xong",
+        "Chỉ xóa mọi log"
+      ],
+      "correct": 1,
+      "explanation": "Chính sách failure là phần thiết kế, không do & tự quyết định."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Wait child identity",
+      "question": "Vì sao thu thập PID/host association hữu ích ngoài chỉ đếm running?",
+      "options": [
+        "Để tự tăng số core",
+        "Để tránh mọi lỗi mạng tuyệt đối",
+        "Để gắn kết quả và cleanup với đúng tác vụ/host",
+        "Để tự xác thực host SSH"
+      ],
+      "correct": 2,
+      "explanation": "Count không mang danh tính hoặc kết quả của từng child."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Trap idempotency",
+      "question": "Cleanup đăng ký nhiều sự kiện nên đáp ứng điều gì?",
+      "options": [
+        "Xóa càng rộng càng tốt để không sót",
+        "Giả chỉ có một signal trong đời process",
+        "Bỏ mọi kiểm mục tiêu vì mktemp luôn đúng",
+        "Chỉ xử lý tài nguyên do script sở hữu và chịu được gọi lặp"
+      ],
+      "correct": 3,
+      "explanation": "Ownership và tính lặp an toàn giúp giảm hậu quả khi signal/exit giao nhau."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Trap status preservation",
+      "question": "Cleanup có thể thất bại sau một lỗi chính. Nên lưu/hiển thị gì?",
+      "options": [
+        "Status/nguyên nhân chính cùng kết quả cleanup theo hợp đồng",
+        "Chỉ status echo cuối rồi coi pass",
+        "Chỉ bỏ mọi stderr",
+        "Luôn thay lỗi gốc bằng0"
+      ],
+      "correct": 0,
+      "explanation": "Không để cleanup làm mất chẩn đoán gốc."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Trap quoting layers",
+      "question": "Vì sao quote ngoài của trap không tự bảo đảm path đã chèn vào handler luôn là một argument khi handler chạy?",
+      "options": [
+        "Vì dấu quote ngoài được lưu nguyên như AST readonly",
+        "Handler là command text được parse lại; path cần được bảo toàn ở lớp thực thi đó",
+        "Vì trap không bao giờ parse command",
+        "Vì mọi path tạm đều không có ký tự đặc biệt"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế handler/function tránh chèn dữ liệu tùy ý vào source command."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Signal termination semantics",
+      "question": "Muốn xử lý TERM rồi kết thúc với status phù hợp, chỉ cleanup và echo đã đủ chưa?",
+      "options": [
+        "Đủ, INT/TERM tự kill mọi descendant",
+        "Đủ, EXIT trap luôn chạy đúng một lần",
+        "Chưa, cần luồng exit và chính sách status rõ cùng quản lý child",
+        "Đủ, echo luôn kết thúc process bằng signal gốc"
+      ],
+      "correct": 2,
+      "explanation": "Signal handler không tự tạo đầy đủ cancellation protocol."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Orphan child resources",
+      "question": "Parent bị lỗi trước wait nhưng job background vẫn đang chạy. Thiết kế cần xét gì?",
+      "options": [
+        "Bash luôn dừng mọi child sạch ngay khi parent in lỗi",
+        "Trap tự biết mọi deployment remote đã rollback",
+        "Không cần vì counter local",
+        "Vòng đời child, hủy/chờ theo chính sách và tránh cleanup tài nguyên đang được dùng"
+      ],
+      "correct": 3,
+      "explanation": "Parent lifetime và child work cần được phối hợp."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Process substitution correctness",
+      "question": "Muốn phân biệt hai config thực sự giống nhau với hai lần SSH cùng lỗi, cần gì?",
+      "options": [
+        "Thu thập status từng producer và chỉ so dữ liệu hợp lệ",
+        "Chỉ lấy status diff0",
+        "Chỉ bỏ stderr của SSH",
+        "Chỉ bật pipefail rồi không kiểm gì khác"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu rỗng là một giá trị có thể giống nhau nhưng không chứng minh thu thập thành công."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Remote command data boundary",
+      "question": "Khi mở rộng SSH command có input người dùng, vì sao local quoting chưa tự bảo đảm an toàn ở remote shell?",
+      "options": [
+        "Vì mọi input đều chỉ có chữ cái",
+        "Có thêm lớp diễn giải command từ xa cần giữ code/data riêng",
+        "Vì SSH luôn tự sandbox mọi command",
+        "Vì remote shell đọc trực tiếp AST local"
+      ],
+      "correct": 1,
+      "explanation": "Quoting ở một ngôn ngữ/lớp không tự xử lý lớp tiếp theo."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Host validation",
+      "question": "Array hostname nhận từ nguồn ngoài cần hợp đồng nào trước SSH?",
+      "options": [
+        "Chỉ đổi tên array thành TRUSTED",
+        "Chỉ bỏ stderr để không lộ lỗi",
+        "Danh sách/định dạng đích được phép và chính sách option/auth/host key",
+        "Chỉ quote rồi coi mọi host được phép"
+      ],
+      "correct": 2,
+      "explanation": "Argument boundaries không thay quyền được phép truy cập đích."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Noninteractive SSH design",
+      "question": "Automation cần không bị treo prompt nhưng vẫn kiểm host trust nên làm gì?",
+      "options": [
+        "Tắt mọi kiểm host key rồi coi bảo mật đã giải quyết",
+        "Giữ password prompt vô hạn",
+        "Echo unreachable trước mỗi lần gọi thay kiểm status",
+        "Provision host keys/auth phù hợp, batch mode và timeout theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Tính tự động và xác thực đích phải được thiết kế cùng nhau."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Heredoc unintended command",
+      "question": "Body heredoc delimiter không quote chứa $(command). Điều gì cần biết khi muốn ghi literal script mẫu?",
+      "options": [
+        "Command substitution có thể chạy; quote delimiter khi cần giữ nguyên body",
+        "Heredoc luôn là dữ liệu literal bất kể delimiter",
+        "Cat tự vô hiệu mọi dollar",
+        "Chỉ set -u mới làm substitution chạy"
+      ],
+      "correct": 0,
+      "explanation": "Phải chọn chế độ heredoc theo việc cần expansion hay cần literal."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Config writer contract",
+      "question": "Ghi config bằng heredoc với giá trị ngoài cần kiểm những gì?",
+      "options": [
+        "Chỉ file không rỗng là đủ",
+        "Validation/schema, escaping, quyền file và vòng đời đích",
+        "Chỉ phần mở rộng yml",
+        "Chỉ tên biến CONFIG"
+      ],
+      "correct": 1,
+      "explanation": "Có nội dung text chưa chứng minh cấu hình đúng và được bảo vệ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Temp cleanup beyond trap",
+      "question": "Nếu cần dọn thư mục tạm cả khi máy mất điện, cần gì ngoài EXIT trap?",
+      "options": [
+        "Thêm SIGKILL handler có thể bắt được",
+        "Đặt biến TMPDIR readonly là đủ",
+        "Chính sách quản lý/thu hồi tài nguyên còn sót sau khi khởi động lại",
+        "Thêm EXIT lần thứhai"
+      ],
+      "correct": 2,
+      "explanation": "Handler trong process không chạy được khi process/máy không còn hoạt động."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Parallelism versus throughput",
+      "question": "Tăng max_parallel có luôn giảm thời gian deploy không?",
+      "options": [
+        "Có, thời gian luôn chia tuyến tính cho số job",
+        "Có, Bash tự có thêm CPU core",
+        "Có, SSH connection luôn miễn phí",
+        "Không, còn giới hạn host/network/CPU/IO và tải dịch vụ"
+      ],
+      "correct": 3,
+      "explanation": "Cần đo theo workload và giới hạn hệ thống."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Array empty contract",
+      "question": "Nếu không có server nào, một công cụ deploy nên định nghĩa kết quả thế nào?",
+      "options": [
+        "Quy định rõ no-op hay input lỗi và status tương ứng",
+        "Tự triển khai mọi host trên mạng",
+        "Mặc định gọi web1 dù không có trong input",
+        "Luôn báo4 host thành công"
+      ],
+      "correct": 0,
+      "explanation": "Không để output thành công làm người dùng hiểu nhầm đã có công việc thực hiện."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Portable feature gate",
+      "question": "Script cần associative arrays và wait -n nên làm gì trên máy Bash cũ?",
+      "options": [
+        "Dùng tên file advanced.sh để bật feature",
+        "Kiểm phiên bản/feature và có hướng tương thích hoặc báo yêu cầu rõ",
+        "Chỉ shebang /bin/bash là đủ mọi version",
+        "Bỏ mọi lỗi cú pháp rồi tiếp tục"
+      ],
+      "correct": 1,
+      "explanation": "Feature availability là dependency được kiểm thực tế."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Finite pool testing",
+      "question": "Muốn kiểm pool không gọi host thật, fixture nào hữu ích?",
+      "options": [
+        "Chỉ grep số4 trong source",
+        "Chỉ xác minh array có4 tên",
+        "Worker stub hữu hạn với success/failure và record launch/wait/host mapping",
+        "Chạy SSH tới mọi host production"
+      ],
+      "correct": 2,
+      "explanation": "Có thể kiểm điều phối local, còn SSH/deployment integration là phạm vi riêng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exercise completion",
+      "question": "Bài tập parallel deployment cần gì ngoài source hiện tại?",
+      "options": [
+        "Chỉ thêm một & vào echo",
+        "Chỉ giữ wait cuối và giả mọi child pass",
+        "Chỉ tăng SERVER count",
+        "Implementation deploy_to, giới hạn job đúng, status tổng hợp, cancellation/cleanup và kiểm behavior"
+      ],
+      "correct": 3,
+      "explanation": "Các cơ chế Bash là thành phần để xây quy trình, chưa tự là quy trình hoàn chỉnh."
+    }
+  ]
+}

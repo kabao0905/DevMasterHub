@@ -1,0 +1,1148 @@
+{
+  "version": 1,
+  "tech": "dsa",
+  "level": "mid",
+  "lesson": "graphs",
+  "language": "vi",
+  "sourceHash": "2fae79d7b30f1dda2416f90f64e6d24b7eca98ce84f72337f34c4fb189a7c84e",
+  "status": "approved",
+  "review": "Tự soạn không API. BFS path theo số cạnh, DFS components cho undirected graph, Kahn topo cho directed DAG; directed DFS forest không là SCC/weak-components mặc định. Vertex indices/domain và current adjacency order rõ; empty topo/failure cùng representation. Fixtures nhỏ finite, không invalid indices/deep-stack stress/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Graph ingredients",
+      "question": "Đồ thị gồm những thành phần cơ bản nào?",
+      "options": [
+        "Đỉnh và cạnh.",
+        "Chỉ một stack.",
+        "Chỉ một số nguyên.",
+        "Chỉ các từ đã sort."
+      ],
+      "correct": 0,
+      "explanation": "Cạnh mô tả quan hệ giữa các đỉnh theo mô hình."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Adjacency representation",
+      "question": "DoThi trong source là gì?",
+      "options": [
+        "Một linkedlistduy nhất.",
+        "vector<vector<int>> danh sách kề.",
+        "Ma trận bool được viết rõ.",
+        "Hash map HTTP headers."
+      ],
+      "correct": 1,
+      "explanation": "g[u] liệt kê các đỉnh kề được lưu."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Default direction",
+      "question": "taoDoThi không truyền coHuong mặc định tạo loại nào?",
+      "options": [
+        "Luôn DAG.",
+        "Luôn complete graph.",
+        "Vô hướng.",
+        "Có hướng."
+      ],
+      "correct": 2,
+      "explanation": "coHuong=false thêm cạnh ở cả hai phía."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Directed edge insertion",
+      "question": "Với coHuong=true, cạnh(u,v) nguồn thêm gì?",
+      "options": [
+        "u vào g[v] duy nhất.",
+        "Cả hai chiều bắt buộc.",
+        "Không cạnh nào.",
+        "v vào g[u]."
+      ],
+      "correct": 3,
+      "explanation": "Không tự thêm cạnh ngược trong nhánh này."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Undirected insertion",
+      "question": "Với coHuong=false, cạnh(u,v) được lưu thế nào?",
+      "options": [
+        "Thêm v vào g[u] và u vào g[v].",
+        "Chỉ thêm một phía.",
+        "Sort toàn graph.",
+        "Xóa mọi edges khác."
+      ],
+      "correct": 0,
+      "explanation": "Một cạnh vô hướng được biểu diễn bằng hai adjacency entries."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "BFS objective",
+      "question": "duongNganNhat nguồn tối ưu đại lượng nào?",
+      "options": [
+        "Giá trị val nhỏ nhất.",
+        "Số cạnh của đường đi không trọng số.",
+        "Tổng weightsbất kỳ.",
+        "Số đỉnh lớn nhất."
+      ],
+      "correct": 1,
+      "explanation": "Source không lưu edgeweights."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "BFS queue",
+      "question": "BFS dùng container nào?",
+      "options": [
+        "priority_queueđã có weights.",
+        "set<string>.",
+        "queue<int>.",
+        "stack<int>."
+      ],
+      "correct": 2,
+      "explanation": "FIFO tạo thứ tự khám phá theo lớp."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Parent array",
+      "question": "cha[v] nguồn dùng để làm gì?",
+      "options": [
+        "Lưu weightcủa v.",
+        "Lưu tổng components.",
+        "Đếm mọi shortest paths.",
+        "Nhớ predecessor để dựng lại path."
+      ],
+      "correct": 3,
+      "explanation": "Một parent mỗi discoveredvertex, không là toàn bộ path set."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Visited timing",
+      "question": "BFS đánh dấu daTham[v] khi nào?",
+      "options": [
+        "Khi chuẩn bị enqueue v lần đầu.",
+        "Chỉ sau khi in path.",
+        "Không bao giờ.",
+        "Sau khi xóa vkhỏi graph."
+      ],
+      "correct": 0,
+      "explanation": "Tránh enqueue lặp cùng vertex theo nhiều edges."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Unreachable result",
+      "question": "Nếu dich chưa được thăm sau BFS, source trả gì?",
+      "options": [
+        "Throw đã viết.",
+        "Vector path rỗng.",
+        "{-1}bắt buộc.",
+        "{batDau,dich}luôn."
+      ],
+      "correct": 1,
+      "explanation": "Empty là failure representation của function này."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Path reverse",
+      "question": "Vì sao reverse vector duong trước return?",
+      "options": [
+        "Để xóa cycle.",
+        "Để đổi graph thành undirected.",
+        "Lần dựng cha đi từ đích về nguồn.",
+        "Để sort IDs tăng."
+      ],
+      "correct": 2,
+      "explanation": "Thứ tự path cần từ source đến target."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "DFS mark",
+      "question": "dfs nguồn làm gì trước khi duyệt neighbors?",
+      "options": [
+        "Xóa u.",
+        "Sort toàn g.",
+        "Enqueue mọi nodes không điều kiện.",
+        "Đánh dấu uđã thăm."
+      ],
+      "correct": 3,
+      "explanation": "Visitedgiúp không recursevô hạn qua cycle hợp lệ."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Component scan",
+      "question": "demThanhPhan bắt đầu DFS mới khi nào?",
+      "options": [
+        "Gặp một vertex chưa thăm trong vòng scan.",
+        "Mọi edge không điều kiện.",
+        "Chỉ vertex 0.",
+        "Chỉ IDs âm."
+      ],
+      "correct": 0,
+      "explanation": "Intended component count áp cho graph vô hướng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Topological condition",
+      "question": "Topological order hợp lệ cho graph có hướng cần thỏa gì?",
+      "options": [
+        "Mỗi edge đi theo chiều ngược input.",
+        "Mỗi cạnh u->vthì uđứng trước v.",
+        "Mọi IDs phải tăng.",
+        "Mọi vertices cùng một level."
+      ],
+      "correct": 1,
+      "explanation": "Đây là thứ tự tôn trọng dependencies."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Kahn data",
+      "question": "bacVao của Kahn lưu gì?",
+      "options": [
+        "Shortestdistance.",
+        "ComponentID.",
+        "Số cạnh đi vào mỗi vertex trong phần chưa xử lý.",
+        "Số cạnh đi ra ban đầu duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Mỗi edge được tính khi chuẩn bị và giảm khi xử lý source vertex."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Initial topo queue",
+      "question": "Kahn enqueue vertices nào ban đầu?",
+      "options": [
+        "Outdegree 0 duy nhất.",
+        "Mọi vertices bất kể dependencies.",
+        "Chỉ vertexID 0 luôn.",
+        "Indegree 0."
+      ],
+      "correct": 3,
+      "explanation": "Có thể nhiều task khởi đầu độc lập."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Indegree decrement",
+      "question": "Khi lấy ura khỏi queue, Kahn làm gì với mỗi cạnh u->v?",
+      "options": [
+        "Giảm indegree v và enqueue nếu về 0.",
+        "Tăng indegree v.",
+        "Xóa mọi vertices khác.",
+        "Đổi thứ tự edge về v->u."
+      ],
+      "correct": 0,
+      "explanation": "Một dependency vừa được thỏa."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Cycle result",
+      "question": "Nếu Kahn xử lý không đủ số vertices, source trả gì?",
+      "options": [
+        "Một infinityloopbắt buộc.",
+        "Vector rỗng.",
+        "Thứ tự đã xử lý một phần luôn.",
+        "Vector chứa toàn IDs sort."
+      ],
+      "correct": 1,
+      "explanation": "Không tồn tại topo order đầy đủ cho graph có cycle."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "DAG meaning",
+      "question": "DAG là loại graph nào?",
+      "options": [
+        "Một binary heap.",
+        "Một cache map.",
+        "Directed acyclic graph.",
+        "Mọi graph vô hướng."
+      ],
+      "correct": 2,
+      "explanation": "Topological sorting gắn với dependencies có hướng không cycle."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Islands exercise scope",
+      "question": "Exercise Number of Islands thường mô hình hóa gì?",
+      "options": [
+        "Mọi ký tự Unicodeasheap.",
+        "Một LRU cache.",
+        "Một phép sort names.",
+        "Các ô đất và quan hệ kề theo contract để đếm components."
+      ],
+      "correct": 3,
+      "explanation": "Cần xác định 4 hay 8 hướng và điều kiện ô hợp lệ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Sample shortest path",
+      "question": "Theo adjacencyordercủa main, path 0->2 nguồn trả gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(6,{{0,1},{1,2},{0,3},{3,2},{4,5}});for(int v:duongNganNhat(g,0,2))cout<<v<<\" \";}\n",
+      "options": [
+        "0,1,2.",
+        "0,3,2 luôn được source chọn trước.",
+        "0,2.",
+        "Empty."
+      ],
+      "correct": 0,
+      "explanation": "Neighbor 1 của 0 được enqueue trước 3."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Sample components",
+      "question": "Graph vô hướng main có bao nhiêu components?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(6,{{0,1},{1,2},{0,3},{3,2},{4,5}});cout<<demThanhPhan(g);}\n",
+      "options": [
+        "6.",
+        "2.",
+        "1.",
+        "3."
+      ],
+      "correct": 1,
+      "explanation": "{0,1,2,3}và{4,5}."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Sample topo",
+      "question": "Theo source main, Kahn cho thứ tự nào?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(4,{{0,1},{0,2},{1,3},{2,3}},true);for(int v:topoSort(g))cout<<v<<\" \";}\n",
+      "options": [
+        "1,0,2,3.",
+        "Empty.",
+        "0,1,2,3.",
+        "3,1,2,0."
+      ],
+      "correct": 2,
+      "explanation": "Queue nhận 1 rồi 2 sau xử lý 0."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Unreachable path size",
+      "question": "Hai componentsrời{0,1}và{2,3}, BFS 0->3 có path size gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(4,{{0,1},{2,3}});cout<<duongNganNhat(g,0,3).size();}\n",
+      "options": [
+        "2.",
+        "4.",
+        "1.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Không có path giữa components."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Source equals target",
+      "question": "Graph có vertex 0 hợp lệ, BFS 0->0 trả gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(1,{});for(int v:duongNganNhat(g,0,0))cout<<v;}\n",
+      "options": [
+        "{0}.",
+        "Empty vì không đi edge.",
+        "{-1}.",
+        "Tất cả vertices."
+      ],
+      "correct": 0,
+      "explanation": "Path zero edges vẫn có một vertex."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Isolated components",
+      "question": "Graph 4 vertices không edges có bao nhiêu undirected components?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){cout<<demThanhPhan(taoDoThi(4,{}));}\n",
+      "options": [
+        "2.",
+        "4.",
+        "0.",
+        "1."
+      ],
+      "correct": 1,
+      "explanation": "Mỗi vertex isolated là một component."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Empty component graph",
+      "question": "demThanhPhan trên graph 0 vertices trả gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){cout<<demThanhPhan(taoDoThi(0,{}));}\n",
+      "options": [
+        "-1.",
+        "Throw vì DFS 0 luôn chạy.",
+        "0.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Scanloopkhông vào."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Directed reverse reachability",
+      "question": "Graph directed 0->1, BFS 1->0 trả gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(2,{{0,1}},true);cout<<duongNganNhat(g,1,0).size();}\n",
+      "options": [
+        "{1,0}.",
+        "{0,1}.",
+        "Một cycle.",
+        "Empty."
+      ],
+      "correct": 3,
+      "explanation": "Không có edge 1->0."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Topo simple cycle",
+      "question": "Directed 0->1->0 cho topo result size bao nhiêu?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(2,{{0,1},{1,0}},true);cout<<topoSort(g).size();}\n",
+      "options": [
+        "0.",
+        "2.",
+        "1.",
+        "Vô hạn."
+      ],
+      "correct": 0,
+      "explanation": "Không có indegree 0 để xử lý cycle."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Topo self loop",
+      "question": "Một vertex có edge 0->0 cho topo result gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(1,{{0,0}},true);cout<<topoSort(g).size();}\n",
+      "options": [
+        "Throw đã viết rõ.",
+        "Empty.",
+        "{0}hợp lệ theo dependencies strict.",
+        "{0,0}."
+      ],
+      "correct": 1,
+      "explanation": "Self-dependency là cycle."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Topo independent tasks",
+      "question": "Graph 3 vertices không edges, source Kahn enqueue theo IDcho output nào?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(3,{},true);for(int v:topoSort(g))cout<<v<<\" \";}\n",
+      "options": [
+        "Empty vì không có dependencies.",
+        "Chỉ 0.",
+        "0,1,2.",
+        "2,1,0 bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Mọi task indegree 0 được scanascending."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Topo duplicate edges",
+      "question": "Hai cạnh 0->1 trùng trong input source, Kahn xử lý thế nào với graph 2 vertices?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(2,{{0,1},{0,1}},true);for(int v:topoSort(g))cout<<v<<\" \";}\n",
+      "options": [
+        "Mặc nhiên báo cycle.",
+        "Enqueue 1 hai lần chắc chắn.",
+        "Bỏ cả vertex 0.",
+        "Indegree đếm 2 và giảm 2, vẫn cho 0,1."
+      ],
+      "correct": 3,
+      "explanation": "Cả count và reductionbám từng adjacencyentry."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Partial topo discarded",
+      "question": "Vertex 0 độc lập,1<->2 cycle: source có trả{0}partial không?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(3,{{1,2},{2,1}},true);cout<<topoSort(g).size();}\n",
+      "options": [
+        "Không; cuối cùng trả empty vì thiếu vertices.",
+        "Có; return partial được viết rõ.",
+        "Có; coi cycle là đã hoàn thành.",
+        "Tự bỏ 1,2 vĩnh viễn khỏi graph."
+      ],
+      "correct": 0,
+      "explanation": "Finalsizecheckquyết định failure toàn order."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Directed DFS counterexample",
+      "question": "Graph directed 1->0, demThanhPhanguồn scan 0 trước trả mấy?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(2,{{1,0}},true);cout<<demThanhPhan(g);}\n",
+      "options": [
+        "Throw vì có hướng.",
+        "2.",
+        "1 bắt buộc vì weaklyconnected.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Function vẫn chạy nhưng đây là DFS forest count không là weak-components algorithm."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Directed not SCC",
+      "question": "Graph directed 0->1, demThanhPhanguồn trả mấy?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(2,{{0,1}},true);cout<<demThanhPhan(g);}\n",
+      "options": [
+        "0.",
+        "Không dừng.",
+        "1, dù graph có 2 SCCs.",
+        "2 vì tự chạy Tarjan."
+      ],
+      "correct": 2,
+      "explanation": "DFS từ 0 đến 1 đánh dấu cả hai, không chứng minh strongconnectivity."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Cycle visited finite",
+      "question": "Graph vô hướng triangle 0-1-2-0, demThanhPhan trả gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\nusing namespace std;\n\nusing DoThi = vector<vector<int>>; // danh sách kề\n\nDoThi taoDoThi(int n, const vector<pair<int, int>>& canh, bool coHuong = false) {\n    DoThi g(n);\n    for (auto [u, v] : canh) {\n        g[u].push_back(v);\n        if (!coHuong) g[v].push_back(u);\n    }\n    return g;\n}\n\n// BFS: đường đi ít cạnh nhất giữa hai đỉnh\nvector<int> duongNganNhat(const DoThi& g, int batDau, int dich) {\n    vector<int> cha(g.size(), -1);\n    vector<bool> daTham(g.size(), false);\n    queue<int> q;\n    q.push(batDau);\n    daTham[batDau] = true;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        if (u == dich) break;\n        for (int v : g[u]) {\n            if (!daTham[v]) {\n                daTham[v] = true;\n                cha[v] = u;\n                q.push(v);\n            }\n        }\n    }\n    if (!daTham[dich]) return {};\n    vector<int> duong;\n    for (int v = dich; v != -1; v = cha[v]) duong.push_back(v);\n    reverse(duong.begin(), duong.end());\n    return duong;\n}\n\n// DFS: đếm số thành phần liên thông\nvoid dfs(const DoThi& g, int u, vector<bool>& daTham) {\n    daTham[u] = true;\n    for (int v : g[u]) if (!daTham[v]) dfs(g, v, daTham);\n}\nint demThanhPhan(const DoThi& g) {\n    vector<bool> daTham(g.size(), false);\n    int dem = 0;\n    for (int u = 0; u < (int)g.size(); u++) {\n        if (!daTham[u]) {\n            dfs(g, u, daTham);\n            dem++;\n        }\n    }\n    return dem;\n}\n\n// Topo Sort (thuật toán Kahn): thứ tự làm việc khi có ràng buộc \"phải làm A trước B\"\nvector<int> topoSort(const DoThi& g) {\n    vector<int> bacVao(g.size(), 0);\n    for (const auto& ke : g) for (int v : ke) bacVao[v]++;\n    queue<int> q;\n    for (int u = 0; u < (int)g.size(); u++) if (bacVao[u] == 0) q.push(u);\n    vector<int> thuTu;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        thuTu.push_back(u);\n        for (int v : g[u]) if (--bacVao[v] == 0) q.push(v);\n    }\n    if (thuTu.size() != g.size()) return {}; // có chu trình: không tồn tại thứ tự\n    return thuTu;\n}\n\n\nint main(){auto g=taoDoThi(3,{{0,1},{1,2},{2,0}});cout<<demThanhPhan(g);}\n",
+      "options": [
+        "3.",
+        "Không dừng vì chưa có visited.",
+        "0.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "Markbefore recursion tránh lặp visitedvertices."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "BFS shortest tie",
+      "question": "Hai paths 0-1-3 và 0-2-3 đều dài 2. Kết quả nào đúng với bài toán shortest theo số cạnh?",
+      "options": [
+        "Cả hai có thể hợp lệ; source chọn theo adjacency/discoveryorder.",
+        "Chỉ IDpathnhỏ nhất luôn mặc định theo mọi graph representation.",
+        "Chỉ path có đỉnh 2.",
+        "Không path nào vì cótie."
+      ],
+      "correct": 0,
+      "explanation": "Tách tính hợp lệ của đáp án và thứ tự thực thi cụ thể."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Single parent limitation",
+      "question": "cha[v] một giá trị có lưu tất cả shortest paths to vkhông?",
+      "options": [
+        "Có; reverse khôi phục mọi alternatives.",
+        "Không; chỉ một predecessor đã chọn trong BFS này.",
+        "Có; cha tự là vector paths.",
+        "Có; visitedmọi vertices là đủ tái tạo mọi path."
+      ],
+      "correct": 1,
+      "explanation": "Đếm/liệt kê tất cả shortest paths cần state khác."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Path edge count",
+      "question": "Vector path có Lverticeshợp lệ thì có bao nhiêu cạnh?",
+      "options": [
+        "2 L.",
+        "Luôn 1.",
+        "L-1.",
+        "L."
+      ],
+      "correct": 2,
+      "explanation": "Áp với path không rỗng theo representation nguồn."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "No path versus zero edges",
+      "question": "Path{start}khi start==target khác empty result thế nào?",
+      "options": [
+        "Hoàn toàn cùng một trạng thái.",
+        "{start}luôn sai vì phải có edge.",
+        "Empty luôn nghĩa vertex 0.",
+        "Một là thành công zero edges, một biểu diễn không tìm thấy."
+      ],
+      "correct": 3,
+      "explanation": "Contract representation cần phân biệt rõ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "BFS complexity",
+      "question": "Adjacency list với V vertices,E edges, BFS worst time bound thông thường là gì?",
+      "options": [
+        "O(V+E).",
+        "O(V²) bắt buộc.",
+        "O(logV).",
+        "O(1)."
+      ],
+      "correct": 0,
+      "explanation": "Mỗi vertex/adjacencyentryđược xử lý có giới hạn theo visited."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Graph memory",
+      "question": "Adjacency list giữ V vertices,E edges có memory bound nào?",
+      "options": [
+        "O(2^V).",
+        "O(V+E).",
+        "O(1).",
+        "O(logE)."
+      ],
+      "correct": 1,
+      "explanation": "Undirected representation thường lưu hai entries mỗi edge, không đổi bậc."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "BFS state memory",
+      "question": "cha,daTham và queue có extra space worst case bậc nào?",
+      "options": [
+        "O(1) mọi graph.",
+        "O(2^V).",
+        "O(V), ngoài graph/path output.",
+        "O(E²)."
+      ],
+      "correct": 2,
+      "explanation": "Queue có thể giữ nhiều vertices đã phát hiện."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "DFS stack",
+      "question": "DFS recursive có thể sâu bao nhiêu bậc theo V?",
+      "options": [
+        "O(logV) guaranteed mọi graph.",
+        "O(1) mọi input.",
+        "O(V²) framesđồng thời bắt buộc.",
+        "O(V)."
+      ],
+      "correct": 3,
+      "explanation": "Một path dài có thể tạo recursion chain linear."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Kahn complexity",
+      "question": "Topo sort source có expectedasymptoticworktheoadjacencylistthế nào?",
+      "options": [
+        "O(V+E).",
+        "O(V!) do mọi topo orders.",
+        "O(logV).",
+        "O(1)."
+      ],
+      "correct": 0,
+      "explanation": "Source tìm một order, không enumerate all orders."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Topo not unique",
+      "question": "DAG có nhiều vertices available cùng lúc có thể có gì?",
+      "options": [
+        "Mỗi vertex phải có indegree 1.",
+        "Nhiều topological orders hợp lệ.",
+        "Không có order.",
+        "Bắt buộc uniqueorderascendingID."
+      ],
+      "correct": 1,
+      "explanation": "Queuepolicychọn một valid order."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Task execution caveat",
+      "question": "Topological order có tự là lịch chạy song song tối ưu theo duration không?",
+      "options": [
+        "Có; graph source có durationsđã viết.",
+        "Có; KahnqueuechạyOSthreads.",
+        "Không; cần thông tin thời lượng/tài nguyên và scheduler algorithm khác.",
+        "Có; order array là optimalparallelplan."
+      ],
+      "correct": 2,
+      "explanation": "Ordering constraints khác resource-scheduling optimization."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Indegree release condition",
+      "question": "Vì sao enqueue khi indegree về 0 thay vì mỗi lần giảm?",
+      "options": [
+        "Để xử lý task trước tiên quyết.",
+        "Để bỏ những vertex độc lập.",
+        "Để count shortest paths.",
+        "Chỉ khi mọi incomingdependenciesđã được xử lý."
+      ],
+      "correct": 3,
+      "explanation": "Giảm một edge chưa có nghĩa mọi điều kiện xong."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Cycle with independent nodes",
+      "question": "Graph có một cycle và nhiều nodes independent có topological order cho toàn graph không?",
+      "options": [
+        "Không.",
+        "Có nếu independent nodes nhiều hơn cycle.",
+        "Có nếu IDs sorted.",
+        "Có nếu BFS đến được root."
+      ],
+      "correct": 0,
+      "explanation": "Một directed cycle đã đủ làm toàn dependency order tất cả vertices không tồn tại."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Vertices contract",
+      "question": "Endpoints(u,v) đưa vào taoDoThi cần thỏa gì?",
+      "options": [
+        "IDs phải khác nhau trong mọi bài kể cả self loop.",
+        "0<=u,v<n.",
+        "Chỉ u+vpositive.",
+        "Mọi integers đều hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Source không bounds check trước g[u]/g[v]."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "BFS index contract",
+      "question": "batDau,dich cần hợp lệ khi gọi BFS nguồn vì sao?",
+      "options": [
+        "cha-1 tự clamp mọi ID.",
+        "Vì path phải luôn 1 edge.",
+        "Code index vectors bằng chúng mà không validate.",
+        "Queue int tự kiểm vertex existence."
+      ],
+      "correct": 2,
+      "explanation": "Empty graph không có valid vertex để gọi path query bản này."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Empty topological graph",
+      "question": "Graph 0 vertices, topo result empty có thể là gì?",
+      "options": [
+        "Luôn chứng minh có cycle.",
+        "Luôn invalid memory access.",
+        "Luôn một vertex 0 ngầm.",
+        "Order hợp lệ của tập tasks rỗng."
+      ],
+      "correct": 3,
+      "explanation": "Representation trùng empty failure của graph có cycle, cần context."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Undirected cycle detection distinction",
+      "question": "DFSvisitedđể đếm components có tự trả thông tin cycle không?",
+      "options": [
+        "Không; nguồn không có cycle-result logic riêng.",
+        "Có; booleanvisitedđồng nghĩa cycle.",
+        "Có; dem==1 luôn nghĩa có cycle.",
+        "Có; return void chứa cycle."
+      ],
+      "correct": 0,
+      "explanation": "Muốn detect cycle cần logic phù hợp directed/undirected và edges."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Directed versus undirected reachability",
+      "question": "Đường u->vtrong directed graph có tự bảo đảm v->ukhông?",
+      "options": [
+        "Có; topo đổi graph.",
+        "Không.",
+        "Có; adjacencylistluônđối xứng.",
+        "Có; BFS reverse path tự thêm edge."
+      ],
+      "correct": 1,
+      "explanation": "Chiều edge là phần của input model."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Parent assignment once",
+      "question": "Markv khi enqueue giúp tránh vấn đề gì với cha[v]?",
+      "options": [
+        "Tự sortparentsbyID.",
+        "Tự tạo weighted shortest proof.",
+        "Không bị nhiều discoveriesghi đè parent và enqueue lặp không cần thiết.",
+        "Tự ghi mọi shortest parents."
+      ],
+      "correct": 2,
+      "explanation": "Một lần phát hiện đầu của BFS đủ cho một shortestpathunweighted."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Islands connectivity rule",
+      "question": "Hai ô đất chéo nhau có cùng đảo hay không phụ thuộc gì?",
+      "options": [
+        "Chỉ tổng sốôđất.",
+        "Luôn cùng đảo mọi đề.",
+        "Luôn khác đảo mọi đề.",
+        "Rule 4-neighborhay 8-neighbormà đề quy định."
+      ],
+      "correct": 3,
+      "explanation": "Chốt semantics kề trước implementation."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Visited reset across calls",
+      "question": "Gọi demThanhPhan hai lần trên cùng gkhông đổi có dùng visitedcũ không?",
+      "options": [
+        "Không; mỗi call tạo vectorvisitedmới.",
+        "Có; visitedlàstaticglobalđã viết.",
+        "Có; dfs sửa graph vĩnh viễn.",
+        "Không thể gọi lần hai."
+      ],
+      "correct": 0,
+      "explanation": "Không nhập state persistence chưa có trong source."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Graph mutation source",
+      "question": "Các functions search/DFS/topo nguồn nhận const DoThi&có chủ động xóa edges không?",
+      "options": [
+        "Có; reverse path reverse graph.",
+        "Không có thao tác mutate graph được viết.",
+        "Có; pop queue xóa edges.",
+        "Có; bacVao--thay g."
+      ],
+      "correct": 1,
+      "explanation": "Indegrees/visited/parents là state phụ riêng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Topological test property",
+      "question": "Một test topological result đúng nên kiểm gì ngoài size?",
+      "options": [
+        "Chỉ result không rỗng.",
+        "Chỉ phần tử đầu bằng 0.",
+        "Mọi vertex đúng một lần và mọi edge đi từ vị trí trước sang sau.",
+        "Chỉ IDsascending."
+      ],
+      "correct": 2,
+      "explanation": "Một permutation đủ size vẫn có thể vi phạm dependencies."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "BFS path test property",
+      "question": "Path result nên kiểm gì?",
+      "options": [
+        "Chỉ length positive.",
+        "Chỉ mọi IDs khác nhau.",
+        "Chỉ vector được sort.",
+        "Đúng endpoints,mỗi bước có edge và length tối ưu theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Không coi một vector IDs ngẫu nhiên là path hợp lệ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Weighted BFS misuse",
+      "question": "Một path ít edges hơn có thể tổng weightlớn hơn. BFS nguồn có giải min-totalweighttrường hợp đó không?",
+      "options": [
+        "Không theo algorithm/representation này.",
+        "Có; FIFO luôn tối ưu mọirealweights.",
+        "Có; vertexIDlàweightngầm.",
+        "Có; cha array tự cộngweights."
+      ],
+      "correct": 0,
+      "explanation": "Chọn thuật toán đúng miền và trọng số thay vì gắn nhãn shortest chung chung."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Directed components misuse",
+      "question": "demThanhPhan trên directed input có đủ là SCC algorithm không?",
+      "options": [
+        "Có; visitedvectortự tínhlowlinks.",
+        "Không; reachabilityforestkhông kiểm reachabilityhai chiều.",
+        "Có; mọi DFS đều Tarjan.",
+        "Có; dem==1 chứng minh strongly connected."
+      ],
+      "correct": 1,
+      "explanation": "Cần thuật toán/contract SCC riêng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Weak components misuse",
+      "question": "Vì sao directed 1->0 cho count 2 bác bỏ việc xem demThanhPhan là weak components algorithm?",
+      "options": [
+        "Vì IDs âm.",
+        "Vì return int không thể biểu diễn 1.",
+        "Bỏ chiều edge thì hai vertices cùng một component, nhưng DFS nguồn không thêm reverse edge.",
+        "Vì graph này có hai weak components chuẩn."
+      ],
+      "correct": 2,
+      "explanation": "Muốn weakconnectivityphải xét underlying undirected graph phù hợp."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Invalid vertex access",
+      "question": "Input edge(u,v) với v>=ncó được source báo lỗi có kiểm soát không?",
+      "options": [
+        "Có; vector operator[] luôn throw được bắt.",
+        "Có; bool coHuong tự validate IDs.",
+        "Có; structured binding clamp IDs.",
+        "Không có validation; indexing có thể ngoài range."
+      ],
+      "correct": 3,
+      "explanation": "Không thực thi invalid indices để đoán output."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Empty path query",
+      "question": "Graph empty gọi BFS(0,0) nguồn có hợp lệ không?",
+      "options": [
+        "Không; index 0 không tồn tại và source không guard.",
+        "Có; start==target luôn safe vì check trước index.",
+        "Có; queue tự thêm vertex.",
+        "Có; visitedtự resize."
+      ],
+      "correct": 0,
+      "explanation": "Source đánh dấu daTham[start] trước kiểm target trong loop."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Topo empty ambiguity",
+      "question": "API trả{}cho empty DAG và cyclicfailurecó giới hạn gì?",
+      "options": [
+        "Tự chứa exception message.",
+        "Callerchỉ nhìnresultkhông phân biệt success-empty và failure nếu không có context/trạng thái.",
+        "Không có vì{}luôn là failure.",
+        "Không có vì{}luôn là success."
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng result/status representation rõ hơn nếu API cần phân biệt."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Duplicate edge cycle claim",
+      "question": "Parallel 0->1 edges có tự tạo directed cycle không?",
+      "options": [
+        "Có; indegree>1 nghĩa cycle.",
+        "Có; DAG chỉ cho indegree 1.",
+        "Không; phải có đường quay về hoặc selflooptheo định nghĩa.",
+        "Có; hai edge cùng hướng là cycle độ dài 2."
+      ],
+      "correct": 2,
+      "explanation": "Indegree lớn không đồng nghĩa cycle."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Visited at dequeue variant",
+      "question": "Nếu chỉ markvisitedkhi dequeue mà vẫn không kiểm lặp khác, có thể phát sinh gì?",
+      "options": [
+        "Tự nhanh hơn mọi graph.",
+        "Queue đảm bảo uniqueness keys ngầm.",
+        "Không ảnh hưởng memory trong mọi graph.",
+        "Cùng vertex được enqueue nhiều lần qua các predecessors."
+      ],
+      "correct": 3,
+      "explanation": "Nêu rõ visitedpolicytrong invariant và complexity proof."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Shortest tie portability",
+      "question": "Đổi thứ tự input edges nhưng giữ cùng graph có thể làm BFSpathreturnedđổi không?",
+      "options": [
+        "Có khi nhiều shortest paths, dù độ dài tối ưu không đổi.",
+        "Không; mọi BFS luôn chọn cùng path lexicographic.",
+        "Chỉ nếu có weightsâm.",
+        "Không vì unordered_mapđược dùng trong BFS."
+      ],
+      "correct": 0,
+      "explanation": "So sánh semantic properties khi order không là contract cố định."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Stop at target",
+      "question": "BFS source break khi pop target có làm mất khả năng dựng một shortest path đã tìm không?",
+      "options": [
+        "Có; target luôn cần pop hai lần.",
+        "Không trong domainunweightedhợp lệ; parentchain đã được ghi lúc discovery.",
+        "Có; phải duyệt mọi graph mới biết path bất kỳ.",
+        "Có; cha array chưa tạo."
+      ],
+      "correct": 1,
+      "explanation": "Dừng sớm phù hợp một target, không phục vụ mọi distanceschưa xử lý."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Cycle detection versus connectivity",
+      "question": "Undirected graph connected có bắt buộc có cycle không?",
+      "options": [
+        "Có; có edge bất kỳ là cycle.",
+        "Không thể connected khi có 2 vertices.",
+        "Không; một tree connected acyclic là phản ví dụ.",
+        "Có; dem==1 luôn cycle."
+      ],
+      "correct": 2,
+      "explanation": "Connectivityvà cyclicitylà các thuộc tính khác nhau."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "DFS recursion resource",
+      "question": "Path graph rất dài có rủi ro gì ở DFS recursive?",
+      "options": [
+        "Không có vì algorithm linear.",
+        "StackluônlogV.",
+        "vector<bool>biến recursion thành loop.",
+        "Stackdepth linear và giới hạn tài nguyên, dù timeO(V+E)."
+      ],
+      "correct": 3,
+      "explanation": "Có thể iterative DFS hoặc giới hạn input; không chạy crashstress."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "DAG sorting not runtime success",
+      "question": "Có topoordercho workflow có chứng minh mọi task execution thành công không?",
+      "options": [
+        "Không; nó chỉ cho thứ tự dependency hợp lệ, không kết quả task/runtimes.",
+        "Có; graph acyclic ngăn mọi error.",
+        "Có; indegree 0 nghĩa task đã chạy.",
+        "Có; queue tự retry mọi task."
+      ],
+      "correct": 0,
+      "explanation": "Tách kế hoạch dependency với vận hành thực tế."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Full topo permutation",
+      "question": "Result size==V nhưng lặp một vertex và thiếu một vertex khác có đủ để acceptkhông?",
+      "options": [
+        "Có; vector int tự unique.",
+        "Không; cần kiểm mỗi vertex đúng một lần và edge constraints.",
+        "Có; size là toàn bộ contract.",
+        "Có; IDs bất kỳ luôn hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm property đủ để không bỏ sót malformedresults."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Graph input ownership",
+      "question": "Graph bị thread khác mutate trong khi traverseconstreferencecó tự an toàn không?",
+      "options": [
+        "Có; visitedchốngmọidata race.",
+        "Có; vector iterator vĩnh viễn valid.",
+        "Không; const reference cục bộ không tự synchronization mọi alias.",
+        "Có; const khóa toàn process."
+      ],
+      "correct": 2,
+      "explanation": "Cần synchronization/lifetime design phù hợp."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Sparse versus dense representation",
+      "question": "Nên chọn adjacencylistluôn tốt nhất mọi graph không?",
+      "options": [
+        "Có; matrix không bao giờ có ích.",
+        "Có; O(V+E) nhỏ hơn mọi biểu thức ở mọi input.",
+        "Có; vector luôn miễn phí.",
+        "Không; xem độ thưa, loại queries và memory/workload."
+      ],
+      "correct": 3,
+      "explanation": "Cấu trúc biểu diễn phải phục vụ operations cần làm."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Island mutation policy",
+      "question": "Dùng cách đổi ô đất thành nước để markvisitedcần làm rõ gì với caller?",
+      "options": [
+        "Input có được phép mutate hay cần giữ nguyên/copy.",
+        "Không cần vì mark chỉ là tối ưu.",
+        "Mọi ma trận tự hồi phục sau return.",
+        "Chỉ source code không quan trọng input."
+      ],
+      "correct": 0,
+      "explanation": "Correctnessbao gồm side effect contract."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "DAG edge direction contract",
+      "question": "Dữ liệu prerequisitepair[A,B] có nghĩa BtrướcA. Nếu thêm edgeA->Bthì có thể sai gì?",
+      "options": [
+        "Kahn tự suy nghĩa pair ngôn ngữ.",
+        "Topo order cho graph đảo nghĩa dependenciesso với đề.",
+        "Luôn đúng vì mọi topo đều tương đương.",
+        "Chỉ đổi speedkhông đổi thứ tự hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Xác nhận convention input trước dựng edges."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Course schedule decision",
+      "question": "Chỉ cần biết có thể hoàn thành mọi courses, Kahnprocessedcountgiúp kết luận gì?",
+      "options": [
+        "Queue ban đầu không empty là đủ.",
+        "Indegree của một vertex 0 là đủ.",
+        "Processed==V thì acyclic theo graph hợp lệ; thiếu thì có cycle.",
+        "Processed>0 là đủ mọi courses."
+      ],
+      "correct": 2,
+      "explanation": "Một phần graph xử lý được không chứng minh toàn graph không cycle."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Reachability and path output",
+      "question": "BFSvisited[target] true có bảo đảm path dựng có ít nhất 2 vertices không?",
+      "options": [
+        "Có; mọi path phải có edge.",
+        "Có; parent[start] luôn start.",
+        "Có; reverse xóa path ngắn.",
+        "Không; start==target có path một vertex."
+      ],
+      "correct": 3,
+      "explanation": "Zero-edge path là trường hợp hợp lệ theo contract."
+    }
+  ]
+}

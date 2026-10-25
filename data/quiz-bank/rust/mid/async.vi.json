@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "mid",
+  "lesson": "async",
+  "language": "vi",
+  "sourceHash": "2a46f43ad77dd26ea002f048a4e679578ab3fae0c1c6c563266f5ac5cc1ffb75",
+  "status": "approved",
+  "review": "Tự soạn không API. Source/official docs và local cached Tokio1.52.3 review. Selected actual Tokio fixtures dùng current-thread runtime,rt/sync/time và local cache offline,không reqwest/HTTP/network. Native Future cases ghi riêng. Source fetch_many spawn tất cả trước rồi join theo input order,outerJoinError unwrap có thể panic,không bound concurrency/status policy explicit. Reqwest/serde HTTP source/spec-only;không chạy website mẫu. Async không tự không có overhead hoặc tự cancel/join mọi công việc.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Async function",
+      "question": "async fn thường trả gì khi được gọi?",
+      "options": [
+        "Một Future đại diện computation chưa nhất thiết thực hiện hết ngay.",
+        "Luôn giá trị User đã tải xong ngay.",
+        "Một OS thread mới bắt buộc.",
+        "Một String JSON luôn."
+      ],
+      "correct": 0,
+      "explanation": "Future cần được poll bởi executor hoặc cơ chế phù hợp."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Await role",
+      "question": ".await trên Future có vai trò gì?",
+      "options": [
+        "Tự retry mọi error.",
+        "Đợi/poll để lấy kết quả, có thể nhường execution khi Pending.",
+        "Luôn tạo một thread mới.",
+        "Luôn block OS thread bằng sleep."
+      ],
+      "correct": 1,
+      "explanation": "Không phải mọi await đều suspend nếu future đã Ready."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Executor role",
+      "question": "Tokio runtime hỗ trợ gì?",
+      "options": [
+        "Tự tạo database schema.",
+        "Tự biến mọi blocking call thành nonblocking.",
+        "Điều phối async tasks và các drivers theo features/config.",
+        "Tự validate mọi dữ liệu API."
+      ],
+      "correct": 2,
+      "explanation": "Code blocking/CPU dài vẫn cần thiết kế phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Main macro",
+      "question": "#[tokio::main] trong source nhằm gì?",
+      "options": [
+        "Tự fetch dependencies qua API lúc mỗi request.",
+        "Tự làm mọi field readonly.",
+        "Tự sinh HTTP routes.",
+        "Tạo bootstrap runtime cho async main theo macro/config."
+      ],
+      "correct": 3,
+      "explanation": "Compile còn cần Cargo features và dependencies phù hợp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "HTTP client",
+      "question": "reqwest trong source dùng cho gì?",
+      "options": [
+        "Gửi HTTP request và xử lý response theo API.",
+        "Một database ORM.",
+        "Một unit test framework bắt buộc.",
+        "Một Tokio scheduler replacement."
+      ],
+      "correct": 0,
+      "explanation": "Các fixture nội dung không gọi URL thật trong source."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Deserialize derive",
+      "question": "serde::Deserialize trên User giúp gì?",
+      "options": [
+        "Tự bỏ mọi field thiếu không cần config.",
+        "Cho phép giải mã dữ liệu theo fields/types của User qua serde.",
+        "Tự xác thực mọi email và quyền truy cập.",
+        "Tự tạo users trong DB."
+      ],
+      "correct": 1,
+      "explanation": "Structural decoding khác validation nghiệp vụ."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Source User fields",
+      "question": "User nguồn khai báo những fields nào?",
+      "options": [
+        "status, body.",
+        "timeout, retries.",
+        "id:u32, name:String, email:String.",
+        "title, done."
+      ],
+      "correct": 2,
+      "explanation": "Các types tạo yêu cầu decoding, không mọi invariant domain."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Fetch URL",
+      "question": "fetch_user nguồn ghép URL bằng dữ liệu nào?",
+      "options": [
+        "Một password env đã đọc.",
+        "Một host tùy user nhập trong code này.",
+        "Một SQL query.",
+        "id được đưa vào đường dẫn users/{id}."
+      ],
+      "correct": 3,
+      "explanation": "Source dùng host cố định của ví dụ; task không gọi host đó."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Fetch result",
+      "question": "fetch_user trả kiểu kết quả nào theo signature?",
+      "options": [
+        "Result<User, reqwest::Error>.",
+        "User luôn không lỗi.",
+        "Option<String> bắt buộc.",
+        "Một JoinHandle trực tiếp."
+      ],
+      "correct": 0,
+      "explanation": "Async wrapper khiến lời gọi trả Future với Output là Result đó."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Question mark in fetch",
+      "question": "Hai dấu ? sau await trong fetch_user làm gì?",
+      "options": [
+        "Tự clamp id.",
+        "Propagate lỗi HTTP operation hoặc decode theo Result contract.",
+        "Tự retry tới thành công.",
+        "Tự bắt mọi task panic."
+      ],
+      "correct": 1,
+      "explanation": "Propagation không biến failure thành success."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Spawn task",
+      "question": "tokio::spawn(async move {...}) tạo gì?",
+      "options": [
+        "Một request đã thành công chắc chắn.",
+        "Một transaction DB.",
+        "Task trên runtime và trả JoinHandle.",
+        "Một thread OS riêng cho mỗi call bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Task không được synchronously poll ngay trong spawn theo contract."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Move capture",
+      "question": "async move giúp gì với id trong loop?",
+      "options": [
+        "Tự làm mọi Future Send bất kể payload.",
+        "Tự clone mọi data graph.",
+        "Tự đảm bảo call không lỗi.",
+        "Đưa captured values vào async block theo ownership/capture rules."
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt capture mode với trait/lifetime bounds của spawned future."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Join handle await",
+      "question": "Await JoinHandle<T> thường cho kết quả nào?",
+      "options": [
+        "Result<T, JoinError>.",
+        "Luôn T không có task failures.",
+        "Option<T> duy nhất.",
+        "Một HTTP response luôn."
+      ],
+      "correct": 0,
+      "explanation": "T bản thân có thể lại là Result của business operation."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Nested result",
+      "question": "Với task trả Result<User, reqwest::Error>, join result có mấy lớp Result liên quan?",
+      "options": [
+        "Ba lớp bắt buộc kể cả User.",
+        "Lớp task completion và lớp operation result.",
+        "Chỉ một lớp vì Tokio tự xóa inner error.",
+        "Không có Result nào."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất JoinError với lỗi request/decode."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Source concurrent starts",
+      "question": "fetch_many bắt đầu await handles ở thời điểm nào?",
+      "options": [
+        "Mỗi id được fetch tuần tự xong mới spawn id sau.",
+        "Không bao giờ join.",
+        "Sau loop đã spawn tất cả ids.",
+        "Trước khi tạo task đầu tiên."
+      ],
+      "correct": 2,
+      "explanation": "Await handles tuần tự không undo việc tasks đã được spawn concurrent."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Result order",
+      "question": "Vector results nguồn thường theo thứ tự nào khi join thành công?",
+      "options": [
+        "Bắt buộc completion order của network.",
+        "Random map order.",
+        "Luôn sort theo name.",
+        "Thứ tự handles được lưu, tương ứng input ids."
+      ],
+      "correct": 3,
+      "explanation": "Source push result trong loop handles theo thứ tự vector."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Current thread runtime",
+      "question": "Runtime current_thread có nghĩa gì cơ bản?",
+      "options": [
+        "Tasks async có thể interleave trên luồng runtime đó, không tự thành CPU parallelism nhiều workers.",
+        "Chỉ được có một Future suốt đời.",
+        "Mọi awaits đều block toàn process.",
+        "Tự cấm concurrency."
+      ],
+      "correct": 0,
+      "explanation": "Concurrency khác parallel execution."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Source first unwrap",
+      "question": "fetch_user(1).await.unwrap() trong main có thể làm gì nếu request lỗi?",
+      "options": [
+        "Tự đổi lỗi thành User default.",
+        "Panic.",
+        "Tự log rồi tiếp tục luôn.",
+        "Tự return None."
+      ],
+      "correct": 1,
+      "explanation": "Source demo chưa xử lý mọi failure ở nhánh sequential."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Source result handling",
+      "question": "Trong loop results cuối, Err(e) được làm gì?",
+      "options": [
+        "Tự bỏ toàn runtime ngay bằng osExit.",
+        "Tự gửi vào database.",
+        "In error bằng eprintln theo source.",
+        "Tự retry vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "In diagnostic không tự là retry hoặc exit policy đầy đủ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Async overhead wording",
+      "question": "Zero-cost async có nghĩa không có chi phí runtime cho mọi application không?",
+      "options": [
+        "Có, mọi async call0CPU/0memory.",
+        "Có, Tokio không cần executor.",
+        "Chỉ cần noGC là không latency.",
+        "Không; state machines, scheduling, I/O, allocation và workload vẫn có chi phí."
+      ],
+      "correct": 3,
+      "explanation": "Không diễn đạt theory no runtime overhead như cam kết tuyệt đối."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Ready async block",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let value=async{42}.await;println!(\"{value}\");});}\n",
+      "options": [
+        "42.",
+        "0.",
+        "Một Future debug object thay vì42.",
+        "Tự gọi HTTP."
+      ],
+      "correct": 0,
+      "explanation": "Runtime block_on drive async computation trong RAM."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Await async helper",
+      "question": "Chương trình in gì?",
+      "code": "async fn inc(n:i32)->i32{n+1}\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{println!(\"{}\",inc(2).await);});}\n",
+      "options": [
+        "Compiler cấm async fn không dùng network.",
+        "3.",
+        "2.",
+        "Một JoinError."
+      ],
+      "correct": 1,
+      "explanation": "await lấy Output của helper."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Future body laziness",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let calls=std::cell::Cell::new(0);let future=async{calls.set(1);7};println!(\"{}\",calls.get());let value=future.await;println!(\"{} {value}\",calls.get());});}\n",
+      "options": [
+        "0 rồi0 7.",
+        "Async block chạy ngay hết khi tạo.",
+        "0 rồi1 7 trên hai dòng.",
+        "1 rồi1 7."
+      ],
+      "correct": 2,
+      "explanation": "Body chưa poll trước lần await, Cell ở main future không được spawn qua Send boundary."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Spawn join output",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let h=tokio::spawn(async{7});println!(\"{}\",h.await.unwrap());});}\n",
+      "options": [
+        "0.",
+        "Một HTTP status.",
+        "spawn không chạy được trên current_thread.",
+        "7."
+      ],
+      "correct": 3,
+      "explanation": "Task được drive và join trong cùng runtime."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Operation error versus join",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let h=tokio::spawn(async{Err::<i32,&str>(\"demo\")});println!(\"{}\",matches!(h.await,Ok(Err(\"demo\"))));});}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Inner Err bắt buộc thành JoinError.",
+        "Task phải panic khi trả Result Err."
+      ],
+      "correct": 0,
+      "explanation": "Task có thể complete bình thường với business Err payload."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Outer unwrap leaves Result",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let h=tokio::spawn(async{Ok::<i32,&str>(7)});println!(\"{:?}\",h.await.unwrap());});}\n",
+      "options": [
+        "Compiler cấm nested Result.",
+        "Ok(7).",
+        "7 không còn Result.",
+        "JoinError."
+      ],
+      "correct": 1,
+      "explanation": "h.await.unwrap lấy T, ở đây T là Result<i32, &str>."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Tasks started before joining",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let(tx,rx)=tokio::sync::oneshot::channel();let first=tokio::spawn(async move{rx.await.unwrap();1});let second=tokio::spawn(async move{tx.send(()).unwrap();2});println!(\"{} {}\",first.await.unwrap(),second.await.unwrap());});}\n",
+      "options": [
+        "2 1 luôn theo completion order.",
+        "Không có runtime nào drive oneshot.",
+        "1 2.",
+        "Deadlock vì await first ngăn second task chạy."
+      ],
+      "correct": 2,
+      "explanation": "First có thể chờ second gửi; await nhường runtime để task khác tiến hành."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Handle vector order",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let mut handles=Vec::new();for id in [1,2]{handles.push(tokio::spawn(async move{id*2}));}let mut out=Vec::new();for h in handles{out.push(h.await.unwrap());}println!(\"{out:?}\");});}\n",
+      "options": [
+        "Bắt buộc [4, 2].",
+        "Một thứ tự bất định dù join theo vector.",
+        "spawn tự sort handles.",
+        "[2, 4]."
+      ],
+      "correct": 3,
+      "explanation": "Output được push theo handles order, không assertion về thời điểm task hoàn tất."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cooperative yield then join",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let h=tokio::spawn(async{tokio::task::yield_now().await;7});println!(\"{}\",h.await.unwrap());});}\n",
+      "options": [
+        "7.",
+        "0.",
+        "Yield tự hủy task.",
+        "Một thứ tự khác nhau của số7."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ kiểm kết quả sau join, không hứa fairness/ordering của yield."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Abort pending task",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let h=tokio::spawn(std::future::pending::<i32>());h.abort();let e=h.await.unwrap_err();println!(\"{}\",e.is_cancelled());});}\n",
+      "options": [
+        "abort tự trả i32 bằng0.",
+        "true.",
+        "false.",
+        "Pending task không bao giờ cancel được."
+      ],
+      "correct": 1,
+      "explanation": "Task chưa có kết quả, abort rồi await xác nhận cancellation trong fixture current_thread."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Timeout pending future",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let result=tokio::time::timeout(std::time::Duration::ZERO,std::future::pending::<()>()).await;println!(\"{}\",result.is_err());});}\n",
+      "options": [
+        "Pending tự trảOk ngay.",
+        "Timeout luôn kill OS thread.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Time driver bật; timeout kết thúc việc chờ pending future hữu hạn."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Timeout ready future",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let result=tokio::time::timeout(std::time::Duration::from_secs(3600),async{5}).await;println!(\"{}\",result.unwrap());});}\n",
+      "options": [
+        "Timeout error bắt buộc dù futureReady.",
+        "0.",
+        "Một task riêng tự được spawn.",
+        "5."
+      ],
+      "correct": 3,
+      "explanation": "Ready future hoàn tất trước budget1h, không sleep1h."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Oneshot buffered message",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let(tx,rx)=tokio::sync::oneshot::channel();tx.send(42).unwrap();println!(\"{}\",rx.await.unwrap());});}\n",
+      "options": [
+        "42.",
+        "0.",
+        "None bắt buộc vì send trước await.",
+        "Channel tự gọi network."
+      ],
+      "correct": 0,
+      "explanation": "Oneshot truyền một giá trị trong RAM."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Bounded channel drain",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let(tx,mut rx)=tokio::sync::mpsc::channel(2);tx.send(1).await.unwrap();tx.send(2).await.unwrap();drop(tx);println!(\"{:?} {:?} {:?}\",rx.recv().await,rx.recv().await,rx.recv().await);});}\n",
+      "options": [
+        "Receiver tự block mãi sau drop sender.",
+        "Some(1) Some(2) None.",
+        "None None None.",
+        "Some(2) Some(1) None."
+      ],
+      "correct": 1,
+      "explanation": "Hai messages gửi tuần tự rồi last sender drop, receiver drain tới None."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Semaphore permit lifetime",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let s=tokio::sync::Semaphore::new(1);let permit=s.acquire().await.unwrap();print!(\"{} \",s.available_permits());drop(permit);println!(\"{}\",s.available_permits());});}\n",
+      "options": [
+        "0 0.",
+        "Drop permit không bao giờ trả lại permit.",
+        "0 1.",
+        "1 1."
+      ],
+      "correct": 2,
+      "explanation": "Acquire lấy một permit, Drop trả lại theo semaphore contract."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Async mutex finite counter",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let value=std::sync::Arc::new(tokio::sync::Mutex::new(0));let mut hs=Vec::new();for _ in 0..2{let v=value.clone();hs.push(tokio::spawn(async move{*v.lock().await+=1;}));}for h in hs{h.await.unwrap();}println!(\"{}\",*value.lock().await);});}\n",
+      "options": [
+        "1.",
+        "0.",
+        "Tokio mutex tự tạo data race dù lock đúng.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "Hai tasks join trước khi đọc counter; không benchmark lock throughput."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "JoinSet drain",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let mut tasks=tokio::task::JoinSet::new();tasks.spawn(async{1});tasks.spawn(async{2});let(mut sum,mut count)=(0,0);while let Some(r)=tasks.join_next().await{sum+=r.unwrap();count+=1;}println!(\"{sum} {count}\");});}\n",
+      "options": [
+        "3 2.",
+        "3 1.",
+        "2 3.",
+        "JoinSet tự return sorted Vec."
+      ],
+      "correct": 0,
+      "explanation": "Thu đủ hai outputs1, 2 rồi drain tới None; không giả completion order."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Drop join handle detaches",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let(tx,rx)=tokio::sync::oneshot::channel();let h=tokio::spawn(async move{tx.send(7).unwrap();});drop(h);println!(\"{}\",rx.await.unwrap());});}\n",
+      "options": [
+        "Task không thể chạy khi handle bị drop.",
+        "7.",
+        "Receiver luôn error vì drop handle abort task.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Oneshot ack giúp đợi detached task thực sự hoàn tất, không để task bị bỏ ở runtime shutdown."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Join error catches task panic",
+      "question": "Chương trình in gì ở stdout khi task panic được join?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let h=tokio::spawn(async{panic!(\"quiz panic\");});let e=h.await.unwrap_err();println!(\"{}\",e.is_panic());});}\n",
+      "options": [
+        "Task panic luôn làm main process abort trong fixture này.",
+        "JoinError tự là business Err.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Task panic được phản ánh qua JoinError; default panic hook vẫn có diagnostic stderr và được ghi riêng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Closed receiver send error",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let rt=tokio::runtime::Builder::new_current_thread().enable_time().build().unwrap();rt.block_on(async{let(tx,rx)=tokio::sync::mpsc::channel(1);drop(rx);println!(\"{}\",tx.send(1).await.is_err());});}\n",
+      "options": [
+        "false.",
+        "Send luôn panic thay vìResult.",
+        "Channel tự mở lại receiver.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "mpsc send trả error khi receiver đã drop."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Source join unwrap scope",
+      "question": "handle.await.unwrap() trong fetch_many unwrap lớp nào?",
+      "options": [
+        "Task completion Result, business Result<User, reqwest::Error> còn được push.",
+        "Luôn unwrap cả hai lớp.",
+        "Chỉ JSON User.id.",
+        "Một Option mà Tokio tự tạo."
+      ],
+      "correct": 0,
+      "explanation": "Vì vậy inner request Err có thể được main match sau đó, nhưng JoinError có thể panic ở unwrap."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Task panic policy",
+      "question": "Nếu một spawned task panic, source fetch_many có xử lý JoinError tường minh không?",
+      "options": [
+        "Chỉ khi ids rỗng.",
+        "Chưa; nó unwrap outer join result.",
+        "Có, mọi errors tự được push theo cùng type.",
+        "Có, reqwestError tự bọc mọi panics."
+      ],
+      "correct": 1,
+      "explanation": "Cần policy cho task failures khác request/decode errors."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Concurrency bound missing",
+      "question": "Với ids rất lớn, fetch_many nguồn có giới hạn số spawned tasks không?",
+      "options": [
+        "Có, Tokio luôn chạy tối đa3tasks tổng cộng.",
+        "Chỉ cần await handles theo loop.",
+        "Chưa; cần backpressure/semaphore/bounded buffering theo yêu cầu.",
+        "Có, Vec tự giới hạn10."
+      ],
+      "correct": 2,
+      "explanation": "Await theo vector không ngăn loop trước đó spawn nhiều tasks."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "HTTP status validation",
+      "question": "Source gọi .json::<User>() sau get có tự gọi error_for_status tường minh chưa?",
+      "options": [
+        "Có, mọi .json tự reject mọi4xx/5xx chỉ vìstatus.",
+        "Có, Deserialize làHTTPstatuschecker.",
+        "Chỉ khi id0.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Theo reqwest docs đã xem, status policy cần được xử lý bằng API thích hợp; chưa chạy reqwest integration."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Status versus JSON",
+      "question": "Response lỗi HTTP có body JSON hợp shapeUser có thể decode được nếu không check status không?",
+      "options": [
+        "Có thể; status và deserialization là hai kiểm tra khác nhau.",
+        "Không, mọi typeddecode tự là2xxvalidator.",
+        "Chỉ cần idu32.",
+        "JSON không được dùng trong errorresponses."
+      ],
+      "correct": 0,
+      "explanation": "Đừng coi decode success là xác nhận HTTP business success."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Client reuse",
+      "question": "Dùng shortcut reqwest::get lặp lại nhiều requests có điểm tối ưu nào cần xem?",
+      "options": [
+        "Chỉ cần thêmasync move.",
+        "Docs ghi shortcut tạo Client nội bộ mỗi lần; nên cân nhắc reuse Client theo workload.",
+        "get tự reuse một globalClient bất biến trong mọi version.",
+        "Mọi Client chỉ dùng được mộtrequest."
+      ],
+      "correct": 1,
+      "explanation": "Không báo speedup số cụ thể hoặc giả đã đo connectionpool."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Explicit timeout contract",
+      "question": "Source có đặt timeout/budget ứng dụng tường minh cho fetch_many không?",
+      "options": [
+        "Có, Vec ids chính làtimeout.",
+        "Chỉ cầnquestion mark.",
+        "Chưa; defaults còn phụ thuộc client/version/config, cần budget rõ theo yêu cầu.",
+        "Có, mọi async fn tự có deadline5s."
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất library default với end-to-end request budget của ứng dụng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "JSON fields validation",
+      "question": "Deserialize User có tự kiểm tra email có format nghiệp vụ hợp lệ không?",
+      "options": [
+        "Có, tênfieldemail tựvalidator.",
+        "Có, mọi String từ JSON là email đúng.",
+        "Chỉ khiHTTP200.",
+        "Không theo struct/source này."
+      ],
+      "correct": 3,
+      "explanation": "Typed decoding không thay domain validation."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Async nonblocking guarantee",
+      "question": "Đặt async trước hàm có tự làm std::thread::sleep hay CPUloop dài không block runtime thread không?",
+      "options": [
+        "Không; body cần dùng operations/phân tách phù hợp.",
+        "Có, compiler tự chuyển mọioperationra threadpool.",
+        "Chỉ vớiRustedition2024.",
+        "Chỉ khiFuture Send."
+      ],
+      "correct": 0,
+      "explanation": "Cooperative scheduling cần tránh blocking không phù hợp trên runtime workers."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Await may be ready",
+      "question": "Mỗi .await có bắt buộc nhường cho task khác không?",
+      "options": [
+        "Chỉtrêncurrent_thread.",
+        "Không; FutureReady có thể tiếp tục ngay, không hứa yield scheduling ở mỗi await.",
+        "Có, mọi await luôn có OS context switch.",
+        "Chỉ nếuFuture trả Result."
+      ],
+      "correct": 1,
+      "explanation": "Không dùng await như fairness contract tuyệt đối."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Spawn Send bound",
+      "question": "Tokio spawn thông thường yêu cầu Future và Output có bounds nào quan trọng?",
+      "options": [
+        "Mọi payload tự được clone nếu khôngSend.",
+        "Chỉ Send cho Output, không choFuture.",
+        "Send và static theo API, kèm Future cho task.",
+        "Luôn Copy và Display."
+      ],
+      "correct": 2,
+      "explanation": "Static bound không có nghĩa task phải sống vĩnh viễn; owned values có thể đáp ứng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Static capture meaning",
+      "question": "Future static có bắt buộc giữ mọi captured value tới process exit không?",
+      "options": [
+        "Có, mọicaptures tựleak.",
+        "Có, static nghĩa task không được join.",
+        "Chỉ nếu cóString.",
+        "Không; không borrow dữ liệu ngắn hạn không phù hợp, values vẫn drop theo task lifetime."
+      ],
+      "correct": 3,
+      "explanation": "Trait lifetime bound khác thời gian thực tế task tồn tại."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Spawn local scope",
+      "question": "spawn_local có tự gọi được ở mọi runtime context mà không setup LocalSet/local runtime phù hợp không?",
+      "options": [
+        "Không; cần đúng API/runtime context và bounds.",
+        "Có, chỉ đổi tênspawn là mọi future đều được.",
+        "Chỉ nếu cóRc.",
+        "Chỉ nếuOutput bool."
+      ],
+      "correct": 0,
+      "explanation": "Không gọi source đã dùng spawn_local; đây là lựa chọn API cần setup riêng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Handle dropping",
+      "question": "Drop JoinHandle có đồng nghĩa task đã cleanup và kết thúc không?",
+      "options": [
+        "Chỉ nếutaskResult.",
+        "Không; handle drop detach, muốn xác nhận completion cần join/ack hoặc cancellation protocol phù hợp.",
+        "Có, mọihandleDrop làabort+join.",
+        "Chỉ nếufetchUser."
+      ],
+      "correct": 1,
+      "explanation": "Không bỏ ownership task lifecycle chỉ vì caller không giữ handle."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Abort race",
+      "question": "Abort một task đã hoàn tất có bảo đảm await luôn JoinError cancelled không?",
+      "options": [
+        "Có, abort rollback được quá khứ.",
+        "Chỉ nếucurrent_thread.",
+        "Không; task có thể đã có kết quả completion bình thường.",
+        "Có, abort luôn xóa kết quả đã xong."
+      ],
+      "correct": 2,
+      "explanation": "Fixture cancellation dùng pending task có protocol rõ thay vì dựa race."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Blocking task cancellation",
+      "question": "Task spawn_blocking đã bắt đầu có bị abort như futurepending thông thường không?",
+      "options": [
+        "Có, runtime kill OS thread ngay.",
+        "Chỉ nếutên thread có tokio.",
+        "Chỉ cầnDropJoinHandle.",
+        "Không theo docs; abort không dừng blocking task đã chạy, cần protocol riêng."
+      ],
+      "correct": 3,
+      "explanation": "Có thể ngăn task chưa bắt đầu trong trường hợp phù hợp, không hứa dừng đã chạy."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Runtime shutdown tasks",
+      "question": "Có nên dựa runtime drop để bảo đảm mọi task hữu ích đã chạy xong không?",
+      "options": [
+        "Không; outstanding tasks có thể bị drop, cần join/drain đúng vòng đời.",
+        "Có, runtime luôn đợi mọi async work vĩnh viễn.",
+        "Chỉ cầnmacro main.",
+        "Chỉ cầnyieldmột lần."
+      ],
+      "correct": 0,
+      "explanation": "Giữ completion evidence riêng, không coi spawn là completion guarantee."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source dependencies setup",
+      "question": "Source imports/macro có đủ thông tin Cargo features/versions để tái lập build đầy đủ chưa?",
+      "options": [
+        "Chỉ cầnmain.rs.",
+        "Chưa; manifest/lock/features và toolchain cần được xác định.",
+        "Có, mọi crate imports tự có trongstd.",
+        "Có, Rust compiler tự tải mới nhất."
+      ],
+      "correct": 1,
+      "explanation": "Task dùng cached pinnedTokio cho fixture riêng, không giả đó là dependency set nguyênsource."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Body memory bound",
+      "question": "Deserialize toàn body có tự giới hạn response size phù hợp app không?",
+      "options": [
+        "Chỉ cầnid u32.",
+        "Chỉ cầnerror_for_status.",
+        "Không theo source; cần size/resource policy nếu dữ liệu không được tin cậy.",
+        "Có, mọi User JSON dưới1KB theo specification."
+      ],
+      "correct": 2,
+      "explanation": "Status/typed decode không thay response resource limits."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Result ordering latency",
+      "question": "Join handles theo input order có thể làm việc xử lý kết quả sớm bị chờ task đầu không?",
+      "options": [
+        "Không, mọi tasks complete cùng lúc.",
+        "Chỉ nếuids được sort.",
+        "Await tự reorder vector.",
+        "Có, dù task sau đã hoàn tất, nếu app muốn completion-order có thể chọn API khác phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Đây là processing order/latency tradeoff, không nghĩa tasks đã chạy tuần tự."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Native future single poll",
+      "question": "Chương trình in gì?",
+      "code": "use std::future::Future;use std::task::{Context,Waker};fn main(){let f=async{7};let mut f=std::pin::pin!(f);let mut cx=Context::from_waker(Waker::noop());println!(\"{:?}\",f.as_mut().poll(&mut cx));}\n",
+      "options": [
+        "Ready(7).",
+        "Pending mãi.",
+        "Compiler cấm poll không có Tokio dùFutuređãReady.",
+        "Tự gọi HTTP."
+      ],
+      "correct": 0,
+      "explanation": "Native std Future luôn-ready có thể được poll bằng Context/Waker hợp lệ; không là executor cho arbitrary I/O."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Drop unpolled future",
+      "question": "Chương trình in gì?",
+      "code": "fn main(){let calls=std::cell::Cell::new(0);let f=async{calls.set(1);};drop(f);println!(\"{}\",calls.get());}\n",
+      "options": [
+        "Compiler cấm async borrow Cell.",
+        "0.",
+        "1.",
+        "Async body luôn chạy trước drop."
+      ],
+      "correct": 1,
+      "explanation": "Future chưa poll nên body không chạy; không có externalruntime trong fixture."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Await outside async context",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn main(){let _=async{7}.await;}\n",
+      "options": [
+        "Có, nếu future Ready.",
+        "Chỉruntimepanic.",
+        "Không; await nằm trong main khôngasync ởđây.",
+        "Có, await tự tạoTokioruntime."
+      ],
+      "correct": 2,
+      "explanation": "Await syntax cần đúng async context, không tự bootstrap executor."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Native async Result propagation",
+      "question": "Chương trình in gì?",
+      "code": "use std::future::Future;use std::task::{Context,Waker};async fn work()->Result<i32,&'static str>{Err(\"bad\")?;Ok(7)}fn main(){let mut f=std::pin::pin!(work());let mut cx=Context::from_waker(Waker::noop());println!(\"{:?}\",f.as_mut().poll(&mut cx));}\n",
+      "options": [
+        "Ready(Ok(7)).",
+        "Panic do ? luônpanic.",
+        "Pending bắt buộc cho cả future.",
+        "Ready(Err(\"bad\"))."
+      ],
+      "correct": 3,
+      "explanation": "? trong asyncbody quyết định OutputResult; poll này dùng future không I/O nên hoàn tất ngay."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Async return type mismatch",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "async fn work()->i32{String::from(\"x\")}fn main(){}\n",
+      "options": [
+        "Không; body async fn cam kết Output i32 nhưng trả String.",
+        "Có, Future tự đổitype lúcawait.",
+        "Có, mọi async fn có Output any.",
+        "Chỉruntimepanic."
+      ],
+      "correct": 0,
+      "explanation": "Async không bỏ kiểm tra type của output."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nested error policy",
+      "question": "Muốn fetch_many không panic vì JoinError và vẫn giữ request errors cần làm gì?",
+      "options": [
+        "Chỉ tăngidsbuffer.",
+        "Thiết kế output/error policy biểu diễn task failure và operation failure, thay outer unwrap bằng xử lý rõ.",
+        "Chỉthêm unwrap nữa và hứa không panic.",
+        "Đổi User Debug thành Clone."
+      ],
+      "correct": 1,
+      "explanation": "Không gộp các lớp failure khác nhau rồi mất thông tin cần cho caller."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cancel detached requests",
+      "question": "Timeout caller có tự abort tất cả tasks đã spawn nếu handles chỉ bị drop không?",
+      "options": [
+        "Chỉ cầnasync move.",
+        "Chỉ cầnResult Err.",
+        "Không; handles drop detach, cần quản lý task cancellation/completion phù hợp.",
+        "Có, mọi task tự gắn với lifetime stack của caller."
+      ],
+      "correct": 2,
+      "explanation": "Dropping one waiting future và stopping independently spawned tasks là hai chuyện khác."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Bounded output versus tasks",
+      "question": "Chỉ giữ vector results tối đa100 có bảo đảm source không spawn hàng triệu tasks trước đó không?",
+      "options": [
+        "Có, Vec results cấm spawn khác.",
+        "Chỉ cầnid u32.",
+        "Chỉ cầncurrent_thread.",
+        "Không; cần giới hạn ở admission/spawn/in-flight work, không chỉ output storage."
+      ],
+      "correct": 3,
+      "explanation": "Resource bound cần đặt đúng stage của pipeline."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "CPU and timeouts",
+      "question": "Tokio timeout có bảo đảm preempt một future chạy CPUloop không yield và return đúng deadline không?",
+      "options": [
+        "Không; cooperative polling cần computation nhường/hoàn tất, nên CPU work phải được thiết kế riêng.",
+        "Có, timer kill OS thread ở deadline.",
+        "Chỉ cầnDuration ZERO.",
+        "Chỉ cầnspawn future."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy loop vô hạn để kiểm tra; không hứa deadline là forced termination."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "HTTP success semantics",
+      "question": "Typed User decode pass sau response lỗi có đủ để coi request nghiệp vụ thành công không?",
+      "options": [
+        "Chỉ cầnkhông có JoinError.",
+        "Không; HTTPstatus, domain data và application policy cần kiểm tra riêng.",
+        "Có, mọi JSON schema đúng là HTTP success.",
+        "Chỉ cầnname String."
+      ],
+      "correct": 1,
+      "explanation": "Giữ failure boundaries rõ trong code và quiz."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Join versus parallel threads",
+      "question": "Ba spawned tasks có chứng minh đang dùng đúng ba OS threads và speedup3x không?",
+      "options": [
+        "Chỉ nếuidssố1, 2, 3.",
+        "Chỉ cầnawait.",
+        "Không; runtime flavor, scheduling, I/O và workload quyết định, native fixtures không đo speedup.",
+        "Có, Tokio bắt buộc một task trên một thread."
+      ],
+      "correct": 2,
+      "explanation": "Task concurrency khác thread mapping và performance measurements."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Client timeout budget",
+      "question": "Nếu mỗi attempt timeout5s và retry3lần, có tự bảo đảm tổng request dưới5s không?",
+      "options": [
+        "Có, mọilocal timeouts tự chia sẻ5s.",
+        "Chỉ cầnClient reuse.",
+        "Chỉ cầnerror_for_status.",
+        "Không; cần end-to-end budget gồm retries/backoff/cancellation theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Attempt budget khác tổng workflow budget."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Cancellation safety",
+      "question": "Hủy một future giữa await có tự rollback side effects đã xảy ra không?",
+      "options": [
+        "Không; cần cancellation-safety/idempotency/transaction semantics cho operation cụ thể.",
+        "Có, mọi Rust future là transaction.",
+        "Chỉ cầnDrop guard.",
+        "Chỉ cầnResult Err."
+      ],
+      "correct": 0,
+      "explanation": "Không suy memory cleanup thành rollback business actions."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Resource shutdown acknowledgement",
+      "question": "Gọi abort có đủ để báo task destructors đã xong và giải phóng mọi resource theo yêu cầu chưa?",
+      "options": [
+        "Chỉ cầnDrop handle.",
+        "Chưa; cần await/join hoặc completion protocol phù hợp, đồng thời xét task type.",
+        "Có, abort luôn block tới khi mọi job xong.",
+        "Chỉ cầngọi is_cancelled mà chưa await handle."
+      ],
+      "correct": 1,
+      "explanation": "Signal/request cancellation và observed completion không đồng nhất."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Serde domain checks",
+      "question": "User{id, name, email} deserialize có đảm bảo id đúng entity được request và email đãverify không?",
+      "options": [
+        "Chỉ nếuHTTP200.",
+        "Chỉ cầnDebug.",
+        "Không; đó là domain assertions khác với field types.",
+        "Có, serde tự gọi provider để verify."
+      ],
+      "correct": 2,
+      "explanation": "Có thể cần kiểm tra consistency/provenance theo API contract."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Bounded network integration proof",
+      "question": "Actual Tokio channel/runtime tests có chứng minh reqwest/TLS/provider integration của source đã pass không?",
+      "options": [
+        "Có, Tokio runtime bằng mọi HTTP client.",
+        "Chỉ cầnlock Tokio1.52.3.",
+        "Chỉ cầnprobe in42.",
+        "Không; không thực thi reqwest hoặc gọi website trong fixtures."
+      ],
+      "correct": 3,
+      "explanation": "Báo đúng library/API đã chạy và scope source/docs-only còn lại."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Offline cache provenance",
+      "question": "Để claim fixture dùng Tokio offline cần giữ bằng chứng gì?",
+      "options": [
+        "Manifest/lock/version/features/flags/source và build/run logs phù hợp, không chỉ folder có tênTokio.",
+        "Chỉ comment no-fetch.",
+        "Chỉ version Rust.",
+        "Chỉ đổi tên report thành passed."
+      ],
+      "correct": 0,
+      "explanation": "Local cached dependency execution khác downloaded/generated content hoặc giả lập semantics."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "LocalSet not universal fix",
+      "question": "Dùng LocalSet cho non-Send tasks có tự giải quyết data races/borrows/resource bounds mọi phần app không?",
+      "options": [
+        "Chỉ cầnclone nhiều.",
+        "Không; nó thay scheduling/bounds cho scope đó, không thay invariants khác.",
+        "Có, mọi Rc code tự an toàn qua threads.",
+        "Chỉ cầnstatic annotations."
+      ],
+      "correct": 1,
+      "explanation": "Không dùng tên runtime feature để hứa toàn bộ correctness."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Ready future executor scope",
+      "question": "Một helper poll một lần với noopWaker có là executor hoàn chỉnh cho pending I/O futures không?",
+      "options": [
+        "Chỉ cầnpin!.",
+        "Chỉ cầnasync.",
+        "Không; future Pending cần wake/scheduling/driver đúng contract, fixture chỉ chọn luôn-ready futures.",
+        "Có, mọi future hoàn tất đúng một poll."
+      ],
+      "correct": 2,
+      "explanation": "Không busy-loop hoặc poll tùy tiện để giả asyncruntime integration."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Exercise completion",
+      "question": "Source đã có web scraper đầy đủ concurrency bound và rate limiting theo bài tập chưa?",
+      "options": [
+        "Có, mọi spawn tự rate-limit.",
+        "Chỉ cầnVec results.",
+        "Chỉ cần80câu.",
+        "Chưa; source demo fetch users chưa implement các giới hạn đó đầy đủ."
+      ],
+      "correct": 3,
+      "explanation": "Không coi mục tiêu bài tập như feature đã hoàn thành hoặc chịu tải đã đo."
+    }
+  ]
+}

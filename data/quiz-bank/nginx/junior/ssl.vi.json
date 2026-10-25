@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "nginx",
+  "level": "junior",
+  "lesson": "ssl",
+  "language": "vi",
+  "sourceHash": "a3159029b5e1dc82757bd6479619d3df34b899460686ac8f129c31a9a6ceb10c",
+  "status": "approved",
+  "review": "Tự soạn theo TLS/headers/redirect source và nginx.org SSL/HTTP2/headers docs. listen http2 legacy deprecated, http2 on có từ1.25.1; modules/OpenSSL phải tương thích. Certbot command comment không là certificate đã cấp/renewal. HSTS chỉ max-age,header always riêng,cipher APIs theo TLS/OpenSSL version. Không đọc key/cert thật,chạy certbot/Nginx hay request TLS.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "TLS purpose",
+      "question": "HTTPS bổ sung lớp bảo vệ chính nào so với HTTP plaintext?",
+      "options": [
+        "Mã hóa và xác thực kênh theo TLS/certificate contract",
+        "Tự kiểm quyền từng tài nguyên",
+        "Tự sửa mọi lỗi ứng dụng",
+        "Tự loại nhu cầu DNS"
+      ],
+      "correct": 0,
+      "explanation": "Transport security không thay nghiệp vụ/auth của ứng dụng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "HTTPS listener",
+      "question": "Server HTTPS của source listen port nào?",
+      "options": [
+        "9113",
+        "443",
+        "80",
+        "3000"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn có server 80 riêng để redirect."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "SSL listen parameter",
+      "question": "Tham số ssl trong listen có ý nghĩa gì?",
+      "options": [
+        "Chỉ bật compression",
+        "Chỉ chọn backend",
+        "Cấu hình TLS cho các kết nối listener tương ứng",
+        "Chỉ đặt tên log"
+      ],
+      "correct": 2,
+      "explanation": "Build/library và certificate configuration phải phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Server name",
+      "question": "server_name của HTTPS block được viết là gì?",
+      "options": [
+        "example.com www.example.com",
+        "api.example.com",
+        "localhost:3000",
+        "example.com"
+      ],
+      "correct": 3,
+      "explanation": "Comment certbot có hai tên nhưng block này chỉ ghi một tên."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Certificate file",
+      "question": "ssl_certificate trỏ tới file nào trong ví dụ?",
+      "options": [
+        "fullchain.pem",
+        "privkey.pem",
+        "access.log",
+        "server.js"
+      ],
+      "correct": 0,
+      "explanation": "Nội dung certificate/chain khác private key."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Private key file",
+      "question": "ssl_certificate_key trỏ tới file nào?",
+      "options": [
+        "nginx.pid",
+        "privkey.pem",
+        "fullchain.pem",
+        "index.html"
+      ],
+      "correct": 1,
+      "explanation": "Private key là dữ liệu nhạy cảm cần quyền và lifecycle phù hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Enabled protocol values",
+      "question": "ssl_protocols trong source liệt kê gì?",
+      "options": [
+        "SSLv2 và SSLv3",
+        "Chỉ HTTP/2",
+        "TLSv1.2 và TLSv1.3",
+        "TLSv1.0 và TLSv1.1"
+      ],
+      "correct": 2,
+      "explanation": "Protocol TLS khác application HTTP version."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Cipher directive",
+      "question": "Directive nào chứa hai tên cipher suite của source?",
+      "options": [
+        "ssl_protocols",
+        "server_name",
+        "proxy_pass",
+        "ssl_ciphers"
+      ],
+      "correct": 3,
+      "explanation": "Cách áp dụng còn phụ thuộc phiên bản TLS/library API."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Cipher preference",
+      "question": "ssl_prefer_server_ciphers được đặt thành gì?",
+      "options": [
+        "off",
+        "on",
+        "TLSv1.3",
+        "always"
+      ],
+      "correct": 0,
+      "explanation": "Không suy từ đó mọi client đều đàm phán cùng một cipher."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "HSTS header",
+      "question": "Header nào được thêm với max-age=63072000?",
+      "options": [
+        "Content-Encoding",
+        "Strict-Transport-Security",
+        "Cache-Control",
+        "X-Forwarded-Proto"
+      ],
+      "correct": 1,
+      "explanation": "HSTS mô tả policy dùng HTTPS phía client."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "HSTS always modifier",
+      "question": "Header HSTS trong source có modifier nào?",
+      "options": [
+        "preload",
+        "includeSubDomains",
+        "always",
+        "immutable"
+      ],
+      "correct": 2,
+      "explanation": "Source không thêm hai option cuối trong giá trị header."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "MIME sniff header",
+      "question": "X-Content-Type-Options được đặt giá trị gì?",
+      "options": [
+        "DENY",
+        "same-origin",
+        "upgrade",
+        "nosniff"
+      ],
+      "correct": 3,
+      "explanation": "Cần content type đúng ngoài header này."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Frame header",
+      "question": "X-Frame-Options được đặt giá trị gì?",
+      "options": [
+        "DENY",
+        "SAMEORIGIN",
+        "nosniff",
+        "max-age=0"
+      ],
+      "correct": 0,
+      "explanation": "Đây là chính sách chống nhúng frame theo semantics header."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Backend transport",
+      "question": "HTTPS location / proxy tới scheme/backend nào?",
+      "options": [
+        "Một static directory",
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "http://example.com:80"
+      ],
+      "correct": 1,
+      "explanation": "Client TLS không tự mã hóa hop HTTP upstream này."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Redirect status",
+      "question": "Server 80 dùng status redirect nào?",
+      "options": [
+        "404",
+        "101",
+        "301",
+        "200"
+      ],
+      "correct": 2,
+      "explanation": "Method/response semantics cần phù hợp yêu cầu ứng dụng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Redirect target scheme",
+      "question": "Return 301 trỏ tới scheme nào?",
+      "options": [
+        "http",
+        "ws",
+        "file",
+        "https"
+      ],
+      "correct": 3,
+      "explanation": "Source xây URL bằng server_name và request_uri."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Request target variable",
+      "question": "Biến nào giúp giữ path/query khi xây redirect source?",
+      "options": [
+        "$request_uri",
+        "$document_root",
+        "$remote_addr",
+        "$ssl_cipher"
+      ],
+      "correct": 0,
+      "explanation": "Nó khác filesystem path hay chỉ tên server."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Certificate automation tool",
+      "question": "Comment minh họa dùng công cụ nào lấy certificate?",
+      "options": [
+        "OpenSSH",
+        "Certbot",
+        "Gunicorn",
+        "systemctl"
+      ],
+      "correct": 1,
+      "explanation": "Không có bằng chứng lệnh đã được chạy trong bài."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Names requested in comment",
+      "question": "Certbot comment yêu cầu những domain nào?",
+      "options": [
+        "Mọi subdomain wildcard",
+        "localhost và 127.0.0.1",
+        "example.com và www.example.com",
+        "Chỉ api.example.com"
+      ],
+      "correct": 2,
+      "explanation": "Certificate coverage thực cần kiểm SAN/certificate được cấp."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "HTTP2 source syntax",
+      "question": "Source bật HTTP/2 qua hình thức nào?",
+      "options": [
+        "Directive http2 on riêng đã viết",
+        "Header Upgrade h2c đã viết",
+        "proxy_http_version 2 đã viết",
+        "Tham số http2 trên listen 443"
+      ],
+      "correct": 3,
+      "explanation": "Đó là cú pháp legacy cần đánh giá theo phiên bản Nginx."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Certificate versus key mapping",
+      "question": "Đổi nhầm fullchain.pem và privkey.pem có thể gây gì?",
+      "options": [
+        "Lỗi đọc/khớp certificate-key trong cấu hình TLS",
+        "Chỉ đổi thứ tự cipher",
+        "Chỉ tắt HTTP/2",
+        "Tự sinh key mới tương ứng"
+      ],
+      "correct": 0,
+      "explanation": "Hai loại file có vai trò/format khác nhau."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Certificate validity dimensions",
+      "question": "Chỉ thấy đường dẫn fullchain có đủ xác nhận certificate còn hạn và đúng hostname không?",
+      "options": [
+        "Rồi, port 443 gia hạn certificate",
+        "Chưa, cần kiểm certificate/chain/hostname/validity thực",
+        "Rồi, tên fullchain bảo đảm mọi domain",
+        "Rồi, server_name sửa SAN tự động"
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm filename với dữ liệu/chứng thực hợp lệ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Client hostname validation",
+      "question": "Certificate chỉ cho example.com có tự hợp lệ cho www.example.com không nếu không coverage tương ứng?",
+      "options": [
+        "Có, server_name tự sửa certificate",
+        "Có, HTTP 301 làm handshake bỏ qua hostname",
+        "Không",
+        "Có, www luôn được mọi certificate bao phủ"
+      ],
+      "correct": 2,
+      "explanation": "Hostname coverage cần phù hợp certificate semantics."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "HTTP redirect URI example",
+      "question": "Nếu request chọn HTTP block với URI /p?a=1, target source có ý định gì?",
+      "options": [
+        "https://example.com/p bỏ query luôn",
+        "http://example.com/p?a=1",
+        "https://example.com/var/www/p",
+        "https://example.com/p?a=1"
+      ],
+      "correct": 3,
+      "explanation": "server_name cố định và request_uri giữ request target tương ứng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Canonical host choice",
+      "question": "Dùng $server_name trong redirect có điểm khác $host ở ý định nào?",
+      "options": [
+        "Chọn tên server được cấu hình thay vì luôn phản chiếu host request",
+        "Tự chọn port backend",
+        "Tự loại query string",
+        "Tự xác thực user"
+      ],
+      "correct": 0,
+      "explanation": "Cần thiết kế canonical host và validation phù hợp."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "HSTS no subdomain flag",
+      "question": "Header chỉ max-age có tự bật includeSubDomains không?",
+      "options": [
+        "Có, always đồng nghĩa includeSubDomains",
+        "Không",
+        "Có, max-age lớn tự bật",
+        "Có, www trong certbot command tự bật"
+      ],
+      "correct": 1,
+      "explanation": "always là điều kiện thêm header theo status, không option HSTS subdomain."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "HSTS no preload flag",
+      "question": "Source có chứng minh domain đã vào preload list chưa?",
+      "options": [
+        "Có, port 443 đưa vào preload",
+        "Có, X-Frame-Options làm điều đó",
+        "Không",
+        "Có, thời hạn hai năm là đăng ký tự động"
+      ],
+      "correct": 2,
+      "explanation": "Preload có policy/quy trình ngoài đoạn cấu hình này."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Header always scope",
+      "question": "always trên add_header giúp gì theo module?",
+      "options": [
+        "Tự kế thừa mọi header qua mọi context",
+        "Tự làm TLS luôn thành công",
+        "Tự gửi header qua mọi proxy bên ngoài",
+        "Thêm header bất kể response status theo semantics directive"
+      ],
+      "correct": 3,
+      "explanation": "Nó không thay TLS/certificate hay quyền truy cập."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Other headers status",
+      "question": "nosniff và X-Frame-Options không có always; có nên bảo đảm chúng xuất hiện trên mọi error status chỉ từ source không?",
+      "options": [
+        "Không",
+        "Có, add_header luôn mọi status",
+        "Có, HSTS always tự áp cho mọi dòng",
+        "Có, HTTPS bỏ điều kiện status"
+      ],
+      "correct": 0,
+      "explanation": "Cần xem quy tắc add_header/effective config và status thực."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Header inheritance default",
+      "question": "Location con thêm add_header riêng có thể ảnh hưởng gì nếu dùng inheritance mặc định?",
+      "options": [
+        "Chỉ đổi cipher preference",
+        "Không kế thừa nhóm add_header mức trên như merge từng dòng tự động",
+        "Luôn merge mọi header từ server",
+        "Chỉ bỏ private key"
+      ],
+      "correct": 1,
+      "explanation": "Cần nêu context/version nếu thay quy tắc kế thừa."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "New inheritance API",
+      "question": "add_header_inherit merge có thể được dùng ở mọi Nginx cũ không?",
+      "options": [
+        "Có, là syntax TLS 1.2",
+        "Có, OpenSSL tự cung cấp",
+        "Không, directive xuất hiện từ 1.29.3",
+        "Có, có từ mọi phiên bản"
+      ],
+      "correct": 2,
+      "explanation": "Không áp cú pháp docs mới mù quáng lên binary cũ."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "HTTP2 modern directive",
+      "question": "Theo docs, http2 on xuất hiện từ phiên bản Nginx nào?",
+      "options": [
+        "1.0.0",
+        "0.8.21",
+        "1.13.0",
+        "1.25.1"
+      ],
+      "correct": 3,
+      "explanation": "listen http2 legacy được đánh dấu deprecated."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Deprecated versus removed",
+      "question": "listen 443 ssl http2 bị deprecated có đồng nghĩa không chạy trong mọi bản đang dùng không?",
+      "options": [
+        "Không, cần xét version/build và migration",
+        "Có, mọi binary cũ cũng không từng hiểu nó",
+        "Có, HTTP/2 luôn bị cấm",
+        "Có, TLS 1.3 thay HTTP/2"
+      ],
+      "correct": 0,
+      "explanation": "Deprecation và removal/support của từng bản khác nhau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Module support",
+      "question": "Viết http2 on có tự cài module HTTP/2 cho binary không?",
+      "options": [
+        "Có, proxy_pass tạo module",
+        "Không",
+        "Có, config tự tải module từ registry",
+        "Có, certificate chứa module"
+      ],
+      "correct": 1,
+      "explanation": "Cần build/module support phù hợp."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "TLS library support",
+      "question": "Khai TLSv1.3 có tự nâng library TLS của server không?",
+      "options": [
+        "Có, Certbot luôn thay Nginx binary",
+        "Có, always cập nhật dependency",
+        "Không",
+        "Có, ssl_protocols tự cập nhật OpenSSL"
+      ],
+      "correct": 2,
+      "explanation": "Directive yêu cầu môi trường hỗ trợ; không tự cài runtime."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Client protocol compatibility",
+      "question": "Client chỉ hỗ trợ TLSv1.0 có chắc kết nối được cấu hình chỉ TLS 1.2/1.3 không?",
+      "options": [
+        "Có, Nginx tự bật TLS 1.0 theo client",
+        "Có, HTTP 301 bỏ TLS version",
+        "Có, cipher preference off bật protocol cũ",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Negotiation phải có protocol/cipher tương thích được cho phép."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "HTTP version distinct",
+      "question": "Bật HTTP/2 có đồng nghĩa dùng TLSv1.3 duy nhất không?",
+      "options": [
+        "Không",
+        "Có, HTTP/2 chính là TLS 1.3",
+        "Có, hai phiên bản là cùng chuẩn",
+        "Có, ssl_ciphers xóa TLS 1.2"
+      ],
+      "correct": 0,
+      "explanation": "TLS version và HTTP version là các lớp khác nhau."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Private key permissions",
+      "question": "Private key nên có access policy nào?",
+      "options": [
+        "Ghi vào access log",
+        "Chỉ các thành phần cần thiết theo vận hành được đọc",
+        "Công khai cùng static assets",
+        "Gửi xuống browser để xác minh"
+      ],
+      "correct": 1,
+      "explanation": "Certificate public và key private cần được phân biệt."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Certificate renewal gap",
+      "question": "Comment certbot có tự chứng minh renewal đã được lập lịch/kiểm thành công không?",
+      "options": [
+        "Có, Nginx tự gia hạn mọi certificate",
+        "Có, HSTS gia hạn certificate",
+        "Không",
+        "Có, comment là timer"
+      ],
+      "correct": 2,
+      "explanation": "Cần lifecycle cấp/gia hạn/reload phù hợp và kiểm expiry."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Backend encryption limit",
+      "question": "Client HTTPS tới Nginx rồi HTTP tới Node có phải mọi hop đều TLS không?",
+      "options": [
+        "Có, certificate đầu tiên mã hóa mọi hop",
+        "Có, proxy_pass tự đổi scheme",
+        "Có, HSTS áp cho database",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần đánh giá từng hop và trust boundary của hạ tầng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Cipher API distinction",
+      "question": "Theo OpenSSL3, API cipher list cho TLS 1.2 trở xuống có tự thay TLS 1.3 ciphersuites không?",
+      "options": [
+        "Không, TLS 1.3 có cơ chế ciphersuites riêng",
+        "Có, mọi phiên bản dùng cùng danh sách",
+        "Có, nếu có chuỗi ECDHE trong tên",
+        "Có, HTTP/2 tự chọn cipherlist"
+      ],
+      "correct": 0,
+      "explanation": "Không coi ssl_ciphers của mẫu là chính sách duy nhất cho mọi TLS version."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Certificate chain purpose",
+      "question": "File fullchain thường phục vụ mục đích gì?",
+      "options": [
+        "Mật khẩu proxy upstream",
+        "Certificate server cùng chain cần thiết theo cấu hình",
+        "Private key của mọi client",
+        "Danh sách HTTP headers"
+      ],
+      "correct": 1,
+      "explanation": "Cần đúng nội dung/format, không chỉ tên file."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Validity clock",
+      "question": "Certificate nhìn như hết hạn/chưa hiệu lực có thể cần kiểm thông tin nào?",
+      "options": [
+        "Chỉ server_name trong HTML",
+        "Chỉ giá trị DENY",
+        "Validity period và clock của các thành phần xác minh phù hợp",
+        "Chỉ port backend"
+      ],
+      "correct": 2,
+      "explanation": "Thời gian là một phần của certificate validation."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "SNI selection",
+      "question": "Khi nhiều TLS virtual hosts cùng listener, client SNI có thể ảnh hưởng gì?",
+      "options": [
+        "Tự cấp certificate mới",
+        "Tự đổi mọi Host header",
+        "Tự xác thực user ứng dụng",
+        "Lựa chọn cấu hình/certificate trong handshake theo server setup"
+      ],
+      "correct": 3,
+      "explanation": "TLS selection và HTTP routing liên quan nhưng không cùng một bước."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Domain configuration gap",
+      "question": "Certbot comment có www nhưng server_name block không ghi www; có đủ chứng minh mọi request www vào đúng virtual host không?",
+      "options": [
+        "Chưa, cần xem DNS/cert coverage và selection/config thực",
+        "Rồi, comment tự thêm server_name",
+        "Rồi, certificate thay URL config",
+        "Rồi, www luôn alias trong mọi Nginx"
+      ],
+      "correct": 0,
+      "explanation": "Không mặc định default-server behavior là policy mong muốn."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Redirect method semantics",
+      "question": "Nếu request ghi phải giữ method/body qua redirect, chọn status nên dựa gì?",
+      "options": [
+        "Chỉ tên fullchain",
+        "Semantics status và client/hợp đồng ứng dụng, không mặc định 301 giữ mọi POST",
+        "Chỉ màu cảnh báo browser",
+        "Chỉ số bit private key"
+      ],
+      "correct": 1,
+      "explanation": "Permanent redirect và bảo toàn method là các khía cạnh cần xem riêng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Frame policy scope",
+      "question": "X-Frame-Options DENY có tự chống mọi kiểu XSS trong nội dung trang không?",
+      "options": [
+        "Có, mọi HTML được sanitize",
+        "Có, TLS tự xóa script",
+        "Không, nó phục vụ frame embedding policy",
+        "Có, mọi script đều bị tắt"
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm một header với toàn bộ bảo vệ nội dung."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Nosniff MIME correctness",
+      "question": "Có nosniff nhưng server trả sai Content-Type cho JavaScript; cần xem gì?",
+      "options": [
+        "Tăng HSTS để JavaScript được parse",
+        "Đổi certificate SAN",
+        "Bật SSLv3",
+        "Content-Type đúng và serving contract, không dùng nosniff thay MIME config"
+      ],
+      "correct": 3,
+      "explanation": "Header bảo vệ không tự sửa kiểu nội dung đã trả."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "HSTS secure receipt",
+      "question": "Header HSTS gửi qua HTTP plaintext có nên được coi là browser đã thiết lập policy tin cậy như HTTPS hợp lệ không?",
+      "options": [
+        "Không",
+        "Có, mọi transport đều như nhau",
+        "Có, status 301 là chữ ký TLS",
+        "Có, max-age lớn bỏ qua certificate"
+      ],
+      "correct": 0,
+      "explanation": "Cần tuân semantics HSTS và kênh nhận policy."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Certificate issuance prerequisites",
+      "question": "Có command certbot comment có chứng minh DNS/challenge/account/cấp certificate đã thành công chưa?",
+      "options": [
+        "Có, tên file fullchain là chứng nhận",
+        "Không",
+        "Có, ghi command tạo file ngay",
+        "Có, listen 443 chứng minh CA đã cấp"
+      ],
+      "correct": 1,
+      "explanation": "Không báo cáo side effect chỉ từ hướng dẫn text."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Renewed file versus process",
+      "question": "File certificate đổi trên disk có luôn chứng minh worker đang dùng ngay certificate mới không?",
+      "options": [
+        "Có, HSTS ép reload server",
+        "Có, DNS TTL nạp certificate",
+        "Không, phải xét cơ chế nạp/reload certificate thực",
+        "Có, worker luôn poll mọi file mỗi byte"
+      ],
+      "correct": 2,
+      "explanation": "Lifecycle artifact và process sử dụng artifact cần được kiểm."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Expiry monitoring",
+      "question": "Renewal automation có nên được theo dõi expiry/lỗi và kết quả phục vụ không?",
+      "options": [
+        "Không, mọi scheduler luôn thành công",
+        "Không, Nginx không bao giờ giữ certificate cũ",
+        "Không, HTTPS tự bỏ expiry",
+        "Có, job tồn tại chưa chứng minh certificate mới được phục vụ đúng"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra phải gắn với certificate thực được client nhận."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Key certificate pairing",
+      "question": "Hai file certificate/key đều tồn tại có đủ chứng minh chúng là cặp phù hợp không?",
+      "options": [
+        "Không",
+        "Có, cùng thư mục là đủ",
+        "Có, tên privkey.pem luôn khớp",
+        "Có, HTTP/2 tự ghép lại"
+      ],
+      "correct": 0,
+      "explanation": "Cần đúng dữ liệu/format/keypair theo TLS configuration."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Secure startup validation",
+      "question": "nginx -t hữu ích nhưng có thay client handshake/chain/hostname checks không?",
+      "options": [
+        "Có, kiểm syntax là network test",
+        "Không",
+        "Có, nó gọi mọi browser thật",
+        "Có, parse config xác minh mọi CA"
+      ],
+      "correct": 1,
+      "explanation": "Các lớp validation khác nhau có phạm vi riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Backend HTTPS perception",
+      "question": "Nginx terminate TLS nhưng source chưa set forwarded scheme; backend có chắc biết client ban đầu HTTPS không?",
+      "options": [
+        "Có, file certificate được gửi tới Node",
+        "Có, HSTS là request header",
+        "Không, cần forwarding/trust contract phù hợp",
+        "Có, mọi TCP peer biết TLS ở hop trước"
+      ],
+      "correct": 2,
+      "explanation": "Thông tin scheme qua proxy cần được phối hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "HSTS removal timing",
+      "question": "Ngừng gửi HSTS có tự làm mọi browser quên policy ngay không?",
+      "options": [
+        "Có, một response không header xóa ngay",
+        "Có, restart Nginx reset mọi browser",
+        "Có, clear cookie xóa HSTS",
+        "Không, policy đã nhớ có lifecycle riêng"
+      ],
+      "correct": 3,
+      "explanation": "Rollout/rollback cần hiểu trạng thái client."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Certificate public data",
+      "question": "Certificate public có phải private key cần browser dùng để giải mã mọi kết nối không?",
+      "options": [
+        "Không",
+        "Có, browser cần nhận private keyserver",
+        "Có, public certificate chứa plaintext password",
+        "Có, fullchain là secret key"
+      ],
+      "correct": 0,
+      "explanation": "Private key phải được giữ bí mật phía có thẩm quyền."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Backend authentication boundary",
+      "question": "Một HTTPS connection hợp lệ có tự cấp quyền xem mọi Post của user khác không?",
+      "options": [
+        "Có, DENY kiểm owner",
+        "Không",
+        "Có, certificate CA là permission admin",
+        "Có, port 443 bypass auth"
+      ],
+      "correct": 1,
+      "explanation": "Transport trust và resource authorization là hai lớp."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Header effective config test",
+      "question": "Muốn biết security headers có trên 404/500 của site không, nên kiểm gì?",
+      "options": [
+        "Chỉ port 443",
+        "Chỉ cipherlist",
+        "Response status cụ thể và effective add_header config/version",
+        "Chỉ tên file config"
+      ],
+      "correct": 2,
+      "explanation": "Không suy mọi status mang cùng header chỉ từ một response 200."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Legitimate framing requirement",
+      "question": "Nếu sản phẩm cần nhúng trang trong frame tin cậy, DENY có phù hợp mọi trường hợp không?",
+      "options": [
+        "Có, DENY luôn cho mọi trusted frame",
+        "Có, certificate SAN whitelist frame",
+        "Có, ssl_protocols quyết định frame",
+        "Không, cần chính sách framing theo yêu cầu và cơ chế tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Security policy phải đáp ứng use case và trust boundary thực."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Certificate routing mismatch",
+      "question": "example.com chạy đúng nhưng www báo hostname mismatch dù có certbot comment cho hai tên; cần kiểm gì?",
+      "options": [
+        "Certificate thực được phục vụ, SAN/SNI/DNS và virtual host selection",
+        "Chỉ thêm HSTS luôn",
+        "Chỉ đổi proxy_read_timeout",
+        "Chỉ xóa X-Frame-Options"
+      ],
+      "correct": 0,
+      "explanation": "Comment không chứng minh certificate đã cấp/nạp hoặc request chọn đúng server."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Key rotation startup failure",
+      "question": "Sau thay certificate, reload lỗi key mismatch; hướng sửa đúng là gì?",
+      "options": [
+        "Đổi listen 443 thành 80 rồi coi là hoàn thành",
+        "Xác minh đúng certificate/key pair và đường dẫn/quyền, giữ quy trình rollback an toàn",
+        "Bỏ ssl_certificate_key vì certificate đủ",
+        "Tắt hostname validation cho mọi client"
+      ],
+      "correct": 1,
+      "explanation": "Cần sửa nguyên nhân keypair/lifecycle thay vì bỏ bảo vệ transport."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "TLS1.3 cipher surprise",
+      "question": "TLS 1.3 đàm phán suite không nằm trong ssl_ciphers TLS 1.2 của source; kết luận phù hợp?",
+      "options": [
+        "HTTP 2 tự tạo cipher không có trong TLS",
+        "Certificate đã bị thay chỉ từ dấu hiệu này",
+        "Không tự là lỗi; cần xét cơ chế TLS 1.3 ciphersuites và OpenSSL/Nginx config",
+        "ssl_ciphers luôn chặn mọi suite TLS 1.3"
+      ],
+      "correct": 2,
+      "explanation": "Các API/cấu hình cipher theo TLS version không nên bị đánh đồng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Protocol compatibility rollout",
+      "question": "Cắt protocol cũ khiến nhóm client không kết nối; cách đánh giá đúng là gì?",
+      "options": [
+        "Mở lại mọi SSL version không đánh giá",
+        "Chỉ đổi HTTP redirect status",
+        "Chỉ tăng max-age HSTS",
+        "Xem client support/security policy và lựa chọn protocol được cho phép theo yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Compatibility và mức bảo vệ cần được quyết định có bằng chứng theo sản phẩm."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "HTTP2 config migration",
+      "question": "Binary cũ không hiểu http2 on nhưng source cũ có listen http2; nên làm gì?",
+      "options": [
+        "Xác định version/module support rồi chọn cú pháp migration phù hợp",
+        "Thêm cả mọi directive mới bất kểbinary",
+        "Đổi ssl_protocols thành http2",
+        "Chỉ thêm always"
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp docs mới không tự nâng binary hoặc module."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Header lost in nested location",
+      "question": "Location thêm Cache-Control làm HSTS server level mất theo mặc định; cần xem gì?",
+      "options": [
+        "Chỉ đổi server_name",
+        "Inheritance add_header và version/config, giữ lại các header cần thiết đúng scope",
+        "Tăng certificate validity",
+        "Chỉ thêm TLS 1.3"
+      ],
+      "correct": 1,
+      "explanation": "Không mặc định các dòng header ở các mức luôn merge tự động."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Error response header gap",
+      "question": "HSTS có always nhưng nosniff/DENY không xuất hiện trên một số error responses; hướng giải thích nào đúng?",
+      "options": [
+        "Certificate chỉ chứa cấu hình HSTS",
+        "Browser xóa mọi header khác HSTS",
+        "Modifier/status và effective header configuration khác nhau giữa các dòng",
+        "TLS chưa được đàm phán vì 500"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm status/path thay vì suy từ response thành công."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "HSTS premature rollout",
+      "question": "HSTS dài hạn được nhận trước khi HTTPS ổn định trên các host cần phục vụ; cần cân nhắc gì?",
+      "options": [
+        "Chỉ ngừng gửi header là mọi client quên ngay",
+        "Chỉ restart Node",
+        "Chỉ đổi DNS TTL chắc chắn sửa mọi client",
+        "Client-cached policy và kế hoạch triển khai/khôi phục theo phạm vi host"
+      ],
+      "correct": 3,
+      "explanation": "HSTS có lifecycle phía client, không chỉ một flag server."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Private key exposure",
+      "question": "Private key bị đưa vào public static artifact; ngoài sửa đường dẫn cần xử lý gì theo mức lộ?",
+      "options": [
+        "Thu hồi/rotation certificate-key và điều tra/phạm vi truy cập theo policy",
+        "Chỉ đổi tên file private key",
+        "Chỉ đặt server_tokens off",
+        "Chỉ xóa browser cache"
+      ],
+      "correct": 0,
+      "explanation": "Đổi vị trí file không tự phục hồi bí mật đã có thể bị lộ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Renewal job green old cert",
+      "question": "Scheduler báo job thành công nhưng client vẫn nhận certificate cũ; cần kiểm chuỗi nào?",
+      "options": [
+        "Chỉ port 443 đang listen",
+        "Artifact đã cấp, path deployment, reload/effective server và handshake thực",
+        "Chỉ log file có chữ success",
+        "Chỉ DNS record hiện tại"
+      ],
+      "correct": 1,
+      "explanation": "Thành công một bước không chứng minh toàn lifecycle cấp và phục vụ."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "HTTPS backend redirect loop",
+      "question": "TLS ngoài đã đúng nhưng Node cứ redirect HTTPS vì thấy HTTP upstream; hướng sửa phù hợp?",
+      "options": [
+        "Đổi Certbot account",
+        "Tắt mọi HTTPS ở edge và coi là đúng",
+        "Forward scheme và backend trusted-proxy policy theo topology thực",
+        "Tăng HSTS max-age"
+      ],
+      "correct": 2,
+      "explanation": "Proxy interpretation cần đúng; không tự tin header từ mọi client."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "TLS hop privacy",
+      "question": "Dữ liệu nhạy cảm đi HTTP giữa edge và backend qua mạng không tin cậy; certificate ở edge có đủ không?",
+      "options": [
+        "Rồi, TLS ở edge bao phủ mọi mạng sau đó",
+        "Rồi, HSTS áp cho backend TCP",
+        "Rồi, DENY mã hóa payload",
+        "Chưa, cần bảo vệ hop/network theo trust boundary và requirement"
+      ],
+      "correct": 3,
+      "explanation": "Đánh giá mã hóa và khả năng truy cập ở từng hop."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Certificate chain partial success",
+      "question": "Một client dùng cached intermediate kết nối được nhưng client sạch lỗi chain; cần xem gì?",
+      "options": [
+        "Chain được server gửi và trust path tương ứng thay vì chỉ test một client",
+        "Chỉ đổi port",
+        "Chỉ thêm X-Frame-Options",
+        "Chỉ xóa HTTP redirect"
+      ],
+      "correct": 0,
+      "explanation": "Một môi trường thành công có thể che chain/dependency thiếu."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "MIME policy regression",
+      "question": "Bật nosniff làm script có MIME sai không chạy; sửa đúng là gì?",
+      "options": [
+        "Chỉ bật TLS 1.0",
+        "Sửa Content-Type/static serving contract thay vì bỏ bảo vệ để che lỗi",
+        "Đổi private key",
+        "Chỉ tăng HSTS"
+      ],
+      "correct": 1,
+      "explanation": "Header có thể làm lộ cấu hình nội dung sai vốn đã tồn tại."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Frame embedding conflict",
+      "question": "Trang cần nhúng vào cổng đối tác nhưng DENY chặn; cần thiết kế gì?",
+      "options": [
+        "Đổi certificate SAN để whitelist frame",
+        "Chỉ thêm www vào Certbot comment",
+        "Framing policy theo danh sách origin/trust phù hợp bằng cơ chế hỗ trợ yêu cầu",
+        "Tắt TLS để bỏ header"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng certificate hostname policy thay quyền embedding."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Permanent redirect write flow",
+      "question": "Client POST bị đổi hành vi qua 301 nhưng nghiệp vụ cần giữ method/body; cần xem gì?",
+      "options": [
+        "Chỉ HSTS duration",
+        "Chỉ ssl_ciphers",
+        "Chỉ MIME type",
+        "Status redirect/client semantics và contract ghi/idempotency trước đổi cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Redirect tác vụ ghi cần được đánh giá theo client và yêu cầu thực."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "DNS versus certificate evidence",
+      "question": "Đã trỏ DNS đúng máy có đủ xác nhận TLS identity đúng không?",
+      "options": [
+        "Chưa, cần certificate/hostname/trust chain và server selection đúng",
+        "Rồi, DNS là certificate",
+        "Rồi, listen 443 tự cấp identity",
+        "Rồi, 301 là TLS signature"
+      ],
+      "correct": 0,
+      "explanation": "Đường đi request và xác thực danh tính server là các phần khác nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Header policy not app auth",
+      "question": "Scanner thấy HSTS/nosniff/DENY đủ nhưng API lộ draft; cần sửa tầng nào?",
+      "options": [
+        "Thêm cipher RSA",
+        "Visibility/authorization phía ứng dụng và kiểm các đường dữ liệu",
+        "Tăng HSTS thêm một năm",
+        "Đổi HTTP/2thànhHTTP1.1"
+      ],
+      "correct": 1,
+      "explanation": "Security headers không triển khai resource policy."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Multiple TLS virtual servers",
+      "question": "Hai server cùng 443 có certificate khác, client nhận nhầm cert; cần kiểm gì?",
+      "options": [
+        "Chỉ backend User",
+        "Chỉ cache TTL",
+        "SNI/default server/listen/server_name và certificate effective theo handshake",
+        "Chỉ template title"
+      ],
+      "correct": 2,
+      "explanation": "TLS virtual host selection cần đúng trước khi ứng dụng xử lý nội dung."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Concrete HTTPS completion",
+      "question": "Để mẫu thành HTTPS deployment đáng tin theo yêu cầu, cần ghép nhóm nào?",
+      "options": [
+        "Chỉ listen 443",
+        "Chỉ Certbot comment",
+        "Chỉ header HSTS",
+        "DNS/certificate-key/trust chain, version/module, redirect/headers, renewal và checks thực phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Snippet cung cấp ý tưởng cấu hình, không chứng minh các artifact và vận hành đã tồn tại."
+    }
+  ]
+}

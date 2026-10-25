@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "docker",
+  "level": "master",
+  "lesson": "gitops",
+  "language": "vi",
+  "sourceHash": "ea2500a7c49d60bb0e3427e4cba1d0ba926e193f3cefd36ad3a50d9e36d5920b",
+  "status": "approved",
+  "review": "Tự soạn trực tiếp 80 câu theo Terraform ECS, Argo CD Application và flow GitOps trong nguồn; đối chiếu tài liệu Argo CD/Kubernetes/Terraform. HCL và YAML là các phần riêng, còn thiếu hạ tầng/credentials/CRD/policy. Git revert chỉ đổi desired config, không tự rollback data hoặc pin mutable image. Không chạy Git/Terraform/ArgoCD/cloud/cluster/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "GitOps desired state",
+      "question": "Git giữ vai trò gì trong mô hình GitOps của bài?",
+      "options": [
+        "Nguồn trạng thái mong muốn được quản lý phiên bản",
+        "Nơi tự lưu toàn bộ dữ liệu database runtime",
+        "Bộ cân bằng tải request",
+        "Thay thế cluster control plane"
+      ],
+      "correct": 0,
+      "explanation": "Repository mô tả desired state, không mặc nhiên chứa mọi live state."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Reconciliation",
+      "question": "Controller GitOps chủ yếu đối chiếu gì?",
+      "options": [
+        "File README với mọi DB row",
+        "Trạng thái mong muốn với trạng thái thực theo phạm vi quản lý",
+        "Commit message với màu editor",
+        "Tên user với UID container"
+      ],
+      "correct": 1,
+      "explanation": "Reconciliation hướng môi trường tới cấu hình được khai báo."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Hai công cụ",
+      "question": "Bài nhắc hai công cụ GitOps Kubernetes nào?",
+      "options": [
+        "Trivy và Snyk",
+        "Express và React",
+        "Argo CD và Flux",
+        "ESLint và Prettier"
+      ],
+      "correct": 2,
+      "explanation": "Mỗi công cụ cần được cài và cấu hình thực tế."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "IaC",
+      "question": "Infrastructure as Code hướng tới điều gì?",
+      "options": [
+        "Chỉ ghi log ứng dụng",
+        "Chỉ thay CSS theme",
+        "Chỉ đặt tên container",
+        "Mô tả/quản lý hạ tầng bằng cấu hình có thể review và phiên bản hóa"
+      ],
+      "correct": 3,
+      "explanation": "IaC không tự bảo đảm mọi thay đổi đều an toàn."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Terraform resource",
+      "question": "Resource Terraform minh họa có loại nào?",
+      "options": [
+        "aws_ecs_service",
+        "kubernetes_deployment",
+        "aws_s3_bucket",
+        "argocd_application"
+      ],
+      "correct": 0,
+      "explanation": "Phần Terraform mô tả một ECS service, khác Application của Argo CD."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Resource local name",
+      "question": "Nhãn local của resource ECS trong cấu hình là gì?",
+      "options": [
+        "production",
+        "app",
+        "myapp",
+        "main"
+      ],
+      "correct": 1,
+      "explanation": "app trong resource address khác name thực myapp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "ECS service name",
+      "question": "Thuộc tính name của ECS service nguồn là gì?",
+      "options": [
+        "main",
+        "k8s-manifests",
+        "myapp",
+        "app"
+      ],
+      "correct": 2,
+      "explanation": "Tên resource trong Terraform và tên bên provider không nhất thiết giống nhau."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "ECS count",
+      "question": "desired_count trong ví dụ là bao nhiêu?",
+      "options": [
+        "1",
+        "2",
+        "10",
+        "3"
+      ],
+      "correct": 3,
+      "explanation": "Đây là số task mong muốn theo cấu hình mẫu."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "ECS cluster ref",
+      "question": "cluster tham chiếu tài nguyên nào?",
+      "options": [
+        "aws_ecs_cluster.main.id",
+        "aws_lb_target_group.app.arn",
+        "aws_ecs_task_definition.app.arn",
+        "kubernetes.default.svc"
+      ],
+      "correct": 0,
+      "explanation": "Các resource được tham chiếu cần tồn tại trong cấu hình/phạm vi phù hợp."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Task definition ref",
+      "question": "task_definition lấy giá trị từ đâu?",
+      "options": [
+        "targetRevision main",
+        "aws_ecs_task_definition.app.arn",
+        "aws_ecs_cluster.main.id",
+        "apps/myapp"
+      ],
+      "correct": 1,
+      "explanation": "Đây là tham chiếu trong HCL Terraform."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Target group ref",
+      "question": "load_balancer dùng target group nào theo source?",
+      "options": [
+        "argoproj.io/v1alpha1",
+        "registry.example.com/myapp",
+        "aws_lb_target_group.app.arn",
+        "aws_ecs_cluster.main.id"
+      ],
+      "correct": 2,
+      "explanation": "Target group reference chưa tự khai toàn bộ hạ tầng liên quan."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "ECS container port",
+      "question": "container_port trong load_balancer block là gì?",
+      "options": [
+        "80",
+        "443",
+        "5432",
+        "3000"
+      ],
+      "correct": 3,
+      "explanation": "Port phải khớp task definition và ứng dụng thực tế."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Argo kind",
+      "question": "Manifest Argo CD có kind nào?",
+      "options": [
+        "Application",
+        "Deployment",
+        "Service",
+        "ConfigMap"
+      ],
+      "correct": 0,
+      "explanation": "Application là custom resource, cần Argo CD/CRD phù hợp."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Argo API",
+      "question": "apiVersion của Application trong nguồn là gì?",
+      "options": [
+        "networking.k8s.io/v1",
+        "argoproj.io/v1alpha1",
+        "apps/v1",
+        "v1"
+      ],
+      "correct": 1,
+      "explanation": "Không phải mọi kind đều thuộc core Kubernetes API."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Argo project",
+      "question": "Application tham chiếu project nào?",
+      "options": [
+        "myapp",
+        "main",
+        "default",
+        "production"
+      ],
+      "correct": 2,
+      "explanation": "AppProject và các policy cần được xét riêng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Repo nguồn",
+      "question": "source.repoURL chỉ định điều gì?",
+      "options": [
+        "Địa chỉ DB runtime",
+        "Docker daemon socket",
+        "Đường dẫn volume host",
+        "Repository chứa manifests mong muốn"
+      ],
+      "correct": 3,
+      "explanation": "Cần quyền đọc repository và nội dung hợp lệ."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Revision nguồn",
+      "question": "targetRevision trong nguồn là gì?",
+      "options": [
+        "main",
+        "latest image tag",
+        "HEAD~3",
+        "production namespace"
+      ],
+      "correct": 0,
+      "explanation": "main là ref có thể thay đổi, không phải một commit cố định."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Manifest path",
+      "question": "source.path trong Application là gì?",
+      "options": [
+        ".github/workflows",
+        "apps/myapp",
+        "/run/secrets",
+        "dist/server.js"
+      ],
+      "correct": 1,
+      "explanation": "Controller dùng đường dẫn phù hợp trong repository nguồn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Namespace đích",
+      "question": "destination.namespace được khai gì?",
+      "options": [
+        "argocd",
+        "kube-system",
+        "production",
+        "default"
+      ],
+      "correct": 2,
+      "explanation": "Đây là namespace đích cho tài nguyên ứng dụng theo config."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Hai cờ automated",
+      "question": "Hai cờ automated được đặt true trong source là gì?",
+      "options": [
+        "dryRun và force",
+        "allowEmpty và replace",
+        "rollback và destroy",
+        "prune và selfHeal"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi cờ có tác động và điều kiện riêng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Nhiều ngôn ngữ",
+      "question": "Có thể lưu nguyên cả phần Terraform HCL và Argo YAML vào một manifest YAML rồi coi đã đúng không?",
+      "options": [
+        "Không, cần tách vào file/công cụ phù hợp",
+        "Có, Argo tự chạy mọi HCL trong YAML",
+        "Có, Terraform đọc mọi Kubernetes YAML như HCL",
+        "Chỉ cần thêm một comment"
+      ],
+      "correct": 0,
+      "explanation": "Source ghép ví dụ nhiều công cụ, không phải một file tự đủ."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Terraform thiếu refs",
+      "question": "Snippet ECS có tự định nghĩa aws_ecs_cluster.main và task definition được tham chiếu chưa?",
+      "options": [
+        "Có, Argo project default tạo ECS cluster",
+        "Chưa",
+        "Có, nhắc tên trong expression tự tạo resource",
+        "Có, desired_count tạo mọi resource phụ"
+      ],
+      "correct": 1,
+      "explanation": "Cần cấu hình resource/provider/inputs đầy đủ để áp dụng thực."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Provider auth",
+      "question": "Nguồn đã thể hiện credentials, provider và IAM đầy đủ cho Terraform AWS chưa?",
+      "options": [
+        "Có, Argo destination cấp cloud admin",
+        "Có, repoURL là AWS credential",
+        "Chưa",
+        "Có, resource type tự cấp quyền AWS"
+      ],
+      "correct": 2,
+      "explanation": "Không suy diễn quyền hoặc hạ tầng chỉ từ cấu hình mẫu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Network wiring",
+      "question": "ECS service block có chứng minh đủ networking/load balancer/task wiring cho app chưa?",
+      "options": [
+        "Có, container_port tự tạo VPC",
+        "Có, target group name tự tạo toàn route",
+        "Có, desired_count mở firewall",
+        "Chưa, còn nhiều phần phụ thuộc cấu hình triển khai"
+      ],
+      "correct": 3,
+      "explanation": "Cần đánh giá toàn cấu hình và yêu cầu provider thực tế."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Desired count không autoscale",
+      "question": "desired_count: 3 có tự là cấu hình autoscaling hoàn chỉnh không?",
+      "options": [
+        "Không",
+        "Có, số lớn hơn 1 tự bật autoscaling",
+        "Có, task definition tự đo CPU và scale",
+        "Có, target group luôn điều chỉnh desired_count"
+      ],
+      "correct": 0,
+      "explanation": "Đếm bản sao và chính sách tự điều chỉnh là hai việc khác nhau."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Plan",
+      "question": "terraform plan thường hỗ trợ việc gì trước apply?",
+      "options": [
+        "Tự test mọi API nghiệp vụ",
+        "Xem thay đổi được đề xuất theo config/state và điều kiện",
+        "Tự apply mọi thay đổi đã đề xuất",
+        "Tự xóa cloud resource không cần quyền"
+      ],
+      "correct": 1,
+      "explanation": "Plan là thông tin để review, không phải bảo đảm hành vi production."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Apply",
+      "question": "terraform apply nhằm thực hiện điều gì theo luồng IaC?",
+      "options": [
+        "Chỉ đọc log Node",
+        "Chỉ tạo Git commit",
+        "Thay đổi hạ tầng theo kế hoạch/cấu hình và state phù hợp",
+        "Chỉ format file"
+      ],
+      "correct": 2,
+      "explanation": "Đây là thao tác có side effects, không thực thi khi soạn câu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Destroy",
+      "question": "terraform destroy thuộc loại thao tác nào?",
+      "options": [
+        "Chỉ đóng terminal",
+        "Chỉ dừng lint",
+        "Chỉ xem image digest",
+        "Có thể xóa tài nguyên được quản lý trong phạm vi"
+      ],
+      "correct": 3,
+      "explanation": "Không coi destroy như cleanup vô hại trong môi trường có dữ liệu."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "State purpose",
+      "question": "Terraform state có vai trò nào quan trọng?",
+      "options": [
+        "Liên kết resource instances cấu hình với đối tượng được quản lý",
+        "Thay toàn bộ code repository",
+        "Lưu mọi HTTP request app",
+        "Tự backup mọi database"
+      ],
+      "correct": 0,
+      "explanation": "State và desired config là các loại thông tin khác nhau."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "State sensitivity",
+      "question": "Có nên mặc định commit raw Terraform state vào Git như file không nhạy cảm không?",
+      "options": [
+        "Chỉ khi repo public mới cần xem xét",
+        "Không, state có thể chứa dữ liệu nhạy cảm và cần kiểm soát truy cập",
+        "Có, state luôn tự redact mọi secret",
+        "Có, state chỉ chứa resource names"
+      ],
+      "correct": 1,
+      "explanation": "Backend, quyền và lifecycle state cần quản lý phù hợp."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "State concurrency",
+      "question": "Nhiều người thay cùng infrastructure/state cần quan tâm gì?",
+      "options": [
+        "Chỉ dùng cùng editor",
+        "Chỉ ký commit là đủ mọi lock",
+        "Phối hợp, locking và quyền theo backend/workflow phù hợp",
+        "Chỉ tên branch giống nhau"
+      ],
+      "correct": 2,
+      "explanation": "Git versioning không tự thay state coordination."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "CRD requirement",
+      "question": "Cluster chưa cài Argo CD Application CRD có hiểu kind Application chỉ nhờ YAML này không?",
+      "options": [
+        "Có, apiVersion tự cài CRD",
+        "Có, namespace production chứa mọi CRD",
+        "Có, Terraform ECS tự cài Argo",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Custom resource cần API/controller tương ứng."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Controller requirement",
+      "question": "CRD tồn tại nhưng không có controller hoạt động có chắc deployment GitOps diễn ra không?",
+      "options": [
+        "Không",
+        "Có, CRD tự reconcile mọi resource",
+        "Có, Git tự nói chuyện với kubelet",
+        "Có, repoURL tự tạo controller"
+      ],
+      "correct": 0,
+      "explanation": "Khai báo object và vòng điều khiển thực thi là hai phần riêng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Repo access",
+      "question": "Private manifests repo yêu cầu điều kiện gì cho Argo CD?",
+      "options": [
+        "Chỉ tăng desired_count",
+        "Quyền/credentials và trust kết nối phù hợp",
+        "Mọi app Pod phải có Git admin token",
+        "Chỉ đổi repoURL thành chữ private"
+      ],
+      "correct": 1,
+      "explanation": "Cấp quyền đúng thành phần thực sự cần đọc repository."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Path invalid",
+      "question": "source.path không chứa manifests hợp lệ có thể gây gì?",
+      "options": [
+        "Kubernetes tự chọn path khác",
+        "Terraform tự biến ECS service thành Pod",
+        "Không render/sync được như mong muốn",
+        "Argo tự viết app manifests đúng nghiệp vụ"
+      ],
+      "correct": 2,
+      "explanation": "Đầu vào repository phải khớp công cụ render và ứng dụng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Destination server",
+      "question": "https://kubernetes.default.svc trong ngữ cảnh Argo thường chỉ gì?",
+      "options": [
+        "Domain frontend public myapp",
+        "Docker registry",
+        "Endpoint database PostgreSQL",
+        "Kubernetes API server nội bộ theo cấu hình cluster"
+      ],
+      "correct": 3,
+      "explanation": "Destination cần có cluster registration/quyền phù hợp."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Namespace existence",
+      "question": "destination.namespace: production có tự chứng minh namespace đã tồn tại hoặc được tạo đúng chưa?",
+      "options": [
+        "Không, cần namespace resource/options/quyền phù hợp",
+        "Có, mọi field namespace tự tạo nó",
+        "Có, project default bỏ qua namespace",
+        "Có, repo branch main tạo namespace"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn chưa thể hiện đầy đủ namespace lifecycle."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Project authorization",
+      "question": "project: default có tự chứng minh policy repo/destination/resource phù hợp yêu cầu tổ chức không?",
+      "options": [
+        "Có, namespace production tự khóa repo",
+        "Không, cần xét AppProject và RBAC thực",
+        "Có, tên default là least privilege tối ưu",
+        "Có, mọi project chặn mọi secret"
+      ],
+      "correct": 1,
+      "explanation": "Policy phải được xem theo cấu hình đang dùng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Mutable revision",
+      "question": "targetRevision main có nghĩa artifact config bất biến qua thời gian không?",
+      "options": [
+        "Có, Argo pin main vĩnh viễn sau lần sync đầu",
+        "Chỉ khi repo có nhiều branch",
+        "Không, branch tip có thể đổi",
+        "Có, main là commit hash cố định"
+      ],
+      "correct": 2,
+      "explanation": "Cần ghi commit thực được render/sync để truy vết release."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Sync không CI build",
+      "question": "Argo Application này có tự build Docker image từ code repo không?",
+      "options": [
+        "Có, sync tự chạy mọi Dockerfile",
+        "Có, prune tự build image",
+        "Có, selfHeal tự chạy npm ci",
+        "Không, flow giao build/test/push cho CI"
+      ],
+      "correct": 3,
+      "explanation": "Build artifacts và reconcile manifests là các bước khác nhau."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "CI update manifests",
+      "question": "Sau build/push image, flow còn yêu cầu CI làm gì?",
+      "options": [
+        "Cập nhật manifests trong GitOps repository",
+        "Chỉ xóa branch code",
+        "Chỉ đổi màu dashboard",
+        "Chỉ chạy git blame"
+      ],
+      "correct": 0,
+      "explanation": "Image mới cần được tham chiếu trong desired config theo workflow."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Push image alone",
+      "question": "Push image mới cùng mutable tag nhưng manifests không đổi có bảo đảm Argo rollout mới không?",
+      "options": [
+        "Có, prune đọc Docker events",
+        "Không, cần cơ chế desired state/image update và rollout phù hợp",
+        "Có, mọi registry push tạo commit GitOps",
+        "Có, selfHeal theo dõi mọi registry tag trực tiếp"
+      ],
+      "correct": 1,
+      "explanation": "Argo chủ yếu reconcile trạng thái khai báo, không mặc nhiên là image updater."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Prune scope",
+      "question": "prune: true chủ yếu cho phép điều gì theo cơ chế sync?",
+      "options": [
+        "Chỉ xóa Git comments",
+        "Tự xóa mọi image registry cũ",
+        "Xóa tài nguyên thuộc phạm vi quản lý không còn trong desired manifests theo điều kiện",
+        "Xóa mọi tài nguyên trong mọi cluster"
+      ],
+      "correct": 2,
+      "explanation": "Pruning cần hiểu resource tracking, scope và safety conditions."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Self heal",
+      "question": "selfHeal: true hỗ trợ xử lý tình huống nào?",
+      "options": [
+        "Mọi bug nghiệp vụ trong image",
+        "Mọi DB row bị người dùng sửa",
+        "Mọi cloud bill tăng",
+        "Live state lệch desired state theo cơ chế reconciliation"
+      ],
+      "correct": 3,
+      "explanation": "Nó hướng config về desired state, không viết lại code app."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Manual patch drift",
+      "question": "Sửa replicas trực tiếp trong cluster khác Git có thể gặp gì với selfHeal?",
+      "options": [
+        "Controller có thể đưa lại giá trị được khai trong Git",
+        "Git tự commit manual change ngay",
+        "Patch luôn tồn tại bất chấp controller",
+        "Terraform ECS tự xóa Argo Application"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn trạng thái có thẩm quyền cần rõ để tránh đấu nhau."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Not instant",
+      "question": "Automated sync có bảo đảm mọi push được áp ngay tức khắc không?",
+      "options": [
+        "Có, prune nghĩa zero delay",
+        "Không, còn detect/reconcile, trạng thái, quyền và lỗi",
+        "Có, Git push là transaction đồng bộ với mọi Pod",
+        "Có, selfHeal bỏ mọi latency mạng"
+      ],
+      "correct": 1,
+      "explanation": "Cần quan sát actual sync/health thay suy từ commit thành công."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Sync vs health",
+      "question": "Trạng thái Synced có đồng nghĩa mọi nghiệp vụ app đã được kiểm đúng không?",
+      "options": [
+        "Có, manifests khớp là đủ mọi database transaction",
+        "Chỉ khi project default",
+        "Không, sync/health và business verification là các phạm vi khác nhau",
+        "Có, Argo tự gọi mọi API test"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm hành vi phù hợp của release."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Automated sync creds",
+      "question": "Flow commit manifests có thể giúp CI tránh cần quyền gì trực tiếp?",
+      "options": [
+        "Mọi quyền ghi GitOps repo",
+        "Mọi quyền push image",
+        "Mọi quyền đọc code",
+        "Quyền deploy cluster/Argo API không cần thiết cho chính bước commit đó"
+      ],
+      "correct": 3,
+      "explanation": "Quyền cần xét theo từng job và thành phần, không loại hết mọi auth."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Git revert tác động",
+      "question": "git revert trên GitOps repo chủ yếu đổi điều gì?",
+      "options": [
+        "Desired configuration qua commit đảo thay đổi được chọn",
+        "Tự phục hồi mọi dữ liệu production",
+        "Tự đảo toàn cloud state ngay",
+        "Tự ngăn mọi sync lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Controller còn phải quan sát và áp cấu hình mới hợp lệ."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Rollback mutable image",
+      "question": "Revert manifest về image: myapp:latest có bảo đảm lấy lại bytes image cũ không?",
+      "options": [
+        "Có, prune khôi phục image gốc",
+        "Không, latest có thể trỏ artifact khác",
+        "Có, Git chứa toàn layer image",
+        "Có, Argo tự giữ mọi registry version"
+      ],
+      "correct": 1,
+      "explanation": "Rollback tái lập cần artifact identity rõ."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Data rollback",
+      "question": "Revert manifest có tự undo migration database không?",
+      "options": [
+        "Có, selfHeal sao lưu mọi row",
+        "Có, branch main giữ toàn dữ liệu",
+        "Không",
+        "Có, YAML tự chứa mọi transaction inverse"
+      ],
+      "correct": 2,
+      "explanation": "Cần kế hoạch tương thích code/config/data và phục hồi riêng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Two controllers",
+      "question": "Terraform và Argo cùng quản lý một field của cùng tài nguyên có thể gây gì?",
+      "options": [
+        "Tự hợp nhất policy đúng mọi lúc",
+        "Không thể vì GitOps chặn Terraform toàn cục",
+        "Chỉ đổi tên branch",
+        "Tranh chấp desired state hoặc drift lặp lại"
+      ],
+      "correct": 3,
+      "explanation": "Cần ranh giới ownership rõ giữa các công cụ điều khiển."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "ECS khác Kubernetes",
+      "question": "ECS service trong Terraform có tự trở thành workload do Argo Application này quản lý không?",
+      "options": [
+        "Không, đây là hai ví dụ hạ tầng/tooling riêng",
+        "Có, cùng tên myapp tự nối ECS với Pod",
+        "Có, repoURL tự chuyển ECS thành Kubernetes",
+        "Có, destination server là AWS ECS"
+      ],
+      "correct": 0,
+      "explanation": "Không coi tên giống nhau là wiring đã hiện thực."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Resource deletion risk",
+      "question": "Xóa nhầm manifest khỏi repo với prune bật có thể dẫn tới gì?",
+      "options": [
+        "Tự tạo backup dữ liệu trước mọi lần xóa",
+        "Tài nguyên quản lý bị xóa theo sync policy và điều kiện",
+        "Chỉ mất một Git comment",
+        "Không ảnh hưởng runtime vì Git chỉ là tài liệu"
+      ],
+      "correct": 1,
+      "explanation": "Review và policy cần xét tác động của desired deletion."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Repo write permission",
+      "question": "Quyền ghi GitOps repo có thể quan trọng về bảo mật vì sao?",
+      "options": [
+        "Tự giới hạn ở README mọi lúc",
+        "Không quan trọng nếu app non-root",
+        "Có thể thay desired config được controller triển khai trong phạm vi được cấp",
+        "Chỉ ảnh hưởng text không chạm runtime"
+      ],
+      "correct": 2,
+      "explanation": "Cần bảo vệ review/branch policy và quyền controller phù hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Manifest secret",
+      "question": "GitOps có bắt buộc lưu plaintext production secrets trong Git không?",
+      "options": [
+        "Có, single source of truth nghĩa mọi secret plaintext",
+        "Có, repo private tự mã hóa mọi value",
+        "Có, Argo không thể dùng secret delivery khác",
+        "Không, cần cơ chế secret phù hợp với workflow"
+      ],
+      "correct": 3,
+      "explanation": "Versioned desired config không yêu cầu công bố vật liệu bí mật."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Git success vs release",
+      "question": "Commit/push GitOps repo thành công có chứng minh release đã phục vụ người dùng chưa?",
+      "options": [
+        "Chưa, cần sync, rollout và verification thực tế",
+        "Rồi, Git push bao toàn deployment",
+        "Rồi, selfHeal là end-to-end test",
+        "Rồi, main là production live state"
+      ],
+      "correct": 0,
+      "explanation": "Bằng chứng phải nối config với môi trường và hành vi thực."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source wiring limit",
+      "question": "Flow comment đã hiện thực đủ job CI cập nhật repo và bootstrap Argo chưa?",
+      "options": [
+        "Có, metadata.name là bootstrap script",
+        "Chưa, cần cấu hình cụ thể và quyền tương ứng",
+        "Có, các comment tự chạy tuần tự",
+        "Có, resource ECS tạo GitHub Actions"
+      ],
+      "correct": 1,
+      "explanation": "Tài liệu flow không đồng nghĩa automation đã hoạt động."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Rollback command phân biệt",
+      "question": "Git revert desired config có đồng nhất với thao tác rollback history của Argo CD khi auto-sync bật không?",
+      "options": [
+        "Có, Git revert tự gọi Argo rollback API",
+        "Chỉ khác tên file output",
+        "Không, đó là cơ chế khác; rollback history có hạn chế với auto-sync",
+        "Có, hai lệnh luôn đồng nghĩa"
+      ],
+      "correct": 2,
+      "explanation": "Phải phân biệt đổi nguồn desired state và thao tác lịch sử controller."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Release provenance",
+      "question": "Muốn báo release GitOps chính xác nên giữ thông tin nào?",
+      "options": [
+        "Chỉ tên branch main",
+        "Chỉ namespace production",
+        "Chỉ số desired_count",
+        "Commit manifests, image digest/config và kết quả sync/verification"
+      ],
+      "correct": 3,
+      "explanation": "Tên mutable hoặc số bản sao không định danh đầy đủ release."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Rollback tái lập",
+      "question": "Muốn revert manifests đưa app về đúng artifact cũ cần gì?",
+      "options": [
+        "Tham chiếu image immutable cùng config/data compatibility rõ",
+        "Chỉ dùng tag latest cho mọi release",
+        "Chỉ giữ tên Application",
+        "Chỉ bật selfHeal"
+      ],
+      "correct": 0,
+      "explanation": "Git lưu lịch sử text nhưng không khóa nội dung của mutable registry tag."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Prune xóa nhầm",
+      "question": "Một PR xóa manifest quan trọng trong phạm vi prune. Trước merge cần đánh giá gì?",
+      "options": [
+        "Chỉ số file giảm",
+        "Tác động resource/data, policy bảo vệ và khả năng phục hồi",
+        "Chỉ syntax YAML",
+        "Chỉ commit message có docs"
+      ],
+      "correct": 1,
+      "explanation": "Desired deletion có thể trở thành thay đổi runtime thật."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Drift emergency",
+      "question": "Sửa nóng live config nhưng Git vẫn giữ giá trị lỗi, selfHeal bật. Nên phối hợp thế nào?",
+      "options": [
+        "Chỉ đổi tag image local",
+        "Coi selfHeal tự hiểu ý định operator",
+        "Quản lý nguồn desired state và policy khẩn cấp có chủ đích, ghi lại thay đổi cần giữ",
+        "Patch live lặp vô hạn để đấu controller"
+      ],
+      "correct": 2,
+      "explanation": "Cần ownership và nguồn cấu hình rõ khi xử lý khẩn cấp."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Controller trust",
+      "question": "CI chỉ ghi manifests còn controller có quyền cluster rộng. Ranh giới bảo mật nào quan trọng?",
+      "options": [
+        "Chỉ credential của người dùng frontend",
+        "Chỉ tên branch có chữ main",
+        "Chỉ kích thước image",
+        "Repo write/review và quyền controller trong phạm vi destination/resources"
+      ],
+      "correct": 3,
+      "explanation": "Quyền gián tiếp qua desired config có thể ảnh hưởng hạ tầng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "IaC state teamwork",
+      "question": "Hai pipeline apply cùng state không có phối hợp có thể dẫn tới gì?",
+      "options": [
+        "Xung đột hoặc thao tác theo state/kế hoạch không còn phù hợp",
+        "Terraform luôn tự merge mọi ý định",
+        "Git branch tách biệt bảo đảm cloud tách biệt",
+        "Signed commits tự tạo state locking"
+      ],
+      "correct": 0,
+      "explanation": "Cần backend và workflow coordination đúng phạm vi."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Plan đổi trước apply",
+      "question": "Plan được review nhưng inputs/state thay đổi trước apply. Cần quan tâm gì?",
+      "options": [
+        "Chỉ branch không đổi",
+        "Sự tương ứng giữa kế hoạch đã duyệt và thao tác thực tế",
+        "Chỉ màu output plan",
+        "Chỉ tên người apply"
+      ],
+      "correct": 1,
+      "explanation": "Approval có ý nghĩa khi khớp nội dung và trạng thái được thực hiện."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "ECS snippet partial",
+      "question": "Resource ECS tham chiếu nhiều đối tượng chưa định nghĩa. Có thể tuyên bố hạ tầng sẵn sàng chưa?",
+      "options": [
+        "Có, desired_count 3 chứng minh HA",
+        "Có, Argo tự tạo mọi AWS resource",
+        "Không, cần đầy đủ provider/resources/inputs/wiring và bằng chứng phù hợp",
+        "Có, HCL có dấu ngoặc đủ là production"
+      ],
+      "correct": 2,
+      "explanation": "Config minh họa cần được đặt trong hệ thống đầy đủ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Multi tool ownership",
+      "question": "Terraform và GitOps cùng kéo replicas về hai giá trị khác nhau. Hướng xử lý đúng nguyên nhân?",
+      "options": [
+        "Tăng tốc cả hai vòng reconcile",
+        "Xóa mọi logs để giảm nhiễu",
+        "Chỉ đổi namespace label",
+        "Phân định ownership/config để chỉ có nguồn thẩm quyền phù hợp cho field đó"
+      ],
+      "correct": 3,
+      "explanation": "Đấu desired state là vấn đề quyền sở hữu và hợp đồng điều khiển."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Artifact tamper",
+      "question": "Manifest pin đúng digest nhưng workflow build/provenance không đáng tin. Đã đủ bảo đảm supply chain chưa?",
+      "options": [
+        "Chưa, digest định danh bytes nhưng còn trust nguồn/quy trình tạo artifact",
+        "Rồi, hash tự chứng minh code an toàn",
+        "Rồi, main tự là nhà phát hành đáng tin",
+        "Chỉ cần Application name trùng repo"
+      ],
+      "correct": 0,
+      "explanation": "Định danh nội dung và tin nguồn nội dung là hai thuộc tính khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Git rollback data mismatch",
+      "question": "Revert code image nhưng schema mới không tương thích. Cần làm gì theo thiết kế release?",
+      "options": [
+        "Chỉ đổi project default",
+        "Kế hoạch phối hợp code/config/data, có thể cần forward fix thay rollback đơn giản",
+        "Chỉ lặp git revert cho tới khi app chạy",
+        "Bật prune để xóa DB ngoài ý định"
+      ],
+      "correct": 1,
+      "explanation": "Khả năng phục hồi cần được thiết kế theo trạng thái dữ liệu thật."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Synced chưa khỏe",
+      "question": "Argo báo Synced nhưng app lỗi nghiệp vụ. Cách báo cáo hợp lý?",
+      "options": [
+        "Báo Git repo chắc chắn hỏng",
+        "Bỏ qua lỗi vì Synced là tiêu chuẩn duy nhất",
+        "Config đã đồng bộ theo scope nhưng release chưa đạt verification nghiệp vụ",
+        "Báo toàn hệ thống đã hoạt động đúng"
+      ],
+      "correct": 2,
+      "explanation": "Không phóng đại kết quả của một loại kiểm."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Secret Git incident",
+      "question": "Plaintext token đã vào GitOps repo, sau đó xóa file. Đã xử lý xong chưa?",
+      "options": [
+        "Rồi, commit mới xóa mọi bytes ở mọi clone",
+        "Rồi, Argo tự thay token thật",
+        "Chỉ cần đổi tên namespace",
+        "Chưa, cần revoke/rotate và đánh giá lịch sử/các bản sao trong phạm vi"
+      ],
+      "correct": 3,
+      "explanation": "Xóa desired text không tự thu hồi quyền của credential đã lộ."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Production gate",
+      "question": "Main được controller tự sync nhưng repo thiếu review/branch protection. Điều gì cần xét?",
+      "options": [
+        "Ai có thể đổi desired state và cơ chế kiểm soát trước triển khai",
+        "Chỉ style commit message",
+        "Chỉ namespace tên production",
+        "Chỉ số replicas lớn hơn 1"
+      ],
+      "correct": 0,
+      "explanation": "Automation tăng tầm quan trọng của quyền ghi và policy review."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "GitOps repo race",
+      "question": "Hai CI runs cập nhật image manifest trái thứ tự có thể gây gì?",
+      "options": [
+        "Prune sắp xếp lại commits an toàn",
+        "Release cũ ghi đè desired version mới nếu không có coordination phù hợp",
+        "Git luôn tự chọn artifact mới nhất theo thời gian build",
+        "Argo tự hiểu thứ tự release nghiệp vụ"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm version/order và chiến lược cập nhật repo."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Immutable deployments",
+      "question": "Muốn triển khai immutable hơn, thay sửa app trực tiếp trong container nên làm gì?",
+      "options": [
+        "Patch nhiều Pod khác nhau không ghi nguồn",
+        "Đổi tên container trong dashboard",
+        "Tạo artifact/version mới và cập nhật desired config được quản lý",
+        "Exec cài package thủ công rồi giữ tag cũ"
+      ],
+      "correct": 2,
+      "explanation": "Artifact và cấu hình phiên bản hóa hỗ trợ tái lập và audit."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Pull model không vô quyền",
+      "question": "CI không có cluster credential có đủ chứng minh không thể ảnh hưởng production không?",
+      "options": [
+        "Có, không kubeconfig nghĩa mọi commit vô hại",
+        "Có, Git chỉ lưu văn bản",
+        "Chỉ nếu registry public",
+        "Không, quyền ghi desired repo vẫn có thể tác động qua controller"
+      ],
+      "correct": 3,
+      "explanation": "Quyền gián tiếp cần được đánh giá như một phần đường triển khai."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Unknown sync failure",
+      "question": "Repository commit đã có nhưng sync lỗi do quyền destination. Nên làm gì trước tuyên bố release?",
+      "options": [
+        "Ghi rõ chưa triển khai thành công và chẩn đoán auth/config đúng scope",
+        "Báo hoàn tất vì Git là source of truth",
+        "Cấp cluster-admin cho mọi app ngay",
+        "Bỏ controller và chạy lệnh không rõ phạm vi"
+      ],
+      "correct": 0,
+      "explanation": "Cần sửa đúng nguyên nhân và giữ ranh giới quyền."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Disaster recovery",
+      "question": "Có Git repo manifests có tự đủ phục hồi mọi dữ liệu và môi trường sau sự cố không?",
+      "options": [
+        "Có, desired_count tạo lại toàn lịch sử DB",
+        "Không, còn state/secrets/data backups, hạ tầng và kiểm restore",
+        "Có, Git tự sao lưu mọi volume",
+        "Có, selfHeal khôi phục mọi object ngoài cluster"
+      ],
+      "correct": 1,
+      "explanation": "Desired config quan trọng nhưng không bao trùm mọi tài sản cần phục hồi."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Scale claim",
+      "question": "ECS desired_count 3 và Argo automated sync có chứng minh phục vụ triệu người dùng chưa?",
+      "options": [
+        "Rồi, mỗi task luôn chịu một triệu user",
+        "Rồi, prune giữ cluster luôn đủ capacity",
+        "Chưa, cần kiến trúc, sizing, dependency và bằng chứng tải thực tế",
+        "Rồi, GitOps tự scale vô hạn"
+      ],
+      "correct": 2,
+      "explanation": "Quản lý triển khai khác với chứng minh năng lực hệ thống."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Revert tag và selfHeal",
+      "question": "Manifests luôn dùng myapp:latest. Operator patch live để quay lại bản cũ trong khi selfHeal bật, Git vẫn giữ config mới. Vì sao chưa là rollback tái lập?",
+      "options": [
+        "SelfHeal tự biết release nào operator muốn nên giữ mọi live patch",
+        "Git history chứa mọi image layer nên latest luôn tái lập",
+        "Chỉ cần commit message rollback mà không đổi manifests",
+        "Mutable tag không định danh bytes cũ và live patch có thể bị reconcile lại; cần đổi desired state với artifact/config tương thích"
+      ],
+      "correct": 3,
+      "explanation": "Rollback cần artifact identity và nguồn desired state có thẩm quyền, cùng compatibility cần thiết."
+    }
+  ]
+}

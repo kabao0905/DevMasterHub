@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "scala",
+  "level": "junior",
+  "lesson": "concurrency",
+  "language": "vi",
+  "sourceHash": "f1df3ab9d98bc9f9d1b832494fd0d28d603b79a71f6a68d37b98128fd5e8fdb9",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Future chứa Thread.sleep(500), trả 42, map nhân 2 và Await.result 2.seconds. Phân biệt worker bị sleep với caller bị Await; kết quả 84 có điều kiện hoàn tất thành công trước hạn. Future không tự hủy khi Await timeout, EC và việc tạo Future quyết định scheduling. Đối chiếu Scala Futures/Promises; chỉ review source/docs, không chạy JVM/tác vụ nền.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Future",
+      "question": "Future[Int] biểu diễn điều gì?",
+      "options": [
+        "Kết quả Int có thể chưa hoàn tất, hoặc hoàn tất thất bại",
+        "Một Int luôn sẵn ngay khi khai báo",
+        "Danh sách mọi kết quả trong lịch sử",
+        "Một thread riêng được cấp vĩnh viễn"
+      ],
+      "correct": 0,
+      "explanation": "Future là một kết quả hoàn tất một lần."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Giá trị nguồn",
+      "question": "Khối Future trong source trả số nào sau Thread.sleep?",
+      "options": [
+        "2",
+        "42",
+        "84",
+        "500"
+      ],
+      "correct": 1,
+      "explanation": "42 là biểu thức cuối của khối Future."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Map nguồn",
+      "question": "mapped được tạo bằng phép biến đổi nào?",
+      "options": [
+        "Chuyển f thành None",
+        "Hủy f sau 2 mili giây",
+        "Nhân kết quả f với 2",
+        "Cộng kết quả f với 500"
+      ],
+      "correct": 2,
+      "explanation": "map tạo Future của giá trị đã biến đổi."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Kết quả có điều kiện",
+      "question": "Nếu mọi bước hoàn tất thành công trước hạn Await, result bằng gì?",
+      "options": [
+        "42",
+        "500",
+        "2",
+        "84"
+      ],
+      "correct": 3,
+      "explanation": "42 nhân 2 bằng 84; đây không phải cam kết luôn hoàn tất đúng hạn."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Thời gian chờ",
+      "question": "Await.result trong source dùng giới hạn thời gian nào?",
+      "options": [
+        "2.seconds",
+        "500.seconds",
+        "2.minutes",
+        "Duration.Inf"
+      ],
+      "correct": 0,
+      "explanation": "Giới hạn chờ được tạo nhờ import duration."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Sleep",
+      "question": "Thread.sleep(500) làm gì trong ví dụ?",
+      "options": [
+        "Làm map chạy trước f",
+        "Chặn worker đang thực thi khối trong khoảng chờ",
+        "Tự tạo I/O không chặn",
+        "Tự hủy Future"
+      ],
+      "correct": 1,
+      "explanation": "Đặt sleep trong Future không biến sleep thành thao tác không chặn."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Await",
+      "question": "Await.result chặn đối tượng nào khi đang đợi?",
+      "options": [
+        "Chỉ một kiểu dữ liệu Option",
+        "Không có luồng nào trong mọi trường hợp",
+        "Luồng gọi Await.result",
+        "Mọi luồng trong toàn JVM bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Await là API chờ chặn ở phía caller."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "ExecutionContext",
+      "question": "ExecutionContext có vai trò gì?",
+      "options": [
+        "Chứa dữ liệu của mọi người dùng",
+        "Tự bảo đảm mọi request dưới 2 giây",
+        "Thay thế mọi cơ chế xử lý lỗi",
+        "Thực thi và lập lịch các computation/callback được giao"
+      ],
+      "correct": 3,
+      "explanation": "Chính sách tài nguyên và scheduling thuộc cơ chế thực thi."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "EC nguồn",
+      "question": "Source dùng ExecutionContext nào?",
+      "options": [
+        "ExecutionContext.Implicits.global",
+        "SparkSession",
+        "Một actor dispatcher tự khai báo",
+        "Một pool JDBC đã cấu hình"
+      ],
+      "correct": 0,
+      "explanation": "Import cung cấp global làm đối số ngữ cảnh cho Future/map."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Kiểu map",
+      "question": "Nếu f là Future[Int] thì f.map(_ * 2) có kiểu nào?",
+      "options": [
+        "Promise[String]",
+        "Future[Int]",
+        "Int",
+        "Option[Int]"
+      ],
+      "correct": 1,
+      "explanation": "Biến đổi không lấy kết quả ra khỏi ngữ cảnh Future."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Hoàn tất thất bại",
+      "question": "Một Future thất bại có phải luôn chưa hoàn tất không?",
+      "options": [
+        "Có, phải Await vô hạn mới hoàn tất",
+        "Không, vì Future không thể thất bại",
+        "Không, thất bại cũng là một dạng hoàn tất",
+        "Có, chỉ thành công mới là hoàn tất"
+      ],
+      "correct": 2,
+      "explanation": "Future hoàn tất với giá trị hoặc lỗi."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Nối Future",
+      "question": "Muốn nối hàm Int => Future[String] mà tránh Future lồng, dùng gì?",
+      "options": [
+        "map luôn tự làm phẳng",
+        "Thread.sleep",
+        "getOrElse của Option",
+        "flatMap"
+      ],
+      "correct": 3,
+      "explanation": "flatMap kết hợp bước bất đồng bộ trả Future."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Promise",
+      "question": "Promise thường cung cấp phía nào của kết quả hoàn tất một lần?",
+      "options": [
+        "Phía chủ động hoàn tất, kèm Future cho bên đọc",
+        "Một stream vô hạn nhiều giá trị",
+        "Một bộ hủy thread bắt buộc",
+        "Một database tự có transaction"
+      ],
+      "correct": 0,
+      "explanation": "Promise và Future tách quyền hoàn tất khỏi việc quan sát kết quả."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Callback",
+      "question": "onComplete thường được dùng để làm gì?",
+      "options": [
+        "Bảo đảm mọi callback khác chạy trước nó",
+        "Xử lý trạng thái thành công hoặc thất bại khi Future hoàn tất",
+        "Đọc Int ngay lập tức và chặn luôn",
+        "Đổi Future thành collection phân tán"
+      ],
+      "correct": 1,
+      "explanation": "Callback cho phép phản ứng với kết quả mà không dùng Await tại điểm đó."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Tác vụ bài tập",
+      "question": "Bài tập concurrency yêu cầu gì?",
+      "options": [
+        "Xóa mọi xử lý lỗi",
+        "Đổi mọi Future thành List",
+        "Kết hợp hai tác vụ tải dữ liệu có thể chạy song song",
+        "Chỉ đổi tên val thành var"
+      ],
+      "correct": 2,
+      "explanation": "Việc khởi tạo và kết hợp tác vụ phải phù hợp quan hệ phụ thuộc."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Duration import",
+      "question": "Import duration._ trong source hỗ trợ cú pháp nào?",
+      "options": [
+        "Future(42)",
+        "f.map",
+        "println",
+        "2.seconds"
+      ],
+      "correct": 3,
+      "explanation": "Nó cung cấp cú pháp biểu diễn khoảng thời gian."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Một lần hoàn tất",
+      "question": "Sau khi một Future thành công với 42, nó có đổi thành công sang 84 do map không?",
+      "options": [
+        "Không, map tạo Future khác",
+        "Có, map sửa trực tiếp Future gốc",
+        "Có, mọi subscriber nhìn lại lịch sử bị sửa",
+        "Không, vì map chỉ in log"
+      ],
+      "correct": 0,
+      "explanation": "Future gốc giữ kết quả đã hoàn tất của mình."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Blocking và async",
+      "question": "Nhận định nào đúng với source?",
+      "options": [
+        "Sleep tự chạy trên một thread không giới hạn riêng",
+        "Có thực thi qua Future nhưng vẫn chứa hai điểm chặn là sleep và Await",
+        "Mọi lệnh bên trong Future đều không chặn",
+        "Await chỉ là cách viết khác của map"
+      ],
+      "correct": 1,
+      "explanation": "Bất đồng bộ không đồng nghĩa mọi thao tác đều không chặn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Thất bại map",
+      "question": "Nếu f thất bại thì callback nhân 2 của map có chạy như nhánh thành công không?",
+      "options": [
+        "Có, nhận 42 bất kể lỗi",
+        "Không, mapped tự thành None",
+        "Không, mapped mang thất bại đó",
+        "Có, nhận số 0 mặc định"
+      ],
+      "correct": 2,
+      "explanation": "map biến đổi giá trị thành công; không tự phục hồi lỗi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Giới hạn demo",
+      "question": "Source đã chứng minh khả năng xử lý hàng triệu request chưa?",
+      "options": [
+        "Rồi, vì dùng global",
+        "Rồi, vì 42 nhỏ hơn 500",
+        "Rồi, vì Await có timeout",
+        "Chưa, chỉ là ví dụ Future đơn giản"
+      ],
+      "correct": 3,
+      "explanation": "Năng lực vận hành cần phép đo và thiết kế tài nguyên thực tế."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Timeout",
+      "question": "Nếu mapped chưa hoàn tất sau thời gian chờ cho phép, Await.result có thể làm gì?",
+      "options": [
+        "Ném TimeoutException cho caller",
+        "Tự trả 0 luôn",
+        "Tự trả None dù kiểu Int",
+        "Tự sửa phép nhân thành 1 để kịp hạn"
+      ],
+      "correct": 0,
+      "explanation": "Giới hạn chờ không tạo ra kết quả thành công giả."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Lỗi gốc",
+      "question": "Nếu f thất bại với IllegalArgumentException và Await quan sát thất bại đó, điều gì xảy ra?",
+      "options": [
+        "mapped tự xóa lỗi do đã map",
+        "Await.result ném lỗi thất bại thay vì trả Int thành công",
+        "Await luôn đổi lỗi thành TimeoutException",
+        "Await luôn trả 42"
+      ],
+      "correct": 1,
+      "explanation": "Await không tự cung cấp chiến lược recover cho ứng dụng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Timeout và tác vụ",
+      "question": "Await hết hạn có tự dừng f đang chạy không?",
+      "options": [
+        "Có, mọi side effect được rollback",
+        "Có, f được chuyển thành None",
+        "Không, Future chuẩn không có cơ chế hủy tự động chỉ vì Await timeout",
+        "Có, luôn interrupt worker"
+      ],
+      "correct": 2,
+      "explanation": "Thời gian chờ của caller khác với vòng đời công việc đang thực thi."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Không chắc 500 ms",
+      "question": "Vì sao sleep 500 ms không bảo đảm source luôn trả trong 2 giây?",
+      "options": [
+        "Vì map luôn chờ thêm chính xác 2 giây",
+        "Vì Int không thể nhân trong Future",
+        "Vì global luôn chỉ chạy một tác vụ mỗi phút",
+        "Còn thời gian scheduling, tải hệ thống và các bước khác"
+      ],
+      "correct": 3,
+      "explanation": "Thời gian trì hoãn trong khối không là toàn bộ thời gian đầu cuối."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Tạo Future",
+      "question": "Future { compute() } thông thường lập lịch công việc khi nào?",
+      "options": [
+        "Khi Future được tạo theo ExecutionContext cung cấp",
+        "Chỉ khi gọi Await lần đầu",
+        "Chỉ khi gọi toString",
+        "Chỉ sau khi có Promise khác"
+      ],
+      "correct": 0,
+      "explanation": "Future.apply thông thường chủ động giao computation cho EC."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Lazy bên ngoài",
+      "question": "Nếu val f đổi thành lazy val f = Future { work() }, khác biệt chính là gì?",
+      "options": [
+        "lazy val biến Future thành Option",
+        "Việc tạo Future được trì hoãn đến lúc truy cập lazy val",
+        "Future đã tạo sẽ chỉ chạy sau Await bắt buộc",
+        "Mỗi map hủy một lần work"
+      ],
+      "correct": 1,
+      "explanation": "Tính lazy của khai báo bên ngoài khác cơ chế Future sau khi được tạo."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Giữ f",
+      "question": "Nếu mapped thành công với 84, f đã thành công với giá trị nào?",
+      "options": [
+        "126",
+        "Không còn tồn tại",
+        "42",
+        "84"
+      ],
+      "correct": 2,
+      "explanation": "map không sửa kết quả của nguồn."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Map lồng",
+      "question": "f.map(n => Future(n + 1)) có kiểu kết quả nào nếu f: Future[Int]?",
+      "options": [
+        "Future[Int] tự làm phẳng",
+        "Int",
+        "Promise[Int]",
+        "Future[Future[Int]]"
+      ],
+      "correct": 3,
+      "explanation": "Callback trả Future nên map giữ thêm một tầng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "FlatMap tránh lồng",
+      "question": "f.flatMap(n => Future(n + 1)) có kiểu gì?",
+      "options": [
+        "Future[Int]",
+        "Future[Future[Int]]",
+        "Int",
+        "Option[Int]"
+      ],
+      "correct": 0,
+      "explanation": "flatMap nối kết quả Future của bước sau."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Recover",
+      "question": "f.recover { case _: IllegalArgumentException => 0 } nhằm làm gì?",
+      "options": [
+        "Đổi kiểu Int thành Option bắt buộc",
+        "Cung cấp giá trị phục hồi cho lỗi khớp mẫu",
+        "Làm mọi lỗi và timeout biến mất",
+        "Hủy worker nếu f đã thành công"
+      ],
+      "correct": 1,
+      "explanation": "Lỗi không khớp vẫn cần hợp đồng xử lý riêng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "RecoverWith",
+      "question": "Nếu phục hồi cần gọi hàm trả Future[Int], nên dùng API nào?",
+      "options": [
+        "foreach",
+        "Await.ready thay cho mọi phục hồi",
+        "recoverWith",
+        "recover rồi giả định tự flatten"
+      ],
+      "correct": 2,
+      "explanation": "recoverWith cho phép nhánh phục hồi trả Future."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Lỗi không khớp",
+      "question": "f.recover chỉ khớp IllegalArgumentException nhưng f thất bại với IOException thì sao?",
+      "options": [
+        "Mọi lỗi đều trở thành 0",
+        "Callback recover chạy với null",
+        "Tự retry vô hạn",
+        "Future kết quả vẫn thất bại với lỗi không được xử lý"
+      ],
+      "correct": 3,
+      "explanation": "Partial function chỉ phục hồi những trường hợp được định nghĩa."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Callback ném lỗi",
+      "question": "Nếu callback map ném một ngoại lệ non-fatal, Future được map thường ra sao?",
+      "options": [
+        "Hoàn tất thất bại với ngoại lệ đó",
+        "Tự bỏ callback và dùng kết quả gốc",
+        "Tự trả 0",
+        "Bắt buộc treo vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi trong biến đổi là một phần kết quả Future mới; không khẳng định mọi Throwable đều tương tự."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Thứ tự onComplete",
+      "question": "Hai onComplete độc lập gắn lên cùng Future có được bảo đảm chạy theo thứ tự đăng ký không?",
+      "options": [
+        "Có, vì Future có một kết quả",
+        "Không nên dựa vào thứ tự đó",
+        "Có, luôn FIFO trên mọi EC",
+        "Có, nếu tên callback theo bảng chữ cái"
+      ],
+      "correct": 1,
+      "explanation": "Cần kết hợp rõ quan hệ phụ thuộc nếu thứ tự là yêu cầu nghiệp vụ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Dữ liệu chung",
+      "question": "Hai Future cùng sửa var counter bằng counter += 1 có mặc nhiên an toàn không?",
+      "options": [
+        "Có, vì Int là kiểu bất biến",
+        "Có, global tuần tự hóa mọi Future",
+        "Không, thao tác đọc-sửa-ghi cần cơ chế đồng bộ thích hợp",
+        "Có, Future tự khóa mọi var"
+      ],
+      "correct": 2,
+      "explanation": "Bất biến của giá trị Int không làm cập nhật biến chung thành atomic."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Hai tác vụ độc lập",
+      "question": "Cách nào cho phép hai Future độc lập được lập lịch trước bước ghép kết quả?",
+      "options": [
+        "Tạo b chỉ bên trong callback sau khi a hoàn tất",
+        "Gọi Await cho a rồi mới gọi loadB",
+        "Dùng Thread.sleep giữa a và b để bảo đảm song song",
+        "Tạo val a = loadA(); val b = loadB(); rồi kết hợp a và b"
+      ],
+      "correct": 3,
+      "explanation": "Điều này cho phép chồng lấp nhưng không cam kết hai thread chạy cùng lúc."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Phụ thuộc tuần tự",
+      "question": "Nếu loadB cần id từ kết quả loadA, cách kết hợp nào biểu đạt phụ thuộc?",
+      "options": [
+        "loadA().flatMap(a => loadB(a.id))",
+        "Chạy loadB bằng id chưa có rồi đoán",
+        "Chỉ đặt hai lời gọi vào hai val không liên quan",
+        "Gọi map rồi bỏ Future của loadB"
+      ],
+      "correct": 0,
+      "explanation": "Bước sau chỉ có thể được tạo với dữ liệu đầu vào đã có."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "For và Future",
+      "question": "For trên Future được dùng chủ yếu để làm gì?",
+      "options": [
+        "Tự giới hạn tốc độ gọi API",
+        "Biểu đạt chuỗi map/flatMap theo các phụ thuộc dữ liệu",
+        "Bắt buộc mọi bước song song",
+        "Bắt buộc mọi bước dùng một OS thread"
+      ],
+      "correct": 1,
+      "explanation": "Cú pháp for không tự cung cấp chính sách tài nguyên."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "EC và thread",
+      "question": "Một Future có luôn nhận một OS thread riêng suốt đời không?",
+      "options": [
+        "Có, kể cả Future.successful",
+        "Không, vì Future không bao giờ dùng thread",
+        "Không, EC có thể dùng pool và callback được lập lịch riêng",
+        "Có, một Future bằng một thread vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Không suy ra số thread chỉ từ số Future."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Pool cho blocking",
+      "question": "Nhiều I/O chặn kéo dài nên được xem xét thế nào?",
+      "options": [
+        "Đưa vô hạn lên global vì Future loại bỏ blocking",
+        "Đổi tên hàm thành nonBlocking",
+        "Tăng Await vô hạn để tăng throughput",
+        "Dùng cơ chế/pool thích hợp, giới hạn và quản lý vòng đời tài nguyên"
+      ],
+      "correct": 3,
+      "explanation": "Chuyển việc chặn sang pool không loại bỏ chi phí tài nguyên."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Blocking hint",
+      "question": "scala.concurrent.blocking có bảo đảm thao tác bên trong trở thành non-blocking không?",
+      "options": [
+        "Không, chỉ thông báo việc chặn cho EC có hỗ trợ",
+        "Có, tự đổi mọi I/O thành callback",
+        "Có, không còn worker nào phải đợi",
+        "Không, vì nó luôn hủy tác vụ"
+      ],
+      "correct": 0,
+      "explanation": "Cách EC phản ứng và giới hạn pool vẫn quan trọng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Promise thành công",
+      "question": "Sau khi Promise[Int] đã success(7), Future của nó quan sát giá trị gì?",
+      "options": [
+        "Giá trị của Promise bất kỳ khác",
+        "7",
+        "Có thể đổi ngẫu nhiên mỗi lần đọc",
+        "None"
+      ],
+      "correct": 1,
+      "explanation": "Một Promise gắn với một Future hoàn tất một lần."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "TrySuccess",
+      "question": "trySuccess(8) trên Promise đã hoàn tất thường trả gì?",
+      "options": [
+        "Some(8)",
+        "Một Future[Boolean]",
+        "false",
+        "true và ghi đè kết quả"
+      ],
+      "correct": 2,
+      "explanation": "trySuccess báo có hoàn tất được hay không, không ghi đè."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Success lần hai",
+      "question": "Gọi success lần hai trên cùng Promise đã hoàn tất có vấn đề gì?",
+      "options": [
+        "Tự thêm giá trị vào stream",
+        "Tự tạo Promise khác",
+        "Tự sửa lịch sử subscriber",
+        "Có thể ném IllegalStateException vì đã hoàn tất"
+      ],
+      "correct": 3,
+      "explanation": "Dùng trySuccess khi cạnh tranh hoàn tất là tình huống được dự tính."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Sequence",
+      "question": "Future.sequence(List(fa, fb)) khi mọi Future thành công cung cấp gì?",
+      "options": [
+        "Future chứa List kết quả theo thứ tự đầu vào",
+        "List các thread theo thứ tự hoàn tất",
+        "Kết quả đầu tiên rồi hủy phần còn lại tự động",
+        "Một Int là số worker"
+      ],
+      "correct": 0,
+      "explanation": "Thứ tự collection đầu vào khác với lịch hoàn tất thực tế."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Sequence lỗi",
+      "question": "Một thành phần của Future.sequence thất bại thì có tự chứng minh các thành phần khác đã bị hủy không?",
+      "options": [
+        "Có, mọi Promise tự trở thành None",
+        "Không, thất bại kết quả ghép không đồng nghĩa hủy mọi công việc",
+        "Có, mọi side effect được rollback",
+        "Có, sequence interrupt toàn bộ JVM"
+      ],
+      "correct": 1,
+      "explanation": "Cần cơ chế hủy và điều phối riêng nếu nghiệp vụ yêu cầu."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Await ready",
+      "question": "Khác biệt quan trọng của Await.ready so với Await.result là gì?",
+      "options": [
+        "ready chỉ dành cho Some",
+        "ready tự recover tất cả lỗi",
+        "ready đợi hoàn tất và trả Awaitable, không lấy giá trị thành công như result",
+        "ready không bao giờ chặn"
+      ],
+      "correct": 2,
+      "explanation": "Cả việc chờ quá hạn vẫn cần được xem xét."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Future successful",
+      "question": "Future.successful(42) thường biểu diễn gì?",
+      "options": [
+        "Một computation ngủ 42 giây",
+        "Một Promise chưa hoàn tất",
+        "Một Future chỉ chạy sau map lần thứ hai",
+        "Một Future đã hoàn tất thành công với 42"
+      ],
+      "correct": 3,
+      "explanation": "Không cần lập lịch khối công việc để có giá trị đã biết."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Future failed",
+      "question": "Future.failed[Int](err) biểu diễn gì?",
+      "options": [
+        "Future đã hoàn tất thất bại với err",
+        "Future sẽ retry err mãi",
+        "Một Int mặc định bằng 0",
+        "Một callback chưa được khai báo"
+      ],
+      "correct": 0,
+      "explanation": "Thất bại có thể được mô hình hóa trực tiếp."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Foreach kết quả",
+      "question": "f.foreach(n => println(n)) trả về gì theo API Future thông thường?",
+      "options": [
+        "Option[Unit]",
+        "Unit",
+        "Future[Int] của phép in",
+        "Int bằng n"
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần nối bước tiếp theo, chọn phép kết hợp trả Future thích hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "OnComplete kiểu tham số",
+      "question": "Callback onComplete nhận dạng kết quả nào?",
+      "options": [
+        "Một thread ID thay kết quả",
+        "Chỉ T, không có thông tin lỗi",
+        "Try[T] gồm Success hoặc Failure",
+        "Option[T] gồm Some hoặc None bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Try mô tả hai dạng hoàn tất của Future."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Đọc value",
+      "question": "f.value khi f chưa hoàn tất thường cho gì?",
+      "options": [
+        "Some(Success(0))",
+        "42 bắt buộc",
+        "Một TimeoutException ngay lập tức",
+        "None"
+      ],
+      "correct": 3,
+      "explanation": "value là quan sát trạng thái hiện tại, không thay Await để chờ."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Quan sát value",
+      "question": "Nếu f.value là Some(Failure(err)), f có hoàn tất chưa?",
+      "options": [
+        "Rồi, hoàn tất thất bại",
+        "Chưa, vì chỉ Success mới hoàn tất",
+        "Chưa, vì None mới là hoàn tất",
+        "Rồi, và chắc chắn đã recover thành 0"
+      ],
+      "correct": 0,
+      "explanation": "Option bên ngoài mô tả có kết quả hoàn tất; Try bên trong mô tả thành công/thất bại."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Phục hồi đúng miền",
+      "question": "Nhánh recover trả 0 khi tải điểm lỗi có điều gì cần làm rõ?",
+      "options": [
+        "Không cần log hay hợp đồng vì đã không ném lỗi",
+        "0 là dữ liệu hợp lệ hay dấu thay thế và cách báo trạng thái lỗi",
+        "0 luôn an toàn cho mọi nghiệp vụ",
+        "recover tự đính kèm cảnh báo trong kiểu Int"
+      ],
+      "correct": 1,
+      "explanation": "Giá trị phục hồi có thể che khác biệt quan trọng của kết quả."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Deadline",
+      "question": "Thời gian chờ trên từng bước và deadline toàn request có luôn giống nhau không?",
+      "options": [
+        "Có, for tự trừ thời gian khỏi mọi timeout",
+        "Không, Future cấm deadline",
+        "Không, nhiều bước có thể cộng dồn và cần ngân sách chung",
+        "Có, cứ mỗi bước 2 giây thì tổng luôn 2 giây"
+      ],
+      "correct": 2,
+      "explanation": "Cần thiết kế ngân sách thời gian theo luồng nghiệp vụ."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Kết thúc pool",
+      "question": "Pool riêng do ứng dụng tạo cần gì khi dừng ứng dụng?",
+      "options": [
+        "Không bao giờ cần đóng vì Future tự làm hết",
+        "Mọi callback phải tự tạo pool khác",
+        "Await vô hạn thay cho shutdown",
+        "Quản lý vòng đời và đóng thích hợp theo quyền sở hữu"
+      ],
+      "correct": 3,
+      "explanation": "Tài nguyên thực thi không tự biến mất chỉ vì Future hoàn tất."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Giá trị trả về khối",
+      "question": "Nếu thêm println(\"done\") sau 42 làm biểu thức cuối trong Future, kiểu suy luận có thể đổi thế nào?",
+      "options": [
+        "Thành Future[Unit] vì println trả Unit",
+        "Vẫn Future[Int] vì số 42 xuất hiện trước",
+        "Thành Future[String] vì chuỗi done",
+        "Thành Option[Int]"
+      ],
+      "correct": 0,
+      "explanation": "Biểu thức cuối của block quyết định giá trị trả về thông thường."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Phân biệt đơn vị",
+      "question": "Thread.sleep(500) và 2.seconds có cùng đơn vị đối số gốc không?",
+      "options": [
+        "Không, sleep nhận số lượng Future",
+        "Không, sleep nhận mili giây ở overload dùng trong source, còn seconds tạo Duration",
+        "Có, cả hai đều là 500 giây",
+        "Có, số 2 là mili giây vì nằm trong Await"
+      ],
+      "correct": 1,
+      "explanation": "Đọc đúng đơn vị là điều kiện để hiểu ví dụ thời gian."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không chứng minh thứ tự in",
+      "question": "Nếu thêm một println ngay sau khi tạo f trước Await, có thể suy ra mọi lịch in từ vị trí dòng mã không?",
+      "options": [
+        "Có, global luôn chạy xong f trước dòng tiếp theo",
+        "Không, vì println bị cấm trong Future",
+        "Không, computation nền có lịch riêng; cần quan hệ đồng bộ rõ ràng",
+        "Có, mọi dòng trong mọi thread chạy theo thứ tự tệp"
+      ],
+      "correct": 2,
+      "explanation": "Thứ tự trong một luồng khác với thứ tự giữa các computation."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Ứng dụng demo",
+      "question": "Await có thể được dùng tại biên chương trình console demo nhưng nên hiểu thế nào?",
+      "options": [
+        "Là bằng chứng server non-blocking hoàn toàn",
+        "Là cách tự tăng số thread không giới hạn",
+        "Là API thay thế kiểm tra lỗi đầu vào",
+        "Là lựa chọn chặn có phạm vi, không phải mẫu bắt buộc cho mọi request server"
+      ],
+      "correct": 3,
+      "explanation": "Bối cảnh sử dụng quyết định tác động của việc chờ chặn."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Starvation",
+      "question": "Server dùng global cho hàng nghìn Future chứa sleep/I/O chặn, rồi map cũng trên global. Chậm kéo dài cần xử lý gốc ra sao?",
+      "options": [
+        "Đánh giá blocking và giới hạn tải, chọn cơ chế thực thi phù hợp cùng đo đạc",
+        "Tăng timeout cho mọi request là đủ chứng minh tối ưu",
+        "Bọc thêm map để hết chặn",
+        "Đổi val f thành var để pool tự mở rộng vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "Thiếu worker và tải vượt khả năng không được giải quyết chỉ bằng thời gian chờ dài hơn."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Timeout thanh toán",
+      "question": "Await thanh toán timeout sau 2 giây nhưng Future có thể còn chạy. Trước khi gửi lại lệnh, cần gì?",
+      "options": [
+        "Gọi map lần nữa để hủy giao dịch trước",
+        "Hợp đồng idempotency và đối soát trạng thái, vì timeout không chứng minh thanh toán thất bại",
+        "Gửi lặp vô hạn vì timeout tự rollback",
+        "Đổi amount thành 0 để tránh lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Tách thời gian caller chờ khỏi kết quả nghiệp vụ và side effect bên ngoài."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Song song có chủ ý",
+      "question": "Hai nguồn độc lập loadA và loadB đều trả Future. Muốn giảm tổng thời gian bằng chồng lấp, cách nào đúng nghĩa?",
+      "options": [
+        "Await A xong mới gọi B và kỳ vọng thời gian bằng max",
+        "Đặt Thread.sleep trước B để B luôn chạy cùng A",
+        "Tạo cả hai Future trước rồi ghép kết quả, đồng thời giới hạn tài nguyên",
+        "Đặt loadB bên trong flatMap sau A rồi gọi đó là song song chắc chắn"
+      ],
+      "correct": 2,
+      "explanation": "Cho phép thực thi chồng lấp không thay thế kiểm soát tải hay đo latency."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Dependency thật",
+      "question": "B cần token do A cấp. Đội tạo B trước với token rỗng để chạy “song song”. Sửa thế nào?",
+      "options": [
+        "Giữ token rỗng vì Future tự cập nhật tham số đã truyền",
+        "Dùng zip để bỏ qua yêu cầu token",
+        "Tăng số worker để token rỗng thành hợp lệ",
+        "Nối B sau A bằng flatMap/for đúng phụ thuộc và xử lý thất bại"
+      ],
+      "correct": 3,
+      "explanation": "Quan hệ phụ thuộc dữ liệu quan trọng hơn mục tiêu song song hóa hình thức."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Nối lỗi một phần",
+      "question": "A thành công, B thất bại trong phép ghép; A đã ghi dữ liệu ngoài. Future.sequence có đảm bảo hoàn tác A không?",
+      "options": [
+        "Không, cần thiết kế transaction hoặc bù trừ ở tầng nghiệp vụ phù hợp",
+        "Có, sequence luôn rollback mọi side effect",
+        "Có, vì kết quả ghép thất bại nên A chưa chạy",
+        "Không, nhưng gọi recover(0) sẽ hoàn tác A"
+      ],
+      "correct": 0,
+      "explanation": "Thất bại computation ghép không cung cấp transaction cho hệ thống bên ngoài."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Thứ tự lưu và thông báo",
+      "question": "Cần lưu hồ sơ xong mới gửi thông báo. Hai onComplete độc lập trên cùng Future có đủ thể hiện thứ tự không?",
+      "options": [
+        "Không, phải dùng sleep cố định thay quan hệ phụ thuộc",
+        "Không, nối bước phụ thuộc và xử lý lỗi của từng bước rõ ràng",
+        "Có, thứ tự đăng ký callback là hợp đồng FIFO phổ quát",
+        "Có, đặt tên callback saveA và notifyB là đủ"
+      ],
+      "correct": 1,
+      "explanation": "Composition tạo thứ tự có nghĩa hơn dựa vào scheduling tình cờ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Racing Promise",
+      "question": "Hai callback có thể cùng hoàn tất Promise. Nếu thất bại thứ hai là tình huống bình thường, chọn gì?",
+      "options": [
+        "Tạo var result dùng chung không đồng bộ",
+        "Gọi Await trong cả hai để ngăn callback chạy",
+        "trySuccess/tryFailure và xử lý boolean theo chính sách chọn kết quả",
+        "success ở cả hai rồi giả định kết quả bị ghi đè"
+      ],
+      "correct": 2,
+      "explanation": "Try-completion nhận biết cạnh tranh mà không sửa kết quả đã chốt."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Tách recover và lỗi dữ liệu",
+      "question": "Một API điểm số recover mọi lỗi thành 0 khiến người học bị đánh trượt khi database lỗi. Cách sửa hợp lý?",
+      "options": [
+        "Giữ 0 vì Future thành công là đủ đúng nghiệp vụ",
+        "Chuyển 0 thành -1 nhưng vẫn tuyên bố điểm thật",
+        "Ẩn log để không lộ lỗi vận hành",
+        "Phân biệt lỗi tải với điểm thật và chỉ phục hồi theo hợp đồng công khai"
+      ],
+      "correct": 3,
+      "explanation": "Thành công ở tầng Future không tự bảo đảm ý nghĩa dữ liệu đúng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Await trong pool",
+      "question": "Một worker pool nhỏ chạy Future A rồi A gọi Await cho Future B cũng cần cùng pool. Rủi ro nào cần đánh giá?",
+      "options": [
+        "Pool bị chiếm bởi các tác vụ đang chờ, gây starvation hoặc deadlock tùy lịch",
+        "Mọi Future luôn tự tạo thread nên không có rủi ro",
+        "Await tự chuyển B sang cluster khác",
+        "map làm B hoàn tất ngay dù chưa được thực thi"
+      ],
+      "correct": 0,
+      "explanation": "Composition không chặn và phân bổ tài nguyên phù hợp giúp tránh kiểu chờ phụ thuộc này."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Đếm có kiểm soát",
+      "question": "Cần tổng kết quả của nhiều Future thay vì tăng var chung trong từng callback. Cách nào rõ nghĩa hơn?",
+      "options": [
+        "Đổi Int thành Long là đủ atomic cho toàn phép tăng",
+        "Ghép các kết quả rồi tính tổng trên collection kết quả, đồng thời kiểm soát mức song song",
+        "Giữ counter += 1 vì callback luôn chạy một thread",
+        "Dùng sleep giữa từng phép tăng làm khóa"
+      ],
+      "correct": 1,
+      "explanation": "Tách tính toán kết quả khỏi cập nhật trạng thái chung giảm race và làm rõ lỗi."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Thời gian đầu cuối",
+      "question": "Mỗi API con có Await tối đa 2 giây, request gọi 3 API tuần tự. Có được quảng cáo request luôn dưới 2 giây không?",
+      "options": [
+        "Có, map không tính vào thời gian",
+        "Không, nhưng đổi seconds thành millis vẫn bảo đảm thành công",
+        "Không, cần deadline chung và tính toàn bộ các bước/chi phí",
+        "Có, vì mọi bước có cùng số 2"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn từng phép chờ không tự giới hạn tổng hành trình."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Callback chặn",
+      "question": "Sau Future I/O không chặn, callback map thực hiện tính toán CPU rất dài trên EC dùng cho nhiều request. Nhận định nào đúng?",
+      "options": [
+        "map miễn phí nên không ảnh hưởng throughput",
+        "Chỉ thân Future đầu tiên mới dùng worker",
+        "Đổi map thành foreach chắc chắn tăng khả năng chịu tải",
+        "Callback cũng tiêu thụ tài nguyên; cần đo và chọn scheduling/giới hạn phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không chặn I/O không đồng nghĩa không tốn CPU."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Không hủy tự động",
+      "question": "Chọn Future đầu tiên hoàn tất trong hai nguồn có tự bảo đảm nguồn thua không tiếp tục ghi dữ liệu không?",
+      "options": [
+        "Không, kết quả chọn trước không tự cung cấp hủy/rollback cho nguồn còn lại",
+        "Có, Future thua bị interrupt chắc chắn",
+        "Có, mọi Promise nguồn thua thành None",
+        "Có, vì chỉ một kết quả được người gọi dùng"
+      ],
+      "correct": 0,
+      "explanation": "Cần thiết kế side effect, hủy và idempotency theo khả năng thực tế của hệ thống."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Đánh giá eager",
+      "question": "val a = loadA(); val b = loadB(); val combined = for { x <- a; y <- b } yield (x,y). Nếu a thất bại, b có thể đã chạy chưa?",
+      "options": [
+        "Chỉ khi Await được gọi hai lần",
+        "Có, b đã được tạo trước lúc ghép và có thể đã được lập lịch",
+        "Không, for luôn ngăn việc tạo b trước khi a thành công",
+        "Không, thất bại a quay ngược thời gian khai báo b"
+      ],
+      "correct": 1,
+      "explanation": "Thời điểm tạo công việc khác với thứ tự quan sát kết quả trong for."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Thất bại ở biên gọi",
+      "question": "Nếu loadA() ném lỗi trước khi trả Future, bọc recover trên Future chưa nhận được có xử lý tự động không?",
+      "options": [
+        "Có, ExecutionContext bắt mọi lỗi trước khi gọi hàm",
+        "Không, nhưng đổi timeout là đủ",
+        "Không, cần hợp đồng hàm trả Future thất bại hoặc xử lý lỗi đồng bộ ở biên gọi",
+        "Có, mọi hàm có tên load tự thuộc Future"
+      ],
+      "correct": 2,
+      "explanation": "Lỗi khi tạo đối tượng/hàm trả về và lỗi bên trong Future cần được phân biệt."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Quan sát không chờ",
+      "question": "Code kiểm f.value một lần, thấy None rồi kết luận tác vụ thất bại. Sai ở đâu?",
+      "options": [
+        "None chứng minh lỗi đã bị bỏ qua",
+        "None chứng minh Future đã bị hủy",
+        "None chứng minh kết quả Int bằng 0",
+        "None chỉ nói chưa có kết quả hoàn tất tại thời điểm quan sát"
+      ],
+      "correct": 3,
+      "explanation": "Trạng thái chưa hoàn tất khác kết quả thất bại được chứa trong Some(Failure)."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Khôi phục bất đồng bộ",
+      "question": "API dự phòng cũng trả Future và có thể lỗi. Thiết kế phục hồi nào giữ một tầng Future cùng trạng thái lỗi?",
+      "options": [
+        "recoverWith cho lỗi được chọn, kèm chính sách cho thất bại dự phòng",
+        "recover trả Future rồi coi kết quả là Future[Int] tự flatten",
+        "foreach dự phòng rồi trả 0 bất kể kết quả",
+        "Await vô hạn trong mọi callback"
+      ],
+      "correct": 0,
+      "explanation": "Phục hồi phải giữ kiểu và hợp đồng lỗi của bước dự phòng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Quá tải khởi tạo",
+      "question": "Gọi Future.traverse trên hàng triệu phần tử để gọi API ngoài có tự giới hạn concurrency an toàn theo quota không?",
+      "options": [
+        "Không, nhưng thêm Await vô hạn cấp thêm quota",
+        "Không, phải có chính sách giới hạn, hàng đợi/backpressure và xử lý lỗi phù hợp",
+        "Có, traverse tự hiểu mọi quota dịch vụ",
+        "Có, số phần tử tự bằng số CPU nên không quá tải"
+      ],
+      "correct": 1,
+      "explanation": "Combinator ghép kết quả không thay thế giới hạn tải đầu vào."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Trách nhiệm vòng đời",
+      "question": "Một thư viện nhận ExecutionContext từ caller có nên luôn shutdown nó sau mỗi request không?",
+      "options": [
+        "Có, shutdown làm Future đã xong được an toàn hơn",
+        "Không, vì mọi pool đều không thể shutdown",
+        "Không, phải theo quyền sở hữu; đóng pool dùng chung có thể phá công việc khác",
+        "Có, mọi request sở hữu global riêng"
+      ],
+      "correct": 2,
+      "explanation": "Tài nguyên được truyền vào thường do bên tạo quản lý, trừ hợp đồng khác."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Bắt đầu Future và timeout",
+      "question": "Hai tác vụ A/B cần bắt đầu độc lập rồi tổng hợp. Sau Await.result(..., 100.millis) timeout, process vẫn chạy. Nhận định nào đúng với Future chuẩn?",
+      "options": [
+        "Tạo B trong flatMap sau A hoàn tất vẫn bảo đảm B bắt đầu đồng thời với A",
+        "Await timeout tự interrupt cả hai tác vụ và rollback side effects",
+        "Đặt Await trong global pool luôn tăng khả năng song song vì Await là non-blocking",
+        "Tạo cả hai Future trước khi ghép; timeout chặn chờ không tự hủy tác vụ đang chạy"
+      ],
+      "correct": 3,
+      "explanation": "Future được khởi tạo là eager; đặt B trong callback sau A sẽ hoãn việc tạo B. Await chặn caller, timeout không cung cấp cancellation hay rollback cho Future chuẩn."
+    }
+  ]
+}

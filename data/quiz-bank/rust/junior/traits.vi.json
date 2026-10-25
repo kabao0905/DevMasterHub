@@ -1,0 +1,1162 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "junior",
+  "lesson": "traits",
+  "language": "vi",
+  "sourceHash": "20304aa4a4b23a2bd832485400e5df13c099ddb274f1f263eebcbd054795153a",
+  "status": "approved",
+  "review": "Tự soạn không API. Source review và selected rustc1.93.1 examples ghi riêng. Source là snippet thiếu main; Summary.preview gọi summarize hai lần và byte slicing20,Article.summarize byte slicing50 có UTF-8/stateful hazards. largest empty panic,PartialOrd không total order với NaN,ties giữ reference đầu. impl Trait opaque bounds khác dyn và concrete hidden type; derive không tự implement custom traits. Không hứa zero-cost/performance benchmark hoặc sửa source âm thầm.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Trait role",
+      "question": "Trait Summary trong bài định nghĩa gì?",
+      "options": [
+        "Contract hành vi summarize và preview.",
+        "Một database table.",
+        "Một struct bắt buộc có field title.",
+        "Một runtime API key."
+      ],
+      "correct": 0,
+      "explanation": "Trait yêu cầu methods,không áp field layout của mọi implementer."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Required method",
+      "question": "Method nào của Summary phải được implement nếu không có nguồn default?",
+      "options": [
+        "drop bắt buộc.",
+        "summarize.",
+        "preview bắt buộc không được override.",
+        "new bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "summarize trong trait có signature nhưng không body."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Default method",
+      "question": "preview trong trait có đặc điểm gì?",
+      "options": [
+        "Một field String.",
+        "Tự tạo HTTP response.",
+        "Có implementation mặc định có thể gọi summarize.",
+        "Luôn là abstract method không body."
+      ],
+      "correct": 2,
+      "explanation": "Implementer có thể dùng hoặc override behavior theo rules."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Implement syntax",
+      "question": "Cú pháp implementation custom trait cho Article là gì?",
+      "options": [
+        "class Article implements Summary.",
+        "trait Article extends struct.",
+        "func Summary(Article).",
+        "impl Summary for Article { ... }."
+      ],
+      "correct": 3,
+      "explanation": "Rust dùng impl block với trait và type."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Borrowed receiver",
+      "question": "summarize(&self) nhận instance thế nào?",
+      "options": [
+        "Shared borrow.",
+        "Consume self vô điều kiện.",
+        "Clone mọi fields trước call.",
+        "Một raw pointer luôn nullable."
+      ],
+      "correct": 0,
+      "explanation": "Behavior thực tế vẫn theo implementation và interior mutability contracts."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "String result",
+      "question": "summarize trả kiểu nào?",
+      "options": [
+        "Một database row.",
+        "String owned.",
+        "&str static bắt buộc.",
+        "bool."
+      ],
+      "correct": 1,
+      "explanation": "Return String không có nghĩa receiver bị move."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Clone derive",
+      "question": "#[derive(Debug,Clone)] cho Article bổ sung những traits nào?",
+      "options": [
+        "Display bắt buộc tự có.",
+        "Summary tự có mà không impl.",
+        "Debug và Clone theo derived implementation phù hợp fields.",
+        "Copy và mọi custom traits tự động."
+      ],
+      "correct": 2,
+      "explanation": "Source vẫn implement Summary và Display riêng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Display trait",
+      "question": "fmt::Display trong Article chủ yếu phục vụ gì?",
+      "options": [
+        "Tự validate mọi content.",
+        "Tự publish bài.",
+        "Tự clone Article.",
+        "Định dạng qua {} theo implementation."
+      ],
+      "correct": 3,
+      "explanation": "Debug formatting và Display là contracts khác."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Generic bound",
+      "question": "T:PartialOrd trong largest yêu cầu gì?",
+      "options": [
+        "T hỗ trợ partial ordering theo trait.",
+        "T luôn có total order và không thể NaN.",
+        "T bắt buộc Copy.",
+        "T bắt buộc String."
+      ],
+      "correct": 0,
+      "explanation": "Source trả borrowed T nên không cần Copy chỉ để trả kết quả."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Borrowed maximum",
+      "question": "largest trả gì?",
+      "options": [
+        "Một Result cho empty input trong source hiện tại.",
+        "Reference tới một phần tử trong input slice.",
+        "Owned clone của phần tử bắt buộc.",
+        "Index usize duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Lifetime output gắn input theo elision."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Initial maximum",
+      "question": "largest nguồn lấy giá trị ban đầu ở đâu?",
+      "options": [
+        "Phần tử cuối.",
+        "Một API trả maximum.",
+        "&list[0].",
+        "T::default luôn."
+      ],
+      "correct": 2,
+      "explanation": "Điều này tạo tiền điều kiện input không rỗng chưa được thể hiện bằng Result/Option."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Multiple bounds",
+      "question": "Summary+fmt::Display ở tham số print_summary yêu cầu gì?",
+      "options": [
+        "Một trong hai là đủ.",
+        "Hai instances khác nhau bắt buộc.",
+        "Một string có ký tự+.",
+        "Cả hai trait contracts."
+      ],
+      "correct": 3,
+      "explanation": "Dấu + nối bounds,không là cộng dữ liệu runtime."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Argument impl trait",
+      "question": "&(impl Summary+Display) dùng ở tham số thể hiện gì?",
+      "options": [
+        "Tham số generic ẩn danh có các bounds đó.",
+        "Bắt buộc heap allocation/dynamic dispatch mọi call.",
+        "Một enum chứa hai variants.",
+        "Một trait mới tự sinh vĩnh viễn."
+      ],
+      "correct": 0,
+      "explanation": "Đừng đồng nhất argument-position impl Trait với dyn trait object."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Return impl trait",
+      "question": "create_summarizer()->impl Summary công bố gì cho caller?",
+      "options": [
+        "Một Box<dyn Summary> bắt buộc.",
+        "Một concrete return type ẩn có Summary bound được công bố.",
+        "Bất kỳ concrete type tùy branch không cần thống nhất.",
+        "Mọi methods/traits của Article đều tự được công bố."
+      ],
+      "correct": 1,
+      "explanation": "Opaque return type khác dynamic trait object."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Factory actual value",
+      "question": "Body create_summarizer nguồn tạo gì?",
+      "options": [
+        "Một database connection.",
+        "Một iterator random.",
+        "Article có title Test và content Content here....",
+        "Một Note không định nghĩa."
+      ],
+      "correct": 2,
+      "explanation": "Concrete type có trong body nhưng API chỉ công bố bounds theo signature."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Byte truncate source",
+      "question": "50.min(self.content.len()) trong summarize dùng đơn vị gì?",
+      "options": [
+        "Grapheme clusters luôn.",
+        "Số từ.",
+        "Số lines.",
+        "Byte offsets/byte length của UTF-8 string."
+      ],
+      "correct": 3,
+      "explanation": "Cận byte cần đúng char boundary để slice không panic."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Preview cutoff",
+      "question": "preview nguồn định dùng cận tối đa bao nhiêu bytes trước dấu...?",
+      "options": [
+        "20.",
+        "50.",
+        "100.",
+        "Không có cận."
+      ],
+      "correct": 0,
+      "explanation": "Giới hạn byte không tự là20 ký tự người dùng cảm nhận."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Trait object syntax",
+      "question": "Kiểu trait object borrowed thường viết thế nào?",
+      "options": [
+        "let dyn = trait.",
+        "&dyn Summary.",
+        "&impl struct Summary duy nhất.",
+        "Summary[] bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Trait phải dyn-compatible cho ngữ cảnh đó."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Dyn compatibility term",
+      "question": "Khái niệm dyn compatibility trước đây thường được gọi là gì?",
+      "options": [
+        "SQL isolation.",
+        "String literal lifetime.",
+        "Object safety.",
+        "Memory allocation zero."
+      ],
+      "correct": 2,
+      "explanation": "Rules áp dụng cho trait/method có thể dùng qua trait object."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Source entry gap",
+      "question": "Source Traits có main hoàn chỉnh không?",
+      "options": [
+        "Có,create_summarizer tự làm entry.",
+        "Có,trait default tự chạy khi build.",
+        "Chỉ cần file tênmain.rs.",
+        "Chưa có main trong snippet."
+      ],
+      "correct": 3,
+      "explanation": "Fixtures thêm main riêng không là source nguyên trạng đã chạy."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "ASCII summary",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:\"Hi\".into(),content:\"body\".into()};println!(\"{}\",a.summarize());}\n",
+      "options": [
+        "Hi: body.",
+        "[Hi] body.",
+        "body: Hi.",
+        "Compiler cấm default trait methods."
+      ],
+      "correct": 0,
+      "explanation": "Summary implementation format title: content."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "ASCII content cutoff",
+      "question": "Chương trình in độ dài nào?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:\"T\".into(),content:\"x\".repeat(60)};println!(\"{}\",a.summarize().len());}\n",
+      "options": [
+        "20.",
+        "53.",
+        "63.",
+        "50."
+      ],
+      "correct": 1,
+      "explanation": "Title T và colon-space thêm3 bytes vào50bytes content ASCII."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Full Display",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:\"Hi\".into(),content:\"body\".into()};println!(\"{a}\");}\n",
+      "options": [
+        "Hi....",
+        "Article chỉ debug được,không Display trong source.",
+        "[Hi] body.",
+        "Hi: body."
+      ],
+      "correct": 2,
+      "explanation": "Display riêng không dùng công thức summarize."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Article clone fields",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:\"T\".into(),content:\"x\".into()};let mut b=a.clone();b.content.push('y');println!(\"{} {}\",a.content,b.content);}\n",
+      "options": [
+        "xy xy.",
+        "x x.",
+        "Clone move a vào b.",
+        "x xy."
+      ],
+      "correct": 3,
+      "explanation": "Derived Clone trên hai String fields clone owned strings."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Largest integers",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){println!(\"{}\",largest(&[2,9,5]));}\n",
+      "options": [
+        "9.",
+        "2.",
+        "5.",
+        "Một index3."
+      ],
+      "correct": 0,
+      "explanation": "Source so sánh và giữ reference tới phần tử lớn hơn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Single item maximum",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){println!(\"{}\",largest(&[7]));}\n",
+      "options": [
+        "Không compile vì cần Copy bound.",
+        "7.",
+        "0.",
+        "Panic vì list[1..] không hợp lệ khi len1."
+      ],
+      "correct": 1,
+      "explanation": "Slice[1..] rỗng hợp lệ khi len1."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "String ordering",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let values=[String::from(\"z\"),String::from(\"aa\")];println!(\"{}\",largest(&values));}\n",
+      "options": [
+        "2.",
+        "largest luôn chọn string dài nhất theo len.",
+        "z.",
+        "aa."
+      ],
+      "correct": 2,
+      "explanation": "String PartialOrd theo lexicographic ordering,không phải độ dài."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Empty largest panic",
+      "question": "Chương trình gặp gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let values:[i32;0]=[];println!(\"{}\",largest(&values));}\n",
+      "options": [
+        "TrảNone tự động.",
+        "TrảT::default.",
+        "Compiler luôn reject empty slice call.",
+        "Panic do list[0] vượt bounds."
+      ],
+      "correct": 3,
+      "explanation": "Input không rỗng là tiền điều kiện chưa được API hóa trong source."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Missing order bound",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Item;\nfn main(){let values=[Item];let _=largest(&values);}\n",
+      "options": [
+        "Không;Item chưa implement PartialOrd.",
+        "Có,compiler tự so địa chỉ struct.",
+        "Có,mọi struct tự comparable.",
+        "Chỉ lỗi runtime."
+      ],
+      "correct": 0,
+      "explanation": "Trait bound được kiểm tra tại instantiation."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Opaque bound hides Display",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let x=create_summarizer();println!(\"{x}\");}\n",
+      "options": [
+        "Chỉ lỗi khi title dài.",
+        "Không;return signature chỉ công bố Summary,chưa công bố Display cho opaque type.",
+        "Có,caller luôn dùng mọi traits của hidden Article.",
+        "Có,fmt tự unwrap opaque type."
+      ],
+      "correct": 1,
+      "explanation": "Concrete hidden implementation không tự làm mọi traits thành public API bounds."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Impl trait branch types",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Note;impl Summary for Note{fn summarize(&self)->String{\"note\".into()}}fn make(flag:bool)->impl Summary{if flag{Article{title:\"T\".into(),content:\"x\".into()}}else{Note}}\nfn main(){let _=make(true);}\n",
+      "options": [
+        "Có,Summary bound xóa mọi type mismatch.",
+        "Chỉ runtime dynamic dispatch.",
+        "Không;hai branch concrete types khác nhau cho cùng return impl Summary này.",
+        "Có,impl Trait tự sinh enum cho mọi branches."
+      ],
+      "correct": 2,
+      "explanation": "Có thể dùng enum hoặc trait object khi contract cần heterogeneity."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Heterogeneous boxed trait objects",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Note;impl Summary for Note{fn summarize(&self)->String{\"note\".into()}}\nfn main(){let v:Vec<Box<dyn Summary>>=vec![Box::new(Article{title:\"T\".into(),content:\"x\".into()}),Box::new(Note)];println!(\"{}\",v.len());}\n",
+      "options": [
+        "1.",
+        "Compiler cấm Box<dyn Summary>.",
+        "Tự clone mọi type thành Article.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "Hai concrete implementers có thể nằm sau cùng trait object type."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Borrowed dyn dispatch",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:\"Hi\".into(),content:\"body\".into()};let s:&dyn Summary=&a;println!(\"{}\",s.summarize());}\n",
+      "options": [
+        "Hi: body.",
+        "[Hi] body.",
+        "Compiler cấm Summary trait object do default preview.",
+        "Một địa chỉ vtable."
+      ],
+      "correct": 0,
+      "explanation": "Summary hiện có methods phù hợp dyn use;call dispatch tới Article implementation."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Generic method dyn restriction",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "trait Bad{fn f<T>(&self,x:T);}\nfn main(){let _:Option<Box<dyn Bad>>=None;}\n",
+      "options": [
+        "Chỉ lỗi khi gọi f.",
+        "Không;Bad có generic method dispatchable nên không dyn-compatible.",
+        "Có,mọi trait dùng dyn được.",
+        "Có,Option None bỏ typecheck payload."
+      ],
+      "correct": 1,
+      "explanation": "Trait object validity được kiểm tra dù value None."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Conflicting trait impl",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nimpl Summary for Article{fn summarize(&self)->String{\"other\".into()}}\nfn main(){}\n",
+      "options": [
+        "Có,compiler tự chọn theo callsite.",
+        "Chỉ lỗi khi cả hai methods được gọi.",
+        "Không;Summary đã được implement cho Article rồi.",
+        "Có,implementation cuối luôn ghi đè cái đầu."
+      ],
+      "correct": 2,
+      "explanation": "Coherence không cho hai conflicting implementations này."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Orphan rule",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "impl std::fmt::Display for Vec<i32>{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{write!(f,\"v\")}}\nfn main(){}\n",
+      "options": [
+        "Có,mọi crate override mọi foreign traits/types.",
+        "Có,nếu method không được gọi.",
+        "Chỉ cần unsafe impl.",
+        "Không;crate này không sở hữu Display hay Vec type trong implementation đó."
+      ],
+      "correct": 3,
+      "explanation": "Newtype/local trait có thể là thiết kế phù hợp khi cần behavior."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Required method absent",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Note;impl Summary for Note{}\nfn main(){}\n",
+      "options": [
+        "Không;impl thiếu summarize bắt buộc.",
+        "Có,preview tự tạo summarize default ngầm.",
+        "Có,derive Debug tự sinh summarize.",
+        "Chỉ lỗi runtime."
+      ],
+      "correct": 0,
+      "explanation": "Default của một method không lấp method bắt buộc khác."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Derive custom trait gap",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n#[derive(Debug)]struct Note;\nfn main(){let n=Note;println!(\"{}\",n.summarize());}\n",
+      "options": [
+        "Chỉ nếu method được gọi hai lần.",
+        "Không;Note chưa implement Summary nên không có summarize qua contract này.",
+        "Có,Debug luôn sinh mọi custom trait.",
+        "Có,tênNote tự dùng Article impl."
+      ],
+      "correct": 1,
+      "explanation": "Trait implementation không tự chuyển từ type này sang type khác."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Override default",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Note;impl Summary for Note{fn summarize(&self)->String{\"note\".into()}fn preview(&self)->String{\"custom\".into()}}\nfn main(){println!(\"{}\",Note.preview());}\n",
+      "options": [
+        "Compiler cấm override trait default.",
+        "20.",
+        "custom.",
+        "note...."
+      ],
+      "correct": 2,
+      "explanation": "Impl có thể override preview mặc định."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "First NaN largest",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let values=[f64::NAN,1.0,2.0];println!(\"{}\",largest(&values).is_nan());}\n",
+      "options": [
+        "false.",
+        "Compiler cấm f64:PartialOrd.",
+        "largest tự bỏ NaN theo total order.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Comparisons > với NaN false,nên initial NaN có thể được giữ."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Partial order not total",
+      "question": "T:PartialOrd có bảo đảm so sánh mọi cặp luôn ra thứ tự đầy đủ không?",
+      "options": [
+        "Không,có thể có incomparable values như NaN.",
+        "Có,PartialOrd chính là Ord alias.",
+        "Có,vì source dùng>.",
+        "Chỉ nếu list nonempty."
+      ],
+      "correct": 0,
+      "explanation": "Nếu domain cần total order,cần contract/strategy phù hợp như total_cmp cho floats."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Maximum ties",
+      "question": "Source dùng item>largest có thay reference khi hai phần tử bằng nhau không?",
+      "options": [
+        "Chỉ nếu T String.",
+        "Không,ties giữ lựa chọn trước đó.",
+        "Có,luôn chọn phần tử cuối.",
+        "Có,luôn clone cả hai."
+      ],
+      "correct": 1,
+      "explanation": "Điều này là behavior của comparison strict trong implementation cụ thể."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Largest borrowed lifetime",
+      "question": "Có thể dùng reference largest sau khi Vec owner bị drop không?",
+      "options": [
+        "Có,PartialOrd giữ owner sống trên disk.",
+        "Chỉ cần slice rỗng.",
+        "Không nếu reference tới dữ liệu đã hết lifetime.",
+        "Có,generic tự chuyển reference thành static."
+      ],
+      "correct": 2,
+      "explanation": "Type/lifetime contract khác việc copy hoặc clone value."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Unicode prefix risk",
+      "question": "content[..50.min(content.len())] có bảo đảm boundary UTF-8 hợp lệ không?",
+      "options": [
+        "Có,mọi UTF-8 ký tự đều một byte.",
+        "Có,min tự align Unicode.",
+        "Chỉ nếu String owned.",
+        "Không;min chỉ tránh vượt độ dài,không kiểm char boundary."
+      ],
+      "correct": 3,
+      "explanation": "Cần xử lý truncation theo bytes/chars/graphemes contract thực sự muốn."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Preview duplicate calls",
+      "question": "preview gọi summarize bao nhiêu lần theo expression nguồn?",
+      "options": [
+        "Hai lần.",
+        "Một lần luôn được specification memoize.",
+        "Không lần nào.",
+        "20 lần."
+      ],
+      "correct": 0,
+      "explanation": "Không assume compiler có thể loại side-effectful calls;trait implementation có thể interior-mutable."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Default not automatically safe",
+      "question": "Có body default preview có chứng minh không panic với mọi implementer không?",
+      "options": [
+        "Chỉ cần Summary return String.",
+        "Không.",
+        "Có,compiler chứng minh mọi String slicing an toàn.",
+        "Có,mọi trait methods pure."
+      ],
+      "correct": 1,
+      "explanation": "Validity của default phụ thuộc code và contract chưa được type signature biểu diễn."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Multiple bounds compile role",
+      "question": "Source print_summary có thể nhận implementer chỉ Summary nhưng không Display không?",
+      "options": [
+        "Có,Summary returnString là đủ tự implement Display.",
+        "Chỉ nếu title ngắn.",
+        "Không theo bound hiện tại.",
+        "Có,Display tự fallback Debug."
+      ],
+      "correct": 2,
+      "explanation": "Cả hai bounds được yêu cầu dù caller muốn chỉ một phần behavior."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Opaque return consumer",
+      "question": "Có thể gọi summarize trên return create_summarizer không?",
+      "options": [
+        "Không,vì hidden type không có bất kỳ API nào.",
+        "Chỉ khi downcast Article.",
+        "Chỉ nếu Display được thêm.",
+        "Có,vì Summary bound được công bố."
+      ],
+      "correct": 3,
+      "explanation": "Opaque type che concrete identity không che methods của public bounds."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Dyn no automatic heap",
+      "question": "&dyn Summary có bắt buộc allocate object mới trên heap không?",
+      "options": [
+        "Không;borrowed trait object có thể trỏ object hiện có.",
+        "Có,mọi dyn keyword tự Box.",
+        "Có,vtable luôn clone payload.",
+        "Chỉ nếu summaryString dài."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt dynamic dispatch và ownership/allocation strategy."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Box ownership",
+      "question": "Box<dyn Summary> khác &dyn Summary ở điểm ownership cơ bản nào?",
+      "options": [
+        "Box tự là reference-counted Rc.",
+        "Box sở hữu boxed value theo contract,còn reference borrow.",
+        "Cả hai luôn shared borrow không owner.",
+        "Reference luôn owned clone."
+      ],
+      "correct": 1,
+      "explanation": "Cần chọn carrier theo lifetime/ownership nhu cầu."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Sized generic default",
+      "question": "Type parameter T thông thường có implicit bound gì nếu chưa dùng ?Sized?",
+      "options": [
+        "Copy.",
+        "Send+Sync bắt buộc.",
+        "Sized.",
+        "Clone."
+      ],
+      "correct": 2,
+      "explanation": "Trait objects unsized cần bounds/indirection phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Bound relaxation",
+      "question": "T:Summary+?Sized thường cho phép gì trong helper nhận &T?",
+      "options": [
+        "Tự bỏ Summary requirement.",
+        "Tự clone data.",
+        "Tự tạo hidden enum.",
+        "Không bắt T phải Sized,nên có thể hỗ trợ trait object phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "?Sized nới một requirement,không xóa mọi constraints."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Static methods and dyn",
+      "question": "Method có generic type parameter riêng có thể vẫn tồn tại trong dyn-compatible trait nếu có ràng buộc nào phù hợp?",
+      "options": [
+        "where Self:Sized để nó non-dispatchable theo rules phù hợp.",
+        "Chỉ đổi tên method.",
+        "Chỉ derive Debug.",
+        "Chỉ thêm &self là mọi method tự dyn-safe."
+      ],
+      "correct": 0,
+      "explanation": "Không gọi method đó qua trait object;trait/method usability cần phân biệt."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Associated type requirement",
+      "question": "Trait có associated type thông thường dùng qua dyn thường cần gì?",
+      "options": [
+        "Một String có tên type.",
+        "Nêu associated type binding phù hợp cho trait object khi required.",
+        "Tự dynamic-union mọi types.",
+        "Bỏ hết type parameters của caller."
+      ],
+      "correct": 1,
+      "explanation": "Associated types không tự bị xóa thành any value."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Orphan newtype",
+      "question": "Muốn thêm foreign trait cho behavior của foreign container,cách nào thường đáng cân nhắc?",
+      "options": [
+        "Đặt impl vào comment và coi compile.",
+        "Đổi tên variable Vec thànhLocal.",
+        "Bọc bằng local newtype rồi implement theo coherence rules.",
+        "Dùng unsafe để tắt orphan check."
+      ],
+      "correct": 2,
+      "explanation": "Phải hiểu local type/coherence restrictions,không tự override thư viện ngoài."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Clone vs Copy Article",
+      "question": "Article derive Clone có tự Copy không?",
+      "options": [
+        "Có,Clone luôn implies Copy.",
+        "Có,nếu strings ngắn.",
+        "Chỉ Debug formatter quyết định.",
+        "Không,String fields không Copy và source không derive Copy."
+      ],
+      "correct": 3,
+      "explanation": "Tính chất trait không suy từ kích thước runtime."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Trait object auto auth",
+      "question": "Summary/Display type safety có tự validate quyền đọc Article.content không?",
+      "options": [
+        "Không.",
+        "Có,trait object mặc định private theo user.",
+        "Có,Display tự redact.",
+        "Chỉ nếu content50bytes."
+      ],
+      "correct": 0,
+      "explanation": "Behavior contract khác authorization/data privacy policy."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source example performance",
+      "question": "largest generic và impl Trait có chứng minh speedup cố định so với dyn cho app không?",
+      "options": [
+        "Chỉ cần compiler1.93.1.",
+        "Không,cần compiler/workload measurement cụ thể.",
+        "Có,spec quy định nhanh gấp2.",
+        "Có,mọi generics0CPU."
+      ],
+      "correct": 1,
+      "explanation": "Không gọi zero-cost abstraction thành không có chi phí thực thi."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source output completeness",
+      "question": "Source có định nghĩa print_summary nhưng chưa main gọi,có nên báo đã quan sát hai dòng output từ nó không?",
+      "options": [
+        "Có,trait defaults luôn print.",
+        "Chỉ cần deriveDebug.",
+        "Không nếu chưa có fixture/lần chạy gọi hàm đó.",
+        "Có,mọi function tự chạy khi compile."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ ghi actual executed paths/outputs,các phần khác source/spec review."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Safer prefix requirement",
+      "question": "Muốn prefix theo20Unicode scalar values,cần chọn thao tác theo gì?",
+      "options": [
+        "Cắtbyte20 luôn đủ.",
+        "Chỉ thêm min(len).",
+        "Chỉ đổi String thành &String.",
+        "Iterate chars với limit và tạo/borrow kết quả phù hợp theo contract,không dùng byte20 tùy ý."
+      ],
+      "correct": 3,
+      "explanation": "Scalar values vẫn khác grapheme clusters nếu UI muốn ký tự người dùng cảm nhận."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "First tied reference",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let values=[3,3];let found=largest(&values);println!(\"{}\",std::ptr::eq(found,&values[0]));}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Compiler cấm ptr::eq references.",
+        "largest luôn chọn index cuối."
+      ],
+      "correct": 0,
+      "explanation": "Strict>không thay khi bằng nhau."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Later NaN ignored",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let values=[1.0,f64::NAN,2.0];println!(\"{}\",largest(&values));}\n",
+      "options": [
+        "Compiler cấm array f64.",
+        "2.",
+        "NaN.",
+        "1."
+      ],
+      "correct": 1,
+      "explanation": "NaN>1 false,2>1 true,nên source giữ2 ở cuối."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Signed zero tie",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let values=[-0.0f64,0.0];println!(\"{}\",largest(&values).is_sign_negative());}\n",
+      "options": [
+        "Source tự total-order+0 trên-0.",
+        "Panic vì float negative zero.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "+0 không greater than-0 theo comparison này,nên giữ reference-0 đầu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Content UTF8 boundary panic",
+      "question": "Chương trình gặp gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:\"T\".into(),content:format!(\"{}é\",\"a\".repeat(49))};println!(\"{}\",a.summarize());}\n",
+      "options": [
+        "Tự thay é bằng?.",
+        "Tự cắt về49bytes an toàn.",
+        "Compiler luôn reject strings có Unicode.",
+        "Panic vì byte50 nằm trong encoding của é."
+      ],
+      "correct": 3,
+      "explanation": "49ASCII bytes rồié làm cận50 không là char boundary."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Preview UTF8 boundary panic",
+      "question": "Chương trình gặp gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){let a=Article{title:format!(\"{}é\",\"a\".repeat(19)),content:String::new()};println!(\"{}\",a.preview());}\n",
+      "options": [
+        "Panic vì byte20 nằm trong encoding của é trong summary.",
+        "Tự trả20graphemes an toàn.",
+        "Tự đổi title thành ASCII.",
+        "Largest gọi gây panic trước preview."
+      ],
+      "correct": 0,
+      "explanation": "Summary title19ASCII+é làm cận20không hợp lệ,dù không vượt len."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Stateful summary length mismatch",
+      "question": "Chương trình gặp gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Changing(std::cell::Cell<u32>);impl Summary for Changing{fn summarize(&self)->String{let n=self.0.get();self.0.set(n+1);if n==0{\"a\".into()}else{\"x\".repeat(30)}}}\nfn main(){let s=Changing(std::cell::Cell::new(0));println!(\"{}\",s.preview());}\n",
+      "options": [
+        "Tự clone lại string đầu cho đủ20bytes.",
+        "Panic vì call thứ hai cho length dài hơn string call đầu được slice.",
+        "Luôn trảa...vì summarize chỉ gọi một lần.",
+        "Compiler cấm Cell trong &self."
+      ],
+      "correct": 1,
+      "explanation": "Default gọi summarize hai lần,signature không bảo đảm pure/deterministic."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Single hidden concrete return",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\n\nfn main(){fn make()->impl Summary{Article{title:\"T\".into(),content:\"x\".into()}}println!(\"{}\",make().summarize());}\n",
+      "options": [
+        "Một địa chỉArticle.",
+        "[T] x.",
+        "T: x.",
+        "Compiler cấm returnimplSummary khi caller gọi method."
+      ],
+      "correct": 2,
+      "explanation": "Hàm này trả một concrete Article,callable Summary method công bố."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Same generic parameter types",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nstruct Note;impl Summary for Note{fn summarize(&self)->String{\"note\".into()}}fn pair<T:Summary>(_:&T,_:&T){}\nfn main(){let a=Article{title:\"T\".into(),content:\"x\".into()};let n=Note;pair(&a,&n);}\n",
+      "options": [
+        "Có,cùng trait nghĩa cùng type.",
+        "Có,compiler tự Box từng argument.",
+        "Chỉ nếu Article có content.",
+        "Không;T chung buộc cả hai arguments cùng concrete type trong lời gọi này."
+      ],
+      "correct": 3,
+      "explanation": "Hai argument-position impl Trait riêng có thể là hai type parameters khác;T chung có nghĩa khác."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Implicit Sized and dyn",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nfn render<T:Summary>(x:&T){println!(\"{}\",x.summarize());}\nfn main(){let a=Article{title:\"T\".into(),content:\"x\".into()};let obj:&dyn Summary=&a;render(obj);}\n",
+      "options": [
+        "Không;render T mặc định Sized không nhận dynSummary này như T unsized.",
+        "Có,reference làm mọi underlying T tự Sized.",
+        "Có,Summary tự có Clone.",
+        "Chỉ runtime panic."
+      ],
+      "correct": 0,
+      "explanation": "Có thể nới bound?Sized khi implementation cho phép."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Relaxed Sized helper",
+      "question": "Chương trình in gì?",
+      "code": "use std::fmt;\ntrait Summary{fn summarize(&self)->String;fn preview(&self)->String{format!(\"{}...\",&self.summarize()[..20.min(self.summarize().len())])}}\n#[derive(Debug,Clone)]struct Article{title:String,content:String}\nimpl Summary for Article{fn summarize(&self)->String{format!(\"{}: {}\",self.title,&self.content[..50.min(self.content.len())])}}\nimpl fmt::Display for Article{fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{write!(f,\"[{}] {}\",self.title,self.content)}}\nfn largest<T:PartialOrd>(list:&[T])->&T{let mut largest=&list[0];for item in &list[1..]{if item>largest{largest=item;}}largest}\nfn print_summary(item:&(impl Summary+fmt::Display)){println!(\"Summary: {}\",item.summarize());println!(\"Display: {item}\");}\nfn create_summarizer()->impl Summary{Article{title:\"Test\".into(),content:\"Content here...\".into()}}\nfn render<T:Summary+?Sized>(x:&T){println!(\"{}\",x.summarize());}\nfn main(){let a=Article{title:\"T\".into(),content:\"x\".into()};let obj:&dyn Summary=&a;render(obj);}\n",
+      "options": [
+        "[T] x.",
+        "T: x.",
+        "Compiler cấm?Sized đi cùngSummary.",
+        "Một địa chỉobject."
+      ],
+      "correct": 1,
+      "explanation": "Helper nhận&T và chỉ gọiSummary nên hỗ trợT:?Sized."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Cache summary once",
+      "question": "Sửa preview để gọi summarize đúng một lần có giải quyết hết UTF-8 truncation không?",
+      "options": [
+        "Có,ownedString không thể slicingpanic.",
+        "Chỉ cần len<=20.",
+        "Không;giảm duplicate/state mismatch nhưng cận byte vẫn cần kiểm tra đúng contract.",
+        "Có,một lầncall tự align byte boundaries."
+      ],
+      "correct": 2,
+      "explanation": "Các nguyên nhân duplicate evaluation và invalid boundary là riêng biệt."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Opaque return trait promise",
+      "question": "Muốn caller formatDisplay return create_summarizer theo public bounds,nên làm rõ gì?",
+      "options": [
+        "Caller tự assume Article type mà không cần bound.",
+        "Chỉ đổi function name.",
+        "Chỉderive Debug.",
+        "Return bound thêm Display khi đó là contract mong muốn và concrete type đáp ứng."
+      ],
+      "correct": 3,
+      "explanation": "Không tự công bố mọi hidden implementation detail."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "PartialOrd maximum contract",
+      "question": "Muốn maximum total order của floats,có nên giữ implementation>và hứa xử lý NaN chuẩn duy nhất không?",
+      "options": [
+        "Không;cần định nghĩa NaN/signedzero policy và comparison/return contract phù hợp.",
+        "Có,PartialOrd tự xử lý mọi policy.",
+        "Chỉ cần listnonempty.",
+        "Chỉ cần clone mọi floats."
+      ],
+      "correct": 0,
+      "explanation": "Không có một maximum conventioncho mọi domain floats chưa được xác định."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Empty input API",
+      "question": "Muốn largest xử lý slice rỗng mà không panic, nên cân nhắc return gì?",
+      "options": [
+        "Giữ index0 rồi thêm comment an toàn.",
+        "Option<&T> hoặc Result phù hợp, hoặc biểu diễn tiền điều kiện rõ ràng.",
+        "Reference tới một T::default() tạm thời trong mọi trường hợp.",
+        "Một raw pointer dangling."
+      ],
+      "correct": 1,
+      "explanation": "Không trả reference tới giá trị local đã chết để né trường hợp input rỗng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Trait privacy",
+      "question": "Display in đầy đủ content trong source có thể làm mất giới hạn dữ liệu của summarize không?",
+      "options": [
+        "Chỉ khi dùng trait object.",
+        "Chỉ khi content là ASCII.",
+        "Có; summarize cắt50bytes không có nghĩa mọi đường log đều được giới hạn hoặc redact.",
+        "Không; Display luôn gọi summarize ngầm."
+      ],
+      "correct": 2,
+      "explanation": "Đọc từng đường xuất dữ liệu thực tế và áp dụng policy phù hợp."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Dynamic dispatch performance",
+      "question": "Dùng dyn có nhất thiết chậm đáng kể so với generics trong mọi ứng dụng không?",
+      "options": [
+        "Có; specification quy định latency gấp10.",
+        "Có; mọi dyn call đều phải qua network.",
+        "Chỉ cần Article có Clone.",
+        "Không; cần đo workload, code size, cache, I/O và các tradeoff thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Không biến cơ chế dispatch thành kết luận benchmark chưa được thực hiện."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Dyn compatibility limits",
+      "question": "Trait có associated const hoặc generic associated type có được mặc định coi là dyn-compatible không?",
+      "options": [
+        "Không; phải đối chiếu các rules cụ thể của ngôn ngữ và toolchain.",
+        "Có; mọi trait đều dùng làm trait object được.",
+        "Chỉ cần một method có &self.",
+        "Chỉ cần cấp phát object trên heap."
+      ],
+      "correct": 0,
+      "explanation": "Khả năng dùng trait object khác với khả năng dùng type implement trait trong code generic."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Separate abstract parameters",
+      "question": "fn f(a:impl Summary,b:impl Summary) có mặc định buộc hai arguments cùng concrete type như một T chung không?",
+      "options": [
+        "Chỉ khi Summary có default method.",
+        "Không; hai parameters đó tương ứng hai anonymous type parameters độc lập.",
+        "Có; cùng Summary trait nghĩa là cùng concrete type.",
+        "Chỉ khi argument là Article."
+      ],
+      "correct": 1,
+      "explanation": "Một T chung biểu đạt quan hệ cùng kiểu; hai parameters độc lập không đặt yêu cầu đó."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Source scope compiler",
+      "question": "Traits source được kiểm tra trong fixture có chứng minh bài tập custom Iterator đã được implement chưa?",
+      "options": [
+        "Có; các traits của Article đủ cho mọi collections.",
+        "Chỉ cần đủ80 câu hỏi.",
+        "Chưa; source hiện chưa có collection và Iterator implementation của bài tập đó.",
+        "Có; PartialOrd tự sinh Iterator."
+      ],
+      "correct": 2,
+      "explanation": "Không coi bài tập chưa viết thành feature đã hoàn thành."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Unicode user-facing contract",
+      "question": "Cắt20 Unicode scalar values có bảo đảm đúng20 ký tự người dùng cảm nhận không?",
+      "options": [
+        "Có; mọi ký tự Unicode chỉ có một byte.",
+        "Có; chars luôn tách đúng mọi emoji theo yêu cầu UI.",
+        "Chỉ cần min(len).",
+        "Không; một grapheme cluster có thể gồm nhiều scalar values, cần contract và tooling phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt bytes, Unicode scalar values và grapheme clusters."
+    }
+  ]
+}

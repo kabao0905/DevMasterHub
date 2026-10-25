@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "mid",
+  "lesson": "generics",
+  "language": "vi",
+  "sourceHash": "bf078ec42abe2deb7897806b7d5ae791a8732a5ea7e211263cad42ed706d8dda",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source Filter/Map/Stack và Go spec; local toolchain1.26.1,module language1.26.0. Phân biệt nil/empty, constraints/type inference, shallow alias, retained stack slots và comparable interface exception. Generic-method restriction chỉ phát biểu cho Go1.26, không áp đặt lên docs Go1.27. Selected finite compiler/runtime examples; không đo GC retention duration hay concurrency safety.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Generics purpose",
+      "question": "Generics giúp gì trong bài?",
+      "options": [
+        "Viết hàm/kiểu tái sử dụng với type parameters và constraints.",
+        "Bỏ mọi kiểm tra kiểu.",
+        "Tự tạo database schema.",
+        "Tự chạy API sinh code."
+      ],
+      "correct": 0,
+      "explanation": "Tái sử dụng vẫn chịu ràng buộc kiểu ở compile time."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Version introduction",
+      "question": "Type parameters được đưa vào Go chính thức từ phiên bản nào?",
+      "options": [
+        "Chỉ Go1.27 mới có mọi generics cơ bản.",
+        "Go1.18.",
+        "Go1.0.",
+        "Go1.10."
+      ],
+      "correct": 1,
+      "explanation": "Tính năng mới hơn có version riêng; không đồng nhất tất cả dưới một mốc."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Type parameter",
+      "question": "T trong Filter[T any] đóng vai trò gì?",
+      "options": [
+        "Một package tự import.",
+        "Một goroutine id.",
+        "Tham số kiểu cho phần tử slice và predicate.",
+        "Một biến global chứa mọi object."
+      ],
+      "correct": 2,
+      "explanation": "T được thay bằng type argument khi instantiation."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Any constraint",
+      "question": "any trong [T any] là gì?",
+      "options": [
+        "Một kiểu runtime luôn giống string.",
+        "Bảo đảm mọi toán tử áp dụng cho T.",
+        "Một validator dữ liệu ngoài.",
+        "Alias cho interface{} cho phép mọi kiểu làm type argument trong constraint đó."
+      ],
+      "correct": 3,
+      "explanation": "Cho mọi kiểu không có nghĩa được dùng mọi operation trên T."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Filter contract",
+      "question": "Filter nguồn giữ phần tử khi nào?",
+      "options": [
+        "Predicate trả true.",
+        "Predicate trả false.",
+        "Chỉ khi phần tử đầu tiên.",
+        "Chỉ khi kiểu là int."
+      ],
+      "correct": 0,
+      "explanation": "Predicate có signature func(T) bool."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Filter order",
+      "question": "Filter nguồn giữ thứ tự thế nào?",
+      "options": [
+        "Ngẫu nhiên như map range.",
+        "Thứ tự tương đối của các phần tử được chọn như input.",
+        "Luôn sort tăng dần.",
+        "Luôn đảo ngược."
+      ],
+      "correct": 1,
+      "explanation": "Range slice và append tuần tự giữ thứ tự."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Map contract",
+      "question": "Map[T,U] trong source làm gì?",
+      "options": [
+        "Lọc bỏ mọi phần tử false.",
+        "Tự chia việc sang goroutines.",
+        "Biến từng phần tử T thành một U theo transform.",
+        "Tạo map[K]V kiểu built-in."
+      ],
+      "correct": 2,
+      "explanation": "Tên Map ở đây là hàm transform slice, không phải built-in map type."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Map output length",
+      "question": "Map nguồn tạo output length thế nào?",
+      "options": [
+        "Luôn bằng0.",
+        "Bằng số phần tử khác0.",
+        "Gấp đôi input bắt buộc.",
+        "Bằng len(items)."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi input có một output."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Transform signature",
+      "question": "Transform của Map có chữ ký nào?",
+      "options": [
+        "func(T) U.",
+        "func(U) bool bắt buộc.",
+        "func() error duy nhất.",
+        "Một string JSON."
+      ],
+      "correct": 0,
+      "explanation": "T và U có thể là cùng hoặc khác kiểu."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Generic stack",
+      "question": "Stack[T] trong source lưu gì?",
+      "options": [
+        "Một database queue durable.",
+        "Slice các phần tử kiểu T.",
+        "Mọi kiểu hỗn hợp mà không cần interface.",
+        "Chỉ int bất kể T."
+      ],
+      "correct": 1,
+      "explanation": "Type argument xác định kiểu phần tử cho từng instantiation."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Push operation",
+      "question": "Push làm gì?",
+      "options": [
+        "Sort toàn stack.",
+        "Tự persist xuống đĩa.",
+        "Append item vào cuối items.",
+        "Xóa phần tử đầu."
+      ],
+      "correct": 2,
+      "explanation": "Source dùng pointer receiver để gán slice descriptor mới vào stack."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Pop operation",
+      "question": "Pop thành công lấy phần tử nào?",
+      "options": [
+        "Phần tử nhỏ nhất.",
+        "Phần tử đầu tiên luôn.",
+        "Một phần tử ngẫu nhiên.",
+        "Phần tử được push gần nhất còn trong stack."
+      ],
+      "correct": 3,
+      "explanation": "Đây là LIFO."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Pop empty",
+      "question": "Pop trên stack rỗng trả gì?",
+      "options": [
+        "Zero value của T và false.",
+        "Luôn panic.",
+        "nil cho mọi T kể cả int.",
+        "Một error bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Bool phân biệt không có phần tử với phần tử có giá trị zero."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Zero declaration",
+      "question": "var zero T trong Pop dùng để làm gì?",
+      "options": [
+        "Khởi tạo một pointer non-nil cho mọi T.",
+        "Lấy zero value hợp lệ của type parameter T.",
+        "Tạo hằng0 cho mọi kiểu.",
+        "Tự dùng reflection để gọi constructor."
+      ],
+      "correct": 1,
+      "explanation": "Zero value phụ thuộc kiểu: int0,string rỗng,pointer nil,..."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Comparable constraint",
+      "question": "comparable thường dùng khi cần operation nào?",
+      "options": [
+        "Cộng mọi type.",
+        "Tự sort mọi structs.",
+        "So sánh ==/!= hoặc khóa map phù hợp.",
+        "Gọi mọi method tùy ý."
+      ],
+      "correct": 2,
+      "explanation": "Còn có nuance interface type arguments và runtime dynamic values."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Type inference",
+      "question": "Gọi Filter(nums,predicate) không viết [int] nhờ gì?",
+      "options": [
+        "Runtime đoán từ user input.",
+        "any bỏ mọi typechecking.",
+        "Go tự đổi mọi slice thành []int.",
+        "Compiler có thể suy type arguments từ arguments/context phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không phải mọi lời gọi đều có đủ thông tin để inference."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Explicit instantiation",
+      "question": "Stack[string] chỉ điều gì?",
+      "options": [
+        "Instantiation Stack với T là string.",
+        "Một stack chỉ chứa đúng một string.",
+        "Một hàm trả bool.",
+        "Một map khóa string."
+      ],
+      "correct": 0,
+      "explanation": "Generic type cần type arguments phù hợp."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Source output",
+      "question": "Với nums1..5, source in cặp slice nào?",
+      "options": [
+        "Hai slice rỗng.",
+        "[2 4] và [2 4 6 8 10].",
+        "[1 3 5] và [1 2 3 4 5].",
+        "[2 4] và [1 4 9 16 25]."
+      ],
+      "correct": 1,
+      "explanation": "Predicate n%2==0 chọn số chẵn; transform nhân2."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Constraints role",
+      "question": "Constraint giới hạn điều gì?",
+      "options": [
+        "Thời gian runtime tuyệt đối.",
+        "Kích thước database bắt buộc.",
+        "Tập type arguments được phép và operations dùng được trên type parameter.",
+        "Số users tối đa của ứng dụng."
+      ],
+      "correct": 2,
+      "explanation": "Không phải validation mọi giá trị thuộc kiểu đó."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "No automatic parallelism",
+      "question": "Filter/Map nguồn có tự concurrent không?",
+      "options": [
+        "Có, generics tự tạo một goroutine mỗi phần tử.",
+        "Có, []T luôn GPU parallel.",
+        "Chỉ khi T là int.",
+        "Không; các loops hiện chạy tuần tự."
+      ],
+      "correct": 3,
+      "explanation": "Type abstraction không tự thay execution model."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Filter even values",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){fmt.Println(Filter([]int{1,2,3,4,5},func(n int)bool{return n%2==0}))}\n",
+      "options": [
+        "[2 4].",
+        "[1 3 5].",
+        "[1 2 3 4 5].",
+        "[]."
+      ],
+      "correct": 0,
+      "explanation": "Predicate chọn số chia hết2."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Filter none nil",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){out:=Filter([]int{1,3},func(n int)bool{return n%2==0});fmt.Println(out==nil,len(out))}\n",
+      "options": [
+        "Panic vì không match.",
+        "true 0.",
+        "false 0.",
+        "true 1."
+      ],
+      "correct": 1,
+      "explanation": "result bắt đầu nil và không append nên giữ nil."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Filter empty nil",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){out:=Filter([]int{},func(n int)bool{return true});fmt.Println(out==nil)}\n",
+      "options": [
+        "Không biên dịch vì empty slice.",
+        "Predicate bắt buộc chạy một lần.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Không iteration nên result vẫn nil."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Map doubles",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){fmt.Println(Map([]int{1,2,3},func(n int)int{return n*2}))}\n",
+      "options": [
+        "[1 2 3].",
+        "[1 4 9].",
+        "[].",
+        "[2 4 6]."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi phần tử được nhân2."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Map empty nonnil",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){out:=Map([]int{},func(n int)int{return n*2});fmt.Println(out==nil,len(out))}\n",
+      "options": [
+        "false 0.",
+        "true 0.",
+        "false 1.",
+        "Panic vì transform chưa gọi."
+      ],
+      "correct": 0,
+      "explanation": "make([]U,0) tạo non-nil empty slice."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Map changes type",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){out:=Map([]int{1,2},func(n int)string{return fmt.Sprint(n)});fmt.Printf(\"%T %v\\n\",out,out)}\n",
+      "options": [
+        "Compiler cấm T khác U.",
+        "[]string [1 2].",
+        "[]int [1 2].",
+        "string 12."
+      ],
+      "correct": 1,
+      "explanation": "Transform trả string nên output là []string."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Stack LIFO",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){var s Stack[int];s.Push(1);s.Push(2);a,ok1:=s.Pop();b,ok2:=s.Pop();c,ok3:=s.Pop();fmt.Println(a,ok1,b,ok2,c,ok3)}\n",
+      "options": [
+        "2 false 1 false 0 true.",
+        "Pop thứ ba panic.",
+        "2 true 1 true 0 false.",
+        "1 true 2 true 0 false."
+      ],
+      "correct": 2,
+      "explanation": "Hai Pop đầu lấy theo LIFO; Pop rỗng trả zero,false."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Empty string stack",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){var s Stack[string];v,ok:=s.Pop();fmt.Println(v==\"\",ok)}\n",
+      "options": [
+        "false true.",
+        "true true.",
+        "Pop trả nil string.",
+        "true false."
+      ],
+      "correct": 3,
+      "explanation": "Zero value của string là rỗng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "False element distinction",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){var s Stack[bool];s.Push(false);a,ok1:=s.Pop();b,ok2:=s.Pop();fmt.Println(a,ok1,b,ok2)}\n",
+      "options": [
+        "false true false false.",
+        "false false false false.",
+        "true true false false.",
+        "Bool zero luôn bị bỏ qua."
+      ],
+      "correct": 0,
+      "explanation": "Bool kết quả Pop phân biệt phần tử false thực với stack rỗng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Any operation restriction",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nfunc add[T any](a,b T)T{return a+b}\nfunc main(){_ = 0}\n",
+      "options": [
+        "Chỉ lỗi ở runtime.",
+        "Không; any không bảo đảm T hỗ trợ +.",
+        "Có; any cho phép mọi operator.",
+        "Có; Go tự chuyển mọi T thành int."
+      ],
+      "correct": 1,
+      "explanation": "Operation phải được phép bởi type set của constraint."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Comparable int",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc eq[T comparable](a,b T)bool{return a==b}\nfunc main(){fmt.Println(eq(3,3))}\n",
+      "options": [
+        "Compiler cấm generic ==.",
+        "Panic vì int không comparable.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "int thỏa comparable và hai giá trị bằng nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Slice not comparable",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nfunc eq[T comparable](a,b T)bool{return a==b}\nfunc main(){_ = eq([]int{1},[]int{1})}\n",
+      "options": [
+        "Có; generic == tự so từng phần tử.",
+        "Có; compiler tự đổi slice thành array.",
+        "Chỉ lỗi nếu slice dài hơn1.",
+        "Không; []int không thỏa comparable."
+      ],
+      "correct": 3,
+      "explanation": "Slice không có phép == giữa hai slice."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Underlying integer constraint",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype Score int\nfunc add[T ~int](a,b T)T{return a+b}\nfunc main(){v:=add(Score(2),Score(3));fmt.Printf(\"%T %v\\n\",v,v)}\n",
+      "options": [
+        "main.Score 5.",
+        "int 5.",
+        "main.Score 0.",
+        "Compiler cấm named type với ~int."
+      ],
+      "correct": 0,
+      "explanation": "~int chấp nhận defined type có underlying int và result giữ T."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Exact type constraint",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\ntype Score int\nfunc add[T int](a,b T)T{return a+b}\nfunc main(){_ = add(Score(2),Score(3))}\n",
+      "options": [
+        "Chỉ nếu Score bằng0.",
+        "Không; defined Score không thuộc type set chỉ có int.",
+        "Có; int tự gồm mọi underlying int dù thiếu ~.",
+        "Có; compiler tự bỏ tên type."
+      ],
+      "correct": 1,
+      "explanation": "Dùng ~int khi ý định gồm các defined types có underlying int."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Cannot infer from nil",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\nfunc first[T any](s []T)(T,bool){if len(s)==0{var z T;return z,false};return s[0],true}\nfunc main(){_,_ = first(nil)}\n",
+      "options": [
+        "Có; T tự là nil type.",
+        "Chỉ lỗi ở runtime.",
+        "Không; nil không đủ thông tin để suy T cho []T.",
+        "Có; T tự là int trong mọi function."
+      ],
+      "correct": 2,
+      "explanation": "Có thể chỉ định type argument hoặc truyền slice có kiểu."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Explicit type empty input",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc first[T any](s []T)(T,bool){if len(s)==0{var z T;return z,false};return s[0],true}\nfunc main(){v,ok:=first[int](nil);fmt.Println(v,ok)}\n",
+      "options": [
+        "0 true.",
+        "nil false.",
+        "Không compile vì nil slice không hợp lệ.",
+        "0 false."
+      ],
+      "correct": 3,
+      "explanation": "Type argument int làm rõ T; helper trả zero,false khi rỗng."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Transform invocation count",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){calls:=0;out:=Map([]int{4,5,6},func(n int)int{calls++;return calls});fmt.Println(calls,out)}\n",
+      "options": [
+        "3 [1 2 3].",
+        "1 [1 1 1].",
+        "0 [].",
+        "3 [3 2 1]."
+      ],
+      "correct": 0,
+      "explanation": "Loop tuần tự gọi transform đúng một lần cho mỗi input."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Predicate invocation count",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){calls:=0;out:=Filter([]int{1,2,3,4,5},func(n int)bool{calls++;return n%2==0});fmt.Println(calls,out)}\n",
+      "options": [
+        "0 [].",
+        "5 [2 4].",
+        "2 [2 4].",
+        "5 [4 2]."
+      ],
+      "correct": 1,
+      "explanation": "Predicate chạy cho cả phần tử không được giữ."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Type alias constraint",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype Number = int\nfunc add[T int](a,b T)T{return a+b}\nfunc main(){fmt.Println(add(Number(2),Number(3)))}\n",
+      "options": [
+        "0.",
+        "Panic.",
+        "5.",
+        "Compiler từ chối vì mọi alias đều khác int."
+      ],
+      "correct": 2,
+      "explanation": "type Number = int là alias, không tạo defined type mới như type Score int."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "String stack value",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){var s Stack[string];s.Push(\"Go\");v,ok:=s.Pop();fmt.Println(v,ok)}\n",
+      "options": [
+        "Go false.",
+        "nil true.",
+        "Không compile vì Stack chỉ chứa int.",
+        "Go true."
+      ],
+      "correct": 3,
+      "explanation": "T=string hợp lệ với any."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Filter alias depth",
+      "question": "Filter trả []T mới có chắc deep clone mọi referenced object bên trong T không?",
+      "options": [
+        "Không; append chép giá trị T, pointer/slice/map bên trong vẫn có thể alias.",
+        "Có, generics tự deep clone.",
+        "Có, predicate readonly mọi input.",
+        "Chỉ nếu T có tên riêng."
+      ],
+      "correct": 0,
+      "explanation": "Slice kết quả riêng không đồng nghĩa object graph riêng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Map input mutation",
+      "question": "Map nguồn có trực tiếp gán lại items[i] không?",
+      "options": [
+        "Chỉ nếu U khác T.",
+        "Không; nó gán result[i], nhưng transform vẫn có thể có side effects qua aliases.",
+        "Có, mọi output tự ghi đè input.",
+        "Không và mọi transform được compiler chứng minh pure."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt code loop với hành vi callback do caller cung cấp."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Callback nil empty",
+      "question": "Filter nhận nil predicate với input rỗng có nhất thiết panic không?",
+      "options": [
+        "Compiler luôn cấm nil callback.",
+        "Go tự tạo predicate true.",
+        "Không; loop không gọi predicate nên không panic từ lời gọi đó.",
+        "Có, nil function bị gọi tự động khi truyền tham số."
+      ],
+      "correct": 2,
+      "explanation": "Input không rỗng sẽ cần gọi predicate và có thể panic nếu nil."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Map nil transform nonempty",
+      "question": "Map input có phần tử nhưng transform nil có hậu quả gì?",
+      "options": [
+        "Tự trả zero outputs không lỗi.",
+        "Compiler chứng minh và luôn từ chối.",
+        "Tự bỏ phần tử.",
+        "Panic khi gọi nil function."
+      ],
+      "correct": 3,
+      "explanation": "Signature không tự bảo đảm function value non-nil."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Stack pointer receiver",
+      "question": "Tại sao Push dùng *Stack[T] trong source?",
+      "options": [
+        "Để cập nhật slice descriptor trên stack của caller.",
+        "Vì generics cấm mọi value receiver.",
+        "Để mọi operation thành atomic.",
+        "Để tự mutex mọi stack."
+      ],
+      "correct": 0,
+      "explanation": "Pointer receiver không tự thread-safe."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Stack copying",
+      "question": "Copy Stack có field slice tạo ra gì?",
+      "options": [
+        "Một transaction độc lập.",
+        "Copy slice descriptor, có thể chia sẻ backing array.",
+        "Deep copy mọi phần tử luôn.",
+        "Một stack readonly tự động."
+      ],
+      "correct": 1,
+      "explanation": "Cần xem capacity/append để biết ảnh hưởng alias."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Pop storage retention",
+      "question": "Reslice trong Pop có tự zero ô backing array vừa bỏ không?",
+      "options": [
+        "Chỉ với int thì luôn xóa.",
+        "Chỉ cần bool false.",
+        "Không theo implementation nguồn.",
+        "Có, mọi reslice tự xóa toàn backing array."
+      ],
+      "correct": 2,
+      "explanation": "Có thể cân nhắc zero slot để tránh giữ reference không cần thiết."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Zero versus absent",
+      "question": "Vì sao Pop cần bool ngay cả khi có zero value T?",
+      "options": [
+        "Vì Go cấm trả một giá trị.",
+        "Vì zero không tồn tại ở runtime.",
+        "Để tự tạo error chain.",
+        "Một phần tử thật có thể bằng zero, nên chỉ nhìn value không đủ biết stack rỗng."
+      ],
+      "correct": 3,
+      "explanation": "Đây là pattern value,ok tương tự các API khác nhưng contract riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Constraint operations",
+      "question": "Constraint interface có method String() string cho phép T gọi gì?",
+      "options": [
+        "Method String theo contract đó.",
+        "Mọi method có thể tồn tại ở mọi concrete type.",
+        "Mọi arithmetic operator.",
+        "Mọi field tên Name."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ operations được bảo đảm bởi constraint/type set."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Union constraint",
+      "question": "int|string trong constraint biểu diễn gì?",
+      "options": [
+        "Một tuple hai phần tử.",
+        "Type set gồm các types theo terms đó.",
+        "Một runtime value chứa đồng thời int và string.",
+        "Một map tự conversion."
+      ],
+      "correct": 1,
+      "explanation": "Type union trong constraint không là tagged union value như một số ngôn ngữ."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Tilde syntax",
+      "question": "~int trong constraint thêm ý nghĩa gì?",
+      "options": [
+        "Tự bitwise-not mọi value.",
+        "Đánh dấu pointer nullable.",
+        "Bao gồm types có underlying type int.",
+        "Biến int thành số âm."
+      ],
+      "correct": 2,
+      "explanation": "Đây là type term trong constraint, không là toán tử trên expression."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Generic type arguments",
+      "question": "Có thể khai báo var s Stack mà bỏ [T] để tự suy từ các Push sau không?",
+      "options": [
+        "Có, Go chờ runtime suy từ Push đầu.",
+        "Có, Stack tự thành Stack[any].",
+        "Chỉ nếu s local.",
+        "Không; generic type cần instantiation hợp lệ ở chỗ dùng này."
+      ],
+      "correct": 3,
+      "explanation": "Function inference không đồng nghĩa generic type declarations được bỏ mọi arguments."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Different instantiations",
+      "question": "Stack[int] và Stack[string] có cùng kiểu không?",
+      "options": [
+        "Không.",
+        "Có, vì cùng tên Stack.",
+        "Có, nếu đều rỗng.",
+        "Chỉ khác khi chạy trên Linux."
+      ],
+      "correct": 0,
+      "explanation": "Type arguments khác tạo instantiated types khác theo quy tắc kiểu."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Method receiver parameters",
+      "question": "T trong func(s *Stack[T])Pop()(T,bool) có nguồn ràng buộc từ đâu?",
+      "options": [
+        "Tên package fmt.",
+        "Type parameters của receiver base type Stack.",
+        "Một type global được tạo tự động.",
+        "Một type mới suy từ error."
+      ],
+      "correct": 1,
+      "explanation": "Receiver parameter declaration dùng lại tương ứng constraints của generic base type."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Constraint package claim",
+      "question": "Có package chuẩn tên constraints được source import không?",
+      "options": [
+        "Có, constraints luôn là một global value.",
+        "Chỉ khi dùng Stack.",
+        "Không; source chỉ import fmt và dùng predeclared any.",
+        "Có, mọi generics tự import golang.org/x/exp/constraints."
+      ],
+      "correct": 2,
+      "explanation": "Không cài dependency ngoài chỉ vì theory nhắc package constraints."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Runtime validation gap",
+      "question": "[T ~int] có tự bảo đảm value dương hoặc không tràn nghiệp vụ không?",
+      "options": [
+        "Có, ~int chỉ số dương.",
+        "Có, generics dùng số vô hạn.",
+        "Chỉ khi function tên Sum.",
+        "Không; constraint về kiểu, cần kiểm tra miền giá trị riêng."
+      ],
+      "correct": 3,
+      "explanation": "Compile-time type set khác validation domain."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Comparable not ordering",
+      "question": "T comparable có đủ dùng a < b cho mọi T không?",
+      "options": [
+        "Không; comparable bao gồm types không có thứ tự <.",
+        "Có, == luôn kéo theo <.",
+        "Có, compiler tự sort struct theo địa chỉ.",
+        "Chỉ khi T là interface."
+      ],
+      "correct": 0,
+      "explanation": "Cần constraint operations phù hợp, không đồng nhất equality với ordering."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Preserve input order",
+      "question": "Muốn Filter sort output tăng dần, source hiện đã làm chưa?",
+      "options": [
+        "Chỉ cần T any.",
+        "Chưa; chỉ giữ thứ tự input, cần bước sort/constraint phù hợp nếu muốn.",
+        "Có, append luôn sort.",
+        "Có, predicate bool là comparator."
+      ],
+      "correct": 1,
+      "explanation": "Contract phải phân biệt selection và sorting."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Mutation callback scope",
+      "question": "Predicate sửa object qua pointer có bị Filter ngăn không?",
+      "options": [
+        "Chỉ với named types mới được sửa.",
+        "Filter tự rollback mọi mutation.",
+        "Không; callback có thể có side effects qua references được phép.",
+        "Có, mọi func(T)bool được coi pure."
+      ],
+      "correct": 2,
+      "explanation": "Cần document purity/ownership nếu API yêu cầu."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Performance claim",
+      "question": "Generics có bảo đảm mọi code nhanh hơn interface100% không?",
+      "options": [
+        "Có, specification quy định speedup cố định.",
+        "Có, type parameters bỏ mọi allocation tự động.",
+        "Chỉ cần tên function ngắn.",
+        "Không; cần compiler/workload measurements."
+      ],
+      "correct": 3,
+      "explanation": "Không suy benchmark hay representation implementation từ type abstraction."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Retained slot proof",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){s:=Stack[string]{items:make([]string,0,1)};s.Push(\"kept\");v,ok:=s.Pop();fmt.Println(v,ok,len(s.items),s.items[:cap(s.items)][0])}\n",
+      "options": [
+        "kept true 0 kept.",
+        "kept true 0 rồi chuỗi rỗng.",
+        "nil false 0 nil.",
+        "Reslice luôn cấm nhìn tới capacity."
+      ],
+      "correct": 0,
+      "explanation": "Trong fixture cùng package, reslice tới cap cho thấy slot chưa được zero; không đo thời gian GC."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Comparable any dynamic panic",
+      "question": "Trên Go1.26, chương trình có kết quả gì?",
+      "code": "package main\nimport \"fmt\"\nfunc eq[T comparable](a,b T)bool{return a==b}\nfunc main(){var a any=[]int{1};var b any=[]int{1};fmt.Println(eq[any](a,b))}\n",
+      "options": [
+        "Compiler luôn từ chối type argument any.",
+        "Compile được nhưng panic khi so hai dynamic slices qua interface.",
+        "Luôn true vì comparable bảo đảm mọi dynamic value an toàn.",
+        "Luôn false không panic."
+      ],
+      "correct": 1,
+      "explanation": "Interface type argument có constraint-satisfaction exception; dynamic uncomparable values vẫn có thể panic."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Go126 generic method restriction",
+      "question": "Đoạn code có biên dịch được bằng toolchain Go1.26.1 không?",
+      "code": "package main\ntype Box[T any]struct{X T}\nfunc(b Box[T])Convert[U any](f func(T)U)U{return f(b.X)}\nfunc main(){_ = Box[int]{}}\n",
+      "options": [
+        "Chỉ lỗi vì Box có field X.",
+        "Tự suy U là int nên luôn hợp lệ.",
+        "Không; version này chưa cho method khai báo type parameters riêng [U any].",
+        "Có trong mọi Go từ1.18."
+      ],
+      "correct": 2,
+      "explanation": "Phát biểu giới hạn ở Go1.26; docs Go1.27 có generic methods không được áp ngược vào compiler đã cài."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Copied stack backing alias",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){a:=Stack[int]{items:make([]int,1,2)};a.items[0]=1;b:=a;b.Push(9);a.Push(7);fmt.Println(a.items[1],b.items[1])}\n",
+      "options": [
+        "7 9.",
+        "9 9.",
+        "Panic vì copy stack bị cấm bởi compiler.",
+        "7 7."
+      ],
+      "correct": 3,
+      "explanation": "Hai descriptors chia sẻ backing capacity2; append sau ghi đè cùng slot1."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Map nested slice aliases",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\nfunc Filter[T any](items []T,predicate func(T)bool)[]T{var result []T;for _,item:=range items{if predicate(item){result=append(result,item)}};return result}\nfunc Map[T any,U any](items []T,transform func(T)U)[]U{result:=make([]U,len(items));for i,item:=range items{result[i]=transform(item)};return result}\ntype Stack[T any]struct{items []T}\nfunc(s *Stack[T])Push(item T){s.items=append(s.items,item)}\nfunc(s *Stack[T])Pop()(T,bool){if len(s.items)==0{var zero T;return zero,false};top:=s.items[len(s.items)-1];s.items=s.items[:len(s.items)-1];return top,true}\n\nfunc main(){in:=[][]int{{1}};out:=Map(in,func(s []int)[]int{return s});out[0][0]=9;fmt.Println(in[0][0])}\n",
+      "options": [
+        "9.",
+        "1.",
+        "0.",
+        "Map tự deep clone nên không thể sửa."
+      ],
+      "correct": 0,
+      "explanation": "Transform trả cùng slice descriptor, output outer slice mới vẫn chứa alias inner slice."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Clearing stack slot",
+      "question": "Muốn giảm reference retention sau Pop thường sửa gì?",
+      "options": [
+        "Luôn gọi runtime.GC mỗi Pop là giải pháp đầy đủ.",
+        "Lưu top, gán zero T vào slot cuối rồi reslice, vẫn giữ contract giá trị trả về.",
+        "Chỉ đổi tên items thành cache.",
+        "Chỉ gọi len nhiều lần."
+      ],
+      "correct": 1,
+      "explanation": "Cần đánh giá ownership/performance, không khẳng định GC lập tức thu mọi object."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Thread safe generic stack",
+      "question": "Stack[T] có tự an toàn cho nhiều goroutine Push/Pop không?",
+      "options": [
+        "Có, pointer receiver tự atomic mọi chuỗi thao tác.",
+        "Chỉ với Stack[int] thì luôn safe.",
+        "Không; implementation không đồng bộ shared slice state.",
+        "Có, T any tự có mutex."
+      ],
+      "correct": 2,
+      "explanation": "Generics không thay concurrency protocol."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Nil stack receiver",
+      "question": "var s *Stack[int];s.Push(1) có an toàn theo source không?",
+      "options": [
+        "Có, Push tự make Stack object.",
+        "Compiler luôn cấm nil pointer.",
+        "Chỉ cần T comparable.",
+        "Không; method dereference receiver nil để dùng s.items."
+      ],
+      "correct": 3,
+      "explanation": "Zero-value Stack value dùng được, nil *Stack receiver là chuyện khác."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Filter nil callback safety",
+      "question": "Có nên gọi Filter(input,nil) như API hợp lệ cho mọi input vì empty input không panic không?",
+      "options": [
+        "Không; input có phần tử sẽ gọi nil callback, cần contract/validation rõ.",
+        "Có, compiler tạo predicate false mặc định.",
+        "Có, một lần empty pass chứng minh mọi input.",
+        "Chỉ cần thêm ~int."
+      ],
+      "correct": 0,
+      "explanation": "Một trường hợp không thực hiện callback không chứng minh callback hợp lệ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "API nil semantics",
+      "question": "Filter không match trả nil còn Map input rỗng trả [] non-nil có ảnh hưởng gì khi JSON encode?",
+      "options": [
+        "Tự trở thành HTTP status khác.",
+        "Có thể cho null và [] khác nhau; API nên quyết định contract rõ.",
+        "Không, mọi serializer luôn giống nhau.",
+        "Chỉ khác ở compile time."
+      ],
+      "correct": 1,
+      "explanation": "Nil/empty equivalence trong len/range không có nghĩa representation giống mọi nơi."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Unbounded memory",
+      "question": "Map cấp output theo len input có tự an toàn với input cực lớn không?",
+      "options": [
+        "Có, compiler chuyển sang streaming tự động.",
+        "Chỉ cần T là byte.",
+        "Không; cần giới hạn workload, allocation budget và lỗi tài nguyên phù hợp.",
+        "Có, make không dùng memory."
+      ],
+      "correct": 2,
+      "explanation": "Generics không loại giới hạn tài nguyên."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Callback errors",
+      "question": "Map source nhận func(T)U có tự propagate một error riêng do transform muốn trả không?",
+      "options": [
+        "Có, mọi callback error tự thành return error của Map.",
+        "Có, panic luôn tự được wrap.",
+        "Chỉ cần tên U là Result.",
+        "Chưa có error channel/result trong signature này; cần thiết kế API khác hoặc U phù hợp contract."
+      ],
+      "correct": 3,
+      "explanation": "Signature quyết định contract; không suy error handling chưa viết."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Type erasure oversimplification",
+      "question": "Có nên mô tả mọi generic Go implementation luôn là một chiến lược machine code cố định trong specification không?",
+      "options": [
+        "Không; cần phân biệt ngữ nghĩa ngôn ngữ với chiến lược compiler cụ thể.",
+        "Có, spec bắt buộc mọi compiler sinh cùng assembly.",
+        "Có, luôn dynamic reflection.",
+        "Chỉ cần benchmark một Add."
+      ],
+      "correct": 0,
+      "explanation": "Không dạy implementation detail như universal guarantee."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Any slice assignment",
+      "question": "[]int có assign trực tiếp cho []any chỉ vì int assign được cho any không?",
+      "options": [
+        "Chỉ khi slice rỗng.",
+        "Không; hai slice types khác nhau, cần chuyển từng phần tử nếu muốn.",
+        "Có, Go luôn covariant slice.",
+        "Có, []any chỉ là alias []int."
+      ],
+      "correct": 1,
+      "explanation": "Element assignment compatibility không làm slice types covariant."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Underlying slice preservation",
+      "question": "Nếu API muốn giữ named slice type S, chữ ký nào đáng cân nhắc?",
+      "options": [
+        "T any tự giữ mọi tên type qua mọi conversion.",
+        "Bỏ hết constraints.",
+        "Dùng S ~[]E và trả S với implementation phù hợp, thay vì mặc định trả []E.",
+        "Chỉ đổi tên biến items thành S."
+      ],
+      "correct": 2,
+      "explanation": "Cần thiết kế type parameters theo output contract, không chỉ theo runtime contents."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Method parameters version claim",
+      "question": "Tại sao quiz ghi rõ Go1.26 cho restriction generic method riêng?",
+      "options": [
+        "Vì mọi type parameter chỉ chạy trên Windows.",
+        "Vì source không có fmt.",
+        "Để tự tải compiler mới ngầm.",
+        "Tính năng ngôn ngữ thay đổi theo version; không biến kết quả compiler cũ thành cấm đoán cho mọi Go tương lai."
+      ],
+      "correct": 3,
+      "explanation": "Không đổi toolchain hay gọi dependency ngoài để che mismatch version."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Comparable map dynamic keys",
+      "question": "map[any]int có bảo đảm mọi value any đều làm key an toàn không?",
+      "options": [
+        "Không; dynamic slice/map/function không comparable có thể làm thao tác key panic.",
+        "Có, any tự hash mọi object.",
+        "Có, generics chuyển mọi value thành string.",
+        "Chỉ cần map được make trước."
+      ],
+      "correct": 0,
+      "explanation": "Static interface key type và dynamic value comparability khác nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Stability versus purity",
+      "question": "Filter giữ thứ tự có chứng minh predicate không side effect không?",
+      "options": [
+        "Chỉ nếu input đã sort.",
+        "Không; stable ordering khác purity.",
+        "Có, range slice làm callback pure.",
+        "Có, bool return tự readonly."
+      ],
+      "correct": 1,
+      "explanation": "Các properties của API cần được kiểm tra/ghi rõ riêng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Copy versus isolation",
+      "question": "Một test chứng minh output slice mới có đủ để kết luận input/output hoàn toàn độc lập không?",
+      "options": [
+        "Có, mọi T được clone đệ quy.",
+        "Chỉ với struct chứa map thì tự tách.",
+        "Chưa; phải xét referenced members và callback behavior.",
+        "Có, outer pointer khác là deep isolation tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Alias có thể tồn tại ở nhiều tầng object graph."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Evidence limits",
+      "question": "Các ví dụ generic compile và chạy đúng có chứng minh Stack production-ready mọi tải không?",
+      "options": [
+        "Có, typechecking bảo đảm mọi thuộc tính runtime.",
+        "Có, có80 câu là đủ capacity proof.",
+        "Chỉ cần Go1.26 mới nhất trên máy.",
+        "Không; chưa có chứng minh concurrency, resource bounds hay mọi domain yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Bằng chứng chọn lọc và API semantics cần giữ đúng phạm vi."
+    }
+  ]
+}

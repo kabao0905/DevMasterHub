@@ -1,0 +1,1149 @@
+{
+  "version": 1,
+  "tech": "cpp",
+  "level": "senior",
+  "lesson": "perf-optimization",
+  "language": "vi",
+  "sourceHash": "75175d2c4ec36ebb25851b817baf01e8bc1eea648aa8f9497baa979acbd97568",
+  "status": "approved",
+  "review": "Tự biên soạn, không API. C++17 move/copy/noexcept, constexpr, accumulator type, locality và benchmark. Không bịa thời gian/speedup; Buffer của giáo trình chưa có deep-copy hoặc move assignment. Phân biệt constexpr function với bắt buộc constant evaluation.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Profiling first",
+      "question": "Trước khi tối ưu một ứng dụng chậm, nên bắt đầu thế nào?",
+      "options": [
+        "Đo workload đại diện để tìm bottleneck và đặt mục tiêu.",
+        "Đổi mọi biến thành pointer.",
+        "Thêm std::move vào mọi biểu thức.",
+        "Giả định mọi chậm đều do thiếu constexpr."
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu có căn cứ cần baseline và đo phần chiếm thời gian/tài nguyên thực."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Move intent",
+      "question": "Move semantics thường giúp gì khi kiểu hỗ trợ transfer resource phù hợp?",
+      "options": [
+        "Bỏ mọi kiểm tra lifetime.",
+        "Chuyển tài nguyên thay vì sao chép nội dung đắt tiền.",
+        "Bảo đảm mọi thao tác O(1) cho mọi T.",
+        "Tắt destructor nguồn vĩnh viễn."
+      ],
+      "correct": 1,
+      "explanation": "Lợi ích phụ thuộc implementation của kiểu và ngữ cảnh gọi."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Std move meaning",
+      "question": "std::move(x) tự nó làm gì?",
+      "options": [
+        "Luôn gọi destructor x.",
+        "Luôn tạo bản sao sâu.",
+        "Chuyển biểu thức sang dạng cho phép chọn move operation phù hợp.",
+        "Lập tức lấy mọi tài nguyên khỏi x."
+      ],
+      "correct": 2,
+      "explanation": "Operation được chọn sau cast mới quyết định có di chuyển/copy hay không."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Move constructor signature",
+      "question": "Với class Buffer, chữ ký move constructor thông thường nào đúng?",
+      "options": [
+        "void Buffer(Buffer other);",
+        "Buffer& move(const Buffer other);",
+        "Buffer(int*&&) luôn là move constructor của Buffer",
+        "Buffer(Buffer&& other);"
+      ],
+      "correct": 3,
+      "explanation": "Move constructor nhận rvalue reference tới chính kiểu với các điều kiện chữ ký phù hợp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Rvalue reference",
+      "question": "Ký hiệu Buffer&& trong tham số move constructor biểu đạt gì?",
+      "options": [
+        "Rvalue reference tới Buffer.",
+        "Hai reference độc lập cùng lúc.",
+        "Con trỏ hai cấp.",
+        "Một mutex khóa kép."
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm && trong khai báo kiểu với logical AND của biểu thức."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Noexcept",
+      "question": "noexcept trên move constructor thông thường cam kết gì?",
+      "options": [
+        "Tự cấp phát bộ nhớ không bao giờ lỗi.",
+        "Không để exception thoát ra khỏi hàm theo hợp đồng exception specification.",
+        "Bỏ qua mọi exception bên trong tự động.",
+        "Luôn chạy nhanh gấp2."
+      ],
+      "correct": 1,
+      "explanation": "Nếu exception thoát hàm noexcept thì terminate; chỉ khai báo khi implementation thực sự đáp ứng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Constexpr function",
+      "question": "constexpr function cho phép gì khi thỏa điều kiện?",
+      "options": [
+        "Cấm mọi lời gọi runtime.",
+        "Luôn bỏ toàn bộ chi phí I/O bên ngoài.",
+        "Dùng trong constant evaluation với đối số/ngữ cảnh phù hợp.",
+        "Bắt buộc mọi lần gọi đều compile-time."
+      ],
+      "correct": 2,
+      "explanation": "constexpr function vẫn có thể được gọi ở runtime."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Constexpr variable",
+      "question": "constexpr int n=3; yêu cầu gì với initializer?",
+      "options": [
+        "Có thể đọc cin tùy ý lúc runtime.",
+        "Luôn cấp phát heap.",
+        "Được đổi n=4 sau đó.",
+        "Phải là constant expression phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "constexpr variable có tính const và yêu cầu khởi tạo hằng phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Accumulate header",
+      "question": "Header cho std::accumulate là gì?",
+      "options": [
+        "<numeric>",
+        "<algorithm> luôn thay thế numeric",
+        "<chrono>",
+        "<memory>"
+      ],
+      "correct": 0,
+      "explanation": "Include <numeric> để dùng các thuật toán số như accumulate."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Accumulator type",
+      "question": "Trong accumulate(begin,end,0LL), 0LL chủ yếu chọn gì?",
+      "options": [
+        "Cấm mọi phép cộng.",
+        "Kiểu giá trị tích lũy ban đầu là long long.",
+        "Số phần tử tối đa bằng0.",
+        "Tự bật SIMD bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Kiểu accumulator theo initializer, không chỉ theo kiểu biến nhận kết quả."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Steady clock",
+      "question": "Đồng hồ thư viện nào hướng tới đo khoảng thời gian không lùi do điều chỉnh giờ hệ thống?",
+      "options": [
+        "Một int global tăng theo request.",
+        "Tên high_resolution_clock luôn bảo đảm mọi thuộc tính.",
+        "std::chrono::steady_clock.",
+        "std::chrono::system_clock luôn steady trên mọi máy."
+      ],
+      "correct": 2,
+      "explanation": "steady_clock có tính monotonic theo semantics của clock."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Duration cast",
+      "question": "duration_cast<milliseconds> thường làm gì với thời lượng nhỏ hơn1ms dương?",
+      "options": [
+        "Luôn làm tròn lên1ms.",
+        "Ném lỗi vì quá nhanh.",
+        "Tự chạy benchmark lại.",
+        "Có thể cho0ms do chuyển sang đơn vị nguyên bị cắt phần lẻ."
+      ],
+      "correct": 3,
+      "explanation": "0ms đo được không chứng minh thao tác không có chi phí."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Locality",
+      "question": "Cache locality thường liên quan điều gì?",
+      "options": [
+        "Cách truy cập dữ liệu tận dụng dữ liệu/vùng nhớ gần nhau hoặc vừa dùng.",
+        "Tên biến có prefix cache.",
+        "Mọi object phải global.",
+        "Mọi dữ liệu phải qua mạng."
+      ],
+      "correct": 0,
+      "explanation": "Bố trí và thứ tự truy cập ảnh hưởng cache, nhưng cần đo trên workload/target."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Vector storage",
+      "question": "std::vector<int> thường cung cấp thuộc tính lưu trữ nào theo chuẩn?",
+      "options": [
+        "Các phần tử tự sort theo địa chỉ.",
+        "Các phần tử int liên tiếp.",
+        "Mỗi int luôn ở node heap riêng.",
+        "Mọi int đều cùng địa chỉ."
+      ],
+      "correct": 1,
+      "explanation": "Contiguous storage hỗ trợ duyệt tuần tự thuận lợi cho nhiều workload."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Reserve intent",
+      "question": "v.reserve(n) chủ yếu dùng để làm gì?",
+      "options": [
+        "Gán mọi phần tử bằng n.",
+        "Xóa mọi phần tử cũ luôn.",
+        "Chuẩn bị capacity ít nhất n khi cần, giảm tái cấp phát về sau.",
+        "Tạo size n phần tử sống."
+      ],
+      "correct": 2,
+      "explanation": "Capacity và size vẫn khác nhau."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Resize intent",
+      "question": "v.resize(n) khác reserve(n) thế nào?",
+      "options": [
+        "Chỉ đổi tên vector.",
+        "Không bao giờ tạo/hủy phần tử.",
+        "Luôn chỉ đổi capacity còn size giữ nguyên.",
+        "Thay đổi số phần tử theo size, khởi tạo/hủy phần tử khi cần."
+      ],
+      "correct": 3,
+      "explanation": "Chọn thao tác theo yêu cầu có phần tử thực hay chỉ chuẩn bị dung lượng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Alignment",
+      "question": "alignas dùng để biểu đạt gì?",
+      "options": [
+        "Yêu cầu căn chỉnh phù hợp cho kiểu/object theo quy tắc ngôn ngữ.",
+        "Luôn căn mọi thứ đúng64 byte trên mọi máy.",
+        "Tự sắp xếp vector.",
+        "Tự bảo vệ data race."
+      ],
+      "correct": 0,
+      "explanation": "Căn chỉnh là thuộc tính layout, không là khóa đồng bộ hoặc bảo đảm speedup."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Benchmark comparison",
+      "question": "So copy và move nên bảo đảm gì?",
+      "options": [
+        "Luôn tính cả tạo dữ liệu cho một bên còn bên kia không.",
+        "Cùng dữ liệu/ngữ cảnh và nêu rõ phần công việc được đo.",
+        "Chỉ chạy mỗi cách một lần ở hai cấu hình khác nhau.",
+        "Bỏ qua kết quả đúng/sai miễn nhanh."
+      ],
+      "correct": 1,
+      "explanation": "So sánh lệch điều kiện không cho kết luận nguyên nhân đáng tin."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Optimization correctness",
+      "question": "Một tối ưu cho kết quả sai nhưng nhanh hơn có đạt mục tiêu thông thường không?",
+      "options": [
+        "Có nếu dùng template.",
+        "Chỉ cần tắt test.",
+        "Không; phải giữ hành vi/hợp đồng cần thiết.",
+        "Có nếu benchmark đẹp."
+      ],
+      "correct": 2,
+      "explanation": "Tính đúng là điều kiện trước so hiệu năng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Workload baseline",
+      "question": "Baseline hiệu năng là gì?",
+      "options": [
+        "Một cam kết mọi máy chạy cùng số ms.",
+        "Số phần tử từ tên file.",
+        "Tổng số keyword constexpr.",
+        "Mốc đo hiện trạng để so thay đổi trong điều kiện xác định."
+      ],
+      "correct": 3,
+      "explanation": "Ghi cấu hình và workload giúp kết quả có thể kiểm tra lại."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Custom Buffer moved source",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nclass Buffer{int* data;std::size_t size;public:Buffer(std::size_t n):data(new int[n]),size(n){}Buffer(Buffer&&o)noexcept:data(o.data),size(o.size){o.data=nullptr;o.size=0;}~Buffer(){delete[]data;}std::size_t getSize()const{return size;}};\nint main(){\nBuffer a(3);Buffer b=std::move(a);std::cout<<a.getSize()<<\" \"<<b.getSize();\n}\n",
+      "options": [
+        "0 3",
+        "3 3",
+        "3 0",
+        "Không thể biết vì mọi moved-from đều không đọc được."
+      ],
+      "correct": 0,
+      "explanation": "Move constructor này chủ động đặt nguồn size0, khác với giả định chung về mọi kiểu."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Copy versus move trace",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nstruct T{T()=default;T(const T&){std::cout<<\"C\";}T(T&&)noexcept{std::cout<<\"M\";}};\nint main(){\nT a;T b=a;T c=std::move(a);\n}\n",
+      "options": [
+        "MM",
+        "CM",
+        "MC",
+        "CC"
+      ],
+      "correct": 1,
+      "explanation": "b nhận lvalue a nên copy; c nhận rvalue cast a nên chọn move overload."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Move cast alone",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nint x=1;(void)std::move(x);std::cout<<x;\n}\n",
+      "options": [
+        "M",
+        "Không được dùng x sau std::move(x) expression đơn lẻ.",
+        "1",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Không có operation tiêu thụ kết quả cast nên int x không đổi."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Const move copies",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nstruct T{T()=default;T(const T&){std::cout<<\"C\";}T(T&&)noexcept{std::cout<<\"M\";}};\nint main(){\nconst T a;T b=std::move(a);\n}\n",
+      "options": [
+        "M",
+        "CM",
+        "Không biên dịch vì std::move luôn bỏ const.",
+        "C"
+      ],
+      "correct": 3,
+      "explanation": "Rvalue const không gắn vào T&& non-const, nên copy ctor const T& được chọn."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Named rvalue ref lvalue",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nstruct T{T()=default;T(const T&){std::cout<<\"C\";}T(T&&)noexcept{std::cout<<\"M\";}};void f(T&&x){T y=x;}\nint main(){\nT a;f(std::move(a));\n}\n",
+      "options": [
+        "C",
+        "M",
+        "CM",
+        "T&& tên x luôn là rvalue expression."
+      ],
+      "correct": 0,
+      "explanation": "Biểu thức có tên x là lvalue dù kiểu tham số là rvalue reference."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Move named parameter",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nstruct T{T()=default;T(const T&){std::cout<<\"C\";}T(T&&)noexcept{std::cout<<\"M\";}};void f(T&&x){T y=std::move(x);}\nint main(){\nT a;f(std::move(a));\n}\n",
+      "options": [
+        "Lỗi vì không được std::move tham số.",
+        "M",
+        "C",
+        "CM"
+      ],
+      "correct": 1,
+      "explanation": "Cast x sang rvalue cho phép chọn move ctor."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Constexpr factorial",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nconstexpr long long fact(int n){return n<=1?1:n*fact(n-1);}\nint main(){\nconstexpr auto n=fact(5);std::cout<<n;\n}\n",
+      "options": [
+        "0",
+        "Không thể dùng đệ quy trong constexpr C++17.",
+        "120",
+        "5"
+      ],
+      "correct": 2,
+      "explanation": "Các đối số nhỏ trong miền an toàn cho long long được tính thành constant expression."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Constexpr runtime call",
+      "question": "constexpr f(int) được gọi với int n đọc runtime. Có mặc định lỗi chỉ vì n không hằng không?",
+      "options": [
+        "Có; mọi lời gọi phải constant expression.",
+        "Có trừ khi thêm static.",
+        "Không và vì thế mọi kết quả luôn compile-time.",
+        "Không; hàm constexpr có thể chạy runtime nếu cách dùng hợp lệ."
+      ],
+      "correct": 3,
+      "explanation": "Chính ngữ cảnh như initializer constexpr mới buộc constant evaluation phù hợp."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Constexpr invalid initializer",
+      "question": "Code có hợp lệ không?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nconstexpr int f(int x){return x+1;}\nint main(){\nint n=3;constexpr int v=f(n);std::cout<<v;\n}\n",
+      "options": [
+        "Không; biến local runtime n không dùng được làm initializer hằng ở đây.",
+        "Có; compiler tự sửa n thành constexpr.",
+        "Có vì f có constexpr nên mọi đối số tự hằng.",
+        "Chỉ cần cout sau đó."
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất khả năng constexpr của hàm với việc đối số thỏa constant expression."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Accumulator result",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>v={1,2,3,4};long long sum=std::accumulate(v.begin(),v.end(),0LL);std::cout<<sum;\n}\n",
+      "options": [
+        "Một thời gian benchmark.",
+        "10",
+        "4",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Tổng1+2+3+4 với accumulator long long."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Accumulator return type",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>v={1,2};using R=decltype(std::accumulate(v.begin(),v.end(),0LL));std::cout<<std::is_same_v<R,long long>;\n}\n",
+      "options": [
+        "Không thể dùng decltype với accumulate.",
+        "Tự là int vì vector<int>.",
+        "1",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Kiểu trả accumulate theo initial value long long."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Long long receiver insufficient",
+      "question": "long long s=accumulate(begin,end,0); có tự làm phép cộng tích lũy dùng long long không?",
+      "options": [
+        "Có; kiểu biến nhận luôn truyền ngược vào template deduction.",
+        "Có nếu vector có nhiều phần tử.",
+        "Chỉ nếu s là const.",
+        "Không; initializer0 là int nên accumulator của lời gọi vẫn int."
+      ],
+      "correct": 3,
+      "explanation": "Đổi initializer thành0LL hoặc kiểu phù hợp; cast kết quả sau phép cộng không cứu signed overflow đã xảy ra."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Reserve size",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>v={1,2};v.reserve(100);std::cout<<v.size();\n}\n",
+      "options": [
+        "2",
+        "100",
+        "102",
+        "0"
+      ],
+      "correct": 0,
+      "explanation": "Reserve không thêm phần tử."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Resize size values",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>v={1,2};v.resize(4);std::cout<<v.size()<<\" \"<<v[3];\n}\n",
+      "options": [
+        "Truy cập index3 ngoài biên.",
+        "4 0",
+        "2 0",
+        "4 9"
+      ],
+      "correct": 1,
+      "explanation": "Resize tạo thêm int value-initialized bằng0 khi không truyền fill value."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Copy vector independent",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>a={1,2};auto b=a;b[0]=9;std::cout<<a[0]<<\" \"<<b[0];\n}\n",
+      "options": [
+        "1 1",
+        "Copy vector<int> chỉ copy pointer nên alias.",
+        "1 9",
+        "9 9"
+      ],
+      "correct": 2,
+      "explanation": "Vector copy tạo các phần tử độc lập theo value semantics."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Moved target vector",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>a={1,2,3};auto b=std::move(a);std::cout<<b.size()<<\" \"<<b[0];\n}\n",
+      "options": [
+        "0 0",
+        "3 0",
+        "Không được đọc b vì a moved.",
+        "3 1"
+      ],
+      "correct": 3,
+      "explanation": "Đích nhận nội dung vector nguồn; không đoán size của source trong câu hỏi này."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Moved standard source contract",
+      "question": "Với object thư viện chuẩn moved-from mà không có bảo đảm riêng cụ thể, nên dựa vào điều gì?",
+      "options": [
+        "Trạng thái valid nhưng unspecified theo hợp đồng liên quan, không mặc định nội dung như cũ hay rỗng.",
+        "Mọi source chắc chắn nullptr và size0.",
+        "Không được hủy source nữa.",
+        "Source tự mất tên biến."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ gọi thao tác có precondition được đáp ứng; đọc nội dung cần xem type-specific guarantees."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Rule of zero",
+      "question": "Class chỉ chứa vector<int> và không sở hữu raw resource riêng thường nên quản lý copy/move/destructor thế nào?",
+      "options": [
+        "Xóa destructor để không có cleanup.",
+        "Ưu tiên các special member mặc định khi semantics phù hợp.",
+        "Tự delete vector.data() trong destructor.",
+        "Luôn viết memcpy cho mọi member."
+      ],
+      "correct": 1,
+      "explanation": "RAII member cung cấp semantics đúng, giảm lỗi double free và code thừa."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Raw buffer copy suppressed",
+      "question": "Buffer trong bài tự khai báo move constructor và destructor, không khai báo copy constructor. Buffer b=a; có tự deep-copy vùng data không?",
+      "options": [
+        "Có; memcpy object luôn tạo ownership độc lập.",
+        "Chỉ cần thêm std::move vào cout.",
+        "Không; implicit copy constructor bị xóa trong trường hợp này.",
+        "Có; compiler tự duyệt raw pointer để clone dữ liệu."
+      ],
+      "correct": 2,
+      "explanation": "Muốn so benchmark copy của chính Buffer cần thiết kế deep-copy đúng, hoặc dùng vector có copy semantics phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Raw buffer assignment missing",
+      "question": "Buffer bài học có move constructor nhưng không định nghĩa assignment. b=std::move(a) có tự dùng move constructor để gán vào b đã có không?",
+      "options": [
+        "Có; mọi dấu = luôn gọi constructor.",
+        "Có nếu destructor có delete[].",
+        "Chỉ cần b.getSize() trước.",
+        "Không; assignment khác construction và cần operation khả dụng phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Đừng suy ra đã có đủ Rule of Five chỉ từ một move constructor."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Measure allocation included",
+      "question": "Trong benchmark bài học, timer bắt đầu trước vector<int> v(10000000,1), kết thúc sau accumulate. Thời gian đo gồm gì?",
+      "options": [
+        "Cả tạo/khởi tạo vector và phép accumulate trong đoạn đó.",
+        "Chỉ phép cộng, bỏ mọi cấp phát tự động.",
+        "Chỉ cout dù cout nằm sau stop.",
+        "Chỉ move constructor Buffer ở trước start."
+      ],
+      "correct": 0,
+      "explanation": "Kết luận benchmark phải khớp đoạn công việc được đo."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Milliseconds zero",
+      "question": "Một lượt đo nhanh trả0ms. Kết luận nào hợp lý?",
+      "options": [
+        "Compiler bảo đảm mọi máy đều0ns.",
+        "Độ phân giải/đơn vị đo quá thô cho lượt đó; không kết luận chi phí bằng0.",
+        "Thao tác chắc chắn compile-time.",
+        "CPU không làm việc."
+      ],
+      "correct": 1,
+      "explanation": "Có thể tăng số lượt có kiểm soát hoặc dùng đơn vị phù hợp rồi báo phân phối."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "High resolution name",
+      "question": "high_resolution_clock có luôn được chuẩn bảo đảm steady chỉ từ tên không?",
+      "options": [
+        "Có nếu duration_cast dùng ms.",
+        "Chỉ nếu vector rỗng.",
+        "Không; cần xem is_steady/định nghĩa implementation.",
+        "Có; high_resolution luôn monotonic."
+      ],
+      "correct": 2,
+      "explanation": "Chọn steady_clock khi cần clock monotonic đo interval."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Output outside timing",
+      "question": "Vì sao thường đưa cout ra ngoài đoạn đo thuật toán khi mục tiêu chỉ đo thuật toán?",
+      "options": [
+        "Vì cout làm code sai kiểu.",
+        "Vì không được in kết quả benchmark.",
+        "Vì cout tự reset timer.",
+        "I/O có thể lấn át chi phí cần đo và thêm nhiễu."
+      ],
+      "correct": 3,
+      "explanation": "Vẫn cần làm kết quả quan sát được bằng cách phù hợp để tránh compiler loại bỏ công việc."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Warmup versus results",
+      "question": "Vì sao một lần chạy đầu có thể không đại diện trạng thái ổn định?",
+      "options": [
+        "Có chi phí khởi tạo, page fault/cache và ảnh hưởng môi trường khác.",
+        "Vì C++ luôn phiên dịch chậm lần đầu như JIT.",
+        "Vì constexpr chỉ bật sau10 lần.",
+        "Vì std::move luôn copy lần đầu."
+      ],
+      "correct": 0,
+      "explanation": "Ghi rõ cold/warm workload theo điều cần đánh giá; không tự bỏ mọi số chậm mà không tiêu chí."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Repeated move benchmark state",
+      "question": "Lặp b=std::move(a) nhiều lần nhưng không phục hồi dữ liệu a có đo cùng workload mỗi lượt không?",
+      "options": [
+        "Chỉ cần giữ cùng tên a.",
+        "Không chắc; sau lượt đầu a đã moved-from nên các lượt sau có thể chuyển trạng thái khác.",
+        "Có; std::move luôn tạo lại dữ liệu gốc.",
+        "Có nếu a là vector lớn ban đầu."
+      ],
+      "correct": 1,
+      "explanation": "Chuẩn bị trạng thái đầu tương đương hoặc mô tả rõ workload được đo."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Build mode consistency",
+      "question": "So Debug copy với Release move rồi gán mọi chênh lệch cho move có hợp lý không?",
+      "options": [
+        "Có nếu số phần tử bằng nhau.",
+        "Chỉ cần timer cùng đơn vị.",
+        "Không; khác build mode là yếu tố gây nhiễu.",
+        "Có vì compiler flags không ảnh hưởng C++."
+      ],
+      "correct": 2,
+      "explanation": "Giữ điều kiện so sánh nhất quán và công bố compiler/flags/target."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Allocation count evidence",
+      "question": "Muốn khẳng định tối ưu giảm số cấp phát, bằng chứng nào phù hợp?",
+      "options": [
+        "Chỉ xem số dòng code ít hơn.",
+        "Chỉ có keyword move.",
+        "Chỉ thời gian một lượt thấp hơn.",
+        "Đo allocation bằng công cụ/counter đúng phạm vi, cùng workload."
+      ],
+      "correct": 3,
+      "explanation": "Thời gian giảm chưa tự chứng minh nguyên nhân là số lần cấp phát."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Data layout AoS SoA",
+      "question": "Vòng xử lý chỉ đọc một trường của hàng triệu record có thể cân nhắc layout nào để giảm dữ liệu không cần tải?",
+      "options": [
+        "SoA cho trường được truy cập liên tiếp, rồi đo theo workload.",
+        "Luôn pointer tới node rải rác bất kể workload.",
+        "Xếp mọi field thành static toàn cục.",
+        "Đặt mọi record cùng địa chỉ."
+      ],
+      "correct": 0,
+      "explanation": "AoS hay SoA phụ thuộc cách truy cập và chi phí cập nhật, không có lựa chọn tối ưu tuyệt đối."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Avoid needless copies",
+      "question": "Hàm chỉ đọc vector lớn trong lời gọi, signature nào thường tránh copy cả vector?",
+      "options": [
+        "void inspect(int v); để tự nhận vector",
+        "void inspect(const std::vector<int>& v);",
+        "void inspect(std::vector<int> v); luôn không copy từ lvalue",
+        "void inspect(void v);"
+      ],
+      "correct": 1,
+      "explanation": "Const reference phù hợp mượn đọc, nếu không cần giữ ownership sau lời gọi."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Noexcept trait",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nstruct T{T()=default;T(T&&)noexcept{}};\nint main(){\nstd::cout<<std::is_nothrow_move_constructible_v<T>;\n}\n",
+      "options": [
+        "M",
+        "Trait không kiểm tra exception specification.",
+        "1",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Move constructor khai báo noexcept nên trait tương ứng true cho T này."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Iota contents",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\n\nint main(){\nstd::vector<int>v(4);std::iota(v.begin(),v.end(),0);for(int x:v)std::cout<<x;\n}\n",
+      "options": [
+        "1234",
+        "0000",
+        "4321",
+        "0123"
+      ],
+      "correct": 3,
+      "explanation": "iota ghi các giá trị tăng dần từ initial0."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Duration difference",
+      "question": "Để đo elapsed interval từ hai time_point của cùng steady_clock, thường làm gì?",
+      "options": [
+        "Lấy end-start rồi chuyển đơn vị phù hợp.",
+        "Lấy start-end rồi luôn gọi abs để bỏ dấu lỗi.",
+        "Cộng end+start.",
+        "Đọc tên clock như một số ms."
+      ],
+      "correct": 0,
+      "explanation": "So thời điểm cùng clock và vùng đo rõ ràng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Const versus constexpr",
+      "question": "const int x=runtimeValue; có tự là compile-time constant trong mọi ngữ cảnh không?",
+      "options": [
+        "Chỉ cần đặt x trong vector.",
+        "Không; const không đồng nghĩa initializer là constant expression.",
+        "Có; const và constexpr giống hệt mọi trường hợp.",
+        "Có nếu biến tên x."
+      ],
+      "correct": 1,
+      "explanation": "const kiểm soát sửa đổi; constexpr đặt thêm yêu cầu constant initialization phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Benchmark checksum",
+      "question": "Vì sao nên kiểm tra checksum/kết quả đúng khi đổi implementation tối ưu?",
+      "options": [
+        "Để ép mọi CPU chạy cùng tốc độ.",
+        "Để bỏ toàn bộ test dữ liệu biên.",
+        "Để phát hiện tối ưu đã đổi công việc hoặc kết quả, và hỗ trợ công việc có tác dụng quan sát được.",
+        "Để tự bảo đảm không còn mọi UB."
+      ],
+      "correct": 2,
+      "explanation": "Checksum đơn lẻ không chứng minh toàn bộ semantics; vẫn cần test hành vi phù hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Capacity invalidation",
+      "question": "Reserve tăng capacity thực sự có hệ quả gì với pointer/reference/iterator cũ tới phần tử vector?",
+      "options": [
+        "Chúng tự chuyển tới địa chỉ mới.",
+        "Chỉ size thay đổi, mọi địa chỉ giữ nguyên.",
+        "Chỉ const iterator bị mất.",
+        "Tái cấp phát làm chúng mất hiệu lực."
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu cấp phát phải xét lifetime các observer đã lưu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Shrink size not capacity promise",
+      "question": "v.clear() có được coi là bảo đảm trả toàn bộ capacity về hệ điều hành không?",
+      "options": [
+        "Không; nó hủy phần tử, capacity có thể còn.",
+        "Có; clear luôn gọi free cho mọi byte.",
+        "Có nếu v.size() đã0.",
+        "Không vì clear không hủy phần tử."
+      ],
+      "correct": 0,
+      "explanation": "Số phần tử sống, bộ nhớ container giữ và RSS hệ điều hành là các chỉ số khác nhau."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "No fixed speedup",
+      "question": "Chỉ từ độ phức tạp O(1) move và O(n) copy có suy được move luôn nhanh đúng100 lần không?",
+      "options": [
+        "Chỉ cần dùng high_resolution_clock.",
+        "Không; hằng số, kích thước, allocator và điều kiện máy ảnh hưởng thời gian.",
+        "Có; Big-O xác định ratio chính xác.",
+        "Có nếu n=100."
+      ],
+      "correct": 1,
+      "explanation": "Big-O là mức tăng theo quy mô, không là số đo speedup cụ thể."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Memory alignment overhead",
+      "question": "Tăng alignas cho nhiều object nhỏ có thể gây tác dụng phụ gì?",
+      "options": [
+        "Tự xóa mọi padding.",
+        "Tự làm thao tác thread safe.",
+        "Tăng padding/footprint, nên cần cân bằng locality và đo thực tế.",
+        "Luôn giảm kích thước object."
+      ],
+      "correct": 2,
+      "explanation": "Alignment không là tối ưu miễn phí trên mọi workload."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Return value optimization",
+      "question": "Vì sao không nên mặc định return std::move(local); luôn tối ưu hơn return local;?",
+      "options": [
+        "Vì return local luôn copy sâu theo chuẩn.",
+        "Vì std::move tự xóa biến trước return.",
+        "Vì mọi return phải dùng shared_ptr.",
+        "Nó có thể cản NRVO ở ngữ cảnh phù hợp; cần hiểu copy elision và implicit move."
+      ],
+      "correct": 3,
+      "explanation": "Ngữ cảnh C++17 có quy tắc elision/implicit move riêng; thêm move máy móc có thể làm tệ hơn."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Buffer copy benchmark validity",
+      "question": "Bài tập so copy/move của Buffer nguồn chỉ có move ctor và destructor. Bước nào phải làm trước khi báo số liệu copy của Buffer?",
+      "options": [
+        "Cung cấp deep-copy đúng hoặc chọn kiểu có copy semantics như vector, rồi xác nhận kết quả/lifetime.",
+        "Gán b=a rồi coi lỗi compile là thời gian0.",
+        "Dùng memcpy object để hai Buffer cùng delete data.",
+        "Chỉ đổi nhãn move thành copy trong log."
+      ],
+      "correct": 0,
+      "explanation": "Không đo một operation chưa tồn tại; raw owning pointer cần semantics copy được thiết kế đúng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Moved source destruction invariant",
+      "question": "Vì sao custom Buffer move constructor đặt other.data=nullptr sau lấy ownership?",
+      "options": [
+        "Vì std::move tự yêu cầu mọi field phải0 dù không cần.",
+        "Để destructor nguồn không giải phóng vùng mà đích đang sở hữu.",
+        "Để tránh mọi destructor nguồn chạy.",
+        "Để làm allocator bỏ mọi lỗi."
+      ],
+      "correct": 1,
+      "explanation": "Cùng với size0, nó thiết lập trạng thái nguồn được implementation này công bố; không suy thành luật mọi moved-from type."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Move assignment existing resource",
+      "question": "Khi tự thêm Buffer::operator=(Buffer&&), ngoài lấy data từ nguồn còn phải xem gì?",
+      "options": [
+        "Không cần destructor vì move đã xảy ra.",
+        "Luôn memcpy toàn object là đúng cho mọi resource.",
+        "Tài nguyên đích cũ, self-move policy và trạng thái nguồn/đích sau thao tác.",
+        "Chỉ copy pointer, quên data đích cũ cũng không leak."
+      ],
+      "correct": 2,
+      "explanation": "Assignment tác động object đã tồn tại, khác constructor chưa sở hữu tài nguyên cũ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Noexcept lie",
+      "question": "Đánh dấu noexcept cho move nhưng implementation vẫn có thể để allocation exception thoát ra. Điều gì đúng?",
+      "options": [
+        "Exception tự được đổi thành nullptr.",
+        "Compiler bắt buộc bỏ phép cấp phát.",
+        "Move sẽ luôn được thay bằng copy ở runtime để cứu lỗi.",
+        "Không có bảo đảm an toàn; ngoại lệ thoát noexcept dẫn tới terminate."
+      ],
+      "correct": 3,
+      "explanation": "Noexcept phải khớp hành vi, không là mẹo tăng tốc bất chấp semantics."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Move if noexcept choice",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <utility>\n#include <numeric>\n#include <chrono>\n#include <type_traits>\n#include <cstddef>\nstruct T{T()=default;T(const T&){std::cout<<\"C\";}T(T&&)noexcept(false){std::cout<<\"M\";}};\nint main(){\nT a;T b(std::move_if_noexcept(a));\n}\n",
+      "options": [
+        "C",
+        "M",
+        "CM",
+        "Không biên dịch vì move không noexcept."
+      ],
+      "correct": 0,
+      "explanation": "T copy được và move có thể throw nên move_if_noexcept chọn const lvalue reference cho copy."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Vector reallocation exception tradeoff",
+      "question": "Vì sao vector có thể copy phần tử thay vì move khi move có thể throw và copy khả dụng?",
+      "options": [
+        "Vì copy luôn O(1).",
+        "Để đáp ứng exception guarantee phù hợp trong tái cấp phát.",
+        "Vì vector cấm move constructor.",
+        "Vì noexcept chỉ là comment không có semantics."
+      ],
+      "correct": 1,
+      "explanation": "Các trường hợp kiểu không copy được có bảo đảm khác; không gán một đường thực thi cho mọi T."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Allocator aware move cost",
+      "question": "Move assignment vector với allocator không propagate và không bằng allocator nguồn có luôn O(1) transfer buffer không?",
+      "options": [
+        "Có vì allocator bị xóa khi std::move.",
+        "Không và mọi move đều O(n).",
+        "Không; có thể cần di chuyển từng phần tử do ràng buộc allocator.",
+        "Có; tên move bảo đảm O(1) cho mọi allocator."
+      ],
+      "correct": 2,
+      "explanation": "Độ phức tạp phụ thuộc operation/allocator, không chỉ kiểu container hoặc keyword."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "SSO move intuition",
+      "question": "Vì sao move string ngắn không chắc nhanh vượt trội copy như Buffer lớn trên heap?",
+      "options": [
+        "Vì string không có move semantics.",
+        "Vì mọi string ngắn luôn heap allocation riêng.",
+        "Vì std::move luôn trả nullptr cho string.",
+        "Small-string optimization và kích thước nhỏ có thể khiến copy/move chi phí tương tự; cần đo implementation/workload."
+      ],
+      "correct": 3,
+      "explanation": "Không suy speedup từ một kiểu resource sang mọi đối tượng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Return prvalue elision",
+      "question": "C++17, T make(){return T{};} rồi T x=make(); với T có default ctor và destructor accessible. Có bắt buộc cần copy/move ctor khả dụng để tạo x theo đường prvalue này không?",
+      "options": [
+        "Không; guaranteed copy elision áp dụng cho trường hợp phù hợp này.",
+        "Có; luôn gọi cả copy lẫn move.",
+        "Có; std::move phải có trong return.",
+        "Chỉ nếu T có vector member."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt guaranteed elision của prvalue với NRVO cho named local có điều kiện khác."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Constexpr overflow",
+      "question": "Một lời gọi factorial trong ngữ cảnh constexpr có phép signed overflow theo kiểu số thực tế có thể là constant expression hợp lệ không?",
+      "options": [
+        "Chỉ cần noexcept cho factorial.",
+        "Không; phải giới hạn miền và kiểu để các phép toán hợp lệ.",
+        "Có; constexpr tự dùng số nguyên vô hạn.",
+        "Có; compiler chỉ lấy phần thấp theo modulo cho signed."
+      ],
+      "correct": 1,
+      "explanation": "Compile-time evaluation không bỏ luật overflow; runtime cũng phải xử lý miền input đúng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Factorial negative input",
+      "question": "Hàm fact(n){return n<=1?1:n*fact(n-1);} có tự từ chối số âm vì tên factorial không?",
+      "options": [
+        "Có; constexpr tự validate mọi số âm.",
+        "Không; số âm luôn gây đệ quy vô hạn trong code này.",
+        "Không; code trả1 với n âm, cần xác định và kiểm tra miền nếu API yêu cầu n>=0.",
+        "Có; compiler biết định nghĩa toán học và tự ném lỗi."
+      ],
+      "correct": 2,
+      "explanation": "Đọc điều kiện thực, không thay behavior của source bằng điều tác giả có thể mong muốn."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Sum overflow before cast",
+      "question": "Tổng có thể vượt int nhưng vừa long long. Vì sao static_cast<long long>(accumulate(...,0)) chưa đủ?",
+      "options": [
+        "Cast tự quay lại và tính lại mọi phép cộng rộng hơn.",
+        "Accumulate luôn dùng long long bất kể initializer.",
+        "Vector<int> không thể có tổng lớn hơn int.",
+        "Phép tích lũy int có thể đã overflow trước cast."
+      ],
+      "correct": 3,
+      "explanation": "Đặt kiểu accumulator phù hợp từ đầu và vẫn kiểm tra giới hạn của kiểu rộng nếu dữ liệu có thể vượt."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Optimizer benchmark elimination",
+      "question": "Đo một phép tính mà kết quả không quan sát được có rủi ro gì trong build tối ưu?",
+      "options": [
+        "Compiler có thể loại bỏ hoặc biến đổi công việc làm phép đo không đại diện điều định đo.",
+        "Compiler luôn giữ nguyên từng lệnh source.",
+        "Tắt cout tự bắt CPU làm nhiều việc hơn.",
+        "Constexpr keyword là nguyên nhân duy nhất."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế harness benchmark đúng, dùng kết quả phù hợp và xem generated behavior khi cần."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Benchmark no comparable work",
+      "question": "Benchmark copy giữ nguyên nguồn dùng lại nhiều lần, move chỉ chuyển dữ liệu thật lượt đầu rồi nguồn rỗng. Vì sao ratio thiếu căn cứ?",
+      "options": [
+        "Chỉ cần đổi ms sang ns.",
+        "Các lượt không làm cùng công việc/trạng thái đầu; cần chuẩn bị và phân tách setup công bằng.",
+        "Move luôn nhanh đúng ratio đó trên mọi lần.",
+        "Chỉ cần tăng số vòng là sai lệch tự mất."
+      ],
+      "correct": 1,
+      "explanation": "Không so chi phí sao chép dữ liệu thật với chuyển object rỗng rồi gán chênh lệch cho cùng workload."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Noise statistics",
+      "question": "Số đo một lượt nhanh bất thường có đủ báo speedup chắc chắn không?",
+      "options": [
+        "Có nếu CPU hiện đại.",
+        "Chỉ cần số có3 chữ số thập phân.",
+        "Không; cần nhiều mẫu, tiêu chí ổn định và báo phân phối/độ biến thiên thích hợp.",
+        "Có; luôn lấy số nhỏ nhất của mỗi bên là bằng chứng đầy đủ."
+      ],
+      "correct": 2,
+      "explanation": "Ghi môi trường và biến gây nhiễu, tránh chọn mẫu thuận mắt không có quy tắc."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Reserve on every push",
+      "question": "Vì sao reserve(size()+1) trước mỗi push không mặc định tối ưu?",
+      "options": [
+        "Vì reserve luôn thêm một phần tử0.",
+        "Vì vector tự thành linked list.",
+        "Vì push_back không được dùng sau reserve.",
+        "Có thể phá chiến lược tăng capacity hiệu quả và gây tái cấp phát thường xuyên theo implementation."
+      ],
+      "correct": 3,
+      "explanation": "Nếu biết cận số phần tử, reserve một lần phù hợp; đừng hứa O(n) hay số allocation cụ thể cho mọi implementation khi chưa đo."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "RSS versus deallocation",
+      "question": "Đã hủy vector lớn nhưng RSS chưa giảm ngay. Có thể kết luận destructor không giải phóng tài nguyên đúng không?",
+      "options": [
+        "Không; allocator/OS có thể giữ vùng nhớ, cần đo đúng tầng và kiểm tra ownership/leak bằng công cụ phù hợp.",
+        "Có; RSS phải giảm đúng sizeof(vector) ngay lập tức.",
+        "Có; destructor không bao giờ chạy trong Release.",
+        "Chỉ cần gọi clear hai lần."
+      ],
+      "correct": 0,
+      "explanation": "Object lifetime, allocation còn sống và bộ nhớ process trả cho OS là các khái niệm khác nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cache layout correctness",
+      "question": "Đổi sang pool/SoA để tăng locality nhưng giữ raw pointer tới phần tử khi storage resize có rủi ro gì?",
+      "options": [
+        "Const pointer tự cập nhật địa chỉ mới.",
+        "Pointer/reference cũ có thể mất hiệu lực; thiết kế handle/lifetime phải được cập nhật.",
+        "Layout nhanh tự bảo đảm mọi địa chỉ ổn định.",
+        "Chỉ thay số ms, không thể ảnh hưởng correctness."
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu layout thường thay ranh giới lifetime/identity, cần kiểm tra người dùng dữ liệu."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Whole system tradeoff",
+      "question": "Một thay đổi tăng throughput nhưng tăng bộ nhớ10 lần và làm p99 xấu đi có tự là tối ưu tốt không?",
+      "options": [
+        "Có nếu dùng move.",
+        "Không; mọi tăng throughput đều xấu.",
+        "Không; cần đánh giá theo mục tiêu và giới hạn hệ thống đã chọn.",
+        "Có; throughput là chỉ số duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Theo dõi latency phân phối, resource và correctness cùng workload đại diện."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Performance proof standard",
+      "question": "Bằng chứng nào mạnh nhất cho một claim tối ưu cụ thể?",
+      "options": [
+        "Chỉ comment faster.",
+        "Chỉ tên class OptimizedBuffer.",
+        "Chỉ một screenshot số ms không có dữ liệu đầu vào.",
+        "Diff hành vi giữ đúng, baseline/cấu hình/workload rõ, phép đo lặp phù hợp và số liệu trước/sau có thể tái kiểm tra."
+      ],
+      "correct": 3,
+      "explanation": "Không bịa speedup từ ý tưởng; báo giới hạn của số đo và phạm vi kết luận."
+    }
+  ]
+}

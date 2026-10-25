@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "php",
+  "level": "junior",
+  "lesson": "queues",
+  "language": "vi",
+  "sourceHash": "ac59300ac08109875cdb51ab4775c44f17598c28c9a89e868b16be3ddceb2526",
+  "status": "approved",
+  "review": "Tự soạn không API. Đối chiếu snippet, Laravel12 queues/events/scheduling docs. Không chạy PHP, worker, payment, mail hoặc scheduler. OrderPaid nguồn thiếu Dispatchable/static dispatch implementation; chỉ ProcessOrder có trait. Queue sync, model rehydration, retries/side effects và transaction boundaries được phân biệt, không tuyên bố exactly-once hoặc pipeline đã chạy.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Job class",
+      "question": "Class job xử lý đơn hàng nguồn tên gì?",
+      "options": [
+        "ProcessOrder.",
+        "OrderPaid.",
+        "SendOrderConfirmation.",
+        "GenerateReportProvider."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt job, event và listener."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Queue marker",
+      "question": "ProcessOrder implements interface nào?",
+      "options": [
+        "Runnable của Java.",
+        "ShouldQueue.",
+        "Repository.",
+        "JsonSerializable được viết rõ."
+      ],
+      "correct": 1,
+      "explanation": "Interface thuộc hệ thống queue Laravel."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Job entry",
+      "question": "Method nào chứa các bước xử lý chính của job?",
+      "options": [
+        "authorize.",
+        "rules.",
+        "handle.",
+        "render."
+      ],
+      "correct": 2,
+      "explanation": "Container/worker gọi handle theo cơ chế framework."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Constructor payload",
+      "question": "Job nhận object nào qua constructor nguồn?",
+      "options": [
+        "Request.",
+        "Category.",
+        "HttpClient.",
+        "Order."
+      ],
+      "correct": 3,
+      "explanation": "Promoted public property giữ order theo khai báo."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Payment dependency",
+      "question": "handle nguồn nhận service nào?",
+      "options": [
+        "PaymentService.",
+        "MailServiceProvider.",
+        "CacheStore.",
+        "PostRepository."
+      ],
+      "correct": 0,
+      "explanation": "Cần binding/implementation phù hợp trong ứng dụng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "First operation",
+      "question": "Trong handle, thao tác đầu tiên nguồn gọi là gì?",
+      "options": [
+        "Xóa order.",
+        "payment->charge(order).",
+        "Cập nhật status paid.",
+        "Gửi mail trực tiếp."
+      ],
+      "correct": 1,
+      "explanation": "Thứ tự side effects ảnh hưởng lỗi và retry."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Stored status",
+      "question": "Sau charge, order được update status nào?",
+      "options": [
+        "archived.",
+        "pending mãi.",
+        "paid.",
+        "draft."
+      ],
+      "correct": 2,
+      "explanation": "Đó là nhánh source sau khi charge trả về không throw."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Event attempt",
+      "question": "Cuối handle, nguồn cố dispatch event nào?",
+      "options": [
+        "OrderDeleted.",
+        "PostPublished.",
+        "UserLoggedIn.",
+        "OrderPaid."
+      ],
+      "correct": 3,
+      "explanation": "Lời gọi tồn tại trong source chưa có nghĩa class đã hỗ trợ dispatch."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Failure hook",
+      "question": "Method nguồn dành cho xử lý job thất bại tên gì?",
+      "options": [
+        "failed.",
+        "finally.",
+        "abortAll.",
+        "rollbackMail."
+      ],
+      "correct": 0,
+      "explanation": "Tên method thuộc hook queue framework, không tự là compensation."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Failure parameter",
+      "question": "failed nguồn nhận loại tham số nào?",
+      "options": [
+        "int page.",
+        "\\Throwable.",
+        "string title.",
+        "User."
+      ],
+      "correct": 1,
+      "explanation": "Khai báo nguồn dùng Throwable để nhận thông tin lỗi."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Failure log",
+      "question": "Hook failed nguồn thực hiện việc gì rõ ràng?",
+      "options": [
+        "Xóa mọi failed jobs.",
+        "Tự gửi lại vô hạn.",
+        "Log lỗi kèm order id và message.",
+        "Hoàn tiền tự động."
+      ],
+      "correct": 2,
+      "explanation": "Không có refund hoặc transaction rollback trong thân method."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Queue selection",
+      "question": "onQueue nguồn chọn tên hàng đợi nào?",
+      "options": [
+        "emails.",
+        "default_reports.",
+        "posts.",
+        "payments."
+      ],
+      "correct": 3,
+      "explanation": "Tên queue khác tên connection."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Serialization trait",
+      "question": "Trait nào nguồn liên quan serialize Eloquent models?",
+      "options": [
+        "SerializesModels.",
+        "RefreshDatabase.",
+        "HasTimestamps.",
+        "WithPagination."
+      ],
+      "correct": 0,
+      "explanation": "Cần hiểu model reference/rehydration thay vì coi là snapshot mọi field."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Event payload",
+      "question": "OrderPaid nguồn có constructor nhận gì?",
+      "options": [
+        "Schedule.",
+        "Order.",
+        "PaymentService.",
+        "Request."
+      ],
+      "correct": 1,
+      "explanation": "Class hiển thị chỉ constructor promoted property."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Listener class",
+      "question": "Listener gửi xác nhận nguồn tên gì?",
+      "options": [
+        "OrderServiceProvider.",
+        "HasMail.",
+        "SendOrderConfirmation.",
+        "ProcessOrder."
+      ],
+      "correct": 2,
+      "explanation": "Listener nhận event chứ không trực tiếp nhận Request."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Listener event",
+      "question": "handle của listener type-hint event nào?",
+      "options": [
+        "PostCreated.",
+        "PaymentRejected.",
+        "GenerateReport.",
+        "OrderPaid."
+      ],
+      "correct": 3,
+      "explanation": "Signature là một phần wiring listener."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Mail recipient",
+      "question": "Mail nguồn nhắm tới giá trị nào?",
+      "options": [
+        "$event->order->user.",
+        "Mọi admin trong database.",
+        "Một email hardcode được viết rõ.",
+        "Tên queue payments."
+      ],
+      "correct": 0,
+      "explanation": "Quan hệ user và cấu hình mail phải có trong app."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Mail object",
+      "question": "Mailable nguồn được khởi tạo là gì?",
+      "options": [
+        "PostResource.",
+        "OrderConfirmationMail.",
+        "GenerateReport.",
+        "PaymentService."
+      ],
+      "correct": 1,
+      "explanation": "Implementation mailable không có trong snippet."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Cleanup frequency",
+      "question": "orders:cleanup nguồn được schedule theo tần suất nào?",
+      "options": [
+        "everySecond.",
+        "weeklyOn thứHai 8 giờ.",
+        "daily.",
+        "hourly."
+      ],
+      "correct": 2,
+      "explanation": "Đây là cấu hình lịch, không là bằng chứng cron đã chạy."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Report frequency",
+      "question": "GenerateReport nguồn được đặt lịch thế nào?",
+      "options": [
+        "daily không có giờ.",
+        "Mỗi request HTTP.",
+        "Ngay khi file được text editor mở.",
+        "weeklyOn(1, \"8:00\")."
+      ],
+      "correct": 3,
+      "explanation": "Ngày/giờ được giải nghĩa theo scheduler và timezone cấu hình."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Sync driver caveat",
+      "question": "ShouldQueue có bảo đảm luôn chạy ở process nền khác request không?",
+      "options": [
+        "Không; connection sync có thể xử lý đồng bộ.",
+        "Có trong mọi cấu hình.",
+        "Có vì interface tự tạo OSprocess.",
+        "Có vì tên class ProcessOrder."
+      ],
+      "correct": 0,
+      "explanation": "Cần xem queue connection/driver thực tế."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Worker required",
+      "question": "Với backend queue bất đồng bộ, dispatch đã đủ đảm bảo job được xử lý chưa?",
+      "options": [
+        "Rồi; tên payments tự mở daemon.",
+        "Chưa; cần worker đang xử lý đúng queue/connection và cấu hình phù hợp.",
+        "Rồi; không bao giờ cần consumer.",
+        "Rồi; PHP comment tự chạy worker."
+      ],
+      "correct": 1,
+      "explanation": "Enqueue và consume là hai bước khác nhau."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Queue versus connection",
+      "question": "onQueue(\"payments\") tự chọn Redis connection không?",
+      "options": [
+        "Có; nó cài Redis nếu thiếu.",
+        "Có; nó đổi database driver.",
+        "Không; queue name khác connection/driver.",
+        "Có; mọi payments queue dùng Redis."
+      ],
+      "correct": 2,
+      "explanation": "Connection có thể được cấu hình hoặc chỉ định riêng."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Unconsumed queue",
+      "question": "Worker chỉ nghe default, job vào payments. Điều gì cần kiểm?",
+      "options": [
+        "Đổi title Post.",
+        "Tăng max:255.",
+        "Bỏ SerializesModels để tự chạy.",
+        "Cấu hình worker có xử lý payments không."
+      ],
+      "correct": 3,
+      "explanation": "Job đã enqueue có thể chờ nếu không có consumer phù hợp."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Model payload semantics",
+      "question": "SerializesModels với Eloquent order thường lưu gì để xử lý sau?",
+      "options": [
+        "Thông tin định danh để framework truy xuất lại model, không đơn thuần snapshot mọi field.",
+        "Một database server đầy đủ.",
+        "Chỉ chuỗi tên PHPclass không id.",
+        "Một bản backup bất biến toàn DB."
+      ],
+      "correct": 0,
+      "explanation": "Trạng thái khi worker chạy có thể khác lúc dispatch."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Updated order before run",
+      "question": "Order thay đổi sau dispatch trước worker. Vì sao job có thể thấy trạng thái mới?",
+      "options": [
+        "onQueue tự khóa record vĩnh viễn.",
+        "Model có thể được rehydrate từ DB lúc xử lý.",
+        "PHP queue luôn đóng băng toàn database.",
+        "SerializesModels cấm mọi UPDATE."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần snapshot nghiệp vụ, phải thiết kế payload/phiên bản rõ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Missing model scenario",
+      "question": "Order bị xóa trước khi worker tải lại. Thiết kế cần cân nhắc gì?",
+      "options": [
+        "Luôn charge null an toàn.",
+        "Tự hoàn tác việc xóa trên mọi DB.",
+        "Chính sách xử lý model không còn tồn tại thay vì giả luôn có.",
+        "Tự tạo lại order với mọi payment thông tin đúng."
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình/framework behavior và nghiệp vụ quyết định cách xử lý."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Handle injection",
+      "question": "PaymentService trong handle thường được resolve nhờ thành phần nào?",
+      "options": [
+        "Tên queue tự sinh APIkey.",
+        "Mail recipient tạo service.",
+        "Status paid tự tạo class.",
+        "Service container với dependency bindings phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Source không cung cấp implementation gateway."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Charge throws",
+      "question": "Nếu charge throw ngay, theo luồng thông thường source có chạy update paid tiếp không?",
+      "options": [
+        "Không.",
+        "Có vì mọi statement luôn chạy bất kể exception.",
+        "Có vì ShouldQueue bỏ mọi exception.",
+        "Có vì update nằm trong finally."
+      ],
+      "correct": 0,
+      "explanation": "Không có catch/finally trong handle được hiển thị."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Update throws",
+      "question": "Nếu charge thành công nhưng update throw, điều gì đã có thể xảy ra?",
+      "options": [
+        "Toàn bộ thế giới tự rollback.",
+        "Thanh toán bên ngoài đã diễn ra trong khi DB chưa ghi paid.",
+        "Không có side effect nào vì PHP tự rollback gateway.",
+        "Order chắc đã gửi email."
+      ],
+      "correct": 1,
+      "explanation": "Retry cần xét trạng thái ngoài DB."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Dispatch throws",
+      "question": "Charge và update xong nhưng event dispatch lỗi: source có tự hoàn tiền không?",
+      "options": [
+        "Có do event là transaction gateway.",
+        "Có do Log::error thu hồi tiền.",
+        "Không có logic hoàn tiền được hiển thị.",
+        "Có do failed luôn refund."
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt logging với recovery."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Missing event dispatch implementation",
+      "question": "Vấn đề trực tiếp ở OrderPaid::dispatch trong snippet là gì?",
+      "options": [
+        "ProcessOrder không có constructor.",
+        "Listener không có handle.",
+        "Mail không có recipient expression.",
+        "OrderPaid không hiển thị Dispatchable trait hoặc static dispatch method."
+      ],
+      "correct": 3,
+      "explanation": "Không nhập trait của job sang event một cách tự động."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Fix dispatch surface",
+      "question": "Cách bổ sung phù hợp cho event dispatch theo framework là gì?",
+      "options": [
+        "Dùng event Dispatchable phù hợp hoặc dispatcher API với event instance theo thiết kế.",
+        "Chỉ đổi tên property order.",
+        "Chỉ thêm ShouldQueue vào enum.",
+        "Chỉ đặt queue name khác."
+      ],
+      "correct": 0,
+      "explanation": "Vẫn cần imports và event/listener wiring."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Listener registration",
+      "question": "Có class SendOrderConfirmation đã đủ chứng minh nó được gọi khi OrderPaid phát ra không?",
+      "options": [
+        "Có; interface tự đăng ký mọi file tùy ý.",
+        "Chưa; cần registration/discovery hoạt động đúng trong app.",
+        "Có; mọi class có chữSend tự chạy.",
+        "Có; Mail tự quét filesystem mỗi lần."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm discovery configuration hoặc đăng ký rõ ràng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Event is not broker",
+      "question": "Một event class trong PHP có tự là durable message broker không?",
+      "options": [
+        "Có; public property được replicate toàncluster.",
+        "Có; mỗi event tự lưu DB vĩnh viễn.",
+        "Không.",
+        "Có; constructor là một queue server."
+      ],
+      "correct": 2,
+      "explanation": "Độ bền phụ thuộc dispatch/queue/outbox/backend thực tế."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Queued listener consequence",
+      "question": "Listener implements ShouldQueue gợi ý điều gì khi wiring/backend phù hợp?",
+      "options": [
+        "Mail chắc đến trước khi charge bắt đầu.",
+        "Không cần worker với mọi backend.",
+        "Listener không thể thất bại.",
+        "Framework có thể đưa xử lý listener qua queue."
+      ],
+      "correct": 3,
+      "explanation": "Không suy synchronous/asynchronous tuyệt đối khi chưa xem driver."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Sequential statements",
+      "question": "Ba statements trong handle có nghĩa charge/update/event đồng thời không?",
+      "options": [
+        "Không; luồng source gọi tuần tự nếu không có cơ chế khác.",
+        "Có; PHP tự parallel mọi dòng.",
+        "Có; ShouldQueue parallel mỗi statement.",
+        "Có; event type-hint tạo coroutine."
+      ],
+      "correct": 0,
+      "explanation": "Job chạy nền không biến thân method thành parallel code."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "No transaction wrapper",
+      "question": "Handle nguồn có DB::transaction rõ ràng không?",
+      "options": [
+        "Có vì onQueue là transaction.",
+        "Không.",
+        "Có vì class implements ShouldQueue.",
+        "Có vì có Order model."
+      ],
+      "correct": 1,
+      "explanation": "Dù thêm DB transaction cũng không tự rollback external charge."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Retry duplicate charge",
+      "question": "Job retry sau lỗi ghi status có rủi ro gì nếu charge không idempotent?",
+      "options": [
+        "Luôn chỉ log không gọi handle.",
+        "Tự refund mọi lần trước.",
+        "Charge lặp lại cùng đơn.",
+        "Tự biết không charge lần hai nhờ tên class."
+      ],
+      "correct": 2,
+      "explanation": "Cần idempotency key và đối soát trạng thái gateway phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Idempotency key choice",
+      "question": "Với một payment intent ổn định, key retry nên có tính chất gì?",
+      "options": [
+        "Ngẫu nhiên mới mỗi retry để gateway coi khác nhau.",
+        "Chỉ là tên server thay đổi.",
+        "Chỉ là page number của UI.",
+        "Ổn định cho cùng thao tác nghiệp vụ và duy nhất trong phạm vi cần phân biệt."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế key theo đơn/lần thanh toán hợp lệ, không mặc định một order chỉ có một operation mãi mãi."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Log versus recovery",
+      "question": "Log lỗi trong failed có tác dụng chính gì?",
+      "options": [
+        "Ghi thông tin chẩn đoán; không tự sửa trạng thái/payment.",
+        "Đảm bảo exactly-once.",
+        "Tự gửi email thành công.",
+        "Tự restart mọi worker."
+      ],
+      "correct": 0,
+      "explanation": "Cần workflow phục hồi riêng nếu nghiệp vụ yêu cầu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Retry controls absent",
+      "question": "Nguồn đã đặt tries/backoff/timeout cụ thể cho job chưa?",
+      "options": [
+        "Có; public order tự đặt backoff.",
+        "Chưa.",
+        "Có; tên payments luôn nghĩa 3 tries.",
+        "Có; daily là timeout của job."
+      ],
+      "correct": 1,
+      "explanation": "Hành vi retry còn phụ thuộc worker/backend/config."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Permanent versus transient",
+      "question": "Lỗi thẻ bị từ chối vĩnh viễn và lỗi mạng tạm thời nên được xử lý ra sao?",
+      "options": [
+        "Bỏ mọi log.",
+        "Đổi mọi lỗi thành paid.",
+        "Phân loại để chọn retry/failed/reconcile theo nghiệp vụ.",
+        "Retry vô hạn cả hai không phân biệt."
+      ],
+      "correct": 2,
+      "explanation": "Không coi mọi exception là lý do charge lại mù quáng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Mail retry risk",
+      "question": "Listener gửi mail thành công nhưng ack lỗi có thể tạo tình huống gì khi retry?",
+      "options": [
+        "SMTP tự rollback email đã nhận.",
+        "Order chắc bị xóa.",
+        "Event class tự nhớ hộp thư nhận vĩnh viễn.",
+        "Email xác nhận có thể được gửi lặp."
+      ],
+      "correct": 3,
+      "explanation": "Có thể cần khóa/dedup theo notification nghiệp vụ."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "After commit goal",
+      "question": "Dispatch afterCommit hữu ích khi nào?",
+      "options": [
+        "Tránh worker xử lý trước khi transaction tạo/cập nhật dữ liệu commit.",
+        "Để mọi externalAPI tham gia rollbackDB.",
+        "Để bỏ database constraints.",
+        "Để bảo đảm email đã delivered."
+      ],
+      "correct": 0,
+      "explanation": "After-commit timing khác giải pháp atomic outbox đầy đủ."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Scheduler trigger",
+      "question": "Định nghĩa daily() có tự thay thế việc chạy scheduler ở hệ điều hành/service không?",
+      "options": [
+        "Có; mở file bằng editor đủ kích hoạt.",
+        "Không; cần cơ chế kích hoạt scheduler thực tế.",
+        "Có; comment Kernel.php tự cài cron.",
+        "Có; every method tạo WindowsTaskScheduler."
+      ],
+      "correct": 1,
+      "explanation": "Khai báo lịch khác vận hành scheduler."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Monday schedule",
+      "question": "Theo Laravel scheduler, weeklyOn(1, \"8:00\") nghĩa gì với timezone đã cấu hình?",
+      "options": [
+        "Mỗi request lúc userlogin.",
+        "Ngày 1 mỗi tháng lúc 20:00.",
+        "Thứ Hai lúc 08:00.",
+        "Chủ Nhật mỗi 8 phút."
+      ],
+      "correct": 2,
+      "explanation": "Không tự suy timezone server là timezone người dùng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Daily default time",
+      "question": "Theo quy ước scheduler, daily() không thêm giờ thường là khi nào?",
+      "options": [
+        "Mỗi phút.",
+        "08:00 cố định.",
+        "Ngay sau mỗi payment.",
+        "Nửa đêm theo timezone lịch áp dụng."
+      ],
+      "correct": 3,
+      "explanation": "Cần cấu hình trigger và timezone trước khi kỳ vọng run thực tế."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Kernel layout version",
+      "question": "Comment app/Console/Kernel.php có chứng minh cấu trúc chuẩn của mọi Laravel version không?",
+      "options": [
+        "Không; skeleton mới có thể định nghĩa lịch ở routes/console.php hoặc bootstrap.",
+        "Có; mọi version bắt buộc cùng một file.",
+        "Có; PHP không cho thay folder.",
+        "Có; scheduler tự di chuyển source."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt snippet phong cách cũ với version ứng dụng thật."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Overlap scenario",
+      "question": "Cleanup chạy lâu hơn chu kỳ và lần sau khởi động. Cần cân nhắc gì?",
+      "options": [
+        "Đổi tên command mỗi lần.",
+        "Chống overlap hoặc thiết kế công việc lặp an toàn.",
+        "Cho rằng daily tự cấm overlap mọi trường hợp.",
+        "Xóa log để tránh trùng."
+      ],
+      "correct": 1,
+      "explanation": "Cơ chế lock phải có phạm vi và thời hạn phù hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Multiple schedulers",
+      "question": "Nhiều server cùng chạy lịch có thể dẫn đến gì nếu chưa phối hợp?",
+      "options": [
+        "Mọi lịch tự tắt.",
+        "Mỗi task chỉ còn mộtbyte.",
+        "Một tác vụ có thể được kích hoạt nhiều lần.",
+        "Chắc chắn tự chỉ có một server chạy."
+      ],
+      "correct": 2,
+      "explanation": "Cần cơ chế một-server/lock chung theo deployment và semantics mong muốn."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Report job prerequisites",
+      "question": "new GenerateReport xuất hiện nhưng chưa có class. Cần gì để lịch đó hoạt động?",
+      "options": [
+        "Chỉ tên class trong comment.",
+        "Chỉ gọi Log::error.",
+        "Chỉ tạo một Post model.",
+        "Implementation, autoload và queue/scheduler wiring tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Không suy phụ thuộc đã tồn tại ngoài snippet."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Timeout versus remote outcome",
+      "question": "HTTP timeout khi charge có nghĩa gateway chắc chưa thu tiền không?",
+      "options": [
+        "Không; kết quả phía xa có thể chưa biết, cần query/reconcile/idempotency.",
+        "Có; timeout luôn rollback phía xa.",
+        "Có; mọi request mất kết nối chưa từng tới server.",
+        "Có; PHP tự refund."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt lỗi quan sát kết quả với việc side effect có xảy ra hay không."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Sensitive log content",
+      "question": "Đưa toàn bộ exception message vào log cần cân nhắc gì?",
+      "options": [
+        "Log tự mã hóa mọi bí mật đúng policy.",
+        "Không để lộ dữ liệu thanh toán/credentials/PII ngoài phạm vi cho phép.",
+        "Mọi exception message luôn vô hại.",
+        "Xóa order IDkhỏiDB."
+      ],
+      "correct": 1,
+      "explanation": "Chọn dữ liệu chẩn đoán đủ dùng và kiểm soát truy cập."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "State validation missing",
+      "question": "Source có kiểm order đã paid trước charge chưa?",
+      "options": [
+        "Có; failed chạy trướchandle.",
+        "Có; Mailrecipient kiểm status.",
+        "Không có guard đó được hiển thị.",
+        "Có; ShouldQueue tự đọc status."
+      ],
+      "correct": 2,
+      "explanation": "Guard đơn giản còn phải xét race/concurrency và trạng thái gateway."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Queue ordering assumption",
+      "question": "Hai jobs cùng order trong cùng queue có chắc không bao giờ chạy đồng thời?",
+      "options": [
+        "Có; mọi queue chỉ có một worker tuyệt đối.",
+        "Có; orderproperty là mutex.",
+        "Có; tênpayments cấm concurrency.",
+        "Không; còn phụ thuộc số workers/backend và cơ chế phối hợp."
+      ],
+      "correct": 3,
+      "explanation": "Cần lock/optimistic state/idempotency theo yêu cầu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Testing dispatch boundary",
+      "question": "Muốn kiểm request có dispatch đúng job mà không charge thật, cách phù hợp là gì?",
+      "options": [
+        "Dùng fake queue/bus theo phạm vi và assert job/payload mong đợi.",
+        "Gọi production payment nhiều lần.",
+        "Chỉ tìm chữProcessOrder trong source.",
+        "Tắt mọi assertions."
+      ],
+      "correct": 0,
+      "explanation": "Fake dispatch không thay test logic handle riêng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Testing handle boundary",
+      "question": "Muốn kiểm logic handle không tốn tiền, nên thay thành phần nào?",
+      "options": [
+        "Bỏ orderstate khỏitest.",
+        "Payment gateway bằng test double có kết quả xác định.",
+        "Thay toàn bộ handle bằng no-op rồi coi đã kiểm logic.",
+        "Dùng thẻ khách thật."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm thứ tự/trạng thái/dispatch theo contract với side effects được kiểm soát."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Testing listener separately",
+      "question": "Fake mọi events rồi mong listener thật gửi mail trong cùng test có vấn đề gì?",
+      "options": [
+        "Mail không bao giờ có thểfake.",
+        "Không cần kiểm listener.",
+        "Fake có thể ngăn listener chạy, cần chia phạm vi test rõ.",
+        "Eventfake luôn gửi mail thật."
+      ],
+      "correct": 2,
+      "explanation": "Test dispatch ý định và test listener behavior là hai phạm vi khác."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Failure hook object",
+      "question": "Theo docs, property thay đổi trong handle có chắc còn trên instance khi failed được gọi không?",
+      "options": [
+        "Có; luôn cùng object identity.",
+        "Có; PHP giữ mọi localvariables.",
+        "Có; queue luôn serialize cả stack.",
+        "Không; framework có thể khởi tạo instance mới cho failed."
+      ],
+      "correct": 3,
+      "explanation": "Không dựa recovery vào biến RAM chỉ được gán giữa handle."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Paid then event error",
+      "question": "Nếu bổ sung dispatch đúng nhưng event backend lỗi sau update paid, retry mù toànhandle có thể gây gì?",
+      "options": [
+        "Thu tiền lặp hoặc phát event trùng nếu không có trạng thái/idempotency phù hợp.",
+        "Luôn tự rollback charge và DB.",
+        "Không thể có vì events không thất bại.",
+        "Chỉ đổi titlePost."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế các bước side effect với retry semantics rõ."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Transactional outbox scope",
+      "question": "Outbox cùng transaction với cập nhật order nhằm giải quyết khoảng trống nào?",
+      "options": [
+        "Loại bỏ mọi deduplication cần thiết.",
+        "Lưu ý định phát event bền vững cùng thay đổi DB, rồi publisher xử lý riêng.",
+        "Bắt gateway/SMTP tham gia transactionDB tự động.",
+        "Bảo đảm recipient đã đọc email."
+      ],
+      "correct": 1,
+      "explanation": "Publisher/consumer vẫn cần xử lý retry và trùng lặp."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Exactly once claim",
+      "question": "ShouldQueue+SerializesModels có chứng minh payment exactly once không?",
+      "options": [
+        "Có nhờ public constructor.",
+        "Có vì mọi queue không bao giờretry.",
+        "Không; cần protocol idempotency và đối soát theo hệ thống thực tế.",
+        "Có chỉ nhờ interface."
+      ],
+      "correct": 2,
+      "explanation": "Không gán bảo đảm toàn hệ thống cho hai cơ chế cục bộ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Check then charge race",
+      "question": "Hai workers cùng thấy order chưa paid rồi đều charge. Vì sao guard if đơn lẻ chưa đủ?",
+      "options": [
+        "PHP không hỗ trợif.",
+        "Mọi database luôn khóa mọi read vĩnh viễn.",
+        "ShouldQueue tự serialize theo order id.",
+        "Read-check-write không atomic giữa workers."
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế claim/state transition, lock và gateway idempotency phù hợp."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Lease loss",
+      "question": "Worker hết lease/visibility timeout nhưng vẫn đang charge, worker khác nhận job. Rủi ro nào có thể có?",
+      "options": [
+        "Xử lý đồng thời cùng thao tác và side effects trùng.",
+        "Job tự mất mọi state trong gateway.",
+        "Mọi worker chắc bị dừng cùng lúc.",
+        "Queue tự biết tiền đã settled."
+      ],
+      "correct": 0,
+      "explanation": "Căn chỉnh timeout/retry cùng cơ chế lặp an toàn."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Timeout configuration",
+      "question": "Vì sao retry visibility phải xét thời gian chạy/worker timeout thực tế?",
+      "options": [
+        "Để HTTPstatus tự biến thành 201.",
+        "Tránh job bị giao lại khi lần trước còn xử lý, đồng thời có phục hồi khi worker chết.",
+        "Để tối đa mọi retry đến vô hạn.",
+        "Để không cần monitor."
+      ],
+      "correct": 1,
+      "explanation": "Không có một giá trị cố định đúng với mọi workload."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Snapshot versus reference",
+      "question": "Nếu giá order thay đổi trước worker, chỉ truyền model reference có đủ chốt số tiền nghiệp vụ ban đầu không?",
+      "options": [
+        "Đủ vì serialize model đóng băng DB.",
+        "Đủ vì Mailmailablelưu mọi giá.",
+        "Chưa; cần snapshot/phiên bản và quy tắc xác nhận số tiền thích hợp.",
+        "Đủ vì modelIDchứa mọi giá lịch sử."
+      ],
+      "correct": 2,
+      "explanation": "Định nghĩa rõ charge theo dữ liệu nào và thời điểm nào."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Failure message nullability",
+      "question": "Vì sao không nên suy failed luôn nhận một loại lỗi nghiệp vụ duy nhất?",
+      "options": [
+        "Vì Throwablechỉ có thể là lỗi email.",
+        "Vì mọi lỗi luôn có cùng message.",
+        "Vì fail không bao giờ xảy ra.",
+        "Job có thể fail vì nhiều nguyên nhân như exception/attempts/timeout tùy config và version."
+      ],
+      "correct": 3,
+      "explanation": "Hook cần phù hợp hợp đồng framework đang dùng và logging/recovery an toàn."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Notification dedup boundary",
+      "question": "Đánh dấu mail sent trong DB trước gửi hoặc sau gửi đều có tradeoff gì?",
+      "options": [
+        "Crash giữa hai bước có thể gây bỏ gửi hoặc gửi lặp; cần quy trình và dedup phù hợp.",
+        "Cả hai đều mặc nhiên exactlyonce.",
+        "SMTPnằm trong DB transaction.",
+        "Không có crash trong workers."
+      ],
+      "correct": 0,
+      "explanation": "Không thể bỏ qua khoảng trống giữa tài nguyên độc lập."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Scheduling timezone DST",
+      "question": "Lịch 08:00 theo timezone có đổi giờ mùa hè cần lưu ý gì?",
+      "options": [
+        "PHPtự biết nơi ở mọi người dùng.",
+        "Đối chiếu timezone và semantics chuyển giờ để xử lý lịch đúng mong đợi.",
+        "Mọi timezone đều UTC.",
+        "weeklyOn cấm timezone."
+      ],
+      "correct": 1,
+      "explanation": "Đặc biệt cẩn trọng với giờ không tồn tại hoặc lặp nếu chọn thời điểm đó."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Cron duplicate trigger",
+      "question": "Chạy cron scheduler ở nhiều nodes và thêm onOneServer có đủ khi cache lock không chia sẻ đúng không?",
+      "options": [
+        "Có; mỗi nodetự biết globalstate.",
+        "Có; privateRAMlà distributedlock.",
+        "Không; cơ chế phối hợp cần backend/config hỗ trợ và dùng chung đúng phạm vi.",
+        "Có; tênmethod tự kết nối mọi node."
+      ],
+      "correct": 2,
+      "explanation": "Một annotation không thay hạ tầng khóa chung."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Overlap lock expiry",
+      "question": "Lock chống overlap hết hạn trước khi tác vụ dài hoàn thành có thể dẫn tới gì?",
+      "options": [
+        "Tự bảo đảm không còn overlap.",
+        "Tự cancel externalpayment.",
+        "Tự rollback email.",
+        "Lần chạy khác có thể bắt đầu trong khi lần cũ vẫn chạy."
+      ],
+      "correct": 3,
+      "explanation": "Thời hạn lock và recovery phải phù hợp thời gian xử lý."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Event missing trait consequence",
+      "question": "Trong chính OrderPaid class nguồn, chỉ thêm implements ShouldQueue có tạo static dispatch không?",
+      "options": [
+        "Không; marker đó không cung cấp method dispatch.",
+        "Có; mọiinterface tự có implementation.",
+        "Có; PHP tự kế thừa trait của ProcessOrder.",
+        "Có; constructor public tạo mọi staticmethods."
+      ],
+      "correct": 0,
+      "explanation": "Bổ sung đúng dispatch API và namespace, không sửa bằng marker không liên quan."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "After commit gap",
+      "question": "Dispatch sau commit nhưng process chết trước khi enqueue có thể còn khoảng trống nào?",
+      "options": [
+        "Không thể có vì afterCommitlà outboxđầyđủ.",
+        "DB đã commit nhưng ý định message chưa được lưu bền nếu không có cơ chế phù hợp.",
+        "DBtự gửi message sau khi processchết.",
+        "Gatewaychắc rollback."
+      ],
+      "correct": 1,
+      "explanation": "After-commit timing không tự là atomic durable handoff."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Queue fake limitation",
+      "question": "Test Queue::fake thấy job đã dispatch có chứng minh worker serialize/rehydrate đúng trên backend thật chưa?",
+      "options": [
+        "Có vì PHP không có serialization errors.",
+        "Có vì mọi driver giống nhau.",
+        "Chưa.",
+        "Có vì fake là backend production."
+      ],
+      "correct": 2,
+      "explanation": "Có thể cần integration test backend phù hợp ngoài unit dispatch test."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Payment ambiguous result",
+      "question": "Gateway timeout sau khi đã thu tiền. Recovery nào hợp lý hơn charge lại với key mới?",
+      "options": [
+        "Luôn gửi lại vô hạn bằng key mới.",
+        "Ghi paid dù không kiểm gì.",
+        "Xóa log để bỏ qua.",
+        "Tra cứu/đối soát với key ổn định và quyết định theo trạng thái xác thực được."
+      ],
+      "correct": 3,
+      "explanation": "Không đánh đồng timeout client với không có side effect."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "PII retention",
+      "question": "Lưu toàn bộ order/paymentpayload trong failed_jobs và logs cần xem điều gì?",
+      "options": [
+        "Giới hạn dữ liệu nhạy cảm, quyền truy cập và thời hạn lưu theo yêu cầu thực tế.",
+        "Không cần vì joblànền.",
+        "Mọi backendtự xóa ngay.",
+        "Chỉ cần đổi tênqueue."
+      ],
+      "correct": 0,
+      "explanation": "Quan sát hệ thống không đồng nghĩa lưu không giới hạn mọi thông tin."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Bounded retries",
+      "question": "Tại sao retry vô hạn với lỗi vĩnh viễn có thể gây hại?",
+      "options": [
+        "Không dùng tài nguyên.",
+        "Tăng tải/chi phí, làm nghẽn queue và lặp side effects mà không khắc phục nguyên nhân.",
+        "Luôn nhanh hơn boundedretry.",
+        "Tự sửa rule nghiệp vụ."
+      ],
+      "correct": 1,
+      "explanation": "Kết hợp phân loại lỗi, giới hạn và escalation/recovery theo thiết kế."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Order cancellation race",
+      "question": "Order bị hủy khi job đang chờ. Cần gì trước khi charge?",
+      "options": [
+        "Đổi Mail recipient thành null.",
+        "Tăng scheduler frequency.",
+        "Kiểm trạng thái/phiên bản và chuyển trạng thái hợp lệ một cách phối hợp theo nghiệp vụ.",
+        "Chỉ tin trạng thái lúc dispatch mãi mãi."
+      ],
+      "correct": 2,
+      "explanation": "Khi dữ liệu đổi, job cần quyết định theo contract thay vì charge mù."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Operational readiness",
+      "question": "Trước khi coi pipeline hoạt động, điều gì cần được kiểm thực tế?",
+      "options": [
+        "Chỉ tồn tại ba tênclass.",
+        "Chỉ có 80 câu hỏi.",
+        "Chỉ thêm commentdone.",
+        "Dispatch API đúng, listener wiring, worker/queue/config và hành vi retry/side effects trong môi trường thử."
+      ],
+      "correct": 3,
+      "explanation": "Source còn thiếu các thành phần không thể thay bằng lời khẳng định đã chạy."
+    }
+  ]
+}

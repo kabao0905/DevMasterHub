@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "ruby",
+  "level": "mid",
+  "lesson": "services",
+  "language": "vi",
+  "sourceHash": "7715e5034f58ebfb4dd6692e8e00d9885797aee10c770c3b3000bca6a27cf05b",
+  "status": "approved",
+  "review": "Tự soạn theo Orders::CreateService/controller và Rails transaction/Stripe/OpenStruct docs. apply_coupon chưa viết;namespace/models/total_cents/libs/helpers chưa đủ. DB transaction không rollback Stripe/mail;Charge.create thiếu currency trong snippet và API legacy. Không gọi payment/API/DB/jobs hoặc cài dependencies.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Service role",
+      "question": "Orders::CreateService có ý định gì?",
+      "options": [
+        "Gom workflow tạo order ngoài controller",
+        "Tạo UI widget",
+        "Migrate mọi tables",
+        "Thay Stripe server"
+      ],
+      "correct": 0,
+      "explanation": "Service tổ chức business workflow."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Constructor required inputs",
+      "question": "initialize yêu cầu keyword inputs nào?",
+      "options": [
+        "Không inputs",
+        "user và items",
+        "Chỉ coupon",
+        "Chỉ order ID"
+      ],
+      "correct": 1,
+      "explanation": "Coupon có default nil."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Optional coupon",
+      "question": "Không truyền coupon thì @coupon nhận gì?",
+      "options": [
+        "Chuỗi DEFAULT",
+        "Một coupon mới",
+        "nil",
+        "false tự động"
+      ],
+      "correct": 2,
+      "explanation": "Default literal là nil."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Workflow entry",
+      "question": "Method public chính để chạy service là gì?",
+      "options": [
+        "perform",
+        "paint",
+        "index",
+        "call"
+      ],
+      "correct": 3,
+      "explanation": "Controller tạo service rồi gọi call."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Transaction intent",
+      "question": "ActiveRecord::Base.transaction nhằm gì?",
+      "options": [
+        "Nhóm DB writes trên connection theo transaction",
+        "Rollback mọi hệ thống ngoài DB",
+        "Tự encode JSON",
+        "Tự xác minh coupon"
+      ],
+      "correct": 0,
+      "explanation": "Atomicity có phạm vi database transaction."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Initial order status",
+      "question": "Order được create! với status nào?",
+      "options": [
+        "failed",
+        "pending",
+        "paid",
+        "completed"
+      ],
+      "correct": 1,
+      "explanation": "Source chưa chuyển paid sau charge."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Owner association",
+      "question": "Order mới được tạo qua association nào?",
+      "options": [
+        "Product.orders",
+        "AdminNotifier.orders",
+        "@user.orders",
+        "Order.all của mọi user"
+      ],
+      "correct": 2,
+      "explanation": "Identity user được caller cung cấp."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Create items step",
+      "question": "create_items(order) duyệt dữ liệu nào?",
+      "options": [
+        "Mọi Product trong DB",
+        "Mọi user",
+        "Danh sách mailers",
+        "@items"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi input item tạo một order_item."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Product reference",
+      "question": "product_id lấy từ đâu trong input item?",
+      "options": [
+        "item[:product_id]",
+        "item[:price]",
+        "@coupon",
+        "order.status"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu item cần contract/validation."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Quantity field",
+      "question": "Quantity khi tạo order_item lấy từ đâu?",
+      "options": [
+        "@user.id",
+        "item[:quantity]",
+        "Product.count",
+        "order.total_cents"
+      ],
+      "correct": 1,
+      "explanation": "Service chưa validate số lượng tại đây."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Server price source",
+      "question": "Price được lấy theo source nào?",
+      "options": [
+        "Coupon String",
+        "User email",
+        "Product.find(product_id).price",
+        "item[:price] trực tiếp"
+      ],
+      "correct": 2,
+      "explanation": "Lấy giá từ product server-side nhưng vẫn cần quyền/domain."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Coupon condition",
+      "question": "apply_coupon được gọi khi điều kiện nào thỏa?",
+      "options": [
+        "Items luôn rỗng",
+        "Status paid",
+        "Current user nil",
+        "@coupon truthy"
+      ],
+      "correct": 3,
+      "explanation": "Ruby nil/false là false-values."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Payment step",
+      "question": "charge_payment(order) gọi dịch vụ nào theo code?",
+      "options": [
+        "Stripe::Charge.create",
+        "Rails.cache.fetch",
+        "FactoryBot.create",
+        "ActionCable.broadcast"
+      ],
+      "correct": 0,
+      "explanation": "Đây là code mẫu,chưa được thực thi."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Amount argument",
+      "question": "Amount truyền cho Stripe lấy từ đâu?",
+      "options": [
+        "@coupon.length",
+        "order.total_cents",
+        "Số lượng item đơn thuần",
+        "@user.id"
+      ],
+      "correct": 1,
+      "explanation": "Field/method total_cents chưa được định nghĩa trong snippet."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Customer argument",
+      "question": "Customer truyền cho Stripe lấy từ đâu?",
+      "options": [
+        "Product.id",
+        "Current controller name",
+        "@user.stripe_id",
+        "order.id"
+      ],
+      "correct": 2,
+      "explanation": "Cần customer mapping đúng account/domain."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Notification recipients",
+      "question": "send_notifications gọi mailers nào?",
+      "options": [
+        "Chỉ JSON encoder",
+        "Chỉ FactoryBot",
+        "Chỉ PostMailer",
+        "OrderMailer và AdminNotifier"
+      ],
+      "correct": 3,
+      "explanation": "Hai lời gọi deliver_later riêng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Success return",
+      "question": "Khi transaction block hoàn tất bình thường,value cuối là gì?",
+      "options": [
+        "order",
+        "true cố định",
+        "OpenStruct lỗi",
+        "Stripe charge ID bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Biểu thức cuối block là order."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Rescued class",
+      "question": "Service chỉ rescue class lỗi nào được ghi?",
+      "options": [
+        "ZeroDivisionError",
+        "Stripe::CardError",
+        "Mọi StandardError",
+        "ActiveRecord::RecordInvalid"
+      ],
+      "correct": 1,
+      "explanation": "Các lỗi khác chưa có mapping ở source."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Failure representation",
+      "question": "CardError được đổi thành object nào?",
+      "options": [
+        "nil luôn luôn",
+        "JSON String",
+        "OpenStruct có success?:false,error:e.message",
+        "Order status paid"
+      ],
+      "correct": 2,
+      "explanation": "Controller kiểm loại Order thay đọc success?."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Controller success check",
+      "question": "Controller quyết định success bằng gì?",
+      "options": [
+        "result.success? duy nhất",
+        "HTTP status từ Stripe trực tiếp",
+        "result.nil?",
+        "result.is_a?(Order)"
+      ],
+      "correct": 3,
+      "explanation": "Success và failure trả kiểu khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Workflow order",
+      "question": "Thứ tự source sau tạo order là gì?",
+      "options": [
+        "Create items,coupon nếu có,charge,notifications,return order",
+        "Charge trước mọi DB write",
+        "Notifications rồi mới create items",
+        "Return order rồi charge"
+      ],
+      "correct": 0,
+      "explanation": "Đọc đúng control flow không suy từ theory."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Bang create failure",
+      "question": "create! khi model validation fail thường có thể làm gì?",
+      "options": [
+        "Tự đổi pending thành paid",
+        "Raise RecordInvalid",
+        "Luôn trả false để tiếp tục",
+        "Tự bỏ item lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Bang persistence khác kiểm boolean save."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Validation error rescue gap",
+      "question": "RecordInvalid từ create! có được rescue CardError bắt không?",
+      "options": [
+        "Có,transaction tự chuyển class",
+        "Có,OpenStruct tự bắt",
+        "Không",
+        "Có,vì mọi lỗi đều CardError"
+      ],
+      "correct": 2,
+      "explanation": "Cần error taxonomy/boundary theo contract."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Product not found",
+      "question": "Product.find không thấy record có thể làm gì?",
+      "options": [
+        "Tự tạo Product giá0",
+        "Trả price0 luôn luôn",
+        "Tự bỏ item",
+        "Raise ActiveRecord::RecordNotFound"
+      ],
+      "correct": 3,
+      "explanation": "Source chưa rescue lỗi này."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Empty items behavior",
+      "question": "@items=[] có bị service chặn ở đầu không?",
+      "options": [
+        "Không có guard trong snippet",
+        "Có,each tự validate nonempty",
+        "Có,transaction cấm empty cart",
+        "Có,Stripe type kiểm trước DB"
+      ],
+      "correct": 0,
+      "explanation": "Model/payment constraints khác chưa biết."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Missing quantity",
+      "question": "Thiếu item[:quantity] đưa value gì từ Hash lookup thông thường?",
+      "options": [
+        "Tên product",
+        "nil",
+        "1 tự động",
+        "0 tự động"
+      ],
+      "correct": 1,
+      "explanation": "Model validation/schema có thể từ chối nhưng service chưa nêu default."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Caller price ignored",
+      "question": "Caller gửi item[:price] khác giá Product,code tạo item dùng gì?",
+      "options": [
+        "Giá thấp hơn tự động",
+        "Coupon value",
+        "Product.price",
+        "Caller price"
+      ],
+      "correct": 2,
+      "explanation": "Source không mass assign input price."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Product lookup count",
+      "question": "Với n input items,source gọi Product.find bao nhiêu lần nếu đi hết loop?",
+      "options": [
+        "1 luôn luôn",
+        "0",
+        "n!",
+        "n"
+      ],
+      "correct": 3,
+      "explanation": "Chưa batch lookup/deduplicate trong code."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Duplicate products",
+      "question": "Hai item cùng product_id có được service tự gộp quantity không?",
+      "options": [
+        "Không",
+        "Có,each tự group_by",
+        "Có,association tự merge mọi row",
+        "Có,Stripe tự gom order_items"
+      ],
+      "correct": 0,
+      "explanation": "Cần policy merge/uniqueness nếu muốn."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Negative quantity domain",
+      "question": "Quantity âm có bị source service tự reject trước create! không?",
+      "options": [
+        "Có,Hash Symbol key bảo đảm domain",
+        "Không có kiểm tại đây",
+        "Có,Ruby Integer cấm âm",
+        "Có,items.each tự kiểm"
+      ],
+      "correct": 1,
+      "explanation": "Validation có thể ở model nhưng chưa được cung cấp."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Coupon method missing",
+      "question": "apply_coupon có implementation trong class được đưa không?",
+      "options": [
+        "Có,ActiveRecord transaction sinh",
+        "Có,OpenStruct sinh",
+        "Chưa",
+        "Có,Stripe SDK tự cung cấp private method đó"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ lời gọi có điều kiện."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Nil coupon skip",
+      "question": "Coupon nil thì apply_coupon có được gọi không?",
+      "options": [
+        "Có,default nil vẫn truthy Ruby",
+        "Có,chỉ false mới skip",
+        "Có,nếu items nonempty",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "nil là false-value."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Empty coupon truthy",
+      "question": "Coupon=\"\" có khiến if @coupon đi vào không?",
+      "options": [
+        "Có,Ruby empty String truthy",
+        "Không,empty tự nil",
+        "Không,if tự strip",
+        "Chỉ nếu title valid"
+      ],
+      "correct": 0,
+      "explanation": "Có thể chạm method thiếu dù coupon trống."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "False coupon skip",
+      "question": "Coupon=false có làm apply_coupon chạy không?",
+      "options": [
+        "Chỉ nếu Stripe customer có ID",
+        "Không",
+        "Có,mọi non-nil đều truthy",
+        "Có,false.to_s nonempty nên if true"
+      ],
+      "correct": 1,
+      "explanation": "If xét value false,không to_s."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Namespaces dependency",
+      "question": "class Orders::CreateService đòi bối cảnh nào?",
+      "options": [
+        "Orders phải là String",
+        "Stripe tạo namespace Orders",
+        "Orders namespace/autoload setup hợp lệ",
+        "Mọi namespace tự global có sẵn Ruby"
+      ],
+      "correct": 2,
+      "explanation": "Rails loader có thể hỗ trợ qua cấu trúc folder;snippet chưa cung cấp app setup."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "OpenStruct load",
+      "question": "Process chưa load OpenStruct cần gì để dùng library này?",
+      "options": [
+        "Chỉ require \"json\" chắc chắn đủ",
+        "Chỉ define Order",
+        "Không có thư viện OpenStruct trong Ruby",
+        "require \"ostruct\" hoặc setup load tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Không kết luận mọi process đều chưa load."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "CardError failure flag",
+      "question": "OpenStruct error result có success? value nào được ghi?",
+      "options": [
+        "false",
+        "true",
+        "nil",
+        "pending"
+      ],
+      "correct": 0,
+      "explanation": "Controller hiện không dùng field này."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Controller error response",
+      "question": "Nếu nhận failure object phù hợp,controller render gì?",
+      "options": [
+        "HTTP204 không body",
+        "JSON error với422",
+        "JSON order với201",
+        "Redirect home"
+      ],
+      "correct": 1,
+      "explanation": "Else đọc result.error."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Controller success response",
+      "question": "Nếu result là Order,controller trả status gì?",
+      "options": [
+        "404",
+        "301",
+        "201",
+        "422"
+      ],
+      "correct": 2,
+      "explanation": "Theo symbol :created."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Unexpected result contract",
+      "question": "Nếu service trả nil do thay đổi không kiểm soát,else result.error có thể gặp gì?",
+      "options": [
+        "Tự trả error Unknown",
+        "Tự tạo Order",
+        "Tự retry charge",
+        "NoMethodError"
+      ],
+      "correct": 3,
+      "explanation": "Controller dựa shape của failure object."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Payment return discarded",
+      "question": "charge_payment trả charge object nhưng call có lưu charge ID vào order tường minh không?",
+      "options": [
+        "Không",
+        "Có,ActiveRecord tự biết Stripe response",
+        "Có,transaction tự serialize response",
+        "Có,return order chứa charge tự động"
+      ],
+      "correct": 0,
+      "explanation": "Reconciliation cần lưu identifiers theo thiết kế."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "No paid status update",
+      "question": "Sau charge,source có order.update!(status:\"paid\") không?",
+      "options": [
+        "Có,return order đổi pending",
+        "Không",
+        "Có,Stripe callback tự sửa object local",
+        "Có,deliver_later đổi status"
+      ],
+      "correct": 1,
+      "explanation": "Payment state mapping chưa cài."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Currency omission",
+      "question": "Lời gọi Charge.create mẫu thiếu parameter bắt buộc nào theo contract create charge?",
+      "options": [
+        "published",
+        "queue",
+        "currency",
+        "title"
+      ],
+      "correct": 2,
+      "explanation": "Cần currency hợp lệ;không gửi request để kiểm ở đây."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Amount unit meaning",
+      "question": "Amount payment API nên dùng đơn vị nào theo currency contract?",
+      "options": [
+        "Luôn Float dollars cho mọi currency",
+        "Số lượng products",
+        "Bất kỳ String formatted có dấu phẩy",
+        "Integer ở smallest currency unit phù hợp currency"
+      ],
+      "correct": 3,
+      "explanation": "Tên total_cents không tự xử lý mọi currency."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "No idempotency option",
+      "question": "Source có truyền idempotency key cho payment call chưa?",
+      "options": [
+        "Chưa",
+        "Có,order.id tự thành option",
+        "Có,customer ID tự deduplicate mọi charge",
+        "Có,transaction tự tạo Stripe key"
+      ],
+      "correct": 0,
+      "explanation": "Không có request options thể hiện điều đó."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Network inside transaction",
+      "question": "Payment call nằm ở đâu so với DB transaction block?",
+      "options": [
+        "Trong ensure sau rollback",
+        "Bên trong block",
+        "Sau commit tường minh",
+        "Trước mọi transaction"
+      ],
+      "correct": 1,
+      "explanation": "Có thể giữ DB transaction mở trong lúc chờ external service."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Notifications ordering",
+      "question": "Hai deliver_later được gọi theo thứ tự nào?",
+      "options": [
+        "Cả hai atomic chung Redis mặc định",
+        "Chỉ một trong hai theo coupon",
+        "OrderMailer trước AdminNotifier",
+        "AdminNotifier trước OrderMailer"
+      ],
+      "correct": 2,
+      "explanation": "Sequential calls không là atomic group."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Notification failure gap",
+      "question": "Nếu enqueue đầu thành công và enqueue sau raise,source có tự unsend/unqueue đầu không?",
+      "options": [
+        "Có,DB rollback hủy mọi external queue",
+        "Có,raise tự gọi cancel mail",
+        "Có,OpenStruct xóa queue",
+        "Không có compensation như vậy trong code"
+      ],
+      "correct": 3,
+      "explanation": "Tác động phụ ngoài DB cần policy riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Transaction exception propagation",
+      "question": "Một exception không được rescue bên trong block thường làm DB transaction thế nào?",
+      "options": [
+        "Rollback writes trong scope rồi propagate theo API",
+        "Commit mọi writes rồi im lặng",
+        "Chỉ rollback Stripe",
+        "Tự retry vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "Có các trường hợp đặc biệt như ActiveRecord::Rollback cần phân biệt."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Rescue placement",
+      "question": "rescue CardError nằm ngoài transaction block hay trong từng item?",
+      "options": [
+        "Trong Stripe SDK config",
+        "Ngoài block ở method call",
+        "Trong create_items mỗi lượt",
+        "Trong controller private"
+      ],
+      "correct": 1,
+      "explanation": "Do đó CardError có thể unwind transaction trước mapping result."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Remote charge rollback",
+      "question": "DB rollback có tự hoàn tiền/hủy charge Stripe đã thành công không?",
+      "options": [
+        "Có,CardError gọi refund tự động",
+        "Có,Stripe đọc SQL rollback",
+        "Không",
+        "Có,ActiveRecord transaction phân tán mặc định"
+      ],
+      "correct": 2,
+      "explanation": "External system không thuộc DB transaction đó."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Single connection scope",
+      "question": "Transaction ActiveRecord mặc định có bảo vệ mọi DB connection riêng biệt atomically không?",
+      "options": [
+        "Có,mọi model ở mọi database chung transaction",
+        "Có,Stripe cũng là connection đó",
+        "Có,OpenStruct là transaction coordinator",
+        "Không,transaction gắn connection"
+      ],
+      "correct": 3,
+      "explanation": "Không có distributed transaction implementation ở source."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "In memory state rollback",
+      "question": "Rollback DB có tự khôi phục mọi field object trong RAM về trước transaction không?",
+      "options": [
+        "Không theo ActiveRecord transaction docs",
+        "Có,deep rollback mọi object graph",
+        "Có,mọi instance freeze",
+        "Có,Order reference tự nil"
+      ],
+      "correct": 0,
+      "explanation": "Cần reload/discard object state phù hợp sau failure."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Order params helper gap",
+      "question": "order_params có implementation trong controller snippet chưa?",
+      "options": [
+        "Có,Stripe SDK tạo",
+        "Chưa",
+        "Có,service initialize tự permit",
+        "Có,Rails core luôn có helper này"
+      ],
+      "correct": 1,
+      "explanation": "Không chứng minh request parsing/authorization hoàn chỉnh."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Items permission scope",
+      "question": "Product.find theo ID có tự kiểm user được mua product đó trong tenant hiện tại không?",
+      "options": [
+        "Có,current_user.orders áp vào mọi Product.find",
+        "Có,Symbol ID trusted",
+        "Không,cần policy/scope phù hợp",
+        "Có,find luôn user-scoped"
+      ],
+      "correct": 2,
+      "explanation": "Object existence khác quyền/phạm vi dữ liệu."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Total derivation missing",
+      "question": "Service có tính lại order.total_cents sau create_items tường minh không?",
+      "options": [
+        "Có,mỗi child create tự save mọi parent",
+        "Có,charge_payment tự sum items trong code",
+        "Có,notification tính tiền",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Model callbacks khác chưa được cung cấp trong service snippet."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Prior model integration",
+      "question": "Nếu dùng đúng Order.before_save tính total ở bài trước,cần xem rủi ro nào?",
+      "options": [
+        "Order tạo trước items có thể có total ban đầu chưa cập nhật khi charge",
+        "Mọi child create chắc chắn gọi lại parent before_save",
+        "Total và total_cents luôn cùng field tự động",
+        "Stripe tự tính lại từ products"
+      ],
+      "correct": 0,
+      "explanation": "Không mặc định ghép snippets khác thành app đúng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "CardError only scope",
+      "question": "Lỗi API connection/invalid request có nhất thiết là CardError để rescue bắt không?",
+      "options": [
+        "Có,error.message làm class giống nhau",
+        "Không,cần xem hierarchy/types SDK",
+        "Có,mọi Stripe error là CardError",
+        "Có,transaction đổi mọi lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Không claim tất cả failure được mapping."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Charge API lifecycle",
+      "question": "Tài liệu Stripe hiện hành đánh giá direct create Charge thế nào?",
+      "options": [
+        "Chỉ dành caching ảnh",
+        "Không có API này từng tồn tại",
+        "Legacy/deprecated,không là flow khuyến nghị cho tích hợp mới",
+        "Luôn API mới nhất bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Câu hỏi review mẫu cũ,không triển khai/gọi payment."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Service not full architecture",
+      "question": "Source có Form/Query/Presenter objects được theory nhắc chưa?",
+      "options": [
+        "Có,mọi private method tự là cả ba",
+        "Có,OpenStruct là Presenter hoàn chỉnh",
+        "Có,controller thin tạo mọi layer",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Không suy implementation từ danh sách khái niệm."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Atomicity boundary",
+      "question": "Vì sao transaction không làm workflow DB/payment/mail all-or-nothing tuyệt đối?",
+      "options": [
+        "Các side effects ngoài connection không tự rollback cùng DB",
+        "Vì transactions không bảo vệ SQL nào",
+        "Vì Ruby methods không được gọi trong transaction",
+        "Vì pending status cấm DB"
+      ],
+      "correct": 0,
+      "explanation": "Cần coordination/reconciliation theo domain."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Payment timeout uncertainty",
+      "question": "Payment timeout có chứng minh provider chưa charge không?",
+      "options": [
+        "Có,không nhận response là không side effect",
+        "Không,kết quả có thể unknown,cần reconcile/idempotency",
+        "Có,timeout luôn rollback provider",
+        "Có,DB rollback là proof chưa charge"
+      ],
+      "correct": 1,
+      "explanation": "Không retry mù khi outcome chưa biết."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Idempotency business key",
+      "question": "Payment idempotency key nên gắn gì theo operation contract?",
+      "options": [
+        "Chỉ customer ID dùng cho mọi khoản mãi mãi",
+        "Email chứa thông tin nhạy cảm không xét policy",
+        "Một payment attempt/operation ổn định qua retries cùng intent",
+        "Một random key mới cho mỗi retry cùng operation"
+      ],
+      "correct": 2,
+      "explanation": "Key phải phân biệt operation nhưng nhất quán khi retry."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Provider key retention",
+      "question": "Có thể coi idempotency key của provider là dedupe vĩnh viễn cho mọi request tương lai không?",
+      "options": [
+        "Có,mọi key tồn tại vĩnh viễn",
+        "Có,UUID là DB constraint remote",
+        "Có,transaction gia hạn mọi key",
+        "Không,có retention/API semantics,app cần state strategy riêng"
+      ],
+      "correct": 3,
+      "explanation": "Đối chiếu version/API thay giả universal guarantee."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Idempotency mismatched params",
+      "question": "Retry cùng key nhưng đổi amount/currency tùy tiện có nên coi như request mới an toàn không?",
+      "options": [
+        "Không,phải giữ operation semantics và xử lý mismatch theo API",
+        "Có,key giống nhau cho phép đổi mọi dữ liệu",
+        "Có,provider tự chọn số lớn hơn",
+        "Có,customer ID sửa mọi mismatch"
+      ],
+      "correct": 0,
+      "explanation": "Idempotency không thay validation của intent."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Outbox purpose",
+      "question": "Outbox có thể giúp phần nào của workflow?",
+      "options": [
+        "Tự kiểm coupon policy",
+        "Ghi ý định side effect cùng DB commit rồi worker xử lý có dedupe/retry",
+        "Tự làm Stripe nằm trong SQL transaction",
+        "Bảo đảm email inbox exactly-once tuyệt đối"
+      ],
+      "correct": 1,
+      "explanation": "Giảm commit/enqueue gap,không xóa mọi external failure."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Long transaction cost",
+      "question": "Chờ payment network trong transaction mở có thể gây gì?",
+      "options": [
+        "Tự giảm latency tất cả requests",
+        "Tự tạo distributed lock cho Stripe",
+        "Giữ connection/locks lâu hơn,tăng contention theo DB workload",
+        "Luôn không tốn resource"
+      ],
+      "correct": 2,
+      "explanation": "Cần thiết kế orchestration và đo scope thật."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Inventory concurrency",
+      "question": "Product.find(price) có tự reserve inventory an toàn trước nhiều buyers không?",
+      "options": [
+        "Có,find tự lock mọi product",
+        "Có,transaction tự trừ stock chưa viết",
+        "Có,Stripe giữ hàng thay DB",
+        "Không,cần stock/locking/constraint strategy riêng"
+      ],
+      "correct": 3,
+      "explanation": "Price lookup khác inventory invariant."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Coupon consistency",
+      "question": "apply_coupon còn thiếu nên cần quy định gì khi hiện thực?",
+      "options": [
+        "Eligibility,expiry,scope,redemption concurrency và total recomputation",
+        "Chỉ String coupon non-empty",
+        "Mọi truthy coupon giảm100%",
+        "Chỉ rescue CardError"
+      ],
+      "correct": 0,
+      "explanation": "Domain rules không được tạo bởi optional parameter."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Price snapshot",
+      "question": "Order item lưu Product.price có cần policy khi giá thay đổi không?",
+      "options": [
+        "Không,callback tự chọn giá tốt nhất",
+        "Có,snapshot currency/price/version và thời điểm chấp nhận rõ",
+        "Không,mọi price field tự stable toàn transaction mọi DB",
+        "Không,client price luôn đúng"
+      ],
+      "correct": 1,
+      "explanation": "Cần contract về giá được chốt,không giả tính nhất quán ngoài scope."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Result contract redesign",
+      "question": "Order hoặc OpenStruct lỗi có tradeoff gì?",
+      "options": [
+        "OpenStruct luôn type-safe compile-time",
+        "is_a? chứng minh payment settled",
+        "Caller phải xử lý union ngầm;typed/explicit Result có thể rõ hơn",
+        "Nó tự bảo đảm mọi lỗi được catch"
+      ],
+      "correct": 2,
+      "explanation": "Chọn failure model nhất quán và kiểm các channels."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Broad rescue not fix",
+      "question": "Đổi rescue mọi StandardError rồi trả422 có đủ sửa workflow không?",
+      "options": [
+        "Có,mọi failure thành validation",
+        "Có,refund tự được gọi",
+        "Có,DB và provider tự khớp",
+        "Không,có thể che lỗi hệ thống/outcome unknown và cần mapping/reconcile"
+      ],
+      "correct": 3,
+      "explanation": "Không dùng error swallowing thay correctness."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Notification duplicate side effect",
+      "question": "Nếu Order model cũng enqueue confirmation after_create,service còn enqueue nữa thì sao?",
+      "options": [
+        "Có thể gửi/enqueue trùng nếu tích hợp cả hai không policy",
+        "Framework tự dedupe theo class OrderMailer",
+        "Một trong hai tự bị bỏ vì transaction",
+        "Không thể vì methods private"
+      ],
+      "correct": 0,
+      "explanation": "Ownership side effect nên có một thiết kế rõ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Currency amount relation",
+      "question": "Tên total_cents có đủ dùng cho mọi currency không?",
+      "options": [
+        "Có,Stripe customer ID quyết định mọi conversion",
+        "Không,minor-unit rules khác nhau và phải có currency contract",
+        "Có,mọi currency đều100cents",
+        "Có,int tự xác định currency"
+      ],
+      "correct": 1,
+      "explanation": "Không đoán currency từ field name."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Payment state storage",
+      "question": "Muốn reconcile payment/order cần bổ sung thông tin nào?",
+      "options": [
+        "Chỉ user.name",
+        "Chỉ OpenStruct.error text",
+        "Provider IDs,attempt/state transitions và constraints theo contract",
+        "Chỉ status pending mãi mãi"
+      ],
+      "correct": 2,
+      "explanation": "Traceable state cần cho xử lý retry/webhook/outcome unknown."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Test no remote spend",
+      "question": "Test orchestration offline nên làm gì?",
+      "options": [
+        "Dùng live key cho mọi unit test",
+        "Charge rồi refund mỗi test bắt buộc",
+        "Bỏ mọi assertion provider",
+        "Fake/mocks boundary để kiểm order/error/side effects,không gửi charge thật"
+      ],
+      "correct": 3,
+      "explanation": "Mock proof chỉ là scope mô phỏng,không production integration."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Failure matrix",
+      "question": "Case nào quan trọng ngoài success?",
+      "options": [
+        "Invalid item,product missing,coupon error,payment rejection/timeout,enqueue fail và rollback scope",
+        "Chỉ user tồn tại",
+        "Chỉ controller201",
+        "Chỉ items có1phần tử"
+      ],
+      "correct": 0,
+      "explanation": "Nhắm operation boundaries có thể lệch state."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "External result evidence",
+      "question": "Mock Stripe success có chứng minh currency/API version/native provider behavior thật không?",
+      "options": [
+        "Có,transaction đã chạy",
+        "Không,cần contract/integration evidence tách biệt nếu được yêu cầu",
+        "Có,mock tự xác thực mọi API",
+        "Có,docs là log provider"
+      ],
+      "correct": 1,
+      "explanation": "Không claim remote test khi chỉ fake."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Namespace runtime readiness",
+      "question": "Chỉ class Orders::CreateService trong snippet có đủ app runnable chưa?",
+      "options": [
+        "Đủ,OpenStruct thay mọi missing class",
+        "Đủ,transaction định nghĩa mọi types",
+        "Chưa,cần namespace/autoload,models,libs,helpers và methods thiếu",
+        "Đủ,mọi Rails source tự load mọi dependency"
+      ],
+      "correct": 2,
+      "explanation": "Không sửa snippets ngoài phạm vi ngân hàng câu hỏi."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Service retry notification duplication",
+      "question": "Client retry cùng yêu cầu tạo order sau khi lần trước đã gửi mail nhưng chưa nhận response. Thiết kế nào giảm tạo order và gửi mail trùng?",
+      "options": [
+        "Chỉ rescue mọi lỗi rồi chạy lại toàn bộ không lưu trạng thái",
+        "Chỉ đổi tên service",
+        "Chỉ dùng OpenStruct success:true sau mọi exception",
+        "Khóa nghiệp vụ/idempotency cùng trạng thái kết quả và chính sách gửi thông báo chống trùng"
+      ],
+      "correct": 3,
+      "explanation": "Retry có thể lặp cả DB và tác dụng phụ ngoài; cần điều phối theo một yêu cầu nghiệp vụ ổn định."
+    }
+  ]
+}

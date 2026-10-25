@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "kubernetes",
+  "level": "junior",
+  "lesson": "scaling",
+  "language": "vi",
+  "sourceHash": "8c05ef32097042875c38b06a412b5e34433e9495e70892d988b40aa89c528557",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo autoscaling/v2 HPA và fragment Deployment trong bài; đối chiếu tài liệu chính thức về requests, nhiều metric, RollingUpdate và rollback. Không chạy kubectl, cluster, metric pipeline hay rollout; cấu hình không chứng minh uptime.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "HPA",
+      "question": "HPA chủ yếu điều chỉnh đại lượng nào của workload?",
+      "options": [
+        "Số lượng bản sao Pod",
+        "Dung lượng từng ổ đĩa trên máy cá nhân",
+        "Số dòng trong Dockerfile",
+        "Tên miền công khai"
+      ],
+      "correct": 0,
+      "explanation": "Horizontal Pod Autoscaler điều chỉnh quy mô ngang của đối tượng đích hỗ trợ scale."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Phiên bản API",
+      "question": "Manifest HPA trong bài sử dụng apiVersion nào?",
+      "options": [
+        "batch/v1",
+        "autoscaling/v2",
+        "apps/v1",
+        "networking.k8s.io/v1"
+      ],
+      "correct": 1,
+      "explanation": "autoscaling/v2 hỗ trợ danh sách nhiều metric trong ví dụ."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Loại đối tượng",
+      "question": "kind của đối tượng autoscaling trong bài là gì?",
+      "options": [
+        "ConfigMap",
+        "ResourceQuota",
+        "HorizontalPodAutoscaler",
+        "ReplicaSet"
+      ],
+      "correct": 2,
+      "explanation": "kind xác định loại API object, khác với tên riêng trong metadata."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Tên HPA",
+      "question": "Tên riêng của HPA trong manifest là gì?",
+      "options": [
+        "web-app",
+        "cpu",
+        "RollingUpdate",
+        "web-hpa"
+      ],
+      "correct": 3,
+      "explanation": "metadata.name đặt tên HPA là web-hpa."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Đích scale",
+      "question": "scaleTargetRef.name trong bài trỏ đến đối tượng nào?",
+      "options": [
+        "web-app",
+        "web-hpa",
+        "metrics-server",
+        "production"
+      ],
+      "correct": 0,
+      "explanation": "HPA nhắm Deployment web-app chứ không tự tạo ứng dụng đó."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Giới hạn dưới",
+      "question": "minReplicas trong ví dụ bằng bao nhiêu?",
+      "options": [
+        "10",
+        "2",
+        "0",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "Giới hạn dưới được cấu hình là hai bản sao trong chế độ hoạt động thông thường."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Giới hạn trên",
+      "question": "maxReplicas trong ví dụ bằng bao nhiêu?",
+      "options": [
+        "70",
+        "80",
+        "10",
+        "2"
+      ],
+      "correct": 2,
+      "explanation": "HPA bị ràng buộc bởi giới hạn trên cấu hình, không tăng vô hạn."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "CPU metric",
+      "question": "averageUtilization của CPU trong bài là bao nhiêu?",
+      "options": [
+        "80",
+        "2",
+        "10",
+        "70"
+      ],
+      "correct": 3,
+      "explanation": "CPU có mục tiêu utilization trung bình 70 phần trăm."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Memory metric",
+      "question": "averageUtilization của memory trong bài là bao nhiêu?",
+      "options": [
+        "80",
+        "70",
+        "10",
+        "1000"
+      ],
+      "correct": 0,
+      "explanation": "Memory có mục tiêu utilization trung bình 80 phần trăm."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Mẫu số utilization",
+      "question": "Utilization CPU của HPA được tính tương đối với gì?",
+      "options": [
+        "Số request HTTP mỗi phút",
+        "CPU requests của các container liên quan",
+        "CPU limits trong mọi trường hợp",
+        "Tổng CPU của toàn Internet"
+      ],
+      "correct": 1,
+      "explanation": "Resource utilization dùng mức request làm cơ sở; không mặc định dùng limit."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Nguồn số liệu",
+      "question": "Để dùng resource metrics, HPA cần khả năng nào của cụm?",
+      "options": [
+        "Chỉ đổi tên Deployment",
+        "Chỉ thêm comment HPA",
+        "Cung cấp số liệu tài nguyên qua metrics API phù hợp",
+        "Có file CSS tên metrics"
+      ],
+      "correct": 2,
+      "explanation": "Khai báo HPA không tự cài hoặc bảo đảm metrics pipeline hoạt động."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Scale ngang",
+      "question": "Khác biệt chính của scale ngang so với tăng tài nguyên một Pod là gì?",
+      "options": [
+        "Thay CPU request của từng container là thao tác chính",
+        "Đổi runtime từ Java sang Go",
+        "Bắt buộc đổi namespace",
+        "Tăng hoặc giảm số bản sao"
+      ],
+      "correct": 3,
+      "explanation": "Scale ngang bổ sung hoặc giảm các đơn vị chạy song song."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "RollingUpdate",
+      "question": "Rolling update triển khai phiên bản mới theo cách nào?",
+      "options": [
+        "Thay thế dần các bản sao theo chiến lược",
+        "Bắt buộc xóa tất cả Pod trước khi tạo mới",
+        "Chỉ sửa log của Pod cũ",
+        "Chỉ đổi tên Service"
+      ],
+      "correct": 0,
+      "explanation": "Deployment có thể duy trì phiên bản cũ và mới cùng lúc trong quá trình chuyển đổi."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "MaxSurge",
+      "question": "maxSurge: 1 cho phép điều gì trong quá trình rollout?",
+      "options": [
+        "Giữ lại đúng một revision mãi mãi",
+        "Tạo tối đa một Pod vượt số bản sao mong muốn theo chiến lược",
+        "Chỉ được phục vụ một người dùng",
+        "Tăng CPU lên một lõi ở mọi Pod"
+      ],
+      "correct": 1,
+      "explanation": "Surge giới hạn phần tăng thêm so với desired replicas của Deployment."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "MaxUnavailable",
+      "question": "maxUnavailable: 0 đặt giới hạn nào cho rollout?",
+      "options": [
+        "Không cần readiness probe",
+        "Không cần thêm tài nguyên cho Pod mới",
+        "Không chủ động làm giảm số Pod available dưới desired theo chiến lược",
+        "Không thể có lỗi ứng dụng hoặc mạng"
+      ],
+      "correct": 2,
+      "explanation": "Đây là ràng buộc điều phối rollout, không phải cam kết uptime tuyệt đối."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Xem tiến độ",
+      "question": "Lệnh nào trong bài dùng theo dõi trạng thái rollout của Deployment?",
+      "options": [
+        "kubectl logs deployment/web-app --delete",
+        "kubectl get secret --rollback",
+        "kubectl create hpa-history",
+        "kubectl rollout status deployment/web-app"
+      ],
+      "correct": 3,
+      "explanation": "rollout status theo dõi quá trình cập nhật; câu hỏi chỉ đọc lệnh, không thực thi."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Xem lịch sử",
+      "question": "Lệnh nào thể hiện ý định xem lịch sử rollout?",
+      "options": [
+        "kubectl rollout history deployment/web-app",
+        "kubectl rollout undo deployment/web-app",
+        "kubectl delete deployment/web-app",
+        "kubectl scale secret/web-app"
+      ],
+      "correct": 0,
+      "explanation": "history dùng xem revision có sẵn, không tự hoàn tác."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Hoàn tác",
+      "question": "Lệnh nào trong bài yêu cầu hoàn tác rollout Deployment?",
+      "options": [
+        "kubectl describe configmap web-app",
+        "kubectl rollout undo deployment/web-app",
+        "kubectl rollout status deployment/web-app",
+        "kubectl get pods"
+      ],
+      "correct": 1,
+      "explanation": "undo yêu cầu trở lại revision workload trước đó nếu revision cần thiết còn tồn tại."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Fragment strategy",
+      "question": "Đoạn spec.strategy trong bài thuộc cấu hình loại workload nào?",
+      "options": [
+        "Ingress",
+        "ServiceMonitor",
+        "Deployment",
+        "Secret"
+      ],
+      "correct": 2,
+      "explanation": "RollingUpdate với maxSurge và maxUnavailable trong ví dụ là chiến lược Deployment."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Giới hạn bảo đảm",
+      "question": "Nhận xét nào đúng về rolling update?",
+      "options": [
+        "Tự bảo đảm mọi giao dịch thành công 100%",
+        "Tự hoàn tác mọi thay đổi dữ liệu",
+        "Tự cung cấp hệ thống quan sát đầy đủ",
+        "Cần phối hợp ứng dụng và hạ tầng để giảm gián đoạn"
+      ],
+      "correct": 3,
+      "explanation": "Chiến lược thay Pod không thay thế readiness, capacity, tương thích và xử lý kết nối."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Đọc target",
+      "question": "HPA có kind Deployment, name web-app trong scaleTargetRef. Nếu chỉ tồn tại Deployment web-api thì cần sửa gì?",
+      "options": [
+        "Tên tham chiếu hoặc đối tượng đích cho khớp",
+        "Đổi metadata.name của HPA thành cpu",
+        "Tăng memory target lên 100",
+        "Xóa toàn bộ metric"
+      ],
+      "correct": 0,
+      "explanation": "HPA cần trỏ đúng workload hỗ trợ scale trong phạm vi namespace thích hợp."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Namespace của đích",
+      "question": "HPA ở namespace staging, Deployment web-app chỉ ở production. Điều gì cần kiểm tra trước?",
+      "options": [
+        "Chỉ cần đổi CPU metric sang memory",
+        "Workload đích phải được tham chiếu đúng trong namespace của HPA",
+        "HPA mặc nhiên tìm mọi namespace",
+        "Tên trùng khiến namespace bị bỏ qua"
+      ],
+      "correct": 1,
+      "explanation": "scaleTargetRef không có trường namespace để trỏ tùy ý sang workload namespace khác."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Thiếu requests",
+      "question": "CPU metric có usage nhưng các container cần tính utilization thiếu CPU requests. Chẩn đoán hợp lý là gì?",
+      "options": [
+        "HPA tự dùng 1000m làm request cho mọi container",
+        "Ứng dụng chắc chắn có đúng hai Pod",
+        "Thiếu cơ sở tính utilization cần khắc phục",
+        "HPA tự dùng limits trong mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "Không nên suy utilization khi request không được xác định cho phạm vi metric."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Phân biệt limit",
+      "question": "Pod có CPU request 200m, limit 1000m và usage 100m. Utilization tương đối với request là bao nhiêu?",
+      "options": [
+        "10%",
+        "200%",
+        "1000%",
+        "50%"
+      ],
+      "correct": 3,
+      "explanation": "100m chia 200m bằng 50%; limit không phải mẫu số trong câu này."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Memory request",
+      "question": "Container có memory request 100Mi và usage 80Mi. Theo phép tính utilization đơn giản, kết quả là gì?",
+      "options": [
+        "80%",
+        "8%",
+        "125%",
+        "0.8%"
+      ],
+      "correct": 0,
+      "explanation": "Usage chia request là 0.8, tương đương 80 phần trăm."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Tính scale cơ bản",
+      "question": "Giả sử đủ metric, không tolerance, không stabilization và không giới hạn khác: 4 Pod có CPU utilization 140%, target 70%. Công thức cơ bản đề xuất bao nhiêu Pod?",
+      "options": [
+        "14",
+        "8",
+        "2",
+        "4"
+      ],
+      "correct": 1,
+      "explanation": "ceil(4 × 140/70) bằng 8; điều kiện đã loại bỏ các bước điều chỉnh thực tế khác."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Làm tròn lên",
+      "question": "Giả sử chỉ dùng công thức cơ bản, 3 Pod có utilization 100%, target 70%. Đề xuất là bao nhiêu?",
+      "options": [
+        "3",
+        "7",
+        "5",
+        "4"
+      ],
+      "correct": 2,
+      "explanation": "ceil(3 × 100/70) bằng ceil(4.2857), tức 5."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Áp giới hạn trên",
+      "question": "Một tính toán scale hợp lệ muốn 14 Pod nhưng maxReplicas là 10. Giới hạn cấu hình chặn ở đâu?",
+      "options": [
+        "14 Pod",
+        "70 Pod",
+        "Không có giới hạn",
+        "10 Pod"
+      ],
+      "correct": 3,
+      "explanation": "Đề xuất vượt maxReplicas không làm mất giới hạn trên đã khai báo."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Áp giới hạn dưới",
+      "question": "Trong hoạt động thông thường, đề xuất scale xuống 1 nhưng minReplicas là 2. Giới hạn dưới là gì?",
+      "options": [
+        "2 Pod",
+        "1 Pod",
+        "0 Pod",
+        "10 Pod"
+      ],
+      "correct": 0,
+      "explanation": "HPA tôn trọng giới hạn dưới cấu hình khi hoạt động theo các giả định của câu hỏi."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Nhiều metric",
+      "question": "CPU đề xuất 6 Pod, memory đề xuất 8 Pod; cả hai metric hợp lệ và bỏ qua các hạn chế khác. HPA chọn đề xuất nào?",
+      "options": [
+        "6 Pod vì CPU đứng trước",
+        "8 Pod",
+        "14 Pod",
+        "7 Pod"
+      ],
+      "correct": 1,
+      "explanation": "HPA lấy đề xuất lớn nhất giữa các metric thay vì cộng hoặc lấy trung bình."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Thứ tự metric",
+      "question": "Đổi thứ tự CPU và memory trong danh sách có khiến HPA luôn ưu tiên metric đầu tiên không?",
+      "options": [
+        "Có; YAML chỉ hỗ trợ một metric",
+        "Không; HPA cộng mọi phần trăm lại",
+        "Không; lựa chọn dựa trên các đề xuất và quy tắc HPA",
+        "Có; metric đầu tiên vô hiệu hóa tất cả metric sau"
+      ],
+      "correct": 2,
+      "explanation": "Vị trí trong danh sách không biến nhiều metric thành quy tắc ưu tiên tuần tự."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Metrics API thiếu",
+      "question": "HPA báo không lấy được resource metrics. Bước điều tra phù hợp là gì?",
+      "options": [
+        "Xóa readiness probe để tăng CPU",
+        "Đổi tên Deployment thành metrics-server",
+        "Chỉ tăng số ký tự trong image tag",
+        "Kiểm tra metrics API, pipeline và điều kiện HPA"
+      ],
+      "correct": 3,
+      "explanation": "Không có dữ liệu đầu vào cần kiểm tra đường thu thập và trạng thái controller."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Không phải scale node",
+      "question": "HPA tăng desired replicas nhưng Pod mới Pending vì thiếu CPU ở mọi node. HPA đã bảo đảm thêm node chưa?",
+      "options": [
+        "Chưa; mở rộng node là cơ chế khác",
+        "Đã; mỗi Pod mới luôn tạo một node",
+        "Đã; maxReplicas là số node",
+        "Chưa; HPA chỉ đổi image tag"
+      ],
+      "correct": 0,
+      "explanation": "Scale Pod và cung cấp năng lực node là hai vòng điều khiển khác nhau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Target utilization",
+      "question": "CPU target 70% có phải giới hạn cứng ngăn mọi Pod vượt 70% không?",
+      "options": [
+        "Không; đây là phần trăm ổ đĩa",
+        "Không; đây là mục tiêu điều khiển theo metric trung bình",
+        "Có; CPU scheduler dừng container ở đúng 70%",
+        "Có; tương đương CPU limit 700m"
+      ],
+      "correct": 1,
+      "explanation": "HPA phản ứng qua scale, không biến target thành cgroup CPU limit."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Trung bình không đều",
+      "question": "Một Pod nóng hơn các Pod khác nhưng trung bình workload vẫn gần target. Cần xem thêm gì?",
+      "options": [
+        "Coi trung bình chứng minh mọi Pod đều khỏe",
+        "Đổi tên metric thành peak",
+        "Phân phối tải giữa các Pod và số liệu từng Pod",
+        "Chỉ đổi minReplicas thành số lẻ"
+      ],
+      "correct": 2,
+      "explanation": "Một số liệu trung bình có thể che mất hotspot hoặc phân phối kết nối không đều."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Thiếu Deployment header",
+      "question": "Đoạn Rolling update strategy chỉ bắt đầu bằng spec. Muốn dùng như manifest Deployment riêng cần gì?",
+      "options": [
+        "Chỉ thêm dấu comment ở đầu",
+        "Đổi spec thành kind",
+        "Chỉ đặt tên file có đuôi .yaml",
+        "Bổ sung apiVersion, kind, metadata và các phần spec bắt buộc"
+      ],
+      "correct": 3,
+      "explanation": "Một fragment strategy không phải đối tượng Deployment hoàn chỉnh."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Surge với ba bản sao",
+      "question": "Desired replicas là 3, maxSurge 1. Bỏ qua Pod đang terminating, giới hạn tổng Pod theo surge là bao nhiêu?",
+      "options": [
+        "4",
+        "3",
+        "2",
+        "10"
+      ],
+      "correct": 0,
+      "explanation": "Chiến lược cho phép thêm một so với ba desired replicas; terminating có thể ảnh hưởng quan sát tổng thực tế."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Không giảm availability",
+      "question": "Desired là 3, maxUnavailable 0. Rollout cần giữ ít nhất bao nhiêu Pod available theo ràng buộc chiến lược?",
+      "options": [
+        "4",
+        "3",
+        "0",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "Ràng buộc đặt sàn availability bằng desired; nó không ngăn mọi sự cố ngoài rollout."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Capacity cho surge",
+      "question": "Cụm chỉ đủ chỗ cho ba Pod đang chạy, desired 3 và maxSurge 1. Điều gì có thể xảy ra?",
+      "options": [
+        "Mọi Pod cũ bị xóa ngay bất kể maxUnavailable",
+        "HPA tự nâng CPU vật lý",
+        "Pod mới Pending khiến rollout chờ thêm capacity",
+        "Kubernetes tự bỏ mọi resource request"
+      ],
+      "correct": 2,
+      "explanation": "Giữ availability và tạo Pod mới cần năng lực tài nguyên phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Readiness",
+      "question": "Pod mới chạy process nhưng chưa nhận request đúng. Tín hiệu nào nên phản ánh khả năng nhận traffic?",
+      "options": [
+        "Chỉ tên container",
+        "Chỉ thời điểm tải image xong",
+        "Chỉ số revision tăng",
+        "Readiness phù hợp với trạng thái sẵn sàng của ứng dụng"
+      ],
+      "correct": 3,
+      "explanation": "Readiness giúp hệ thống nhận biết điều kiện phục vụ thay vì chỉ process tồn tại."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Liveness khác readiness",
+      "question": "Liveness kiểm tra process cần restart, readiness kiểm tra nhận traffic. Khi DB tạm mất kết nối, chọn probe cần dựa trên gì?",
+      "options": [
+        "Ý nghĩa phục vụ và khả năng tự hồi phục của ứng dụng",
+        "Luôn dùng cùng một kiểm tra rồi coi chúng tương đương",
+        "Luôn restart tất cả Pod mỗi lần DB lỗi",
+        "Chỉ giá trị maxSurge"
+      ],
+      "correct": 0,
+      "explanation": "Các probe có mục đích khác nhau; thiết kế sai có thể làm sự cố nặng hơn."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Graceful shutdown",
+      "question": "Pod cũ bị dừng khi còn request đang xử lý. Yếu tố nào cần phối hợp ngoài maxUnavailable?",
+      "options": [
+        "Chỉ đổi tỷ lệ memory metric",
+        "Thoát mềm, điều kiện nhận traffic và thời gian hoàn tất request",
+        "Chỉ màu badge của level",
+        "Chỉ tên HPA"
+      ],
+      "correct": 1,
+      "explanation": "Availability theo Pod không đồng nghĩa mọi kết nối đang thực thi được bảo toàn."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Chạy hai phiên bản",
+      "question": "Trong rolling update, bản cũ và mới cùng truy cập một API nội bộ. Điều gì cần kiểm tra?",
+      "options": [
+        "Luôn cấm mọi Service",
+        "Tự coi rollout là migration giao thức nguyên tử",
+        "Tính tương thích giao thức giữa các phiên bản trong giai đoạn chuyển tiếp",
+        "Chỉ yêu cầu chúng có image tag khác nhau"
+      ],
+      "correct": 2,
+      "explanation": "Thay thế dần tạo ra khoảng thời gian nhiều phiên bản cùng tồn tại."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Image không tải được",
+      "question": "Pod mới ImagePullBackOff trong rollout maxUnavailable 0. Cách suy luận đúng là gì?",
+      "options": [
+        "Tuyên bố rollout thành công vì Pod object đã tạo",
+        "Xóa toàn bộ Pod cũ ngay",
+        "Tăng CPU target để sửa mật khẩu registry",
+        "Điều tra image, quyền registry và sự kiện; rollout có thể chưa tiến triển"
+      ],
+      "correct": 3,
+      "explanation": "Chiến lược rollout không tự giải quyết image reference hoặc quyền tải."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Theo dõi khác hoàn tác",
+      "question": "Muốn theo dõi rollout mà chưa thay đổi ý định phiên bản, chọn lệnh nào trong bài?",
+      "options": [
+        "kubectl rollout status deployment/web-app",
+        "kubectl rollout undo deployment/web-app",
+        "kubectl delete deployment/web-app",
+        "kubectl set image deployment/web-app web=unknown"
+      ],
+      "correct": 0,
+      "explanation": "status là quan sát; undo là yêu cầu đổi workload."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Lịch sử không phải backup DB",
+      "question": "rollout history hiển thị revision Deployment. Nó có cung cấp bản sao toàn bộ dữ liệu DB không?",
+      "options": [
+        "Không; nó chỉ lưu cấu hình Secret",
+        "Không; lịch sử workload không phải bản sao dữ liệu ứng dụng",
+        "Có; mỗi revision chứa mọi transaction",
+        "Có; miễn maxSurge bằng một"
+      ],
+      "correct": 1,
+      "explanation": "Không thể dùng lịch sử Deployment thay thế quy trình sao lưu dữ liệu."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Phạm vi rollback",
+      "question": "Sau khi rollout undo, dữ liệu đã ghi bằng phiên bản mới có tự trở lại trạng thái trước đó không?",
+      "options": [
+        "Có; nếu tên HPA không đổi",
+        "Không; vì undo chỉ sửa hostname",
+        "Không; cần xử lý dữ liệu và tương thích riêng",
+        "Có; mọi transaction tự đảo ngược"
+      ],
+      "correct": 2,
+      "explanation": "Rollback template workload không là transaction đảo ngược các tác động bên ngoài."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Revision không còn",
+      "question": "Muốn quay về revision đã bị dọn khỏi lịch sử. Cần điều gì để phục hồi cấu hình đó?",
+      "options": [
+        "Chỉ gõ undo nhiều lần bất kể lịch sử",
+        "Chỉ tăng memory request",
+        "Chỉ đổi tên namespace",
+        "Nguồn cấu hình hoặc artifact đáng tin còn lưu giữ"
+      ],
+      "correct": 3,
+      "explanation": "Không có revision và nguồn cấu hình thì lệnh không thể tự dựng lại trạng thái bị mất."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Thay đổi template",
+      "question": "Thao tác nào thường làm Deployment tạo rollout phiên bản Pod mới?",
+      "options": [
+        "Đổi image trong spec.template",
+        "Chỉ sửa nhãn metadata không nằm trong Pod template",
+        "Chỉ đọc rollout history",
+        "Chỉ xem logs"
+      ],
+      "correct": 0,
+      "explanation": "Rollout Deployment gắn với thay đổi Pod template, không phải mọi thao tác quan sát."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "HPA và replicas Git",
+      "question": "HPA quản lý scale nhưng công cụ khác liên tục áp replicas cố định. Vấn đề có thể là gì?",
+      "options": [
+        "Service bị biến thành HPA",
+        "Hai tác nhân liên tục ghi số replicas theo ý định khác nhau",
+        "HPA tự hợp nhất hai số bằng phép cộng",
+        "Tất cả metric tự trở thành custom metrics"
+      ],
+      "correct": 1,
+      "explanation": "Cần xác định quyền sở hữu trường scale để tránh tranh chấp điều khiển."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Không tức thời",
+      "question": "Metric vượt target trong vài giây nhưng số Pod chưa đổi ngay. Kết luận hợp lý là gì?",
+      "options": [
+        "Kubernetes cam kết phản ứng tức thời với mọi mẫu",
+        "CPU metric không bao giờ được dùng cho scale",
+        "Cần xem chu kỳ điều khiển, tolerance, dữ liệu và behavior",
+        "HPA chỉ hoạt động khi người dùng nhấn nút"
+      ],
+      "correct": 2,
+      "explanation": "HPA là vòng điều khiển định kỳ có các quy tắc ổn định và giới hạn."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Ổn định scale",
+      "question": "Tải dao động khiến số Pod tăng giảm liên tục. Cấu hình behavior và stabilization nhằm mục tiêu gì?",
+      "options": [
+        "Mã hóa metric bằng Base64",
+        "Đổi namespace sau mỗi request",
+        "Cố định image digest của registry",
+        "Giảm dao động và kiểm soát tốc độ thay đổi phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Ổn định phản ứng cần cân bằng độ nhanh với chi phí và độ tin cậy."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Khởi động chậm",
+      "question": "Pod mới cần khởi động lâu trước khi nhận tải. Điều này ảnh hưởng gì đến kỳ vọng autoscaling?",
+      "options": [
+        "Có độ trễ từ quyết định scale đến năng lực phục vụ thực",
+        "HPA làm thời gian khởi động bằng không",
+        "Pod Pending vẫn phục vụ đầy đủ request",
+        "Đổi maxReplicas luôn bỏ qua startup"
+      ],
+      "correct": 0,
+      "explanation": "Đưa thêm Pod vào desired chưa tạo ngay năng lực sẵn sàng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Memory và rò rỉ",
+      "question": "Ứng dụng rò rỉ memory lâu dài. HPA theo memory có thay thế việc sửa rò rỉ không?",
+      "options": [
+        "Không; memory không thể là resource metric",
+        "Không; thêm bản sao không loại bỏ nguyên nhân rò rỉ",
+        "Có; HPA tự sửa source code",
+        "Có; mỗi lần scale xóa toàn bộ heap mọi Pod"
+      ],
+      "correct": 1,
+      "explanation": "Autoscaling không sửa lỗi ứng dụng hoặc đảm bảo tránh mọi OOM."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Target và requests thay đổi",
+      "question": "Usage CPU giữ 100m nhưng request tăng từ 100m lên 200m. Utilization tính đơn giản thay đổi thế nào?",
+      "options": [
+        "Giữ 100% vì usage không đổi",
+        "Từ 100% lên 200%",
+        "Từ 100% xuống 50%",
+        "Từ 50% lên 100%"
+      ],
+      "correct": 2,
+      "explanation": "Đổi mẫu số request ảnh hưởng trực tiếp utilization dù usage không đổi."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Không phải sửa Service",
+      "question": "Muốn tăng số Pod do Deployment quản lý, HPA làm việc với scale của đối tượng nào?",
+      "options": [
+        "Service port",
+        "Ingress host",
+        "Secret stringData",
+        "Deployment đích"
+      ],
+      "correct": 3,
+      "explanation": "Service định tuyến đến endpoint, không là bộ điều khiển số bản sao ứng dụng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Metric khác loại",
+      "question": "Muốn scale theo hàng đợi nhưng manifest chỉ có CPU và memory. Điều gì còn thiếu?",
+      "options": [
+        "Metric thích hợp và hạ tầng cung cấp metric đó cùng cấu hình HPA",
+        "Chỉ đổi tên memory thành queue trong comment",
+        "Chỉ tăng containerPort",
+        "Chỉ đặt hàng đợi ở namespace khác"
+      ],
+      "correct": 0,
+      "explanation": "Resource metrics hiện tại không tự trở thành chỉ số backlog nghiệp vụ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Bằng chứng rollout",
+      "question": "rollout status báo thành công. Để đánh giá trải nghiệm người dùng còn cần gì?",
+      "options": [
+        "Chỉ tên chart",
+        "Quan sát lỗi, độ trễ và kiểm tra luồng nghiệp vụ phù hợp",
+        "Chỉ kết quả tạo Pod object",
+        "Chỉ số dòng YAML"
+      ],
+      "correct": 1,
+      "explanation": "Trạng thái workload là một lớp bằng chứng, không thay thế tín hiệu phục vụ thực tế."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Quota hạn chế",
+      "question": "HPA muốn tăng replicas nhưng namespace vượt ResourceQuota. Cần điều tra gì?",
+      "options": [
+        "Đổi CPU target thành hostname",
+        "Tắt quyền kiểm tra sourceHash",
+        "Sự kiện tạo Pod, quota và năng lực được cấp",
+        "Coi maxReplicas tự vượt mọi quota"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn HPA không cấp thêm quota hoặc bypass admission."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Viết lại claim nguồn",
+      "question": "Câu maxUnavailable: 0 đảm bảo phục vụ 100% thời gian nên được hiểu thế nào?",
+      "options": [
+        "Là bảo đảm uptime tuyệt đối trong mọi sự cố",
+        "Chỉ đúng vì maxSurge bằng một",
+        "Là bằng chứng đã kiểm thử tải trên production",
+        "Giảm gián đoạn theo chiến lược, còn phụ thuộc readiness, ứng dụng và hạ tầng"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn dùng cách nói quá mạnh; không nên biến cấu hình điều phối thành cam kết toàn hệ thống."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Metric lỗi và scale down",
+      "question": "CPU hợp lệ đề xuất giảm từ 8 xuống 4, memory metric bị lỗi. Theo quy tắc nhiều metric của HPA, điểm nào cần lưu ý?",
+      "options": [
+        "Scale down có thể bị bỏ qua khi metric còn lại không tính được",
+        "Luôn giảm xuống 4 bất kể lỗi metric",
+        "Luôn cộng số 4 với số metric bị lỗi",
+        "Luôn xóa HPA để phục hồi"
+      ],
+      "correct": 0,
+      "explanation": "HPA thận trọng với scale down khi không thể đánh giá đầy đủ các metric cấu hình."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Metric lỗi và scale up",
+      "question": "CPU hợp lệ đề xuất tăng từ 4 lên 8, memory metric bị lỗi. Kết luận phù hợp là gì?",
+      "options": [
+        "HPA buộc tăng đúng gấp ba",
+        "HPA vẫn có thể scale up theo metric hợp lệ, trong các giới hạn khác",
+        "Mọi lỗi một metric luôn cấm cả scale up",
+        "HPA tự thay memory bằng số 0 để giảm Pod"
+      ],
+      "correct": 1,
+      "explanation": "Quy tắc lỗi nhiều metric không đối xứng: không nên suy rằng lỗi một metric luôn đóng băng mọi hướng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Surge và Pending",
+      "question": "Desired 3, maxUnavailable 0, maxSurge 1; Pod mới Pending vì node thiếu tài nguyên. Thiết kế xử lý nào hợp lý?",
+      "options": [
+        "Xóa cả ba Pod cũ để được gọi là zero downtime",
+        "Chỉ đổi HPA name để Pod được schedule",
+        "Đánh giá capacity/quota/requests và phương án rollout giữ mức phục vụ cần thiết",
+        "Coi maxUnavailable 0 tự tạo thêm CPU vật lý"
+      ],
+      "correct": 2,
+      "explanation": "Phải giải quyết ràng buộc tài nguyên thực; thay đổi availability cần quyết định theo yêu cầu phục vụ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Ready giả",
+      "question": "Probe luôn trả thành công dù dependency bắt buộc chưa sẵn sàng. maxUnavailable 0 có bảo đảm request không lỗi không?",
+      "options": [
+        "Có; maxUnavailable kiểm tra mọi dependency nghiệp vụ",
+        "Có; TCP port mở đồng nghĩa giao dịch đúng",
+        "Không; vì RollingUpdate không hỗ trợ readiness",
+        "Không; controller có thể coi Pod chưa phục vụ được là available"
+      ],
+      "correct": 3,
+      "explanation": "Độ đúng của tín hiệu readiness quyết định ý nghĩa availability mà controller nhìn thấy."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Rollback và schema",
+      "question": "Bản mới ghi schema mà bản cũ không đọc được, rồi rollout undo. Điều gì phải được lên kế hoạch?",
+      "options": [
+        "Tương thích tiến/lùi và quy trình dữ liệu ngoài rollback template",
+        "Chỉ giữ nhiều ReplicaSet là đủ đảo mọi dữ liệu",
+        "HPA sẽ tự chuyển schema về phiên bản trước",
+        "Service tự dịch mọi schema giữa hai bản"
+      ],
+      "correct": 0,
+      "explanation": "Rollback workload không loại bỏ yêu cầu quản lý thay đổi dữ liệu."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Metric trung bình che hotspot",
+      "question": "CPU trung bình ở target nhưng một Pod giữ kết nối dài bị quá tải. Phân tích nào đúng?",
+      "options": [
+        "Chỉ giảm maxSurge sẽ cân bằng mọi kết nối",
+        "Cần kiểm tra phân phối kết nối, số liệu chi tiết và chiến lược scale phù hợp",
+        "Trung bình ở target chứng minh mọi Pod có CPU giống nhau",
+        "Tăng replicas luôn chia đều ngay các kết nối đã tồn tại"
+      ],
+      "correct": 1,
+      "explanation": "Scale không tự phân phối lại mọi session hoặc kết nối lâu dài đã được gắn vào một Pod."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Request quá thấp",
+      "question": "CPU requests đặt quá thấp làm utilization cao dù usage tuyệt đối vừa phải. Điều gì cần cân bằng?",
+      "options": [
+        "Luôn bỏ requests và vẫn dùng utilization y nguyên",
+        "Coi utilization cao chứng minh CPU node đã hết",
+        "Định cỡ requests, lịch lập lịch và mục tiêu HPA bằng dữ liệu workload",
+        "Luôn tăng target tới vô hạn để không scale"
+      ],
+      "correct": 2,
+      "explanation": "Requests vừa ảnh hưởng placement vừa là cơ sở tính metric; không nên chỉnh chỉ để làm đẹp tỷ lệ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Giới hạn scale không phải SLO",
+      "question": "Tại maxReplicas 10, lỗi và latency vẫn tăng. HPA đã giải quyết xong yêu cầu năng lực chưa?",
+      "options": [
+        "Rồi; số 10 tự là chứng nhận phục vụ mọi lượng người dùng",
+        "Rồi; target CPU tự giới hạn tốc độ người dùng gửi request",
+        "Chưa; chỉ cần đổi metadata.name là đủ",
+        "Chưa; cần tìm nút thắt, capacity và chính sách bảo vệ tải theo SLO"
+      ],
+      "correct": 3,
+      "explanation": "HPA có giới hạn và không chứng minh capacity của database, network hoặc dependency."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Hai controller",
+      "question": "GitOps liên tục ghi replicas 3 còn HPA tính 8. Cách tiếp cận đúng là gì?",
+      "options": [
+        "Làm rõ ownership trường scale và cấu hình đồng bộ để tránh tranh chấp",
+        "Để hai bên ghi liên tục vì Kubernetes tự lấy trung bình",
+        "Cho HPA đổi image để thắng GitOps",
+        "Đổi resource kind thành Secret"
+      ],
+      "correct": 0,
+      "explanation": "Hệ thống điều khiển cần thống nhất nguồn ý định cho trường mà autoscaler quản lý."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Khởi động và tải tăng",
+      "question": "Tải tăng nhanh hơn thời gian khởi động Pod. Cần phối hợp gì ngoài tăng maxReplicas?",
+      "options": [
+        "Chỉ rút ngắn tên container",
+        "Dự phòng, thời gian startup, metric, giới hạn phụ thuộc và chính sách nhận tải",
+        "Chỉ đặt averageUtilization thành số âm",
+        "Coi quyết định scale đã tương đương năng lực sẵn sàng"
+      ],
+      "correct": 1,
+      "explanation": "Độ trễ điều khiển và khởi động có thể làm workload quá tải trước khi bản sao mới phục vụ."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Drain kết nối",
+      "question": "Rollout thành công theo Pod available nhưng request dài bị cắt khi Pod cũ tắt. Sửa đúng lớp nào?",
+      "options": [
+        "Chỉ tăng số revision history",
+        "Coi available đủ chứng minh mọi request hoàn tất",
+        "Phối hợp ngừng nhận kết nối, graceful shutdown và thời hạn termination",
+        "Chỉ đổi memory target vì request dài là memory metric"
+      ],
+      "correct": 2,
+      "explanation": "Vòng đời kết nối cần được quản lý ở ứng dụng và đường traffic, không chỉ số Pod."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "State cục bộ",
+      "question": "Ứng dụng lưu session chỉ trong memory của từng Pod rồi scale lên và xuống. Vấn đề thiết kế nào cần xem?",
+      "options": [
+        "HPA tự sao chép heap giữa mọi Pod",
+        "RollingUpdate tự biến memory thành database",
+        "Service đảm bảo một người dùng luôn gặp Pod cũ mãi mãi",
+        "Vòng đời session và nơi lưu trạng thái khi replica thay đổi"
+      ],
+      "correct": 3,
+      "explanation": "Scale ngang yêu cầu xử lý state theo hành vi phân phối và thay thế Pod."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "HPA không tự rollback",
+      "question": "Pod mới gây lỗi nghiệp vụ nhưng probe và metric CPU vẫn bình thường. HPA có tự undo bản phát hành không?",
+      "options": [
+        "Không; cần tín hiệu phát hành và cơ chế quyết định rollback riêng",
+        "Có; HPA tự đọc mọi lỗi nghiệp vụ từ source code",
+        "Có; minReplicas luôn trỏ revision trước",
+        "Không; vì HPA không thể scale Deployment"
+      ],
+      "correct": 0,
+      "explanation": "Autoscaling và quyết định chất lượng bản phát hành là trách nhiệm khác nhau."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Mức sử dụng và nhu cầu",
+      "question": "Memory usage tăng do cache giữ dữ liệu sau khi tải giảm. Vì sao không nên suy backlog chỉ từ memory?",
+      "options": [
+        "CPU target luôn điều khiển garbage collector",
+        "Usage có thể phản ánh state/cache chứ không trực tiếp phản ánh tải chờ",
+        "Memory luôn bằng số request chờ trong mọi ứng dụng",
+        "HPA tự biết phần nào của heap là cache không cần metric khác"
+      ],
+      "correct": 1,
+      "explanation": "Chọn metric cần hiểu mối quan hệ giữa số đo và nhu cầu năng lực của workload."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Rollout nhiều metric",
+      "question": "Trong rollout, Pod mới đang warm-up có CPU cao. Cần hiểu điều gì trước khi suy nhu cầu scale?",
+      "options": [
+        "CPU của Pod mới không bao giờ được tính trong bất kỳ phiên bản nào",
+        "Chỉ tên image quyết định số replicas",
+        "Readiness, mẫu metric và quy tắc HPA đối với Pod chưa sẵn sàng",
+        "Mọi spike startup luôn phải nhân đôi replicas ngay"
+      ],
+      "correct": 2,
+      "explanation": "HPA có cách xử lý Pod mới và metric thiếu; startup profile cần được phản ánh đúng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Lịch sử và artifact",
+      "question": "Revision Deployment còn nhưng image tag cũ đã bị ghi đè trong registry. Rủi ro rollback là gì?",
+      "options": [
+        "Revision tự lưu đầy đủ tất cả image layer trong etcd",
+        "Undo tự tải source Git rồi rebuild đúng môi trường",
+        "Chỉ maxUnavailable bị mất tác dụng",
+        "Template cũ có thể không còn trỏ đúng nội dung image ban đầu"
+      ],
+      "correct": 3,
+      "explanation": "Tính tái lập cần artifact xác định và còn truy cập được; lưu template không đồng nghĩa lưu image."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Tổng Pod thực tế",
+      "question": "Trong rollout có Pod đang terminating, thấy số object vượt desired + maxSurge. Có thể kết luận ngay controller sai không?",
+      "options": [
+        "Không; cần phân biệt Pod terminating và giới hạn chiến lược đang áp dụng",
+        "Có; tổng object mọi trạng thái luôn bằng desired + maxSurge",
+        "Có; HPA không bao giờ hoạt động cùng rollout",
+        "Không; maxSurge có nghĩa số node mới"
+      ],
+      "correct": 0,
+      "explanation": "Quan sát số object cần gắn với trạng thái lifecycle; terminating có thể còn tiêu thụ tài nguyên."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Ảo tưởng thời gian thực",
+      "question": "Yêu cầu chống spike một giây chỉ bằng CPU HPA. Đánh giá đúng là gì?",
+      "options": [
+        "Đặt minReplicas 2 bảo đảm vô hạn throughput",
+        "Phải xét sampling, vòng điều khiển, startup và cơ chế bảo vệ tải bổ sung",
+        "HPA bảo đảm mọi spike một giây được xử lý tức thời",
+        "Đổi API từ v2 sang apps/v1 sẽ hết trễ"
+      ],
+      "correct": 1,
+      "explanation": "Autoscaling có độ trễ và giới hạn; cần thiết kế theo đặc tính tải."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Tiêu chí kiểm chứng",
+      "question": "Muốn nói cấu hình rollout đạt mục tiêu giảm lỗi trong phát hành, bằng chứng nào có ý nghĩa?",
+      "options": [
+        "Chỉ HPA object được lưu",
+        "Chỉ rollout history có hai dòng",
+        "Tín hiệu ứng dụng và thử nghiệm rollout phù hợp với điều kiện, tải và lỗi dự kiến",
+        "Chỉ file YAML có maxUnavailable 0"
+      ],
+      "correct": 2,
+      "explanation": "Khẳng định hành vi cần quan sát đúng mục tiêu, không chỉ sự hiện diện của trường cấu hình."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Tổng hợp hợp đồng scale",
+      "question": "Thiết kế nào bao quát đúng bài toán autoscale và rolling update?",
+      "options": [
+        "Chỉ đặt maxReplicas thật lớn",
+        "Chỉ một dòng maxUnavailable 0",
+        "Chỉ dùng cả CPU lẫn memory mà bỏ mọi kiểm chứng",
+        "Metric đáng tin, requests phù hợp, capacity, readiness, lifecycle và rollback tương thích"
+      ],
+      "correct": 3,
+      "explanation": "Cần phối hợp vòng điều khiển với ứng dụng, dữ liệu và hạ tầng; không có một trường YAML thay thế tất cả."
+    }
+  ]
+}

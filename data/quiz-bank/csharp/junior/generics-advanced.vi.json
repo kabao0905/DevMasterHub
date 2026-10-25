@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "csharp",
+  "level": "junior",
+  "lesson": "generics-advanced",
+  "language": "vi",
+  "sourceHash": "754069c8f5b88c351c62d95f1432e7e56a86ee617abdd0e93925d214186c1fa9",
+  "status": "approved",
+  "review": "Soạn trực tiếp không API. C# constraints/variance/nullable generic T? docs,property pattern source theo order. Selected C#5 constraints/delegates và explicit if-based shipping model,không giả property-pattern syntax đã compile. EF repository thiếu ctor/_db init/IEntity/Order definitions,provider chưa chạy. Result<T> unconstrained T? khác Nullable<T> cho int,public init state không tự enforce sumtype invariant.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Generic repository types",
+      "question": "Repository<TEntity,TKey> nguồn có bao nhiêu type parameters?",
+      "options": [
+        "2.",
+        "1.",
+        "0.",
+        "3."
+      ],
+      "correct": 0,
+      "explanation": "Entity và key types được tách riêng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Entity class bound",
+      "question": "where TEntity:class yêu cầu gì?",
+      "options": [
+        "TEntity tự có database table.",
+        "TEntity là reference type theo constraint.",
+        "TEntity luôn Product.",
+        "TEntity là value type."
+      ],
+      "correct": 1,
+      "explanation": "Constraint không tự tạo persistence mapping."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Entity interface bound",
+      "question": "IEntity<TKey> trong constraint nguồn nhằm thể hiện gì?",
+      "options": [
+        "Mọi entities tự share ID.",
+        "Một method tự generate SQL.",
+        "Entity phải đáp ứng interface tương ứng key type.",
+        "Mọi key đều là string."
+      ],
+      "correct": 2,
+      "explanation": "Interface definition chưa có trong snippet."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Key equality bound",
+      "question": "where TKey:IEquatable<TKey> cho compiler biết capability nào?",
+      "options": [
+        "Mọi key có ordering total.",
+        "Mọi key unique toàn database.",
+        "Mọi key non-empty string.",
+        "Typed equality contract tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Equality capability khác ordering và domain uniqueness."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Find method return",
+      "question": "FindAsync nguồn trả async shape nào?",
+      "options": [
+        "Task<TEntity?>.",
+        "List<TKey> đồng bộ.",
+        "Một JSON string cố định.",
+        "Một SqlConnection luôn mở."
+      ],
+      "correct": 0,
+      "explanation": "Nullable outcome cần theo entity/key/provider contract."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Where expression input",
+      "question": "WhereAsync nhận predicate dạng nào?",
+      "options": [
+        "Một TKey[] duy nhất.",
+        "Expression<Func<TEntity,bool>>.",
+        "Một raw SQL string bắt buộc.",
+        "Một Action<TEntity> không return."
+      ],
+      "correct": 1,
+      "explanation": "Expression tree có thể được query provider phân tích."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Where result shape",
+      "question": "WhereAsync nguồn trả kiểu nào?",
+      "options": [
+        "TKey?.",
+        "Một record Result<string> bắt buộc.",
+        "Task<List<TEntity>>.",
+        "Task<bool>."
+      ],
+      "correct": 2,
+      "explanation": "Source materialize qua ToListAsync."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Free shipping rule",
+      "question": "Arm shipping đầu của source kiểm gì?",
+      "options": [
+        "Total>=100.",
+        "Weight<1.",
+        "Country==\"VN\".",
+        "Total>100."
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự arms quyết định priority."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Bulk shipping rule",
+      "question": "Bulk rate nguồn áp điều kiện nào?",
+      "options": [
+        "Items.Count>5 nếu arm trước chưa match.",
+        "Items.Count>=5 luôn.",
+        "Mọi products ID>5.",
+        "Mọi orders có address."
+      ],
+      "correct": 0,
+      "explanation": "Strict greater-than khác greater-or-equal."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Domestic shipping value",
+      "question": "Domestic VN arm trả gì?",
+      "options": [
+        "9.99m.",
+        "2.99m.",
+        "0m.",
+        "5.99m."
+      ],
+      "correct": 1,
+      "explanation": "Arm này sau free và bulk."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Lightweight value",
+      "question": "Weight<1 arm trả gì?",
+      "options": [
+        "2.99m.",
+        "5.99m.",
+        "4.99m.",
+        "0m."
+      ],
+      "correct": 2,
+      "explanation": "Các arms trước có priority cao hơn."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Fallback rate",
+      "question": "Discard arm shipping trả gì?",
+      "options": [
+        "0m.",
+        "2.99m.",
+        "5.99m.",
+        "9.99m."
+      ],
+      "correct": 3,
+      "explanation": "Nó nhận inputs còn lại theo switch semantics."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Result flag",
+      "question": "IsSuccess trong Result<T> có kiểu gì?",
+      "options": [
+        "bool.",
+        "string.",
+        "T.",
+        "Exception."
+      ],
+      "correct": 0,
+      "explanation": "Flag không tự enforce quan hệ với Value/Error."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Result payload",
+      "question": "Value trong Result<T> dùng để biểu diễn gì?",
+      "options": [
+        "Một global cache.",
+        "Payload kết quả theo generic/nullability contract.",
+        "Database connection pool.",
+        "Một route parameter luôn int."
+      ],
+      "correct": 1,
+      "explanation": "T? phải được hiểu theo type argument/constraints và language version."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Result error",
+      "question": "Error trong source có kiểu nào?",
+      "options": [
+        "int.",
+        "TKey.",
+        "string?.",
+        "Exception bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Source dùng message string, không typed error variants."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Factory success",
+      "question": "Ok(value) nguồn đặt IsSuccess thế nào?",
+      "options": [
+        "false.",
+        "Không bao giờ gán.",
+        "Theo string value tự parse.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Factory còn đặt Value."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Factory failure",
+      "question": "Fail(error) nguồn đặt field nào cùng IsSuccess=false?",
+      "options": [
+        "Error.",
+        "Value bắt buộc bằng new T().",
+        "Repository._db.",
+        "Order.Total."
+      ],
+      "correct": 0,
+      "explanation": "Các properties không được gán theo default initialization semantics."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Init timing role",
+      "question": "init accessor chủ yếu giới hạn gì?",
+      "options": [
+        "Tự sinh union variants kín.",
+        "Assignment theo initialization rules, không tự validate mọi state.",
+        "Mọi referenced objects bất biến sâu.",
+        "Tự throw cho Error rỗng."
+      ],
+      "correct": 1,
+      "explanation": "Source vẫn expose các properties có thể khởi tạo độc lập."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Covariance direction",
+      "question": "Covariant producer có thể cho phép hướng reference-type conversion nào?",
+      "options": [
+        "Mọi int thành object sequence bằng variance tự động.",
+        "Mọi delegates đổi parameters tùy ý.",
+        "Từ producer của derived sang producer của base theo variant contract.",
+        "Mọi List<Base> thành List<Derived>."
+      ],
+      "correct": 2,
+      "explanation": "Variance cần declared positions và reference type conversions phù hợp."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Contravariance direction",
+      "question": "Consumer có thể nhận Animal nói chung có thể dùng làm consumer Dog trong contract contravariant không?",
+      "options": [
+        "Không bao giờ.",
+        "Chỉ nếu Dog là struct.",
+        "Chỉ khi tự clone Animal.",
+        "Có theo variance rules thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Nó có thể xử lý mọi Dog vì Dog là Animal."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Free priority model",
+      "question": "If-based C#5 shipping model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=101m,Items=Enumerable.Range(0,6).ToList(),Address=new Address{Country=\"VN\"},Weight=0.5m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "0.",
+        "5.99.",
+        "2.99.",
+        "4.99."
+      ],
+      "correct": 0,
+      "explanation": "Total101 match đầu dù bulk/domestic/light đều có thể hợp."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Bulk before domestic model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=100m,Items=Enumerable.Range(0,6).ToList(),Address=new Address{Country=\"VN\"},Weight=0.5m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "4.99.",
+        "5.99.",
+        "2.99.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Total không free nhưng6items match bulk trước VN."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Domestic before light model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=10m,Items=new List<int>(),Address=new Address{Country=\"VN\"},Weight=0.5m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "5.99.",
+        "9.99.",
+        "2.99.",
+        "4.99."
+      ],
+      "correct": 2,
+      "explanation": "VN arm đứng trước Weight<1."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Light model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=10m,Items=new List<int>(),Address=new Address{Country=\"US\"},Weight=0.5m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "2.99.",
+        "5.99.",
+        "9.99.",
+        "4.99."
+      ],
+      "correct": 3,
+      "explanation": "Không free/bulk/VN,Weight0.5 match light."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Default model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=10m,Items=new List<int>(),Address=new Address{Country=\"US\"},Weight=1m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "9.99.",
+        "4.99.",
+        "2.99.",
+        "0."
+      ],
+      "correct": 0,
+      "explanation": "Weight1 không nhỏ hơn1 và các rules trước không match."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Threshold total equality",
+      "question": "Model Total100 này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=100m,Items=new List<int>(),Address=new Address{Country=\"US\"},Weight=2m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "2.99.",
+        "9.99.",
+        "0.",
+        "5.99."
+      ],
+      "correct": 1,
+      "explanation": "Strict>100 không match equality."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Bulk equality boundary",
+      "question": "Model Count5 này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=10m,Items=Enumerable.Range(0,5).ToList(),Address=new Address{Country=\"US\"},Weight=2m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "0.",
+        "2.99.",
+        "9.99.",
+        "5.99."
+      ],
+      "correct": 2,
+      "explanation": "Strict>5 không match five items."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Null order fallback model",
+      "question": "Explicit null-safe if model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;Console.WriteLine(Shipping.Calculate(null));}}\n",
+      "options": [
+        "NullReferenceException.",
+        "0.",
+        "null.",
+        "9.99."
+      ],
+      "correct": 3,
+      "explanation": "Model phản ánh property patterns không match null và discard fallback. Không giả đã compile pattern syntax."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Null items nested pattern model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=10m,Items=null,Address=new Address{Country=\"VN\"},Weight=2m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "2.99.",
+        "NullReferenceException bắt buộc.",
+        "5.99.",
+        "0."
+      ],
+      "correct": 0,
+      "explanation": "Nested Items.Count pattern không match null Items; VN có thể match tiếp."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Country constant case model",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Address{public string Country;}class Order{public decimal Total;public List<int> Items;public Address Address;public decimal Weight;}\nstatic class Shipping{public static decimal Calculate(Order o){if(o!=null&&o.Total>100)return 0m;if(o!=null&&o.Items!=null&&o.Items.Count>5)return 5.99m;if(o!=null&&o.Address!=null&&o.Address.Country==\"VN\")return 2.99m;if(o!=null&&o.Weight<1)return 4.99m;return 9.99m;}}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var o=new Order{Total=10m,Items=new List<int>(),Address=new Address{Country=\"vn\"},Weight=2m};Console.WriteLine(Shipping.Calculate(o));}}\n",
+      "options": [
+        "5.99.",
+        "9.99.",
+        "2.99.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "String constant VN không tự normalize vn thành VN."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Covariant enumeration",
+      "question": "Đoạn này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Animal{}class Dog:Animal{}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;IEnumerable<Dog> dogs=new List<Dog>{new Dog()};IEnumerable<Animal> a=dogs;Console.WriteLine(a.First().GetType().Name);}}\n",
+      "options": [
+        "Compile error vì IEnumerable luôn invariant.",
+        "null.",
+        "Dog.",
+        "Animal."
+      ],
+      "correct": 2,
+      "explanation": "IEnumerable<out T> cho conversion reference types phù hợp."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Invariant list rejection",
+      "question": "Đoạn này compile được không?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Animal{}class Dog:Animal{}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;List<Animal> a=new List<Dog>();Console.WriteLine(a.Count);}}\n",
+      "options": [
+        "Có; List luôn covariant.",
+        "Có; compiler clone list với cast mỗi element.",
+        "Chỉ runtime exception.",
+        "Không; List<Dog> không implicit-convert thành List<Animal>."
+      ],
+      "correct": 3,
+      "explanation": "Class List invariant dù implement covariant interfaces."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Contravariant consumer",
+      "question": "Đoạn này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Animal{}class Dog:Animal{}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;Action<Animal> a=x=>Console.WriteLine(x.GetType().Name);Action<Dog> d=a;d(new Dog());}}\n",
+      "options": [
+        "Dog.",
+        "Animal.",
+        "Không thể dùng Action<Animal> làm Action<Dog>.",
+        "null."
+      ],
+      "correct": 0,
+      "explanation": "Consumer xử lý mọi Animal có thể nhận Dog."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Covariant factory",
+      "question": "Đoạn này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Animal{}class Dog:Animal{}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;Func<Dog> d=()=>new Dog();Func<Animal> a=d;Console.WriteLine(a().GetType().Name);}}\n",
+      "options": [
+        "null.",
+        "Dog.",
+        "Animal.",
+        "Func return không thể variance."
+      ],
+      "correct": 1,
+      "explanation": "Func return type có covariance reference types theo delegate contract."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Class constraint compile reject",
+      "question": "Đoạn này compile được không?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Box<T> where T:class{}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var b=new Box<int>();Console.WriteLine(b);}}\n",
+      "options": [
+        "Có; compiler đổi T thành object.",
+        "Chỉ runtime exception.",
+        "Không; int không đáp ứng class constraint.",
+        "Có; mọi generic int tự boxing đáp ứng class."
+      ],
+      "correct": 2,
+      "explanation": "Constraint xét type argument chứ không auto boxing thay type."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Constructor constraint reject",
+      "question": "Đoạn này compile được không?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass NoDefault{public NoDefault(int n){}}class Factory<T> where T:new(){}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var b=new Factory<NoDefault>();Console.WriteLine(b);}}\n",
+      "options": [
+        "Có; compiler tự truyền0 vào constructor.",
+        "Có; mọi class mặc định có cả constructor rỗng.",
+        "Chỉ runtime exception.",
+        "Không; NoDefault thiếu public parameterless constructor theo new() constraint."
+      ],
+      "correct": 3,
+      "explanation": "User-defined constructor có arguments không tự cung cấp parameterless."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Comparable generic helper",
+      "question": "Generic model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\n\nclass Program{static T Max<T>(T a,T b)where T:IComparable<T>{return a.CompareTo(b)>0?a:b;}\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;Console.WriteLine(Max(2,3));}}\n",
+      "options": [
+        "3.",
+        "2.",
+        "0.",
+        "Compile error vì int không IComparable<int>."
+      ],
+      "correct": 0,
+      "explanation": "Bound cho phép CompareTo,không cần dynamic."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Struct nullable generic model",
+      "question": "Đoạn này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Maybe<T>where T:struct{public T? Value;}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var b=new Maybe<int>();Console.WriteLine(b.Value.HasValue);}}\n",
+      "options": [
+        "Compiler cấm T? khi có struct constraint.",
+        "False.",
+        "True.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Với where T:struct,T? là Nullable<T> và default không có value."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Unconstrained default value",
+      "question": "Legacy generic model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Box<T>{public T Value=default(T);}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var b=new Box<int>();Console.WriteLine(b.Value);}}\n",
+      "options": [
+        "1.",
+        "Compile error vì default(T).",
+        "0.",
+        "null."
+      ],
+      "correct": 2,
+      "explanation": "Default của int là0;model không dùng modern unconstrained T? syntax."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Unconstrained default reference",
+      "question": "Legacy generic model này in gì?",
+      "code": "using System;using System.Collections.Generic;using System.Linq;using System.Globalization;\nclass Box<T>{public T Value=default(T);}\nclass Program{\nstatic void Main(){CultureInfo.CurrentCulture=CultureInfo.InvariantCulture;var b=new Box<string>();Console.WriteLine(b.Value==null);}}\n",
+      "options": [
+        "False.",
+        "Một String instance rỗng.",
+        "Compile error.",
+        "True."
+      ],
+      "correct": 3,
+      "explanation": "Default của reference type string là null."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Multiple constraint meaning",
+      "question": "TEntity:class,IEntity<TKey> có nghĩa type argument đáp ứng thế nào?",
+      "options": [
+        "Đồng thời reference-type và interface constraints.",
+        "Chỉ một trong hai tùy runtime.",
+        "Compiler chọn constraint dễ nhất.",
+        "Chỉ có class constraint được dùng."
+      ],
+      "correct": 0,
+      "explanation": "Constraints không là các alternatives như union."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Equality not uniqueness",
+      "question": "IEquatable<TKey> có tự enforce key unique trong DB không?",
+      "options": [
+        "Chỉ cần async Find.",
+        "Không.",
+        "Có; Equals tự là primary key.",
+        "Có; generic compiler tự tạo index."
+      ],
+      "correct": 1,
+      "explanation": "Equality contract và database invariant khác nhau."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Expression tree purpose",
+      "question": "Expression<Func<TEntity,bool>> có thể được provider dùng như thế nào?",
+      "options": [
+        "Tự là raw SQL chuẩn mọi DB.",
+        "Tự tải tất cả records luôn.",
+        "Phân tích cấu trúc expression để translate theo support của provider.",
+        "Chắc chắn thực thi mọi C# helper trong DB."
+      ],
+      "correct": 2,
+      "explanation": "Provider translation không được chứng minh chỉ từ delegate-like signature."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Delegate versus expression",
+      "question": "Func<TEntity,bool> và Expression<Func<TEntity,bool>> có cùng representation/role hoàn toàn không?",
+      "options": [
+        "Có; chỉ khác tên dài.",
+        "Có; cả hai luôn SQL strings.",
+        "Chỉ cần .Where.",
+        "Không; executable delegate và expression tree có contracts khác."
+      ],
+      "correct": 3,
+      "explanation": "API overload/source type quyết định semantics."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Repository initialization gap",
+      "question": "Field readonly DbContext _db trong snippet đã được constructor gán rõ chưa?",
+      "options": [
+        "Chưa.",
+        "Có; readonly tự new DbContext.",
+        "Có; generic type tự DI.",
+        "Chỉ cần FindAsync name."
+      ],
+      "correct": 0,
+      "explanation": "Snippet thiếu wiring cần thiết cho runnable repository."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Missing DbContext configuration",
+      "question": "Source đủ để biết database provider/connection/query behavior thực tế chưa?",
+      "options": [
+        "Chỉ cần ToListAsync.",
+        "Chưa.",
+        "Đủ; DbContext luôn SQLite.",
+        "Đủ; TKey chọn SQL Server."
+      ],
+      "correct": 1,
+      "explanation": "Không claim provider integration từ snippet."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Cancellation repository gap",
+      "question": "FindAsync/WhereAsync signatures nguồn có nhận cancellation token rõ chưa?",
+      "options": [
+        "Có; predicate là cancellation token.",
+        "Chỉ cần Task<List<TEntity>>.",
+        "Chưa.",
+        "Có; mọi async method tự propagate request token bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Nếu requirement có cancellation cần propagation theo APIs."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Pattern priority source",
+      "question": "Order vừa Total>100 vừa Items.Count>5 nhận rate nào theo source?",
+      "options": [
+        "5.99m.",
+        "Tổng0+5.99m.",
+        "Random rule.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Switch chọn first matching arm."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Null nested property pattern",
+      "question": "Property pattern {Address.Country:\"VN\"} có coi Address null là matching VN không?",
+      "options": [
+        "Không.",
+        "Có; null tự default Country VN.",
+        "Có; pattern tự tạo Address.",
+        "Chỉ cần order non-null."
+      ],
+      "correct": 0,
+      "explanation": "Nested property requirements phải match."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Order domain validity",
+      "question": "Fallback rate9.99 có tự reject null/invalid Order domain không?",
+      "options": [
+        "Chỉ cần static method.",
+        "Không; source chưa có explicit rejection rule.",
+        "Có; discard pattern tự throw cho null.",
+        "Có; decimal rate validate order."
+      ],
+      "correct": 1,
+      "explanation": "Classification fallback không thay domain validation."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Result default reference failure",
+      "question": "Với Result<string>.Fail(\"bad\") theo source, Value thường ở trạng thái nào nếu không custom initialization?",
+      "options": [
+        "Chuỗi rỗng luôn.",
+        "Một String mới tự tạo.",
+        "null.",
+        "Chuỗi \"bad\"."
+      ],
+      "correct": 2,
+      "explanation": "Factory chỉ set IsSuccess và Error."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Unconstrained T questionmark",
+      "question": "Với Result<int> unconstrained modern T? annotation,Value có nhất thiết là Nullable<int> không?",
+      "options": [
+        "Có; mọi T? luôn Nullable<T>.",
+        "Có; int tự thành string?.",
+        "Không thể dùng int với Result<T> nguồn.",
+        "Không; với nonnullable value-type argument ở context này,T? là int."
+      ],
+      "correct": 3,
+      "explanation": "Where T:struct có semantics khác cho T?."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Failure value int default",
+      "question": "Theo source Result<int>.Fail(\"bad\"),Value không được set thì có thể là gì?",
+      "options": [
+        "0.",
+        "null như int? bắt buộc.",
+        "Một int random.",
+        "Luôn throw khi construction."
+      ],
+      "correct": 0,
+      "explanation": "Default value-type result cần diễn giải cùng IsSuccess."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Success default payload",
+      "question": "Result<int>.Ok(0) có thể là success hợp lệ theo factory không?",
+      "options": [
+        "Factory tự đổi0 thành1.",
+        "Có; IsSuccess=true dù Value0.",
+        "Không;0 luôn là failure.",
+        "Chỉ khi Error non-null."
+      ],
+      "correct": 1,
+      "explanation": "Không suy success từ payload truthiness/default."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Public init invariant",
+      "question": "Source Result<T> có ngăn caller new Result<string>{IsSuccess=true,Error=\"bad\"} bằng constructor kín chưa?",
+      "options": [
+        "Rồi vì init không cho object initializer.",
+        "Chỉ cần static factories.",
+        "Chưa.",
+        "Rồi vì record keyword tự sealed sum type."
+      ],
+      "correct": 2,
+      "explanation": "Factories tồn tại không tự cấm các construction paths public khác."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Record with state mutation",
+      "question": "Caller dùng with để sửa IsSuccess có thể phá liên hệ Value/Error nếu không kiểm soát không?",
+      "options": [
+        "Không; compiler tự validate Result invariant.",
+        "Không; with deep clones và tự sửa flag.",
+        "Chỉ nếu T=string.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "Representation hiện không kín theo success/failure variants."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Init shallow state",
+      "question": "Value chứa mutable list trong Result record có tự bất biến sâu không?",
+      "options": [
+        "Không.",
+        "Có; init freeze toàn graph.",
+        "Có; record tự copy list mỗi lần đọc.",
+        "Chỉ cần IsSuccess=true."
+      ],
+      "correct": 0,
+      "explanation": "Payload mutability vẫn theo type/ownership thực tế."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "New constraint purpose",
+      "question": "where T:new() cung cấp khả năng nào?",
+      "options": [
+        "T luôn reference type.",
+        "T có public parameterless constructor theo constraint.",
+        "T tự serialize JSON.",
+        "T tự implement IEquatable."
+      ],
+      "correct": 1,
+      "explanation": "Có thể kết hợp constraints theo grammar/order phù hợp."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Interface constraints and structs",
+      "question": "Một struct implement IEquatable<T> có thể đáp ứng key interface constraint không?",
+      "options": [
+        "Chỉ nếu boxing type argument thành object.",
+        "Chỉ cần name Key.",
+        "Có nếu type implementation phù hợp.",
+        "Không; mọi interface constraints chỉ cho classes."
+      ],
+      "correct": 2,
+      "explanation": "Source key constraint không có class bound."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Generic capability limits",
+      "question": "Bound IEquatable<T> có tự cho phép gọi CompareTo trên T không?",
+      "options": [
+        "Có; Equals luôn chứa CompareTo.",
+        "Có; mọi interface có ordering.",
+        "Chỉ với generic classes.",
+        "Không; cần capability/bound phù hợp cho ordering."
+      ],
+      "correct": 3,
+      "explanation": "Chỉ dùng members được constraints thực sự bảo đảm."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Variance value-type limit",
+      "question": "IEnumerable<int> có implicit covariance thành IEnumerable<object> chỉ vì boxing từng int khả thi không?",
+      "options": [
+        "Không; variance conversions liên quan reference types,boxing không tự map sequence.",
+        "Có; mọi value-type sequences tự boxing qua variance.",
+        "Có; compiler tự ToList<object>.",
+        "Chỉ cần using Linq."
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần projection/cast thì đó là operation khác có costs/contract riêng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "List variance safety",
+      "question": "Vì sao mutable List<Dog> không được implicit dùng như List<Animal>?",
+      "options": [
+        "Vì List tự deep copies không hiệu quả.",
+        "Nếu cho Add Animal khác Dog qua alias có thể phá element-type invariant.",
+        "Vì Dog không là Animal.",
+        "Vì generic chỉ hỗ trợ strings."
+      ],
+      "correct": 1,
+      "explanation": "Invariance giữ hợp lệ cho API vừa nhận vừa trả elements."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Consumer reversed direction",
+      "question": "Một Action<Dog> có dùng như Action<Animal> tổng quát bằng contravariance không?",
+      "options": [
+        "Có; compiler tự biến Cat thành Dog.",
+        "Chỉ cần interface.",
+        "Không; consumer chỉ biết Dog không thể xử lý mọi Animal tùy ý.",
+        "Có; variance luôn hai chiều."
+      ],
+      "correct": 2,
+      "explanation": "Theo đúng hướng type-safe của input capability."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Unconstrained nullable failure design",
+      "question": "Vì sao chỉ kiểm Value==default để xác định Result<T> success dễ sai?",
+      "options": [
+        "Vì generic không có default values.",
+        "Vì mọi T? đều reference null.",
+        "Vì Result record luôn throw.",
+        "Success có thể chứa default hợp lệ,và failure/default representation khác theo T."
+      ],
+      "correct": 3,
+      "explanation": "Use explicit outcome contract thay payload heuristic."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Failure invalid combinations",
+      "question": "Muốn loại states success+error hoặc failure+payload không hợp lệ nên xét gì?",
+      "options": [
+        "API construction kín/variants/validation giữ invariant xuyên mọi paths.",
+        "Chỉ đặt tên property IsSuccess.",
+        "Chỉ static factories nhưng giữ mọi setters public tùy ý.",
+        "Chỉ đổi class thành record."
+      ],
+      "correct": 0,
+      "explanation": "Representation nên phản ánh domain states có chủ ý."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nullable reference warning limits",
+      "question": "where T:class trong nullable context có tự là runtime guard mọi null argument không?",
+      "options": [
+        "Chỉ cần sealed Result.",
+        "Không.",
+        "Có; CLR intercept mọi null assignments.",
+        "Có; generic constraint thay validation."
+      ],
+      "correct": 1,
+      "explanation": "Annotations/constraints không hứa domain/runtime guards ngoài semantics của chúng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Property getters side effects",
+      "question": "Property pattern đọc một getter có thể throw nếu getter implementation throw không?",
+      "options": [
+        "Không; getters luôn pure compiler guarantee.",
+        "Chỉ nếu property string.",
+        "Có; pattern không tự catch mọi getter errors.",
+        "Không; pattern chỉ xem metadata không evaluate values."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng assumptions của field-only model cho mọi arbitrary Order getters."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Shipping invalid weight",
+      "question": "Source Weight<1 có tự reject Weight âm không?",
+      "options": [
+        "Có; property pattern tự áp Weight>=0.",
+        "Có; decimal không âm.",
+        "Chỉ cần fallback.",
+        "Không; số âm cũng nhỏ hơn1 nếu các rules trước không match."
+      ],
+      "correct": 3,
+      "explanation": "Domain validity phải được kiểm riêng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Shipping exact threshold",
+      "question": "Order Total100,Count6,VN và Weight0.5 nhận rate nào?",
+      "options": [
+        "5.99m.",
+        "0m.",
+        "2.99m.",
+        "4.99m."
+      ],
+      "correct": 0,
+      "explanation": "Không free ở equality100;bulk ưu tiên trước domestic/light."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Fallback null requirement",
+      "question": "Nếu requirement cấm Order null, source discard fallback9.99 đã đáp ứng chưa?",
+      "options": [
+        "Chỉ cần decimal return.",
+        "Chưa; cần explicit rejection/guard theo contract.",
+        "Rồi; property patterns tự throw cho null trước fallback.",
+        "Rồi; type annotation không cho runtime null."
+      ],
+      "correct": 1,
+      "explanation": "Một total classifier có thể che invalid input thay vì reject."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Database null field",
+      "question": "readonly DbContext field chưa gán có được compile guarantee về valid DB connection không?",
+      "options": [
+        "Có; generic compiler tự DI.",
+        "Chỉ need entity class.",
+        "Không; readonly chỉ giới hạn assignment,không tạo dependency.",
+        "Có; readonly tự new đúng provider."
+      ],
+      "correct": 2,
+      "explanation": "Ctor/wiring/lifetime cần được triển khai và kiểm tra."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Provider expression translation",
+      "question": "Expression tree chứa custom helper C# có luôn translate thành SQL trên mọi provider không?",
+      "options": [
+        "Có; Expression tự là SQL AST chuẩn mọi DB.",
+        "Có; compiler dịch mọi method sang stored procedure.",
+        "Chỉ cần ToListAsync.",
+        "Không; cần provider/version/query support và tests phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Native generic tests không là provider integration proof."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Repository thread safety",
+      "question": "Generic repository methods async có tự cho phép dùng cùng DbContext concurrent mọi operations không?",
+      "options": [
+        "Không; phải tuân DbContext/provider concurrency contract.",
+        "Có; Task tự serialize context.",
+        "Có; readonly field là mutex.",
+        "Chỉ cần Expression predicate."
+      ],
+      "correct": 0,
+      "explanation": "Không suy thread safety từ generic abstraction."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Equality comparer domain",
+      "question": "IEquatable<TKey> có đủ quy định case-insensitive key matching mong muốn trong DB không?",
+      "options": [
+        "Chỉ cần class entity.",
+        "Không; còn comparer/collation/storage semantics theo domain/provider.",
+        "Có; typed equality tự sync mọi DB collations.",
+        "Có; mọi string key ignore case."
+      ],
+      "correct": 1,
+      "explanation": "Equality contracts xuyên layers cần thống nhất."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Result versus exceptions scope",
+      "question": "Dùng Result<T> có nghĩa mọi programming/system failures nên bị giấu thành Error string không?",
+      "options": [
+        "Có; Result tự chữa lỗi hệ thống.",
+        "Chỉ cần IsSuccess=false.",
+        "Không; cần phân biệt expected outcomes và failures theo error policy.",
+        "Có; catch mọi Exception rồi bỏ stacktrace luôn."
+      ],
+      "correct": 2,
+      "explanation": "Representation không thay logging/diagnostics và recovery decisions."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Record equality of payload",
+      "question": "Hai Result<List<int>> có lists riêng cùng numbers có tự deep-equal theo record semantics không?",
+      "options": [
+        "Có; record recursively sequence-compares mọi collection.",
+        "Có; Result<T> tự sort lists.",
+        "Chỉ cần IsSuccess=true.",
+        "Không; payload equality phụ thuộc List equality mặc định theo reference."
+      ],
+      "correct": 3,
+      "explanation": "Value equality không đồng nghĩa arbitrary structural graph equality."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Constraint strength tradeoff",
+      "question": "Thêm class constraint vào TKey chỉ vì tiện null handling có thể loại gì?",
+      "options": [
+        "Các value-type keys hợp lệ như int/Guid theo design.",
+        "Chỉ strings rỗng.",
+        "Không loại bất kỳ types nào.",
+        "Tự tăng performance mọi cases."
+      ],
+      "correct": 0,
+      "explanation": "Constraints nên phản ánh actual capabilities cần,không tùy tiện thu hẹp API."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Invalid result output exposure",
+      "question": "Return Result<T> thẳng qua public API cần xem xét gì về Error?",
+      "options": [
+        "Chỉ cần HTTP200 cho mọi outcomes.",
+        "Error representation không lộ secrets/internal details và mapping contract phù hợp.",
+        "Mọi Error string tự được mã hóa bởi record.",
+        "Nullability tự redacts stack traces."
+      ],
+      "correct": 1,
+      "explanation": "Domain error và public transport representation cần design rõ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Pattern rule changes",
+      "question": "Nếu thêm free shipping rule mới, cách kiểm behavior có ý nghĩa là gì?",
+      "options": [
+        "Chỉ thay comments.",
+        "Chỉ test một input đã free từ trước.",
+        "Các input overlap và boundaries chứng minh priority/range đúng requirement.",
+        "Chỉ đếm số arms."
+      ],
+      "correct": 2,
+      "explanation": "Decision ordering cần regression examples phân biệt được rules."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Implementation completeness",
+      "question": "Generic constraints,Result record và shipping snippet có tự hoàn thành architecture/error handling enterprise chưa?",
+      "options": [
+        "Rồi; generics tự giải quyết mọi systems problem.",
+        "Rồi; record tự tạo authentication.",
+        "Chỉ cần ToListAsync.",
+        "Chưa; cần wiring,invariants,provider/transport behaviors và verification theo requirements."
+      ],
+      "correct": 3,
+      "explanation": "Không suy implementation hoàn chỉnh từ abstractions minh họa."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "nginx",
+  "level": "mid",
+  "lesson": "perf",
+  "language": "vi",
+  "sourceHash": "007d440ccc890769ce80e12d774034b166028c11e689687eb98b4ac5a77c35a3",
+  "status": "approved",
+  "review": "Biên soạn trực tiếp theo nguồn và ngx_http_gzip/headers/limit_req/limit_conn/core/proxy docs. Nguồn chứa location trực tiếp trong http không hợp lệ; các tình huống vận dụng giả định đã chuyển location vào server hợp lệ. Không chạy Nginx, request, tải thử, Celery hoặc dịch vụ thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Bật gzip",
+      "question": "Chỉ thị nào trong nguồn bật nén gzip?",
+      "options": [
+        "gzip on;",
+        "gzip_vary on;",
+        "expires 1y;",
+        "limit_conn addr 100;"
+      ],
+      "correct": 0,
+      "explanation": "gzip_vary điều khiển header Vary, không thay gzip on."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Mục tiêu nén",
+      "question": "Nén response thường nhằm giảm đại lượng nào?",
+      "options": [
+        "Số bảng trong database",
+        "Số byte truyền cho nội dung có thể nén hiệu quả",
+        "Số tài khoản cần xác thực",
+        "Độ dài khóa TLS"
+      ],
+      "correct": 1,
+      "explanation": "Mức lợi ích tùy dữ liệu và chi phí nén."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Vary encoding",
+      "question": "gzip_vary on liên quan tới header nào?",
+      "options": [
+        "X-Forwarded-For",
+        "Location",
+        "Vary: Accept-Encoding",
+        "Authorization"
+      ],
+      "correct": 2,
+      "explanation": "Cache cần phân biệt biến thể theo khả năng nhận encoding."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Ngưỡng gzip",
+      "question": "Nguồn đặt gzip_min_length bằng bao nhiêu?",
+      "options": [
+        "100",
+        "20",
+        "10",
+        "1024"
+      ],
+      "correct": 3,
+      "explanation": "Đó là ngưỡng độ dài response, không phải số request."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Loại nội dung",
+      "question": "gzip_types chủ yếu liệt kê đại lượng nào?",
+      "options": [
+        "MIME type của response",
+        "Đuôi process Linux",
+        "Địa chỉ backend",
+        "Tên tài khoản"
+      ],
+      "correct": 0,
+      "explanation": "Content-Type khác với tên file hoặc đường dẫn."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Cache phía client",
+      "question": "expires 1y trong location static chủ yếu thiết lập gì?",
+      "options": [
+        "Thời gian sống process",
+        "Header thời hạn cache của response",
+        "Kho proxy cache trên đĩa",
+        "Lịch backup mỗi năm"
+      ],
+      "correct": 1,
+      "explanation": "Header cache không tự tạo proxy_cache."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Immutable",
+      "question": "Cache-Control immutable phù hợp nhất với tài nguyên nào?",
+      "options": [
+        "Mọi response riêng tư của user",
+        "Mọi lỗi đăng nhập",
+        "URL có phiên bản hoặc hash nội dung ổn định",
+        "URL luôn đổi nội dung nhưng giữ tên"
+      ],
+      "correct": 2,
+      "explanation": "Đổi nội dung thường nên đổi URL nếu cache dài hạn."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Khai báo zone request",
+      "question": "limit_req_zone tạo cấu trúc gì?",
+      "options": [
+        "Một process Node.js",
+        "Một file certificate",
+        "Một thư mục public",
+        "Vùng nhớ chia sẻ lưu trạng thái giới hạn theo khóa"
+      ],
+      "correct": 3,
+      "explanation": "Khai báo zone khác với áp dụng limit_req vào request."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Khóa trong nguồn",
+      "question": "Khóa dùng cho zone api là gì?",
+      "options": [
+        "$binary_remote_addr",
+        "$request_uri",
+        "$server_name",
+        "$http_authorization"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn phân nhóm theo địa chỉ IP nhị phân."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Tốc độ cấu hình",
+      "question": "rate=10r/s biểu thị gì?",
+      "options": [
+        "10 user được tạo mỗi giây",
+        "Tốc độ request trung bình theo khóa là 10 mỗi giây",
+        "10 megabyte mỗi giây",
+        "10 kết nối cho toàn hệ thống mãi mãi"
+      ],
+      "correct": 1,
+      "explanation": "Burst và thời điểm request còn ảnh hưởng cách chấp nhận."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Kích thước zone",
+      "question": "Phần 10m trong zone=api:10m là gì?",
+      "options": [
+        "Timeout mười phút",
+        "Mười máy backend",
+        "Kích thước vùng nhớ chia sẻ",
+        "Mười triệu request được miễn hạn mức"
+      ],
+      "correct": 2,
+      "explanation": "Đơn vị này không phải ngân sách request."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Áp dụng limit",
+      "question": "Chỉ thị nào áp dụng zone api với burst trong nguồn?",
+      "options": [
+        "limit_req_zone addr 100;",
+        "gzip_types api;",
+        "expires api;",
+        "limit_req zone=api burst=20 nodelay;"
+      ],
+      "correct": 3,
+      "explanation": "Tên zone phải khớp định nghĩa tương ứng."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Ý nghĩa nodelay",
+      "question": "nodelay thay đổi điều gì đối với request vượt tốc độ nhưng còn trong burst cho phép?",
+      "options": [
+        "Không trì hoãn chúng theo cơ chế giới hạn đó",
+        "Miễn mọi giới hạn vô thời hạn",
+        "Tắt mọi timeout mạng",
+        "Bỏ xác thực backend"
+      ],
+      "correct": 0,
+      "explanation": "Không delay không đồng nghĩa burst vô hạn."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Giới hạn kết nối",
+      "question": "limit_conn addr 100 dùng để giới hạn gì?",
+      "options": [
+        "Dung lượng mỗi response 100 byte",
+        "Số kết nối được module tính theo mỗi khóa addr",
+        "Mọi process trên máy xuống 100",
+        "Tổng tài khoản còn 100"
+      ],
+      "correct": 1,
+      "explanation": "Module có quy tắc riêng về kết nối được tính."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Context zone",
+      "question": "limit_conn_zone và limit_req_zone được khai báo ở context nào?",
+      "options": [
+        "location",
+        "upstream",
+        "http",
+        "events"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ thị áp dụng limit có thể thuộc context khác."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Timeout body",
+      "question": "client_body_timeout liên quan tới phía nào?",
+      "options": [
+        "Đọc certificate từ đĩa",
+        "Khởi động Celery",
+        "Chờ backup database",
+        "Đọc request body từ client"
+      ],
+      "correct": 3,
+      "explanation": "Đây không phải proxy_read_timeout."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Timeout header",
+      "question": "client_header_timeout đặt giới hạn liên quan tới việc gì?",
+      "options": [
+        "Đọc request header từ client",
+        "Giữ certificate còn hạn",
+        "Chờ mọi query database",
+        "Phân phối trọng số upstream"
+      ],
+      "correct": 0,
+      "explanation": "Header request phải được nhận trong khoảng cho phép."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Keepalive timeout",
+      "question": "keepalive_timeout 15 chủ yếu điều khiển khoảng chờ nào?",
+      "options": [
+        "Giữ session tài khoản đúng 15 năm",
+        "Giữ kết nối client nhàn rỗi để có thể tái sử dụng",
+        "Toàn bộ transaction database",
+        "Nén file trong 15 phút"
+      ],
+      "correct": 1,
+      "explanation": "Kết nối nhàn rỗi và trạng thái đăng nhập là hai khái niệm khác nhau."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Send timeout",
+      "question": "send_timeout liên quan tới luồng nào?",
+      "options": [
+        "Tạo khóa TLS",
+        "Khởi động worker Celery",
+        "Gửi response tới client",
+        "Kết nối tới kho Git"
+      ],
+      "correct": 2,
+      "explanation": "Không phải thời hạn tổng cho mọi xử lý ứng dụng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Lỗi context nguồn",
+      "question": "Hai khối location được đặt trực tiếp trong http ở nguồn có hợp lệ không?",
+      "options": [
+        "Có, mọi location luôn được đặt trong http",
+        "Có, regex tự tạo server",
+        "Có, gzip tự tạo context server",
+        "Không, cần đặt trong server phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Phải sửa cấu trúc trước khi xem cấu hình là có thể chạy."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Sửa cấu trúc",
+      "question": "Muốn giữ zone ở http và sửa location của nguồn, bố trí nào phù hợp?",
+      "options": [
+        "http chứa zone và server; server chứa location",
+        "Đưa mọi zone vào events",
+        "Đưa server vào gzip_types",
+        "Đưa location vào limit_req_zone"
+      ],
+      "correct": 0,
+      "explanation": "Không thể bỏ qua quy định context của từng chỉ thị."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Thiếu upstream",
+      "question": "Sau khi sửa context, proxy_pass http://backend vẫn cần gì để tham chiếu nhóm dự kiến?",
+      "options": [
+        "Một header Cache-Control",
+        "Định nghĩa upstream backend hoặc đích phân giải hợp lệ theo thiết kế",
+        "Một comment có chữ backend",
+        "Một đuôi file .js"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn perf không cung cấp nhóm upstream backend."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Không có Celery",
+      "question": "Tiêu đề nhắc Celery nhưng đoạn cấu hình có khởi tạo tác vụ Celery không?",
+      "options": [
+        "Có, limit_conn tạo broker",
+        "Có, expires là lịch task",
+        "Không, chưa có worker, broker hay wiring Celery",
+        "Có, gzip on khởi động worker"
+      ],
+      "correct": 2,
+      "explanation": "Không suy diễn triển khai từ tiêu đề bài."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Không có microcache",
+      "question": "Dựa trên code nguồn, nhận định nào đúng về micro-caching ở Nginx?",
+      "options": [
+        "Đã bật vì có expires",
+        "Đã bật vì có gzip_types",
+        "Đã bật vì zone api là cache nội dung",
+        "Chưa thấy cấu hình proxy_cache dù lý thuyết có nhắc"
+      ],
+      "correct": 3,
+      "explanation": "Zone rate limit lưu trạng thái hạn mức, không lưu response."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "MIME JSON",
+      "question": "Sau khi cấu hình hợp lệ, application/json có nằm trong gzip_types tường minh của nguồn không?",
+      "options": [
+        "Có",
+        "Không, chỉ có text/html",
+        "Không, JSON là ảnh",
+        "Không, chỉ có application/xml"
+      ],
+      "correct": 0,
+      "explanation": "Có tên MIME không bảo đảm mọi response đều đáp ứng mọi điều kiện nén."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "HTML mặc định",
+      "question": "Không viết text/html trong danh sách gzip_types có đồng nghĩa HTML luôn bị loại khỏi gzip không?",
+      "options": [
+        "Có, gzip_vary cấm HTML",
+        "Không, text/html là loại mặc định của module",
+        "Có, chỉ đuôi .html quyết định",
+        "Có, HTML không thể nén"
+      ],
+      "correct": 1,
+      "explanation": "Còn cần thỏa điều kiện bật nén, độ dài và khả năng client."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Header chấp nhận encoding",
+      "question": "Client không chấp nhận gzip. Vì sao không thể coi gzip on là ép mọi response sang gzip?",
+      "options": [
+        "Vì expires luôn ghi đè Content-Type",
+        "Vì nodelay tự giải nén",
+        "Còn phải xét khả năng nhận encoding của client và điều kiện module",
+        "Vì gzip chỉ đổi tên file"
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình nén là thương lượng có điều kiện."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Độ dài có Content-Length",
+      "question": "Một response có Content-Length: 500, ngưỡng 1024 và đủ các điều kiện khác. Kết quả phù hợp là gì?",
+      "options": [
+        "Chắc chắn được nén vì nhỏ hơn ngưỡng",
+        "Tự bị rate limit 503",
+        "Tự đổi thành 1024 byte",
+        "Không đạt ngưỡng gzip_min_length này"
+      ],
+      "correct": 3,
+      "explanation": "Ngưỡng được xác định từ Content-Length theo tài liệu module."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Gzip và kích thước gốc",
+      "question": "Response Content-Length 2048 vượt ngưỡng 1024 có bảo đảm nén sẽ giảm đúng một nửa không?",
+      "options": [
+        "Không, tỷ lệ nén phụ thuộc nội dung",
+        "Có, ngưỡng quyết định tỷ lệ 2:1",
+        "Có, gzip_vary cố định tỷ lệ",
+        "Có, MIME JSON luôn giảm 50%"
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện đủ lớn không phải cam kết hiệu quả."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Ảnh đã nén",
+      "question": "Vì sao không nên mặc định gzip mọi PNG/JPEG để chắc chắn tăng tốc?",
+      "options": [
+        "Vì client không thể nhận ảnh qua HTTPS",
+        "Dữ liệu thường đã nén, cần cân nhắc lợi ích và CPU",
+        "Vì mọi ảnh là dữ liệu văn bản",
+        "Vì expires cấm ảnh"
+      ],
+      "correct": 1,
+      "explanation": "Nén thêm không tự mang lại tiết kiệm đáng kể."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Regex phân biệt hoa thường",
+      "question": "Trong location ~* với các đuôi static ở nguồn, dấu ~* biểu thị gì?",
+      "options": [
+        "Chỉ nhận request POST",
+        "Chỉ áp dụng port 443",
+        "Regex không phân biệt hoa thường",
+        "Prefix chính xác duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Phải phân biệt regex location với prefix location."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Phạm vi cache CSS",
+      "question": "Giả định location static được chọn và cấu hình hợp lệ, file app.css thuộc nhóm cache đuôi nào?",
+      "options": [
+        "json",
+        "html",
+        "txt",
+        "css"
+      ],
+      "correct": 3,
+      "explanation": "Danh sách nguồn có css nhưng không liệt kê html hoặc json cho regex này."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Đổi nội dung cùng URL",
+      "question": "app.js đã gửi cache một năm immutable nhưng server thay nội dung cùng URL. Rủi ro chính là gì?",
+      "options": [
+        "Client có thể tiếp tục dùng bản cũ khi còn fresh",
+        "Client chắc chắn tải lại ngay mỗi lần",
+        "Nginx tự đổi mọi URL trong HTML",
+        "Gzip bắt buộc xóa cache browser"
+      ],
+      "correct": 0,
+      "explanation": "Tài nguyên cache dài nên được đặt tên có hash hoặc phiên bản."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Cache riêng tư",
+      "question": "Vì sao không nên tùy tiện áp public immutable cho response hồ sơ người dùng?",
+      "options": [
+        "Vì browser không cache JSON",
+        "Có thể gây lưu và tái sử dụng dữ liệu riêng tư sai phạm vi",
+        "Vì public tự mã hóa dữ liệu",
+        "Vì immutable tự kiểm quyền truy cập"
+      ],
+      "correct": 1,
+      "explanation": "Chính sách cache phải phù hợp danh tính và tính nhạy cảm."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Hai cache headers",
+      "question": "expires và add_header Cache-Control trong cùng location có thể dẫn tới điều gì?",
+      "options": [
+        "expires tự vô hiệu gzip",
+        "Mỗi header tạo một process mới",
+        "Có thể có nhiều giá trị Cache-Control cần xét tổng thể",
+        "add_header luôn xóa mọi Cache-Control cũ"
+      ],
+      "correct": 2,
+      "explanation": "Không suy ra thao tác ghi đè header từ tên add_header."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Rate theo IP",
+      "question": "Hai tài khoản dùng cùng IP NAT truy cập API với khóa nguồn. Hạn mức liên hệ thế nào?",
+      "options": [
+        "Mỗi tài khoản tự được zone riêng",
+        "Mỗi cookie có hạn mức độc lập",
+        "Nginx tự phân biệt tài khoản qua tên app",
+        "Chúng cùng dùng trạng thái khóa IP đó"
+      ],
+      "correct": 3,
+      "explanation": "Khóa nguồn không chứa user ID."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Đằng sau reverse proxy",
+      "question": "Nếu remote address là IP của proxy trước Nginx, giới hạn theo khóa nguồn có thể xảy ra gì?",
+      "options": [
+        "Nhiều client bị gộp vào IP proxy nếu chưa xử lý real IP tin cậy",
+        "Tự chia theo tài khoản Google",
+        "Tự bỏ qua mọi proxy",
+        "Tự lấy IP từ database"
+      ],
+      "correct": 0,
+      "explanation": "Cần mô hình chuỗi proxy và trust đúng, không tin header tùy ý."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Tránh giả mạo khóa",
+      "question": "Muốn dùng IP gốc từ proxy, vì sao không chỉ tin mọi X-Forwarded-For ngoài Internet?",
+      "options": [
+        "Vì tất cả IP sau proxy đều giống về danh tính",
+        "Client có thể giả mạo header nếu không giới hạn proxy được tin",
+        "Vì header đó luôn là khóa TLS",
+        "Vì Nginx không đọc được HTTP header"
+      ],
+      "correct": 1,
+      "explanation": "Xác lập nguồn tin cậy là phần của chính sách nhận diện."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Burst không vô hạn",
+      "question": "Với burst=20 nodelay, kết luận nào đúng?",
+      "options": [
+        "Tốc độ nền đổi thành vô hạn",
+        "Mọi request đều bắt buộc chờ đúng 20s",
+        "Có khả năng tiếp nhận đột biến hữu hạn, vẫn có request bị từ chối",
+        "Mỗi client được miễn hạn mức vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Nodelay thay cách trì hoãn, không xóa mức burst."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Bỏ nodelay",
+      "question": "Giả định chỉ bỏ nodelay nhưng giữ burst=20, điều gì có thể thay đổi?",
+      "options": [
+        "Zone biến thành cache ảnh",
+        "Mọi client được tăng CPU",
+        "Rate tự trở thành 20r/m",
+        "Request vượt tốc độ trong burst có thể bị trì hoãn để giữ tốc độ"
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt tiếp nhận đột biến và thời điểm xử lý."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Mã từ chối mặc định",
+      "question": "Nếu không cấu hình limit_req_status, mã mặc định tài liệu nêu khi từ chối do limit_req là gì?",
+      "options": [
+        "503",
+        "429",
+        "301",
+        "204"
+      ],
+      "correct": 0,
+      "explanation": "Muốn dùng 429 cần cấu hình rõ thay vì mặc định suy ra."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Zone được chia sẻ",
+      "question": "Vùng nhớ chia sẻ của limit_req giúp điều gì giữa các worker cùng instance?",
+      "options": [
+        "Tự nhân bản session ứng dụng",
+        "Chia sẻ trạng thái hạn mức theo khóa trong zone đó",
+        "Chia sẻ mọi dữ liệu nghiệp vụ trên Internet",
+        "Tự đồng bộ mọi cụm máy khác"
+      ],
+      "correct": 1,
+      "explanation": "Chia sẻ giữa worker không tự là đồng bộ liên máy."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Không phải rate toàn site",
+      "question": "rate=10r/s với khóa IP có nghĩa tổng toàn site luôn bị giới hạn 10r/s không?",
+      "options": [
+        "Có, zone chỉ giữ đúng một client",
+        "Có, 10m là tổng số user",
+        "Không, mỗi giá trị khóa có trạng thái riêng",
+        "Có, mọi IP là cùng một khóa bất biến"
+      ],
+      "correct": 2,
+      "explanation": "Muốn giới hạn tổng cần thiết kế khóa/chính sách tương ứng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Zone và request rỗng khóa",
+      "question": "Theo tài liệu limit_req, request có giá trị khóa rỗng được xử lý thống kê thế nào?",
+      "options": [
+        "Tự nhận khóa của user trước",
+        "Luôn trả 500 vì JSON lỗi",
+        "Luôn tạo IP mới",
+        "Không được tính vào zone theo khóa đó"
+      ],
+      "correct": 3,
+      "explanation": "Lựa chọn khóa phải tránh khoảng trống chính sách ngoài ý muốn."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Request rate và bandwidth",
+      "question": "Limit_req có tự giới hạn mỗi user còn 10 byte mỗi giây không?",
+      "options": [
+        "Không, rate này đếm request chứ không đếm byte",
+        "Có, r/s là byte trên giây",
+        "Có, gzip đổi request thành byte",
+        "Có, zone api dùng đơn vị byte cho tốc độ"
+      ],
+      "correct": 0,
+      "explanation": "Một request rất lớn vẫn có thể tiêu tốn nhiều tài nguyên."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Kết nối được tính",
+      "question": "Theo limit_conn HTTP docs, một kết nối được tính khi nào?",
+      "options": [
+        "Chỉ khi request có cookie",
+        "Có request đang xử lý và đã đọc đầy đủ request header",
+        "Ngay khi mọi socket của OS được tạo",
+        "Chỉ sau khi user đăng xuất"
+      ],
+      "correct": 1,
+      "explanation": "Đây không phải bộ đếm mọi socket đang mở của máy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "HTTP2 đồng thời",
+      "question": "Theo limit_conn docs, nhiều request HTTP/2 đồng thời trên một transport được tính ra sao?",
+      "options": [
+        "Không request nào được tính",
+        "Chỉ request cuối cùng được tính",
+        "Mỗi request đồng thời được xem như một kết nối cho giới hạn",
+        "Luôn chỉ tính một bất kể request"
+      ],
+      "correct": 2,
+      "explanation": "Không được đồng nhất một TCP socket với một đơn vị tính trong HTTP/2."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Zone conn và rate khác nhau",
+      "question": "Vì sao limit_conn addr 100 không thay thế rate=10r/s?",
+      "options": [
+        "Hai chỉ thị luôn là một tên khác nhau",
+        "Conn chỉ nén file",
+        "Rate chỉ đếm CPU",
+        "Một giới hạn đồng thời, một giới hạn tốc độ request"
+      ],
+      "correct": 3,
+      "explanation": "Có thể phối hợp hai chiều giới hạn tùy workload."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Mã limit_conn mặc định",
+      "question": "Nếu limit_conn_status chưa được đặt, tài liệu nêu mã từ chối mặc định là gì?",
+      "options": [
+        "503",
+        "200",
+        "302",
+        "101"
+      ],
+      "correct": 0,
+      "explanation": "Không thể khẳng định mọi cơ chế giới hạn mặc định dùng 429."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Header timeout cụ thể",
+      "question": "Client gửi request header quá chậm so với client_header_timeout đã cấu hình. Đây là giới hạn cho giai đoạn nào?",
+      "options": [
+        "Thời gian lưu browser cache",
+        "Nhận đầy đủ request header từ client",
+        "Thời gian thực hiện query DB",
+        "Thời gian certificate còn hạn"
+      ],
+      "correct": 1,
+      "explanation": "Không dùng timeout header để diễn giải độ chậm response backend."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Body timeout khoảng đọc",
+      "question": "client_body_timeout có phải luôn là hạn tổng để upload xong toàn body không?",
+      "options": [
+        "Có, gzip_min_length đổi nó thành hạn tổng",
+        "Có, bất kể body vẫn đều đặn có dữ liệu",
+        "Không, nó áp dụng giữa các lần đọc body kế tiếp",
+        "Có, bắt đầu từ lúc mở trang cho tới logout"
+      ],
+      "correct": 2,
+      "explanation": "Client tiếp tục gửi từng phần có thể có tổng thời gian dài hơn giá trị đó."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Send timeout khoảng ghi",
+      "question": "send_timeout 10 có bảo đảm mọi response gửi xong trong tổng 10 giây không?",
+      "options": [
+        "Có, kể cả tải file lớn luôn hoàn tất 10s",
+        "Có, quá 10s thì Nginx đổi file nhỏ hơn",
+        "Có, thời gian backend bị xóa khỏi phép tính",
+        "Không, nó xét khoảng giữa các lần ghi kế tiếp tới client"
+      ],
+      "correct": 3,
+      "explanation": "Timeout I/O và deadline tổng không đồng nghĩa."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Keepalive không là đăng nhập",
+      "question": "Giảm keepalive_timeout có tự làm tài khoản logout ngay sau 15 giây không?",
+      "options": [
+        "Không, thời gian nhàn rỗi kết nối khác tuổi phiên ứng dụng",
+        "Có, cookie do Nginx này xóa hết",
+        "Có, session luôn nằm trong TCP socket",
+        "Có, Cache-Control quyết định password"
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm vòng đời transport với trạng thái xác thực."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Context regex và API",
+      "question": "Sau khi sửa context, URI /api/app.js có thể cần chú ý điều gì khi có cả prefix /api/ và regex đuôi .js?",
+      "options": [
+        "Đuôi .js không bao giờ khớp regex",
+        "Regex có thể được chọn theo quy tắc location nếu prefix không được bảo vệ phù hợp",
+        "Prefix /api/ luôn thắng mọi regex trong mọi cấu hình",
+        "Rate zone tự vô hiệu regex"
+      ],
+      "correct": 1,
+      "explanation": "Phải review quy tắc chọn location trước khi khẳng định API nhận chính sách nào."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Thiếu đường dẫn static",
+      "question": "Regex cache đuôi file có tự xác định đầy đủ root hoặc alias phục vụ file không?",
+      "options": [
+        "Có, gzip_types tự tìm file trên Internet",
+        "Có, zone addr là thư mục static",
+        "Không, còn cần context phục vụ nội dung và đường dẫn phù hợp",
+        "Có, expires tự tạo filesystem"
+      ],
+      "correct": 2,
+      "explanation": "Chính sách header không chứng minh file tồn tại hay truy cập được."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Đo lợi ích nén",
+      "question": "Muốn kết luận gzip có lợi cho workload cụ thể, cần so sánh gì?",
+      "options": [
+        "Chỉ số dòng config",
+        "Chỉ độ dài tên miền",
+        "Chỉ màu của logo Nginx",
+        "Kích thước truyền, chi phí CPU và thời gian phản hồi của workload"
+      ],
+      "correct": 3,
+      "explanation": "Tối ưu cần bằng chứng chứ không chỉ bật một chỉ thị."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Zone đầy",
+      "question": "Zone lưu trạng thái có kích thước hữu hạn nên cần cân nhắc điều gì?",
+      "options": [
+        "Số lượng khóa và hành vi khi không còn chỗ lưu trạng thái",
+        "Nó chứa vô hạn IP vì có chữ shared",
+        "Nó tự biến thành database không giới hạn",
+        "Nó tự tăng RAM host mà không giới hạn"
+      ],
+      "correct": 0,
+      "explanation": "Bộ nhớ zone là một phần ngân sách tài nguyên."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Timeout thiếu phía upstream",
+      "question": "Nguồn có client/send timeout nhưng chưa có proxy_read_timeout tường minh. Có nên coi client_body_timeout là timeout đọc backend không?",
+      "options": [
+        "Có, expires cũng là timeout upstream",
+        "Không, chúng áp cho các hướng và giai đoạn khác nhau",
+        "Có, tên client bao gồm mọi server",
+        "Có, nodelay thay toàn bộ proxy timeout"
+      ],
+      "correct": 1,
+      "explanation": "Cần đọc đúng module và context của chỉ thị."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không khẳng định tải",
+      "question": "Việc chọn rate=10r/s có chứng minh backend chịu được đúng tốc độ đó cho mọi endpoint không?",
+      "options": [
+        "Có, mỗi request luôn tốn như nhau",
+        "Có, burst bảo đảm mọi query nhanh",
+        "Không, chi phí endpoint và tài nguyên phải được đánh giá",
+        "Có, Nginx tự đo và đặt tốc độ này"
+      ],
+      "correct": 2,
+      "explanation": "Hạn mức định sẵn không phải kết quả thử tải."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Sửa context trước đánh giá",
+      "question": "Tại sao không nên công bố đoạn perf nguyên văn đã tối ưu thành công?",
+      "options": [
+        "Vì gzip không bao giờ giảm byte",
+        "Vì Nginx không hỗ trợ cache headers",
+        "Vì limit_req chỉ là comment",
+        "Nó còn lỗi context và chưa có bằng chứng thực thi hay đo tải"
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt mục tiêu bài học với tính hợp lệ và kết quả thực tế."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Bảo vệ route API",
+      "question": "Sau khi chuyển location vào server, /api/export.js đi vào regex static thay vì /api/. Cách xử lý có căn cứ là gì?",
+      "options": [
+        "Review lại ưu tiên location, root/proxy và nơi áp rate/cache cho API",
+        "Chỉ tăng burst để regex biến mất",
+        "Chỉ đổi MIME JSON",
+        "Chỉ đổi zone từ 10m sang 20m"
+      ],
+      "correct": 0,
+      "explanation": "Policy phải gắn vào route thực sự được chọn."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Cache dữ liệu cá nhân",
+      "question": "Một response export riêng tư vô tình khớp regex .js và nhận public immutable. Việc cần ưu tiên là gì?",
+      "options": [
+        "Bỏ limit_conn vì nó gây public",
+        "Tách route và chính sách cache theo tính riêng tư, kiểm tra header thực tế",
+        "Tăng thời hạn lên hai năm",
+        "Bật gzip cho mọi ảnh"
+      ],
+      "correct": 1,
+      "explanation": "Sai phạm vi cache có thể làm dữ liệu được tái sử dụng không phù hợp."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Khóa sau CDN",
+      "question": "Site sau CDN dùng khóa IP nhưng chưa cấu hình trust real IP. Cách đánh giá đúng nhất là gì?",
+      "options": [
+        "Mặc định mỗi user có IP độc lập",
+        "Tăng worker tự tách được NAT",
+        "Xác định IP Nginx quan sát, trust proxy và khả năng giả mạo trước khi chốt hạn mức",
+        "Tin mọi header do Internet gửi"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn chính xác phụ thuộc nhận diện nguồn request."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Burst khuếch đại tải",
+      "question": "Backend chịu không nổi đột biến dù tốc độ trung bình nhỏ. Vì sao nodelay burst lớn cần cân nhắc?",
+      "options": [
+        "Nó bắt mọi request chờ đến năm sau",
+        "Nó tự xếp hàng vô hạn không dùng tài nguyên",
+        "Nó giảm mọi request thành một",
+        "Nó có thể cho nhiều request vượt tốc độ đi ngay trong phần burst cho phép"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình admission phải phù hợp khả năng xử lý tức thời."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Hạn mức đa máy",
+      "question": "Chạy hai Nginx độc lập cùng cấu hình zone có mặc định một ngân sách IP chung liên máy không?",
+      "options": [
+        "Không, chia sẻ zone trong một instance không tự đồng bộ giữa hai máy",
+        "Có, cùng tên api là tự kết nối toàn cầu",
+        "Có, 10m là địa chỉ multicast",
+        "Có, browser tự đồng bộ bộ đếm"
+      ],
+      "correct": 0,
+      "explanation": "Giới hạn toàn cụm cần giải pháp phối hợp phù hợp."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Giới hạn nhiều chiều",
+      "question": "Request ít nhưng giữ kết nối xử lý lâu, request khác nhiều nhưng kết thúc nhanh. Vì sao phối hợp rate và concurrency có thể cần thiết?",
+      "options": [
+        "Vì rate tự nhân bản database",
+        "Chúng kiểm soát hai loại áp lực khác nhau lên tài nguyên",
+        "Vì cả hai chỉ đếm dung lượng file",
+        "Vì concurrency tự thay xác thực"
+      ],
+      "correct": 1,
+      "explanation": "Chọn giới hạn dựa vào tính chất workload và phụ thuộc."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Đo sau thay đổi",
+      "question": "Gzip giảm byte nhưng tăng CPU khiến latency xấu đi. Kết luận nào hợp lý?",
+      "options": [
+        "Tăng gzip vô hạn để CPU tự giảm",
+        "Bỏ mọi log để khỏi thấy latency",
+        "Đánh giá tradeoff theo workload và điều chỉnh thay vì coi giảm byte là đủ",
+        "Coi tối ưu hoàn tất vì file nhỏ hơn"
+      ],
+      "correct": 2,
+      "explanation": "Một chỉ số cải thiện không bảo đảm kết quả hệ thống tốt hơn."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Giới hạn của body timeout",
+      "question": "Muốn kiểm soát thời gian upload tổng khi client liên tục gửi nhỏ giọt, chỉ client_body_timeout có đủ bảo đảm không?",
+      "options": [
+        "Có, mọi body luôn xong đúng 12s",
+        "Có, gzip_min_length chặn upload dài",
+        "Có, keepalive_timeout là thời hạn mọi body",
+        "Không, khoảng chờ giữa lần đọc không tự là deadline tổng"
+      ],
+      "correct": 3,
+      "explanation": "Cần chính sách thời gian và kích thước phù hợp thay vì nhầm timeout I/O."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Versioned asset rollout",
+      "question": "Triển khai app.abc.js được cache immutable một năm, sau đó sửa nội dung. Cách phát hành phù hợp là gì?",
+      "options": [
+        "Xuất URL hash mới và cập nhật trang tham chiếu",
+        "Ghi đè cùng URL và tin mọi browser tự tải lại",
+        "Đổi port upstream để xóa cache client",
+        "Tăng burst để cache tự hết hạn"
+      ],
+      "correct": 0,
+      "explanation": "URL định danh nội dung giúp triển khai nhất quán với cache dài."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "API lỗi và retry client",
+      "question": "Nếu trả 429 có chủ đích khi rate limit, hệ thống còn nên xét gì để tránh client làm tải nặng thêm?",
+      "options": [
+        "Xóa mọi khóa rate sau mỗi request",
+        "Hướng dẫn retry có kiểm soát cùng quan sát hành vi và chính sách phù hợp",
+        "Cho retry ngay vô hạn",
+        "Đổi mọi lỗi thành 200"
+      ],
+      "correct": 1,
+      "explanation": "Mã HTTP đơn lẻ không tạo hành vi phục hồi đúng cho mọi client."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Nhận định nguyên văn",
+      "question": "Reviewer nói nguồn đã có microcache, Celery và gzip chạy hoàn chỉnh. Sửa nhận định thế nào?",
+      "options": [
+        "Chỉ thiếu một comment khác màu",
+        "Đã có Celery trong limit_req_zone",
+        "Chỉ có các ý cấu hình; thiếu cache/task wiring và có lỗi context location",
+        "Tất cả đã chạy vì tiêu đề có nhắc"
+      ],
+      "correct": 2,
+      "explanation": "Cần đọc code có hiệu lực và ghi rõ giới hạn bằng chứng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Zone không là response store",
+      "question": "Đặt zone=api:10m có giải quyết response API chậm do query DB lặp lại không?",
+      "options": [
+        "Có, mọi JSON tự lưu trong 10m",
+        "Có, database tự được index",
+        "Có, tên api kích hoạt memoization",
+        "Không trực tiếp, zone này giữ trạng thái giới hạn chứ không cache kết quả query"
+      ],
+      "correct": 3,
+      "explanation": "Caching nghiệp vụ hoặc proxy cache cần thiết kế riêng về key, TTL và quyền riêng tư."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "HTTP2 và conn cap",
+      "question": "Một IP mở một kết nối HTTP/2 nhưng 200 request đồng thời. Vì sao không thể chỉ dựa số TCP=1 để bảo rằng limit_conn 100 chưa liên quan?",
+      "options": [
+        "Module tính mỗi request HTTP/2 đồng thời như một kết nối cho giới hạn",
+        "HTTP/2 không có request",
+        "Zone addr chỉ đếm hostname",
+        "Limit_conn chỉ chạy với file JPG"
+      ],
+      "correct": 0,
+      "explanation": "Phải dùng đơn vị đếm của module thay vì suy luận từ transport."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Đọc header Vary",
+      "question": "Một cache trung gian lưu chung gzip và bản thường mà bỏ qua Accept-Encoding. Cấu hình liên quan cần review là gì?",
+      "options": [
+        "Chỉ đơn vị r/s",
+        "gzip_vary và cách cache tôn trọng biến thể encoding",
+        "Chỉ worker_processes",
+        "Chỉ tên thư mục nguồn"
+      ],
+      "correct": 1,
+      "explanation": "Encoding là một chiều chọn biến thể, không phải khóa danh tính."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Phân biệt hạn tổng",
+      "question": "Backend chậm chưa trả response, client_body_timeout và send_timeout đều nhỏ. Có đủ để chứng minh backend bị hủy đúng hạn mong muốn không?",
+      "options": [
+        "Có, client_body_timeout bao trùm mọi code backend",
+        "Có, rate limit tự hủy mọi transaction",
+        "Không, cần xét proxy timeout và cơ chế deadline/cancellation tương ứng",
+        "Có, send_timeout luôn giới hạn query DB"
+      ],
+      "correct": 2,
+      "explanation": "Timeout ở Nginx còn không tự chứng minh tác vụ backend đã dừng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Chính sách cho người dùng NAT",
+      "question": "Một văn phòng nhiều user bị giới hạn chung theo IP. Hướng thiết kế cân nhắc nào phù hợp?",
+      "options": [
+        "Tắt mọi bảo vệ vĩnh viễn vì NAT tồn tại",
+        "Tin user tự khai một IP mới",
+        "Đổi Content-Type để có thêm quota",
+        "Kết hợp khóa/policy theo nhu cầu, xác thực và chống lạm dụng, không mặc định IP là user"
+      ],
+      "correct": 3,
+      "explanation": "Khóa phải cân bằng công bằng, tài nguyên và khả năng giả mạo."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Đánh giá cấu hình hợp lệ",
+      "question": "Chuyển location vào server là đủ để khẳng định perf đạt production chưa?",
+      "options": [
+        "Chưa, còn module/đích phục vụ/chính sách và kiểm chứng vận hành",
+        "Đủ, cú pháp hợp lệ là mọi tài nguyên vô hạn",
+        "Đủ, proxy_pass tự chạy backend",
+        "Đủ, headers tự thay load test"
+      ],
+      "correct": 0,
+      "explanation": "Sửa một lỗi cấu trúc chưa chứng minh toàn bộ hệ thống."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Lỗi bảo vệ không cùng tầng",
+      "question": "Rate limit HTTP có bảo đảm chặn mọi tấn công làm nghẽn đường truyền trước khi request tới Nginx không?",
+      "options": [
+        "Có, expires chống mọi DDoS",
+        "Không, bảo vệ cần xét cả tầng mạng và hạ tầng phía trước",
+        "Có, zone API điều khiển băng thông Internet toàn cầu",
+        "Có, gzip chặn mọi packet"
+      ],
+      "correct": 1,
+      "explanation": "Biện pháp tầng ứng dụng không tự loại trừ bão lưu lượng tầng thấp hơn."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Cache asset và thay phiên bản",
+      "question": "CSS dùng cùng URL style.css nhưng thay nội dung mỗi lần deploy, trong khi cấu hình gửi expires 1y và immutable. Người dùng thấy giao diện cũ. Cách sửa bám đúng cơ chế cache?",
+      "options": [
+        "Tăng expires lên 2y để trình duyệt phát hiện nội dung mới nhanh hơn",
+        "Chỉ bật gzip_vary vì Vary tự làm URL style.css đổi theo deploy",
+        "Dùng URL mang content hash cho asset bất biến và cập nhật HTML trỏ URL mới; chọn cache policy phù hợp cho HTML",
+        "Chỉ reload Nginx vì reload tự xóa cache CSS ở mọi trình duyệt"
+      ],
+      "correct": 2,
+      "explanation": "Cache phía trình duyệt có thể tiếp tục dùng asset còn fresh mà không hỏi server. URL fingerprint gắn bản nội dung mới; gzip/Vary và reload không thay URL đã cache."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Ưu tiên thực hiện tối ưu",
+      "question": "Trước khi chọn con số timeout/rate/burst cho site tải cao, cách làm có căn cứ nhất là gì?",
+      "options": [
+        "Sao chép mọi con số và công bố hàng triệu user",
+        "Tăng mọi giới hạn tối đa rồi bỏ quan sát",
+        "Chỉ nhìn tên bài là đủ",
+        "Sửa cấu hình hợp lệ, xác định workload và mục tiêu rồi đo các chỉ số liên quan"
+      ],
+      "correct": 3,
+      "explanation": "Giá trị mẫu là điểm học tập, không phải kết quả sizing của hệ thống thật."
+    }
+  ]
+}

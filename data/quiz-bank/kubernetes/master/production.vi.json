@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "kubernetes",
+  "level": "master",
+  "lesson": "production",
+  "language": "vi",
+  "sourceHash": "ada2cf6d2ad43cf0d4fe82786cb7595fd3dfbf6aa7bc8671a70ad9559182e74c",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo ServiceMonitor và Argo CD Application trong bài, đối chiếu tài liệu chính thức Prometheus Operator/Argo CD/Kubernetes. Nêu các phụ thuộc CRD, controller, Service port, selection, quyền, Git revision; ResourceQuota/PDB/logging/dashboard chỉ được nhắc chứ chưa cấu hình. Không chạy monitoring, GitOps, mạng hay cluster.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Monitoring",
+      "question": "Trong cặp Prometheus/Grafana, Prometheus chủ yếu đảm nhiệm việc gì?",
+      "options": [
+        "Thu thập và truy vấn số liệu chuỗi thời gian",
+        "Biên dịch TypeScript thành JavaScript",
+        "Làm container runtime cho mọi node",
+        "Thay thế mọi cơ chế xác thực ứng dụng"
+      ],
+      "correct": 0,
+      "explanation": "Monitoring cần nguồn số liệu, thu thập và cách sử dụng số liệu; không chỉ tên công cụ."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Grafana",
+      "question": "Vai trò điển hình của Grafana trong hệ thống được nhắc là gì?",
+      "options": [
+        "Mã hóa toàn bộ Secret trong etcd",
+        "Hiển thị và khai thác số liệu qua dashboard",
+        "Tạo Pod scheduler của Kubernetes",
+        "Quản lý image layer trong registry"
+      ],
+      "correct": 1,
+      "explanation": "Dashboard cần datasource và nội dung thực tế; bài chưa cung cấp cấu hình Grafana."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "ServiceMonitor kind",
+      "question": "Tài nguyên monitoring trong code có kind nào?",
+      "options": [
+        "ResourceQuota",
+        "ApplicationSet",
+        "ServiceMonitor",
+        "PodDisruptionBudget"
+      ],
+      "correct": 2,
+      "explanation": "ServiceMonitor là tài nguyên thuộc hệ sinh thái Prometheus Operator."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "API mở rộng",
+      "question": "apiVersion monitoring.coreos.com/v1 thuộc loại nào trong bối cảnh bài?",
+      "options": [
+        "Core API luôn sẵn trong mọi cluster mới",
+        "Phiên bản của HTTP/1.1",
+        "Tên branch Git",
+        "API mở rộng cần CRD tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Cần cài đúng CRD và controller liên quan trước khi dùng resource mở rộng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Tên monitor",
+      "question": "metadata.name của ServiceMonitor mẫu là gì?",
+      "options": [
+        "app-monitor",
+        "my-app",
+        "production",
+        "argocd"
+      ],
+      "correct": 0,
+      "explanation": "Tên monitor không đồng nghĩa tên Service mà selector sẽ chọn."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Nhãn khám phá",
+      "question": "ServiceMonitor source khai báo matchLabels nào?",
+      "options": [
+        "role: database",
+        "app: web",
+        "app: api",
+        "team: frontend"
+      ],
+      "correct": 1,
+      "explanation": "Selector được dùng trong khám phá target theo mô hình Service của Operator, không là phép chọn mọi Pod trực tiếp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Named port",
+      "question": "endpoints.port của ServiceMonitor có giá trị gì?",
+      "options": [
+        "80",
+        "app-monitor",
+        "metrics",
+        "30s"
+      ],
+      "correct": 2,
+      "explanation": "Giá trị metrics là tên Service port được endpoint tham chiếu, không phải số giây."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Scrape interval",
+      "question": "interval trong endpoint mẫu được đặt bao nhiêu?",
+      "options": [
+        "30m",
+        "1s",
+        "24h",
+        "30s"
+      ],
+      "correct": 3,
+      "explanation": "Đây là chu kỳ scrape mong muốn trong cấu hình, không phải retention."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "GitOps",
+      "question": "GitOps trong bài dùng Git chủ yếu để làm gì?",
+      "options": [
+        "Lưu trạng thái mong muốn phục vụ đối chiếu và đồng bộ",
+        "Lưu trực tiếp mọi byte memory của Pod đang chạy",
+        "Thay đường mạng giữa tất cả node",
+        "Thay thế metrics pipeline"
+      ],
+      "correct": 0,
+      "explanation": "Controller đối chiếu nguồn khai báo với trạng thái sống theo quyền và cấu hình."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Argo resource",
+      "question": "kind của tài nguyên Argo CD được hiển thị là gì?",
+      "options": [
+        "IngressClass",
+        "Application",
+        "Deployment",
+        "ServiceMonitor"
+      ],
+      "correct": 1,
+      "explanation": "Argo CD Application mô tả nguồn và đích ứng dụng được quản lý."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Argo API",
+      "question": "Application trong bài dùng apiVersion nào?",
+      "options": [
+        "core/v1",
+        "autoscaling/v2",
+        "argoproj.io/v1alpha1",
+        "apps/v1"
+      ],
+      "correct": 2,
+      "explanation": "Đây là API mở rộng của Argo CD, không phải built-in Deployment."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Tên Application",
+      "question": "Tên riêng của Application mẫu là gì?",
+      "options": [
+        "app-monitor",
+        "default",
+        "main",
+        "my-app"
+      ],
+      "correct": 3,
+      "explanation": "metadata.name khác với project, revision và namespace đích."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Namespace Application",
+      "question": "Application object mẫu được đặt ở namespace nào?",
+      "options": [
+        "argocd",
+        "production",
+        "default",
+        "kube-public"
+      ],
+      "correct": 0,
+      "explanation": "Source đặt object Application trong namespace argocd, còn tài nguyên ứng dụng nhắm production."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Namespace đích",
+      "question": "spec.destination.namespace trong bài là gì?",
+      "options": [
+        "apps",
+        "production",
+        "argocd",
+        "main"
+      ],
+      "correct": 1,
+      "explanation": "Namespace quản lý Application và namespace triển khai workload có thể khác nhau."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Project",
+      "question": "Application mẫu tham chiếu Argo CD project nào?",
+      "options": [
+        "main",
+        "web",
+        "default",
+        "production"
+      ],
+      "correct": 2,
+      "explanation": "Project là một phần ràng buộc và tổ chức trong Argo CD, không phải branch Git."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Revision Git",
+      "question": "targetRevision trong source có giá trị gì?",
+      "options": [
+        "v1.0",
+        "production",
+        "30s",
+        "main"
+      ],
+      "correct": 3,
+      "explanation": "main thường là branch chuyển động, không phải định danh nội dung bất biến."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Path Git",
+      "question": "Source.path trong Application trỏ đâu bên trong repository?",
+      "options": [
+        "apps/production",
+        "/etc/metrics",
+        "templates/Chart.yaml",
+        "argocd/default"
+      ],
+      "correct": 0,
+      "explanation": "Đường dẫn này xác định vị trí nguồn manifest mà Application xử lý."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Prune",
+      "question": "prune: true trong automated sync thể hiện ý định nào?",
+      "options": [
+        "Nén mọi metric quá 30 giây",
+        "Cho phép dọn tài nguyên do ứng dụng quản lý khi không còn trong trạng thái mong muốn, theo các điều kiện áp dụng",
+        "Xóa mọi tài nguyên ở mọi cluster bất kể ownership",
+        "Xóa toàn bộ lịch sử Git"
+      ],
+      "correct": 1,
+      "explanation": "Prune có phạm vi và các cơ chế bảo vệ/ngoại lệ, không là lệnh xóa toàn hệ thống."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "SelfHeal",
+      "question": "selfHeal: true chủ yếu cho phép phản ứng với điều gì?",
+      "options": [
+        "Mọi lỗi phần cứng không cần capacity dự phòng",
+        "Mọi rò rỉ password bằng cách tự đổi hết key",
+        "Sai lệch trạng thái sống so với trạng thái mong muốn được quản lý",
+        "Mọi bug nghiệp vụ trong source code"
+      ],
+      "correct": 2,
+      "explanation": "Đồng bộ lại trạng thái không có nghĩa controller tự sửa mọi nguyên nhân gây lỗi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "PDB",
+      "question": "PodDisruptionBudget được nhắc để hỗ trợ quản lý điều gì?",
+      "options": [
+        "Mã hóa ổ đĩa của DB",
+        "Số revision Git phải giữ",
+        "Độ dài tối đa của URL",
+        "Gián đoạn tự nguyện qua các cơ chế tôn trọng ngân sách"
+      ],
+      "correct": 3,
+      "explanation": "PDB có giới hạn phạm vi, không bảo vệ tuyệt đối trước mọi cách xóa hoặc sự cố."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Không chọn Pod trực tiếp",
+      "question": "Một Pod app=web tồn tại nhưng Service không có nhãn phù hợp để monitor khám phá. Vì sao cần xem Service/endpoint?",
+      "options": [
+        "ServiceMonitor dùng mô hình khám phá qua Service và endpoint, khác PodMonitor",
+        "Mọi Pod app=web tự được scrape bất kể cấu hình",
+        "Tên app-monitor tự trùng Pod name",
+        "Grafana tự tạo Service cho Pod được gắn label"
+      ],
+      "correct": 0,
+      "explanation": "Không được nhầm selector monitor với selector Service dùng để chọn Pod."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Hai loại selector",
+      "question": "Prometheus có serviceMonitorSelector, ServiceMonitor có spec.selector. Chúng đóng hai vai trò gì?",
+      "options": [
+        "Cả hai đều là RBAC user selector",
+        "Chọn ServiceMonitor để dùng và chọn target Service/endpoint tương ứng",
+        "Cả hai chỉ chọn trực tiếp container image",
+        "Chọn namespace Git và branch Git"
+      ],
+      "correct": 1,
+      "explanation": "Chuỗi khám phá có nhiều bước chọn tài nguyên khác nhau."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Named port chưa khớp",
+      "question": "Service chỉ có spec.ports.name: http nhưng ServiceMonitor endpoints.port: metrics. Cần kiểm tra gì?",
+      "options": [
+        "Chỉ đổi interval thành metrics",
+        "Chỉ đổi tên monitor thành http",
+        "Tên Service port phải khớp tham chiếu endpoint mong muốn",
+        "Chỉ containerPort có số lớn hơn 80"
+      ],
+      "correct": 2,
+      "explanation": "endpoints.port là tên port của Service, không tự chọn theo ý nghĩa ứng dụng."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Port tên không phải path",
+      "question": "Service có port tên metrics nhưng app không cung cấp dữ liệu metrics tại endpoint scrape. Điều gì đúng?",
+      "options": [
+        "Đặt tên metrics tự tạo endpoint trong app",
+        "Prometheus tự thay HTML bằng metric có nghĩa",
+        "Grafana sẽ build lại ứng dụng để thêm endpoint",
+        "Tên port không tự làm ứng dụng xuất metric hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Cần nguồn metric thật và đường scrape phù hợp."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Chu kỳ khác retention",
+      "question": "interval: 30s có nghĩa dữ liệu chỉ được giữ 30 giây không?",
+      "options": [
+        "Không; chu kỳ thu thập khác chính sách lưu giữ",
+        "Có; Prometheus xóa từng mẫu sau đúng 30 giây",
+        "Có; ServiceMonitor là cấu hình retention duy nhất",
+        "Không; interval là thời gian rollout Argo"
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm tần suất lấy mẫu với vòng đời lưu trữ."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "CRD thiếu",
+      "question": "API server báo không nhận kind ServiceMonitor. Lớp phụ thuộc nào cần kiểm tra?",
+      "options": [
+        "Chỉ branch main có tồn tại",
+        "CRD/version tương ứng đã được cung cấp chưa",
+        "Chỉ label app của Pod",
+        "Chỉ DNS tới GitHub"
+      ],
+      "correct": 1,
+      "explanation": "Không có API definition thì object mở rộng chưa thể được xử lý như mong muốn."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Controller thiếu",
+      "question": "CRD ServiceMonitor đã có nhưng không có Operator/Prometheus cấu hình sử dụng nó. Điều gì còn thiếu?",
+      "options": [
+        "Chỉ đổi kind thành ConfigMap mà giữ nguyên spec",
+        "Chỉ đặt interval ngắn hơn",
+        "Thành phần và selection thực sự tiêu thụ cấu hình monitor",
+        "Chỉ thêm comment prometheus vào Pod"
+      ],
+      "correct": 2,
+      "explanation": "Tồn tại API object không tự tạo vòng thu thập số liệu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Namespace khám phá",
+      "question": "ServiceMonitor không đặt namespaceSelector. Theo cấu hình khám phá thông thường, cần xem Service trong phạm vi nào trước?",
+      "options": [
+        "Tất cả namespace vô điều kiện",
+        "Chỉ argocd bất kể monitor ở đâu",
+        "Chỉ production vì path Git có chữ production",
+        "Cùng namespace với ServiceMonitor"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi namespace và cấu hình Prometheus selection phải được kiểm tra riêng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Monitor chưa được chọn",
+      "question": "Service/port đều đúng nhưng Prometheus selector không chọn app-monitor. Có thể có kết quả gì?",
+      "options": [
+        "Monitor không đi vào cấu hình scrape của Prometheus đó",
+        "Prometheus tự bỏ qua selector nếu tên có monitor",
+        "Service tự đăng ký vào mọi Prometheus trong Internet",
+        "Đổi image tag tự sửa mọi selector"
+      ],
+      "correct": 0,
+      "explanation": "Cần lần theo cả đường từ Prometheus tới monitor và từ monitor tới target."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Network chặn scrape",
+      "question": "Target xuất metrics đúng nhưng policy mạng chặn Prometheus kết nối. Cần làm gì?",
+      "options": [
+        "Coi có ServiceMonitor là bằng chứng kết nối được",
+        "Đánh giá đường kết nối và quyền mạng phù hợp với mô hình giám sát",
+        "Đổi interval thành 1s để bỏ qua firewall",
+        "Đổi tên Service thành public"
+      ],
+      "correct": 1,
+      "explanation": "Đường dữ liệu scrape cần có kết nối, xác thực/TLS nếu áp dụng và endpoint đúng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Scrape khác nghiệp vụ",
+      "question": "Endpoint metrics trả200 có chứng minh mọi giao dịch nghiệp vụ thành công không?",
+      "options": [
+        "Có; Prometheus tự diễn giải mọi bug",
+        "Không; vì ServiceMonitor không thể scrape HTTP",
+        "Không; cần metric và kiểm tra phù hợp với mục tiêu nghiệp vụ",
+        "Có; HTTP 200 của metrics thay mọi test ứng dụng"
+      ],
+      "correct": 2,
+      "explanation": "Tín hiệu phải liên quan điều cần kết luận."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Dashboard chưa có",
+      "question": "Source chỉ đưa ServiceMonitor và Application. Có thể nói Grafana dashboard đã được cấu hình chưa?",
+      "options": [
+        "Rồi; ServiceMonitor tự sinh mọi dashboard",
+        "Rồi; app=web tự tạo dashboard chuẩn cho mọi app",
+        "Chưa; Grafana không hỗ trợ Kubernetes",
+        "Chưa; phần đó mới được nhắc trong theory/keypoints"
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất đề cập công cụ với triển khai tích hợp thực tế."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Logging chưa có",
+      "question": "Source có theory nhắc ELK nhưng không có cấu hình thu log. Nhận xét nào đúng?",
+      "options": [
+        "Chưa có bằng chứng pipeline log được cấu hình",
+        "Argo tự chuyển mọi log tới ELK vì project default",
+        "Prometheus mặc nhiên thu mọi dòng log dạng text",
+        "ServiceMonitor interval cũng là lịch thu log"
+      ],
+      "correct": 0,
+      "explanation": "Metric và log là hai loại dữ liệu có pipeline và chính sách riêng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Quota chưa có",
+      "question": "ResourceQuota nằm trong keypoints nhưng không có resource tương ứng. Có thể kết luận đã giới hạn namespace chưa?",
+      "options": [
+        "Không; Kubernetes không hỗ trợ quota",
+        "Không; cần cấu hình quota thực tế và điều kiện áp dụng",
+        "Có; namespace production tự có quota chuẩn",
+        "Có; project default tự đặt CPU quota tối ưu"
+      ],
+      "correct": 1,
+      "explanation": "Danh sách nội dung học không phải bằng chứng đối tượng đã tồn tại."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "PDB chưa có",
+      "question": "Pod Disruption Budgets được nhắc nhưng code không có PDB object. Kết luận đúng là gì?",
+      "options": [
+        "Mọi ServiceMonitor tự đặt minAvailable",
+        "Chỉ cần namespace tên production là có PDB",
+        "Bài chưa triển khai ngân sách gián đoạn đó",
+        "Mọi Application tự tạo PDB cho mọi Pod"
+      ],
+      "correct": 2,
+      "explanation": "Tài nguyên hỗ trợ availability cần được khai báo/thiết lập theo workload cụ thể."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Nguồn repository",
+      "question": "repoURL trong Application xác định điều gì?",
+      "options": [
+        "Địa chỉ DB để sao lưu tự động",
+        "Địa chỉ HTTP metrics của Pod",
+        "Tên image registry bắt buộc",
+        "Repository chứa nguồn khai báo mà controller sẽ truy cập"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn Git và nguồn artifact container là các tham chiếu riêng."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Private repo",
+      "question": "Repository là private nhưng Application không có wiring quyền truy cập được trình bày. Cần kiểm tra gì?",
+      "options": [
+        "Cấu hình truy cập repository và quyền của Argo CD theo môi trường",
+        "Chỉ tên repo có chữ k8s hay không",
+        "Chỉ đổi targetRevision thành production",
+        "Chỉ tăng metrics interval"
+      ],
+      "correct": 0,
+      "explanation": "repoURL không tự cấp credential hoặc quyền đọc nội dung riêng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Branch chuyển động",
+      "question": "targetRevision: main có ảnh hưởng gì tới tính cố định của nguồn?",
+      "options": [
+        "main luôn trỏ release revision 1",
+        "Nội dung đích có thể thay khi branch main chuyển commit",
+        "main luôn là content hash bất biến",
+        "Mỗi namespace tự tạo branch main riêng"
+      ],
+      "correct": 1,
+      "explanation": "Cần ghi nhận commit/nội dung thực tế khi muốn truy vết một lần triển khai."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Path thiếu",
+      "question": "Branch tồn tại nhưng apps/production không có manifest mong muốn. Cần xem gì?",
+      "options": [
+        "Chỉ target namespace có Pod hay chưa",
+        "Chỉ label app=web của ServiceMonitor",
+        "Nội dung/path nguồn và kết quả sinh manifest của Application",
+        "Chỉ tên Application"
+      ],
+      "correct": 2,
+      "explanation": "Truy cập được repository chưa chứng minh nguồn ứng dụng đúng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Destination server",
+      "question": "https://kubernetes.default.svc trong destination mẫu đại diện điều gì theo ngữ cảnh in-cluster?",
+      "options": [
+        "Endpoint metrics của app-monitor",
+        "Repository Git của Argo CD",
+        "URL public của Grafana",
+        "Địa chỉ API Kubernetes nội bộ được dùng làm đích"
+      ],
+      "correct": 3,
+      "explanation": "Cần quyền và đăng ký đích phù hợp; chuỗi URL không tự chứng minh kết nối hoặc quyền."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Namespace chưa có",
+      "question": "Application nhắm namespace production nhưng bài không nêu tạo namespace. Điều gì cần kiểm tra?",
+      "options": [
+        "Namespace tồn tại hoặc có cơ chế tạo được cấu hình và cấp quyền",
+        "Argo luôn tự tạo mọi namespace không cần option",
+        "Tên path apps/production tự tạo namespace",
+        "ServiceMonitor tạo namespace khi scrape"
+      ],
+      "correct": 0,
+      "explanation": "Không suy hành vi auto-create từ một tham chiếu namespace."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Project ràng buộc",
+      "question": "Project default trong Application có tự chứng minh repo/destination đều được phép theo môi trường hiện tại không?",
+      "options": [
+        "Không; vì project bắt buộc tên production",
+        "Không; cần xem cấu hình project và quyền thực tế",
+        "Có; từ default luôn vượt mọi RBAC",
+        "Có; project không có ảnh hưởng nào đến Argo"
+      ],
+      "correct": 1,
+      "explanation": "Project và quyền là một phần hợp đồng triển khai cần đánh giá cụ thể."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Prune có scope",
+      "question": "Xóa một manifest do Application quản lý khỏi Git và sync với prune. Điều gì cần đánh giá?",
+      "options": [
+        "Mọi file ngoài Git tự bị xóa trên máy người dùng",
+        "Prometheus tự xóa toàn bộ metric",
+        "Tài nguyên quản lý có thể bị dọn theo policy, tracking và các điều kiện áp dụng",
+        "Mọi namespace không liên quan tự bị xóa"
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi quản lý và các ngoại lệ quyết định tác động, không phải chỉ một từ prune."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Self-heal drift",
+      "question": "Người vận hành sửa replica count trực tiếp nhưng Git vẫn giữ giá trị cũ. selfHeal có thể làm gì trong scope quản lý?",
+      "options": [
+        "Tự ghi sửa tay ngược lên Git thành nguồn mới",
+        "Tự sửa mọi bug của image",
+        "Tự khóa vĩnh viễn người vận hành",
+        "Đồng bộ lại trạng thái mong muốn nếu sai lệch được xem là cần sync"
+      ],
+      "correct": 3,
+      "explanation": "GitOps có thể sửa drift thay vì coi sửa tay là nguồn ý định mới."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Không tự sửa bug",
+      "question": "Git chứa một image có lỗi logic nhưng trạng thái cluster khớp Git. selfHeal có tự viết code sửa lỗi không?",
+      "options": [
+        "Không; nó đối chiếu trạng thái, không tự biên soạn bản sửa ứng dụng",
+        "Có; Argo luôn tích hợp AI sửa source",
+        "Có; Synced là bằng chứng ứng dụng không có bug",
+        "Không; vì selfHeal chỉ dùng cho Grafana"
+      ],
+      "correct": 0,
+      "explanation": "Desired state cũng có thể là một cấu hình ứng dụng lỗi."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Sync và health",
+      "question": "Argo báo tài nguyên đồng bộ với nguồn. Điều gì còn cần theo dõi?",
+      "options": [
+        "Chỉ project name có phải default",
+        "Health và tín hiệu phục vụ ứng dụng theo mục tiêu",
+        "Chỉ tên branch có đúng chữ thường",
+        "Chỉ số file YAML trong repo"
+      ],
+      "correct": 1,
+      "explanation": "Khớp desired/live không đồng nghĩa mọi yêu cầu người dùng thành công."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Độ trễ GitOps",
+      "question": "Vừa thay nguồn Git nhưng cluster chưa đổi ngay. Nhận xét hợp lý là gì?",
+      "options": [
+        "Argo chỉ đổi khi người dùng restart laptop",
+        "Chỉ tăng scrape interval sẽ đẩy nhanh deploy",
+        "Cần xem discovery/reconciliation, trạng thái sync và các lỗi liên quan",
+        "Git commit tự là giao dịch tức thời tới mọi Pod"
+      ],
+      "correct": 2,
+      "explanation": "Đồng bộ có chu kỳ, trigger, thời gian xử lý và điều kiện thành công riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Không build ngầm",
+      "question": "Đổi source code ứng dụng trong repo không kèm image/artifact phù hợp. Application có tự build image mặc định trong code này không?",
+      "options": [
+        "Có; mọi Argo Application tự có Docker build pipeline",
+        "Có; targetRevision main tự là registry tag",
+        "Không; Argo chỉ hỗ trợ ConfigMap",
+        "Không; phần build artifact chưa được cấu hình trong snippet"
+      ],
+      "correct": 3,
+      "explanation": "Triển khai nguồn khai báo khác với quy trình build image ứng dụng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Quota chức năng",
+      "question": "ResourceQuota được dùng chủ yếu để làm gì ở mức namespace?",
+      "options": [
+        "Ràng buộc lượng tài nguyên hoặc số lượng object theo cấu hình",
+        "Bảo đảm mọi request HTTP đều dưới 10ms",
+        "Tự cân bằng session giữa các Pod",
+        "Lưu bản sao mọi ConfigMap"
+      ],
+      "correct": 0,
+      "explanation": "Quota kiểm soát mức sử dụng/quy mô được phép, không trực tiếp là SLO ứng dụng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "PDB giới hạn",
+      "question": "PDB có chặn mọi sự cố phần cứng làm Pod mất không?",
+      "options": [
+        "Không; vì PDB chỉ chứa lịch sử Git",
+        "Không; sự cố ngoài ý muốn không thể được PDB ngăn tuyệt đối",
+        "Có; PDB tạo UPS cho mọi node",
+        "Có; minAvailable biến node thành bất tử"
+      ],
+      "correct": 1,
+      "explanation": "PDB hỗ trợ kiểm soát một số gián đoạn tự nguyện, không chống mọi kiểu hỏng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Xóa trực tiếp",
+      "question": "Gọi xóa Pod trực tiếp có nhất thiết phải tuân thủ PDB như Eviction API không?",
+      "options": [
+        "Có; chỉ cần tên PDB khớp Pod name",
+        "Không; vì PDB chỉ áp dụng cho Secret",
+        "Không; thao tác xóa trực tiếp có thể bypass PDB",
+        "Có; PDB luôn phủ mọi hành động xóa"
+      ],
+      "correct": 2,
+      "explanation": "Khi đánh giá bảo vệ gián đoạn cần phân biệt API/cơ chế thao tác."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Rollout và PDB",
+      "question": "PDB có tự thay thế maxUnavailable/maxSurge của Deployment rollout không?",
+      "options": [
+        "Có; Deployment bỏ qua strategy khi có PDB",
+        "Có; PDB tự đặt image mới nhất",
+        "Không; PDB không liên quan availability",
+        "Không; cập nhật workload dùng chiến lược của workload, PDB có phạm vi riêng"
+      ],
+      "correct": 3,
+      "explanation": "Pod không available do rollout vẫn ảnh hưởng budget nhưng controller rollout không bị PDB thay thế chiến lược."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Metric labels",
+      "question": "Gắn user ID riêng cho mỗi request làm label metric có thể gây vấn đề gì?",
+      "options": [
+        "Số lượng time series tăng rất lớn và chi phí tài nguyên cao",
+        "Tự tạo request auth an toàn hơn",
+        "Tự giảm cardinality xuống một",
+        "Không có tác động vì Prometheus không lưu label"
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế metric cần cân nhắc cardinality và mục đích quan sát, không chỉ thu càng nhiều càng tốt."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Dữ liệu nhạy cảm",
+      "question": "Đưa token thật vào log hoặc label metric có thể ảnh hưởng gì?",
+      "options": [
+        "Chỉ thay đổi màu dashboard",
+        "Lộ thông tin qua hệ thống quan sát và quyền truy cập liên quan",
+        "Tự mã hóa token vì được gọi là metric",
+        "Tự thu hồi token sau30s"
+      ],
+      "correct": 1,
+      "explanation": "Quan sát cần quản lý dữ liệu nhạy cảm, retention và quyền, không chỉ đường thu thập."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Alerting chưa có",
+      "question": "Có dashboard nhưng không có alert rule hay đường thông báo. Đã chứng minh sự cố được phát hiện chủ động chưa?",
+      "options": [
+        "Rồi; Grafana luôn gửi email cho toàn bộ cluster",
+        "Chưa; vì dashboard không thể chứa metric",
+        "Chưa; cần quy tắc và cơ chế phản ứng phù hợp",
+        "Rồi; mọi dashboard tự gọi người trực"
+      ],
+      "correct": 2,
+      "explanation": "Hiển thị số liệu và cảnh báo chủ động là những phần cần thiết kế riêng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Scrape30s không realtime tuyệt đối",
+      "question": "Scrape interval 30s có bảo đảm phát hiện mọi spike kéo dài1s không?",
+      "options": [
+        "Có; tên Prometheus có nghĩa quan sát liên tục từng nanosecond",
+        "Có; interval chỉ là tên hiển thị",
+        "Không; vì metric không thể biểu diễn sự kiện ngắn",
+        "Không; còn đặc tính metric, sampling và thời điểm lấy mẫu"
+      ],
+      "correct": 3,
+      "explanation": "Chọn loại metric và chu kỳ cần dựa trên tín hiệu cần quan sát."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Source hai tài nguyên",
+      "question": "Giữa ServiceMonitor và Application trong code không có dấu --- thực sự, chỉ comment. Muốn gửi cả hai như YAML chuẩn cần xem gì?",
+      "options": [
+        "Tách document/file hợp lệ để tránh gộp mapping trùng key",
+        "Chỉ đổi tất cả comment thành tên tài nguyên",
+        "Coi comment tự là separator YAML",
+        "Chỉ đặt interval lớn hơn"
+      ],
+      "correct": 0,
+      "explanation": "Đầu vào nguồn là các ví dụ ghép; comment không thay dấu phân tách document."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Không backup từ GitOps",
+      "question": "Lưu manifest trong Git có tự sao lưu dữ liệu volume của DB không?",
+      "options": [
+        "Không; vì Git không thể lưu file text",
+        "Không; dữ liệu ứng dụng cần cơ chế sao lưu và khôi phục riêng",
+        "Có; mọi byte volume tự được Git commit",
+        "Có; prune true luôn giữ snapshot DB"
+      ],
+      "correct": 1,
+      "explanation": "Desired manifests không đồng nghĩa bản sao dữ liệu sống."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không HA từ công cụ",
+      "question": "Có Prometheus và Argo CD có tự bảo đảm ứng dụng luôn sẵn sàng không?",
+      "options": [
+        "Có; mỗi Application tự có ba availability zone",
+        "Không; vì Kubernetes không thể chạy nhiều replica",
+        "Không; cần capacity, topology, dữ liệu và vận hành phù hợp",
+        "Có; chỉ tên công cụ đã là chứng nhận HA"
+      ],
+      "correct": 2,
+      "explanation": "Các công cụ hỗ trợ quản lý và quan sát, không tự hoàn thiện mọi phần kiến trúc."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Phân biệt namespace",
+      "question": "Application ở argocd nhưng workload nhắm production. Quyền cần xem ở đâu?",
+      "options": [
+        "Chỉ quyền đọc ServiceMonitor ở namespace bất kỳ",
+        "Chỉ owner của Git repository trên laptop",
+        "Chỉ tên Application có trùng namespace không",
+        "Quyền controller và chính sách project/destination để quản lý đúng tài nguyên đích"
+      ],
+      "correct": 3,
+      "explanation": "Vị trí object điều khiển không tự cấp quyền tới namespace đích."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Chuỗi khám phá metrics",
+      "question": "Có Pod metrics khỏe, Service đúng port, ServiceMonitor tồn tại nhưng Prometheus không thấy target. Điều tra nào đầy đủ nhất?",
+      "options": [
+        "Selection Prometheus→ServiceMonitor, namespace, Service/endpoint, port và quyền/network",
+        "Chỉ đổi label Pod thành app-monitor rồi dừng",
+        "Chỉ giảm interval để tự tạo target",
+        "Chỉ đổi Application project"
+      ],
+      "correct": 0,
+      "explanation": "Cần lần theo từng tầng khám phá và kết nối thay vì coi có object là đã tích hợp xong."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Ba selector khác nhau",
+      "question": "Pod label app=web, Service selector app=web nhưng Service metadata thiếu app=web. ServiceMonitor selector app=web có được giải thích đơn giản là chọn Pod trực tiếp không?",
+      "options": [
+        "Không; vì Pod không thể có label app=web",
+        "Không; cần nhãn Service/endpoint trong mô hình khám phá tương ứng, không chỉ selector của Service",
+        "Có; selector ServiceMonitor luôn đọc Pod label thay Service",
+        "Có; tên Service được bỏ qua nên mọi metadata không liên quan"
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt nhãn object Service với selector bên trong Service và nhãn Pod."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Tự phục hồi sai ý định",
+      "question": "Git cấu hình sai nhưng tự động sync và selfHeal đang bật. Điều gì quan trọng trong vận hành?",
+      "options": [
+        "SelfHeal tự biết cấu hình nghiệp vụ đúng hơn Git",
+        "Prune tự chạy test ứng dụng trước mọi thao tác",
+        "Kiểm soát thay đổi nguồn, rollback/revert đúng quy trình và quan sát vì sai desired có thể được tái áp",
+        "Chỉ sửa tay cluster sẽ luôn tồn tại mãi"
+      ],
+      "correct": 2,
+      "explanation": "Tự động hóa khuếch đại cả ý định đúng và sai; nguồn khai báo cần quản lý chất lượng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Prune và tài nguyên quan trọng",
+      "question": "Một manifest quan trọng bị xóa nhầm khỏi repo trong ứng dụng bật prune. Cần thiết kế bảo vệ gì?",
+      "options": [
+        "Chỉ đổi tên Application dài hơn",
+        "Coi prune chỉ làm sạch comment không thể xóa resource",
+        "Chỉ tăng scrape interval để trì hoãn xóa",
+        "Quyền/review nguồn, phạm vi ownership và chính sách bảo vệ tài nguyên phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cần hiểu tác động đồng bộ xóa và những giới hạn/ngoại lệ được cấu hình, không suy an toàn từ tên công cụ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Empty target",
+      "question": "Application bật prune nhưng không khai báo allowEmpty. Có nên suy mọi phiên bản/cấu hình sẽ xóa sạch ứng dụng khi nguồn thành rỗng không?",
+      "options": [
+        "Không; phải xét cơ chế bảo vệ empty target và options/version thực tế",
+        "Có; prune luôn vượt mọi bảo vệ empty target",
+        "Có; selfHeal bắt buộc đặt allowEmpty true",
+        "Không; vì prune không bao giờ xóa tài nguyên"
+      ],
+      "correct": 0,
+      "explanation": "Tài liệu mô tả bảo vệ empty target và allowEmpty; không đồng nhất prune với xóa vô điều kiện."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Rollback và auto-sync",
+      "question": "Muốn thao tác rollback Argo trong khi auto-sync vẫn bật theo tài liệu hiện hành. Điều gì cần làm rõ?",
+      "options": [
+        "ServiceMonitor sẽ tự khóa auto-sync",
+        "Quy trình điều khiển auto-sync/desired Git phù hợp trước khi rollback, không coi sửa tay là nguồn bền",
+        "Argo luôn giữ rollback thủ công dù Git yêu cầu bản mới",
+        "Chỉ đổi tên branch ở comment"
+      ],
+      "correct": 1,
+      "explanation": "Tài liệu nêu hạn chế rollback khi auto-sync bật; nguồn Git cũng có thể tái áp trạng thái không mong muốn."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Branch và truy vết",
+      "question": "Hai thời điểm cùng dùng targetRevision main nhưng nội dung khác. Bằng chứng triển khai nên gắn với gì?",
+      "options": [
+        "Chỉ tên namespace không cần version",
+        "Chỉ tên người xem dashboard",
+        "Commit/artifact/cấu hình thực tế cùng trạng thái quan sát ở từng thời điểm",
+        "Chỉ chuỗi main vì nó là content hash"
+      ],
+      "correct": 2,
+      "explanation": "Một nhãn branch chuyển động không đủ xác định nội dung đã triển khai."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Health không là Synced",
+      "question": "Application Synced nhưng tỷ lệ lỗi nghiệp vụ tăng. Cần phân biệt gì?",
+      "options": [
+        "Synced chứng minh mọi metric đều đạt SLO",
+        "Prometheus tự đổi desired Git để giảm lỗi",
+        "SelfHeal luôn tự rollback khi HTTP 500 xuất hiện",
+        "Khớp trạng thái khai báo và chất lượng phục vụ là hai tiêu chí cần số liệu riêng"
+      ],
+      "correct": 3,
+      "explanation": "Các vòng điều khiển không tự mang hợp đồng nghiệp vụ nếu chưa có thiết kế liên quan."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Quota và autoscaling",
+      "question": "Namespace chạm quota khiến Pod mới không tạo được khi tải tăng. Nhận xét nào đúng?",
+      "options": [
+        "Quota/capacity/autoscaling phải được phối hợp, quota không tự bảo đảm khả năng phục vụ",
+        "Quota luôn tự tăng cùng tải không cần quyền",
+        "HPA tự bỏ qua mọi admission quota",
+        "Prometheus tự cấp CPU vật lý khi biểu đồ cao"
+      ],
+      "correct": 0,
+      "explanation": "Giới hạn tiêu thụ và khả năng tăng năng lực có thể xung đột nếu không thiết kế cùng nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "PDB và lỗi node",
+      "question": "PDB minAvailable 2 cho ba replica nhưng cả ba nằm trên cùng node rồi node hỏng. PDB có bảo đảm còn hai Pod phục vụ không?",
+      "options": [
+        "Không; vì PDB chỉ hoạt động với một replica",
+        "Không; cần topology/capacity và khả năng phục hồi, PDB không ngăn node failure",
+        "Có; minAvailable tự chuyển Pod tức thì trước mọi lỗi",
+        "Có; PDB tự sao chép node vật lý"
+      ],
+      "correct": 1,
+      "explanation": "Ngân sách gián đoạn không thay thế phân bố failure domain hoặc dự phòng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Budget cản bảo trì",
+      "question": "PDB quá chặt cùng thiếu capacity khiến drain theo Eviction API bị chặn. Cách xử lý hợp lý là gì?",
+      "options": [
+        "Coi PDB tự tạo node mới không giới hạn",
+        "Chỉ đổi namespace ServiceMonitor",
+        "Đánh giá availability cần giữ, capacity và kế hoạch bảo trì trước khi điều chỉnh có chủ đích",
+        "Luôn xóa trực tiếp mọi Pod để coi PDB thành công"
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế phải cân bằng khả năng bảo trì với mức phục vụ, không chỉ đặt budget thật chặt."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Metrics bị lạm dụng",
+      "question": "Cho phép người không tin cậy thay ServiceMonitor để trỏ target tùy ý. Cần đánh giá gì?",
+      "options": [
+        "Chỉ chọn interval ngắn nhất",
+        "Coi monitor là cấu hình không bao giờ có tác động bảo mật",
+        "Chỉ đổi logo Grafana",
+        "Quyền cấu hình scrape, phạm vi truy cập mạng và credential mà hệ giám sát có thể dùng"
+      ],
+      "correct": 3,
+      "explanation": "Control plane giám sát cũng là một ranh giới quyền và kết nối cần quản lý."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Cardinality không giới hạn",
+      "question": "Mỗi request tạo một label request_id duy nhất trong metric. Rủi ro chuỗi thời gian liên quan gì tới thiết kế production?",
+      "options": [
+        "Tăng cardinality có thể tiêu tốn memory/storage và làm truy vấn kém hiệu quả",
+        "Làm metric tự có retention bằng0",
+        "Bảo đảm phát hiện mọi lỗi mà không tăng chi phí",
+        "Biến Prometheus thành Git repository"
+      ],
+      "correct": 0,
+      "explanation": "Quan sát phải giữ tín hiệu hữu ích trong ngân sách tài nguyên phù hợp."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Logs và dữ liệu sống",
+      "question": "GitOps có thể tái tạo Deployment nhưng DB volume mất và log retention đã hết. Có thể coi disaster recovery hoàn chỉnh không?",
+      "options": [
+        "Không; chỉ cần thêm tên ELK trong README",
+        "Không; cần kế hoạch dữ liệu, bản sao, khôi phục và các phụ thuộc theo mục tiêu",
+        "Có; Deployment YAML chứa toàn bộ dữ liệu nghiệp vụ",
+        "Có; tự tạo Pod mới tương đương khôi phục DB"
+      ],
+      "correct": 1,
+      "explanation": "Khả năng tái tạo control objects không đồng nghĩa khôi phục state và lịch sử quan sát."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Scrape có auth",
+      "question": "Endpoint metrics cần auth/TLS nhưng monitor source không cung cấp cấu hình đó. Kết luận đúng là gì?",
+      "options": [
+        "Prometheus luôn bỏ qua TLS/auth của server",
+        "Chỉ interval 30s tự làm endpoint công khai",
+        "Phụ thuộc đường scrape bảo mật còn cần thiết lập theo API/version và môi trường",
+        "Tên metrics tự cấp mọi credential"
+      ],
+      "correct": 2,
+      "explanation": "Không nên suy khả năng truy cập từ một đoạn cấu hình thiếu các tham số môi trường."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Permission rộng",
+      "question": "Controller Argo được cấp quyền rộng còn nhiều người có thể sửa repo theo dõi. Điểm thiết kế nào đáng xem nhất?",
+      "options": [
+        "Chỉ tên repo có chứa production",
+        "Coi Git không phải đường thay đổi cluster vì chỉ là file",
+        "Chỉ giới hạn độ dài tên Application",
+        "Chuỗi quyền từ sửa nguồn đến hành động cluster cùng project/RBAC/review phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Quyền ghi nguồn declarative có thể trở thành quyền tác động môi trường qua controller."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Công cụ quan sát hỏng",
+      "question": "Dashboard xanh vì pipeline scrape đang lỗi và giữ dữ liệu cũ. Cần quan sát gì ngoài metric nghiệp vụ?",
+      "options": [
+        "Độ mới dữ liệu và sức khỏe chính pipeline giám sát",
+        "Chỉ tăng số panel xanh",
+        "Coi không có alert luôn là không có sự cố",
+        "Chỉ bật prune cho monitor"
+      ],
+      "correct": 0,
+      "explanation": "Hệ giám sát cần tự được quan sát để tránh nhầm dữ liệu thiếu/cũ với trạng thái khỏe."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Source ghép document",
+      "question": "Đoạn ServiceMonitor và Application bị ghép thành một mapping YAML do thiếu separator. Vì sao chỉ kiểm tra có chuỗi kind là không đủ?",
+      "options": [
+        "Chỉ tên file quyết định số resource",
+        "Cần parse/document boundaries/schema đúng để biết mỗi tài nguyên thực sự được tạo từ đầu vào nào",
+        "Mỗi comment luôn tự chia document nên không có vấn đề",
+        "API tự chia mọi mapping mỗi khi gặp kind mới"
+      ],
+      "correct": 1,
+      "explanation": "Một bài minh họa nhiều phần không nên được coi là manifest hoàn chỉnh có thể apply nguyên văn."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Bằng chứng production",
+      "question": "Chỉ review source/docs trên máy không truy cập cluster. Có thể công bố điều gì về bài production?",
+      "options": [
+        "Đã kiểm thử prune an toàn trên cluster thật",
+        "Đã benchmark hệ thống phục vụ hàng triệu người",
+        "Câu hỏi đã được review theo phạm vi nguồn và các phụ thuộc, chưa chứng minh hệ thống monitoring/GitOps chạy",
+        "Đã xác nhận mọi target đang Up"
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi xác nhận phải theo đúng bằng chứng đã thu thập."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Hợp đồng vận hành",
+      "question": "Nhóm yêu cầu nào phù hợp nhất khi hoàn thiện kiến trúc được phác trong bài?",
+      "options": [
+        "Chỉ cài hai tên công cụ rồi xem là production-ready",
+        "Chỉ đặt namespace thành production",
+        "Chỉ bật prune và selfHeal cho mọi tài nguyên mà bỏ review",
+        "Nguồn/version/quyền, controller/CRD, khám phá metric, health/alert, quota/disruption và dữ liệu/khôi phục"
+      ],
+      "correct": 3,
+      "explanation": "Các công cụ và snippet là điểm khởi đầu; thiết kế vận hành cần các hợp đồng và phụ thuộc cụ thể."
+    }
+  ]
+}

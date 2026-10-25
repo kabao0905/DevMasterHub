@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "jest",
+  "level": "junior",
+  "lesson": "async",
+  "language": "vi",
+  "sourceHash": "7773bfab38262b8c03ab3080dfd1350b0e1813d54ed47e42d66e466e7a43a9be",
+  "status": "approved",
+  "review": "Biên soạn trực tiếp theo fetchUser/debounce source và Jest 30 asynchronous/timer-mocks/jest-object docs. Await/return Promise assertions, HTTP error khác network reject, fake timers khác Promise lifecycle; global fetch assignment cần cleanup riêng. Không HTTP/WebSocket request hay Jest runtime.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Await test",
+      "question": "Để runner chờ test async/await, callback thường được khai báo thế nào?",
+      "options": [
+        "async",
+        "declare",
+        "interface",
+        "readonly"
+      ],
+      "correct": 0,
+      "explanation": "Promise trả từ async callback được runner theo dõi."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Promise return",
+      "question": "Ngoài async/await, test có thể cho Jest biết phải chờ bằng cách nào?",
+      "options": [
+        "Chỉ đặt tên test Promise",
+        "Return Promise cần chờ",
+        "Chỉ tạo Promise rồi bỏ",
+        "Chỉ thêm comment async"
+      ],
+      "correct": 1,
+      "explanation": "Kết quả async phải gắn với vòng đời callback."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Resolves",
+      "question": "resolves dùng để kiểm điều gì?",
+      "options": [
+        "Số lần describe chạy",
+        "Độ dài tên file",
+        "Giá trị Promise fulfill",
+        "Mọi exception đồng bộ"
+      ],
+      "correct": 2,
+      "explanation": "Assertion đó cũng cần được await/return."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Rejects",
+      "question": "rejects dùng để kiểm điều gì?",
+      "options": [
+        "Object luôn truthy",
+        "Số request tối đa",
+        "Tên callback",
+        "Lý do Promise reject"
+      ],
+      "correct": 3,
+      "explanation": "Promise fulfill khiến rejection assertion fail."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Fetch route",
+      "question": "fetchUser(1) trong nguồn gọi URL nào?",
+      "options": [
+        "/api/users/1",
+        "/users?id=1",
+        "/api/user",
+        "https://example.com/1"
+      ],
+      "correct": 0,
+      "explanation": "Đây là đường dẫn tương đối được truyền vào fetch mock."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Fetch status signal",
+      "question": "fetchUser xét thuộc tính nào để quyết định lỗi HTTP?",
+      "options": [
+        "res.length",
+        "res.ok",
+        "res.name",
+        "res.done"
+      ],
+      "correct": 1,
+      "explanation": "Không chỉ dựa vào Promise fetch có resolve hay không."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Response data",
+      "question": "Khi res.ok đúng, hàm trả kết quả từ gì?",
+      "options": [
+        "res.headers",
+        "res.ok",
+        "res.json()",
+        "res.status"
+      ],
+      "correct": 2,
+      "explanation": "Không giả định JSON parser luôn thành công."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Missing user error",
+      "question": "Nếu id999 và res.ok=false, source tạo lỗi chứa thông tin gì?",
+      "options": [
+        "DB Error",
+        "Invalid title",
+        "Timeout300",
+        "User 999 not found"
+      ],
+      "correct": 3,
+      "explanation": "Thông báo được dựng từ id."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Fetch replacement",
+      "question": "beforeEach của Async testing gán gì?",
+      "options": [
+        "global.fetch=jest.fn()",
+        "global.fetch=URL",
+        "global.fetch=true",
+        "global.fetch=describe"
+      ],
+      "correct": 0,
+      "explanation": "Đây là assignment thủ công cần phục hồi riêng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Fake timer activation",
+      "question": "API nào bật fake timers?",
+      "options": [
+        "setTimeout.fake()",
+        "jest.useFakeTimers()",
+        "jest.mockTimersAlways()",
+        "expect.fake()"
+      ],
+      "correct": 1,
+      "explanation": "Fake timer API phụ thuộc runner Jest, không phải hàm JS chuẩn."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Real timer restoration",
+      "question": "API nào trả về timers thật theo nguồn?",
+      "options": [
+        "expect.real()",
+        "clearTimeout()",
+        "jest.useRealTimers()",
+        "jest.restoreHttp()"
+      ],
+      "correct": 2,
+      "explanation": "Xóa một timeout không tương đương restore toàn bộ timer APIs."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Advance clock",
+      "question": "advanceTimersByTime(300) nhằm làm gì?",
+      "options": [
+        "Ngủ thật 300 s",
+        "Gửi 300 request",
+        "Thay callback bằng mock",
+        "Tiến thời gian giả 300 ms và chạy các timer đến hạn theo API"
+      ],
+      "correct": 3,
+      "explanation": "Không phải thử tải hoặc chờ theo đồng hồ thật."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Debounce intent",
+      "question": "Debounce thường gộp các lời gọi gần nhau theo cách nào trong source?",
+      "options": [
+        "Chỉ gọi fn sau khoảng yên lặng từ lần gọi cuối",
+        "Gọi fn ngay mỗi lần",
+        "Gọi fn trước khi wrapper được gọi",
+        "Gọi fn vô hạn định kỳ"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn có trailing behavior, không có leading call."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Cancel prior timer",
+      "question": "Debounce dùng API nào để hủy timer trước?",
+      "options": [
+        "fetch.abort()",
+        "clearTimeout(timer)",
+        "clearInterval(fn)",
+        "Promise.reject(timer)"
+      ],
+      "correct": 1,
+      "explanation": "Sau đó đặt timeout mới."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Timer creation",
+      "question": "Debounce lên lịch fn bằng API nào?",
+      "options": [
+        "requestAnimationFrame",
+        "fetch",
+        "setTimeout",
+        "setInterval"
+      ],
+      "correct": 2,
+      "explanation": "Mỗi wrapper call thay timer trước bằng timeout mới."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Last args",
+      "question": "Gọi debounced(\"a\") rồi(\"b\") ngay nhau trước khi chạy timer, fn nhận đối số nào?",
+      "options": [
+        "\"a\"",
+        "Cả a và b trong hai lời gọi",
+        "Không đối số",
+        "\"b\""
+      ],
+      "correct": 3,
+      "explanation": "Timer của a bị hủy, closure mới giữ args b."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Before timer",
+      "question": "Ngay sau hai lời gọi debounced nhưng chưa tiến thời gian, fn được gọi bao nhiêu lần?",
+      "options": [
+        "0",
+        "1",
+        "2",
+        "300"
+      ],
+      "correct": 0,
+      "explanation": "Không có nhánh leading invocation."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "After timer source",
+      "question": "Sau advanceTimersByTime(300) theo kịch bản nguồn, fn được gọi bao nhiêu lần?",
+      "options": [
+        "300",
+        "1",
+        "0",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "Chỉ timeout cuối còn hiệu lực."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Cleanup hook",
+      "question": "Nguồn fake timer suite dùng hook nào để restore timers sau mỗi test?",
+      "options": [
+        "describe",
+        "test.only",
+        "afterEach",
+        "beforeAll"
+      ],
+      "correct": 2,
+      "explanation": "Giúp tránh timer mode rò rỉ giữa test."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Async fixture json",
+      "question": "json trong mock response thành công trả loại kết quả gì?",
+      "options": [
+        "Chuỗi URL",
+        "Lỗi đồng bộ bắt buộc",
+        "Booleanfalse",
+        "Promise resolve object user"
+      ],
+      "correct": 3,
+      "explanation": "Phù hợp cách res.json trả Promise."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Await successful call",
+      "question": "Vì sao source viết const user=await fetchUser(1) trước expect(user.name)?",
+      "options": [
+        "Để nhận dữ liệu sau khi Promise hoàn tất",
+        "Vì await tự thêm fieldname",
+        "Vì fetch luôn đồng bộ",
+        "Vì expect chỉ nhận string"
+      ],
+      "correct": 0,
+      "explanation": "Không await thì biến giữ Promise thay vì user đã resolve."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Fetch HTTP vs transport",
+      "question": "Fetch resolve response ok=false có khác Promise reject do network không?",
+      "options": [
+        "Có, chỉ 404 mới là network",
+        "Có, một là response HTTP được nhận, một là lỗi giao tiếp/rejection",
+        "Không, fetch luôn reject mọi 404",
+        "Không, okfalse nghĩa undefined"
+      ],
+      "correct": 1,
+      "explanation": "Source tự chuyển res.ok=false thành Error."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "HTTP 404 handling",
+      "question": "Mock response {ok:false,status:404} không có json(). Vì sao source vẫn vào đúng error path?",
+      "options": [
+        "Fetch bắt buộc bỏ status",
+        "Json được gọi dù throw",
+        "Nó throw trước khi gọi json",
+        "Jest tự tạo mọi method thiếu"
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện ok là cổng trước bước parse."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "JSON failure",
+      "question": "Nếu ok=true nhưng json() reject, fetchUser dự kiến thế nào theo source?",
+      "options": [
+        "Luôn resolve user mẫu",
+        "Tự retry vô hạn",
+        "Tự đổi ok=false",
+        "Promise reject theo lỗi parse đó"
+      ],
+      "correct": 3,
+      "explanation": "Async return sẽ tiếp nhận trạng thái Promise của json."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Fetch rejected",
+      "question": "Nếu fetch mock reject Error(\"offline\"), source có thay thành Not found không?",
+      "options": [
+        "Không, chưa có catch để wrap lỗi đó",
+        "Có, mọi reject luôn được thay",
+        "Có, status404 được tự tạo",
+        "Không vì await bỏ mọi lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt luồng lỗi fetch với nhánh res.ok."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Request argument check",
+      "question": "Muốn bắt lỗi fetchUser gọi nhầm /api/user/1, assertion nào phù hợp?",
+      "options": [
+        "Chỉ useFakeTimers",
+        "toHaveBeenCalledWith(\"/api/users/1\") trên fetch",
+        "Chỉ user.name bằng An",
+        "Chỉ response truthy"
+      ],
+      "correct": 1,
+      "explanation": "Fixture cố định có thể vẫn trả đúng dữ liệu dù route sai."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Reject matcher awaited",
+      "question": "Cách viết nào giữ đúng vòng đời test lỗi?",
+      "options": [
+        "expect(() => fetchUser(999)).toThrow()",
+        "Chỉ gọi fetchUser rồi kết thúc",
+        "await expect(fetchUser(999)).rejects.toThrow(\"not found\")",
+        "expect(fetchUser(999)).toBeTruthy()"
+      ],
+      "correct": 2,
+      "explanation": "Async rejection khác exception đồng bộ từ callback thường."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Reject message scope",
+      "question": "toThrow(\"not found\") trong rejects của source kiểm gì?",
+      "options": [
+        "Status bắt buộc 404 trong mọi trường hợp",
+        "Fetch đã gọi đúng một lần",
+        "Server thật đang chạy",
+        "Thông báo lỗi chứa chuỗi đó"
+      ],
+      "correct": 3,
+      "explanation": "Không suy ra các thuộc tính không có assertion riêng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "No await false pass",
+      "question": "Test gọi fetchUser(...).then(assert) nhưng không return/await có rủi ro gì?",
+      "options": [
+        "Test có thể kết thúc trước assertion",
+        "Jest tự chờ mọi Promise toàn process",
+        "Then tự biến test callback thành async",
+        "Mọi assertion tự đăng ký globalwait"
+      ],
+      "correct": 0,
+      "explanation": "Cần nối Promise kiểm tra vào callback."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Try catch blind spot",
+      "question": "Test chỉ assert trong catch nhưng Promise lại resolve, không có kiểm bổ sung. Rủi ro là gì?",
+      "options": [
+        "Async function không thể có catch",
+        "Test có thể pass mà chưa chạy assertion catch",
+        "Jest bắt buộc catch luôn chạy",
+        "Resolve tự biến thành reject"
+      ],
+      "correct": 1,
+      "explanation": "Dùng rejects hoặc assertion count/luồng lỗi rõ."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Assertions count",
+      "question": "expect.assertions(1) giúp kiểm điều gì?",
+      "options": [
+        "Mọi HTTP request bị chặn",
+        "Mọi expected tự đúng",
+        "Test thực sự gọi đúng số assertion đã định",
+        "Mọi Promise tự hoàn tất đúng hạn"
+      ],
+      "correct": 2,
+      "explanation": "Nó không thay await/return hoặc hoàn tất callback đúng."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Has assertions",
+      "question": "expect.hasAssertions() thường dùng để đòi gì?",
+      "options": [
+        "Đúng một lời gọi fetch",
+        "Đúng một timer",
+        "Không có callback nào chạy",
+        "Ít nhất một assertion được gọi"
+      ],
+      "correct": 3,
+      "explanation": "Count exact và ít nhất một là hai yêu cầu khác nhau."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Callback done",
+      "question": "Với API callback, done thông báo gì cho Jest?",
+      "options": [
+        "Test callback bất đồng bộ đã hoàn tất hoặc lỗi",
+        "Server HTTP đã deploy",
+        "Promise đã bị mock tự động",
+        "Coverage đã 100%"
+      ],
+      "correct": 0,
+      "explanation": "Phải gọi done đúng đường thành công/lỗi."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Callback error",
+      "question": "Callback nhận error, cách báo lỗi rõ cho runner là gì?",
+      "options": [
+        "Chỉ console.log rồi coi pass",
+        "done(error) và dừng luồng phù hợp",
+        "done() rồi bỏ error",
+        "Throw ở timer không nối vòng đời"
+      ],
+      "correct": 1,
+      "explanation": "Không nuốt tín hiệu lỗi để làm test xanh."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Done and promise",
+      "question": "Vì sao không nên vừa nhận done vừa return Promise trong cùng test Jest?",
+      "options": [
+        "Vì done chỉ có trongbrowser",
+        "Vì nó luôn chạy nhanh gấp đôi",
+        "Jest coi đó là hai cơ chế hoàn tất xung đột và báo lỗi",
+        "Vì Promise không thể trả dữ liệu"
+      ],
+      "correct": 2,
+      "explanation": "Chọn một mô hình hoàn tất rõ ràng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "No done completion",
+      "question": "Test callback có done nhưng không bao giờ gọi nó sẽ thường thế nào?",
+      "options": [
+        "Pass ngay vì callback đã đăng ký",
+        "Tự gọi done sau một assertion bất kỳ",
+        "Skip toàn suite",
+        "Fail do timeout"
+      ],
+      "correct": 3,
+      "explanation": "Timeout là giới hạn đợi, không tự chứng minh nguyên nhân lỗi."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Debounce just before boundary",
+      "question": "Wrapper debounce300 được gọi một lần, tiến 299 ms. Fn nên thế nào trong thời gian giả này?",
+      "options": [
+        "Chưa được gọi",
+        "Đã gọi đúng một lần",
+        "Đã gọi 299 lần",
+        "Ném Error vì chưa đủ 300"
+      ],
+      "correct": 0,
+      "explanation": "Kiểm trước và sau biên giúp bảo vệ thời điểm hành vi."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Debounce boundary",
+      "question": "Sau kịch bản 299 ms chưa gọi, tiến thêm 1 ms. Kỳ vọng phù hợp là gì?",
+      "options": [
+        "Fn chỉ chạy ở 1000 ms",
+        "Fn được gọi một lần với args đã giữ",
+        "Fn bị hủy vĩnh viễn",
+        "Fn gọi hai lần"
+      ],
+      "correct": 1,
+      "explanation": "Tổng thời gian giả đạt hạn 300 ms."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Reset trailing deadline",
+      "question": "Gọi debounce300 t=0 với a, tiến 200 rồi gọi với b. Sau thêm 100 ms, fn có được gọi chưa?",
+      "options": [
+        "Rồi, b chạy ngay khi gọi",
+        "Có hai lời gọi",
+        "Chưa, timer mới của b đến hạn t=500",
+        "Rồi, a chạy ở t=300"
+      ],
+      "correct": 2,
+      "explanation": "Lần gọi sau hủy timer trước và bắt đầu khoảng chờ mới."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Final deadline",
+      "question": "Tiếp tình huống t=0 với a,t=200 với b, tới t=500 thì kỳ vọng gì?",
+      "options": [
+        "Một lời gọi với a",
+        "Hai lời gọi a rồi b",
+        "Không bao giờ gọi",
+        "Một lời gọi với b"
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm cả thời điểm, đối số và số lần."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Multiple arguments",
+      "question": "debounced(\"x\",2) sau thời hạn truyền gì cho fn theo source?",
+      "options": [
+        "Hai đối số\"x\",2",
+        "Một array[\"x\",2] duy nhất",
+        "Chỉ\"x\"",
+        "Chỉ 2"
+      ],
+      "correct": 0,
+      "explanation": "Wrapper gọi fn(...args), không fn(args)."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Separate wrappers",
+      "question": "Hai wrapper tạo từ debounce(fn,300) riêng biệt có dùng chung timer closure không?",
+      "options": [
+        "Không vì tất cả timer bị tắt",
+        "Không, mỗi lần gọi debounce tạo biến timer riêng",
+        "Có, timer là global",
+        "Có, cùng fn luôn chung timer"
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt instance wrapper với function callback dùng chung."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "After first execution",
+      "question": "Sau timeout đầu đã chạy, gọi wrapper lần nữa và đợi đủ ms có thể dẫn đến gì?",
+      "options": [
+        "Fn chỉ được gọi một lần cả đời",
+        "Tự tạo interval vô hạn",
+        "Một lời gọi fn mới",
+        "Wrapper bị vô hiệu vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Source không có điều kiện once."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "No return value forwarding",
+      "question": "Wrapper debounce trong source return giá trị sync nào khi được gọi?",
+      "options": [
+        "Kết quả fn ngay lập tức",
+        "Promise chắc chắn resolve kết quả fn",
+        "Timer id được return tường minh",
+        "undefined"
+      ],
+      "correct": 3,
+      "explanation": "Trong arrow block không có return."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "This binding",
+      "question": "Wrapper gọi fn(...args) mà không dùng apply(this,...). Có bảo đảm giữ this từ nơi gọi wrapper không?",
+      "options": [
+        "Không, source chưa chuyển tiếp receiver theo contract đó",
+        "Có, restargs luôn chứa this",
+        "Có, clearTimeout giữ this",
+        "Có, Jest tự bindcontext"
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần receiver phải thiết kế và kiểm rõ."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Timer mode leakage",
+      "question": "Quên useRealTimers sau suite fake timer có rủi ro gì?",
+      "options": [
+        "Mọi Promise luôn resolve",
+        "Test khác có thể vẫn dùng đồng hồ giả",
+        "Mọi test tự chuyển sangUTC",
+        "Fetch tự đổi thành HTTP2"
+      ],
+      "correct": 1,
+      "explanation": "Cleanup mode là trách nhiệm vòng đời test."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Pending timer cleanup",
+      "question": "Nếu test để timeout chưa chạy rồi restore mode, cần cân nhắc gì?",
+      "options": [
+        "Tăng coverage để timer tự hủy",
+        "Đổi expected không liên quan",
+        "Dọn/hoàn tất timer theo ý định test trước khi phục hồi để tránh rò rỉ",
+        "Mặc định mọi callback đều đã được kiểm"
+      ],
+      "correct": 2,
+      "explanation": "Chính sách cleanup phụ thuộc tác vụ timer và tác động mong muốn."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Run all recursion",
+      "question": "Với timer tự lên lịch timer mới vô hạn, runAllTimers có rủi ro gì?",
+      "options": [
+        "Tự chứng minh mọi retry an toàn",
+        "Chỉ chạy đúng một callback",
+        "Tự xóa mọi timer đệ quy",
+        "Gặp vòng lặp timer đến giới hạn bảo vệ của runner"
+      ],
+      "correct": 3,
+      "explanation": "Có thể dùng bước pending timers cho kịch bản phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Pending step",
+      "question": "runOnlyPendingTimers giúp gì khi khảo sát timer đệ quy?",
+      "options": [
+        "Chạy các timer hiện đang pending mà không đuổi vô hạn timer mới tạo",
+        "Tự gửi request thật",
+        "Reset mọi Promise",
+        "Thử mọi input ngẫu nhiên"
+      ],
+      "correct": 0,
+      "explanation": "Không phải bảo đảm toàn thuật toán retry kết thúc."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Promises and timers",
+      "question": "Một callback timer tạo Promise continuation. Chỉ tiến timer sync có luôn đủ để mọi async assertion hoàn tất không?",
+      "options": [
+        "Có, useRealTimers gọi mọi then",
+        "Không, còn phải await vòng đời Promise hoặc dùng API async thích hợp theo phiên bản",
+        "Có, mọi Promise chỉ là setTimeout",
+        "Có, advancesync tự đợi mọiI/O"
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt lịch timer với hoàn tất async chain."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Modern async API scope",
+      "question": "advanceTimersByTimeAsync thuộc loại API nào cần nêu scope?",
+      "options": [
+        "Một HTTP method",
+        "Cách cài Jest",
+        "API Jest fake timers hiện đại có giới hạn phiên bản/mode",
+        "JavaScript chuẩn ở mọi runtime"
+      ],
+      "correct": 2,
+      "explanation": "Không giả định mọi legacy timer mode đều hỗ trợ."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Fake clock not network",
+      "question": "useFakeTimers có tự giả lập response HTTP thật không?",
+      "options": [
+        "Có, mọi timer đồng nghĩa HTTP",
+        "Có, res.json tự có fixture",
+        "Có, request được DNS trả lời",
+        "Không, cần mock fetch/biên I/O riêng"
+      ],
+      "correct": 3,
+      "explanation": "Điều khiển thời gian không thay dữ liệu dependency."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Fetch cleanup assignment",
+      "question": "afterEach restoreAllMocks có đủ tự khôi phục global.fetch=jest.fn() từ source không?",
+      "options": [
+        "Không, assignment thủ công phải được khôi phục riêng hoặc đổi cách mock",
+        "Có, nó theo dõi mọi JS assignment",
+        "Có, clearTimersresetglobalfetch",
+        "Không vì fetch không thể mock"
+      ],
+      "correct": 0,
+      "explanation": "Đây là thiếu sót isolation cần nêu rõ."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Missing response shape",
+      "question": "Mock fetch resolve {id:1,name:\"An\"} thay vì response {ok,json}. Source có trả user như mong muốn không?",
+      "options": [
+        "Có, mọi object đều ok",
+        "Không, ok thiếu nên đi nhánh lỗi",
+        "Có, fetchUser tự đọc name",
+        "Có, Jest tự bọc response"
+      ],
+      "correct": 1,
+      "explanation": "Double phải phù hợp contract Fetch Response được sử dụng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Status alone insufficient",
+      "question": "Mock {status:200,json:...} nhưng không ok. Nguồn dự kiến làm gì?",
+      "options": [
+        "Tự tính ok từ status",
+        "Gọi json trước kiểm ok",
+        "Throw nhánh not found vì !res.ok",
+        "Luôn resolve vì status 200"
+      ],
+      "correct": 2,
+      "explanation": "Source chỉ đọc ok, không tự suy lại từ status."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "No catch retry",
+      "question": "fetchUser nguồn có tự retry khi network lỗi không?",
+      "options": [
+        "Có,async luôn retry 3 lần",
+        "Có,fakeTimers tự retry",
+        "Có,expect.rejects tự retry",
+        "Không có logic retry trong nguồn"
+      ],
+      "correct": 3,
+      "explanation": "Bài tập reconnection là phần yêu cầu mở, chưa được triển khai."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "404 naming",
+      "question": "Nguồn test tên throws on404 nhưng code fetchUser lỗi với mọi ok=false. Nên diễn giải thế nào?",
+      "options": [
+        "404 là một trường hợp; nhánh code rộng hơn status404",
+        "Chỉ 404 có thể ok false",
+        "Tên testthu hẹp implementation",
+        "Status không bao giờ liên quan HTTP"
+      ],
+      "correct": 0,
+      "explanation": "Đọc điều kiện thực, không chỉ tên test."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Not tested websockets",
+      "question": "Exercise nhắc WebSocket timeout/reconnect. Source có connection WebSocket chưa?",
+      "options": [
+        "Có,setTimeout tự mở kết nối",
+        "Chưa, không có constructor hay transport WebSocket",
+        "Có,debounce là socket",
+        "Có,fetch luôn tạo WebSocket"
+      ],
+      "correct": 1,
+      "explanation": "Không gán bằng chứng runtime cho bài tập chưa làm."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Error as value",
+      "question": "Mock json resolve Error object khác reject Error thế nào?",
+      "options": [
+        "Error object không thể resolve",
+        "Jest tự throw mọi Error value",
+        "Resolve vẫn là dữ liệu thành công trừ khi code tự kiểm",
+        "Hai cách luôn reject giống nhau"
+      ],
+      "correct": 2,
+      "explanation": "Kiểu dữ liệu và trạng thái Promise là hai chiều khác nhau."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Async function toThrow",
+      "question": "expect(() => fetchUser(999)).toThrow() có kiểm đúng Promise rejection không?",
+      "options": [
+        "Có,mọi async error ném đồng bộ",
+        "Có,toThrow tự đợi mọi promise",
+        "Không vì id 999 không hợp lệ JS",
+        "Không, cần await/return rejects cho async failure"
+      ],
+      "correct": 3,
+      "explanation": "Async function trả Promise, ngay cả lỗi trước await cũng thành rejection."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Debounce meaningful case",
+      "question": "Cần bắt lỗi bỏ clearTimeout trong debounce. Kịch bản nào mạnh hơn chỉ gọi một lần?",
+      "options": [
+        "Gọi a, chờ một phần, gọi b, kiểm chỉ b chạy đúng hạn cuối và đúng một lần",
+        "Chỉ gọi một lần rồi assert truthy wrapper",
+        "Mock luôn debounce để không chạy source",
+        "Chỉ kiểm tên function"
+      ],
+      "correct": 0,
+      "explanation": "Hai timer chồng nhau bộc lộ lỗi hủy không hoạt động."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Async completion repair",
+      "question": "Test fetchUser thỉnh thoảng pass dù assertion trong then sai vì callback kết thúc sớm. Sửa căn nguyên là gì?",
+      "options": [
+        "Đổi expected thành truthy",
+        "Return/await chuỗi Promise assertion để runner theo dõi thất bại",
+        "Chỉ tăng số test",
+        "Chỉ đặt độ trễ thật ngẫu nhiên"
+      ],
+      "correct": 1,
+      "explanation": "Kết thúc test đúng thời điểm là điều kiện trước khi tin assertion."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "HTTP and parsing coverage",
+      "question": "Cần bảo vệ cả request route, HTTP lỗi và JSON lỗi. Bộ kịch bản phù hợp gồm gì?",
+      "options": [
+        "Chỉ test tên fetchUser",
+        "Chỉ test timeout debounce",
+        "Response ok dữ liệu đúng, okfalse và json reject, cùng kiểm URL theo contract",
+        "Chỉ mock mọi fetch resolve user trực tiếp"
+      ],
+      "correct": 2,
+      "explanation": "Ba lớp hành vi không được một fixture happy path chứng minh hết."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Catch-only weakness",
+      "question": "Test dự kiến reject nhưng chỉ assert trong catch, hàm đổi sang resolve và test xanh. Hướng cải thiện nào đúng?",
+      "options": [
+        "Giữ catch trống để luôn xanh",
+        "Tăng timeout cho resolve biến thành reject",
+        "Đổi Tên Test thành reject",
+        "Dùng awaited rejects hoặc cơ chế bắt buộc assertion và báo lỗi khi resolve"
+      ],
+      "correct": 3,
+      "explanation": "Cần đường fail rõ khi điều kiện lỗi mong đợi không xảy ra."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Global restoration",
+      "question": "Sau suite gán fetch thủ công, test khác bất ngờ nhận undefined response. Cách sửa isolation nào hợp lý?",
+      "options": [
+        "Khôi phục reference fetch ban đầu sau test hoặc dùng spy phù hợp có restore",
+        "Chỉ clear calls của mock",
+        "Chỉ useRealTimers",
+        "Đổi mọi URL thành localhost"
+      ],
+      "correct": 0,
+      "explanation": "Timer restore và global dependency restore là hai việc khác nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Clock and microtask boundary",
+      "question": "Debounce callback gọi async fn rồi assertion chưa thấy side effect Promise. Cần phối hợp gì?",
+      "options": [
+        "Bỏ assert side effect",
+        "Tiến timer đúng hạn rồi await async chain/API timer async phù hợp, không chỉ assert ngay sau sync advance",
+        "Dùng sleep thật dài vô hạn",
+        "Cho all Promise đồng nghĩa setTimeout"
+      ],
+      "correct": 1,
+      "explanation": "Đồng hồ giả không tự là bằng chứng mọi Promise continuation đã hoàn tất."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Recursive reconnect",
+      "question": "Bài tập reconnect tự đặt timeout mới khi thất bại. Vì sao không mặc định runAllTimers để kiểm toàn bộ?",
+      "options": [
+        "Timer đệ quy không thể tồn tại",
+        "Fake clock tự chặn network và mọi retry",
+        "Có thể tạo vòng lịch vô hạn; cần bước pending hữu hạn và tiêu chí dừng/giới hạn retry",
+        "RunAllTimers luôn chạy đúng một lần"
+      ],
+      "correct": 2,
+      "explanation": "Test cần kiểm thuật toán dừng và tài nguyên, không đuổi vô hạn lịch mới."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Timeout is not diagnosis",
+      "question": "Async test timeout sau khi mock fetch không bao giờ settle. Cách điều tra có cơ sở là gì?",
+      "options": [
+        "Đổi mọi error thành pass",
+        "Tăng timeout vô hạn rồi coi xong",
+        "Bỏ await để test kết thúc",
+        "Kiểm Promise completion, wiring mock và deadline/cleanup thay vì chỉ tăng timeout"
+      ],
+      "correct": 3,
+      "explanation": "Thời gian chờ hết chỉ là triệu chứng của công việc chưa hoàn tất."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Concurrent wrappers",
+      "question": "Hai ô tìm kiếm dùng hai debounce wrapper cùng fn nhưng cần độc lập. Kịch bản nào kiểm đúng yêu cầu?",
+      "options": [
+        "Lên lịch cả hai wrapper rồi kiểm mỗi timer/args riêng, không wrapper nào hủy nhầm wrapper kia",
+        "Chỉ kiểm cùng function truthy",
+        "Dùng một wrapper cho cả hai và coi là độc lập",
+        "Chỉ kiểm fetch route"
+      ],
+      "correct": 0,
+      "explanation": "Closure timer riêng là hành vi cần được bảo vệ nếu contract yêu cầu."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Receiver contract",
+      "question": "Một object method phụ thuộc this được truyền vào debounce nguồn. Cần đánh giá gì trước khi test kỳ vọng giữ receiver?",
+      "options": [
+        "ClearTimeout giữ mọi context",
+        "Source gọi fn(...args) chưa chuyển this; chốt contract rồi sửa wrapper/binding và test hành vi",
+        "Restargs tự chứa this nên không cần xem",
+        "ToHaveBeenCalledWith tự gán receiver"
+      ],
+      "correct": 1,
+      "explanation": "Không viết expected giả định tính năng chưa có."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Error before callback",
+      "question": "Timer callback ném lỗi khi chạy fake clock. Điều gì cần kiểm để không nhầm đây là Promise rejection?",
+      "options": [
+        "Mọi throw đều là HTTP 404",
+        "FakeTimers bắt buộc sửa mọi error",
+        "Nguồn lỗi đồng bộ trong callback timer và cách runner/API advance báo lỗi tương ứng",
+        "Mọi lỗi trong timer đều resolve"
+      ],
+      "correct": 2,
+      "explanation": "Loại lỗi phụ thuộc vị trí thực thi và contract callback."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Transport double contract",
+      "question": "Mock fetch trả user object trực tiếp làm test fail not found. Cách sửa fixture đúng là gì?",
+      "options": [
+        "Đặt mọi expected là not found",
+        "Mock chính fetchUser thay logic thật",
+        "Bỏ res.ok khỏi mọi code không xét yêu cầu",
+        "Cung cấp response ok và json() theo interface source dùng, không đổi source để chiều mock sai"
+      ],
+      "correct": 3,
+      "explanation": "Test double phải phản ánh biên dependency thực."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Exact debounce contract",
+      "question": "Sản phẩm muốn leading call và trailing call nhưng source chỉ trailing. Hướng kiểm/sửa phù hợp là gì?",
+      "options": [
+        "Định nghĩa cả hai thời điểm và số lần rồi thêm test/sửa implementation theo contract mới",
+        "Chỉ đổi tên wrapper thành leading",
+        "Coi useFakeTimers tự bật leading",
+        "Chỉ assert function tồn tại"
+      ],
+      "correct": 0,
+      "explanation": "Tên kỹ thuật chung không thay định nghĩa hành vi cụ thể."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Cancellation contract",
+      "question": "Component unmount cần hủy debounce pending nhưng wrapper nguồn không có cancel method. Cần làm gì?",
+      "options": [
+        "Giữ timer rồi bỏ mọi assert",
+        "Bổ sung contract/API hủy và kiểm không gọi fn sau hủy, không giả source đã hỗ trợ",
+        "Gọi debounced.cancel()và coi Jest tự thêm",
+        "Chỉ useRealTimers là app có cancel"
+      ],
+      "correct": 1,
+      "explanation": "Test phải phản ánh vòng đời tài nguyên sản phẩm cần quản lý."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Boundary elapsed",
+      "question": "Gọi debounce ở t0, tiến 299 ms, gọi lại ở t299 rồi tiến 1 ms. Kỳ vọng đúng của source là gì?",
+      "options": [
+        "Gọi b ngay t300",
+        "Gọi cả hai vì đã có tổng 300 ms",
+        "Chưa gọi; deadline mới nằm 300 ms sau lời gọi thứ hai",
+        "Gọi a ở t300 bất kể hủy"
+      ],
+      "correct": 2,
+      "explanation": "Thời gian tính từ lần gọi cuối, không chỉ từ đầu test."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Promise assertion lifecycle",
+      "question": "Kết hợp done và async callback trả Promise có thể làm test lỗi vì sao?",
+      "options": [
+        "Done luôn là boolean",
+        "Async bắt buộc thêm HTTP server",
+        "Jest không hỗ trợ Promise",
+        "Hai cơ chế hoàn tất chồng nhau; chọn một kiểu và nối mọi lỗi vào đó"
+      ],
+      "correct": 3,
+      "explanation": "Giảm mơ hồ về điều kiện test hoàn tất."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Source errors scope",
+      "question": "fetchUser gộp mọi res.ok=false thành Not found, kể cả 500. Review chính xác là gì?",
+      "options": [
+        "Đó là hành vi nguồn hiện tại nhưng không phải phân loại lỗi HTTP đầy đủ; yêu cầu khác cần sửa/test",
+        "Fetch chỉ có 404 và 200",
+        "Tên test throws on 404 thay đổi mọi 500 thành 404 trên server",
+        "Status 500 tự resolve user"
+      ],
+      "correct": 0,
+      "explanation": "Không dạy cách gộp lỗi như chuẩn đúng cho mọi API."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Reconnect hữu hạn và cleanup",
+      "question": "Mock kết nối lỗi lần đầu, thành công lần hai; ứng dụng phải retry sau delay rồi dừng lịch khi đã nối. Test nên phối hợp gì?",
+      "options": [
+        "Chỉ kiểm tên event connected",
+        "Điều khiển kết quả mock và fake clock, kiểm lần gọi/thời điểm cùng không còn retry ngoài ý muốn",
+        "Chỉ kiểm wrapper là function",
+        "Gọi runAllTimers vô hạn với retry không điều kiện"
+      ],
+      "correct": 1,
+      "explanation": "Kịch bản cần kiểm cả chuyển trạng thái kết nối và vòng đời timer."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Performance claim",
+      "question": "Fake timers giúp test300ms hoàn tất nhanh. Có thể từ đó tuyên bố production debounce chạy nhanh hơn 300 ms không?",
+      "options": [
+        "Có,Jest tự tối ưu Node production",
+        "Fake clock là số đo CPU production",
+        "Không, fake time kiểm logic lịch, không đo latency runtime thực",
+        "Có,advance bỏ qua thời gian nghĩa app nhanh hơn"
+      ],
+      "correct": 2,
+      "explanation": "Không biến công cụ điều khiển thời gian thành số đo hiệu năng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Complete async regression",
+      "question": "Muốn bảo vệ debounce tránh cả gọi sớm, gọi thừa và dùng args cũ, test nên phối hợp gì?",
+      "options": [
+        "Chỉ kiểm fn được gọi ít nhất một lần",
+        "Chỉ kiểm timer id thật",
+        "Chỉ kiểm wrapper truthy",
+        "Kiểm trước hạn, nhiều lần gọi, tiến đến hạn cuối, kiểm đúng args và đúng một lần"
+      ],
+      "correct": 3,
+      "explanation": "Các chiều thời gian, dữ liệu và số lần phải được bảo vệ cùng contract."
+    }
+  ]
+}

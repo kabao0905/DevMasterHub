@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "django",
+  "level": "master",
+  "lesson": "deploy",
+  "language": "vi",
+  "sourceHash": "487b1d24652353746b04ca949f5ca7f04e316b06a91fb2692326368b7de02256",
+  "status": "approved",
+  "review": "Tự soạn theo production settings và Dockerfile comments; Django5.2/5.1 release/WhiteNoise docs. STATICFILES_STORAGE bị loại5.1, dùng STORAGES theo version. Thiếu middleware/collectstatic/proxy/DB credential/config/wiring; thiếu PASSWORD/PORT không chứng minh mọi môi trường không kết nối vì auth có thể ngoài snippet. Không đọc secrets hay chạy deploy/Docker/DB/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Production debug setting",
+      "question": "Source đặt DEBUG thành gì?",
+      "options": [
+        "False",
+        "True",
+        "None",
+        "Chuỗi true"
+      ],
+      "correct": 0,
+      "explanation": "Production không nên trả trang debug nội bộ cho người dùng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Environment module",
+      "question": "Module Python nào được dùng đọc environment?",
+      "options": [
+        "models",
+        "os",
+        "http",
+        "forms"
+      ],
+      "correct": 1,
+      "explanation": "Source chỉ mô tả tên biến, không cung cấp hay đọc giá trị thật khi soạn quiz."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Base settings import",
+      "question": "from .base import * có ý định gì?",
+      "options": [
+        "Tự tạo database",
+        "Tạo Docker image",
+        "Lấy cấu hình nền từ module base cùng package",
+        "Tải secrets từ Internet"
+      ],
+      "correct": 2,
+      "explanation": "base.py và các tên cần dùng phải tồn tại phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Allowed hosts setting",
+      "question": "ALLOWED_HOSTS chủ yếu kiểm điều gì?",
+      "options": [
+        "Quyền sở hữu từng Post",
+        "Danh sách user admin",
+        "Mọi nguồn CORS",
+        "Host hợp lệ của HTTP request theo cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Host validation không thay authentication hay CORS policy."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Allowed hosts parsing",
+      "question": "Source tách biến ALLOWED_HOSTS bằng ký tự nào?",
+      "options": [
+        "Dấu phẩy",
+        "Dấu chấm",
+        "Dấu hai chấm",
+        "Khoảng trắng duy nhất"
+      ],
+      "correct": 0,
+      "explanation": "Parser đơn giản chưa strip/loại entry rỗng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Secret variable",
+      "question": "SECRET_KEY được lấy từ tên environment nào?",
+      "options": [
+        "STATIC_ROOT",
+        "SECRET_KEY",
+        "DB_USER",
+        "ALLOWED_HOSTS"
+      ],
+      "correct": 1,
+      "explanation": "Không hard-code khóa production trong source public."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Required env syntax",
+      "question": "os.environ[\"SECRET_KEY\"] làm gì nếu key không tồn tại?",
+      "options": [
+        "Trả chuỗi rỗng mặc định",
+        "Tự tải khóa từ Django",
+        "Raise KeyError",
+        "Tự tạo khóa production ổn định"
+      ],
+      "correct": 2,
+      "explanation": "Đó là truy cập bắt buộc thay vì getenv có default."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Database backend",
+      "question": "ENGINE trong source chọn backend nào?",
+      "options": [
+        "django.db.backends.sqlite3",
+        "mysql.connector",
+        "redis",
+        "django.db.backends.postgresql"
+      ],
+      "correct": 3,
+      "explanation": "Cần dependency/config và server DB phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Database name env",
+      "question": "Tên database lấy từ biến nào?",
+      "options": [
+        "DB_NAME",
+        "DB_USER",
+        "DB_HOST",
+        "SECRET_KEY"
+      ],
+      "correct": 0,
+      "explanation": "Mỗi mục cấu hình có hợp đồng riêng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Database user env",
+      "question": "User database lấy từ đâu?",
+      "options": [
+        "Post.author",
+        "DB_USER",
+        "request.user",
+        "ALLOWED_HOSTS"
+      ],
+      "correct": 1,
+      "explanation": "Database principal không đồng nghĩa app user."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Database host env",
+      "question": "Host database lấy từ đâu?",
+      "options": [
+        "LOGIN_URL",
+        "BASE_DIR",
+        "DB_HOST",
+        "STATIC_ROOT"
+      ],
+      "correct": 2,
+      "explanation": "Network/auth setup thực tế chưa được đưa đầy đủ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "HTTPS redirect flag",
+      "question": "SECURE_SSL_REDIRECT=True có ý định gì?",
+      "options": [
+        "Tự cấp certificate",
+        "Mã hóa mọi DB backup",
+        "Tự tạo reverse proxy",
+        "Chuyển request HTTP sang HTTPS theo middleware/config"
+      ],
+      "correct": 3,
+      "explanation": "HTTPS termination và proxy trust vẫn cần cấu hình đúng."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Session secure cookie",
+      "question": "SESSION_COOKIE_SECURE=True có ý định gì?",
+      "options": [
+        "Session cookie chỉ được browser gửi qua kết nối secure theo semantics cookie",
+        "Mã hóa toàn bộ session bằng tên setting",
+        "Tự thu hồi mọi API token",
+        "Tự ngăn mọi XSS"
+      ],
+      "correct": 0,
+      "explanation": "Cookie flags là một phần cấu hình, không thay toàn bộ security policy."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "CSRF secure cookie",
+      "question": "CSRF_COOKIE_SECURE=True áp dụng cho cookie nào?",
+      "options": [
+        "Một token JWT bắt buộc",
+        "CSRF cookie",
+        "Mọi file static",
+        "Database cookie"
+      ],
+      "correct": 1,
+      "explanation": "Cần HTTPS và CSRF request flow phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "HSTS seconds",
+      "question": "SECURE_HSTS_SECONDS trong source bằng bao nhiêu?",
+      "options": [
+        "900",
+        "0",
+        "31536000",
+        "300"
+      ],
+      "correct": 2,
+      "explanation": "Đây là thời gian tính bằng giây được cấu hình."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Static destination",
+      "question": "STATIC_ROOT có ý định xác định gì?",
+      "options": [
+        "Mọi uploaded media của user bắt buộc",
+        "Tên database",
+        "Root của route API",
+        "Thư mục thu gom static files để triển khai"
+      ],
+      "correct": 3,
+      "explanation": "Static assets và user-uploaded media là các loại dữ liệu khác nhau."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Legacy storage backend",
+      "question": "Backend static được source ghi tên gì?",
+      "options": [
+        "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "django.forms.ModelForm",
+        "django.urls.DefaultRouter",
+        "redis.cache.Default"
+      ],
+      "correct": 0,
+      "explanation": "Tên backend chưa chứng minh middleware/package đã được cấu hình."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Docker base comment",
+      "question": "Dockerfile minh họa dùng base image nào?",
+      "options": [
+        "postgres:16",
+        "python:3.11-slim",
+        "node:20",
+        "nginx:latest"
+      ],
+      "correct": 1,
+      "explanation": "Đây là comment hướng dẫn, không phải image đã được build."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Container work directory",
+      "question": "WORKDIR trong Dockerfile comment là gì?",
+      "options": [
+        "/home/admin",
+        "/staticfiles",
+        "/app",
+        "/var/db"
+      ],
+      "correct": 2,
+      "explanation": "Những đường dẫn container không tự là đường dẫn máy host."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "App server command",
+      "question": "CMD minh họa dùng server nào?",
+      "options": [
+        "Django runserver",
+        "SQLite",
+        "Celery",
+        "Gunicorn"
+      ],
+      "correct": 3,
+      "explanation": "Source trỏ tới myproject.wsgi:application và bind 8000."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Missing environment default",
+      "question": "ALLOWED_HOSTS không có trong environment thì biểu thức \"\".split(\",\") trả gì?",
+      "options": [
+        "List chứa một chuỗi rỗng",
+        "List rỗng",
+        "List wildcard *",
+        "Mọi domain của máy"
+      ],
+      "correct": 0,
+      "explanation": "Không nên nhầm parser này đã có cấu hình host hợp lệ."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Spaces host parsing",
+      "question": "Environment có \"a.example, b.example\"; source có tự strip khoảng trắng mỗi entry không?",
+      "options": [
+        "Có, DEBUG=False trim mọi setting",
+        "Không",
+        "Có, split luôn strip",
+        "Có, Django tự sửa mọi lỗi input"
+      ],
+      "correct": 1,
+      "explanation": "Nên normalize/validate danh sách theo hợp đồng cấu hình."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Host not URL",
+      "question": "ALLOWED_HOSTS thường cần giá trị loại nào?",
+      "options": [
+        "Tên user admin",
+        "Mật khẩu database",
+        "Host/domain theo quy tắc Django, không toàn URL có scheme/path",
+        "Mọi URL API đầy đủ"
+      ],
+      "correct": 2,
+      "explanation": "Cần đối chiếu host matching policy thật."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Wildcard tradeoff",
+      "question": "Đặt ALLOWED_HOSTS=[\"*\"] có tự giữ host validation giới hạn domain không?",
+      "options": [
+        "Có, * nghĩa không cho host nào",
+        "Có, wildcard tự kiểm DNS ownership",
+        "Có, HTTPS tự kiểm mọi Host",
+        "Không, cần cơ chế kiểm Host phù hợp nếu chọn wildcard"
+      ],
+      "correct": 3,
+      "explanation": "Không dùng wildcard để che cấu hình host mà bỏ policy."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Secret empty string",
+      "question": "Có biến SECRET_KEY nhưng giá trị rỗng có bảo đảm cấu hình tốt chỉ nhờ dùng [] không?",
+      "options": [
+        "Không, cần validate giá trị và lifecycle secret phù hợp",
+        "Có, [] tự sinh khóa mạnh",
+        "Có, os luôn không cho chuỗi rỗng",
+        "Có, DEBUG=False thay khóa"
+      ],
+      "correct": 0,
+      "explanation": "Kiểm tồn tại key và kiểm chất lượng/cấu hình value là hai bước."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Database credential scope",
+      "question": "Snippet không có PASSWORD/PORT có đủ kết luận mọi môi trường chắc chắn không kết nối DB không?",
+      "options": [
+        "Có, HOST không có ý nghĩa",
+        "Không, có thể có auth/config ngoài snippet; cần xem hợp đồng thực",
+        "Có, mọi DB luôn cần cả hai field literal",
+        "Có, PostgreSQL không hỗ trợ auth ngoài password"
+      ],
+      "correct": 1,
+      "explanation": "Không suy đầy đủ topology/auth từ một đoạn rút gọn."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Dependency driver gap",
+      "question": "Chỉ khai ENGINE PostgreSQL có tự cài driver Python chưa?",
+      "options": [
+        "Có, os.environ cài dependency",
+        "Có, Gunicorn chứa mọi DB driver",
+        "Không",
+        "Có, Django tự tải driver lúc request"
+      ],
+      "correct": 2,
+      "explanation": "Dependency phải được quản lý trong môi trường build/runtime."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Proxy HTTPS recognition",
+      "question": "Nếu TLS kết thúc ở proxy, Django cần biết gì để nhận đúng HTTPS?",
+      "options": [
+        "Chỉ đổi DB_HOST",
+        "Chỉ thêm CSS",
+        "Chỉ đổi STATIC_ROOT",
+        "Cấu hình proxy/request trust đúng theo hạ tầng"
+      ],
+      "correct": 3,
+      "explanation": "Không được tin forwarded header tùy ý từ client."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Redirect no TLS provisioning",
+      "question": "SECURE_SSL_REDIRECT=True có tự tạo TLS certificate và listener HTTPS không?",
+      "options": [
+        "Không",
+        "Có, SecurityMiddleware cấp cert",
+        "Có, Gunicorn tạo DNS",
+        "Có, cookie secure mở port 443"
+      ],
+      "correct": 0,
+      "explanation": "Redirect policy khác cung cấp transport TLS thực."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "HSTS role",
+      "question": "HSTS chủ yếu yêu cầu browser làm gì trong phạm vi policy?",
+      "options": [
+        "Tự cache HTML vĩnh viễn",
+        "Dùng HTTPS cho host theo thời hạn/chính sách đã nhận",
+        "Mã hóa file DB trên disk",
+        "Tự đăng nhập user"
+      ],
+      "correct": 1,
+      "explanation": "Cần HTTPS setup và rollout phù hợp."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Subdomain HSTS gap",
+      "question": "SECURE_HSTS_SECONDS riêng có chứng minh includeSubDomains/preload đã bật chưa?",
+      "options": [
+        "Có, DEBUG=False tự thêm",
+        "Có, ALLOWED_HOSTS quyết định preload",
+        "Không",
+        "Có, thời hạn một năm tự bật mọi option"
+      ],
+      "correct": 2,
+      "explanation": "Các option và điều kiện triển khai cần được cấu hình riêng."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Static directory creation",
+      "question": "Gán STATIC_ROOT có tự thu gom/copy mọi asset chưa?",
+      "options": [
+        "Có, assignment tự đọc mọi thư mục",
+        "Có, os.path.join copy files",
+        "Có, Gunicorn quét static",
+        "Không, cần collectstatic/build/deploy phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Đường dẫn cấu hình khác nội dung đã được triển khai."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Storage version removal",
+      "question": "Trong Django 5.1+, STATICFILES_STORAGE cũ của source cần được thay theo hướng nào?",
+      "options": [
+        "STORAGES với alias staticfiles và BACKEND phù hợp",
+        "Đổi biến thành STATICFILES_PASSWORD",
+        "Đổi backend thành title string",
+        "Không cần vì setting cũ luôn còn hiệu lực"
+      ],
+      "correct": 0,
+      "explanation": "Release 5.1 ghi loại setting legacy này."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Storages merge behavior",
+      "question": "Đặt STORAGES tùy chỉnh có tự merge đầy đủ aliases với default theo docs 5.2 không?",
+      "options": [
+        "Có, WhiteNoise luôn thêm media backend",
+        "Không, cần khai đủ cấu hình cần giữ",
+        "Có, mọi dict settings luôn merge sâu",
+        "Có, staticfiles tự giữ mọi default alias"
+      ],
+      "correct": 1,
+      "explanation": "Cần xem ảnh hưởng tới default file storage và aliases khác."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "WhiteNoise middleware gap",
+      "question": "Chỉ đặt tên storage WhiteNoise có chứng minh middleware phục vụ static đã có chưa?",
+      "options": [
+        "Có, STATIC_ROOT là middleware",
+        "Có, Gunicorn tự đọc class name",
+        "Không",
+        "Có, storage tự chèn mọi middleware"
+      ],
+      "correct": 2,
+      "explanation": "Cần package/middleware/static configuration theo kiến trúc phục vụ asset."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Manifest storage intent",
+      "question": "Manifest static storage giúp cơ chế nào?",
+      "options": [
+        "Mã hóa database password",
+        "Kiểm owner từng Post",
+        "Tự tạo template HTML",
+        "Ánh xạ asset tới tên có hash để hỗ trợ version/cache"
+      ],
+      "correct": 3,
+      "explanation": "Hash asset không là hash credential hay quyền tài nguyên."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Static versus media",
+      "question": "Có nên dùng cùng giả định cache/public serving cho mọi user upload như static build assets không?",
+      "options": [
+        "Không, cần policy quyền/nội dung/lifecycle riêng",
+        "Có, mọi file đều công khai",
+        "Có, WhiteNoise tự kiểm owner mọi upload",
+        "Có, STATIC_ROOT là private storage"
+      ],
+      "correct": 0,
+      "explanation": "User content có trust boundary khác file do ứng dụng build."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Docker comments status",
+      "question": "Các dòng # FROM/# CMD trong file settings Python có tự build/run container không?",
+      "options": [
+        "Có, Gunicorn đọc mọi comment",
+        "Không, chúng là comment",
+        "Có, Python chạy Docker khi import",
+        "Có, Django tách Dockerfile tự động"
+      ],
+      "correct": 1,
+      "explanation": "Phải có Dockerfile và quy trình build/run thực riêng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Requirements copy order",
+      "question": "COPY requirements.txt rồi install trước COPY . . có thể giúp điều gì?",
+      "options": [
+        "Tự xác thực package supply chain",
+        "Tự loại mọi secret",
+        "Tận dụng layer cache dependency khi source đổi mà requirements không đổi",
+        "Tự pin mọi dependency mới nhất ổn định"
+      ],
+      "correct": 2,
+      "explanation": "Lợi ích cache phụ thuộc Docker build inputs thực tế."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Bind address scope",
+      "question": "0.0.0.0:8000 trong container có nghĩa gì phù hợp?",
+      "options": [
+        "Tự publish Internet qua mọi firewall",
+        "Tự có HTTPS trên 443",
+        "Chỉ lắng nghe localhost của host",
+        "Lắng nghe các interface phù hợp trong network namespace đó trên port 8000"
+      ],
+      "correct": 3,
+      "explanation": "Publish/proxy/firewall/port exposure là cấu hình riêng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Gunicorn WSGI target",
+      "question": "myproject.wsgi:application chỉ tới gì?",
+      "options": [
+        "Object application trong module WSGI của project",
+        "Một file template",
+        "Một User model",
+        "Một database name"
+      ],
+      "correct": 0,
+      "explanation": "Package/path cần khớp dự án và môi trường import."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "WSGI versus ASGI target",
+      "question": "CMD minh họa có tự là cấu hình ASGI server đầy đủ không?",
+      "options": [
+        "Có, async_api tạo server mới",
+        "Không, nó nêu WSGI target",
+        "Có, mọi Gunicorn CMD luôn ASGI đầy đủ",
+        "Có, Django tự đổi file wsgi"
+      ],
+      "correct": 1,
+      "explanation": "Server/worker protocol cần phù hợp workload và phiên bản thực."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Worker configuration gap",
+      "question": "Snippet có đặt worker count/timeouts/graceful shutdown policy cụ thể chưa?",
+      "options": [
+        "Có, Python 3.11 biết workload",
+        "Có, STATIC_ROOT cấu hình worker",
+        "Chưa",
+        "Có, 0.0.0.0 tự chọn mọi thông số tối ưu"
+      ],
+      "correct": 2,
+      "explanation": "Không suy capacity từ CMD đơn giản."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Migrations deployment gap",
+      "question": "Docker CMD có tự chạy database migrations trước phục vụ không?",
+      "options": [
+        "Có, Gunicorn tự migrate",
+        "Có, COPY . . áp migrations",
+        "Có, os.environ cập nhật schema",
+        "Không có bước đó trong source"
+      ],
+      "correct": 3,
+      "explanation": "Migration rollout cần quy trình và quyền phù hợp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Collectstatic gap",
+      "question": "Docker comments đã có lệnh collectstatic chưa?",
+      "options": [
+        "Chưa",
+        "Có, pip install luôn thu gom assets",
+        "Có, Gunicorn gọi khi khởi động",
+        "Có, STATICFILES_STORAGE tự build"
+      ],
+      "correct": 0,
+      "explanation": "Asset build cần được phối hợp với image/storage phục vụ thực."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Nginx implementation gap",
+      "question": "Theory nhắc Nginx; source đã có server/location/upstream configuration chưa?",
+      "options": [
+        "Có, DEBUG=False mở reverse proxy",
+        "Chưa",
+        "Có, bind 8000 tạo Nginx config",
+        "Có, import os cài Nginx"
+      ],
+      "correct": 1,
+      "explanation": "Framework setting không là cấu hình của một dịch vụ khác."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Secrets build context",
+      "question": "COPY . . có thể cần chú ý gì với file không nên vào image?",
+      "options": [
+        "Chỉ route prefix",
+        "Chỉ PostgreSQL ordering",
+        "Build context/.dockerignore và secret injection policy",
+        "Chỉ title template"
+      ],
+      "correct": 2,
+      "explanation": "Không nên đưa bí mật vào build context/image theo thói quen."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Runtime env injection",
+      "question": "Tạo image có source đọc os.environ có tự bảo đảm runtime được cấp đúng variables không?",
+      "options": [
+        "Có, Docker tự biết mọi DB credentials",
+        "Có, requirements chứa values",
+        "Có, Gunicorn sinh SECRET_KEY",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần cấu hình runtime đúng mà không để lộ bí mật trong source/log."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Debug false limits",
+      "question": "DEBUG=False có tự chứng minh app có authorization đúng không?",
+      "options": [
+        "Không",
+        "Có, mọi endpoint tự private",
+        "Có, mọi logged-in user thành owner",
+        "Có, DB driver tự kiểm role app"
+      ],
+      "correct": 0,
+      "explanation": "Tắt debug là một setting, không thay policy tài nguyên."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Allowed hosts not CORS",
+      "question": "ALLOWED_HOSTS có thay CORS policy cho browser origins không?",
+      "options": [
+        "Có, secure cookie bỏ CORS",
+        "Không",
+        "Có, hai tên là alias",
+        "Có, mọi allowed host đều là CSRF trusted"
+      ],
+      "correct": 1,
+      "explanation": "Host validation, CORS và CSRF có hợp đồng khác nhau."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Cookie transport flag limits",
+      "question": "Secure cookie flag có tự bảo vệ cookie khỏi JavaScript đọc trong mọi trường hợp không?",
+      "options": [
+        "Có, HTTPS loại mọi XSS",
+        "Có, HSTS luôn mã hóa DOM",
+        "Không, cần xét HttpOnly và các cơ chế khác theo loại cookie",
+        "Có, Secure tự thay mọi flag"
+      ],
+      "correct": 2,
+      "explanation": "Mỗi cookie attribute có ý nghĩa riêng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Database least privilege",
+      "question": "User DB cho ứng dụng có nên mặc định là superuser để tiện mọi request không?",
+      "options": [
+        "Có, Django chỉ hỗ trợ DB superuser",
+        "Có, Gunicorn yêu cầu role admin",
+        "Có, DEBUG=False cần quyền tối đa",
+        "Không, quyền nên theo nhu cầu vận hành/nghiệp vụ"
+      ],
+      "correct": 3,
+      "explanation": "Quyền migrations và runtime có thể được thiết kế khác nhau."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Health check absence",
+      "question": "Source có readiness/liveness checks cụ thể chưa?",
+      "options": [
+        "Chưa",
+        "Có, bind port tự kiểm schema/DB",
+        "Có, SECRET_KEY là health check",
+        "Có, collectstatic đã được chạy"
+      ],
+      "correct": 0,
+      "explanation": "Một process chạy chưa chứng minh sẵn phục vụ mọi dependency."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Persistent data scope",
+      "question": "Dữ liệu cần giữ qua thay container có nên chỉ dựa writable layer của container không?",
+      "options": [
+        "Có, STATIC_ROOT lưu DB",
+        "Không, cần storage/persistence và backup policy phù hợp",
+        "Có, mọi container layer là backup vĩnh viễn",
+        "Có, COPY . . giữ mọi user upload tương lai"
+      ],
+      "correct": 1,
+      "explanation": "Container lifecycle và dữ liệu bền vững cần được tách rõ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Dependency reproducibility",
+      "question": "pip install -r requirements có tự chứng minh reproducible nếu file không pin versions phù hợp không?",
+      "options": [
+        "Có, Python image pin mọi package",
+        "Có, Gunicorn khóa dependency tree",
+        "Không",
+        "Có, mọi registry luôn trả cùng build"
+      ],
+      "correct": 2,
+      "explanation": "Reproducibility phụ thuộc versions/lock/build inputs theo quy trình."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Base image mutability",
+      "question": "Tag python:3.11-slim có phải bằng chứng mọi build tương lai dùng cùng image digest không?",
+      "options": [
+        "Có, mọi tag luôn immutable",
+        "Có, slim là checksum",
+        "Có, COPY giữ base image",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Có thể cần pin/verify/update image theo policy của dự án."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Error logging scope",
+      "question": "Production log có nên chứa SECRET_KEY hay DB password để chẩn đoán nhanh không?",
+      "options": [
+        "Không, dùng chẩn đoán đã che dữ liệu theo policy",
+        "Có, logs luôn private tuyệt đối",
+        "Có, vì DEBUG=False",
+        "Có, secrets trong container không thể lộ"
+      ],
+      "correct": 0,
+      "explanation": "Log là dữ liệu cần kiểm quyền và retention."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "HTTPS proxy trust",
+      "question": "SECURE_PROXY_SSL_HEADER nên được đặt khi nào theo điều kiện an toàn của docs?",
+      "options": [
+        "Để bỏ mọi TLS validation",
+        "Khi kiểm soát proxy và bảo đảm xử lý header đầu vào đúng trust contract",
+        "Bất cứ khi client gửi header https",
+        "Chỉ vì có ALLOWED_HOSTS"
+      ],
+      "correct": 1,
+      "explanation": "Không tin forwarded header do người ngoài tùy ý gửi."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "HSTS expiry effect",
+      "question": "Browser đã nhận HSTS dài hạn có thể làm gì sau khi server ngừng gửi header?",
+      "options": [
+        "Tự mở HTTP plaintext mọi lần",
+        "Tự xóa mọi session",
+        "Tiếp tục áp policy đã nhớ tới khi hết hạn theo semantics",
+        "Quên policy ngay vì một response không header"
+      ],
+      "correct": 2,
+      "explanation": "Rollout/rollback HSTS cần tính trạng thái đã lưu ở client."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Deployment testing scope",
+      "question": "Build image thành công có đủ xác nhận DB/proxy/static/auth ở production chạy đúng không?",
+      "options": [
+        "Có, Docker build thử mọi endpoint",
+        "Có, pip install là integration test",
+        "Có, WSGI target đúng nghĩa mọi policy đúng",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Các lớp cần kiểm theo dependency và hành vi thực."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Host parsing startup",
+      "question": "ALLOWED_HOSTS env có khoảng trắng và entry rỗng, app báo DisallowedHost. Hướng sửa đúng là gì?",
+      "options": [
+        "Normalize/validate danh sách host theo hợp đồng deployment thay vì mở wildcard tùy tiện",
+        "Đặt mọi user thành admin",
+        "Chỉ đổi tên DB",
+        "Chỉ tắt secure cookie"
+      ],
+      "correct": 0,
+      "explanation": "Cần sửa cấu hình host đúng, không bỏ ranh giới kiểm tra để che lỗi."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Proxy redirect loop",
+      "question": "TLS kết thúc ở proxy nhưng Django luôn thấy HTTP và redirect lặp; cần chẩn đoán gì?",
+      "options": [
+        "Chỉ tăng Gunicorn timeout",
+        "Forwarded scheme/trust configuration và header stripping ở proxy theo kiến trúc",
+        "Chỉ xóa dữ liệu Post",
+        "Chỉ đổi STATIC_ROOT"
+      ],
+      "correct": 1,
+      "explanation": "Django phải nhận đúng tính chất request gốc qua nguồn proxy đáng tin."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Forwarded header spoof",
+      "question": "Cấu hình tin X-Forwarded-Proto nhưng proxy cho client giữ header tùy ý có rủi ro gì?",
+      "options": [
+        "HSTS tự sửa mọi header giả",
+        "DB password ngăn HTTP spoof",
+        "Client có thể tác động suy luận secure request; cần sửa trust/header handling",
+        "Không có vì ALLOWED_HOSTS là CORS"
+      ],
+      "correct": 2,
+      "explanation": "Thiết lập proxy header không tự xác minh nguồn header."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Static setting migration",
+      "question": "Nâng Django 4.2 lên 5.2 nhưng chỉ giữ STATICFILES_STORAGE, asset hashing sai kỳ vọng; sửa nhóm nào?",
+      "options": [
+        "Chỉ đổi tên file CSS",
+        "Chỉ tăng HSTS",
+        "Chỉ thêm SECRET_KEY mới",
+        "Chuyển STORAGES đúng alias/backend và kiểm collectstatic/middleware/serving theo pipeline"
+      ],
+      "correct": 3,
+      "explanation": "Migration setting phải đi cùng artifact/static delivery thực."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Storage default alias loss",
+      "question": "Đặt STORAGES chỉ có staticfiles khiến luồng media cần default alias lỗi; nguyên nhân gì?",
+      "options": [
+        "Setting được override chứ không tự merge aliases, cần khai đủ cấu hình dùng",
+        "WhiteNoise luôn xóa mọi upload",
+        "Django không hỗ trợ media",
+        "DEBUG=False cấm file"
+      ],
+      "correct": 0,
+      "explanation": "Cần xem toàn hợp đồng storage khi thay setting dạng dict."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Missing static artifact",
+      "question": "Ứng dụng deploy được nhưng CSS 404; STATIC_ROOT đã đặt. Cần kiểm đường đi nào?",
+      "options": [
+        "Chỉ username",
+        "Asset source/build, collectstatic, storage manifest và server/CDN routing",
+        "Chỉ template title",
+        "Chỉ DB_HOST"
+      ],
+      "correct": 1,
+      "explanation": "Một path setting không chứng minh artifact đã tồn tại và được phục vụ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Manifest release consistency",
+      "question": "HTML release mới tham chiếu hash asset mới nhưng CDN chỉ có file cũ; cần thiết kế gì?",
+      "options": [
+        "Chỉ tắt mọi template escaping",
+        "Chỉ đổi container hostname",
+        "Phối hợp publish assets/cache/retention và release order để consumer tìm được đúng phiên bản",
+        "Chỉ tăng browsercache TTL"
+      ],
+      "correct": 2,
+      "explanation": "App và static artifacts có dependency phiên bản khi rollout."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Secret generation per replica",
+      "question": "Mỗi replica tự sinh SECRET_KEY mới mỗi lần start có thể ảnh hưởng gì?",
+      "options": [
+        "Mọi user tự thành anonymous an toàn không cần policy",
+        "Chỉ ảnh hưởng CSS",
+        "Tự giảm query count",
+        "Tính tương thích session/signature giữa replica và restart theo cơ chế dùng khóa"
+      ],
+      "correct": 3,
+      "explanation": "Secrets cần lifecycle/chia sẻ/rotation phù hợp, không sinh tùy tiện ở từng process."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Secret image leakage",
+      "question": "Developer COPY file env bí mật vào image rồi xóa ở layer sau; cách xử lý tốt cần xét gì?",
+      "options": [
+        "Build layers/context/secret injection và rotation theo mức lộ thực tế",
+        "Coi xóa layer cuối là không còn dấu vết",
+        "Chỉ đổi nhãn image",
+        "Chỉ đặt DEBUG=False"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu bí mật trong image/history cần được coi theo trust boundary thực."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Database rollout compatibility",
+      "question": "Release mới yêu cầu column chưa migrate trong lúc replica cũ còn chạy; cần lập kế hoạch gì?",
+      "options": [
+        "Chỉ tăng static cache",
+        "Schema/data rollout tương thích các phiên bản cùng tồn tại và thứ tự deploy",
+        "Chỉ restart mọi worker ngẫu nhiên",
+        "Chỉ thêm ALLOWED_HOSTS"
+      ],
+      "correct": 1,
+      "explanation": "Migration phải phù hợp trạng thái chuyển tiếp và khả năng rollback."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Migration startup stampede",
+      "question": "Mọi replica tự chạy migration đồng thời khi scale up có thể cần xem gì?",
+      "options": [
+        "Chỉ thêm worker",
+        "Chỉ đổi bind address",
+        "Điều phối migration/locks/quyền và startup readiness theo quy trình",
+        "Coi Gunicorn serialize DB toàn cục"
+      ],
+      "correct": 2,
+      "explanation": "Không mặc định mọi thao tác thay schema an toàn khi nhiều instance cùng làm."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "HSTS rollout risk",
+      "question": "Bật HSTS dài hạn trước khi mọi host/phạm vi cần thiết có HTTPS ổn định; cần cân nhắc gì?",
+      "options": [
+        "Chỉ giảm database size",
+        "Chỉ đổi template",
+        "Coi xóa header ngay sau là sửa mọi client",
+        "Tính tương thích host/client và kế hoạch rollout/khôi phục theo policy đã nhớ ở browser"
+      ],
+      "correct": 3,
+      "explanation": "HSTS có lifecycle phía client khác một flag server trong request hiện tại."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "HTTPS cookie troubleshooting",
+      "question": "Login qua HTTP dev không giữ session khi secure cookie bật; hướng chẩn đoán đúng?",
+      "options": [
+        "Xem transport/cookie/env config phù hợp, không vô hiệu bảo vệ production tùy tiện",
+        "Chỉ đổi password hash",
+        "Chỉ gán user.is_staff",
+        "Chỉ thêm select_related"
+      ],
+      "correct": 0,
+      "explanation": "Cookie behavior phụ thuộc kết nối và môi trường thật."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Readiness dependency",
+      "question": "Process lắng nghe 8000 nhưng DB/schema chưa sẵn; traffic vào lỗi. Cần gì?",
+      "options": [
+        "Chỉ đặt DEBUG=False",
+        "Readiness theo điều kiện phục vụ và rollout/probe policy phù hợp",
+        "Chỉ kiểm PID tồn tại",
+        "Chỉ bind 0.0.0.0"
+      ],
+      "correct": 1,
+      "explanation": "Liveness process và khả năng xử lý request là hai tín hiệu khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Graceful deploy data",
+      "question": "Restart worker khi request ghi đang chạy cần xem điều gì?",
+      "options": [
+        "Chỉ staticfiles hash",
+        "Chỉ template CSS",
+        "Graceful shutdown, timeouts, retry/idempotency và kết quả tác vụ theo hợp đồng",
+        "Chỉ worker name"
+      ],
+      "correct": 2,
+      "explanation": "Không mặc định đóng process là rollback hay commit sạch mọi tác vụ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "User media isolation",
+      "question": "Phục vụ upload HTML không tin cậy như static build cùng origin có nguy cơ gì?",
+      "options": [
+        "WhiteNoise hash luôn sanitize HTML",
+        "STATIC_ROOT tự xác nhận owner",
+        "Secure cookie giải quyết mọi XSS",
+        "Nội dung chủ động có thể ảnh hưởng browser; cần storage/serving/access policy phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Content trust khác artifact path và cache versioning."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Horizontal scaling data",
+      "question": "Nhiều replica giữ upload/session/cache riêng ở local disk/memory có thể gặp gì?",
+      "options": [
+        "Dữ liệu/trạng thái không nhất quán giữa replica nếu kiến trúc không điều phối",
+        "Django tự copy mọi filesystem",
+        "Gunicorn bind tự shared memory phân tán",
+        "Docker image giữ mọi upload mới"
+      ],
+      "correct": 0,
+      "explanation": "Cần state/storage topology phù hợp yêu cầu, không chỉ tăng instance count."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Backup recovery evidence",
+      "question": "Có backup job thành công có đủ chứng minh phục hồi dịch vụ/dữ liệu đúng mục tiêu không?",
+      "options": [
+        "Có, ALLOWED_HOSTS chứng minh dữ liệu",
+        "Chưa, cần restore/consistency và recovery procedure được kiểm theo yêu cầu",
+        "Có, mọi backup luôn restore được",
+        "Có, Docker image chứa DB mới nhất"
+      ],
+      "correct": 1,
+      "explanation": "Khả năng khôi phục cần bằng chứng đúng phạm vi và mục tiêu thời gian/dữ liệu."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Capacity assessment",
+      "question": "Một Gunicorn CMD và DEBUG=False có đủ kết luận phục vụ triệu người dùng chưa?",
+      "options": [
+        "Rồi, vì Django có ORM",
+        "Rồi, vì container bind mọi interface",
+        "Chưa, cần workload, backend/data capacity, limits và bằng chứng tải/vận hành",
+        "Rồi, vì production file đã có tên"
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình skeleton không thay thiết kế và đo toàn hệ thống."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Concrete deployment completion",
+      "question": "Để bài Dockerize thành artifact triển khai được, cần hoàn thiện nhóm nào?",
+      "options": [
+        "Chỉ copy comments sang README",
+        "Chỉ đổi Python version",
+        "Chỉ thêm port vào theory",
+        "Dockerfile/dependencies/settings/runtime secrets, DB/static/proxy và checks phù hợp môi trường"
+      ],
+      "correct": 3,
+      "explanation": "Source minh họa nhiều phần nhưng chưa chứa pipeline/deployment hoàn chỉnh."
+    }
+  ]
+}

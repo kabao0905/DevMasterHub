@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "solidity",
+  "level": "junior",
+  "lesson": "erc20",
+  "language": "vi",
+  "sourceHash": "0336ea414a96dbd8c9c1720cbe4cb4c3e658caac50ff5df60554c6d3ff91783f",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo MyToken, EIP-20 và OpenZeppelin ERC20 v5.0.2/v4.9.6 được nêu rõ khi so sánh. Solidity 0.8.20 checked math, base units/decimals, mint/allowance và hooks khác version. Không compile/deploy/RPC/transaction/approval hoặc khóa/ví thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Chuẩn",
+      "question": "ERC-20 chủ yếu định nghĩa gì?",
+      "options": [
+        "Giao diện chung cho fungible tokens",
+        "Một cơ chế token ID duy nhất như NFT",
+        "Một đồng tiền phải có giá cố định",
+        "Một ví lưu mọi private key"
+      ],
+      "correct": 0,
+      "explanation": "Chuẩn giao diện không xác định giá hoặc mọi chính sách phát hành."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Fungible",
+      "question": "Fungible trong ngữ cảnh token nghĩa là gì?",
+      "options": [
+        "Mỗi tài khoản phải có một token khác loại",
+        "Các đơn vị cùng loại có thể thay thế nhau theo giá trị danh nghĩa",
+        "Mỗi đơn vị bắt buộc có ID NFT riêng",
+        "Không thể chia nhỏ số lượng theo đơn vị"
+      ],
+      "correct": 1,
+      "explanation": "Khác với mô hình mỗi token có danh tính riêng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Kế thừa",
+      "question": "MyToken kế thừa contract nào trong nguồn?",
+      "options": [
+        "Ownable",
+        "ERC721",
+        "ERC20",
+        "IERC20 trực tiếp duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "ERC20 cung cấp triển khai, khác interface chỉ mô tả hàm."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Import",
+      "question": "Đường import của mẫu lấy thư viện từ đâu?",
+      "options": [
+        "Một hợp đồng tên BankAccount trong nguồn",
+        "Một RPC endpoint của ví",
+        "Module ERC20 trong JavaScript browser",
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      ],
+      "correct": 3,
+      "explanation": "Đây là dependency Solidity, không phải lời gọi mạng trong contract."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Tên token",
+      "question": "Tên truyền cho constructor ERC20 là gì?",
+      "options": [
+        "DevMaster Token",
+        "MyToken",
+        "DMT",
+        "HelloWorld"
+      ],
+      "correct": 0,
+      "explanation": "Tên contract và metadata token không bắt buộc giống nhau."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Symbol",
+      "question": "Symbol của token nguồn là gì?",
+      "options": [
+        "DevMaster Token",
+        "DMT",
+        "ETH",
+        "ERC20"
+      ],
+      "correct": 1,
+      "explanation": "Symbol là metadata, không định danh deployment duy nhất."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Supply getter",
+      "question": "Hàm nào đọc tổng cung token?",
+      "options": [
+        "allowance(owner, spender)",
+        "approve(spender, amount)",
+        "totalSupply()",
+        "balanceOf(account)"
+      ],
+      "correct": 2,
+      "explanation": "Tổng cung khác số dư của một tài khoản hoặc hạn mức chi tiêu."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Balance getter",
+      "question": "Hàm nào đọc số dư token của A?",
+      "options": [
+        "totalSupply(A)",
+        "approve(A)",
+        "transferFrom(A)",
+        "balanceOf(A)"
+      ],
+      "correct": 3,
+      "explanation": "balanceOf là truy vấn theo tài khoản."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Transfer",
+      "question": "transfer(to, amount) thường chuyển từ ai?",
+      "options": [
+        "Caller theo context của token",
+        "Mọi owner có allowance cho caller",
+        "Địa chỉ zero để mint",
+        "Địa chỉ token contract mặc định"
+      ],
+      "correct": 0,
+      "explanation": "Chuyển thay tài khoản khác thường dùng transferFrom với quyền phù hợp."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Approve",
+      "question": "approve(spender, amount) chủ yếu làm gì?",
+      "options": [
+        "Đổi tổng cung thành amount",
+        "Đặt allowance của spender đối với token của caller",
+        "Chuyển ngay amount token tới spender",
+        "Mint thêm amount cho caller"
+      ],
+      "correct": 1,
+      "explanation": "Approval là cấp hạn mức, không tự chuyển token."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "TransferFrom",
+      "question": "transferFrom(from, to, amount) phục vụ luồng nào?",
+      "options": [
+        "Tự tăng allowance cho caller",
+        "Mint mọi amount bất kể số dư",
+        "Chuyển theo quyền chi tiêu phù hợp đối với from",
+        "Đọc toàn bộ lịch sử token"
+      ],
+      "correct": 2,
+      "explanation": "Cần cả số dư và quyền theo triển khai được dùng."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Allowance getter",
+      "question": "allowance(owner, spender) trả gì?",
+      "options": [
+        "Số dư Ether của spender",
+        "Tổng supply của token",
+        "Số phiếu quản trị mặc định",
+        "Hạn mức còn được cấp cho spender từ owner"
+      ],
+      "correct": 3,
+      "explanation": "Allowance khác balance và không tự là voting power."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Mint",
+      "question": "_mint trong constructor nguồn làm gì?",
+      "options": [
+        "Tạo supply và ghi số dư cho tài khoản nhận",
+        "Chỉ đổi symbol",
+        "Chỉ phê duyệt spender",
+        "Chỉ gửi Ether vào ví"
+      ],
+      "correct": 0,
+      "explanation": "Mint làm tăng supply theo logic thư viện."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Người nhận ban đầu",
+      "question": "Constructor nguồn mint cho địa chỉ nào?",
+      "options": [
+        "Mọi holder chia đều",
+        "msg.sender",
+        "address(this)",
+        "address(0)"
+      ],
+      "correct": 1,
+      "explanation": "Caller tạo instance nhận lượng mint trong mẫu."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Decimals mặc định",
+      "question": "OpenZeppelin ERC20 v5.0.2 không override decimals trả mặc định bao nhiêu?",
+      "options": [
+        "8",
+        "0",
+        "18",
+        "6"
+      ],
+      "correct": 2,
+      "explanation": "Đây là mặc định triển khai, không yêu cầu mọi token ERC-20 phải giống."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Decimals ý nghĩa",
+      "question": "decimals chủ yếu phục vụ gì?",
+      "options": [
+        "Tự tạo số thực trong phép cộng Solidity",
+        "Thay đổi allowance khi chuyển token",
+        "Tự đặt giá thị trường token",
+        "Quy đổi số nguyên base units sang biểu diễn người dùng"
+      ],
+      "correct": 3,
+      "explanation": "Phép tính balance/transfer vẫn dùng số nguyên base units."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "InitialSupply",
+      "question": "Mẫu nhân initialSupply với 10 ** decimals() nhằm gì?",
+      "options": [
+        "Đổi lượng theo đơn vị token nguyên sang base units",
+        "Tăng giá bán token theo số chữ số",
+        "Tính phí gas constructor",
+        "Chia supply cho số người nhận"
+      ],
+      "correct": 0,
+      "explanation": "Cần xác định đơn vị của tham số constructor."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Mint visibility",
+      "question": "_mint trong ERC20 v5.0.2 có phải hàm public để ví gọi trực tiếp không?",
+      "options": [
+        "Chỉ cần caller biết symbol",
+        "Không, là internal",
+        "Có, dấu gạch dưới chỉ trang trí",
+        "Có, mọi token holder đều gọi được qua ABI"
+      ],
+      "correct": 1,
+      "explanation": "Muốn expose mint phải có hàm ngoài và policy riêng."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Transfer event",
+      "question": "Theo EIP-20, chuyển token gắn với event nào?",
+      "options": [
+        "OwnershipTransferred",
+        "MemberJoined",
+        "Transfer",
+        "Approval duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Approval phản ánh cấp quyền, không thay event chuyển token."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Approval event",
+      "question": "Theo EIP-20, approve thành công phải phát event nào?",
+      "options": [
+        "Transfer thay cho mọi trường hợp",
+        "LogMessage bắt buộc",
+        "Upgraded",
+        "Approval"
+      ],
+      "correct": 3,
+      "explanation": "Các event có semantics khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Một token",
+      "question": "Với decimals 18, constructor initialSupply = 1 mint bao nhiêu base units?",
+      "options": [
+        "10^18",
+        "1",
+        "18",
+        "10^-18"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu coi input là token nguyên trước khi scale."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Supply zero",
+      "question": "initialSupply = 0 có tạo lượng token dương nhờ decimals không?",
+      "options": [
+        "Chỉ khi deployer là EOA",
+        "Không, kết quả nhân vẫn 0",
+        "Có, decimals tự mint 18",
+        "Có, ERC20 luôn mint tối thiểu 1"
+      ],
+      "correct": 1,
+      "explanation": "Scale không đổi zero thành lượng dương."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Double scale",
+      "question": "Client đã đổi 100 token thành 100 * 10^18 rồi truyền cho constructor nguồn. Hậu quả dự kiến nếu không overflow?",
+      "options": [
+        "Supply bị chia cho 10^18",
+        "Decimals chỉ tác động UI nên constructor bỏ phép nhân",
+        "Mẫu nhân thêm 10^18 nên supply bị scale hai lần",
+        "Mẫu tự nhận biết và không nhân nữa"
+      ],
+      "correct": 2,
+      "explanation": "Đơn vị đầu vào phải nhất quán với công thức constructor."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Overflow supply",
+      "question": "Ở Solidity 0.8.20 checked context, initialSupply nhân scale vượt uint256 làm gì?",
+      "options": [
+        "Tự wrap về 0 dù không unchecked",
+        "Tự chuyển sang số thực lớn hơn",
+        "Tự bỏ số chữ số thập phân",
+        "Revert quá trình thực thi phép tính"
+      ],
+      "correct": 3,
+      "explanation": "Không có số nguyên độ dài tùy ý ở runtime uint256."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Raw transfer amount",
+      "question": "Muốn chuyển 1 token với decimals 18, amount của transfer nên theo đơn vị nào?",
+      "options": [
+        "10^18 base units",
+        "1 luôn luôn vì library tự scale",
+        "18 base units",
+        "Giá token theo USD"
+      ],
+      "correct": 0,
+      "explanation": "transfer không tự nhân theo decimals."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Hiển thị phân số",
+      "question": "Token decimals 2 có balanceOf(A) = 505. Giá trị hiển thị phù hợp là gì?",
+      "options": [
+        "0,505 token",
+        "5,05 token",
+        "505 token",
+        "50.500 token"
+      ],
+      "correct": 1,
+      "explanation": "Decimals là scale biểu diễn số nguyên."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Metadata optional",
+      "question": "EIP-20 có bắt buộc mọi token triển khai name/symbol/decimals như core methods không?",
+      "options": [
+        "Có, symbol phải duy nhất toàn chain",
+        "Chỉ name optional còn decimals bắt buộc 18",
+        "Không, các metadata này được mô tả optional trong EIP-20",
+        "Có, mọi token phải có đúng 18 decimals"
+      ],
+      "correct": 2,
+      "explanation": "Ứng dụng không nên mặc định mọi token có cùng metadata."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Supply sau transfer",
+      "question": "Chuyển thường A sang B trong ERC20 v5.0.2 có tự đổi totalSupply không?",
+      "options": [
+        "Có, mỗi transfer mint lại amount",
+        "Có, supply giảm bằng gas fee",
+        "Chỉ giữ nguyên nếu A là deployer",
+        "Không, chuyển số dư giữa hai tài khoản"
+      ],
+      "correct": 3,
+      "explanation": "Chuyển khác mint và burn."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Mint event from",
+      "question": "Trong ERC20 v5.0.2, event của mint dùng from nào?",
+      "options": [
+        "address(0)",
+        "msg.sender luôn luôn",
+        "Địa chỉ token contract",
+        "Địa chỉ người nhận"
+      ],
+      "correct": 0,
+      "explanation": "Zero from là convention mint được triển khai ở thư viện này."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Burn event to",
+      "question": "_burn của ERC20 v5.0.2 làm supply giảm và phát Transfer tới đâu?",
+      "options": [
+        "Địa chỉ bất kỳ trong symbol",
+        "address(0)",
+        "Owner mặc định",
+        "Caller luôn luôn"
+      ],
+      "correct": 1,
+      "explanation": "Burn khác transfer tới một địa chỉ không phải zero."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Không public burn",
+      "question": "MyToken chỉ kế thừa ERC20 và constructor. Có sẵn hàm burn public từ nguồn đó không?",
+      "options": [
+        "Có, _burn tự thành ABI method",
+        "Chỉ cần holder gọi totalSupply với amount",
+        "Không, chưa kế thừa extension/expose đường burn",
+        "Có, mọi ERC20 bắt buộc burn public"
+      ],
+      "correct": 2,
+      "explanation": "Internal helper không tự là public API."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Owner ngầm",
+      "question": "Kế thừa ERC20 có tự cung cấp onlyOwner/owner quản trị không?",
+      "options": [
+        "Có, deployer tự là owner của mọi hàm",
+        "Có, token nhiều nhất là owner",
+        "Chỉ khi symbol khác ETH",
+        "Không, access control là phần thiết kế riêng"
+      ],
+      "correct": 3,
+      "explanation": "ERC20 không đồng nhất với Ownable."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Phát hành thêm",
+      "question": "MyToken nguồn có public mint sau deployment không?",
+      "options": [
+        "Không có đường public mint trong code được cho",
+        "Có, caller gọi _mint qua ABI",
+        "Có, constructor gọi lại được",
+        "Chỉ token holder tự mint đúng balance của mình"
+      ],
+      "correct": 0,
+      "explanation": "Cần đánh giá đường supply trong source thực, không tên helper riêng lẻ."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Factory recipient",
+      "question": "Factory F tạo MyToken bằng new. Token ban đầu được ghi cho ai theo nguồn?",
+      "options": [
+        "Mọi thành viên của factory",
+        "F",
+        "EOA gọi F luôn luôn",
+        "MyToken tự động"
+      ],
+      "correct": 1,
+      "explanation": "msg.sender trong constructor là caller trực tiếp tạo instance."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Approve overwrite",
+      "question": "A approve B 10 rồi approve B 4, không có thao tác xen giữa. Allowance mới là gì?",
+      "options": [
+        "6",
+        "10",
+        "4",
+        "14"
+      ],
+      "correct": 2,
+      "explanation": "approve đặt giá trị mới, không phải tăng tương đối."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Allowance độc lập",
+      "question": "A approve B 10 có làm balanceOf(A) giảm ngay 10 không?",
+      "options": [
+        "Có, token tự chuyển sang B",
+        "Chỉ khi B là contract",
+        "Chỉ nếu totalSupply lớn hơn 10",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Hạn mức và số dư là hai state riêng."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Finite allowance",
+      "question": "ERC20 v5.0.2: allowance A→B là 10, B transferFrom A sang C 3 thành công. Hạn mức còn bao nhiêu?",
+      "options": [
+        "7",
+        "10",
+        "3",
+        "13"
+      ],
+      "correct": 0,
+      "explanation": "Hạn mức hữu hạn giảm theo lượng đã chi."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Infinite allowance",
+      "question": "ERC20 v5.0.2 giữ allowance bằng type(uint256).max sau transferFrom thành công theo thiết kế nào?",
+      "options": [
+        "Tự thu hồi về 0",
+        "Không giảm giá trị sentinel infinite allowance",
+        "Luôn trừ như mọi hạn mức hữu hạn",
+        "Tự đặt bằng balance của owner"
+      ],
+      "correct": 1,
+      "explanation": "Đây là semantics của triển khai được nêu, không quy tắc mọi token."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Balance thiếu",
+      "question": "Spender có allowance đủ nhưng from thiếu balance trong ERC20 v5.0.2. TransferFrom có thành công không?",
+      "options": [
+        "Có, spender trả phần thiếu bằng Ether",
+        "Chỉ khi to là deployer",
+        "Không, cần cả điều kiện balance",
+        "Có, allowance tự mint phần thiếu"
+      ],
+      "correct": 2,
+      "explanation": "Allowance không bảo đảm owner đang có đủ tài sản."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Allowance thiếu",
+      "question": "From có đủ balance nhưng caller không có allowance cần thiết. TransferFrom của ERC20 v5.0.2 xử lý thế nào?",
+      "options": [
+        "Tự approve rồi chuyển",
+        "Chỉ chuyển phần thiếu allowance",
+        "Chỉ kiểm balance nên thành công",
+        "Revert nếu không đáp ứng cơ chế allowance đó"
+      ],
+      "correct": 3,
+      "explanation": "Không tự cấp quyền khi cố chi token của tài khoản khác."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Đơn vị allowance",
+      "question": "Allowance 100 là 100 gì trong ERC20?",
+      "options": [
+        "100 base units của token",
+        "100 token hiển thị bất kể decimals",
+        "100 wei gas",
+        "100 giao dịch bất kể amount"
+      ],
+      "correct": 0,
+      "explanation": "Scale UI không tự áp vào tham số số nguyên."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Zero transfer",
+      "question": "Theo EIP-20, transfer value 0 nên được xem thế nào?",
+      "options": [
+        "Luôn bỏ event để tiết kiệm gas",
+        "Chuyển bình thường và phát Transfer event",
+        "Luôn là lỗi không hợp chuẩn",
+        "Tự mint 1 đơn vị tối thiểu"
+      ],
+      "correct": 1,
+      "explanation": "Zero-value transfer được chuẩn đề cập rõ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Zero recipient library",
+      "question": "transfer tới address(0) trong ERC20 v5.0.2 được xử lý thế nào?",
+      "options": [
+        "Chuyển cho deployer thay thế",
+        "Tự bỏ qua và trả false",
+        "Revert, không dùng transfer để burn theo API đó",
+        "Tự gọi _burn như public burn"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt transfer guard với helper _burn."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "False return",
+      "question": "Khi tích hợp một IERC20 không rõ implementation, có thể mặc định transferFrom không bao giờ trả false không?",
+      "options": [
+        "Có, mọi token dùng đúng OpenZeppelin",
+        "Có, vì ABI có bool nên chắc chắn true",
+        "Chỉ cần amount lớn hơn 0",
+        "Không, EIP-20 yêu cầu caller xử lý khả năng false"
+      ],
+      "correct": 3,
+      "explanation": "Không tổng quát convention revert của một thư viện ra mọi token."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Interface và code",
+      "question": "IERC20(tokenAddress) có tự xác minh địa chỉ đó là token chuẩn đáng tin không?",
+      "options": [
+        "Không, ép kiểu interface không xác minh hành vi contract",
+        "Có, compiler tải và kiểm mọi bytecode ở địa chỉ",
+        "Có, tên interface chứng nhận audit",
+        "Chỉ cần địa chỉ không zero"
+      ],
+      "correct": 0,
+      "explanation": "Địa chỉ và dependency cần được đánh giá theo ngữ cảnh."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Token và ETH",
+      "question": "Có số dư DMT đồng nghĩa có đủ ETH để trả mọi giao dịch Ethereum không?",
+      "options": [
+        "Chỉ cần symbol dài ba ký tự",
+        "Không, tài sản token và tài sản trả gas là hai loại theo chain",
+        "Có, ERC20 tự quy đổi DMT sang gas",
+        "Có, decimals 18 nghĩa DMT là ETH"
+      ],
+      "correct": 1,
+      "explanation": "Đơn vị cùng 18 chữ số không làm hai tài sản giống nhau."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Symbol trùng",
+      "question": "Hai contract cùng symbol DMT có chắc cùng tài sản không?",
+      "options": [
+        "Có, tên token tự đăng ký toàn cầu",
+        "Chỉ cần cùng decimals",
+        "Không, cần chain/address để định danh",
+        "Có, symbol phải duy nhất theo EIP-20"
+      ],
+      "correct": 2,
+      "explanation": "Metadata không phải định danh cryptographic deployment."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Version import",
+      "question": "Import không ghi version trong file source có tự pin dependency vào v5.0.2 không?",
+      "options": [
+        "Có, ^0.8.20 chọn đúng OpenZeppelin v5.0.2",
+        "Có, đường ERC20.sol luôn bất biến",
+        "Chỉ cần SPDX MIT",
+        "Không, version phụ thuộc quản lý dependency/build"
+      ],
+      "correct": 3,
+      "explanation": "Pragma compiler và version thư viện là hai ràng buộc riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Hook v4",
+      "question": "Trong OpenZeppelin ERC20 v4.9.6, hook trước transfer/mint/burn là gì?",
+      "options": [
+        "_beforeTokenTransfer",
+        "_update duy nhất của v5",
+        "_authorizeUpgrade",
+        "__Ownable_init"
+      ],
+      "correct": 0,
+      "explanation": "Câu này nêu rõ phiên bản để tránh trộn API."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Hook v5",
+      "question": "Trong ERC20 v5.0.2, customization chuyển/mint/burn tập trung ở đâu?",
+      "options": [
+        "Đổi decimals để kiểm mọi transfer",
+        "Override _update phù hợp",
+        "Override _beforeTokenTransfer từ v4 nguyên xi",
+        "Gọi lại constructor mỗi transfer"
+      ],
+      "correct": 1,
+      "explanation": "API hook đã thay đổi giữa major versions."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Super update",
+      "question": "Override _update ở ERC20 v5.0.2 nhưng bỏ xử lý kế thừa có thể gây gì?",
+      "options": [
+        "Compiler tự gọi base mọi lần bất kể code",
+        "Tự nhận access control onlyOwner",
+        "Mất cập nhật balance/supply/event mà base implementation thực hiện",
+        "Chỉ đổi tên getter không ảnh hưởng state"
+      ],
+      "correct": 2,
+      "explanation": "Override cần giữ invariant và logic kế thừa phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Decimals override",
+      "question": "Đổi decimals thành 6 nhưng không đổi raw balance đã có có tự chia state cho 10^12 không?",
+      "options": [
+        "Có, compiler tự rescale toàn state",
+        "Có, transferFrom tự sửa mọi amount cũ",
+        "Chỉ totalSupply bị chia tự động",
+        "Không, decimals không tự thay arithmetic/balance storage"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế đơn vị nhất quán thay vì chỉ đổi metadata."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Supply cap",
+      "question": "Kế thừa ERC20 cơ bản có tự áp một cap kinh tế tùy sản phẩm không?",
+      "options": [
+        "Không, cần cơ chế/cap riêng nếu yêu cầu",
+        "Có, cap luôn bằng initialSupply constructor của base",
+        "Có, decimals là cap",
+        "Chỉ token symbol DMT có cap mặc định"
+      ],
+      "correct": 0,
+      "explanation": "Base ERC20 không định nghĩa chính sách cung của mọi sản phẩm."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Transfer balance invariant",
+      "question": "A chuyển 4 base units sang B thành công, không fee/customization. Cặp biến đổi nào đúng?",
+      "options": [
+        "Allowance B→A tăng 4",
+        "A giảm 4, B tăng 4",
+        "A giữ nguyên, B tăng 4",
+        "A giảm 4, supply giảm 4"
+      ],
+      "correct": 1,
+      "explanation": "Giả định plain transfer không mint/burn/fee."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Approve không nhận tiền",
+      "question": "Contract nhận approval có tự chạy callback nhận token trong EIP-20 cơ bản không?",
+      "options": [
+        "Có, từ Approval event EVM tự chuyển",
+        "Chỉ nếu spender là smart contract",
+        "Không, approve chỉ cấp hạn mức theo chuẩn cơ bản",
+        "Có, spender tự động được gọi hàm receive"
+      ],
+      "correct": 2,
+      "explanation": "Không mặc định các extension callback có trong core ERC-20."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Allowance event v5",
+      "question": "ERC20 v5.0.2 mặc định có bắt buộc emit Approval mỗi lần _spendAllowance hữu hạn trong transferFrom không?",
+      "options": [
+        "Có, EIP-20 bắt buộc Approval ở mọi transferFrom",
+        "Có, comment cũ thay mọi code thực thi",
+        "Chỉ nếu value bằng max uint256",
+        "Không, code dùng emitEvent false cho cập nhật đó"
+      ],
+      "correct": 3,
+      "explanation": "Phải đọc implementation, không suy từ comment hoặc version khác."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Approve race",
+      "question": "Vì sao đổi một allowance khác 0 sang giá trị khác có thể cần policy cẩn thận?",
+      "options": [
+        "Thứ tự chi tiêu và cập nhật có thể tạo race theo luồng được EIP-20 lưu ý",
+        "Vì approve luôn chuyển ngay balance sang spender",
+        "Vì decimals tự thay trong lúc approve",
+        "Vì mọi approve đều mint supply mới"
+      ],
+      "correct": 0,
+      "explanation": "Không coi một thay đổi UI là tự loại mọi giao dịch đang chờ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Zero approve",
+      "question": "approve spender 0 theo semantics thông thường có ý định gì?",
+      "options": [
+        "Đặt balance spender bằng 0",
+        "Thu hồi hạn mức tương lai tương ứng sau khi cập nhật có hiệu lực",
+        "Lấy lại mọi token spender đã chuyển trước đó",
+        "Xóa lịch sử Approval của chain"
+      ],
+      "correct": 1,
+      "explanation": "Revocation không đảo ngược các chuyển token đã commit."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source supply path",
+      "question": "Vì sao MyToken nguồn có supply phát ban đầu nhưng không tự có lịch lạm phát?",
+      "options": [
+        "Decimals tự làm supply giảm dần",
+        "Tên initialSupply tự tạo schedule",
+        "Chỉ constructor gọi _mint, không có logic phát hành theo block",
+        "ERC20 tự cấm mọi phát hành sau mỗi block"
+      ],
+      "correct": 2,
+      "explanation": "Chính sách cung do đường code thực quyết định."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Inherited checks",
+      "question": "Vì sao dùng thư viện vẫn cần review phần constructor MyToken?",
+      "options": [
+        "Library tự chọn economics đúng cho mọi dự án",
+        "Compiler chỉ kiểm thư viện mà bỏ source ứng dụng",
+        "SPDX bảo đảm constructor không thể sai",
+        "Đơn vị input, lượng mint và người nhận do code ứng dụng quyết định"
+      ],
+      "correct": 3,
+      "explanation": "Thư viện chuẩn không thay yêu cầu và tích hợp cụ thể."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Double scale deployment",
+      "question": "UI nhận 1.000 token, chuyển sang base units trước khi gọi constructor nguồn; hợp đồng tiếp tục nhân decimals. Cách sửa hợp đồng dữ liệu?",
+      "options": [
+        "Quy định rõ input token nguyên hoặc base units và chỉ scale một lần ở boundary đã chọn",
+        "Chỉ đổi symbol để ví hiển thị đúng",
+        "Tăng decimals để bù nhân hai lần",
+        "Bỏ checked arithmetic để supply wrap về mong muốn"
+      ],
+      "correct": 0,
+      "explanation": "Sai đơn vị có thể tạo supply khác dự định dù công thức hợp lệ."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Factory giữ supply",
+      "question": "Một factory tạo MyToken cho user A, nhưng constructor mint msg.sender. Vì sao A không có số dư và cần gì?",
+      "options": [
+        "Symbol phải trùng tên A để nhận mint",
+        "Supply thuộc factory; thiết kế recipient rõ ràng hoặc đường phân phối có kiểm soát",
+        "Public ERC20 tự chuyển từ factory sang tx.origin ở block sau",
+        "Chỉ cần A approve factory"
+      ],
+      "correct": 1,
+      "explanation": "Người tạo trực tiếp và người nhận mong muốn có thể khác nhau."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Approval bị hiểu như chuyển",
+      "question": "UI báo staking hoàn tất ngay khi approve thành công, trong khi chưa transferFrom. Thiếu bước nào về semantics token?",
+      "options": [
+        "Gọi balanceOf là đủ hoàn tất chuyển",
+        "Đổi amount approve sang decimals để token tự tới staking",
+        "Allowance chỉ cấp quyền; cần luồng chuyển/stake thành công và accounting tương ứng",
+        "Không thiếu, Approval tự chuyển tài sản"
+      ],
+      "correct": 2,
+      "explanation": "Quyền chi và việc thực chi không đồng nhất."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Allowance đủ balance thiếu",
+      "question": "Spender có allowance 100 nhưng owner đã chuyển bớt, còn balance 20; muốn transferFrom 50. Cách xử lý đúng?",
+      "options": [
+        "Tự mint phần thiếu 30 cho spender",
+        "Allowance bảo đảm 100 token đã được ký quỹ",
+        "Chỉ tăng gas sẽ chuyển được 50",
+        "Dự kiến thất bại theo balance check và xử lý lỗi, không coi allowance là tài sản đã khóa"
+      ],
+      "correct": 3,
+      "explanation": "Approval không phong tỏa balance cho spender."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Allowance infinite risk",
+      "question": "DApp xin max uint256 rồi giữ quyền lâu dài dù user chỉ cần một giao dịch nhỏ. Điểm thiết kế cần xét?",
+      "options": [
+        "Phạm vi/lifecycle spender và revocation; sentinel có thể không giảm sau mỗi lần chi ở OZ v5.0.2",
+        "Max allowance tự hết ngay sau một transfer",
+        "Balance tăng thì allowance tự bị chia đôi",
+        "EIP-20 bắt buộc mọi DApp dùng unlimited"
+      ],
+      "correct": 0,
+      "explanation": "Hạn mức dài hạn mở rộng quyền chi theo implementation và trust của spender."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Hook migration",
+      "question": "Token v4.9.6 kiểm policy trong _beforeTokenTransfer, chuyển code sang v5.0.2 mà giữ giả định hook cũ. Cần gì?",
+      "options": [
+        "Bỏ mọi hook vì base ERC20 đã biết policy sản phẩm",
+        "Chuyển customization sang API _update đúng version, giữ super/invariants và kiểm cả mint/burn/transfer",
+        "Chỉ sửa pragma vì mọi hook cùng tên",
+        "Chỉ đổi decimals để hook tự chạy"
+      ],
+      "correct": 1,
+      "explanation": "Major version có thể đổi điểm tích hợp logic."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Decimals đổi nghĩa",
+      "question": "Một integration mặc định 18 decimals nhưng token hỗ trợ có decimals 6, amount user nhập bị scale sai. Cách sửa?",
+      "options": [
+        "Dùng float JavaScript cho mọi uint256 lớn",
+        "Gọi approve trước để token tự chuẩn hóa amount",
+        "Ràng buộc metadata/đơn vị theo token được hỗ trợ và parse số nguyên đúng precision",
+        "Đổi symbol token thành ETH"
+      ],
+      "correct": 2,
+      "explanation": "Scale là contract dữ liệu giữa UI và token."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Mint public nguy hiểm",
+      "question": "Developer thêm mint(to, amount) public gọi _mint mà không kiểm quyền để tiện thử. Hệ quả với supply ban đầu?",
+      "options": [
+        "ERC20 tự giới hạn hàm mới cho deployer",
+        "InitialSupply trong constructor tự khóa mọi mint tương lai",
+        "Dấu gạch dưới _mint ngăn mọi public wrapper chạy",
+        "Bất kỳ caller có thể mint theo đường mới; cần policy phát hành/cap đúng yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Internal helper không cung cấp authorization cho wrapper."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Cap bỏ sót mint",
+      "question": "Team áp cap chỉ ở constructor nhưng sau đó thêm mint public có kiểm role. Điều gì còn cần?",
+      "options": [
+        "Enforce cap trên mọi đường tăng supply, không chỉ lần khởi tạo",
+        "Role tự bảo đảm tổng cung không vượt cap",
+        "Decimals ngăn supply tăng hơn ban đầu",
+        "Chỉ totalSupply getter cần sửa"
+      ],
+      "correct": 0,
+      "explanation": "Quyền phát hành và invariant giới hạn cung khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Event giả cùng symbol",
+      "question": "Một contract phát Transfer và symbol DMT giống MyToken nhưng không có balances chuẩn. Wallet indexer cần làm gì?",
+      "options": [
+        "Tin event vì cùng topic bảo đảm cùng bytecode",
+        "Định danh chain/address và đánh giá semantics contract hỗ trợ, không tin symbol/event riêng lẻ",
+        "Gộp mọi DMT vì symbol là duy nhất theo EIP",
+        "Chỉ indexed amount là đủ nhận diện tài sản"
+      ],
+      "correct": 1,
+      "explanation": "Giao diện quan sát không tự chứng minh toàn bộ hành vi token."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Revocation đang chờ",
+      "question": "User gửi approve 0 để thu hồi nhưng spender có giao dịch chi đã được thực thi trước đó. Điều nào đúng?",
+      "options": [
+        "UI ẩn nút là mọi giao dịch spender bị vô hiệu",
+        "Tăng gas limit hồi tố thay thứ tự đã commit",
+        "Thu hồi có hiệu lực theo thứ tự chain và không lấy lại token đã chuyển",
+        "Approve 0 tự rollback mọi transfer lịch sử"
+      ],
+      "correct": 2,
+      "explanation": "Lifecycle allowance phải xét transaction ordering."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Reconstruct allowance",
+      "question": "Indexer chỉ theo Approval để dựng allowance và giả định mọi transferFrom giảm hạn mức đều phát event ở OZ v5.0.2. Sai ở đâu?",
+      "options": [
+        "EIP-20 bắt buộc Approval mọi lần chi nên code không quan trọng",
+        "Chỉ tăng confirmations sẽ sinh thêm Approval",
+        "Transfer event luôn chứa allowance mới",
+        "Implementation mặc định bỏ Approval khi spend; cần nguồn truy vấn/logic phù hợp thay giả định event đầy đủ"
+      ],
+      "correct": 3,
+      "explanation": "Comment cũ và EIP không thay implementation cụ thể."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Transfer không burn",
+      "question": "Team muốn holder burn bằng transfer(address(0), amount) trên MyToken OZ v5.0.2. Kết quả thiết kế nào đúng?",
+      "options": [
+        "Transfer API chặn zero; cần đường burn được thiết kế/kế thừa phù hợp nếu muốn chức năng đó",
+        "Transfer tự burn vì _update hiểu zero ở mọi public API",
+        "Approve zero tự giảm supply thay burn",
+        "Chỉ gửi gas cao hơn để bỏ guard"
+      ],
+      "correct": 0,
+      "explanation": "Internal update semantics và guard public API phải cùng được đọc."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Overflow initial supply",
+      "question": "Một lượng input lớn làm constructor overflow ở 0.8.20. Team định dùng unchecked để deploy. Hướng sửa đúng hơn?",
+      "options": [
+        "Đổi owner sẽ giải quyết số học",
+        "Kiểm đơn vị và giới hạn supply trong miền uint256; không wrap để che sai yêu cầu",
+        "Unchecked tạo thêm bit nên vẫn giữ lượng mong muốn",
+        "Chỉ decimals metadata đủ bảo vệ phép nhân"
+      ],
+      "correct": 1,
+      "explanation": "Supply bị wrap khác số token sản phẩm định phát hành."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Token cùng địa chỉ khác chain",
+      "question": "UI dùng chain A cho approve nhưng chain B cho staking, cùng chuỗi địa chỉ token. Vì sao không thể coi allowance đã sẵn?",
+      "options": [
+        "Symbol DMT tự đồng bộ trạng thái",
+        "Decimals 18 làm hai allowance bằng nhau",
+        "State allowance theo chain và contract instance; cần thống nhất định danh trong luồng",
+        "Approval tự truyền giữa mọi EVM chain"
+      ],
+      "correct": 2,
+      "explanation": "Metadata và địa chỉ chữ không thay ngữ cảnh chain."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Supply và giá",
+      "question": "Nhóm cho rằng ERC-20 chuẩn và cap cố định bảo đảm token giữ giá hoặc bền vững. Điều gì cần phân biệt?",
+      "options": [
+        "ERC-20 có công thức giá cố định trong balanceOf",
+        "Decimals quyết định lãi suất cho mọi holder",
+        "Chỉ symbol đủ làm token ổn định",
+        "Chuẩn kỹ thuật và policy cung không tự bảo đảm nhu cầu, thanh khoản hoặc giá thị trường"
+      ],
+      "correct": 3,
+      "explanation": "Chuẩn giao diện không là cam kết kinh tế."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Quyền quản trị tưởng có",
+      "question": "Ứng dụng chỉ ERC20 nhưng frontend gọi owner() để kiểm quyền mint. Thiếu gì trong contract thiết kế?",
+      "options": [
+        "Mô hình access control và đường mint phù hợp; ERC20 cơ bản không tự có owner",
+        "Chỉ đổi tên MyToken thành Ownable",
+        "Deployer luôn có owner() ngầm trong ABI",
+        "Thêm approve sẽ sinh onlyOwner"
+      ],
+      "correct": 0,
+      "explanation": "Kế thừa phải cung cấp interface/logic mà ứng dụng cần."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Sửa _update mất invariant",
+      "question": "V5.0.2 override _update để emit log phí nhưng không cập nhật base balance/supply. Cách sửa?",
+      "options": [
+        "Đổi decimals thành 0 để tránh cập nhật",
+        "Thiết kế chuyển/mint/burn nhất quán và gọi logic kế thừa đúng, không chỉ phát event",
+        "Chỉ giữ Transfer event là token balances tự đổi",
+        "Chỉ thêm returns bool cho _update"
+      ],
+      "correct": 1,
+      "explanation": "Events không thay accounting của ERC20."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Integer ở frontend",
+      "question": "Wallet dùng Number cho raw balance lớn vượt vùng số nguyên an toàn JavaScript rồi tính transfer. Cần gì?",
+      "options": [
+        "Đổi uint256 thành string chỉ ở ABI để EVM sửa sai",
+        "Cộng allowance vào balance để tránh mất precision",
+        "Dùng biểu diễn số nguyên chính xác và scale decimal có kiểm soát theo token",
+        "Làm tròn về số gần nhất vì decimals tự bù"
+      ],
+      "correct": 2,
+      "explanation": "Precision UI là một phần hợp đồng amount gửi vào chain."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Generic token failure",
+      "question": "Một integration đúng với OZ revert-on-failure bỏ qua bool khi hỗ trợ token khác trả false. Hậu quả và cách sửa?",
+      "options": [
+        "False tự revert toàn giao dịch theo EIP ở mọi caller",
+        "Chỉ kiểm symbol là đủ tương thích",
+        "Tăng allowance luôn sửa mọi false",
+        "Có thể ghi nhận chuyển thành công giả; xử lý return/error theo token policy hoặc wrapper phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không tổng quát hóa convention của một triển khai cho mọi IERC20."
+    }
+  ]
+}

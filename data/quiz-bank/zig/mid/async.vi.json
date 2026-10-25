@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "zig",
+  "level": "mid",
+  "lesson": "async",
+  "language": "vi",
+  "sourceHash": "32d7de64a1e611c7a36879ba132048f0bd0e0bc566fe55bcd91aab0515e4b303",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Address.parseIp4/listen/reuse_address/deinit và bài TCP echo. Scope std.net Zig 0.13.0: default listener không force_nonblocking, source chưa accept/read/write và thoát sau print. Language reference nói async regression từ 0.11; 0.15.1 loại keyword async/await. Full review 80 câu/options/explanations; chỉ source/docs, không mở socket hoặc chạy server/FFI/OS commands.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Namespace",
+      "question": "const net=std.net trong nguồn tạo gì?",
+      "options": [
+        "Alias để dùng networking namespace",
+        "Một kết nối TCP đang mở",
+        "Một thread server",
+        "Một packet UDP"
+      ],
+      "correct": 0,
+      "explanation": "Alias chưa là thao tác mạng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Địa chỉ nguồn",
+      "question": "parseIp4 trong nguồn nhận chuỗi địa chỉ nào?",
+      "options": [
+        "::1",
+        "127.0.0.1",
+        "0.0.0.0",
+        "192.168.1.1"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn dùng IPv4 loopback."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Port",
+      "question": "Port được truyền trong nguồn là bao nhiêu?",
+      "options": [
+        "443",
+        "0",
+        "8080",
+        "80"
+      ],
+      "correct": 2,
+      "explanation": "Đọc đúng cấu hình minh họa."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "IPv4 parser",
+      "question": "Address.parseIp4 chủ yếu làm gì?",
+      "options": [
+        "Tự gửi request tới server",
+        "Tự accept client",
+        "Tự phân giải mọi hostname DNS",
+        "Phân tích địa chỉ IPv4 và port thành Address theo API"
+      ],
+      "correct": 3,
+      "explanation": "Parser không đồng nghĩa kết nối mạng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Try parse",
+      "question": "try trước parseIp4 phản ánh gì?",
+      "options": [
+        "Input địa chỉ có thể không parse được và lỗi được chuyển tiếp",
+        "Parser luôn chạy lại đến khi đúng",
+        "Địa chỉ tự được sửa sang localhost",
+        "Try tự tạo TCP payload"
+      ],
+      "correct": 0,
+      "explanation": "Error handling khác phục hồi ngầm."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Listen",
+      "question": "address.listen(...) trong mẫu 0.13 nhằm gì?",
+      "options": [
+        "Đọc stdin thành địa chỉ",
+        "Tạo listener TCP theo Address/options",
+        "Gửi một chuỗi echo cho client",
+        "Tạo UDP packet bất kỳ"
+      ],
+      "correct": 1,
+      "explanation": "Listen chưa là xử lý dữ liệu ứng dụng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Server owner",
+      "question": "Giá trị server sau listen thành công giữ tài nguyên nào cần cleanup?",
+      "options": [
+        "Một ma trận fixed array",
+        "Một error set không tài nguyên",
+        "Listener stream/socket theo API",
+        "Chỉ một string message"
+      ],
+      "correct": 2,
+      "explanation": "Socket handle có vòng đời cần quản lý."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Deinit",
+      "question": "defer server.deinit() trong nguồn có ý định gì?",
+      "options": [
+        "Tự gửi lời chào tới mọi client",
+        "Tự retry listen",
+        "Tự giữ server chạy vô hạn",
+        "Đóng listener khi rời scope bình thường/error-return tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Cleanup không tạo vòng phục vụ."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Reuse",
+      "question": "reuse_address trong nguồn được đặt giá trị nào?",
+      "options": [
+        "true",
+        "false",
+        "8080",
+        "127"
+      ],
+      "correct": 0,
+      "explanation": "Option bool khác port."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Loopback",
+      "question": "127.0.0.1 thông thường liên quan phạm vi nào?",
+      "options": [
+        "Một hostname cần DNS",
+        "Loopback của máy/network namespace đang dùng",
+        "Mọi địa chỉ Internet công cộng",
+        "Mọi interface bên ngoài bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Không suy máy khác truy cập được qua loopback của nó."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Echo",
+      "question": "TCP echo server theo bài tập cần làm gì với dữ liệu nhận?",
+      "options": [
+        "Chỉ parse địa chỉ rồi thoát",
+        "Tự đổi mọi byte thành JSON",
+        "Gửi lại các byte nhận được theo hợp đồng",
+        "Luôn gửi cùng message cố định bất kể input"
+      ],
+      "correct": 2,
+      "explanation": "Echo cần đường nhận và gửi thực tế."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Accept",
+      "question": "Accept listener phục vụ mục tiêu nào?",
+      "options": [
+        "Đọc toàn bộ message của client",
+        "Tự chuyển TCP sang UDP",
+        "Tự kiểm mọi nội dung hợp lệ",
+        "Nhận một kết nối client theo API"
+      ],
+      "correct": 3,
+      "explanation": "Kết nối và payload là hai bước khác nhau."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Read",
+      "question": "Read trên connected stream nhằm gì?",
+      "options": [
+        "Nhận byte vào buffer theo kết quả API",
+        "Tự tạo listener mới",
+        "Tự sort mọi packet",
+        "Tự xác nhận một message đầy đủ"
+      ],
+      "correct": 0,
+      "explanation": "TCP là byte stream."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Write",
+      "question": "Write trên stream nhằm gì?",
+      "options": [
+        "Tự close mọi connection",
+        "Gửi một phần dữ liệu theo số byte API trả về",
+        "Luôn bảo đảm toàn buffer được ghi trong một lần",
+        "Tự đọc client khác"
+      ],
+      "correct": 1,
+      "explanation": "Phải xem số byte thực sự được gửi."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "TCP model",
+      "question": "TCP cung cấp abstraction nào cho ứng dụng?",
+      "options": [
+        "Một file JSON tự parse",
+        "Một collector quản lý mọi connection",
+        "Luồng byte có thứ tự theo kết nối",
+        "Các message ứng dụng có ranh giới sẵn như mọi lần write"
+      ],
+      "correct": 2,
+      "explanation": "Ứng dụng cần framing riêng khi có message."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Buffer length",
+      "question": "Nếu read trả n byte hợp lệ, phần dữ liệu nhận nằm ở đâu?",
+      "options": [
+        "Toàn capacity luôn là dữ liệu mới",
+        "buffer[n..] là dữ liệu mới duy nhất",
+        "Một packet tự có string terminator",
+        "buffer[0..n]"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ dùng phạm vi dữ liệu thực đã đọc."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Source missing",
+      "question": "Nguồn hiện có lời gọi accept/read/write chưa?",
+      "options": [
+        "Chưa",
+        "Có, listen tự chứa mọi bước echo",
+        "Có, print chính là write tới client",
+        "Có, reuse_address tự đọc payload"
+      ],
+      "correct": 0,
+      "explanation": "Không thêm hành vi không có trong source."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Blocking option",
+      "question": "reuse_address=true có tự bật nonblocking I/O không?",
+      "options": [
+        "Chỉ nếu main !void",
+        "Không, đây là option khác với nonblocking",
+        "Có, reuse nghĩa mọi thao tác async",
+        "Có, port 8080 mặc định nonblocking"
+      ],
+      "correct": 1,
+      "explanation": "Không suy mô hình I/O từ reuse option."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Async keyword scope",
+      "question": "Theo reference 0.13, có nên dạy async/await cũ như tính năng đã hoạt động đầy đủ không?",
+      "options": [
+        "Có, title bài đủ bảo đảm compiler hỗ trợ",
+        "Chỉ nếu dùng TCP",
+        "Không, reference nêu async functions regression từ 0.11",
+        "Có, mọi std.net call tự dùng await"
+      ],
+      "correct": 2,
+      "explanation": "Version và implementation cần được scope rõ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Message log",
+      "question": "std.debug.print trong nguồn đang làm gì?",
+      "options": [
+        "Gửi echo payload cho client",
+        "Đợi client kết nối",
+        "Tạo event loop",
+        "In thông báo chẩn đoán"
+      ],
+      "correct": 3,
+      "explanation": "Console diagnostic khác network stream I/O."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Source kết thúc",
+      "question": "Sau print cuối main nguồn, nếu không thêm logic khác thì điều gì theo control flow?",
+      "options": [
+        "Main rời scope và defer đóng listener",
+        "Server tự phục vụ vô hạn nhờ tên biến server",
+        "Print tự bắt đầu accept loop",
+        "Reuse giữ listener sống sau mọi cleanup"
+      ],
+      "correct": 0,
+      "explanation": "Một listener cần vòng đời ứng dụng đủ lâu để phục vụ."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "TCP chứ không UDP",
+      "question": "Theo implementation Address.listen 0.13.0 cho IPv4, loại socket/protocol liên quan là gì?",
+      "options": [
+        "Một HTTP parser mặc định",
+        "Stream TCP",
+        "Datagram UDP mặc định",
+        "ICMP echo request"
+      ],
+      "correct": 1,
+      "explanation": "Module net rộng hơn API listen cụ thể."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Default nonblocking",
+      "question": "ListenOptions 0.13 có force_nonblocking mặc định false. Mẫu chỉ đổi reuse_address. Có thể gọi listener là nonblocking chỉ từ source đó không?",
+      "options": [
+        "Có, localhost tự nonblocking",
+        "Chỉ nếu không có client",
+        "Không",
+        "Có, reuse luôn kéo theo force_nonblocking"
+      ],
+      "correct": 2,
+      "explanation": "Không thêm option không được cấu hình."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Accept mặc định",
+      "question": "Server.accept trong std.net 0.13 được tài liệu/source mô tả thế nào trong trường hợp blocking thông thường?",
+      "options": [
+        "Tự trả toàn payload đã đọc thành string",
+        "Luôn trả ngay một Connection giả",
+        "Tự tạo coroutine cho từng client",
+        "Chờ kết nối client rồi trả Connection có open stream"
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm accept với read hoặc scheduler."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Parse không bind",
+      "question": "parseIp4 thành công có đủ chứng minh port đã bind thành công chưa?",
+      "options": [
+        "Chưa, listen/bind là bước có thể thất bại khác",
+        "Rồi, parser tự chiếm port",
+        "Rồi, chuỗi hợp lệ bảo đảm OS chấp nhận mọi bind",
+        "Chỉ nếu reuse_address true"
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp địa chỉ hợp lệ khác tài nguyên hệ thống khả dụng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Port bận",
+      "question": "Port 8080 đang được dùng; reuse_address=true có bảo đảm mọi bind tiếp theo đều thành công mọi OS không?",
+      "options": [
+        "Chỉ cần đổi main thành void",
+        "Không, semantics reuse/điều kiện OS và tài nguyên cần được xét",
+        "Có, reuse bắt OS chuyển mọi traffic sang server mới",
+        "Có, option xóa listener cũ"
+      ],
+      "correct": 1,
+      "explanation": "Reuse không là bảo đảm thành công tuyệt đối."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Loopback khác máy",
+      "question": "Client máy B kết nối 127.0.0.1:8080 có mặc định tới listener máy A không?",
+      "options": [
+        "Có, cùng port là đủ chọn máy A",
+        "Chỉ nếu TCP",
+        "Không, loopback của B trỏ về B trong context của nó",
+        "Có, 127.0.0.1 luôn là server đầu tiên trong LAN"
+      ],
+      "correct": 2,
+      "explanation": "Address phải phù hợp phạm vi mạng thực."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Bind all interfaces",
+      "question": "Muốn nhận từ interface bên ngoài cần xem gì ngoài thay literal loopback?",
+      "options": [
+        "Chỉ đổi message log",
+        "Chỉ reuse_address=true",
+        "Chỉ tăng buffer read",
+        "Bind address/routing/firewall và chính sách truy cập phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng truy cập không suy từ lời chào console."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Partial read",
+      "question": "Client write 100 byte một lần; một read server có bắt buộc trả đúng 100 byte không?",
+      "options": [
+        "Không, read có thể trả một phần stream",
+        "Có, mỗi write tương ứng đúng một read",
+        "Có, TCP tự giữ ranh giới mọi message",
+        "Chỉ nếu buffer server lớn hơn 100"
+      ],
+      "correct": 0,
+      "explanation": "TCP không bảo toàn ranh giới write ứng dụng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Coalesced read",
+      "question": "Hai lần write nhỏ của client có thể xuất hiện trong một lần read server không?",
+      "options": [
+        "Chỉ nếu reuse_address true",
+        "Có, ứng dụng cần framing nếu muốn phân message",
+        "Không, TCP giữ nguyên mỗi write thành một message",
+        "Chỉ nếu dùng UDP"
+      ],
+      "correct": 1,
+      "explanation": "Byte stream có thể chia/gộp chunk khác cách gửi."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Partial write",
+      "question": "Write trả k nhỏ hơn số byte cần gửi. Cần làm gì?",
+      "options": [
+        "Gửi lại cả buffer từ đầu không xét phần đã gửi",
+        "Tăng len source để đánh dấu đã gửi",
+        "Theo dõi phần còn lại theo contract hoặc dùng API writeAll phù hợp",
+        "Coi cả buffer đã gửi vì không có error"
+      ],
+      "correct": 2,
+      "explanation": "Số byte thực gửi quyết định progress."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "WriteAll",
+      "question": "Stream.writeAll theo API 0.13 phục vụ gì?",
+      "options": [
+        "Biến mọi stream thành nonblocking event loop",
+        "Tự đóng listener khi client chậm",
+        "Tự thêm message delimiter",
+        "Lặp ghi phần còn lại tới khi đủ hoặc trả lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Complete write helper khác scheduling và framing."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Echo buffer scope",
+      "question": "Read n=3 vào buffer 1024 byte; echo toàn buffer có vấn đề gì?",
+      "options": [
+        "Gửi thêm dữ liệu ngoài phạm vi read hợp lệ",
+        "Không, capacity luôn chứa message đầy đủ",
+        "Không, write tự biết n của read trước",
+        "Chỉ cần const buffer"
+      ],
+      "correct": 0,
+      "explanation": "Phải căn dữ liệu gửi với số byte thực nhận."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Read zero",
+      "question": "Read với buffer không rỗng trả 0 trong trường hợp stream EOF thông thường nên xử lý thế nào?",
+      "options": [
+        "Coi là một message dài 1024 byte",
+        "Kết thúc nhận theo contract và cleanup kết nối",
+        "Tiếp tục gửi toàn buffer cũ như dữ liệu mới",
+        "Tự thêm một byte 0 vào message"
+      ],
+      "correct": 1,
+      "explanation": "Không lặp bận trên EOF hoặc gửi dữ liệu cũ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "EOF không message delimiter",
+      "question": "EOF của kết nối có phải delimiter duy nhất thích hợp cho mọi giao thức không?",
+      "options": [
+        "Có, read chunk luôn thay delimiter",
+        "Chỉ nếu dùng localhost",
+        "Không, framing phụ thuộc protocol; một connection có thể có nhiều message",
+        "Có, mọi TCP message phải đóng kết nối"
+      ],
+      "correct": 2,
+      "explanation": "Ứng dụng cần xác định message contract."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Newline protocol",
+      "question": "Nếu protocol dùng newline, một read có nửa dòng thì nên làm gì?",
+      "options": [
+        "Xử lý nửa dòng như message hoàn chỉnh bắt buộc",
+        "Bỏ chunk vì không có newline ngay",
+        "Giả TCP sẽ tự thêm newline",
+        "Tích lũy có giới hạn tới đủ frame theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Framing cần state qua các lần read."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Binary echo",
+      "question": "Byte 0 xuất hiện trong payload TCP có tự là kết thúc dữ liệu không?",
+      "options": [
+        "Không, dùng n/length theo protocol thay vì giả C-string",
+        "Có, mọi stream là NUL-terminated string",
+        "Chỉ nếu UTF-8",
+        "Chỉ nếu buffer mutable"
+      ],
+      "correct": 0,
+      "explanation": "Echo bytes khác C string processing."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Unicode chunk",
+      "question": "Một UTF-8 code point bị chia giữa hai read có nhất thiết lỗi TCP không?",
+      "options": [
+        "Chỉ nếu nonblocking",
+        "Không, chunk boundary không theo ranh giới ký tự",
+        "Có, TCP luôn cắt theo Unicode",
+        "Có, {s} yêu cầu mọi read là một ký tự"
+      ],
+      "correct": 1,
+      "explanation": "Text decoder/framer cần xử lý stream phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Read lỗi",
+      "question": "Một read trả error khác EOF. Có nên tự dùng lại buffer cũ như dữ liệu mới nhận không?",
+      "options": [
+        "Có, const buffer tự biết dữ liệu mới",
+        "Chỉ nếu echo ngắn",
+        "Không, cần policy lỗi và cleanup/progress rõ",
+        "Có, mọi error đều giữ đầy buffer mới"
+      ],
+      "correct": 2,
+      "explanation": "Lỗi không cung cấp payload mới hợp lệ tùy ý."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Client stream owner",
+      "question": "Sau accept thành công, ai cần quản lý connected stream theo design?",
+      "options": [
+        "Listener deinit tự theo dõi mọi accepted stream trong mọi trường hợp",
+        "Client tự free mọi server handle",
+        "Không ai vì TCP có GC",
+        "Code nhận Connection theo ownership/API của nó"
+      ],
+      "correct": 3,
+      "explanation": "Listener và accepted connection là tài nguyên riêng."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Reuse khác authentication",
+      "question": "reuse_address=true có cung cấp xác thực client không?",
+      "options": [
+        "Không, đây là cấu hình socket reuse",
+        "Có, nó chỉ cho client đã biết địa chỉ",
+        "Có, loopback tự xác thực danh tính mọi process",
+        "Chỉ nếu port 8080"
+      ],
+      "correct": 0,
+      "explanation": "Socket option không là cơ chế identity ứng dụng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "TLS",
+      "question": "TCP listener nguồn có tự mã hóa dữ liệu như TLS không?",
+      "options": [
+        "Chỉ nếu bind loopback",
+        "Không, chưa có TLS layer/contract như vậy",
+        "Có, mọi std.net stream là TLS",
+        "Có, reuse_address bật mã hóa"
+      ],
+      "correct": 1,
+      "explanation": "Transport connection không tự cung cấp mọi security property."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Backlog",
+      "question": "kernel_backlog của listener phản ánh gì về mục đích?",
+      "options": [
+        "Số thread worker bắt buộc",
+        "Dung lượng RAM cố định mọi OS",
+        "Giới hạn/hàng đợi kết nối theo OS, không là số request app đã xử lý",
+        "Số byte echo mỗi read"
+      ],
+      "correct": 2,
+      "explanation": "Queue option và khả năng xử lý app khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Slow client",
+      "question": "Server xử lý từng client tuần tự bằng blocking read có thể gặp gì?",
+      "options": [
+        "Mọi client vẫn được xử lý song song ngầm",
+        "Reuse tự tạo worker cho từng kết nối",
+        "Print message tự tránh blocking",
+        "Client chậm có thể giữ luồng phục vụ và trì hoãn client khác"
+      ],
+      "correct": 3,
+      "explanation": "Concurrency cần thiết kế rõ."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Nonblocking không scheduler",
+      "question": "Chỉ bật nonblocking socket có tự tạo cơ chế chờ readiness và quản lý partial I/O không?",
+      "options": [
+        "Không, ứng dụng cần state/readiness/error handling phù hợp",
+        "Có, OS tự chạy mọi code echo tiếp theo",
+        "Có, mỗi call tự là coroutine",
+        "Chỉ nếu có try"
+      ],
+      "correct": 0,
+      "explanation": "Mô hình điều phối không có chỉ từ một flag."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Busy loop",
+      "question": "Nonblocking read chưa có dữ liệu rồi loop liên tục không chờ có nguy cơ gì?",
+      "options": [
+        "Chỉ ảnh hưởng màu log",
+        "Lãng phí CPU; cần cơ chế chờ/readiness và tiến trình phù hợp",
+        "Tự tăng băng thông vô hạn",
+        "Tự trở thành async/await tối ưu"
+      ],
+      "correct": 1,
+      "explanation": "Không dữ liệu chưa có nghĩa phải quay bận."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Bounded memory",
+      "question": "Client gửi không giới hạn mà server tích lũy toàn bộ trước echo cần xem gì?",
+      "options": [
+        "Chỉ tăng backlog",
+        "Chỉ dùng const cho input",
+        "Giới hạn buffer/frame và backpressure/timeout theo protocol",
+        "Giả không GC nghĩa không thể hết memory"
+      ],
+      "correct": 2,
+      "explanation": "Storage và flow control cần đáp ứng tài nguyên hữu hạn."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Write progress",
+      "question": "Khi đã gửi k byte của một frame, retry toàn frame từ đầu có thể gây gì?",
+      "options": [
+        "Tự loại byte trùng bằng TCP mọi trường hợp",
+        "Không ảnh hưởng vì TCP nhận theo message",
+        "Chỉ nếu input có newline",
+        "Lặp byte đã gửi và làm sai payload protocol"
+      ],
+      "correct": 3,
+      "explanation": "TCP retransmission của transport khác app tự gửi trùng dữ liệu."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Port numeric range",
+      "question": "Port trong API kiểu u16 có cho literal 70000 hợp lệ không?",
+      "options": [
+        "Không, cần miền/type và cấu hình phù hợp",
+        "Có, parser tự mở rộng sang u32",
+        "Có, tên port giữ nguyên mọi số",
+        "Chỉ nếu reuse_address true"
+      ],
+      "correct": 0,
+      "explanation": "Miền số của API là một ràng buộc cấu hình."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Bind rồi cleanup",
+      "question": "Source listen thành công rồi rời main ngay có giữ socket tồn tại để echo sau đó không?",
+      "options": [
+        "Chỉ nếu stdout mở",
+        "Không, defer đóng listener theo vòng đời đó",
+        "Có, port thuộc kernel nên app cleanup không ảnh hưởng",
+        "Có, message log giữ process sống"
+      ],
+      "correct": 1,
+      "explanation": "Tài nguyên được quản lý theo vòng đời chương trình."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Version async 0.15",
+      "question": "Release notes 0.15.1 nói gì về async/await keywords cũ?",
+      "options": [
+        "Chúng là API ổn định cho mọi compiler trước/sau",
+        "Chỉ được bật nhờ reuse_address",
+        "Chúng bị loại khỏi ngôn ngữ trong release đó",
+        "Mọi std.net call tự được viết lại thành await cũ"
+      ],
+      "correct": 2,
+      "explanation": "Không trộn tutorial cũ với API ngôn ngữ khác phiên bản."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Address literal và DNS",
+      "question": "parseIp4(\"example.com\",8080) có nên được mô tả như DNS lookup theo hợp đồng parser IPv4 không?",
+      "options": [
+        "Có, mọi string input tự có DNS lookup",
+        "Chỉ nếu hostname ASCII",
+        "Chỉ nếu main !void",
+        "Không, parser địa chỉ IPv4 khác resolver hostname"
+      ],
+      "correct": 3,
+      "explanation": "Chọn đúng API theo loại input."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Multiple messages",
+      "question": "Một connection gửi hai dòng rồi vẫn mở; server chờ EOF trước xử lý có đáp ứng protocol line-response ngay không?",
+      "options": [
+        "Không, cần xử lý frame hoàn chỉnh khi đủ thay vì đợi đóng kết nối",
+        "Có, TCP tự đóng sau mỗi dòng",
+        "Có, newline tự kích writeAll",
+        "Chỉ nếu port khác 8080"
+      ],
+      "correct": 0,
+      "explanation": "Vòng đọc cần khớp thời điểm phản hồi protocol."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Listener vs connection close",
+      "question": "Đóng listener có đồng nghĩa mọi stream đã accept đều tự được quản lý/đóng bởi object Server nguồn không?",
+      "options": [
+        "Chỉ nếu accepted client local",
+        "Không, cần quản lý từng accepted stream theo ownership",
+        "Có, Server giữ danh sách mọi client mặc định",
+        "Có, socket cùng port luôn cùng handle"
+      ],
+      "correct": 1,
+      "explanation": "Không suy resource tracking không có trong object/API."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Echo exact bytes",
+      "question": "Muốn echo nguyên byte, thao tác nào không nên thêm ngầm?",
+      "options": [
+        "Xử lý partial writes",
+        "Dừng và cleanup khi EOF",
+        "Chuyển chữ hoa/thêm newline nếu protocol không yêu cầu",
+        "Dùng đúng phạm vi n byte nhận"
+      ],
+      "correct": 2,
+      "explanation": "Biến đổi payload thay ý nghĩa echo."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Counter range",
+      "question": "Đếm tổng byte nhận vào u16 trong phiên lâu cần xem gì?",
+      "options": [
+        "Mọi TCP stream tự giới hạn 65535 byte tổng",
+        "Try tự mở rộng counter",
+        "Chỉ nếu buffer lớn",
+        "Miền counter/overflow và policy phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Một chunk nhỏ không giới hạn tổng dữ liệu cả phiên."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Timeout scope",
+      "question": "Muốn client im lặng không giữ tài nguyên mãi cần thiết kế gì?",
+      "options": [
+        "Timeout/cancellation/lifecycle theo API và protocol phù hợp",
+        "Chỉ đặt reuse_address",
+        "Chỉ đổi message log",
+        "Chỉ const connection"
+      ],
+      "correct": 0,
+      "explanation": "Socket option reuse không là timeout."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Test transport contract",
+      "question": "Một lần gửi chuỗi ngắn trên loopback có đủ suy mọi chunking/load/error behavior không?",
+      "options": [
+        "Chỉ nếu echo có newline",
+        "Không, cần đánh giá theo những hành vi/rủi ro thực quan tâm",
+        "Có, TCP đã bảo đảm mọi protocol app đúng",
+        "Có, localhost loại mọi partial I/O"
+      ],
+      "correct": 1,
+      "explanation": "Một case nhỏ không đại diện mọi điều kiện stream."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Read-only payload view",
+      "question": "Slice read-only trỏ buffer nhận được dùng sau khi buffer tái ghi có tự giữ snapshot không?",
+      "options": [
+        "Có, TCP tự giữ bản copy trong view",
+        "Chỉ nếu n không đổi",
+        "Không, cần dùng/copy theo lifetime và ownership rõ",
+        "Có, const view clone payload"
+      ],
+      "correct": 2,
+      "explanation": "Qualification không lưu lịch sử nội dung buffer."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Echo structure",
+      "question": "Từ listener skeleton để có echo thực, nhóm thao tác nào còn cần?",
+      "options": [
+        "Chỉ đổi print thành nội dung client",
+        "Chỉ tăng backlog",
+        "Chỉ bật reuse_address",
+        "Accept connection, read dữ liệu và gửi lại đúng phạm vi/progress, cleanup đúng vòng đời"
+      ],
+      "correct": 3,
+      "explanation": "Những bước này phải được triển khai theo contract stream cụ thể."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Thoát ngay sau listen",
+      "question": "Source tạo listener, in thông báo rồi main kết thúc. Team muốn TCP echo nhưng thêm mỗi reuse_address và đổi chữ log thành Ready. Cần sửa hành vi gì?",
+      "options": [
+        "Giữ vòng đời phục vụ và triển khai accept/read/write cùng cleanup, không dựa message hay reuse tạo xử lý payload",
+        "Reuse=true đã đủ để OS tự echo mọi byte",
+        "Đổi main sang void để defer không chạy",
+        "Dùng const server để listener sống sau main"
+      ],
+      "correct": 0,
+      "explanation": "Vòng đời tài nguyên và đường dữ liệu ứng dụng đều còn thiếu."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Một read một message",
+      "question": "Client gửi một message 2000 byte nhưng server read 512 byte rồi xử lý như đủ và đóng. Thiết kế đúng theo protocol có length prefix?",
+      "options": [
+        "Tăng backlog sẽ làm read tự dài hơn",
+        "Tích lũy/đọc đủ frame theo length đã kiểm và giới hạn, xử lý EOF/error/partial data trước phản hồi",
+        "Mọi TCP write luôn tới trong một read nên buffer 512 là đủ",
+        "Coi 512 byte đầu là toàn message bất kể prefix"
+      ],
+      "correct": 1,
+      "explanation": "Framing cần state và giới hạn, không suy từ ranh giới transport chunks."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Echo quá phạm vi",
+      "question": "Read trả n=7 vào buffer 4096, server writeAll cả buffer rồi nói echo chính xác. Cần gì?",
+      "options": [
+        "Const buffer làm mọi phần dư thành dữ liệu client",
+        "Giữ 4096 vì capacity là độ dài message",
+        "Gửi buffer[0..n] và giữ dữ liệu hợp lệ tới khi gửi xong, xử lý lỗi theo contract",
+        "WriteAll tự biết n từ lần read trước"
+      ],
+      "correct": 2,
+      "explanation": "Số byte nhận và lifetime payload phải khớp phạm vi gửi."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Partial write và duplicate",
+      "question": "Server đã write 4/10 byte rồi retry cả 10 từ đầu. Client thấy lặp tiền tố. Cách sửa?",
+      "options": [
+        "TCP tự loại app bytes trùng nếu cùng buffer",
+        "Đổi buffer sang const để write tiếp tục đúng offset",
+        "Chỉ thêm newline để client tự bỏ phần lặp",
+        "Theo dõi offset còn lại hoặc dùng helper writeAll phù hợp, không gửi lại phần đã thành công"
+      ],
+      "correct": 3,
+      "explanation": "Application write progress cần được theo dõi đúng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "EOF lặp bận",
+      "question": "Read với buffer không rỗng trả 0, server cứ loop và ghi lại buffer cũ. Cần gì?",
+      "options": [
+        "Xử lý EOF như kết thúc nhận theo protocol, dừng/cleanup phù hợp thay vì coi là payload mới",
+        "Coi 0 là yêu cầu retry vô hạn ngay lập tức",
+        "Gán n bằng capacity để giữ echo hoạt động",
+        "Bật reuse_address để EOF thành dữ liệu"
+      ],
+      "correct": 0,
+      "explanation": "EOF không cung cấp byte mới và loop sai có thể vừa tốn CPU vừa gửi dữ liệu cũ."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nonblocking chưa đủ",
+      "question": "Đội bật force_nonblocking rồi giữ vòng while đọc/ghi chưa có readiness state, cho rằng đã thành async server. Cần thêm gì?",
+      "options": [
+        "Tăng backlog để thay readiness handling",
+        "State theo connection, chờ readiness và xử lý partial I/O/error/backpressure theo API; flag không tự tạo scheduler",
+        "Chỉ thêm keyword await cũ vào mọi call trong Zig 0.13",
+        "Coi mọi read chưa có dữ liệu là connection hoàn tất"
+      ],
+      "correct": 1,
+      "explanation": "Mô hình nonblocking cần cả điều phối và quản lý tiến trình I/O."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Client chậm chặn tất cả",
+      "question": "Server blocking xử lý một client tới EOF trước accept tiếp; một client giữ kết nối im lặng. Hướng thiết kế phù hợp?",
+      "options": [
+        "Chỉ tăng read buffer để không còn blocking",
+        "Đổi log sang stdout để accept chạy song song",
+        "Chọn concurrency/readiness và timeout giới hạn theo mục tiêu, giữ lifecycle tài nguyên rõ",
+        "Reuse_address tự phân phối mỗi client sang thread riêng"
+      ],
+      "correct": 2,
+      "explanation": "Chính sách phục vụ và giới hạn tài nguyên phải được thiết kế cùng nhau."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Buffer reuse khi gửi chậm",
+      "question": "Echo giữ view vào receive buffer để gửi dần, nhưng vòng đọc ghi đè buffer trước khi gửi hết. Cần gì?",
+      "options": [
+        "Const view tự khóa buffer khỏi lần read sau",
+        "TCP giữ snapshot mọi buffer tại lúc tạo slice",
+        "Chỉ giữ n cũ để dữ liệu không đổi",
+        "Không tái sử dụng vùng còn pending hoặc copy/queue có ownership và giới hạn rõ, giữ offset gửi"
+      ],
+      "correct": 3,
+      "explanation": "Lifetime nội dung quan trọng ngoài pointer và length."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Newline split UTF-8",
+      "question": "Protocol dùng dòng UTF-8, một read kết thúc giữa code point và chưa có newline. Cách xử lý?",
+      "options": [
+        "Tích lũy có giới hạn, chờ frame/encoding hoàn chỉnh theo protocol rồi xử lý, không coi chunk là dòng",
+        "Mỗi read luôn là UTF-8 hoàn chỉnh vì TCP có thứ tự",
+        "Dùng {s} để tự sửa mọi byte thiếu",
+        "Bỏ toàn chunk để loại ký tự dở dang"
+      ],
+      "correct": 0,
+      "explanation": "Framing và decoding phải tôn trọng byte stream."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Two frames một read",
+      "question": "Hai request newline nằm trong một buffer read; server chỉ xử lý frame đầu rồi bỏ phần dư. Cần sửa?",
+      "options": [
+        "Bật nonblocking để TCP tự chia lại read theo dòng",
+        "Tách đủ các frame hoàn chỉnh và giữ phần dư chưa hoàn chỉnh cho vòng sau theo giới hạn",
+        "Một read chỉ có một request nên phần dư luôn rác",
+        "Đóng connection sau frame đầu dù protocol cho nhiều request"
+      ],
+      "correct": 1,
+      "explanation": "Protocol parser cần quản lý cả coalescing lẫn fragmentation."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Loopback qua container",
+      "question": "Server bind 127.0.0.1 bên trong một network namespace, client ngoài namespace dùng loopback của nó. Cần phân tích gì?",
+      "options": [
+        "Reuse_address chuyển loopback thành địa chỉ công cộng",
+        "Chỉ port 8080 đã đủ định tuyến đúng server",
+        "Phạm vi bind/network namespace, địa chỉ publish/routing và policy truy cập; cùng literal không chỉ cùng máy đích",
+        "Mọi 127.0.0.1 trên mọi namespace là cùng listener"
+      ],
+      "correct": 2,
+      "explanation": "Địa chỉ cần context mạng, không chỉ chuỗi literal."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Reuse không security",
+      "question": "Listener mở trên interface ngoài, reuse=true và log Ready. Team coi chỉ client tin cậy mới kết nối và payload đã mã hóa. Cần gì?",
+      "options": [
+        "Reuse=true tự bật TLS và xác thực process",
+        "Port 8080 tự là vùng an toàn với mọi client",
+        "Const address làm mọi connection read-only và được bảo vệ",
+        "Thiết kế authentication/authorization và transport protection nếu yêu cầu, không suy từ socket reuse hoặc log"
+      ],
+      "correct": 3,
+      "explanation": "Các thuộc tính truy cập và bảo vệ payload không có từ option reuse."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Length prefix quá lớn",
+      "question": "Client khai báo frame dài nhiều GB, server allocate theo prefix trước kiểm giới hạn. Hướng sửa?",
+      "options": [
+        "Validate prefix/miền arithmetic và giới hạn tài nguyên trước allocation/read, xử lý frame không hợp lệ theo protocol",
+        "TCP bảo đảm mọi length prefix là dữ liệu đáng tin",
+        "Chỉ dùng usize để mọi độ dài đều khả thi",
+        "Không GC nghĩa memory không tăng theo frame"
+      ],
+      "correct": 0,
+      "explanation": "Framing metadata từ client cần hợp đồng giới hạn rõ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Listener cleanup khác client",
+      "question": "Server accept client, chỉ defer server.deinit và không close accepted stream sau lỗi read. Cần gì?",
+      "options": [
+        "Const connection tự có destructor ẩn",
+        "Quản lý cleanup từng Connection stream và listener ở scope/ownership phù hợp",
+        "Listener deinit mặc định giữ danh sách mọi accepted stream và close hết",
+        "TCP client tự đóng mọi handle của server khi server return lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Listener object và connected socket là tài nguyên riêng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Backpressure và queue",
+      "question": "Client gửi nhanh nhưng đọc echo chậm; server giữ mọi pending bytes trong queue tăng mãi. Cần thiết kế gì?",
+      "options": [
+        "Bật reuse để pending bytes được GC",
+        "Chỉ đổi mọi slice thành const",
+        "Giới hạn queue/backpressure, progress gửi và timeout/lifecycle theo protocol, không chỉ tăng buffer",
+        "Tăng backlog sẽ tự giới hạn mọi payload queue"
+      ],
+      "correct": 2,
+      "explanation": "Flow control ứng dụng và storage phải cùng đáp ứng tài nguyên hữu hạn."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Retry read lỗi vô hạn",
+      "question": "Mọi read error đều bị catch rồi loop ngay trên cùng handle; có lỗi vĩnh viễn và CPU tăng. Cần gì?",
+      "options": [
+        "Catch làm mọi error tạm thời nên retry vô hạn đúng",
+        "Chỉ print ít log hơn để coi đã sửa lỗi",
+        "Dùng ReleaseFast để mọi lỗi biến mất",
+        "Phân loại trạng thái có thể chờ/retry với lỗi cần kết thúc, quản lý readiness/budget/cleanup theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Retry cần policy tiến triển và giới hạn, không chỉ nuốt error."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Dùng API async cũ",
+      "question": "Tutorial cũ dùng async/await frame được ghép vào project scope 0.13 hoặc 0.15.1 và giả keyword vẫn hoạt động như trước. Cần gì?",
+      "options": [
+        "Đối chiếu version/language support và chọn mô hình I/O hiện thực phù hợp, không coi title async là bảo đảm API cũ",
+        "Chỉ thêm reuse_address để bật lại compiler feature",
+        "Đổi main thành !void để async keywords luôn được hỗ trợ",
+        "Mọi std.net function tự biến thành frame cũ"
+      ],
+      "correct": 0,
+      "explanation": "Các thế hệ API và mô hình điều phối không thể trộn bằng suy đoán."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Binary payload và string",
+      "question": "Echo dùng C-string length để gửi payload nhận có byte 0 ở giữa. Client mất phần sau. Sửa gì?",
+      "options": [
+        "Thêm newline sẽ phục hồi byte đã bị cắt",
+        "Dùng số byte thực nhận và protocol length, không coi NUL là terminator nếu echo binary",
+        "Mọi TCP payload là C string nên client sai",
+        "Dùng const buffer để NUL tự biến mất"
+      ],
+      "correct": 1,
+      "explanation": "Memory buffer length và text termination là các khái niệm khác nhau."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Shutdown còn pending",
+      "question": "Server nhận yêu cầu dừng, close stream ngay dù còn phần echo đã nhận chưa gửi. Nếu contract cần drain có giới hạn thì sao?",
+      "options": [
+        "Listener deinit tự hoàn tất mọi queue app",
+        "Đổi log thành flushed là đủ chứng minh drain",
+        "Thiết kế trạng thái shutdown/drain với progress, timeout và cleanup rõ; không coi close là đã gửi đủ",
+        "Close tự bảo đảm mọi app bytes chưa write đều được gửi"
+      ],
+      "correct": 2,
+      "explanation": "Transport teardown không tự thực hiện công việc pending trong bộ nhớ ứng dụng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Echo server có giới hạn",
+      "question": "Bài echo nhận nhiều client, mỗi client có thể gửi partial chunks rồi ngừng đọc. Thiết kế nào đáp ứng byte echo và tài nguyên hữu hạn?",
+      "options": [
+        "Mỗi accept chỉ read một lần rồi write toàn capacity để đơn giản",
+        "Dùng reuse_address thay mọi concurrency/backpressure policy",
+        "Giữ mọi payload tới EOF vô hạn và giả const slice tự quản lifetime",
+        "Giữ state/progress từng connection, echo đúng n byte và phần chưa gửi, giới hạn buffer/queue và timeout, cleanup từng stream/listener"
+      ],
+      "correct": 3,
+      "explanation": "Bài toán kết hợp byte-stream semantics, scheduling và ownership theo hợp đồng cụ thể."
+    }
+  ]
+}

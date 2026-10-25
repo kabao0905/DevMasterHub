@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "bash",
+  "level": "junior",
+  "lesson": "docker-compose",
+  "language": "vi",
+  "sourceHash": "724854f8e2d13045a890ff2127ba4e38882c09283f06ed7bec0a7e59f3d29bda",
+  "status": "approved",
+  "review": "Tự soạn theo router Bash và Docker CLI/Compose docs. Không có Dockerfile/Compose thực trong lesson. ci_test có lỗ hổng errexit và down không giữ -f test; prune có phạm vi daemon. Chỉ review và mô hình shell hữu hạn, không chạy Docker/build/push/prune/down/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Application name",
+      "question": "APP_NAME được gán giá trị nào trong source?",
+      "options": [
+        "myapp",
+        "test",
+        "app:latest",
+        "docker-compose"
+      ],
+      "correct": 0,
+      "explanation": "Đây là biến shell dùng để dựng tên image."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Registry prefix",
+      "question": "REGISTRY trong mẫu là gì?",
+      "options": [
+        "Một đường dẫn /tmp",
+        "ghcr.io/user",
+        "localhost:3000",
+        "docker.io/library bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Tên registry/namespace hiện là giá trị minh họa hardcode."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Version command",
+      "question": "VERSION lấy stdout từ command nào?",
+      "options": [
+        "date +%H",
+        "npm version",
+        "git describe --tags --always",
+        "docker ps"
+      ],
+      "correct": 2,
+      "explanation": "Lệnh cần một trạng thái repository phù hợp để trả về kết quả."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Build function",
+      "question": "Function build gọi công cụ nào để tạo image?",
+      "options": [
+        "docker compose logs",
+        "tar extract",
+        "git push",
+        "docker build"
+      ],
+      "correct": 3,
+      "explanation": "Việc build cần Dockerfile/build context và môi trường tương ứng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Build context dot",
+      "question": "Dấu . cuối docker build biểu thị gì?",
+      "options": [
+        "Build context là thư mục hiện tại",
+        "Chỉ dùng Dockerfile nằm ở root filesystem",
+        "Không gửi bất kỳ context nào",
+        "Một image tag tên chấm"
+      ],
+      "correct": 0,
+      "explanation": "Nội dung context và .dockerignore ảnh hưởng dữ liệu có thể được dùng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Build time arguments",
+      "question": "--build-arg được dùng nhằm gì?",
+      "options": [
+        "Chọn số container chạy song song",
+        "Truyền giá trị build argument cho quá trình build theo Dockerfile",
+        "Tự khai báo mọi biến runtime trong container",
+        "Tự tạo secret store"
+      ],
+      "correct": 1,
+      "explanation": "Dockerfile phải sử dụng/khai báo argument theo quy tắc build."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Version argument name",
+      "question": "Một build argument trong mẫu có tên gì?",
+      "options": [
+        "DATABASE_URL bắt buộc",
+        "CPU_COUNT",
+        "VERSION",
+        "SERVER_PASSWORD bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Một argument khác là BUILD_DATE."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Build date timezone",
+      "question": "date -u trong BUILD_DATE có ý định dùng múi giờ nào?",
+      "options": [
+        "Timezone riêng của registry",
+        "Múi giờ browser người dùng",
+        "Timezone ngẫu nhiên theo tag",
+        "UTC"
+      ],
+      "correct": 3,
+      "explanation": "Định dạng kết thúc bằng Z phù hợp ý định UTC."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Tag option",
+      "question": "Tùy chọn -t trong docker build nhằm gì?",
+      "options": [
+        "Gán tên/tag cho kết quả image",
+        "Chạy toàn bộ test suite tự động",
+        "Tạo terminal tương tác",
+        "Xóa mọi image cũ"
+      ],
+      "correct": 0,
+      "explanation": "Chữ t ở đây không tự mang nghĩa test."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Two tags",
+      "question": "Một lần build thành công của mẫu đặt những tag nào theo ý định?",
+      "options": [
+        "Tag production lấy từ argument thứ2",
+        "Tag VERSION và tag latest cho cùng tên image",
+        "Chỉ tag dev",
+        "Một tag cho mỗi file source"
+      ],
+      "correct": 1,
+      "explanation": "Hai -t gán hai tham chiếu tên cho kết quả build."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Push role",
+      "question": "Function push có mục đích gì?",
+      "options": [
+        "Khởi tạo cluster Kubernetes",
+        "Chỉ đổi branch Git",
+        "Đẩy hai tag image lên registry",
+        "Tự chạy unit test"
+      ],
+      "correct": 2,
+      "explanation": "Cần quyền registry và kết nối phù hợp trong thực tế."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Compose file option",
+      "question": "docker compose -f dùng để chỉ gì?",
+      "options": [
+        "Số frame mỗi giây",
+        "Flag buộc mọi health check pass",
+        "Tên Docker daemon",
+        "File cấu hình Compose"
+      ],
+      "correct": 3,
+      "explanation": "Có thể chỉ nhiều file để merge theo thứ tự."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Dev override",
+      "question": "Function dev ghép base với file nào?",
+      "options": [
+        "docker-compose.dev.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.test.yml",
+        "package-lock.json"
+      ],
+      "correct": 0,
+      "explanation": "Các file được nhắc tới chưa có nội dung trong lesson."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Prod override",
+      "question": "Function prod ghép base với file nào?",
+      "options": [
+        "Dockerfile.test bắt buộc",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "README.md"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm cấu hình hợp nhất thực tế để biết tài nguyên được tạo."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Detached mode",
+      "question": "up -d có ý nghĩa chính nào?",
+      "options": [
+        "Xóa toàn bộ data",
+        "Chỉ in cấu hình không tạo container",
+        "Chạy container ở chế độ detached",
+        "Luôn chờ mọi dịch vụ healthy rồi mới trả về"
+      ],
+      "correct": 2,
+      "explanation": "Detached không tự là chứng nhận readiness."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Follow logs",
+      "question": "docker compose logs -f app nhằm làm gì?",
+      "options": [
+        "Force xóa service app",
+        "Build image của app",
+        "Tự kiểm mọi endpoint",
+        "Theo dõi log của service app"
+      ],
+      "correct": 3,
+      "explanation": "Theo dõi log có thể tiếp tục chạy đến khi được dừng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "One off service",
+      "question": "docker compose run ... test trong ci_test có ý định gì?",
+      "options": [
+        "Chạy một command/container theo service test",
+        "Tự chạy mọi service như production",
+        "Chỉ đổi tên container có sẵn",
+        "Chỉ xem Docker version"
+      ],
+      "correct": 0,
+      "explanation": "Service configuration quyết định command và dependency thực tế."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Remove run container",
+      "question": "--rm trên compose run nhằm gì?",
+      "options": [
+        "Xóa Docker daemon",
+        "Tự xóa container one-off sau khi nó kết thúc",
+        "Xóa mọi volume ở mọi project",
+        "Xóa source Git repository"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nghĩa toàn bộ dependency/resources đều đã cleanup."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Command routing",
+      "question": "case ở cuối script dùng để làm gì?",
+      "options": [
+        "Tự xác minh mọi argument đúng",
+        "Tạo Compose YAML",
+        "Chọn function theo đối số command",
+        "Tự load mọi function đồng thời"
+      ],
+      "correct": 2,
+      "explanation": "Command routing cần hợp đồng đầu vào và status lỗi riêng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Help default",
+      "question": "Nếu không truyền command, case dùng từ mặc định nào?",
+      "options": [
+        "build",
+        "prod",
+        "clean",
+        "help"
+      ],
+      "correct": 3,
+      "explanation": "Nó rơi vào nhánh usage vì không có nhánh help riêng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Build route scope",
+      "question": "Gọi script với command build có tự chạy ci_test không?",
+      "options": [
+        "Không, nhánh đó chỉ gọi build",
+        "Có, mọi build bắt buộc gọi function test của script",
+        "Có, -t tự là test",
+        "Có, case chạy tất cả nhánh"
+      ],
+      "correct": 0,
+      "explanation": "Không suy tính năng từ tên command."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Push route order",
+      "question": "Command push trong router được viết theo thứ tự nào?",
+      "options": [
+        "prod rồi push",
+        "build && push",
+        "push rồi build bất kể status",
+        "ci_test rồi push luôn luôn"
+      ],
+      "correct": 1,
+      "explanation": "Vế phải && chỉ chạy khi vế trái thành công theo status."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Build failure skip push",
+      "question": "Nếu function build trả status khác0 ở build && push, push có được gọi không?",
+      "options": [
+        "Chỉ khi VERSION có latest",
+        "Có, pipefail đổi && thành ;",
+        "Không",
+        "Có, && luôn chạy cả hai"
+      ],
+      "correct": 2,
+      "explanation": "Đây là điều kiện theo status, không phải kiểm nội dung log."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Dev route scope",
+      "question": "Command dev có tự gọi function build trước up trong source không?",
+      "options": [
+        "Có, mọi nhánh tự chạy build",
+        "Có, echo tự build",
+        "Có, logs -f build lại image",
+        "Không có lời gọi build tường minh ở nhánh đó"
+      ],
+      "correct": 3,
+      "explanation": "Compose có hành vi riêng theo config/options, nhưng script không gọi helper build ở đây."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Test route scope",
+      "question": "Command test có tự push image sau khi test pass không?",
+      "options": [
+        "Không, ci_test kết thúc script bằng exit",
+        "Có, case luôn chạy tiếp nhánh push",
+        "Có, --rm có nghĩa push-on-success",
+        "Chỉ khi Dockerfile có VERSION"
+      ],
+      "correct": 0,
+      "explanation": "Chưa có pipeline build→test→push→deploy đầy đủ trong router."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Unknown route status",
+      "question": "Nhánh command không biết chỉ echo Usage và echo thành công thì script có thể exit thế nào?",
+      "options": [
+        "Luôn1 vì có set -u",
+        "0 dù command không hợp lệ",
+        "Luôn2 do case tự báo lỗi",
+        "Luôn127 vì không có function cùng tên"
+      ],
+      "correct": 1,
+      "explanation": "Nếu muốn invalid command là failure phải đặt status theo hợp đồng."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Extra arguments",
+      "question": "Router chỉ xét $1. Argument thứ2 có được tự chuyển cho các function không tham số trong source không?",
+      "options": [
+        "Có, Docker CLI tự đọc $2 từ shell cha",
+        "Có, case tự validate arity",
+        "Không, nó không được chuyển tiếp/chế biến tường minh",
+        "Có, mọi function tự nhận toàn bộ script args"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm số lượng và ý nghĩa argument nếu CLI có contract rõ."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Version before routing",
+      "question": "VERSION được tính trước case. Nếu git describe thất bại ở assignment thông thường với -e thì có thể ảnh hưởng gì?",
+      "options": [
+        "Help luôn bỏ qua mọi command trước nó",
+        "Case tự chạy trước mọi assignment",
+        "Git error tự được echo Usage xử lý",
+        "Script có thể dừng trước cả usage/help"
+      ],
+      "correct": 3,
+      "explanation": "Khởi tạo eager có thể làm command không cần Git cũng phụ thuộc Git."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Dirty worktree version",
+      "question": "git describe --tags --always trong mẫu có yêu cầu --dirty để đánh dấu source chưa commit không?",
+      "options": [
+        "Mẫu chưa truyền --dirty nên không nên giả tag phản ánh mọi thay đổi local",
+        "Có, --always luôn là --dirty",
+        "Có, tag latest biểu diễn nội dung working tree",
+        "Không thể build từ working tree có thay đổi"
+      ],
+      "correct": 0,
+      "explanation": "Tên version và nội dung context thực tế có thể không tương ứng như mong đợi."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Git tags output",
+      "question": "--always trong git describe có ý định hỗ trợ gì khi không mô tả được bằng tag phù hợp?",
+      "options": [
+        "Chạy được dù không có repository trong mọi trường hợp",
+        "Dùng tên đối tượng rút gọn theo cơ chế Git thay vì chỉ phụ thuộc tag",
+        "Tự tạo tag mới trên remote",
+        "Tự push branch"
+      ],
+      "correct": 1,
+      "explanation": "Không loại mọi điều kiện lỗi của Git."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Image name construction",
+      "question": "Nếu VERSION=v1, tên version image được dựng thành gì?",
+      "options": [
+        "ghcr.io:v1/user/myapp",
+        "docker-compose.test.yml:v1",
+        "ghcr.io/user/myapp:v1",
+        "myapp/ghcr.io:user"
+      ],
+      "correct": 2,
+      "explanation": "Cấu trúc là registry/namespace/name:tag trong trường hợp đã nêu."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Latest mutable reference",
+      "question": "Tag latest có tự nghĩa là image mới nhất theo thời gian mà registry xác minh không?",
+      "options": [
+        "Có, registry tự sắp mọi image rồi gán latest",
+        "Có, Docker tự kiểm toàn bộ branch",
+        "Có, latest là digest bất biến",
+        "Không, đó là tag có thể được gán/chuyển theo thao tác của người dùng"
+      ],
+      "correct": 3,
+      "explanation": "Tên tag không tự là chính sách phát hành."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Multiple tags image identity",
+      "question": "Hai -t trong một build có tạo hai bản filesystem image độc lập bắt buộc không?",
+      "options": [
+        "Không, có thể là hai tên tham chiếu cùng kết quả build",
+        "Có, luôn nhân đôi toàn bộ dữ liệu",
+        "Có, mỗi tag là một container đang chạy",
+        "Có, mỗi tag có một daemon riêng"
+      ],
+      "correct": 0,
+      "explanation": "Tag và nội dung image là các khái niệm khác nhau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Argument not automatic runtime env",
+      "question": "Truyền --build-arg VERSION=v1 có tự bảo đảm container runtime có environment VERSION không?",
+      "options": [
+        "Có, registry tự inject VERSION lúc chạy",
+        "Không, cần Dockerfile/config xử lý phù hợp",
+        "Có, mọi ARG tự chuyển thành ENV vĩnh viễn",
+        "Có, -t export mọi biến shell"
+      ],
+      "correct": 1,
+      "explanation": "Build-time inputs và runtime environment là hai giai đoạn."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Build secret transport",
+      "question": "Build argument có nên là kênh mặc định để truyền secret cần giữ kín không?",
+      "options": [
+        "Có, quote shell tự mã hóa giá trị",
+        "Có, tag latest tự bảo vệ secrets",
+        "Không, dùng cơ chế secret build phù hợp thay vì giả ARG được giấu",
+        "Có, mọi ARG luôn bị xóa khỏi metadata/history"
+      ],
+      "correct": 2,
+      "explanation": "Cần xét cơ chế build và metadata, không suy an toàn từ tên argument."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Unexported Compose variables",
+      "question": "APP_NAME được gán nhưng không export. Compose executable có tự nhận nó là environment variable từ shell không?",
+      "options": [
+        "Có, mọi biến viết hoa tự export",
+        "Có, Compose đọc local variables trực tiếp từ bộ nhớ Bash",
+        "Có, -f tự export mọi biến",
+        "Không mặc định, cần export/truyền hoặc nguồn interpolation phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Shell variables và environment truyền cho process con khác nhau."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Merge order",
+      "question": "Với base rồi prod trong danh sách -f, file nào được áp dụng sau theo Compose merge rules?",
+      "options": [
+        "Prod",
+        "Base luôn ghi đè mọi thứ cuối cùng",
+        "Thứ tự alphabet tên file",
+        "Thứ tự timestamp trên đĩa"
+      ],
+      "correct": 0,
+      "explanation": "Từng loại field còn có quy tắc merge/replace riêng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Merge not text concatenation",
+      "question": "Vì sao không coi hai Compose file như nối text thuần?",
+      "options": [
+        "Vì Bash tự đổi YAML thành JSON rồi xóa base",
+        "Compose merge theo cấu trúc và quy tắc từng field",
+        "Vì YAML không có key",
+        "Vì file sau luôn bị bỏ"
+      ],
+      "correct": 1,
+      "explanation": "Ví dụ image đơn trị và danh sách/mount có thể được xử lý khác nhau."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Relative path base",
+      "question": "Theo quy tắc nhiều file Compose thông thường, đường dẫn tương đối trong override được tính theo đâu?",
+      "options": [
+        "Luôn theo /",
+        "Theo thư mục registry",
+        "Base file đầu tiên theo cấu hình Compose",
+        "Luôn theo thư mục riêng của từng override"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm base path khi di chuyển/call script từ nơi khác."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Effective configuration review",
+      "question": "Lệnh Compose nào hữu ích để xem cấu hình hợp nhất trước khi thao tác tài nguyên?",
+      "options": [
+        "docker system prune",
+        "docker push latest",
+        "docker compose logs -f",
+        "docker compose ... config"
+      ],
+      "correct": 3,
+      "explanation": "Đây là khả năng phân tích cấu hình, không tự chứng minh ứng dụng sẽ khỏe."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Detached readiness gap",
+      "question": "up -d trả thành công có tự xác minh mọi API nghiệp vụ hoạt động chưa?",
+      "options": [
+        "Không, còn health/readiness/integration theo yêu cầu",
+        "Có, -d nghĩa deep test",
+        "Có, container được tạo là đủ cho mọi nghiệp vụ",
+        "Có, echo Production running là bằng chứng"
+      ],
+      "correct": 0,
+      "explanation": "Trạng thái tạo/chạy container khác trạng thái phục vụ đúng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Log service config dependency",
+      "question": "logs -f app có mặc định dùng lại hai -f đã truyền ở command up trước đó trong source không?",
+      "options": [
+        "Có, -f trong logs tự nghĩa Compose file",
+        "Không, mỗi lời gọi có options/context riêng; cần giữ cấu hình nhất quán",
+        "Có, Compose ghi nhớ mọi -f của command trước trong shell",
+        "Có, app tự chứa file override"
+      ],
+      "correct": 1,
+      "explanation": "-f của logs là follow; còn file options ở cấp Compose phải được chọn phù hợp."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Run new container",
+      "question": "compose run test thường dùng container thế nào?",
+      "options": [
+        "Không tạo process nào",
+        "Chỉ xem metadata image",
+        "Tạo container one-off theo service configuration",
+        "Chỉ exec vào container test đang có trong mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "run khác exec vào container đã chạy."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Run port behavior",
+      "question": "Compose run mặc định có publish toàn bộ service ports như up không?",
+      "options": [
+        "Có, luôn publish cùng cách",
+        "Có, --rm tự publish",
+        "Chỉ khi -P của xargs được bật",
+        "Không, cần option phù hợp nếu muốn publish các service ports"
+      ],
+      "correct": 3,
+      "explanation": "Đây là điểm khác biệt được Docker docs nêu cho run."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Run dependencies",
+      "question": "--rm trên run có tự ngăn khởi động các dependency service không?",
+      "options": [
+        "Không, muốn chính sách không start deps phải xét --no-deps và config",
+        "Có, remove nghĩa không cần dependencies",
+        "Có, test service luôn độc lập",
+        "Có, --rm tắt mọi network"
+      ],
+      "correct": 0,
+      "explanation": "Remove one-off container và dependency startup là hai hành vi khác nhau."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Test command definition gap",
+      "question": "Từ source shell có biết chính xác test framework và test command của service test không?",
+      "options": [
+        "Có, Docker luôn chạy pytest",
+        "Không, nội dung Compose/image chưa được cho",
+        "Có, tên test tự nghĩa npm test",
+        "Có, --rm tự chọn Jest"
+      ],
+      "correct": 1,
+      "explanation": "Cần source cấu hình để biết công việc thực sự."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Failure before capture",
+      "question": "Trong ci_test với -e đang có hiệu lực, compose run test trả1 có thể làm gì?",
+      "options": [
+        "Tự gọi function cleanup",
+        "Tự chuyển status thành0",
+        "Dừng trước local EXIT_CODE=$? và trước cleanup",
+        "Luôn chạy cleanup trước vì có biến EXIT_CODE"
+      ],
+      "correct": 2,
+      "explanation": "Việc lưu status phía sau command không có nghĩa command lỗi chắc chắn cho chạy tới đó."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Success capture",
+      "question": "Nếu compose run thành công và đi tới local EXIT_CODE=$?, biến thường nhận gì?",
+      "options": [
+        "1",
+        "Số container đã xóa",
+        "Status của echo ở function khác",
+        "0"
+      ],
+      "correct": 3,
+      "explanation": "Ở đây $? được mở rộng ngay sau command thành công."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Down file mismatch",
+      "question": "ci_test run dùng -f docker-compose.test.yml nhưng down -v không truyền -f. Vấn đề gì có thể xảy ra?",
+      "options": [
+        "Cleanup dùng cấu hình mặc định/context khác với test",
+        "Compose luôn nhớ file test nên không có vấn đề",
+        "Down tự dò toàn bộ lịch sử run",
+        "-v có nghĩa dùng file test vừa chạy"
+      ],
+      "correct": 0,
+      "explanation": "Cần dùng cùng project/config boundary cho start và teardown."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Down volumes flag",
+      "question": "Theo Docker Compose docs, down -v có thể xóa gì thêm?",
+      "options": [
+        "Chỉ log text trong terminal",
+        "Named volumes khai báo trong cấu hình và anonymous volumes gắn với container theo phạm vi đó",
+        "Mọi volume trên mọi daemon",
+        "Các volume external trong mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Đây là thao tác có nguy cơ mất dữ liệu nếu scope không phù hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "External volume exception",
+      "question": "Compose down có mặc định xóa volume được khai báo external không?",
+      "options": [
+        "Chỉ khi tên có dấu gạch dưới",
+        "Có, set -e buộc xóa",
+        "Không, Docker docs loại external volumes/networks khỏi teardown đó",
+        "Có, mọi -v luôn xóa toàn bộ external resource"
+      ],
+      "correct": 2,
+      "explanation": "External ownership cần được hiểu đúng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Prune force flag",
+      "question": "-f trong docker system prune -af --volumes làm gì?",
+      "options": [
+        "Giới hạn chỉ project hiện tại",
+        "Tự sao lưu dữ liệu trước khi xóa",
+        "Chỉ chạy mô phỏng",
+        "Bỏ prompt xác nhận của Docker command"
+      ],
+      "correct": 3,
+      "explanation": "Force không làm mục tiêu an toàn hơn hay hẹp hơn."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Prune all images",
+      "question": "-a trong system prune mở rộng phạm vi image theo hướng nào?",
+      "options": [
+        "Xét mọi unused image, không chỉ dangling image",
+        "Xóa mọi running container ngay lập tức",
+        "Chỉ xóa tag alpha",
+        "Tự tạo archive cho mọi image"
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt unused và đang được tài nguyên khác sử dụng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Prune anonymous volumes",
+      "question": "Theo Docker docs hiện tại, --volumes của system prune bổ sung nhóm nào?",
+      "options": [
+        "Một volume backup mới",
+        "Anonymous volumes không được dùng theo phạm vi prune",
+        "Mọi named/external volume bất kể đang dùng",
+        "Chỉ bind mount source code"
+      ],
+      "correct": 1,
+      "explanation": "Không mô tả tùy chọn này như xóa tất cả named volumes."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Prune daemon scope",
+      "question": "Function cleanup có filter project/label để chỉ dọn myapp chưa?",
+      "options": [
+        "Có, tên function cleanup giới hạn scope",
+        "Có, case clean tự xác định Compose project",
+        "Chưa, đây là system prune theo daemon context",
+        "Có, APP_NAME tự trở thành filter"
+      ],
+      "correct": 2,
+      "explanation": "Biến không được dùng trong command không tự tạo ranh giới tài nguyên."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Partial push",
+      "question": "Push tag VERSION thành công nhưng push latest lỗi có thể để registry ở trạng thái nào?",
+      "options": [
+        "Cả hai push tự rollback nguyên tử",
+        "Không tag nào từng được ghi",
+        "Docker tự sửa latest vào hôm sau",
+        "Version tag đã có còn latest chưa cập nhật như mong muốn"
+      ],
+      "correct": 3,
+      "explanation": "Hai command push riêng không tự là một transaction."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Build date reproducibility",
+      "question": "BUILD_DATE thay theo thời gian có thể ảnh hưởng tính tái lập nếu được dùng trong image không?",
+      "options": [
+        "Có, đầu vào khác có thể tạo metadata/nội dung khác",
+        "Không, timestamp không bao giờ là input",
+        "Có nhưng luôn làm image nhỏ hơn",
+        "Không vì -t xóa mọi build argument"
+      ],
+      "correct": 0,
+      "explanation": "Tính tái lập cần kiểm mọi input có tác động, không chỉ git ref."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "No prod health loop",
+      "question": "Function prod hiện có vòng kiểm health/rollback sau up chưa?",
+      "options": [
+        "Có, Docker luôn tự rollback mọi app lỗi",
+        "Chưa, chỉ up và echo",
+        "Có, echo tự gọi curl",
+        "Có, file suffix prod tự thêm rollback"
+      ],
+      "correct": 1,
+      "explanation": "Cấu hình có thể có healthcheck, nhưng source chưa cho thấy quy trình rollout đầy đủ."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Config prerequisite",
+      "question": "Nếu thiếu docker-compose.prod.yml, shell script có tự viết file đó không?",
+      "options": [
+        "Có, Docker luôn sinh đúng cấu hình ứng dụng",
+        "Có, up -d đọc comment để tạo file",
+        "Không, chỉ tham chiếu nó trong command",
+        "Có, local variables tạo YAML"
+      ],
+      "correct": 2,
+      "explanation": "Phụ thuộc file/config là một điều kiện cần được kiểm rõ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Exit versus return",
+      "question": "exit \"$EXIT_CODE\" bên trong ci_test khác return thế nào?",
+      "options": [
+        "Hai dạng luôn giống nhau trong mọi context",
+        "Exit chỉ bỏ một vòng case",
+        "Return luôn dừng Docker daemon",
+        "Exit kết thúc shell script đang chạy, return chỉ trả khỏi function"
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế helper tái sử dụng cần xác định ai quyết định kết thúc script."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Reliable test cleanup",
+      "question": "Muốn test thất bại vẫn cleanup và giữ status test, nên tổ chức thế nào?",
+      "options": [
+        "Bắt status chủ động trong if/nhánh phù hợp, cleanup đúng scope rồi trả status theo contract",
+        "Đặt local EXIT_CODE=$? sau command và tin -e luôn cho chạy tiếp",
+        "Bỏ mọi error status rồi exit0",
+        "Chạy system prune toàn daemon thay mọi cleanup"
+      ],
+      "correct": 0,
+      "explanation": "Phải xử lý cả luồng điều khiển và ranh giới tài nguyên."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Cleanup secondary error",
+      "question": "Test fail rồi cleanup cũng fail. Báo kết quả theo hướng nào hợp lý?",
+      "options": [
+        "Luôn ghi pass nếu container đã được tạo",
+        "Giữ lỗi test cùng lỗi cleanup, không biến thành pass do echo cuối",
+        "Chỉ lấy status0 của echo cuối cùng",
+        "Luôn bỏ lỗi cleanup vì test đã fail"
+      ],
+      "correct": 1,
+      "explanation": "Hai lỗi cần chẩn đoán riêng và status cuối theo hợp đồng CLI."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Compose context consistency",
+      "question": "Muốn tránh teardown nhầm tài nguyên test cần giữ thống nhất gì?",
+      "options": [
+        "Chỉ tag latest",
+        "Chỉ cwd của terminal người viết trong lần trước",
+        "Danh sách file, project name/context và các cấu hình định danh tài nguyên",
+        "Chỉ tên biến EXIT_CODE"
+      ],
+      "correct": 2,
+      "explanation": "Các command riêng phải dùng cùng ranh giới được thiết kế."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Safe cleanup design",
+      "question": "Vì sao system prune -af --volumes không nên làm cleanup mặc định cho mỗi test trên daemon dùng chung?",
+      "options": [
+        "Vì prune không bao giờ xóa gì",
+        "Vì --volumes chỉ in tên",
+        "Vì daemon tự phân loại mọi tài nguyên theo file script",
+        "Phạm vi rộng có thể tác động tài nguyên không thuộc test"
+      ],
+      "correct": 3,
+      "explanation": "Ưu tiên cleanup tài nguyên do test sở hữu và có chính sách dữ liệu rõ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Image provenance",
+      "question": "Muốn bảo đảm image được deploy chính là artifact đã test nên dùng nguyên tắc nào?",
+      "options": [
+        "Gắn kết quả test với image identity/digest và phát hành đúng artifact đó",
+        "Build lại từ latest tùy thời điểm rồi giả giống hệt",
+        "Chỉ so tên app",
+        "Chỉ in VERSION trong log"
+      ],
+      "correct": 0,
+      "explanation": "Tên mutable hoặc việc build lần nữa không tự chứng minh cùng nội dung."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Release tag concurrency",
+      "question": "Hai pipeline đồng thời push latest có thể gây điều gì?",
+      "options": [
+        "Không thể có hai push cùng registry",
+        "Pipeline hoàn tất sau có thể chuyển tag latest khác release mong muốn",
+        "Registry tự chọn commit tốt nhất theo test",
+        "Latest tự khóa mọi pipeline"
+      ],
+      "correct": 1,
+      "explanation": "Cần chính sách promotion/concurrency và identity rõ ràng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Version source integrity",
+      "question": "Git describe chỉ phản ánh ref nhưng context có file chưa commit. Cần thêm gì nếu yêu cầu truy vết source chính xác?",
+      "options": [
+        "Chỉ đặt APP_NAME readonly",
+        "Chỉ dùng hai -t",
+        "Chính sách working tree, input build và provenance phù hợp thay vì chỉ một tag từ ref",
+        "Chỉ thêm echo Building"
+      ],
+      "correct": 2,
+      "explanation": "Build context thực tế là đầu vào quan trọng của artifact."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Argument validation and version",
+      "question": "VERSION từ Git có thể là chuỗi không phù hợp image tag theo mọi repo naming rule không?",
+      "options": [
+        "Không, mọi Git ref đều luôn là Docker tag hợp lệ",
+        "Không, shell quotes tự đổi ký tự cấm",
+        "Không, registry tự bảo tồn nguyên mọi ký tự",
+        "Có thể, cần chuẩn hóa/validate theo quy tắc tag và giữ liên kết source"
+      ],
+      "correct": 3,
+      "explanation": "Hai hệ đặt tên có grammar và giới hạn khác nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Build args secret alternative",
+      "question": "Khi build cần credential tạm, hướng thiết kế nào phù hợp?",
+      "options": [
+        "Cơ chế build secret được hỗ trợ, quyền tối thiểu và tránh ghi credential vào image/log",
+        "Nhét credential vào tag latest",
+        "Ghi credential vào ARG rồi giả luôn biến mất",
+        "Echo toàn token để dễ debug"
+      ],
+      "correct": 0,
+      "explanation": "Không tự gọi registry hoặc đọc secret để trả lời câu này."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Production override audit",
+      "question": "Sau merge base/prod, cần kiểm gì trước khi cho rằng prod an toàn theo cấu hình?",
+      "options": [
+        "Chỉ app tên myapp",
+        "Port, volume, environment, image, dependency và quyền hiệu lực theo contract",
+        "Chỉ tên file có chữ prod",
+        "Chỉ up có -d"
+      ],
+      "correct": 1,
+      "explanation": "Tên file không bảo đảm kết quả merge đáp ứng yêu cầu."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Readiness dependency graph",
+      "question": "Container app được tạo trước khi DB sẵn sàng có thể làm gì?",
+      "options": [
+        "Compose file luôn là transaction database",
+        "Log follow tự làm DB khỏe",
+        "App cần xử lý readiness/retry theo dependency contract",
+        "Up -d tự chứng minh DB đã xử lý query nghiệp vụ"
+      ],
+      "correct": 2,
+      "explanation": "Startup order và khả năng phục vụ thực tế là hai vấn đề riêng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Test isolation",
+      "question": "Các test container dùng chung named volume dữ liệu production có rủi ro gì?",
+      "options": [
+        "Container tự cô lập mọi volume trùng tên",
+        "--rm bảo vệ mọi dữ liệu host",
+        "Tên service test tự chặn ghi production",
+        "Test/teardown có thể sửa hoặc xóa dữ liệu ngoài phạm vi test"
+      ],
+      "correct": 3,
+      "explanation": "Cần ranh giới project/data và cleanup theo ownership thực."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Unknown command contract",
+      "question": "Vì sao CLI tự động hóa nên trả status lỗi cho command không hỗ trợ thay vì chỉ echo usage thành công?",
+      "options": [
+        "Caller/CI cần phân biệt input sai với thao tác thành công",
+        "Vì echo không thể in usage",
+        "Vì case bắt buộc exit1 ở mọi nhánh",
+        "Vì status không được đọc trong CI"
+      ],
+      "correct": 0,
+      "explanation": "Text trợ giúp và status vận hành có vai trò khác nhau."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Help dependency laziness",
+      "question": "Muốn help chạy được ngay cả ngoài Git repository nên thay đổi thiết kế nào?",
+      "options": [
+        "Bỏ mọi error check của script",
+        "Parse/help sớm rồi chỉ tính VERSION khi command cần",
+        "Luôn git describe trước mọi command",
+        "Tự clone một repo bất kỳ để in help"
+      ],
+      "correct": 1,
+      "explanation": "Trì hoãn dependency không cần thiết làm hợp đồng CLI rõ hơn."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Build test push order",
+      "question": "Quy trình đầy đủ nên ngăn điều gì khi test không đạt?",
+      "options": [
+        "Chỉ đổi latest thành failed nhưng vẫn chạy prod",
+        "Xóa toàn daemon để coi như test pass",
+        "Không promotion/push/deploy artifact chưa đạt tiêu chí theo chính sách",
+        "Vẫn deploy rồi chỉ thêm warning"
+      ],
+      "correct": 2,
+      "explanation": "Các gate cần dùng đúng artifact và status, không chỉ tên function."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Pull and deploy version",
+      "question": "Nếu prod Compose dùng image latest cũ ở local, source chỉ up -d có đủ xác nhận đã lấy đúng image vừa push chưa?",
+      "options": [
+        "Có, latest luôn được tự cập nhật ở mọi command",
+        "Có, echo Production running tự pull",
+        "Có, Git VERSION tự thay mọi image field",
+        "Không, cần pull/image identity policy và kiểm release thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Pull policy/cache/config cần được nêu rõ thay vì suy đoán."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Docker permission boundary",
+      "question": "Script gọi Docker daemon từ context khác mong muốn có thể tác động gì?",
+      "options": [
+        "Tài nguyên của daemon/context được chọn, không nhất thiết máy/project người viết đang nghĩ",
+        "Chỉ các file nằm cạnh script",
+        "Chỉ container có cùng username trong tên",
+        "Không có tác động vì Bash là local"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm context/quyền và ranh giới thao tác."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Shell stub testing",
+      "question": "Muốn kiểm nhánh test failure cleanup mà không chạy Docker thật, cách nào hữu ích?",
+      "options": [
+        "Giả mọi container exit0",
+        "Stub command ghi lại argument/status và kiểm thứ tự/luồng lỗi trên fixture",
+        "Chạy prune thật để chứng minh cleanup",
+        "Chỉ grep chữ cleanup trong source"
+      ],
+      "correct": 1,
+      "explanation": "Kiểm mô hình shell không đồng nghĩa kiểm Docker integration nhưng kiểm được lỗi điều phối."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Artifact retention policy",
+      "question": "Vì sao dọn mọi unused image ngay sau deploy có thể ảnh hưởng khả năng rollback?",
+      "options": [
+        "Tag latest giữ mọi version trước tự động",
+        "Prune tự biết lịch sử rollback của ứng dụng",
+        "Có thể loại artifact cũ còn cần theo chính sách phục hồi dù hiện chưa có container dùng",
+        "Unused luôn có nghĩa vô giá trị vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Retention phải bám mục tiêu phục hồi và tài nguyên thực."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Complete pipeline acceptance",
+      "question": "Để hoàn thành bài tập CI/CD của lesson cần bổ sung và kiểm gì?",
+      "options": [
+        "Chỉ thêm một echo CI complete",
+        "Chỉ gọi build và bỏ test",
+        "Chỉ tăng -P của xargs không liên quan",
+        "Chuỗi build/test/push/deploy, failure/cleanup/status, identity và config theo môi trường"
+      ],
+      "correct": 3,
+      "explanation": "Source là tập helper/router, chưa tự là pipeline phát hành đầy đủ."
+    }
+  ]
+}

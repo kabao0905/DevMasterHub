@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "ruby",
+  "level": "junior",
+  "lesson": "activerecord",
+  "language": "vi",
+  "sourceHash": "e766fcce2b7cc2c662fa3747d22199471d1f453554fe8af6c5d9ad579faac808",
+  "status": "approved",
+  "review": "Tự soạn theo Order/callbacks/report/index migration. Rails7.1 baseline,7.2 docs bổ sung. Source chưa có notify_status_change/recent;sum block duyệt records ở Ruby;after_create không đồng nghĩa commit. Không chạy DB/SQL/migration/mailer/jobs.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Order parent",
+      "question": "Order kế thừa gì?",
+      "options": [
+        "ApplicationRecord",
+        "ApplicationController",
+        "Sidekiq::Job",
+        "Module"
+      ],
+      "correct": 0,
+      "explanation": "Model dùng ActiveRecord."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Customer link",
+      "question": "belongs_to :customer khai báo gì?",
+      "options": [
+        "Một cache key",
+        "Liên kết order tới customer",
+        "Một String customer luôn hợp lệ",
+        "Một route customer"
+      ],
+      "correct": 1,
+      "explanation": "Cần model/schema liên quan."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Order items collection",
+      "question": "has_many :order_items mô tả gì?",
+      "options": [
+        "Một HTTP list",
+        "Một class method report",
+        "Collection item thuộc order",
+        "Một field Integer duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Association có lifecycle option riêng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Item destroy option",
+      "question": "dependent: :destroy áp lên association nào?",
+      "options": [
+        "customer",
+        "products trực tiếp",
+        "Mọi order trong DB",
+        "order_items"
+      ],
+      "correct": 3,
+      "explanation": "Source không áp option này cho products."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Products through",
+      "question": "Order liên kết products qua đâu?",
+      "options": [
+        "order_items",
+        "customer",
+        "status",
+        "mailer"
+      ],
+      "correct": 0,
+      "explanation": "Through association dùng join/line items."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Total callback",
+      "question": "calculate_total được đăng ký ở callback nào?",
+      "options": [
+        "after_find",
+        "before_save",
+        "after_commit",
+        "after_destroy"
+      ],
+      "correct": 1,
+      "explanation": "Được gọi trước save theo callback flow."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Confirmation callback",
+      "question": "send_confirmation được đăng ký khi nào?",
+      "options": [
+        "after_destroy",
+        "Sau mọi query",
+        "after_create",
+        "before_validation"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nghĩa sau commit."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Status notification",
+      "question": "notify_status_change được đăng ký ở đâu?",
+      "options": [
+        "before_create",
+        "after_find",
+        "after_initialize",
+        "after_update"
+      ],
+      "correct": 3,
+      "explanation": "Có điều kiện dirty tracking đi kèm."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Status condition",
+      "question": "Điều kiện callback status là gì?",
+      "options": [
+        "saved_change_to_status?",
+        "status luôn pending",
+        "total>100",
+        "created_at.nil?"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ nhắm saved status change."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Pending scope",
+      "question": "pending lọc điều kiện nào?",
+      "options": [
+        "customer:nil",
+        "status:\"pending\"",
+        "published:true",
+        "total:0"
+      ],
+      "correct": 1,
+      "explanation": "Scope chứa where hash."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Date scope",
+      "question": "by_date nhận những tham số nào?",
+      "options": [
+        "customer và product",
+        "page và per",
+        "from và to",
+        "month duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Tạo range created_at."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Expensive scope",
+      "question": "expensive lọc gì?",
+      "options": [
+        "total >= 100",
+        "total < 100",
+        "quantity > 100",
+        "total > 100"
+      ],
+      "correct": 3,
+      "explanation": "Dấu > là strict."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Report group",
+      "question": "sales_report group theo field nào?",
+      "options": [
+        "status",
+        "customer_id",
+        "created_at từng giây",
+        "product_id"
+      ],
+      "correct": 0,
+      "explanation": "Một row aggregate cho mỗi nhóm có dữ liệu."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Report count",
+      "question": "COUNT(*) trong report có ý định gì?",
+      "options": [
+        "Đếm query requests",
+        "Đếm order rows mỗi status",
+        "Đếm sản phẩm khác nhau",
+        "Đếm khách duy nhất"
+      ],
+      "correct": 1,
+      "explanation": "Không có DISTINCT trong expression."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Report revenue",
+      "question": "SUM(total) tính gì?",
+      "options": [
+        "Số lượng user",
+        "Max quantity",
+        "Tổng total của order rows mỗi nhóm",
+        "Trung bình giá"
+      ],
+      "correct": 2,
+      "explanation": "Đây là aggregate SQL."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Item amount",
+      "question": "Mỗi item đóng góp total theo biểu thức nào?",
+      "options": [
+        "quantity + price",
+        "quantity / price",
+        "product_id * customer_id",
+        "quantity * price"
+      ],
+      "correct": 3,
+      "explanation": "Sum các line amounts."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Deferred mail",
+      "question": "deliver_later có ý định gì?",
+      "options": [
+        "Enqueue mail delivery qua job setup",
+        "Bảo đảm mail đã tới inbox ngay",
+        "Return JSON response",
+        "Tạo database index"
+      ],
+      "correct": 0,
+      "explanation": "Enqueue khác hoàn tất giao thư."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Migration purpose",
+      "question": "AddIndexesToOrders dùng để làm gì?",
+      "options": [
+        "Chạy report mỗi tháng",
+        "Mô tả thêm indexes",
+        "Tự tạo mailer",
+        "Validate order quantities"
+      ],
+      "correct": 1,
+      "explanation": "Schema changes cần migration execution."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Status index",
+      "question": "Migration thêm single-column index nào?",
+      "options": [
+        "quantity",
+        "email",
+        "status",
+        "total"
+      ],
+      "correct": 2,
+      "explanation": "Còn có created_at index và composite index."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Composite index columns",
+      "question": "Composite index trong source theo thứ tự nào?",
+      "options": [
+        "status,customer_id",
+        "created_at,total",
+        "product_id,quantity",
+        "customer_id,status"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự cột có ý nghĩa với access patterns."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Before save coverage",
+      "question": "before_save thường áp lên create/update qua save hợp lệ không?",
+      "options": [
+        "Có",
+        "Chỉ create",
+        "Chỉ update",
+        "Chỉ find"
+      ],
+      "correct": 0,
+      "explanation": "Không áp cho mọi API ghi bỏ callbacks."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Empty item total",
+      "question": "Theo sum block,collection items rỗng bình thường cho tổng nào?",
+      "options": [
+        "Một Array",
+        "0",
+        "nil bắt buộc",
+        "100"
+      ],
+      "correct": 1,
+      "explanation": "Sum với identity0 cho collection rỗng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Simple total",
+      "question": "Hai items quantity2 price10 và quantity3 price5 cho total toán học nào?",
+      "options": [
+        "50",
+        "20",
+        "35",
+        "25"
+      ],
+      "correct": 2,
+      "explanation": "2*10+3*5=35,giả định numeric domain phù hợp."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Block aggregation location",
+      "question": "order_items.sum{|item|...} thực hiện phép nhân/cộng chủ yếu ở đâu theo Rails7.1 API?",
+      "options": [
+        "Một SQL SUM expression tự suy từ block",
+        "Native mailer",
+        "Database trigger tự tạo",
+        "Ruby map/sum trên records"
+      ],
+      "correct": 3,
+      "explanation": "Block không tự chuyển thành SQL expression."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Sql aggregation alternative",
+      "question": "Muốn DB aggregate quantity*price cần xem hướng nào?",
+      "options": [
+        "SQL/Arel expression an toàn với schema/type phù hợp",
+        "Giữ block và giả là SQL",
+        "Đổi sum thành puts",
+        "Thêm includes products để compiler dịch block"
+      ],
+      "correct": 0,
+      "explanation": "Cần thiết kế query thực tế thay suy từ tên sum."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Item loading cost",
+      "question": "Sum bằng block có thể cần load gì?",
+      "options": [
+        "Không dữ liệu nào",
+        "Các item records để chạy Ruby block",
+        "Chỉ một Integer tổng từ SQL chắc chắn",
+        "Chỉ status String"
+      ],
+      "correct": 1,
+      "explanation": "Cân nhắc memory/query cost khi nhiều items."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Child updates parent callback",
+      "question": "Chỉ sửa một OrderItem có tự bảo đảm Order.before_save chạy không?",
+      "options": [
+        "Có,through tự recalculate",
+        "Có,dependent destroy xử lý tổng",
+        "Không,cần cơ chế cập nhật parent rõ",
+        "Có,mọi association mutation tự save parent"
+      ],
+      "correct": 2,
+      "explanation": "Callbacks gắn trên Order không tự cover mọi child change."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Total validation omission",
+      "question": "Source có validate quantity/price không âm không?",
+      "options": [
+        "Có,belongs_to tự kiểm",
+        "Có,total type tự cấm âm",
+        "Có,scope expensive chặn",
+        "Chưa thấy"
+      ],
+      "correct": 3,
+      "explanation": "Model/schema item chưa được cung cấp."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Null arithmetic input",
+      "question": "Nếu quantity hoặc price nil mà không có handling,block có thể gặp gì?",
+      "options": [
+        "Lỗi arithmetic/protocol",
+        "Tự coi nil=0 mọi trường hợp",
+        "Tự bỏ item",
+        "Tự tạo product"
+      ],
+      "correct": 0,
+      "explanation": "Cần domain constraints/normalization theo contract."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Price data type uncertainty",
+      "question": "Source có chứng minh price dùng decimal hay Float chưa?",
+      "options": [
+        "Có,total luôn integer cents",
+        "Chưa,schema không có",
+        "Có,mọi price tự BigDecimal",
+        "Có,Ruby variable tên price là Money"
+      ],
+      "correct": 1,
+      "explanation": "Không suy numeric model từ tên field."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Exactly threshold",
+      "question": "total=100 có được expensive chọn không?",
+      "options": [
+        "Chỉ nếu pending",
+        "Luôn có vì index status",
+        "Không",
+        "Có,vì > là >="
+      ],
+      "correct": 2,
+      "explanation": "Predicate strict >100."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Pending chain",
+      "question": "Order.pending.expensive thể hiện điều kiện gì?",
+      "options": [
+        "pending hoặc total>100",
+        "Chỉ total>100 vì scope ghi đè nhau",
+        "Chỉ pending vì scope sau bỏ qua",
+        "status pending và total>100"
+      ],
+      "correct": 3,
+      "explanation": "Hai where chain kết hợp trong query này."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Bound parameter",
+      "question": "where(\"total > ?\",100) dùng ? để làm gì?",
+      "options": [
+        "Bind giá trị theo API thay nối input tùy ý",
+        "Tên wildcard cột",
+        "Ruby ternary operator",
+        "Tự tạo index"
+      ],
+      "correct": 0,
+      "explanation": "Value binding khác cho phép SQL identifier tùy ý."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Inclusive date range",
+      "question": "from..to trong by_date bao gồm endpoint to theo range không?",
+      "options": [
+        "Không vì where luôn exclusive",
+        "Có",
+        "Không",
+        "Chỉ nếu String"
+      ],
+      "correct": 1,
+      "explanation": "Timezone/precision vẫn cần định nghĩa theo contract."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "All month argument",
+      "question": "sales_report(month) cần month hỗ trợ API nào?",
+      "options": [
+        "jsonEncode",
+        "goBranch",
+        "all_month của kiểu date/time phù hợp",
+        "times của Integer bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Tham số không được code parse tự từ số1..12."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Report filter placement",
+      "question": "where(created_at:month.all_month) áp lên dữ liệu khi nào trong ý nghĩa query?",
+      "options": [
+        "Chỉ lọc tên status sau SUM",
+        "Tạo một row cho mọi ngày kể cả rỗng",
+        "Sort revenue",
+        "Lọc rows thuộc tháng trước aggregate groups"
+      ],
+      "correct": 3,
+      "explanation": "Đây là WHERE condition."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Report fields",
+      "question": "select trong report gồm những trường/aliases nào?",
+      "options": [
+        "status,count,revenue",
+        "id,title,body",
+        "customer,password,token",
+        "quantity,price,product_id"
+      ],
+      "correct": 0,
+      "explanation": "Aggregate projection không là đầy đủ Order attributes."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "No rows group",
+      "question": "Không có orders tháng đó thì grouped report có tự tạo mọi status với0 không?",
+      "options": [
+        "Có,month.all_month tạo records",
+        "Không,không có group rows nếu chưa logic bổ sung",
+        "Có,group tự tạo mọi enum status",
+        "Có,select COUNT tạo đủ mọi status"
+      ],
+      "correct": 1,
+      "explanation": "Muốn zero-filled report cần thiết kế thêm."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Count star null totals",
+      "question": "COUNT(*) có vẫn đếm row có total null không?",
+      "options": [
+        "Không,chỉ đếm customer unique",
+        "Có nhưng tự đổi total thành0",
+        "Có theo COUNT(*) semantics",
+        "Không,chỉ đếm total non-null"
+      ],
+      "correct": 2,
+      "explanation": "Count rows khác COUNT(total)."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Revenue null treatment",
+      "question": "SUM(total) với một số total null thường xử lý thế nào?",
+      "options": [
+        "Mọi null tự thành100",
+        "Luôn count rows thay sum",
+        "Luôn lỗi query",
+        "Bỏ qua null values theo SQL;all-null/group result cần policy"
+      ],
+      "correct": 3,
+      "explanation": "Không khẳng định adapter numeric return type khi chưa chạy."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "No report order",
+      "question": "Report có order revenue/status tường minh không?",
+      "options": [
+        "Không",
+        "Có,group luôn sort alphabet mọi DB",
+        "Có,COUNT tự sort giảm",
+        "Có,select thứ tự columns là row order"
+      ],
+      "correct": 0,
+      "explanation": "Cần order nếu output order là contract."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Partial record access",
+      "question": "Dùng result aggregate như full Order để đọc field chưa select có rủi ro gì?",
+      "options": [
+        "Tự parse revenue thành customer",
+        "Thiếu attribute hoặc value không được load theo API",
+        "Tự fetch mọi field vô điều kiện",
+        "Luôn hợp vì class Order"
+      ],
+      "correct": 1,
+      "explanation": "Projection hẹp cần dùng đúng loại dữ liệu/result."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Notification missing implementation",
+      "question": "Method callback nào được đăng ký nhưng chưa thấy body?",
+      "options": [
+        "send_confirmation",
+        "sales_report",
+        "notify_status_change",
+        "calculate_total"
+      ],
+      "correct": 2,
+      "explanation": "Nếu điều kiện đúng cần implementation/inherited behavior phù hợp."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Recent scope omission",
+      "question": "Line Order.includes(...).pending.recent có dependency nào chưa thấy trên Order?",
+      "options": [
+        "pending scope",
+        "includes API",
+        "customer association",
+        "recent scope/method"
+      ],
+      "correct": 3,
+      "explanation": "Post.recent ở bài khác không tự trở thành Order.recent."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Dirty condition intent",
+      "question": "saved_change_to_status? ở after_update nhằm gì?",
+      "options": [
+        "Chỉ notify khi status được lưu thay đổi",
+        "Notify mỗi lần đọc status",
+        "Validate status enum",
+        "Sort theo status"
+      ],
+      "correct": 0,
+      "explanation": "Dirty tracking condition không tự implement notification."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Unchanged status",
+      "question": "Update field khác không làm status đổi,callback conditional có nên được coi tự chạy notify không?",
+      "options": [
+        "Có,nếu có customer index",
+        "Không nếu predicate saved change false",
+        "Có,mọi update đều status change",
+        "Có,nếu expensive"
+      ],
+      "correct": 1,
+      "explanation": "Nêu theo predicate chứ không đếm callbacks tùy tiện."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Create versus commit",
+      "question": "after_create có đồng nghĩa transaction đã commit chưa?",
+      "options": [
+        "Có,deliver_later là commit",
+        "Có,Order có belongs_to",
+        "Không",
+        "Có,mọi insert auto commit trước callback"
+      ],
+      "correct": 2,
+      "explanation": "Outer transaction có thể vẫn đang diễn ra."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Mailer dependency",
+      "question": "OrderMailer.confirmation có implementation trong source chưa?",
+      "options": [
+        "Có,Rails sinh tự theo tên method",
+        "Có,mọi Order có Mailer built-in",
+        "Có,Migration7.1 tạo Mailer",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Job adapter/templates/config cũng chưa có."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Delivery completion",
+      "question": "deliver_later trả/enqueue thành công có chứng minh recipient nhận mail chưa?",
+      "options": [
+        "Không",
+        "Có,mọi queue exactly-once delivery",
+        "Có,after_create chứng minh inbox",
+        "Có,order persisted là proof mail"
+      ],
+      "correct": 0,
+      "explanation": "Cần quan sát/job/provider scope tương ứng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Migration executed status",
+      "question": "Định nghĩa class migration có tự chạy add_index production không?",
+      "options": [
+        "Có,includes chạy change",
+        "Không",
+        "Có,khi đọc code mọi table đổi",
+        "Có,scope expensive kích hoạt"
+      ],
+      "correct": 1,
+      "explanation": "Migration execution/state khác Ruby declaration."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Index quantity",
+      "question": "change viết bao nhiêu lệnh add_index?",
+      "options": [
+        "4",
+        "1",
+        "3",
+        "2"
+      ],
+      "correct": 2,
+      "explanation": "Status,created_at và composite customer_id/status."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Composite not unique",
+      "question": "Các indexes source có unique:true không?",
+      "options": [
+        "Có,mọi composite tự unique",
+        "Có,status index tự unique",
+        "Có,customer_id luôn unique",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Không suy uniqueness guarantee."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Separate date index",
+      "question": "created_at index là gì trong migration?",
+      "options": [
+        "Một index riêng",
+        "Cột thứ ba trong composite customer/status",
+        "Foreign key",
+        "Validation method"
+      ],
+      "correct": 0,
+      "explanation": "Access pattern/time filter cần xem DB plan."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Index not foreign key",
+      "question": "add_index customer_id/status có tự thêm foreign key constraint không?",
+      "options": [
+        "Có,composite key là reference",
+        "Không",
+        "Có,index luôn là FK",
+        "Có,belongs_to sửa DB khi migrate index"
+      ],
+      "correct": 1,
+      "explanation": "Constraint phải khai báo/xác minh riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Eager associations",
+      "question": "Line includes nạp associations nào theo ý định?",
+      "options": [
+        "status và total",
+        "Mọi association vô hạn",
+        "customer và products",
+        "order_items và mailer chắc chắn"
+      ],
+      "correct": 2,
+      "explanation": "Through loading strategy không chứng minh exact query count."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Nplus1 definition",
+      "question": "N+1 trong danh sách orders thường là gì?",
+      "options": [
+        "Một index có N+1 cột",
+        "Một callback được gọi một lần",
+        "Một phép cộng numeric",
+        "Query list rồi truy vấn lặp association cho từng order"
+      ],
+      "correct": 3,
+      "explanation": "Eager loading nhắm pattern truy vấn lặp."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Includes no cost guarantee",
+      "question": "includes có bảo đảm chỉ một query và luôn nhanh hơn mọi workload không?",
+      "options": [
+        "Không",
+        "Có,mọi DB giống nhau",
+        "Có,vì name eager",
+        "Có,nếu scope pending"
+      ],
+      "correct": 0,
+      "explanation": "Có memory/join/preload tradeoffs cần đo."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Before save not before validation",
+      "question": "calculate_total before_save có tự chạy trước mọi validation của save không?",
+      "options": [
+        "Có,sum block sửa phase",
+        "Không,before_validation là phase khác",
+        "Có,before_save luôn đầu mọi callback",
+        "Có,method private ưu tiên"
+      ],
+      "correct": 1,
+      "explanation": "Validation phụ thuộc total cần xem thời điểm cập nhật."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Callback bypass writes",
+      "question": "Một bulk write bỏ callbacks có tự chạy calculate_total không?",
+      "options": [
+        "Có,before_save là DB trigger",
+        "Có,includes bảo đảm",
+        "Không,phải xem API ghi cụ thể",
+        "Có,mọi SQL qua model đều callback"
+      ],
+      "correct": 2,
+      "explanation": "Không coi callback như constraint DB universal."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Exercise incomplete",
+      "question": "Source đã có benchmark/query plan/job results cho tối ưu chưa?",
+      "options": [
+        "Có,comment N+1 fix là proof",
+        "Có,migration code là benchmark",
+        "Có,deliver_later là load test",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Đó là nội dung cần xác minh khi làm exercise."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Total consistency",
+      "question": "Để total đúng khi item được thêm/sửa/xóa từ nhiều paths cần gì?",
+      "options": [
+        "Invariant/transaction/update strategy bao phủ child changes",
+        "Chỉ before_save trên parent là đủ mọi trường hợp",
+        "Chỉ index status",
+        "Chỉ scope expensive"
+      ],
+      "correct": 0,
+      "explanation": "Source hiện chỉ tính ở một parent lifecycle path."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Concurrent line item writes",
+      "question": "Hai thao tác items overlap có thể làm total stale nếu thiếu coordination không?",
+      "options": [
+        "Không,Ruby object chỉ một nên DB không concurrent",
+        "Có,cần transaction/locking/version policy phù hợp",
+        "Không,vì Rails model có final fields",
+        "Không,mọi callback global lock"
+      ],
+      "correct": 1,
+      "explanation": "DB concurrency khác local callback syntax."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Numeric money model",
+      "question": "Tổng tiền nên được thiết kế theo hướng nào?",
+      "options": [
+        "Chỉ tên total là đủ",
+        "Chỉ before_save loại sai số",
+        "Precision,currency,rounding/overflow và schema rõ ràng",
+        "Mặc định Float luôn chính xác tuyệt đối"
+      ],
+      "correct": 2,
+      "explanation": "Đây là kỹ thuật biểu diễn số,không là khuyến nghị tài chính."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "External atomicity",
+      "question": "Transaction DB có tự rollback mail đã gửi/side effect ngoài DB không?",
+      "options": [
+        "Có,ActiveRecord rollback mọi network",
+        "Có,deliver_later luôn rollback Redis mọi version",
+        "Có,callback tự transaction phân tán",
+        "Không,cần phối hợp side effect theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Không phóng đại all-or-nothing ngoài DB connection scope."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "After commit delivery gap",
+      "question": "Chuyển enqueue sang after_commit có bảo đảm job không thể thất lạc sau commit không?",
+      "options": [
+        "Không,commit-to-enqueue vẫn có failure gap nếu thiếu durable coordination",
+        "Có,after_commit tự distributed transaction",
+        "Có,mọi queue exactly-once",
+        "Có,nếu model có indexes"
+      ],
+      "correct": 0,
+      "explanation": "Có thể cần outbox/idempotency và quan sát theo yêu cầu."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Callback transaction baseline",
+      "question": "Có thể áp hành vi enqueue-after-commit của mọi Rails/job adapter mới vào source này không?",
+      "options": [
+        "Có,deliver_later không có adapter",
+        "Không,phải xét version/config/adapter thực",
+        "Có,latest docs luôn áp7.1",
+        "Có,Migration[7.1] tự bật mọi tính năng tương lai"
+      ],
+      "correct": 1,
+      "explanation": "Không claim behavior dependency chưa biết."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Report timezone",
+      "question": "Biên tháng của sales_report cần xác định gì?",
+      "options": [
+        "Mọi DB timezone luôn UTC theo local",
+        "group status tự chuẩn hóa timezone",
+        "Timezone và range boundaries theo contract dữ liệu",
+        "Chỉ số tháng integer là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Sai boundary có thể lọt/mất orders ở ranh giới."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Report aggregate meaning",
+      "question": "SUM(total) có tự là doanh thu đã thu thực tế không?",
+      "options": [
+        "Có,mọi Order.total là settled revenue",
+        "Có,group status tự loại canceled",
+        "Có,COUNT kiểm payment",
+        "Không,phải định nghĩa trạng thái/thanh toán/hoàn tiền và domain report"
+      ],
+      "correct": 3,
+      "explanation": "Tên alias revenue không chứng minh nghiệp vụ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Report SQL shape",
+      "question": "Nếu thêm cột không aggregate vào SELECT cùng GROUP BY cần xem gì?",
+      "options": [
+        "SQL grouping rules/functional dependencies của adapter và schema",
+        "Mọi cột bất kỳ đều hợp lệ",
+        "ActiveRecord tự đoán row đúng",
+        "Ruby tự sort khắc phục query"
+      ],
+      "correct": 0,
+      "explanation": "Không phụ thuộc behavior permissive của một DB để suy mọi DB."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Composite access pattern",
+      "question": "Index(customer_id,status) có luôn tương đương index(status,customer_id) không?",
+      "options": [
+        "Có,index chỉ metadata",
+        "Không,thứ tự cột ảnh hưởng khả năng sử dụng theo query/DB",
+        "Có,vì cùng hai cột",
+        "Có,SQL tự đảo mọi index miễn phí"
+      ],
+      "correct": 1,
+      "explanation": "Xem EXPLAIN và workload thực thay quy tắc tuyệt đối."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Low selectivity index",
+      "question": "Index status ít giá trị có luôn tăng tốc mọi query không?",
+      "options": [
+        "Có,pending là String nên O(1)",
+        "Có,unique false làm nhanh vô hạn",
+        "Không,selectivity/data distribution/write cost ảnh hưởng planner",
+        "Có,index luôn được dùng"
+      ],
+      "correct": 2,
+      "explanation": "Cần đo plan/latency thay thêm index theo tên."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Migration production risk",
+      "question": "Thêm indexes lớn ở production cần kiểm gì?",
+      "options": [
+        "Chỉ migration class compile",
+        "Chỉ version7.1 trong bracket",
+        "Chỉ tên AddIndexes",
+        "Locking/DDL support,rollout và write/storage overhead theo DB"
+      ],
+      "correct": 3,
+      "explanation": "Chưa chạy migration ở đây."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Callback failure missing method",
+      "question": "Nếu status đổi và notify_status_change thật sự không có,có rủi ro gì?",
+      "options": [
+        "Callback raise và update transaction behavior theo lỗi thay vì notify thành công",
+        "Rails tự tạo method trống",
+        "Migration tạo notification body",
+        "Saved dirty predicate bỏ qua method thiếu"
+      ],
+      "correct": 0,
+      "explanation": "Không gọi sample update hoàn chỉnh khi dependency thiếu."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Calculation query scaling",
+      "question": "Recompute bằng block toàn bộ items mỗi save có cost gì?",
+      "options": [
+        "Tự dùng index status để cộng line values",
+        "Load/duyệt theo số items,cần cân nhắc DB aggregate hoặc incremental strategy",
+        "Luôn O(1) vì callback",
+        "Không tốn RAM"
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu phải giữ invariant và domain số."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Destroy versus item recompute",
+      "question": "dependent destroy có tự cập nhật báo cáo total của order khác không?",
+      "options": [
+        "Có,through products cập nhật mọi customer",
+        "Có,indexes làm computed columns",
+        "Không,cần logic liên quan được chỉ rõ",
+        "Có,mọi model totals tự sync"
+      ],
+      "correct": 2,
+      "explanation": "Association lifecycle không là hệ aggregate universal."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Query evidence needed",
+      "question": "Muốn chứng minh đã fix N+1 cần gì?",
+      "options": [
+        "Chỉ có includes trong source",
+        "Chỉ chạy một Order không association",
+        "Chỉ tạo migration file",
+        "Đo queries trên path truy cập associations với dataset/tests phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Evidence phải bám số truy vấn thực tế."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Index tradeoff tests",
+      "question": "Sau thêm index cần kiểm gì ngoài read speed?",
+      "options": [
+        "Write latency/storage và query plans theo workload",
+        "Chỉ count add_index",
+        "Chỉ status có chữ pending",
+        "Chỉ report alias revenue"
+      ],
+      "correct": 0,
+      "explanation": "Indexes có chi phí duy trì."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Callback contract tests",
+      "question": "Test nào phù hợp source?",
+      "options": [
+        "Chỉ pending scope name",
+        "Create/update status unchanged/changed,items changes,rollback và enqueue policy",
+        "Chỉ Order.new không save",
+        "Chỉ method private tồn tại"
+      ],
+      "correct": 1,
+      "explanation": "Nhắm phases/invariants và dependencies thiếu."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Aggregate zero policy",
+      "question": "Báo cáo sum(total) có thể trả nil khi mọi total trong nhóm đều NULL. Nếu nghiệp vụ muốn hiển thị 0 cần làm gì?",
+      "options": [
+        "Giả NULL luôn là số 0 trong mọi SQL expression",
+        "Chỉ thêm index để tổng không còn nil",
+        "Định nghĩa chính sách NULL và dùng COALESCE hoặc xử lý kết quả phù hợp",
+        "Đổi count(*) thành count(total) rồi coi đó là doanh thu"
+      ],
+      "correct": 2,
+      "explanation": "Aggregation và chính sách dữ liệu thiếu khác nhau; index không đổi ngữ nghĩa NULL."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Complete optimization scope",
+      "question": "Để exercise tối ưu hoàn thành cần gì?",
+      "options": [
+        "Chỉ giữ comment N+1 fix",
+        "Chỉ thêm recent vào một class khác",
+        "Chỉ gọi deliver_later",
+        "Sửa source gaps,verify query/index/job behavior và đo workload theo mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "Hiện đang tạo ngân hàng câu hỏi,không claim app Rails đã tối ưu."
+    }
+  ]
+}

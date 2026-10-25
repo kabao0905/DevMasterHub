@@ -1,0 +1,1134 @@
+{
+  "version": 1,
+  "tech": "php",
+  "level": "master",
+  "lesson": "scaling",
+  "language": "vi",
+  "sourceHash": "8195aabc79a746feecdf0323d410ccf4f15ff8afc35577c0ecc83e7015a95d98",
+  "status": "approved",
+  "review": "Tự soạn không API. PHP Manual OPcache/preloading/closure scope và official coroutine HTTP docs, phân biệt Swoole với OpenSwoole namespaces/version/library availability. Không có PHP/Swoole interpreter, HTTP requests, load tests hay config changes. Source thiếu capture urls ở outer closure, cleanup/timeout/error/finally/concurrency bounds và results return. Không khẳng định 3-5x/10x, Windows preload hay WaitGroup class đã sẵn có.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Opcode cache purpose",
+      "question": "OPcache chủ yếu cache gì?",
+      "options": [
+        "Opcode đã biên dịch của PHP scripts.",
+        "Mọi kết quả SQL query tự động.",
+        "Mọi HTTP response người dùng.",
+        "Mật khẩu đã giải mã của mọi account."
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất opcode cache với application data cache."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Enable setting",
+      "question": "Cấu hình minh họa bật OPcache bằng directive nào?",
+      "options": [
+        "swoole.workers=1.",
+        "opcache.enable=1.",
+        "cache.posts=1.",
+        "php.parallel=true."
+      ],
+      "correct": 1,
+      "explanation": "Comment cấu hình chưa được áp dụng vào máy."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Memory setting",
+      "question": "Directive nào nguồn đặt giá trị 256 cho memory OPcache?",
+      "options": [
+        "opcache.preload_user.",
+        "opcache.revalidate_freq.",
+        "opcache.memory_consumption.",
+        "opcache.validate_timestamps."
+      ],
+      "correct": 2,
+      "explanation": "Đơn vị/giới hạn cần theo PHP runtime config."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "File capacity setting",
+      "question": "max_accelerated_files nguồn đặt giá trị nào?",
+      "options": [
+        "256.",
+        "443.",
+        "80.",
+        "20000."
+      ],
+      "correct": 3,
+      "explanation": "Đó là cấu hình khả năng lưu script entries, không số user."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Timestamp setting",
+      "question": "validate_timestamps nguồn được đề xuất giá trị nào?",
+      "options": [
+        "0.",
+        "1.",
+        "256.",
+        "20000."
+      ],
+      "correct": 0,
+      "explanation": "Tắt kiểm timestamp cần quy trình cập nhật code phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Preload path",
+      "question": "opcache.preload minh họa trỏ tới đâu?",
+      "options": [
+        "/app/models.sql.",
+        "/app/preload.php.",
+        "/api/data.",
+        "/tmp/results.json."
+      ],
+      "correct": 1,
+      "explanation": "Path phải đúng trên môi trường server được triển khai."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Preload account",
+      "question": "preload_user trong comment có giá trị gì?",
+      "options": [
+        "postgres.",
+        "browser.",
+        "www-data.",
+        "root bắt buộc được ghi rõ."
+      ],
+      "correct": 2,
+      "explanation": "Đây là account hệ điều hành minh họa, không là Laravel user."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Autoload inclusion",
+      "question": "preload.php nguồn require_once file nào?",
+      "options": [
+        "/api/data.",
+        "/etc/passwd được ghi rõ.",
+        "/app/Models/Comment.php.",
+        "../vendor/autoload.php tính từ __DIR__."
+      ],
+      "correct": 3,
+      "explanation": "Cần Composer autoload file tồn tại theo deployment."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Precompiled models",
+      "question": "Hai model files nguồn đưa cho opcache_compile_file là gì?",
+      "options": [
+        "User.php và Post.php.",
+        "Order.php và Payment.php.",
+        "Tag.php và Category.php.",
+        "Request.php và Response.php."
+      ],
+      "correct": 0,
+      "explanation": "Đọc đúng paths app/Models."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Compile API return",
+      "question": "Theo PHP Manual, opcache_compile_file trả kiểu gì?",
+      "options": [
+        "Array tất cả classes.",
+        "bool.",
+        "HTTP response.",
+        "Post model."
+      ],
+      "correct": 1,
+      "explanation": "Source không kiểm return value của các lời gọi."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Coroutine alias",
+      "question": "use Swoole\\Coroutine as Co làm gì?",
+      "options": [
+        "Tự cài extension.",
+        "Tự nạp biến urls.",
+        "Đặt alias Co cho tên được import theo cú pháp PHP.",
+        "Tạo một OS process tênCo."
+      ],
+      "correct": 2,
+      "explanation": "Alias không chứng minh extension đã có."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Coroutine context",
+      "question": "Nguồn bọc tác vụ trong lời gọi nào?",
+      "options": [
+        "DB::transaction(...).",
+        "Cache::remember(...).",
+        "Route::apiResource(...).",
+        "Co\\run(...)."
+      ],
+      "correct": 3,
+      "explanation": "Cần coroutine runtime tương thích thực tế."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Results initial value",
+      "question": "Trong outer closure, results được khởi tạo là gì?",
+      "options": [
+        "Array rỗng.",
+        "null.",
+        "Một database connection.",
+        "HTTP response hoàn chỉnh."
+      ],
+      "correct": 0,
+      "explanation": "Biến cục bộ của closure không tự trở thành return value."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Wait coordination",
+      "question": "Biến wg nguồn nhằm mục đích gì?",
+      "options": [
+        "Mã hóa TLS certificate.",
+        "Phối hợp chờ các tác vụ hoàn thành qua WaitGroup API dự kiến.",
+        "Lưu username.",
+        "Tạo schema."
+      ],
+      "correct": 1,
+      "explanation": "Class/API WaitGroup phải đúng phiên bản/library đã cài."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Counter increment",
+      "question": "Trong mỗi vòng foreach, nguồn gọi method nào trước tạo coroutine?",
+      "options": [
+        "wait.",
+        "flush.",
+        "add.",
+        "done."
+      ],
+      "correct": 2,
+      "explanation": "Tăng counter trước khi task được tạo/chạy."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Task creation",
+      "question": "Nguồn tạo coroutine con bằng lời gọi nào?",
+      "options": [
+        "new Thread Java.",
+        "fork() được viết rõ.",
+        "array_map synchronous được viết rõ.",
+        "Co::create."
+      ],
+      "correct": 3,
+      "explanation": "Coroutine không đồng nghĩa OS thread riêng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "HTTP port",
+      "question": "Client nguồn được tạo với port nào?",
+      "options": [
+        "443.",
+        "80.",
+        "3306.",
+        "6379."
+      ],
+      "correct": 0,
+      "explanation": "Tham số thứ ba true chọn chế độ SSL theo API tương thích."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "HTTP path",
+      "question": "Client nguồn gọi GET path nào?",
+      "options": [
+        "/.env.",
+        "/api/data.",
+        "/api/posts.",
+        "/health."
+      ],
+      "correct": 1,
+      "explanation": "Host và request path là những đầu vào riêng."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Stored response part",
+      "question": "Nguồn append phần nào của client vào results?",
+      "options": [
+        "Toàn bộ certificate.",
+        "Request headers duy nhất.",
+        "body.",
+        "statusCode được viết rõ."
+      ],
+      "correct": 2,
+      "explanation": "Không có kiểm HTTP status trước khi dùng body."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Completion wait",
+      "question": "Sau khi tạo các tasks, nguồn gọi gì?",
+      "options": [
+        "wg->deleteAll().",
+        "exit ngay trước mọi task.",
+        "echo mỗi result theo input rõ ràng.",
+        "wg->wait()."
+      ],
+      "correct": 3,
+      "explanation": "Chờ counter không tự kiểm chất lượng kết quả HTTP."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Config versus application cache",
+      "question": "Bật OPcache có tự cache kết quả Post::query()->get() giữa requests không?",
+      "options": [
+        "Không.",
+        "Có; mọi query tự nhớ mãi.",
+        "Có; mọi user nhận cùng JSON.",
+        "Có; SQL không cần chạy nữa."
+      ],
+      "correct": 0,
+      "explanation": "Opcode reuse khác cache dữ liệu nghiệp vụ."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Timestamp disabled deployment",
+      "question": "Khi validate_timestamps=0, thay file PHP có tự được phát hiện định kỳ như khi bật không?",
+      "options": [
+        "Có; PHP tự commit Git.",
+        "Không; cần reset/invalidate/restart phù hợp để áp code mới.",
+        "Có; revalidate_freq luôn có hiệu lực bất kể setting.",
+        "Có; mọi request luôn đọc disk đầy đủ."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt opcode entries với preloaded definitions có lifecycle riêng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Preloaded definitions restart",
+      "question": "Theo PHP Manual, muốn thay/clear preloaded scripts cần chú ý gì?",
+      "options": [
+        "Chỉ đổi query parameter.",
+        "Chỉ gọi foreach một lần.",
+        "Restart PHP process theo quy trình deployment.",
+        "Chỉ xóa một cookie browser."
+      ],
+      "correct": 2,
+      "explanation": "Preloaded definitions không giống ordinary runtime cache entries."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Preload platform support",
+      "question": "Theo PHP Manual hiện đọc, preloading có hỗ trợ Windows không?",
+      "options": [
+        "Có trên mọi Windows theo đúng cơ chế nêu.",
+        "Chỉ khi đổi tên file thành.exe.",
+        "Tự chuyển sang Linux trong PHP.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Không hứa chạy cấu hình preload này ngay trên máy Windows hiện tại."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Preload tradeoff",
+      "question": "Preload nhiều code có thể đổi lợi ích khởi tạo lấy chi phí nào?",
+      "options": [
+        "Baseline memory và yêu cầu quản lý lifecycle/deployment.",
+        "Không dùng memory nào.",
+        "Tự giảm mọi payload network về 0.",
+        "Tự loại mọi database locks."
+      ],
+      "correct": 0,
+      "explanation": "Preload everything không mặc nhiên tối ưu nhất."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Compile without execution",
+      "question": "opcache_compile_file thông thường có thực thi các statements của file như include không?",
+      "options": [
+        "Có; luôn chạy migrations.",
+        "Không; nó compile/cache script mà không thực thi.",
+        "Có; luôn gửi mọi HTTP request trong file.",
+        "Có; luôn gọi mọi constructor."
+      ],
+      "correct": 1,
+      "explanation": "Trong preload context cần đối chiếu riêng quy tắc preload/dependencies, không suy mọi side effect đã chạy."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Missing compile check",
+      "question": "Nếu opcache_compile_file trả false nhưng code bỏ qua, source đã xử lý lỗi rõ chưa?",
+      "options": [
+        "Có; results chứa lỗi preload.",
+        "Có; wg chờ compilation.",
+        "Chưa.",
+        "Có; return bool tự abort toàn bộ deployment."
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm tra và quan sát kết quả theo quy trình."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Memory configuration scope",
+      "question": "256 ở memory_consumption có nghĩa mỗi user được riêng 256 MB RAM ứng dụng không?",
+      "options": [
+        "Có; đó là per-user quota.",
+        "Có; PHP heap luôn cố định 256 MB mọi process.",
+        "Có; database cache cũng chính xác 256 MB.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình memory opcode cache khác request heap và tổng memory server."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Max file count scope",
+      "question": "max_accelerated_files=20000 có nghĩa hỗ trợ đúng 20000 người dùng không?",
+      "options": [
+        "Không.",
+        "Có; mỗi user là một script entry.",
+        "Có; request thứ 20001 bị xóa.",
+        "Có; đó là hàng đợi HTTP."
+      ],
+      "correct": 0,
+      "explanation": "Năng lực lưu script cache khác capacity người dùng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Closure missing variable",
+      "question": "Outer function() nguồn có tự nhìn thấy biến urls bên ngoài nếu không use/parameter/global không?",
+      "options": [
+        "Có; alias Co là global variables.",
+        "Không.",
+        "Có; mọi closure PHP tự capture như arrow function.",
+        "Có; Co\\run tự import mọi locals."
+      ],
+      "correct": 1,
+      "explanation": "Đây là lỗi scope trực tiếp trong snippet."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Capture repair",
+      "question": "Sửa scope đầu vào outer closure cách nào rõ ràng?",
+      "options": [
+        "Chỉ đổi port 443 thành 80.",
+        "Chỉ tăng OPcachememory.",
+        "Định nghĩa/validate urls và capture use($urls) hoặc truyền qua contract phù hợp.",
+        "Chỉ thêm& trước results ở inner closure."
+      ],
+      "correct": 2,
+      "explanation": "Inner capture không bổ sung biến thiếu cho outer closure."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Value capture example",
+      "question": "Theo PHP closure semantics, ví dụ này dự kiến in gì?",
+      "code": "<?php\n$x=\"A\";$f=function()use($x){echo $x;};$x=\"B\";$f();\n",
+      "options": [
+        "B.",
+        "null.",
+        "AB.",
+        "A."
+      ],
+      "correct": 3,
+      "explanation": "use capture giá trị tại thời điểm tạo closure."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Reference capture example",
+      "question": "Đổi capture thành reference trong ví dụ này dự kiến in gì?",
+      "code": "<?php\n$x=\"A\";$f=function()use(&$x){echo $x;};$x=\"B\";$f();\n",
+      "options": [
+        "B.",
+        "A.",
+        "null.",
+        "AB."
+      ],
+      "correct": 0,
+      "explanation": "Reference capture nhìn thấy thay đổi cùng biến."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Results capture intent",
+      "question": "Vì sao inner closure nguồn dùng &$results?",
+      "options": [
+        "Để tạo mutex distributed.",
+        "Để cập nhật array results cùng biến ở outer scope.",
+        "Để deep clone results cho mỗi task.",
+        "Để tự serialize mọi result ra DB."
+      ],
+      "correct": 1,
+      "explanation": "Reference capture không là synchronization protocol toàn hệ thống."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Object capture identity",
+      "question": "use($wg) với một object có tạo deep clone WaitGroup không?",
+      "options": [
+        "Có; PHP use luôn copy sâu object.",
+        "Có; mọi properties thành readonly.",
+        "Không.",
+        "Có; mỗi task có counter riêng mới hoàn toàn."
+      ],
+      "correct": 2,
+      "explanation": "Cùng object handle có thể được dùng để phối hợp theo API."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Append ordering",
+      "question": "results[] khi mỗi request hoàn tất có bảo đảm giữ thứ tự urls ban đầu không?",
+      "options": [
+        "Có; foreach luôn ép HTTP hoàn tất theo input.",
+        "Có; WaitGroup tự sort results.",
+        "Có; SSL làm thứ tự cố định.",
+        "Không; thứ tự completion có thể khác thứ tự input."
+      ],
+      "correct": 3,
+      "explanation": "Muốn giữ input order, gán kết quả theo index/key phù hợp."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Status not checked",
+      "question": "HTTP server trả 500 nhưng có body. Source có loại response đó rõ ràng chưa?",
+      "options": [
+        "Chưa; chỉ đọc body.",
+        "Có; mọi get tự coi 500 là exception nghiệp vụ.",
+        "Có; body chỉ tồn tại với 200.",
+        "Có; wg tự kiểm status."
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt transport error và HTTP error response."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Connection error field",
+      "question": "Nếu request kết nối thất bại, chỉ dùng body có đủ mô tả lỗi không?",
+      "options": [
+        "Có; coroutine không thể fail.",
+        "Không; cần kiểm kết quả call/status/error theo API thực tế.",
+        "Có; body luôn là dữ liệu hợp lệ.",
+        "Có; port 443 loại mọi lỗi."
+      ],
+      "correct": 1,
+      "explanation": "Không giả body thành success khi chưa biết outcome."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Host input contract",
+      "question": "Client constructor kiểu host/port/SSL có chấp nhận mọi full URL tùy ý như hostname đúng không?",
+      "options": [
+        "Có; Co tự bỏ mọi querystring.",
+        "Có; WaitGroup sửa mọi URL.",
+        "Không nên giả; cần parse/validate host, port, path theo API/version.",
+        "Có; mọi string gồm scheme/path đều chắc là host hợp lệ."
+      ],
+      "correct": 2,
+      "explanation": "Tên biến url không làm giá trị phù hợp contract constructor."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "TLS flag scope",
+      "question": "Tham số SSL=true có chứng minh mọi certificate/hostname policy đã đúng chưa?",
+      "options": [
+        "Có; boolean tự định nghĩa mọi truststore.",
+        "Có; nó xác thực user của ứng dụng.",
+        "Có; nó mã hóa dữ liệu đã lưu DB.",
+        "Chưa; cần cấu hình xác minh theo API và deployment thực tế."
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất bật transport TLS với mọi yêu cầu trust/auth."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Timeout not specified",
+      "question": "Source có đặt timeout request cụ thể bằng cấu hình client chưa?",
+      "options": [
+        "Chưa.",
+        "Có; 443 là timeout 443 ms.",
+        "Có; validate_timestamps là networktimeout.",
+        "Có; wait tự đặt deadline 10 ms."
+      ],
+      "correct": 0,
+      "explanation": "Default nếu có phụ thuộc implementation/config, không tự suy giá trị."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Done on normal path",
+      "question": "wg->done nằm đâu trong inner closure nguồn?",
+      "options": [
+        "Trong destructor của Order.",
+        "Sau get và append body trên đường chạy bình thường.",
+        "Trong finally được viết rõ.",
+        "Trước create."
+      ],
+      "correct": 1,
+      "explanation": "Nếu một bước throw, counter có thể không giảm như mong đợi."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Finally purpose",
+      "question": "Đưa giảm counter vào finally nhằm điều gì?",
+      "options": [
+        "Bảo đảm process không bao giờ bị kill.",
+        "Tự retry request vô hạn.",
+        "Bảo đảm cleanup counter ở các đường thoát được finally xử lý, kể cả exception.",
+        "Biến mọi response thành 200."
+      ],
+      "correct": 2,
+      "explanation": "Finally không chạy được trong mọi dạng process termination; cần nói đúng phạm vi."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Client close missing",
+      "question": "Nguồn có lời gọi client close rõ ràng chưa?",
+      "options": [
+        "Có trong results[] statement.",
+        "Có trong opcache_compile_file.",
+        "Có vì port 443 nghĩa auto-close mọi trường hợp.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Quản lý tài nguyên cần theo lifecycle API; không giả explicit cleanup đã được viết."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Task admission",
+      "question": "Foreach nguồn có giới hạn rõ số coroutine đang active cùng lúc không?",
+      "options": [
+        "Không.",
+        "Có; WaitGroup luôn cho tối đa 1 task.",
+        "Có; max_accelerated_files là maxrequests.",
+        "Có; 443 là concurrency limit."
+      ],
+      "correct": 0,
+      "explanation": "Wait counter khác semaphore/worker pool."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Result memory growth",
+      "question": "Chờ tất cả rồi giữ body trong results có thể dùng RAM thế nào?",
+      "options": [
+        "OPcache tự chứa response bodies vô hạn.",
+        "Tăng theo tổng dữ liệu giữ lại.",
+        "Luôn cố định 1 byte.",
+        "Tự stream ra disk dù không có code."
+      ],
+      "correct": 1,
+      "explanation": "Cần bound số requests/kích thước hoặc xử lý streaming theo nhu cầu."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "No results returned",
+      "question": "Outer closure nguồn có return results hoặc echo nó không?",
+      "options": [
+        "Có; wait luôn return array đó.",
+        "Có; Co::create export mọi localvariable.",
+        "Không.",
+        "Có; khai báo array tự return."
+      ],
+      "correct": 2,
+      "explanation": "Kết quả cục bộ không tự trở thành output của ứng dụng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Coroutine versus CPU",
+      "question": "Coroutines có tự khiến một CPU-bound PHP loop chạy trên nhiều cores không?",
+      "options": [
+        "Có; mỗi coroutine bắt buộc là OSthread.",
+        "Có; SSL biến code thànhGPUkernel.",
+        "Có; OPcache luôn parallel hóa mọi loop.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Concurrency I/O và parallel execution cần phân biệt."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Blocking API caveat",
+      "question": "Gọi thư viện blocking không hỗ trợ coroutine/hook có thể gây gì?",
+      "options": [
+        "Chặn tiến trình/event loop theo cách runtime/API thực tế hoạt động.",
+        "Tự thành nonblocking trong mọi trường hợp.",
+        "Tự spawn process riêng miễn phí.",
+        "Không bao giờ ảnh hưởng tasks khác."
+      ],
+      "correct": 0,
+      "explanation": "Kiểm khả năng tương thích của từng dependency."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Runtime availability",
+      "question": "Alias Co trong source có cài được Swoole extension/WaitGroup library không?",
+      "options": [
+        "Có; PHP luôn tích hợp mọi namespace.",
+        "Không.",
+        "Có; use tự gọi package manager.",
+        "Có; Composer autoload tự download mọi extension khi đọc file."
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm extension, libraries và version/API cụ thể."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Swoole versus OpenSwoole",
+      "question": "Đọc docs OpenSwoole có cho phép mặc định coi mọi namespace/API Swoole giống hệt mọi version không?",
+      "options": [
+        "Có; PHP tự chuyển mọi class không tồn tại.",
+        "Có; HTTP path quyết định version.",
+        "Không; phải đối chiếu runtime family, aliases và version thực tế.",
+        "Có; tên gần giống nghĩa mọi ABI đều tương thích."
+      ],
+      "correct": 2,
+      "explanation": "Tài liệu tham khảo phải được giới hạn phạm vi áp dụng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Pool sizing",
+      "question": "Kích thước connection pool nên dựa trên gì?",
+      "options": [
+        "Số câu hỏi trong bài.",
+        "Giá trị 256 của OPcache memory mà không xét DB.",
+        "Một số vô hạn để khỏi chờ.",
+        "Nhu cầu đồng thời, giới hạn backend và thời gian giữ connection được đo."
+      ],
+      "correct": 3,
+      "explanation": "Pool không tạo thêm capacity vô hạn cho dependency."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Horizontal state",
+      "question": "Khi thêm nhiều PHP nodes, session lưu RAM riêng mỗi node có thể cần xử lý gì?",
+      "options": [
+        "Shared session hoặc chiến lược routing/state phù hợp contract.",
+        "Không cần vì mọi RAM tự replicate.",
+        "Chỉ đổi icon user.",
+        "Chỉ bật OPcache."
+      ],
+      "correct": 0,
+      "explanation": "Scaling stateless compute không tự giải quyết state."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Database bottleneck",
+      "question": "Thêm PHP workers có bảo đảm DB nhanh hơn không?",
+      "options": [
+        "Có; coroutine thay DBlocks.",
+        "Không; có thể tăng cạnh tranh/tải lên DB.",
+        "Có; worker mới tự tạo CPU cho DB.",
+        "Có; mọi writes tự giảm còn 0."
+      ],
+      "correct": 1,
+      "explanation": "Đánh giá bottleneck toàn request path."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Useful performance metrics",
+      "question": "Đo scaling nên có nhóm metric nào?",
+      "options": [
+        "Chỉ số comment có chữfaster.",
+        "Chỉ một screenshot code.",
+        "Latency phân vị, throughput, lỗi và tài nguyên dưới workload rõ.",
+        "Chỉ tên framework."
+      ],
+      "correct": 2,
+      "explanation": "Đo đủ cả hiệu năng và độ đúng của hệ thống."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "No actual config application",
+      "question": "Các dòng php.ini đứng trong comment chứng minh điều gì?",
+      "options": [
+        "Đã sửa php.ini thật.",
+        "Đã restart PHP-FPM.",
+        "Đã kiểm mọi extension.",
+        "Chỉ là cấu hình minh họa được ghi trong bài."
+      ],
+      "correct": 3,
+      "explanation": "Không gán tác dụng vận hành cho comment."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Coroutine exception policy",
+      "question": "Ngoài finally, cần chính sách gì khi một task HTTP lỗi?",
+      "options": [
+        "Ghi outcome rõ và quyết định partial success/fail-fast/cancel/retry theo yêu cầu.",
+        "Luôn append body như success bất kể lỗi.",
+        "Luôn xóa mọi results không log.",
+        "Luôn retry vô hạn không deadline."
+      ],
+      "correct": 0,
+      "explanation": "Cleanup và quyết định nghiệp vụ là hai trách nhiệm riêng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "FPM memory budgeting",
+      "question": "Tăng số workers FPM cần xét gì về RAM?",
+      "options": [
+        "Không cần vì process không dùng RAM.",
+        "Memory mỗi worker/workload cùng tài nguyên chia sẻ và giới hạn máy.",
+        "Chỉ user count đăng ký.",
+        "Chỉ số routes."
+      ],
+      "correct": 1,
+      "explanation": "Tránh đặt worker count vượt tài nguyên thực."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Preload dependency graph",
+      "question": "Preload class files cần chú ý điều gì ngoài tên file?",
+      "options": [
+        "Mọi file được cache là mọi side effect đã chạy.",
+        "Chỉ tên user account.",
+        "Dependencies, điều kiện khai báo và quy tắc preload của PHP version.",
+        "Chỉ thứ tự alphabet bất kể class dependencies."
+      ],
+      "correct": 2,
+      "explanation": "Không suy đầy đủ preload success khi source bỏ kiểm lỗi."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Body format validation",
+      "question": "Endpoint /api/data được kỳ vọng trả JSON. Chỉ giữ client->body có đủ kiểm schema dữ liệu đó chưa?",
+      "options": [
+        "Rồi; tên path tự chứng minh JSON hợp lệ.",
+        "Rồi; port 443 tự parse JSON.",
+        "Rồi; results[] tự kiểm mọi field.",
+        "Chưa; cần parse và validate theo hợp đồng sau khi kiểm outcome HTTP."
+      ],
+      "correct": 3,
+      "explanation": "Một string response không tự có cấu trúc domain hợp lệ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Outer capture root cause",
+      "question": "Sửa inner closure use($urls) trong khi outer vẫn không có urls có giải quyết đúng nguồn dữ liệu không?",
+      "options": [
+        "Không; phải đưa urls vào outer scope trước rồi phân phối cho tasks.",
+        "Có; inner use tự tìm mọi biến ở global ancestor.",
+        "Có; Co tự định nghĩa urls.",
+        "Có; WaitGroup tạo URL list."
+      ],
+      "correct": 0,
+      "explanation": "Xác định đúng lexical scope tại nơi closure được tạo."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Exception leaves counter",
+      "question": "Sau wg->add, get throw trước done, nếu không có cơ chế bù thì wait có thể gặp gì?",
+      "options": [
+        "Tự rollback OPcache.",
+        "Chờ counter không về 0 hoặc xử lý lỗi theo runtime, thay vì hoàn tất đúng kỳ vọng.",
+        "Luôn tự giảm mọi counter.",
+        "Chắc chắn trả đủ bodies thành công."
+      ],
+      "correct": 1,
+      "explanation": "Cần xử lý mọi đường hoàn tất và lỗi tạo task, không chỉ đường success."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Creation failure accounting",
+      "question": "Counter tăng nhưng tạo task thất bại trước khi inner finally tồn tại. Cần chú ý gì?",
+      "options": [
+        "Tự gọi done hai lần cho mọi task.",
+        "Bỏ counter tăng để wait không cần biết tasks.",
+        "Cân bằng counter/ghi lỗi cả ở đường tạo task thất bại theo API.",
+        "Chỉ finally bên trong luôn xử lý được mọi trường hợp chưa tạo task."
+      ],
+      "correct": 2,
+      "explanation": "Counter phải phản ánh đúng số công việc còn hoạt động."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Unbounded fanout",
+      "question": "Một triệu URLs rồi create một task cho mỗi URL có rủi ro gì?",
+      "options": [
+        "Coroutine không dùng tài nguyên nên luôn an toàn.",
+        "WaitGroup tự limit bằng 20000 files.",
+        "OPcache tự chia đều requests qua mọi server.",
+        "Vượt RAM/sockets/backend limits; cần bounded concurrency và backpressure."
+      ],
+      "correct": 3,
+      "explanation": "I/O concurrency cần giới hạn theo tài nguyên và SLA."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "SSRF boundary",
+      "question": "Nếu urls do client cung cấp, trước khi kết nối cần xét rủi ro nào?",
+      "options": [
+        "SSRF và truy cập host/network ngoài phạm vi; validate/allowlist theo yêu cầu.",
+        "Chỉ title capitalization.",
+        "Chỉ số comments.",
+        "Không có vì HTTPS luôn an toàn mọi đích."
+      ],
+      "correct": 0,
+      "explanation": "TLS không quyết định đích kết nối có được phép hay không."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Completion order repair",
+      "question": "Muốn results giữ thứ tự input dù response hoàn tất khác nhau, thiết kế nào phù hợp?",
+      "options": [
+        "Tăng max_accelerated_files.",
+        "Capture index và ghi outcome theo index, rồi xuất theo thứ tự hợp đồng.",
+        "Tin results[] tự sort theo URL.",
+        "Đổi done thành add."
+      ],
+      "correct": 1,
+      "explanation": "Cần giữ cả lỗi/outcome gắn đúng task, không chỉ bodies thành công."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Fail fast cancellation",
+      "question": "Một task lỗi nghiêm trọng, chỉ return trong task đó có tự cancel các task khác không?",
+      "options": [
+        "Có; WaitGroup là cancellation token.",
+        "Có; TLSflag tự propagate errors.",
+        "Không; cần cơ chế cancellation/cooperation rõ theo runtime.",
+        "Có; return luôn giết mọi coroutine."
+      ],
+      "correct": 2,
+      "explanation": "Task-local control flow không là global cancellation."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Total deadline",
+      "question": "Mỗi request có timeout nhưng retry nhiều lần thì có đủ bound tổng thời gian operation chưa?",
+      "options": [
+        "Đủ; số retries không ảnh hưởng thời gian.",
+        "Đủ; timeout luôn bằng totaldeadline.",
+        "Đủ; WaitGroup tự giới hạn 1 giây.",
+        "Chưa; cần tổng deadline/retry budget phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Xét cả thời gian chờ admission, backoff và cleanup."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Unknown remote outcome",
+      "question": "GET/side-effectful API timeout có chứng minh server chưa thực hiện gì không?",
+      "options": [
+        "Không; cần hiểu semantics endpoint và xử lý outcome chưa biết.",
+        "Có; timeout luôn undo mọi remote action.",
+        "Có; HTTPclient tự rollback server.",
+        "Có; coroutine giữ transaction xuyên mạng."
+      ],
+      "correct": 0,
+      "explanation": "Ngay cả retry cũng phải phù hợp idempotency và hợp đồng API."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "OPcache rollout consistency",
+      "question": "Một node reload code mới, node khác vẫn giữ cache cũ khi timestamp checks tắt. Rủi ro nào cần quản lý?",
+      "options": [
+        "Không thể vì comment production.",
+        "Nhiều phiên bản code/config cùng phục vụ trong rollout.",
+        "Mọi nodes tự đồng bộ opcode theo filename.",
+        "Database luôn đổi code node cũ."
+      ],
+      "correct": 1,
+      "explanation": "Cần rollout/restart/invalidate có kiểm soát và tương thích phiên bản."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Preload reset distinction",
+      "question": "Có thể chỉ dựa opcache_invalidate để thay mọi class đã preload mà không restart process không?",
+      "options": [
+        "Có; browser refresh thay engine definitions.",
+        "Có; giảm TTL application cache là đủ.",
+        "Không theo yêu cầu lifecycle preloaded definitions được PHP Manual nêu.",
+        "Có; mọi preload giống cacheentry thông thường."
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt preload definitions với các script cache entries khác."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Windows deployment assumption",
+      "question": "Máy hiện tại Windows và không có PHPCLI được tìm thấy. Có thể tuyên bố preload config đã kiểm thực thi tại đây chưa?",
+      "options": [
+        "Có; Node chạy JSON tương đương PHPpreload.",
+        "Có; docs chính là runtime log.",
+        "Có; path /app tự tạo Linux subsystem.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Không giả môi trường server hoặc extension đã được cài."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Pool state isolation",
+      "question": "Connection từ pool giữ transaction/session variables của request trước có thể gây gì?",
+      "options": [
+        "Sai dữ liệu/quyền nếu không reset state và quản lý lease đúng.",
+        "Tự làm mọi request isolated hơn.",
+        "Không thể vì pool là array.",
+        "OPcache tự rollback mọi connection."
+      ],
+      "correct": 0,
+      "explanation": "Pooled resource lifecycle cần contract cleanup và error handling."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Backend overload",
+      "question": "Tăng concurrency HTTP từ 100 lên 10000 mà dependency chỉ chịu 100 có thể gây gì?",
+      "options": [
+        "Không ảnh hưởng latency.",
+        "Tăng queueing/errors/timeouts thay vì throughput hữu ích.",
+        "Luôn tăng throughput 100 lần.",
+        "Tự mở rộng dependency miễn phí."
+      ],
+      "correct": 1,
+      "explanation": "Đo bottleneck và áp admission/backpressure theo khả năng thực."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "CPU bound workload",
+      "question": "Ứng dụng chủ yếu xử lý CPU nặng, đổi sang coroutines có tự chứng minh nhanh 10 xkhông?",
+      "options": [
+        "Có; mạng không liên quan CPU.",
+        "Có; port 443 là tăng tốcCPU.",
+        "Không; cần mô hình parallelism/algorithm và đo thực.",
+        "Có; mọi coroutine tự một core."
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu phải đúng loại workload."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Memory measurement scope",
+      "question": "Memory process tăng sau preload có tự chứng minh memory leak không?",
+      "options": [
+        "Có; mọi memory tăng là leak.",
+        "Có; shared cache không bao giờ dùng RAM.",
+        "Có; chỉ cần nhìn memory_consumption 256.",
+        "Không; preload tăng baseline, phải đo xu hướng/lifetime và lượng live data phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt baseline, peak và tăng không thu hồi theo thời gian."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Microservices tradeoff",
+      "question": "Tách monolith PHP thành microservices có mặc nhiên tăng capacity/độ đúng không?",
+      "options": [
+        "Không; còn network, consistency, vận hành và bottleneck dữ liệu.",
+        "Có; thêm service luôn bỏ mọi locks.",
+        "Có; mỗi service tự exactlyonce.",
+        "Có; không cần observability nữa."
+      ],
+      "correct": 0,
+      "explanation": "Chọn phân tách theo ranh giới và nhu cầu đo được."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Performance claim evidence",
+      "question": "Muốn khẳng định nhanh 3-5 xhay 10 x, bằng chứng nào cần có?",
+      "options": [
+        "Chỉ đổi server name.",
+        "Benchmark/workload/baseline/điều kiện và metric so sánh thực tế.",
+        "Chỉ keyPoints ghi con số đó.",
+        "Chỉ bật enable 1."
+      ],
+      "correct": 1,
+      "explanation": "Không biến mục tiêu hoặc marketing thành kết quả đo."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Graceful shutdown",
+      "question": "Worker đang có coroutines khi deploy cần kế hoạch gì?",
+      "options": [
+        "Chỉ đổi icon server.",
+        "Tin mọi request tự replay exactlyonce.",
+        "Ngừng nhận việc mới, xử lý/drain hoặc cancel theo deadline và release resources.",
+        "Kill ngay luôn không ảnh hưởng request/sideeffects."
+      ],
+      "correct": 2,
+      "explanation": "Giữ đúng semantics request và recovery khi rollout."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Complete pipeline contract",
+      "question": "Trước khi coi ví dụ HTTP fanout hoàn chỉnh, cần làm gì ngoài sửa urls capture?",
+      "options": [
+        "Chỉ thêm commentdone.",
+        "Chỉ tăng OPcachefiles.",
+        "Chỉ đổi body thànhstring.",
+        "Xác định runtime/API, giới hạn concurrency, timeout/error/cleanup và cách trả outcomes đúng contract."
+      ],
+      "correct": 3,
+      "explanation": "Một lỗi scope được sửa không tự hoàn thiện vận hành và xử lý thất bại."
+    }
+  ]
+}

@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { veApp } from '@/test/ve-app';
 import { giaSupabase } from '@/test/gia-supabase';
 import type { CongNgheDayDu, CongNgheTomTat } from '@/lib/curriculum';
+import BANK_SEED from '../../../../data/quiz-bank/python/newbie/intro.vi.json';
+import type { QuestionBank } from '../../../../shared/quiz-bank.mjs';
 
 const PY: CongNgheDayDu = {
   id: 'python', name: 'Python', icon: '🐍', color: '#3776AB', gradient: '', category: 'language', description: 'Ngôn ngữ đa năng',
@@ -54,20 +56,27 @@ const INDEX: CongNgheTomTat[] = TECHS.map(t => ({ ...t, levels: t.levels.map(l =
 
 type ThanAi = { system: string; messages: { content: string }[]; taskType: string };
 type TuyChon = {
+  bank?: QuestionBank | Response;
   ai?: (b: ThanAi) => Response | Promise<Response>; dich?: (url: string) => Response; aiEnabled?: boolean;
   chay?: (b: { code: string; stdin: string }) => unknown;
 };
 const traText = (text: string) => new Response(JSON.stringify({ content: [{ type: 'text', text }] }), { status: 200 });
 
-function mo(duongDan: string, { ai, dich, chay, aiEnabled = true, lang = 'vi', bang = {}, loiDoc }: TuyChon & { lang?: string; bang?: Record<string, unknown[]>; loiDoc?: Record<string, string> } = {}) {
+function mo(duongDan: string, { ai, dich, chay, bank, aiEnabled = true, lang = 'vi', bang = {}, loiDoc }: TuyChon & { lang?: string; bang?: Record<string, unknown[]>; loiDoc?: Record<string, string> } = {}) {
   const json: Record<string, unknown> = { '/curriculum/index.json': INDEX, '/api/health': { aiEnabled } };
   for (const t of TECHS) json[`/curriculum/${t.id}.json`] = t;
+  if (bank) {
+    const py = structuredClone(PY);
+    py.levels[0].lessons[0].quizBanks = { vi: { url: '/test-bank.json', sourceHash: BANK_SEED.sourceHash, count: 80 } };
+    json['/curriculum/python.json'] = py;
+  }
   const goiAi: ThanAi[] = [];
   const thanChay: { lang: string; code: string; stdin: string }[] = [];
   const gia = giaSupabase({ nguoiDung: { id: 'u1' }, bang: { profiles: [{ id: 'u1', username: 'an', display_name: 'An' }], ...bang }, loiDoc });
   const kq = veApp(duongDan, {
     gia, json, lang,
     fetch: async (url: string, init?: RequestInit) => {
+      if (url === '/test-bank.json' && bank) return bank instanceof Response ? bank : new Response(JSON.stringify(bank));
       if (url === '/api/ai') {
         const b = docThan(init?.body) as ThanAi;
         goiAi.push(b);
@@ -361,6 +370,51 @@ test('quiz: AI tat tren may chu thi noi ro, khong co nut tao', async () => {
   mo('/lesson/python/newbie/a?tab=quiz', { aiEnabled: false });
   expect(await screen.findByText('Tính năng AI đang tắt trên máy chủ.')).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /Tạo Quiz với AI/ })).not.toBeInTheDocument();
+});
+
+const BANK = { ...BANK_SEED, lesson: 'a' } as QuestionBank;
+
+test('ngan hang: AI tat van boc dung 1 de/2 trung binh/1 kho; cham, doi de khong lap, quay lai giu lua chon', async () => {
+  const u = userEvent.setup();
+  const { goiAi, router, qc } = mo('/lesson/python/newbie/a?tab=quiz', { bank: BANK, aiEnabled: false, bang: XONG_PY('a') });
+  expect(await screen.findByText(/Ngân hàng 80 câu/)).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: 'Bắt đầu quiz' }));
+  await screen.findByRole('button', { name: 'Nộp bài (0/4)' });
+  const groups = screen.getAllByRole('group', { name: /Câu \d/ });
+  expect(groups).toHaveLength(4);
+  expect(screen.getAllByText('Dễ')).toHaveLength(1);
+  expect(screen.getAllByText('Trung bình')).toHaveLength(2);
+  expect(screen.getAllByText('Khó')).toHaveLength(1);
+  const originalIds: string[] = [];
+  const drawn = qc.getQueryData<{ questions: { id: string }[] }>(['quiz', 'u1', 'python.newbie.a', 'vi', '/test-bank.json'])!.questions;
+  for (const [i, group] of groups.entries()) {
+    const original = BANK.questions.find(q => q.id === drawn[i].id);
+    expect(original).toBeDefined();
+    originalIds.push(original!.id);
+    const labels = within(group).getAllByRole('radio');
+    const correct = labels.find(radio => radio.parentElement?.querySelector('span:last-child')?.textContent?.trim() === original!.options[original!.correct]);
+    expect(correct).toBeDefined();
+    await u.click(correct!);
+  }
+  await act(() => router.navigate('/lesson/python/newbie/b?tab=quiz'));
+  await screen.findByRole('heading', { level: 1, name: 'Vòng lặp' });
+  await act(() => router.navigate('/lesson/python/newbie/a?tab=quiz'));
+  await u.click(await screen.findByRole('button', { name: 'Nộp bài (4/4)' }));
+  expect(await screen.findByText('Đúng 4/4 câu (100%)')).toBeInTheDocument();
+  await u.click(screen.getByRole('button', { name: 'Làm quiz mới' }));
+  await screen.findByRole('button', { name: 'Nộp bài (0/4)' });
+  const nextIds = qc.getQueryData<{ questions: { id: string }[] }>(['quiz', 'u1', 'python.newbie.a', 'vi', '/test-bank.json'])!.questions.map(q => q.id);
+  expect(nextIds.every(id => !originalIds.includes(id))).toBe(true);
+  expect(goiAi).toHaveLength(0);
+});
+
+test('ngan hang hong hoac thieu cau: bao loi, khong tu goi AI mat phi', async () => {
+  const u = userEvent.setup();
+  const { goiAi } = mo('/lesson/python/newbie/a?tab=quiz', { bank: { ...BANK, questions: BANK.questions.slice(0, 4) } });
+  await u.click(await screen.findByRole('button', { name: 'Bắt đầu quiz' }));
+  expect((await screen.findByText(/Không tạo được quiz: Ngân hàng câu hỏi chưa hợp lệ/)).closest('[role="alert"]')).toBeInTheDocument();
+  expect(screen.queryByRole('group', { name: /Câu 1/ })).not.toBeInTheDocument();
+  expect(goiAi).toHaveLength(0);
 });
 
 test('gia su: goi y gui dung cau, cau tra loi hien markdown, dang gui thi khong gui them', async () => {

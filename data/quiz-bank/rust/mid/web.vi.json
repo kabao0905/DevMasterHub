@@ -1,0 +1,1147 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "mid",
+  "lesson": "web",
+  "language": "vi",
+  "sourceHash": "f02dd1f38bfc3eaa0d13bb958e1ddb48f17987be77ae9b844aea96efc5db2b1a",
+  "status": "approved",
+  "review": "Tự soạn không API. Axum0.8.4 official source/docs và serde contracts review;Axum chưa có trong cache được kiểm tra nên không framework/HTTP integration. Selected native snippets chỉ mô hình đồng bộ Vec/DTO/clone/ID math,std lock không giả Tokio lock. Source write lock bao cấpID+append nên không bịa race cùngprocess;lenID có giới hạn xóa/overflow/replicas. JSON type safety khác domain/auth,routing có thể panic runtime. Không mở listener,tải deps hoặc gọi API.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Framework role",
+      "question": "Axum trong source dùng để làm gì?",
+      "options": [
+        "Xây HTTP routing/handlers/extractors theo framework.",
+        "Tự tạo database schema.",
+        "Một compile target WASM bắt buộc.",
+        "Một tracing GC."
+      ],
+      "correct": 0,
+      "explanation": "Async Rust web framework vẫn cần logic domain và deployment."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Router role",
+      "question": "Router::new() trong source tạo gì?",
+      "options": [
+        "Một JWT validator đầy đủ.",
+        "Router để đăng ký paths/method handlers.",
+        "Một listener đã bind ngay.",
+        "Một PostgreSQL connection."
+      ],
+      "correct": 1,
+      "explanation": "Router construction và network serving là các bước riêng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Registered path",
+      "question": "Source đăng ký path nào?",
+      "options": [
+        "/auth/login.",
+        "/admin/secrets.",
+        "/todos.",
+        "/users/{id}."
+      ],
+      "correct": 2,
+      "explanation": "Cùng path có get và post handlers trong method router."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Get registration",
+      "question": "get(get_todos).post(create_todo) nêu gì?",
+      "options": [
+        "Mọi methods dùng get_todos.",
+        "Tự sinh đầy đủ CRUD.",
+        "Chỉ endpoint DELETE.",
+        "GET dùng get_todos, POST dùng create_todo cho route đó."
+      ],
+      "correct": 3,
+      "explanation": "Không có update/delete implementation được thể hiện."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "State extractor",
+      "question": "State(state):State<AppState> nhằm gì?",
+      "options": [
+        "Lấy application state đã cấu hình cho handler.",
+        "Tự mở database theo tên AppState.",
+        "Tự xác thực user.",
+        "Đọc JSON body lần hai."
+      ],
+      "correct": 0,
+      "explanation": "State không tự là per-user isolated store."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "JSON extractor",
+      "question": "Json(input):Json<CreateTodo> làm gì?",
+      "options": [
+        "Tự cấp quyền admin.",
+        "Giải mã body JSON vào DTO theo extractor contract.",
+        "Tự validate mọi title non-empty.",
+        "Tự ghi todo vào DB."
+      ],
+      "correct": 1,
+      "explanation": "Extractor parsing khác validation nghiệp vụ."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "State alias",
+      "question": "AppState nguồn là kiểu nào?",
+      "options": [
+        "Mutex<i32> duy nhất.",
+        "Một Vec<String> immutable global.",
+        "Arc<tokio::sync::RwLock<Vec<Todo>>>.",
+        "Rc<RefCell<Todo>>."
+      ],
+      "correct": 2,
+      "explanation": "Shared ownership và async read/write synchronization có vai trò riêng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Read lock",
+      "question": "state.read().await trong get_todos cho access gì?",
+      "options": [
+        "Owned clone Vec tự có ngay không khóa.",
+        "Một write guard độc quyền.",
+        "Một HTTP response body.",
+        "Read guard theo Tokio RwLock contract."
+      ],
+      "correct": 3,
+      "explanation": "Source clone dữ liệu từ read guard trước khi trả Json."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Write lock",
+      "question": "state.write().await trong create_todo dùng để làm gì?",
+      "options": [
+        "Lấy exclusive write access cho thao tác trong handler.",
+        "Tự persist xuống DB.",
+        "Tự tạo transaction toàn cluster.",
+        "Tự đổi client thành admin."
+      ],
+      "correct": 0,
+      "explanation": "Lock bảo vệ state trong process theo các callers cùng protocol."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Todo fields",
+      "question": "Todo nguồn có fields nào?",
+      "options": [
+        "code, message, source.",
+        "id:u32, title:String, done:bool.",
+        "name, email, age.",
+        "width, height, pixels."
+      ],
+      "correct": 1,
+      "explanation": "Types chưa biểu diễn mọi invariant nghiệp vụ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Input fields",
+      "question": "CreateTodo nguồn chỉ nhận field nào?",
+      "options": [
+        "Một JWT được tạo tự động.",
+        "Không có fields.",
+        "title:String.",
+        "id vàdone bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "DTO nhỏ giúp tách input khỏi full stored model nhưng không tự hoàn thành validation."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Created status",
+      "question": "StatusCode::CREATED tương ứng mã nào?",
+      "options": [
+        "200.",
+        "400.",
+        "500.",
+        "201."
+      ],
+      "correct": 3,
+      "explanation": "Tuple response kết hợp status và JSON body."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Response conversion",
+      "question": "impl IntoResponse ở return type chủ yếu cho biết gì?",
+      "options": [
+        "Giá trị trả về có thể được framework chuyển thành HTTP response.",
+        "Mọi business operation đều thành công.",
+        "Handler không thể panic.",
+        "Dữ liệu đã durable tự động."
+      ],
+      "correct": 0,
+      "explanation": "Response conversion khác correctness của side effects."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Server bind",
+      "question": "TcpListener::bind(\"0.0.0.0:3000\") source nhằm gì?",
+      "options": [
+        "Tự tạo TLS certificate.",
+        "Bind listener trên các interfaces theo môi trường và address đó.",
+        "Chỉ tạo một request test trong RAM.",
+        "Tự deploy lên internet."
+      ],
+      "correct": 1,
+      "explanation": "Task không chạy listener này."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Serve call",
+      "question": "axum::serve(listener, app) dùng để làm gì?",
+      "options": [
+        "Tự tạo rate limits và auth hoàn chỉnh.",
+        "Chỉ in sourcecode.",
+        "Phục vụ app qua listener đã tạo.",
+        "Tự chạy migrations."
+      ],
+      "correct": 2,
+      "explanation": "Startup/shutdown/error/config vẫn cần thiết kế theo ứng dụng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Serialize derive",
+      "question": "Serialize cho Todo giúp gì?",
+      "options": [
+        "Tự kiểm quyền xem từng todo.",
+        "Tự đặt TTL.",
+        "Tự cấp ID unique toàn cầu.",
+        "Cho serde encode Todo theo contract của format dùng."
+      ],
+      "correct": 3,
+      "explanation": "Representation capability không là access control."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Clone derive",
+      "question": "Clone trên Todo trong source chủ yếu hỗ trợ gì?",
+      "options": [
+        "Clone owned fields cho snapshot/response theo implementation.",
+        "Tự biến Todo thành Copy.",
+        "Tự đồng bộ DB.",
+        "Tự tạo thread."
+      ],
+      "correct": 0,
+      "explanation": "String clone có chi phí dữ liệu, không là handle copy Arc."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Default done",
+      "question": "create_todo nguồn đặt done ban đầu thế nào?",
+      "options": [
+        "Random.",
+        "false.",
+        "true.",
+        "Theo một client done field đã khai báo trong DTO."
+      ],
+      "correct": 1,
+      "explanation": "DTO hiện không có done field; stored model đặt value tường minh."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Initial store",
+      "question": "State ban đầu trong main có gì?",
+      "options": [
+        "Một PostgreSQL table đã tạo.",
+        "Một config từ environment tự load.",
+        "Vec rỗng.",
+        "Một todo ID1 sẵn."
+      ],
+      "correct": 2,
+      "explanation": "ID đầu tiên theo source inner logic là1 khi store vẫn rỗng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Unused imports",
+      "question": "Path/post imports không dùng trong Rust source có nhất thiết là compiler error mặc định không?",
+      "options": [
+        "Có, giống Go unused import rule tuyệt đối.",
+        "Chỉ nếuport3000.",
+        "Không bao giờ có diagnostics.",
+        "Không; thường warning tùy lints/config."
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm unused warning với framework setup đã được kiểm chứng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "First creation data model",
+      "question": "Mô hình Rust thuần này in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut todos=Vec::new();let t=create(&mut todos,\"Learn\".into());println!(\"{} {} {}\",t.id,t.done,todos.len());}\n",
+      "options": [
+        "1 false 1.",
+        "0 true 0.",
+        "1 true 1.",
+        "Tự gửi HTTP201 qua network."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ inner data logic được mô hình hóa, không thực thi Axum extractor hoặc Tokio lock."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Second sequential creation",
+      "question": "Mô hình đồng bộ in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut todos=Vec::new();create(&mut todos,\"A\".into());let t=create(&mut todos,\"B\".into());println!(\"{} {}\",t.id,todos.len());}\n",
+      "options": [
+        "ID tự thành UUID.",
+        "2 2.",
+        "1 2.",
+        "2 1."
+      ],
+      "correct": 1,
+      "explanation": "Sau hai creates tuần tự, len trước lần hai là1."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Empty title accepted by inner logic",
+      "question": "Mô hình in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut todos=Vec::new();let t=create(&mut todos,String::new());println!(\"{} {}\",t.id,t.title.is_empty());}\n",
+      "options": [
+        "0 false.",
+        "Rust String cấm rỗng.",
+        "1 true.",
+        "Source tự reject trước create."
+      ],
+      "correct": 2,
+      "explanation": "Không có validation title trong helper tương ứng inner logic source."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Snapshot cloned String",
+      "question": "Mô hình in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut todos=Vec::new();create(&mut todos,\"old\".into());let snapshot=todos.clone();todos[0].title=\"new\".into();println!(\"{} {}\",snapshot[0].title,todos[0].title);}\n",
+      "options": [
+        "new new.",
+        "old old.",
+        "Clone Vec chỉ copy String pointers không ownership.",
+        "old new."
+      ],
+      "correct": 3,
+      "explanation": "Todo Clone clone String fields, ảnh hưởng khác với Arc handle clone."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Snapshot length",
+      "question": "Mô hình in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut todos=Vec::new();create(&mut todos,\"A\".into());let snapshot=todos.clone();create(&mut todos,\"B\".into());println!(\"{} {}\",snapshot.len(),todos.len());}\n",
+      "options": [
+        "1 2.",
+        "2 2.",
+        "1 1.",
+        "Clone snapshot tự phản ánh mọi append mới."
+      ],
+      "correct": 0,
+      "explanation": "Outer Vec clone là collection riêng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Len ID after preexisting gap",
+      "question": "Với store có sẵn IDs 1 và 3 như fixture, mô hình in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut todos=vec![Todo{id:1,title:\"A\".into(),done:false},Todo{id:3,title:\"B\".into(),done:false}];let t=create(&mut todos,\"C\".into());println!(\"{} {}\",t.id,todos.iter().filter(|x|x.id==3).count());}\n",
+      "options": [
+        "Len strategy tự tránh mọi duplicate.",
+        "3 2.",
+        "4 1.",
+        "2 1."
+      ],
+      "correct": 1,
+      "explanation": "NewID=len2+1=3, trùng ID hiện có; source chưa có delete endpoint, fixture minh họa tiền điều kiện state khác."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Separate replica stores",
+      "question": "Mô hình hai stores độc lập in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let mut a=Vec::new();let mut b=Vec::new();let x=create(&mut a,\"A\".into());let y=create(&mut b,\"B\".into());println!(\"{} {}\",x.id,y.id);}\n",
+      "options": [
+        "2 1.",
+        "Arc tự chia sẻ state giữa mọi processes.",
+        "1 1.",
+        "1 2."
+      ],
+      "correct": 2,
+      "explanation": "Hai Vec độc lập không có allocator ID toàn hệ thống."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "DTO title ownership",
+      "question": "Mô hình in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let input=CreateTodo{title:\"x\".into()};let mut todos=Vec::new();let t=create(&mut todos,input.title);println!(\"{} {}\",t.title,t.done);}\n",
+      "options": [
+        "x true.",
+        "Compiler cấm move field title vào Todo.",
+        "CreateTodo tự tạo done field.",
+        "x false."
+      ],
+      "correct": 3,
+      "explanation": "Input title được move vào stored model; done được set false."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Mutable Vec helper contract",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let todos=Vec::new();let _=create(&todos,\"x\".into());}\n",
+      "options": [
+        "Không; helper cần &mut Vec nhưng được truyền &Vec.",
+        "Có, create tự đổi mọi shared borrow thành mutable.",
+        "Có, vì todo ID nhỏ.",
+        "Chỉ runtime panic."
+      ],
+      "correct": 0,
+      "explanation": "Đây là Rust type/borrow model, không là HTTP rejection test."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Typed DTO extra field",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let _=CreateTodo{title:\"x\".into(),done:true};}\n",
+      "options": [
+        "Chỉ runtime error.",
+        "Không; CreateTodo type trong fixture không có field done.",
+        "Có, Rust struct literal tự bỏ unknown fields như JSON.",
+        "Có, sourceTodo có done nên mọi DTO cũng có."
+      ],
+      "correct": 1,
+      "explanation": "Rust struct literal typecheck khác serde JSON unknown-field policy."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Serde unknown fields",
+      "question": "Với source DTO không deny_unknown_fields, JSON extra id/done theo serde JSON mặc định được xử lý ra sao?",
+      "options": [
+        "Luôn bị compiler reject request.",
+        "Tự đổi stored done thành true.",
+        "Thường bị bỏ qua theo contract của self-describing format như JSON.",
+        "Tự thành fields của CreateTodo Rust type."
+      ],
+      "correct": 2,
+      "explanation": "Đây là docs/source review, chưa chạy Axum/serde integration trong fixture này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Missing title JSON",
+      "question": "DTO có title:String không default/Option, một JSON object thiếu title có tự tạo chuỗi rỗng theo serde mặc định không?",
+      "options": [
+        "Có, mọi String field luôn serde default ngầm.",
+        "Chỉ nếu title private.",
+        "Chỉ cầnState extractor.",
+        "Không; missing required field có thể là deserialize error."
+      ],
+      "correct": 3,
+      "explanation": "Default cần contract/attribute phù hợp, không suy zero initialization của Go sang serde."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Null title JSON",
+      "question": "title:null có phải String title hợp lệ theo DTO này không?",
+      "options": [
+        "Không theo structural decoding thông thường của String.",
+        "Có, mọi null tự thành chuỗi rỗng.",
+        "Chỉ nếuHTTP POST.",
+        "Chỉ nếu id 0."
+      ],
+      "correct": 0,
+      "explanation": "Null, missing và emptystring là các trạng thái khác nhau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Empty versus absent title",
+      "question": "title:\"\" có tự bị String decoding từ chối không?",
+      "options": [
+        "Chỉ khiStatus Created.",
+        "Không; source cần validation non-empty nếu đó là rule.",
+        "Có, JSON strings cấm rỗng.",
+        "Có, Deserialize tự đo business rules."
+      ],
+      "correct": 1,
+      "explanation": "Type correctness khác validation nội dung."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Default data rejection status",
+      "question": "Theo Axum0.8.4 mặc định, JsonDataError có status nào?",
+      "options": [
+        "201.",
+        "415 cho mọi data errors.",
+        "422 Unprocessable Entity.",
+        "200."
+      ],
+      "correct": 2,
+      "explanation": "Đối chiếu pinned rejection.rs, không nhầm ví dụ custom error mapping trong docs với default."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Default syntax rejection status",
+      "question": "Theo Axum0.8.4 mặc định, JsonSyntaxError có status nào?",
+      "options": [
+        "422 cho mọi syntax.",
+        "201.",
+        "500 bắt buộc.",
+        "400 Bad Request."
+      ],
+      "correct": 3,
+      "explanation": "JSON không đúng syntax khác JSON hợp syntax nhưng không decode vào DTO."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Missing JSON media type",
+      "question": "Theo Axum0.8.4 mặc định, MissingJsonContentType có status nào?",
+      "options": [
+        "415 Unsupported Media Type.",
+        "200.",
+        "201.",
+        "404."
+      ],
+      "correct": 0,
+      "explanation": "Custom rejection handler có thể map khác, nên phải ghi rõ default/version."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Extractor order",
+      "question": "Vì sao State đứng trước Json trong create_todo source là phù hợp?",
+      "options": [
+        "Order không liên quan trait bounds.",
+        "Json consume body nên cần ở vị trí body extractor cuối theo handler rules.",
+        "State luôn phải đứng cuối mọi handler.",
+        "Json tự tạoState nếu sai order."
+      ],
+      "correct": 1,
+      "explanation": "Body thường chỉ được consume theo contract một lần; không thể đặt tùy ý."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Request body default limit",
+      "question": "Không thêm layer custom có nghĩa Json Axum0.8.4 không có body limit mặc định không?",
+      "options": [
+        "Có, Rust memory safety thay resource bound.",
+        "Chỉ nếu title String.",
+        "Không; Bytes-based extractors như Json có default2MB theo docs, scope có ngoại lệ.",
+        "Có, mọi body luôn vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Domain limit và global middleware policy vẫn cần xem theo use case."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Body limit scope",
+      "question": "DefaultBodyLimit có tự áp vào mọi custom extractor đọc body trực tiếp không?",
+      "options": [
+        "Có, mọi Body::poll_frame tự bị layer đó giới hạn.",
+        "Chỉ cầnState.",
+        "Chỉ cầnJson response.",
+        "Không; extractor phải áp dụng hoặc dùng extractor con có áp dụng limit."
+      ],
+      "correct": 3,
+      "explanation": "DefaultBodyLimit khác global RequestBodyLimit theo tài liệu."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Read snapshot",
+      "question": "get_todos trả Json(todos.clone()) nhằm giữ dữ liệu response theo cách nào?",
+      "options": [
+        "Tạo owned snapshot Vec/Todo trước khi handler return.",
+        "Giữ một raw reference tới lock guard vô hạn.",
+        "Tự DB transaction durable.",
+        "Tự paginate mọi kết quả."
+      ],
+      "correct": 0,
+      "explanation": "Clone có chi phí theo dữ liệu, không có pagination trong source."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Serialization lock lifetime",
+      "question": "Có nên khẳng định read guard được giữ tới khi toàn HTTP body đã gửi chỉ từ source này không?",
+      "options": [
+        "Chỉ nếu Vec empty.",
+        "Không; handler tạo owned Json snapshot rồi guard drop khi hàm kết thúc, framework conversion khác bước đó.",
+        "Có, Json luôn giữ borrow guard.",
+        "Có, Clone tự lock state vĩnh viễn."
+      ],
+      "correct": 1,
+      "explanation": "Không bịa lock lifetime vượt những gì type/source thể hiện."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Write critical section",
+      "question": "ID=len+1 và append trong create_todo nguồn nằm trong vùng nào?",
+      "options": [
+        "Một distributed transaction tự động.",
+        "Một DBsequence.",
+        "Cùng write-guard critical section của state này.",
+        "Hai blocks không đồng bộ trong source."
+      ],
+      "correct": 2,
+      "explanation": "Điều đó bảo vệ hai thao tác với concurrent creators cùng state/process theo protocol."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Same process creation race",
+      "question": "Có đúng rằng hai source create_todo giữ cùng write lock vẫn đồng thời đọc cùng len rồi append không khóa không?",
+      "options": [
+        "Có, RwLock không bao giờ ngăn writers.",
+        "Chỉ nếu ID u32.",
+        "Chỉ nếu Tokio runtime.",
+        "Không; write guard serialize critical section đó."
+      ],
+      "correct": 3,
+      "explanation": "Đừng áp bug của Go global slice unprotected sang source Rust có lock."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "ID strategy limitations",
+      "question": "Dù lock đúng, len+1 còn có hạn chế nào?",
+      "options": [
+        "Gaps/deletions, state resets, replicas và integer bounds theo use case.",
+        "Tự trở thành UUID global.",
+        "Không bao giờ có duplicate trong bất kỳ state nào.",
+        "Compile-time route safety giải quyết hết."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa thể hiện delete nhưng future design cần invariant bền vững."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Persistent state",
+      "question": "Arc<RwLock<Vec<Todo>>> có persistence qua restart process theo source không?",
+      "options": [
+        "Chỉ cần address 3000.",
+        "Chưa có cơ chế persistence được thể hiện.",
+        "Có, Arc tự ghi disk.",
+        "Có, serde tự lưu database."
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng DB/storage phù hợp nếu yêu cầu bền vững."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "User isolation",
+      "question": "State global một Vec có tự tách todos theo người dùng không?",
+      "options": [
+        "Có, Json private fields tự phân quyền.",
+        "Chỉ nếu Arc cloned.",
+        "Không; source chưa có user ownership/auth/filtering.",
+        "Có, State extractor tự đọc token."
+      ],
+      "correct": 2,
+      "explanation": "Routing/extraction không thay authorization."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Type-safe routing scope",
+      "question": "Axum type-safe có nghĩa mọi route conflicts/invalid patterns đều được compiler phát hiện không?",
+      "options": [
+        "Có, không thể có runtime routing error.",
+        "Có, mọi paths phải là Rust types.",
+        "Chỉ cầnget().post().",
+        "Không; một số cấu hình có thể panic khi tạo router theo API/version."
+      ],
+      "correct": 3,
+      "explanation": "Handler trait checks và route configuration validity khác nhau."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Overlapping routes",
+      "question": "Theo docs Axum0.8.4, đăng ký cùng path và cùng method nhiều lần có thể gây gì?",
+      "options": [
+        "Panic khi cấu hình router.",
+        "Luôn âm thầm chọn handler cuối.",
+        "Tự merge responses.",
+        "Tự tạo hai ports."
+      ],
+      "correct": 0,
+      "explanation": "Đây là source/docs-only scope, chưa chạy router framework trên máy."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Default rejection before handler",
+      "question": "Nếu Json extractor reject request, inner create logic có nhất thiết đã append todo không?",
+      "options": [
+        "Chỉ cần State Arc.",
+        "Không; body handler thông thường không được gọi với DTO hợp lệ nếu extraction thất bại.",
+        "Có, mọi POST luôn append trước parse.",
+        "Chỉ nếu JSON null."
+      ],
+      "correct": 1,
+      "explanation": "Đừng dùng plain Vec model như proof status/extractor execution."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "DTO versus stored model",
+      "question": "Tách CreateTodo chỉ title khỏi Todo đầy đủ có lợi ích gì?",
+      "options": [
+        "Tự durable mọi mutations.",
+        "Tự tạo UUID.",
+        "Giới hạn input contract rõ ràng, không nhận id/done như typed DTO fields.",
+        "Tự hoàn thành auth và validation."
+      ],
+      "correct": 2,
+      "explanation": "Unknown JSON fields default có thể bị ignore; khác exposing typed fields."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Title size domain",
+      "question": "Default body2MB có thay title character/byte limit theo nghiệp vụ không?",
+      "options": [
+        "Có, mọi business title tối đa2MB là đúng.",
+        "Chỉ nếuDeserialize.",
+        "Chỉ nếuStatus201.",
+        "Không; request body limit và field validation là các rules khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Chọn giới hạn theo data model/UX/storage/resource requirements."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Server bind error",
+      "question": "Bind(...).await.unwrap() có thể làm gì nếu port không bind được?",
+      "options": [
+        "Panic thay vì trả startup error được xử lý riêng.",
+        "Tự retry vô hạn luôn.",
+        "Tự chọn port khác an toàn.",
+        "Tự tạo listener trong RAM."
+      ],
+      "correct": 0,
+      "explanation": "Không gọi startup path này trong fixtures."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Graceful shutdown missing",
+      "question": "Source serve call đã có graceful shutdown signal path rõ chưa?",
+      "options": [
+        "Chỉ cầnTokio main macro.",
+        "Chưa được thể hiện.",
+        "Có, mọi axum serve tự chờ mọi app jobs khi OS kill.",
+        "Chỉ cầnArc."
+      ],
+      "correct": 1,
+      "explanation": "Shutdown/dependency lifecycle cần thiết kế theo use case."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Pagination missing",
+      "question": "get_todos trả clone toàn Vec có tự giới hạn response page size không?",
+      "options": [
+        "Chỉ nếuVechơn 100.",
+        "Chỉ nếu ReadLock.",
+        "Không; source chưa có pagination/filter limits.",
+        "Có, Json tự chia20items/page."
+      ],
+      "correct": 2,
+      "explanation": "Response size/copying có thể quan trọng khi dataset tăng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Feature manifest missing",
+      "question": "Source snippet có đủ Cargo.toml/lock để tái lập Axum dependency setup không?",
+      "options": [
+        "Có, mọi imports đều std.",
+        "Có, Rustcompiler tự tải version mới nhất.",
+        "Chỉ cầnserde derive.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Docs được pin cho review, không claim source đã resolve/build framework."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Async lock API scope",
+      "question": "std::sync::RwLock fixture có phải bằng chứng Tokio RwLock runtime semantics đã chạy không?",
+      "options": [
+        "Không; phải ghi đúng implementation và fixture được thực thi.",
+        "Có, mọiRwLockcùng tên tương đương hoàn toàn.",
+        "Chỉ nếuArc.",
+        "Chỉ nếuRust1.93.1."
+      ],
+      "correct": 0,
+      "explanation": "Type contracts của locks có thể khác về scheduling/fairness/async behavior."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Unused Path import",
+      "question": "Import Path trong source có nghĩa endpoint /todos/{id} đã được implement chưa?",
+      "options": [
+        "Chỉ cầnpost import.",
+        "Không; chưa có route/handler đó trong snippet.",
+        "Có, import tự tạo routerpath.",
+        "Chỉ cầnTodoid."
+      ],
+      "correct": 1,
+      "explanation": "Imports không là implementation hoặc verification."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "CORS versus auth",
+      "question": "Nếu thêm CORS layer thì có tự bảo đảm caller được sửa todo người khác không?",
+      "options": [
+        "Chỉ nếuJSON.",
+        "Chỉ nếuHTTPS.",
+        "Không; CORS không thay authentication/authorization.",
+        "Có, mọi originallowed làuserowner."
+      ],
+      "correct": 2,
+      "explanation": "Không đưa implementation details vào flow người dùng, nêu đúng responsibility của API."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Full exercise scope",
+      "question": "Source đã có SQLx persistence và JWT auth của bài tập chưa?",
+      "options": [
+        "Có, Arc<Vec> tự là SQLx.",
+        "Có, State alias tự cấp JWT.",
+        "Chỉ cầnBind0.0.0.0.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Không coi mục tiêu bài tập như features đã chạy."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Owned clone independence",
+      "question": "Mô hình in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let a=Todo{id:1,title:\"old\".into(),done:false};let mut b=a.clone();b.title=\"new\".into();println!(\"{} {}\",a.title,b.title);}\n",
+      "options": [
+        "old new.",
+        "new new.",
+        "old old.",
+        "Todo Clone tự shared ownership nhưArc."
+      ],
+      "correct": 0,
+      "explanation": "Clone cụ thể có String fields được clone, native model không serializeJSON."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Usize to u32 truncation model",
+      "question": "Trên target64bit đang kiểm tra, mô hình arithmetic in gì?",
+      "code": "\nfn main(){let len:usize=1usize<<32;println!(\"{}\",len as u32);}\n",
+      "options": [
+        "Tự tăng type củaid.",
+        "0.",
+        "4294967296.",
+        "Compiler luôn reject mọi ascast có thểtruncate."
+      ],
+      "correct": 1,
+      "explanation": "Đây là finite cast model, không allocate Vec hơn4tỷphầntử."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "ID addition overflow model",
+      "question": "Với overflow-checks=yes, mô hình này gặp gì?",
+      "code": "\nfn main(){let len=std::hint::black_box(u32::MAX as usize);let id=len as u32+1;println!(\"{id}\");}\n",
+      "options": [
+        "Tự trả ResultErr.",
+        "Tự allocate Vec khổng lồ.",
+        "Panic do u32MAX+1 ở runtime.",
+        "Luôn trả0 bất kểflags."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ mô hình len->id math hữu hạn, không chạy huge-memory workload."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Checked conversion alternative",
+      "question": "Mô hình64bit này in gì?",
+      "code": "\nfn main(){let len:usize=1usize<<32;println!(\"{}\",u32::try_from(len).is_err());}\n",
+      "options": [
+        "false.",
+        "TryFrom luôn truncate như as.",
+        "Tự tạo ID unique.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "TryFrom cho phép báo khi len không biểu diễn được trongu32, nhưng uniqueness vẫn là invariant khác."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Synchronous lock snapshot model",
+      "question": "Mô hình std lock này in gì?",
+      "code": "#[derive(Clone)]struct Todo{id:u32,title:String,done:bool}\nstruct CreateTodo{title:String}\nfn create(todos:&mut Vec<Todo>,title:String)->Todo{let t=Todo{id:todos.len() as u32+1,title,done:false};todos.push(t.clone());t}\n\nfn main(){let state=std::sync::RwLock::new(vec![Todo{id:1,title:\"old\".into(),done:false}]);let snapshot=state.read().unwrap().clone();state.write().unwrap()[0].title=\"new\".into();println!(\"{} {}\",snapshot[0].title,state.read().unwrap()[0].title);}\n",
+      "options": [
+        "old new.",
+        "new new.",
+        "Compiler cấm clone Vec dưới read guard.",
+        "Đây là actualAxum request đã gửi."
+      ],
+      "correct": 0,
+      "explanation": "Native std RwLock model cho clone/ownership, không giả Tokio hoặc HTTP integration."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "ID global uniqueness",
+      "question": "Một write lock trong process có bảo đảm IDs unique across nhiều replicas/restarts không?",
+      "options": [
+        "Chỉ cần app state cloned.",
+        "Không; cần storage/allocator/invariant phù hợp toàn scope yêu cầu.",
+        "Có, Arc chia sẻ RAM mọi máy.",
+        "Chỉ cần u32."
+      ],
+      "correct": 1,
+      "explanation": "Local critical section không là distributed uniqueness protocol."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "ID gap versus source behavior",
+      "question": "Có nên nói source hiện chắc chắn trùng ID ngay khi hai concurrent creators cùng process chạy không?",
+      "options": [
+        "Chỉ vì Go source từng race.",
+        "Chỉ vì Tokio async.",
+        "Không; write lock bao len+append, phải phân biệt rủi ro gaps/replicas với race không có trong code đó.",
+        "Có, mọi lenID đều race bất kể lock."
+      ],
+      "correct": 2,
+      "explanation": "Review phải theo đúng source, không áp checklist lỗi máy móc."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Default body limit limits",
+      "question": "Default2MB Json có proof mọi endpoint/custom body readers đều bounded cùng cách không?",
+      "options": [
+        "Có, mọi request trong mọi Axum version đều 2MB.",
+        "Chỉ cần Router new.",
+        "Chỉ cầnserde.",
+        "Không; scope phụ thuộc extractor/middleware và có thể thay đổi theo config."
+      ],
+      "correct": 3,
+      "explanation": "Pinned docs nêu direct body consumption có thể không áp default limit."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Type safety versus auth",
+      "question": "Compile handler types đúng có bảo đảm todos chỉ được xem bởi owner không?",
+      "options": [
+        "Không; cần identity, authorization và query/data scoping theo contract.",
+        "Có, private Rust fields là user permissions.",
+        "Chỉ cầnState.",
+        "Chỉ cầnHTTPS."
+      ],
+      "correct": 0,
+      "explanation": "Language visibility khác phân quyền API."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Clone response scalability",
+      "question": "Clone toàn Vec dưới read lock có thể tác động gì khi dataset lớn?",
+      "options": [
+        "Tự làm writes không bao giờchờ.",
+        "Allocation/copy cost và thời gian giữ guard, cần đo/thiết kế pagination/snapshot phù hợp.",
+        "Luôn0 CPU do Rust clone.",
+        "Tự chuyển sang streaming mỗi item."
+      ],
+      "correct": 1,
+      "explanation": "Không claim benchmark hoặc lockfairness chưa thực hiện."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "DTO overposting semantics",
+      "question": "Client gửi done:true nhưng DTO chỉ title có nghĩa chắc request bị reject mặc định không?",
+      "options": [
+        "Chỉ nếuPOST.",
+        "Chỉ nếuTokio.",
+        "Không; serde JSON thường ignore unknown fields khi không deny_unknown_fields, theo docs đã xem.",
+        "Có, Rust struct literal reject đồng nghĩa HTTP JSON reject."
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt static Rust literal check với runtime deserialization policy."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Validation order",
+      "question": "Có nên append todo rồi mới kiểm title hợp lệ khi source yêu cầu reject invalid input không?",
+      "options": [
+        "Có, mọi Errorresponse tự rollbackVec.",
+        "Chỉ cầnStatus422.",
+        "Chỉ cần Json wrapper.",
+        "Không nếu side effect phải tránh; validate trước mutation và giữ invariant theo protocol."
+      ],
+      "correct": 3,
+      "explanation": "Error response không tự hoàn tác side effects."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Route safety nuance",
+      "question": "Một RouteBuilder panic do duplicate method/path có chứng minh Rust type system thất bại memory safety không?",
+      "options": [
+        "Không; configuration validity khác type/memory safety.",
+        "Có, mọi runtimepanic làUB.",
+        "Chỉ nếu handler async.",
+        "Chỉ nếuJSON."
+      ],
+      "correct": 0,
+      "explanation": "Đừng hứa compiler phát hiện mọi routing mistakes hoặc đánh đồng panic với memory corruption."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Return response ownership",
+      "question": "Trả Json(todo) owned có cần giữ write guard tới hết client đọc body không theo type/source này?",
+      "options": [
+        "Chỉ vì title String.",
+        "Không; guard local kết thúc theo handler lifetime, owned response payload tách khỏi borrowed guard.",
+        "Có, Json tự giữ mọi Mutex.",
+        "Chỉ cầnArc."
+      ],
+      "correct": 1,
+      "explanation": "Không suy network-lifetime lock từ một local guard khi output không borrow nó."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Cancellation side effects",
+      "question": "Request cancel sau khi source đã append todo có tự rollback Vec không?",
+      "options": [
+        "Chỉ cầnRwLock.",
+        "Chỉ cầnResultErr.",
+        "Không; cancel/drop không tự là transaction rollback, contract idempotency/outcome cần thiết kế riêng.",
+        "Có, mọi async Rust handler là ACID transaction."
+      ],
+      "correct": 2,
+      "explanation": "Memory/resource cleanup khác durable/application action semantics."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "State across processes",
+      "question": "Chạy nhiều server replicas cùng with_state không tự giải quyết điều gì?",
+      "options": [
+        "Clone typechecker củaRust.",
+        "Một local read guard.",
+        "Một JSON literal.",
+        "Shared data consistency/persistence giữa processes."
+      ],
+      "correct": 3,
+      "explanation": "Mỗi app state RAM riêng cần kiến trúc storage/distribution nếu yêu cầu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "HTTP integration evidence",
+      "question": "Vec/DTO/cast fixtures pass có cho phép báo Axum routing/extractors/status integration đã pass không?",
+      "options": [
+        "Không; framework chưa được thực thi trong các fixture này.",
+        "Có, native Rust thay mọi Axum API.",
+        "Chỉ cầntham chiếudocs0.8.4.",
+        "Chỉ cần 20 Tokio async fixtures khác."
+      ],
+      "correct": 0,
+      "explanation": "Dùng đúng loại bằng chứng cho đúng claim."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Version-specific defaults",
+      "question": "Có nên áp codes/defaults Axum0.8.4 cho source đã chạy nếu chưa biết manifest/version thực tế không?",
+      "options": [
+        "Chỉ cần user không hỏi.",
+        "Chỉ dùng như scope docs đã pin, không giả resolved version/integration đã được xác nhận.",
+        "Có, mọi version vĩnhviễn giống nhau.",
+        "Chỉ cần source có Json."
+      ],
+      "correct": 1,
+      "explanation": "Version và actual dependency proof cần rõ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Million users readiness",
+      "question": "Source có State/RwLock/Json có tự đủ phục vụ triệu người dùng không?",
+      "options": [
+        "Chỉ cần port 3000.",
+        "Chỉ cần Rust no GC.",
+        "Không; cần workload, storage, resource bounds, latency/failure evidence và requirements cụ thể.",
+        "Có, type safety là capacity infinite."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng quiz content proof thay architecture/load verification."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Feature completion",
+      "question": "Bài tập CRUD+SQLx+JWT có thể coi xong từ GET/POST RAM demo này chưa?",
+      "options": [
+        "Có, Router tự sinh mọi code đó.",
+        "Chỉ cầnserde derive.",
+        "Chỉ cần80 câu.",
+        "Chưa; update/delete, storage, auth, validation, error/lifecycle và tests phù hợp vẫn chưa có trong source."
+      ],
+      "correct": 3,
+      "explanation": "Giữ kết luận đúng phạm vi implementation đang có."
+    }
+  ]
+}

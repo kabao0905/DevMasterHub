@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cicd",
+  "level": "master",
+  "lesson": "gitops",
+  "language": "vi",
+  "sourceHash": "222f8415d38b56ffe91e1b115ed6e36d4cce03281b0e6f582869523aca497445",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo comments promotion và approval/kubectl fragment. Đối chiếu manual-approval v1, GitHub environments, Kubernetes Service và Argo CD auto-sync. Chưa có runs-on/auth/checkout/manifest/Argo Application; không tạo issue, approve, kubectl, cluster hay deploy thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "GitOps",
+      "question": "Ý tưởng GitOps trong bài là gì?",
+      "options": [
+        "Dùng trạng thái mong muốn có quản lý trong Git và cơ chế đối chiếu/áp dụng phù hợp",
+        "Chỉ đặt tên branch là gitops",
+        "Tự lưu mọi secret plaintext trong Git",
+        "Bỏ review vì Git có lịch sử"
+      ],
+      "correct": 0,
+      "explanation": "Git là nguồn khai báo được quản lý, nhưng cần controller/quy trình thật."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Declarative",
+      "question": "Cấu hình declarative mô tả điều gì?",
+      "options": [
+        "Bảo đảm không bao giờ có lỗi runtime",
+        "Trạng thái mong muốn của tài nguyên",
+        "Mọi phím người vận hành phải gõ",
+        "Mọi response tương lai của người dùng"
+      ],
+      "correct": 1,
+      "explanation": "Cần cơ chế thực thi/đối chiếu để nối ý định với hệ thống thật."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Promotion",
+      "question": "Promotion giữa môi trường thường có mục tiêu gì?",
+      "options": [
+        "Đổi tên mọi secrets thành public",
+        "Tự bỏ cổng duyệt production",
+        "Đưa phiên bản đã được đánh giá qua các môi trường theo policy",
+        "Tự tăng số sao repository"
+      ],
+      "correct": 2,
+      "explanation": "Cần ràng buộc version/artifact và điều kiện từng môi trường."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Thư mục ví dụ",
+      "question": "Comment nguồn liệt kê các môi trường nào?",
+      "options": [
+        "test, lint, build",
+        "frontend, backend, shared",
+        "blue, latest, main",
+        "dev, staging, production"
+      ],
+      "correct": 3,
+      "explanation": "Đây là cây thư mục minh họa, không chứng minh các file/cấu hình tồn tại."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "File values",
+      "question": "values.yaml trong cấu trúc minh họa thường chứa gì?",
+      "options": [
+        "Giá trị cấu hình theo môi trường cho cơ chế triển khai phù hợp",
+        "Mọi log runtime tự sinh",
+        "Source code của mọi action",
+        "Credential được mã hóa tự động bởi đuôi yaml"
+      ],
+      "correct": 0,
+      "explanation": "Tên file không tự tạo chart, controller hoặc bảo vệ secrets."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Luồng PR",
+      "question": "Luồng được comment trong nguồn bắt đầu từ đâu?",
+      "options": [
+        "Issue → tạo cluster không auth",
+        "Feature branch → PR → review → merge → auto-deploy dự kiến",
+        "Production → xóa Git history → bỏ review",
+        "Tag latest → tự tạo mọi test"
+      ],
+      "correct": 1,
+      "explanation": "Comment là mô tả ý định, không phải cấu hình thực thi đầy đủ."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Job phát hành",
+      "question": "Job trong fragment có ID gì?",
+      "options": [
+        "detect-changes",
+        "security",
+        "promote-to-prod",
+        "deploy-staging"
+      ],
+      "correct": 2,
+      "explanation": "ID này chưa tự làm job hợp lệ hoặc triển khai thành công."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Environment",
+      "question": "Job tham chiếu environment tên gì?",
+      "options": [
+        "green duy nhất",
+        "main",
+        "default-cluster",
+        "production"
+      ],
+      "correct": 3,
+      "explanation": "GitHub environment khác namespace Kubernetes."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "URL",
+      "question": "environment.url trong nguồn là gì?",
+      "options": [
+        "https://myapp.com",
+        "http://green:3000",
+        "https://github.com/actions",
+        "Một secret token"
+      ],
+      "correct": 0,
+      "explanation": "Metadata URL không tự định tuyến traffic hay xác minh health."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Approval action",
+      "question": "Nguồn gọi action nào để chờ duyệt?",
+      "options": [
+        "dorny/paths-filter@v3",
+        "trstringer/manual-approval@v1",
+        "actions/checkout@v4",
+        "docker/build-push-action@v5"
+      ],
+      "correct": 1,
+      "explanation": "Cơ chế action này khác environment required-reviewer gate."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Người duyệt",
+      "question": "Approvers nguồn ghi những ai?",
+      "options": [
+        "Chỉ user anonymous",
+        "Một bot đã được định nghĩa sẵn",
+        "tech-lead và cto",
+        "Mọi người trên Internet"
+      ],
+      "correct": 2,
+      "explanation": "Danh sách cần trỏ tới người/team hợp lệ và quyền phù hợp."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Số duyệt",
+      "question": "minimum-approvals: 1 thể hiện gì?",
+      "options": [
+        "Luôn yêu cầu cả hai người duyệt",
+        "Tự duyệt sau một giây",
+        "Tự tạo đúng một deployment",
+        "Yêu cầu tối thiểu một approval theo semantics/action config"
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất số người trong danh sách với minimum được cấu hình."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Blue-green",
+      "question": "Ý tưởng blue-green deployment là gì?",
+      "options": [
+        "Chuẩn bị hai bộ phiên bản/môi trường và chuyển traffic khi đủ điều kiện",
+        "Trộn ngẫu nhiên mã nguồn của hai branch",
+        "Chỉ đổi màu giao diện dashboard",
+        "Tự rollback mọi dữ liệu khi chuyển màu"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế routing, health và dữ liệu phải được thiết kế riêng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Apply namespace",
+      "question": "Lệnh apply mẫu chọn namespace nào qua tùy chọn?",
+      "options": [
+        "blue",
+        "green",
+        "production",
+        "default tường minh"
+      ],
+      "correct": 1,
+      "explanation": "Cần xét cả namespace trong manifests và cấu hình thật khi triển khai; không chạy lệnh ở đây."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Workload chờ",
+      "question": "Lệnh rollout status trong nguồn theo dõi đối tượng nào?",
+      "options": [
+        "Mọi database transaction",
+        "Một Docker image trong registry",
+        "deployment/app ở namespace green",
+        "Mọi Service trên toàn cluster"
+      ],
+      "correct": 2,
+      "explanation": "Rollout status có phạm vi đối tượng cụ thể."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Service chuyển traffic",
+      "question": "Lệnh patch mẫu nhắm Service tên gì?",
+      "options": [
+        "app",
+        "green",
+        "production",
+        "main-lb"
+      ],
+      "correct": 3,
+      "explanation": "Tên Service không chứng minh nó ở namespace đúng hoặc có endpoint phù hợp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Selector",
+      "question": "Patch trong nguồn có ý định đặt selector field nào?",
+      "options": [
+        "version thành green",
+        "replicas thành green",
+        "namespace thành production",
+        "image thành latest"
+      ],
+      "correct": 0,
+      "explanation": "Service selector dùng labels, không tự đổi namespace hay image của Pod."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Canary",
+      "question": "Canary release khác chuyển toàn bộ blue-green đơn giản ở ý tưởng nào?",
+      "options": [
+        "Tự có phần trăm traffic chỉ từ hai replicas",
+        "Đưa một phần traffic tới bản mới và đánh giá trước khi tăng theo thiết kế",
+        "Luôn xóa bản cũ trước mọi kiểm tra",
+        "Chỉ đổi tên namespace thành canary"
+      ],
+      "correct": 1,
+      "explanation": "Source chưa thể hiện cơ chế weighted canary traffic."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Argo trong source",
+      "question": "Fragment có Argo CD Application hoặc cấu hình controller thực tế chưa?",
+      "options": [
+        "Có, kubectl patch là một Application",
+        "Có, environment.url là Argo config",
+        "Chưa",
+        "Có, comment GitOps tự tạo CRD"
+      ],
+      "correct": 2,
+      "explanation": "Bài tập yêu cầu Argo không có nghĩa source đã triển khai nó."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Runner thiếu",
+      "question": "Job chứa steps trong fragment còn thiếu khai báo trực tiếp nào?",
+      "options": [
+        "Một emoji cho name",
+        "Một key color",
+        "Một dấu ! sau job ID",
+        "runs-on phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Workflow cần cấu trúc hợp lệ và môi trường thực thi."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Comment không tạo files",
+      "question": "Cây environments/dev/values.yaml trong comment có tự tạo file trên runner không?",
+      "options": [
+        "Không, phải có source/artifact hoặc bước tạo file phù hợp",
+        "Có, YAML comments tự sinh thư mục",
+        "Có, manual-approval tự tạo mọi values",
+        "Có, URL environment chứa file"
+      ],
+      "correct": 0,
+      "explanation": "Mô tả bố cục không phải thao tác filesystem."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Approval auth thiếu",
+      "question": "Action manual-approval v1 có input secret bắt buộc nhưng source không truyền. Cần làm gì?",
+      "options": [
+        "Chỉ thêm comment token exists",
+        "Cấu hình token/quyền phù hợp theo contract action, không coi approvers đủ để chạy",
+        "Chỉ tăng minimum-approvals lên2",
+        "Chỉ đổi job name"
+      ],
+      "correct": 1,
+      "explanation": "Đã đối chiếu action.yaml v1: secret là input required."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Issue permissions",
+      "question": "Theo README action manual-approval v1, cơ chế tạo issue cần quyền gì liên quan?",
+      "options": [
+        "Quyền xóa toàn bộ Git history",
+        "Quyền root bắt buộc trên máy người duyệt",
+        "Quyền ghi issues phù hợp và credential có khả năng thao tác repository",
+        "Quyền admin mọi cluster trên Internet"
+      ],
+      "correct": 2,
+      "explanation": "Quyền của action phải phù hợp nhiệm vụ cụ thể."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Hai cơ chế approval",
+      "question": "Environment production có required reviewers và step manual-approval cũng được cấu hình. Điều gì có thể xảy ra?",
+      "options": [
+        "Hai cơ chế luôn tự gộp thành đúng một lần duyệt",
+        "Step action tự tắt environment rules",
+        "Environment tự xóa mọi issue approval",
+        "Có hai cổng riêng cần xem thứ tự/ý nghĩa, không tự là một gate duy nhất"
+      ],
+      "correct": 3,
+      "explanation": "Cần tránh giả định các cơ chế khác nhau tự đồng bộ quyết định."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Environment chưa protection",
+      "question": "Chỉ environment: production có tự đặt required reviewers không?",
+      "options": [
+        "Không, cần cấu hình environment rules theo khả năng hỗ trợ",
+        "Có, production luôn bắt buộc hai người duyệt",
+        "Có, URL HTTPS là rule reviewer",
+        "Có, minimum-approvals tự cấu hình GitHub environment"
+      ],
+      "correct": 0,
+      "explanation": "Action input và environment protection là các lớp riêng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Namespace patch thiếu",
+      "question": "Lệnh patch Service không có -n, context hiện tại chọn namespace blue. Nó mặc định nhắm namespace nào nếu không có override khác?",
+      "options": [
+        "Mọi namespace cùng lúc",
+        "blue",
+        "green vì apply trước có --namespace=green",
+        "production vì GitHub environment"
+      ],
+      "correct": 1,
+      "explanation": "Namespace flag của một lệnh không tự đổi namespace cho các lệnh sau."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Lệnh trước không đổi context",
+      "question": "kubectl apply --namespace=green có tự làm mọi kubectl sau dùng green không?",
+      "options": [
+        "Có, tên thư mục k8s tự đổi context",
+        "Chỉ khi source có approval",
+        "Không, tùy chọn áp cho lệnh đó, không tự lưu namespace vào context",
+        "Có, apply luôn đổi current-context"
+      ],
+      "correct": 2,
+      "explanation": "Cần chỉ định/xác minh context và namespace từng thao tác theo thiết kế."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Service và Pod khác namespace",
+      "question": "Service có selector ở blue có tự chọn Pod label version=green ở namespace green không?",
+      "options": [
+        "Có, label version tự vượt mọi namespace",
+        "Có, tên main-lb cho phép chọn toàn cluster",
+        "Có, nếu GitHub environment là production",
+        "Không theo selector Pod thông thường của Service; cần thiết kế routing đúng ranh giới namespace"
+      ],
+      "correct": 3,
+      "explanation": "Không loại trừ các kiến trúc routing khác được thiết kế riêng; selector mẫu chưa cung cấp chúng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Label không có",
+      "question": "Green Pod không có label version=green nhưng patch selector chỉ nhắm label đó. Cần kiểm gì?",
+      "options": [
+        "Effective selector, Pod labels và endpoints/routing thực tế",
+        "Chỉ tăng số reviewers",
+        "Chỉ đổi URL metadata",
+        "Chỉ thêm comment blue-green"
+      ],
+      "correct": 0,
+      "explanation": "Routing cần các hợp đồng labels và phạm vi đúng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Selector nhiều field",
+      "question": "Service hiện có selector app=web; patch merge chỉ thêm version=green. Có nên mặc định app selector bị xóa không?",
+      "options": [
+        "Không, vì Service không hỗ trợ nhiều label",
+        "Không, cần xem patch type/effective selector; trường app có thể vẫn còn và cùng ràng buộc",
+        "Có, mọi patch luôn thay toàn bộ object",
+        "Có, version là từ khóa xóa app"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện selector hiệu lực và semantics patch phải được kiểm, không đoán theo một field."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Health scope",
+      "question": "rollout status deployment/app thành công có chứng minh mọi luồng nghiệp vụ đúng không?",
+      "options": [
+        "Có, deployment app luôn chứa mọi assertion",
+        "Có, namespace green tự kiểm payments",
+        "Không, chỉ trạng thái rollout theo tiêu chí workload và cấu hình liên quan",
+        "Có, Kubernetes tự kiểm mọi giao dịch nghiệp vụ"
+      ],
+      "correct": 2,
+      "explanation": "Cần smoke/health/functional checks phù hợp mục tiêu."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Readiness",
+      "question": "Vì sao readiness phù hợp quan trọng trước khi chuyển traffic?",
+      "options": [
+        "Tên green tự bảo đảm sẵn sàng",
+        "Readiness tự sửa schema DB",
+        "Readiness luôn là test end-to-end toàn hệ thống",
+        "Pod đang chạy chưa đồng nghĩa sẵn sàng nhận request đúng"
+      ],
+      "correct": 3,
+      "explanation": "Probe cần phản ánh hợp đồng phục vụ của app."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Giữ bản blue",
+      "question": "Vì sao thường giữ bản cũ một thời gian sau chuyển traffic?",
+      "options": [
+        "Để hỗ trợ phục hồi/drain theo policy, cùng xét dữ liệu và kết nối đang tồn tại",
+        "Để tự tăng coverage source",
+        "Để Kubernetes tự cấp reviewer",
+        "Để mọi secret có bản sao công khai"
+      ],
+      "correct": 0,
+      "explanation": "Giữ bản cũ không tự giải quyết mọi dữ liệu/migration."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Rollback data",
+      "question": "Quay traffic về blue có tự đảo mọi DB migration không?",
+      "options": [
+        "Có, Argo luôn có transaction toàn hệ thống",
+        "Không, cần chiến lược dữ liệu tương thích/phục hồi riêng",
+        "Có, Service selector chứa snapshot DB",
+        "Có, Git revert tự rollback DB đang chạy"
+      ],
+      "correct": 1,
+      "explanation": "Ứng dụng và dữ liệu có vòng đời/side effects riêng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Canary chưa cấu hình",
+      "question": "Source chỉ patch selector version=green. Có đủ chứng minh canary10%traffic không?",
+      "options": [
+        "Có, minimum-approvals=1 nghĩa10%traffic",
+        "Có, rollout status tự đặt trọng số",
+        "Không, chưa có cơ chế phân bổ trọng số/đánh giá canary tương ứng",
+        "Có, mỗi selector tự chia10%"
+      ],
+      "correct": 2,
+      "explanation": "Tên kỹ thuật trong keypoints không thay cấu hình routing thực tế."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "GitOps reconciliation",
+      "question": "Controller GitOps có vai trò chính nào?",
+      "options": [
+        "Tự cho mọi người quyền cluster-admin",
+        "Thay mọi health checks nghiệp vụ",
+        "Tự tạo mọi secrets từ tên biến",
+        "So trạng thái mong muốn với thực tế và đồng bộ theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Cần quyền, source, phạm vi tài nguyên và sync policy được cấu hình."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Imperative source",
+      "question": "Lệnh kubectl patch trực tiếp có tự là bằng chứng controller Argo đang quản lý desired state không?",
+      "options": [
+        "Không, cần cấu hình controller/Application và nguồn Git tương ứng",
+        "Có, mọi kubectl command tự đi qua Argo",
+        "Có, namespace production tự cài Argo",
+        "Có, vì file code có comment GitOps"
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt thao tác trực tiếp với cơ chế declarative reconciliation."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Desired state trong Git",
+      "question": "Nếu Git vẫn khai selector blue nhưng người vận hành patch live sang green, có thể tạo gì?",
+      "options": [
+        "Không thể có drift khi dùng YAML",
+        "Drift so với desired state, tùy controller/policy có thể bị đồng bộ lại",
+        "Git tự sửa thành green trong mọi trường hợp",
+        "Deployment cũ tự biến thành commit mới"
+      ],
+      "correct": 1,
+      "explanation": "Luồng chuyển trạng thái cần thống nhất nguồn sự thật và tác nhân có quyền sửa."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Argo self heal",
+      "question": "Theo Argo CD docs được đọc, selfHeal phục vụ điều gì?",
+      "options": [
+        "Tự khôi phục mọi record đã xóa trong DB",
+        "Tự duyệt mọi PR production",
+        "Cho phép đối chiếu/đồng bộ khi live state lệch desired state theo policy",
+        "Tự sửa mọi lỗi nghiệp vụ trong app"
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm đồng bộ tài nguyên với phục hồi dữ liệu ứng dụng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Argo prune",
+      "question": "Prune khi được bật liên quan mục tiêu nào?",
+      "options": [
+        "Xóa mọi tài nguyên toàn cluster bất kể ownership",
+        "Tự gỡ mọi dependency npm cũ",
+        "Tự xóa mọi secret khỏi Git history",
+        "Xóa tài nguyên thuộc phạm vi quản lý không còn trong desired source theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Cần hiểu scope/protection, không coi prune là lệnh cleanup toàn hệ thống."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Secret trong Git",
+      "question": "Dùng Git làm desired state có nghĩa phải commit plaintext credentials không?",
+      "options": [
+        "Không, cần cơ chế quản lý secrets phù hợp và quyền truy cập",
+        "Có, GitOps bắt buộc mọi token public",
+        "Có, đuôi yaml tự mã hóa chuỗi",
+        "Không, vì GitOps cấm mọi cấu hình secret"
+      ],
+      "correct": 0,
+      "explanation": "Khai báo tài nguyên và bảo vệ credential cần được thiết kế cùng nhau."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Artifact promotion",
+      "question": "Muốn dev→staging→production dùng cùng image đã kiểm, nên ràng buộc gì?",
+      "options": [
+        "Chỉ cùng reviewer",
+        "Version/digest và provenance theo policy promotion",
+        "Chỉ tên thư mục giống nhau",
+        "Chỉ tag latest tại thời điểm bất kỳ"
+      ],
+      "correct": 1,
+      "explanation": "Cùng quy trình không tự bảo đảm cùng nội dung artifact."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Chọn cluster",
+      "question": "Source thiếu kubeconfig/auth/context. Có thể suy kubectl nhắm cluster production đúng không?",
+      "options": [
+        "Có, main-lb là tên toàn cầu",
+        "Có, action approval tự cấp cluster credentials",
+        "Không, cần cấu hình/xác minh identity, context, namespace và quyền đích",
+        "Có, GitHub environment tự chọn kubecontext"
+      ],
+      "correct": 2,
+      "explanation": "Ranh giới quyền GitHub và Kubernetes là riêng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Quyền tối thiểu",
+      "question": "Job chuyển traffic có cần mặc định cluster-admin mọi namespace không?",
+      "options": [
+        "Có, mọi patch Service bắt buộc cluster-admin",
+        "Có, tên production tự đòi quyền root máy chủ",
+        "Không cần credential vì namespace green",
+        "Không, nên giới hạn theo tài nguyên/nhiệm vụ và policy thích hợp"
+      ],
+      "correct": 3,
+      "explanation": "Quyền tối thiểu cần phù hợp thao tác thật."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Đường dẫn manifests",
+      "question": "Lệnh apply -f k8s/ cần điều kiện đầu vào nào?",
+      "options": [
+        "Thư mục manifests đúng source/artifact và revision có trong workspace",
+        "Chỉ comment có tên k8s",
+        "Chỉ secret action manual-approval",
+        "Chỉ một URL production"
+      ],
+      "correct": 0,
+      "explanation": "Source fragment chưa có checkout hoặc bước cung cấp files."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Approval không health",
+      "question": "Người duyệt đồng ý rồi rollout lỗi. Có thể nói gì?",
+      "options": [
+        "Reviewer đã tự chạy tất cả checks trong cluster",
+        "Approval là quyết định theo quy trình, không chứng minh deployment hoặc health đạt",
+        "Deployment tự pass vì đã duyệt",
+        "Mọi lỗi runtime tự trở thành warning"
+      ],
+      "correct": 1,
+      "explanation": "Cần giữ kết quả kỹ thuật thật dù có approval."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Cùng tên khác namespace",
+      "question": "Có Service main-lb ở blue và green. Điều gì cần để patch đúng đối tượng?",
+      "options": [
+        "Chỉ GitHub URL",
+        "Chỉ số lượng approvers",
+        "Context/namespace/tên tài nguyên tường minh và quyền phù hợp",
+        "Chỉ name main-lb là đủ toàn cluster"
+      ],
+      "correct": 2,
+      "explanation": "Tài nguyên namespaced không được định danh chỉ bằng tên ngắn."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Timeout approval",
+      "question": "Muốn giới hạn thời gian chờ action approval, docs v1 hướng đặt timeout ở đâu?",
+      "options": [
+        "Chỉ trong name của issue",
+        "Chỉ tăng minimum-approvals",
+        "Chỉ đặt namespace timeout",
+        "Cấp step/job theo GitHub syntax, không mặc định input timeout-minutes của action có hiệu lực"
+      ],
+      "correct": 3,
+      "explanation": "Đã đọc ghi chú input timeout-minutes bị bỏ vì trước đó không tạo timeout như người dùng nghĩ."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Chi phí chờ action",
+      "question": "Chờ trong manual-approval action có mặc định giống gate trước runner, không dùng tài nguyên job không?",
+      "options": [
+        "Không, action đang chạy có thể giữ allocation/compute; cần xét limits/cost theo docs",
+        "Có, mọi pause action giải phóng runner tự động",
+        "Có, nếu approvers có hai người",
+        "Không, vì action luôn deploy trước khi chờ"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế approval khác nhau có vòng đời tài nguyên khác nhau; không đo/công bố chi phí phiên này."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Tự duyệt",
+      "question": "minimum-approvals:1 có tự cấm người khởi tạo tự duyệt không?",
+      "options": [
+        "Chỉ cần tên approver là cto",
+        "Không, cần kiểm cấu hình loại initiator/quyền và cơ chế đang dùng",
+        "Có, số1 tự nghĩa một người khác",
+        "Có, GitOps luôn tự cấm self-approval"
+      ],
+      "correct": 1,
+      "explanation": "Danh sách/count và chống self-review là các điều kiện riêng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Tương thích manifest",
+      "question": "Đặt mọi manifests trong k8s/ và apply namespace green có bảo đảm mọi tài nguyên đều thuộc green không?",
+      "options": [
+        "Có, directory name quyết định toàn scope",
+        "Có, Argo tự thêm namespace dù chưa có Argo config",
+        "Không, cần xem loại tài nguyên và metadata.namespace/flags theo contract; không tự đồng nhất mọi object",
+        "Có, mọi tài nguyên Kubernetes đều namespaced"
+      ],
+      "correct": 2,
+      "explanation": "Cluster-scoped objects và namespace tường minh cần được hiểu đúng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "DB chung blue-green",
+      "question": "Hai phiên bản blue/green dùng cùng DB có cần xem tương thích schema không?",
+      "options": [
+        "Không, màu deployment tự tách schema",
+        "Không, Service giữ snapshot riêng mỗi version",
+        "Chỉ cần thêm replicas",
+        "Có, nhất là khi cùng tồn tại và trong lúc rollback"
+      ],
+      "correct": 3,
+      "explanation": "Routing không giải quyết hợp đồng dữ liệu giữa các phiên bản."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Kết nối lâu dài",
+      "question": "Đổi selector Service có chứng minh mọi WebSocket/connection đang mở lập tức chuyển sang green không?",
+      "options": [
+        "Không, cần thiết kế draining/lifecycle và kiểm hành vi mạng/app phù hợp",
+        "Có, selector tự chuyển mọi tiến trình đang kết nối",
+        "Có, nếu version có chữ green",
+        "Có, rollout status kiểm mọi client"
+      ],
+      "correct": 0,
+      "explanation": "Traffic mới và kết nối đang tồn tại có vòng đời khác nhau."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Giữ desired state đúng",
+      "question": "Muốn rollback bằng Git revert có hiệu lực mong muốn, cần gì?",
+      "options": [
+        "Chỉ đổi tên branch main",
+        "Revert đúng source/artifact/config và để cơ chế sync/kiểm kết quả phù hợp, cùng xem side effects dữ liệu",
+        "Chỉ revert bất kỳ commit có chữ deploy",
+        "Git revert tự phục hồi mọi DB transaction"
+      ],
+      "correct": 1,
+      "explanation": "Thay đổi Git chưa tự chứng minh hệ thống thật đã phục hồi."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Chưa có trigger",
+      "question": "Fragment jobs không có on. Đã mô tả tự động deploy sau merge đầy đủ chưa?",
+      "options": [
+        "Rồi, values.yaml tự tạo push event",
+        "Rồi, approval action tự đăng ký mọi webhook",
+        "Chưa, comment và job fragment còn thiếu trigger/luồng gọi phù hợp",
+        "Rồi, tên promote-to-prod tự trigger merge"
+      ],
+      "correct": 2,
+      "explanation": "Ý định luồng phát hành cần được hiện thực bằng cấu hình."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Nhiều run phát hành",
+      "question": "Hai run cùng patch traffic production có thể cần cơ chế gì?",
+      "options": [
+        "Chỉ minimum-approvals:1 là khóa mọi run",
+        "Chỉ dùng cùng namespace",
+        "Chỉ cùng tên Service",
+        "Điều phối concurrency/promotion và phiên bản đúng, xử lý thao tác dở dang theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Approval của từng run không tự ngăn xung đột mọi run."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Đúng người đúng bản",
+      "question": "Một approval nên gắn với thông tin gì để reviewer hiểu đối tượng phát hành?",
+      "options": [
+        "Version/artifact/source, environment, kết quả kiểm và thay đổi cần đánh giá",
+        "Chỉ chữ Deploy",
+        "Chỉ tên màu green",
+        "Chỉ số lượng job"
+      ],
+      "correct": 0,
+      "explanation": "Approval có ý nghĩa khi đối tượng và điều kiện cụ thể rõ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Canary đo gì",
+      "question": "Muốn đánh giá canary có ích cần gì ngoài chia traffic?",
+      "options": [
+        "Chỉ giảm số ký tự tag",
+        "Chỉ số/tiêu chí, quan sát và quyết định tăng/giảm/rollback theo yêu cầu",
+        "Chỉ tên deployment canary",
+        "Chỉ thêm một reviewer"
+      ],
+      "correct": 1,
+      "explanation": "Phân traffic không tự đánh giá chất lượng bản mới."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "URL metadata không routing",
+      "question": "Đổi environment.url sang domain mới có tự làm Service chuyển traffic không?",
+      "options": [
+        "Có, HTTPS tự chọn label green",
+        "Có, URL thay kubeconfig",
+        "Không, metadata GitHub và cấu hình routing Kubernetes là hai cơ chế riêng",
+        "Có, GitHub tự patch mọi Service"
+      ],
+      "correct": 2,
+      "explanation": "Cần cấu hình routing đích thật."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Bằng chứng promotion",
+      "question": "Báo cáo nào phản ánh đúng khi mới viết xong source mẫu chưa chạy?",
+      "options": [
+        "Production đã chuyển sang green thành công",
+        "Mọi rollback đã được thử",
+        "GitOps controller đã đồng bộ đúng mọi tài nguyên",
+        "Đã mô tả ý tưởng approval/promotion, chưa có bằng chứng issue gate/deploy/traffic/health hoạt động"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình/ý định không phải kết quả thực thi."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Namespace sai chuyển traffic",
+      "question": "Apply/rollout dùng -n green, patch main-lb không -n trong context blue. Green Pod khỏe nhưng traffic không tới như dự kiến. Điều tra/sửa nào đúng?",
+      "options": [
+        "Xác minh Service thực bị patch, effective selector và namespace của Pods; thiết kế routing trong đúng namespace hoặc cơ chế liên namespace phù hợp",
+        "Tăng replicas green vì Service selector tự vượt namespace",
+        "Chỉ thêm URL GitHub environment",
+        "Chỉ yêu cầu thêm approval"
+      ],
+      "correct": 0,
+      "explanation": "Cần nối đúng định danh tài nguyên, label contract và topology, không chỉ trạng thái rollout."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "GitOps drift sau patch",
+      "question": "Argo tự đồng bộ selector blue từ Git, pipeline patch live sang green. Sau đó traffic quay lại blue. Cách thiết kế phù hợp là gì?",
+      "options": [
+        "Tắt mọi log để không thấy drift",
+        "Thống nhất luồng promotion desired state trong Git và controller/policy, tránh hai tác nhân liên tục ghi ý định mâu thuẫn",
+        "Chỉ patch lặp vô hạn nhanh hơn controller",
+        "Chỉ đổi tên job thành GitOps"
+      ],
+      "correct": 1,
+      "explanation": "Controller có thể đưa live state về desired state; cần một hợp đồng quản lý thay đổi rõ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Gate có cấu trúc thiếu",
+      "question": "Fragment có environment/approvers nhưng thiếu runs-on, secret action, checkout và kube auth. Cần gì trước khi claim triển khai đã hoạt động?",
+      "options": [
+        "Chỉ đổi URL thành tên miền thật",
+        "Chỉ đặt minimum-approvals lên2",
+        "Hoàn thiện workflow/inputs/quyền/source/cluster target và kiểm kết quả từng giai đoạn",
+        "Chỉ thêm comment Manual approval"
+      ],
+      "correct": 2,
+      "explanation": "Các nhãn không thay prerequisite cấu trúc và quyền thực thi."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Blue-green và schema",
+      "question": "Green migration xóa cột blue vẫn dùng, rồi định rollback bằng đổi selector khi có lỗi. Rủi ro và hướng thiết kế là gì?",
+      "options": [
+        "Selector chứa snapshot DB nên tự khôi phục cột",
+        "Git revert tự đảo mọi migration đã chạy",
+        "Chỉ giữ blue Pods là đủ rollback an toàn",
+        "Blue có thể không còn tương thích DB; cần chiến lược migration/compatibility và recovery dữ liệu theo vòng phát hành"
+      ],
+      "correct": 3,
+      "explanation": "Duy trì phiên bản app không tự duy trì tương thích dữ liệu."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Approval đúng artifact",
+      "question": "Reviewer duyệt digest A, pipeline sau đó kéo latest đang trỏ B để deploy. Điều gì phải sửa?",
+      "options": [
+        "Ràng buộc artifact/version thực được phát hành với đối tượng đã duyệt và giữ provenance",
+        "Chỉ dùng cùng environment name",
+        "Chỉ đổi tên issue thành Approved",
+        "Minimum-approvals tự khóa mọi tag registry"
+      ],
+      "correct": 0,
+      "explanation": "Phê duyệt cần gắn với đầu vào cụ thể."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Canary không có trọng số",
+      "question": "Team nói patch selector version=green đã gửi10%traffic cho canary dù chỉ có một Service selector. Đánh giá đúng là gì?",
+      "options": [
+        "Chỉ cần hai namespace để mọi request tự chia10%",
+        "Chưa có cơ chế weighted routing/canary tương ứng; cần thiết kế chia traffic và tiêu chí đánh giá thật",
+        "Đúng, giá trị green mặc định10%",
+        "Đúng, một approval nghĩa10%"
+      ],
+      "correct": 1,
+      "explanation": "Không suy tỷ lệ traffic từ tên phiên bản hay môi trường."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Readiness chưa đủ nghiệp vụ",
+      "question": "Rollout green thành công nhưng request ghi dữ liệu lỗi vì thiếu quyền DB. Trước promotion cần gì?",
+      "options": [
+        "Chỉ tăng timeout approval",
+        "Chỉ đổi selector thêm app=web",
+        "Probe/health/smoke phù hợp hợp đồng ứng dụng và dependency, với tín hiệu chặn theo policy",
+        "Chỉ tin rollout status kiểm mọi quyền nghiệp vụ"
+      ],
+      "correct": 2,
+      "explanation": "Điều khiển workload không tự thực hiện mọi kiểm tra nghiệp vụ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Chờ duyệt dài",
+      "question": "Approval action giữ runner chờ lâu trong khi token có hạn và workflow có timeout. Thiết kế nào cần cân nhắc?",
+      "options": [
+        "Đổi input timeout-minutes đã không còn hiệu lực rồi tin chờ an toàn",
+        "Cấp token admin không hết hạn cho mọi PR",
+        "Bỏ mọi timeout để chắc chắn hoàn tất",
+        "Cơ chế gate, limits/chi phí và credential lifetime, timeout ở đúng cấp; không hứa pause vô hạn không tài nguyên"
+      ],
+      "correct": 3,
+      "explanation": "Approval implementation có điều kiện vận hành riêng, không giống mọi loại gate."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Secrets và Git source",
+      "question": "Team muốn Git chứa đầy đủ desired state nên commit plaintext cluster credentials và app passwords. Cách đáp ứng GitOps đúng hơn là gì?",
+      "options": [
+        "Dùng quản lý secrets/credential phù hợp và tham chiếu/cơ chế bảo vệ được thiết kế, cùng access control",
+        "GitOps bắt buộc plaintext nên không thể tránh",
+        "Chỉ thêm .gitignore sau khi commit là token tự vô hiệu",
+        "Chỉ đổi extension file thành secret"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn khai báo quản lý được không yêu cầu công khai quyền truy cập."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Hai run đã được duyệt",
+      "question": "A cũ và B mới đều có approval, B chuyển traffic xong rồi A tiếp tục patch. Cần gì để tránh phát hành ngược ngoài ý muốn?",
+      "options": [
+        "Chỉ tăng minimum-approvals",
+        "Điều phối concurrency/promotion theo environment và kiểm version được phép trước thao tác, xử lý side effects khi hủy",
+        "Chỉ approval đủ để khóa mọi run toàn cục",
+        "Chỉ đặt A ở cuối YAML"
+      ],
+      "correct": 1,
+      "explanation": "Phê duyệt và điều phối cạnh tranh là các hợp đồng khác nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Service selector hiệu lực",
+      "question": "main-lb có selector app=web; patch thêm version=green, nhưng green Pods chỉ có app=api. Dù cùng namespace, vì sao vẫn có thể không có backend?",
+      "options": [
+        "Service chỉ xét field selector cuối cùng",
+        "Số replicas quyết định bỏ qua selector",
+        "Các ràng buộc selector hiệu lực phải cùng khớp; cần thống nhất label contract và kiểm endpoints",
+        "Version luôn ghi đè mọi label selector khác"
+      ],
+      "correct": 2,
+      "explanation": "Cần xem object sau patch và labels thực, không chỉ đoạn JSON dự định thêm."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Tự duyệt theo policy",
+      "question": "Cần một người khác người khởi tạo phê duyệt, nhưng action để mặc định cho phép initiator và minimum1. Cách sửa có căn cứ?",
+      "options": [
+        "Giữ nguyên vì minimum1 tự cấm self-review",
+        "Đổi environment URL",
+        "Chỉ đặt tên approver cto là tự đủ",
+        "Cấu hình loại initiator/role và quyền phù hợp cho cơ chế gate, xác minh hành vi thay vì chỉ tăng tên approvers"
+      ],
+      "correct": 3,
+      "explanation": "Count, tập approver và chính sách self-review phải cùng đáp ứng yêu cầu."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Traffic và kết nối cũ",
+      "question": "Sau switch green, một số kết nối lâu dài vẫn tới blue. Nhóm muốn xóa blue ngay để chứng minh switch hoàn tất. Cách đánh giá đúng?",
+      "options": [
+        "Thiết kế drain/timeout/graceful lifecycle và quan sát phù hợp; không mặc định mọi connection chuyển tức thì",
+        "Xóa blue luôn an toàn vì selector tự di chuyển socket",
+        "Chỉ đổi minimum-approvals",
+        "Chỉ bật prune cho mọi tài nguyên toàn cluster"
+      ],
+      "correct": 0,
+      "explanation": "Traffic mới và kết nối đã thiết lập cần được xử lý theo mục tiêu sẵn sàng."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Rollback Git và live",
+      "question": "Git revert thành công nhưng Argo chưa đồng bộ hoặc workload lỗi khởi động. Báo cáo nào trung thực?",
+      "options": [
+        "DB tự khôi phục transaction trước đó",
+        "Desired source đã đổi; cần quan sát sync/workload/health và dữ liệu trước claim phục hồi",
+        "Hệ thống chắc chắn rollback xong vì Git revert exit0",
+        "Mọi request đã về bản cũ ngay khi commit"
+      ],
+      "correct": 1,
+      "explanation": "Thay đổi nguồn và đạt trạng thái vận hành là hai mốc khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Nhiều môi trường một credential",
+      "question": "Dev/staging/prod tách thư mục nhưng dùng chung token quyền rộng và cùng DB thật. Đã có cách ly môi trường đủ chưa?",
+      "options": [
+        "Rồi, values.yaml tự mã hóa credential",
+        "Chỉ thiếu màu dashboard",
+        "Chưa; cần thiết kế quyền/đích/dữ liệu và side effects phù hợp, không suy từ cấu trúc thư mục",
+        "Rồi, ba folder tự tạo ba security boundaries"
+      ],
+      "correct": 2,
+      "explanation": "Cách ly cần được thực thi ở hạ tầng, quyền và dữ liệu."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Prune có scope",
+      "question": "Team định bật prune để xóa mọi resource không có trong một folder Git, kể cả tài nguyên người khác quản lý. Cần xem gì?",
+      "options": [
+        "Prune luôn xóa mọi namespace nên không cần phân tích",
+        "Chỉ tên folder production đủ chứng minh ownership",
+        "Chỉ approval action tự cấp quyền xóa mọi thứ",
+        "Ownership/phạm vi Application và protection policy; không coi prune là quyền cleanup tùy ý toàn cluster"
+      ],
+      "correct": 3,
+      "explanation": "Cơ chế reconciliation phải giữ ranh giới tài nguyên và thẩm quyền."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Đúng cluster",
+      "question": "Runner có nhiều kubecontexts; source không chọn rõ, nhưng GitHub environment production đã được duyệt. Cần gì trước kubectl?",
+      "options": [
+        "Xác minh/chọn context, namespace, identity/quyền và source artifact đúng đích đã duyệt",
+        "Tin environment GitHub tự cấu hình kubecontext",
+        "Chỉ dùng tên main-lb duy nhất",
+        "Chỉ thêm comment Production"
+      ],
+      "correct": 0,
+      "explanation": "Approval của một job không tự chọn tài nguyên trên hệ thống khác."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Canary tín hiệu không đủ",
+      "question": "Traffic1%được chuyển nhưng chỉ đo PodRunning, không đo lỗi/latency/hành vi mục tiêu. Điều gì còn thiếu?",
+      "options": [
+        "Chỉ thêm approver thứ ba",
+        "Tiêu chí quan sát/đánh giá và quyết định promotion/abort theo rủi ro thực, không chỉ trạng thái process",
+        "Chỉ đổi tên canary thành green",
+        "Tự tăng lên100%vì1%đã có traffic"
+      ],
+      "correct": 1,
+      "explanation": "Triển khai dần cần tín hiệu phù hợp để giảm rủi ro, không tự chứng minh thành công."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Nguồn chưa có Argo",
+      "question": "Mẫu có comments GitOps và kubectl apply/patch, exercise yêu cầu Argo. Điều nào cần làm để claim Argo CD GitOps hoạt động?",
+      "options": [
+        "Chỉ thêm một file values.yaml rỗng",
+        "Chỉ chạy patch Service là Argo tự nhận quản lý",
+        "Thiết lập source/Application/controller/quyền/sync policy và kiểm reconciliation đúng phạm vi, không dựa vào comment",
+        "Chỉ đặt tên job thành argocd"
+      ],
+      "correct": 2,
+      "explanation": "Ý tưởng GitOps và implementation Argo cụ thể cần được phân biệt."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Hoàn thiện promotion",
+      "question": "Muốn quy trình mẫu trở thành phát hành có thể kiểm chứng, bộ hợp đồng nào phù hợp nhất?",
+      "options": [
+        "Chỉ hai tên approvers và chữ green",
+        "Chỉ URL HTTPS và comment auto-deploy",
+        "Chỉ copy các lệnh kubectl mà không xét context",
+        "Source/artifact/version, approval/quyền, controller/cluster/namespace, routing/health, dữ liệu và phục hồi có bằng chứng"
+      ],
+      "correct": 3,
+      "explanation": "Các thành phần cần được nối đúng mục tiêu và kiểm kết quả thực tế, không chỉ có snippet."
+    }
+  ]
+}

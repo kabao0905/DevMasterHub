@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "jest",
+  "level": "senior",
+  "lesson": "property-testing",
+  "language": "vi",
+  "sourceHash": "4a74144a9ffe8813681ebed0f8c46f4ba114c9ec5f36af658bf4e704be7e7a07",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo ba property sort và fast-check official docs. Length/order/idempotence chưa chứng minh permutation; source kiểm inline sort chứ chưa gọi SUT riêng, chưa có contract-test implementation. Shrinking/replay có scope, không chứng minh exhaustive/global minimum. Không chạy fast-check/HTTP/provider.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Property",
+      "question": "Property-based test diễn đạt điều gì?",
+      "options": [
+        "Tính chất cần giữ trên các đầu vào được sinh",
+        "Chỉ một tên test đẹp",
+        "Mọi kết quả đều đúng không cần oracle",
+        "Một benchmark production"
+      ],
+      "correct": 0,
+      "explanation": "Generator và predicate phối hợp để tìm phản ví dụ."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Library",
+      "question": "Nguồn import thư viện nào?",
+      "options": [
+        "dataloader",
+        "fast-check",
+        "supertest",
+        "playwright"
+      ],
+      "correct": 1,
+      "explanation": "fc là tên binding trong ví dụ."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Generator",
+      "question": "fc.integer() là gì theo vai trò?",
+      "options": [
+        "Hàm sort",
+        "Một API HTTP",
+        "Arbitrary sinh số nguyên trong miền của API/version",
+        "Một số nguyên cố định"
+      ],
+      "correct": 2,
+      "explanation": "Không suy nó bao phủ mọi số JS hoặc mọi giá trị lớn tùy ý."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Array generator",
+      "question": "fc.array(fc.integer()) sinh loại đầu vào nào?",
+      "options": [
+        "Chỉ object user",
+        "Chỉ mảng chuỗi email",
+        "Chỉ một mảng bắt buộc dài10",
+        "Mảng số nguyên theo arbitrary cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi có thể tùy chỉnh theo contract."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Define property",
+      "question": "API nào kết hợp arbitrary và predicate đồng bộ trong nguồn?",
+      "options": [
+        "fc.property",
+        "fc.sort",
+        "fc.snapshot",
+        "fc.mock"
+      ],
+      "correct": 0,
+      "explanation": "Property mô tả cách đánh giá mỗi input."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Run property",
+      "question": "fc.assert được dùng nhằm gì?",
+      "options": [
+        "Tự xác minh DB schema",
+        "Chạy đánh giá property và báo thất bại khi không đạt",
+        "Tự sửa sort",
+        "Tự deploy package"
+      ],
+      "correct": 1,
+      "explanation": "Kết quả hữu hạn không là chứng minh toàn miền."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Boolean predicate",
+      "question": "Predicate đồng bộ trả false có nghĩa gì?",
+      "options": [
+        "Input được xóa khỏi source",
+        "Mọi property đều pass",
+        "Property thất bại ở input đó",
+        "Test tự bỏ qua input luôn"
+      ],
+      "correct": 2,
+      "explanation": "Predicate cũng có thể ném assertion để báo lỗi."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Length property",
+      "question": "Property đầu tiên kiểm quan hệ nào?",
+      "options": [
+        "Mọi phần tử bằng0",
+        "Output luôn rỗng",
+        "Output là object mới cùng identity",
+        "Độ dài output bằng input"
+      ],
+      "correct": 3,
+      "explanation": "Giữ length chưa chứng minh giữ nội dung."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Order property",
+      "question": "Property thứ hai kiểm điều gì?",
+      "options": [
+        "Không có cặp kề nhau giảm dần",
+        "Mọi số phải khác nhau",
+        "Chỉ phần tử đầu đúng",
+        "Mảng phải dài ít nhất2"
+      ],
+      "correct": 0,
+      "explanation": "Nó kiểm thứ tự không giảm."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Idempotence",
+      "question": "Sort idempotent nghĩa là gì?",
+      "options": [
+        "Sort luôn trả mảng rỗng",
+        "Sort lần nữa không đổi kết quả đã sort",
+        "Sort trả cùng input reference bắt buộc",
+        "Sort chỉ được gọi một lần đời app"
+      ],
+      "correct": 1,
+      "explanation": "Đây là quan hệ output qua hai lần áp dụng."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Copy input",
+      "question": "Vì sao nguồn dùng [...arr] trước sort?",
+      "options": [
+        "Để tạo HTTP request",
+        "Để random hóa input",
+        "Tránh sort trực tiếp mảng đầu vào đó",
+        "Để clone sâu mọi object tương lai"
+      ],
+      "correct": 2,
+      "explanation": "Với mảng số nguyên, phần tử là giá trị primitive."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Comparator",
+      "question": "Comparator (a,b)=>a-b nhắm thứ tự nào?",
+      "options": [
+        "Chuỗi giảm dần",
+        "Ngẫu nhiên",
+        "Theo độ dài tên biến",
+        "Số tăng dần"
+      ],
+      "correct": 3,
+      "explanation": "Sort không comparator dùng quy tắc khác."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Mutation method",
+      "question": "Array.prototype.sort thông thường có đặc điểm gì?",
+      "options": [
+        "Sắp xếp mảng receiver tại chỗ",
+        "Luôn tạo deep clone",
+        "Không thể nhận comparator",
+        "Luôn trả Promise"
+      ],
+      "correct": 0,
+      "explanation": "Clone trước giúp giữ input theo ý định test."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Loop start",
+      "question": "Vòng kiểm order bắt đầu i=1 để làm gì?",
+      "options": [
+        "Để không kiểm phần tử cuối",
+        "So phần tử hiện tại với phần tử trước",
+        "Bỏ mọi phần tử âm",
+        "Bắt buộc length bằng1"
+      ],
+      "correct": 1,
+      "explanation": "Không có cặp trước cho index0."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Equality source",
+      "question": "Nguồn so once/twice bằng cách nào?",
+      "options": [
+        "So tên function",
+        "Gửi HTTP tới provider",
+        "JSON.stringify hai mảng số nguyên",
+        "toBe cùng reference"
+      ],
+      "correct": 2,
+      "explanation": "Cách so này có miền sử dụng cụ thể."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Counterexample",
+      "question": "Counterexample là gì?",
+      "options": [
+        "Một input tự chứng minh mọi miền",
+        "Tên generator",
+        "Một token xác thực",
+        "Đầu vào làm property không đạt"
+      ],
+      "correct": 3,
+      "explanation": "Giá trị giúp chẩn đoán lỗi hoặc contract sai."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Shrinking",
+      "question": "Shrinking nhằm mục tiêu gì?",
+      "options": [
+        "Tìm phản ví dụ đơn giản hơn theo cơ chế arbitrary",
+        "Tự sửa implementation",
+        "Luôn tìm nhỏ nhất toán học toàn cục",
+        "Xóa mọi test fail"
+      ],
+      "correct": 0,
+      "explanation": "Không hứa một minimum toàn miền vô điều kiện."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Contract testing",
+      "question": "Contract testing trong lý thuyết nhắm gì?",
+      "options": [
+        "Số lượng test files",
+        "Thỏa thuận giữa consumer và provider",
+        "Chỉ màu UI",
+        "Mọi load production tự động"
+      ],
+      "correct": 1,
+      "explanation": "Phải xác định interface và các kỳ vọng liên quan."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Contract gap",
+      "question": "Source đã triển khai provider/consumer contract tests chưa?",
+      "options": [
+        "Có, sort là HTTP endpoint",
+        "Có, describe tự tạo pact",
+        "Chưa",
+        "Có, fc.integer tự tạo provider"
+      ],
+      "correct": 2,
+      "explanation": "Tên chủ đề không thay implementation chưa có."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Finite evidence",
+      "question": "Một run property pass có tự chứng minh mọi input đều đúng không?",
+      "options": [
+        "Có, random là exhaustive",
+        "Có, nếu có shrinking",
+        "Chỉ khi dùng Jest",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi bằng chứng theo generator và số trường hợp đã chạy."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Empty length",
+      "question": "Với arr=[], property length của sort nguồn trả gì?",
+      "options": [
+        "true",
+        "false",
+        "Ném lỗi vì length0",
+        "undefined bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Sort mảng rỗng vẫn rỗng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Empty order",
+      "question": "Vòng for kiểm order trên mảng rỗng thực hiện bao nhiêu lần?",
+      "options": [
+        "Vô hạn",
+        "0",
+        "1",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "Không có cặp kề nhau; true cuối không chứng minh phần tử đã được quan sát."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Singleton order",
+      "question": "Mảng một phần tử có thể kiểm được lỗi đảo thứ tự không?",
+      "options": [
+        "Chỉ với số0",
+        "Chỉ với số âm",
+        "Không có cặp kề nhau trong case đó",
+        "Có, mọi đảo thứ tự đều bị bắt"
+      ],
+      "correct": 2,
+      "explanation": "Cần đầu vào phân biệt cho tính chất mong muốn."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Duplicates",
+      "question": "[2,2,1] sort số tăng dần dự kiến thành gì?",
+      "options": [
+        "[1,2]",
+        "[2,1,2]",
+        "[2,2,1]",
+        "[1,2,2]"
+      ],
+      "correct": 3,
+      "explanation": "Sort không có nhiệm vụ deduplicate."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Negative numbers",
+      "question": "Comparator số xử lý [-1,3,-5] theo thứ tự nào?",
+      "options": [
+        "[-5,-1,3]",
+        "[-1,-5,3]",
+        "[3,-1,-5]",
+        "[-5,3,-1]"
+      ],
+      "correct": 0,
+      "explanation": "Miền số âm là case có ý nghĩa cho order."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Numeric lexical",
+      "question": "Nếu bỏ comparator, [2,10].sort() có thể cho [10,2]. Property order số sẽ thế nào?",
+      "options": [
+        "Skip vì có hai số",
+        "Phát hiện cặp10→2 giảm dần",
+        "Luôn pass vì length đúng",
+        "Tự sửa comparator"
+      ],
+      "correct": 1,
+      "explanation": "Length riêng không bắt được lỗi thứ tự."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Descending mutation",
+      "question": "Nếu comparator đổi thành b-a, property nào trực tiếp phân biệt với input có hai số khác nhau?",
+      "options": [
+        "Input là array",
+        "Tên test sort",
+        "Order không giảm",
+        "Length đơn lẻ"
+      ],
+      "correct": 2,
+      "explanation": "Cần predicate nhắm thuộc tính bị thay đổi."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Length only gap",
+      "question": "Sort lỗi luôn trả [] vẫn có thể pass length khi nào?",
+      "options": [
+        "Khi input bất kỳ",
+        "Chỉ khi có số âm",
+        "Chỉ khi có duplicate",
+        "Khi input rỗng"
+      ],
+      "correct": 3,
+      "explanation": "Một happy case không đủ phân biệt implementation sai."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Order only gap",
+      "question": "Hàm luôn trả [] có thỏa predicate order nguồn không?",
+      "options": [
+        "Có, không có cặp vi phạm",
+        "Không, loop luôn fail",
+        "Không vì mọi array cần length2",
+        "Chỉ khi input rỗng"
+      ],
+      "correct": 0,
+      "explanation": "Order một mình không bảo toàn dữ liệu."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Idempotent gap",
+      "question": "Hàm luôn trả [] có idempotent không?",
+      "options": [
+        "Chỉ nếu input là chuỗi",
+        "Có",
+        "Không, output phải dài hơn0",
+        "Chỉ nếu input sorted"
+      ],
+      "correct": 1,
+      "explanation": "Idempotence không đặc trưng duy nhất sort đúng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "All three still weak",
+      "question": "Hàm trả n số0 với n=input.length có thể thỏa length/order/idempotence không?",
+      "options": [
+        "Chỉ khi input rỗng",
+        "Không vì số0 không thể sort",
+        "Có, nhưng làm mất giá trị input",
+        "Không, ba property đủ mọi yêu cầu"
+      ],
+      "correct": 2,
+      "explanation": "Còn thiếu quan hệ bảo toàn multiset."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Permutation",
+      "question": "Muốn kiểm sort không mất/thêm giá trị cần gì?",
+      "options": [
+        "Chỉ kiểm phần tử đầu",
+        "Chỉ kiểm length",
+        "Chỉ kiểm toBeTruthy",
+        "Kiểm multiset/frequency tương ứng input/output"
+      ],
+      "correct": 3,
+      "explanation": "Multiplicity cũng là phần của bảo toàn dữ liệu."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Same set weak",
+      "question": "Input[1,1,2], output[1,2,2] cùng tập giá trị khác gì cần bắt?",
+      "options": [
+        "Số lần xuất hiện mỗi giá trị",
+        "Số phần tử khác nhau",
+        "Output có được sắp xếp không",
+        "Tên biến arr"
+      ],
+      "correct": 0,
+      "explanation": "Set equality không thay multiset equality."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Input mutation",
+      "question": "Nếu dùng arr.sort() thay [...arr].sort(), property length có tự phát hiện input bị mutate không?",
+      "options": [
+        "Chỉ khi input rỗng",
+        "Không, length vẫn có thể đúng",
+        "Có, mọi mutation làm length đổi",
+        "Có, fc.assert cấm mọi call sort"
+      ],
+      "correct": 1,
+      "explanation": "Nếu không mutation là contract thì cần assertion riêng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Clone depth",
+      "question": "Spread mảng object tương lai có clone object phần tử sâu không?",
+      "options": [
+        "Chỉ khi dùng fc.array",
+        "Chỉ khi gọi JSON.stringify",
+        "Không",
+        "Có, mọi spread đệ quy"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn dùng integer nên không gặp alias object theo cách đó."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Frozen domain",
+      "question": "Thêm yêu cầu không sửa input nên thiết kế test thế nào?",
+      "options": [
+        "Chỉ kiểm output length",
+        "Chỉ kiểm tên comparator",
+        "Cho generator tự sửa input",
+        "Lưu bản đối chiếu/quan sát input và kiểm sau call theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Property cần nhắm đúng đặc tính bất biến."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Calling SUT",
+      "question": "Nguồn recompute sort bằng built-in trong predicate. Muốn kiểm hàm sortCustom thật cần gì?",
+      "options": [
+        "Gọi sortCustom trong Act và giữ oracle/property độc lập",
+        "Chỉ đổi tên describe",
+        "Chỉ import library mà không gọi",
+        "Chỉ tăng numRuns"
+      ],
+      "correct": 0,
+      "explanation": "Test phải thực thi hành vi cần bảo vệ."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Independent inputs",
+      "question": "Ba property ở ba tests có tự dùng cùng mọi arr trong một run không?",
+      "options": [
+        "Chỉ nếu cùng tên test",
+        "Không nên giả định; mỗi run/property có sinh input riêng",
+        "Có, cùng arbitrary nghĩa cùng sequence mọi lần",
+        "Có, Jest tự chia sẻ arr"
+      ],
+      "correct": 1,
+      "explanation": "Không dựa vào coupling không được cấu hình."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Generator domain",
+      "question": "fc.integer có bao gồm NaN theo ý nghĩa generator integer không?",
+      "options": [
+        "Có, shrinking luôn tạo NaN",
+        "Chỉ khi length0",
+        "Không",
+        "Có, mọi số JS đều integer"
+      ],
+      "correct": 2,
+      "explanation": "Muốn kiểm float/NaN cần miền explicit khác phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Bounds",
+      "question": "Muốn kiểm pagination với limit dương hữu hạn nên làm gì?",
+      "options": [
+        "Sinh mọi giá trị rồi bỏ vô hạn mà không policy",
+        "Chỉ test limit=1",
+        "Coi fc.integer tự luôn dương",
+        "Chọn arbitrary/ràng buộc đúng miền và các case lỗi riêng theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Generator là một phần hợp đồng kiểm."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Filtering cost",
+      "question": "Precondition quá hẹp loại gần hết input có thể gây gì?",
+      "options": [
+        "Nhiều discarded cases/khó lấy mẫu phù hợp",
+        "Tự tăng correctness tuyệt đối",
+        "Tự sửa dữ liệu",
+        "Tự biến random thành exhaustive"
+      ],
+      "correct": 0,
+      "explanation": "Có thể chọn arbitrary sinh đúng miền thay vì lọc quá mạnh."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Predicate throw",
+      "question": "Predicate đồng bộ dùng expect rồi throw khi sai có được dùng để báo property failure không?",
+      "options": [
+        "Chỉ khi không shrinking",
+        "Có",
+        "Không, chỉ return false mới được",
+        "Chỉ khi có HTTP"
+      ],
+      "correct": 1,
+      "explanation": "Docs cho phép assertion/throw trong predicate đồng bộ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Undefined predicate",
+      "question": "Theo docs fast-check đồng bộ được đối chiếu, predicate không throw và trả undefined có thể được hiểu thế nào?",
+      "options": [
+        "Luôn skip mọi run",
+        "Tự tạo expected",
+        "Thành công, nên phải bảo đảm assertions thực sự có ý nghĩa",
+        "Luôn thất bại"
+      ],
+      "correct": 2,
+      "explanation": "Không viết predicate rỗng rồi coi có kiểm hành vi."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Empty predicate risk",
+      "question": "Property callback không có assertion và không return false khi sai có vấn đề gì?",
+      "options": [
+        "Tự kiểm mọi invariants",
+        "Tự phát hiện thuật toán sai",
+        "Tự benchmark code",
+        "Có thể pass mà không bảo vệ tính chất cần kiểm"
+      ],
+      "correct": 3,
+      "explanation": "Generator không thay oracle."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Async predicate",
+      "question": "Khi property cần await hoạt động async, API nào cần đối chiếu dùng đúng?",
+      "options": [
+        "fc.asyncProperty và await/return kết quả runner phù hợp",
+        "Nhét async vào fc.property đồng bộ rồi bỏ Promise",
+        "Chỉ tăng test title",
+        "Chỉ set seed"
+      ],
+      "correct": 0,
+      "explanation": "Đã kiểm docs primary phân biệt synchronous/asynchronous properties."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Await runner",
+      "question": "Một asynchronous property chạy nhưng test không chờ fc.assert Promise có rủi ro gì?",
+      "options": [
+        "Chỉ mất màu log",
+        "Test kết thúc trước kết quả property",
+        "Tự chuyển thành synchronous",
+        "Mọi errors tự được gắn đúng test"
+      ],
+      "correct": 1,
+      "explanation": "Vòng đời async vẫn phải được nối."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Replay data",
+      "question": "Thông tin nào thường hữu ích để replay counterexample fast-check?",
+      "options": [
+        "Chỉ current date",
+        "Chỉ số assertions",
+        "Seed/path cùng code/config/version liên quan",
+        "Chỉ tên file"
+      ],
+      "correct": 2,
+      "explanation": "Input provenance cần được giữ để chẩn đoán."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Seed meaning",
+      "question": "Seed cố định có tự chứng minh không còn bug ngoài input đã sinh không?",
+      "options": [
+        "Có, seed là theorem proof",
+        "Có, mọi seed sinh toàn miền",
+        "Chỉ nếu seed42",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Tái lập và độ bao phủ là hai mục tiêu riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Shrinking assumptions",
+      "question": "Predicate mutate input được sinh có thể ảnh hưởng gì?",
+      "options": [
+        "Shrinking và hiển thị/replay counterexample có thể khó tin cậy",
+        "Tự tối ưu mọi test",
+        "Tự tạo baseline đúng",
+        "Không bao giờ ảnh hưởng runner"
+      ],
+      "correct": 0,
+      "explanation": "Docs khuyến cáo không sửa input nếu không clone phù hợp."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Small counterexample",
+      "question": "Counterexample nhỏ giúp ích gì?",
+      "options": [
+        "Thay mọi integration tests",
+        "Dễ thấy điều kiện gây lỗi và bổ sung regression case",
+        "Chứng minh mọi case lớn đều đúng",
+        "Tự sửa source"
+      ],
+      "correct": 1,
+      "explanation": "Đơn giản hóa hỗ trợ hiểu lỗi."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Global minimal",
+      "question": "Shrunk example có luôn là nhỏ nhất toàn miền theo mọi thước đo không?",
+      "options": [
+        "Có, bất kỳ arbitrary đều duy nhất minimum",
+        "Chỉ khi dùng Jest",
+        "Không nên khẳng định như vậy",
+        "Có, shrinking là exhaustive optimization"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả phụ thuộc arbitrary, predicate, cấu hình và quá trình tìm."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Random coverage claim",
+      "question": "numRuns lớn hơn có bảo đảm tìm được mọi lỗi không?",
+      "options": [
+        "Có, sau100runs toàn input đều được duyệt",
+        "Có, array chỉ có hữu hạn cấu trúc nhỏ",
+        "Chỉ nếu tất cả values âm",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Lấy mẫu hữu hạn không phải vét cạn miền."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Deterministic regression",
+      "question": "Sau khi tìm phản ví dụ quan trọng, làm gì có ích?",
+      "options": [
+        "Giữ case hồi quy hoặc replay có ý nghĩa cùng property rộng",
+        "Xóa counterexample để runs sau random lại",
+        "Chỉ chụp badge xanh",
+        "Đổi expected theo output sai"
+      ],
+      "correct": 0,
+      "explanation": "Case cụ thể bảo vệ lỗi đã biết."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Contract schema",
+      "question": "Contract chỉ kiểm field name có mặt chưa chứng minh điều gì?",
+      "options": [
+        "Expected có tên field",
+        "Giá trị/kiểu/nullability và ngữ nghĩa các field khác",
+        "Field name đã được khai báo",
+        "Có một kiểm tra shape"
+      ],
+      "correct": 1,
+      "explanation": "Scope contract phải được định nghĩa rõ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Provider implementation",
+      "question": "Consumer mock luôn trả shape đúng có tự chứng minh provider thật đáp ứng không?",
+      "options": [
+        "Có, contract tên đúng",
+        "Chỉ khi generated nhiều inputs",
+        "Không",
+        "Có, mock là provider thật"
+      ],
+      "correct": 2,
+      "explanation": "Cần verification ở biên provider phù hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Backward compatibility",
+      "question": "Provider đổi field required thành missing có thể ảnh hưởng gì?",
+      "options": [
+        "Không bao giờ vì JSON linh hoạt",
+        "Consumer tự tạo mọi missing fields",
+        "Chỉ đổi tên report",
+        "Consumer dựa field đó có thể hỏng dù provider tests riêng pass"
+      ],
+      "correct": 3,
+      "explanation": "Thỏa thuận giữa hai bên cần được giữ/phiên bản hóa."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Error contract",
+      "question": "Contract API có nên chỉ xét happy response nếu consumer xử lý lỗi?",
+      "options": [
+        "Không, cần các lỗi/status/shape liên quan theo yêu cầu",
+        "Có, errors không thuộc API",
+        "Có, mock luôn success là đủ",
+        "Chỉ kiểm URL"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi cũng là hành vi interface."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Example and property",
+      "question": "Property-based tests có bắt buộc bỏ mọi example tests không?",
+      "options": [
+        "Chỉ khi dùng integers",
+        "Không, chúng có thể bổ sung nhau",
+        "Có, examples luôn vô ích",
+        "Có, fast-check xóa test thường"
+      ],
+      "correct": 1,
+      "explanation": "Case hồi quy/biên cụ thể vẫn có giá trị."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Domain changes",
+      "question": "Sort được mở rộng nhận objects theo key nhưng vẫn generator integers. Khoảng trống nào xuất hiện?",
+      "options": [
+        "Jest tự thêm fields",
+        "Shrinking tự hiểu mọi domain mới",
+        "Miền test chưa bao phủ contract object/key mới",
+        "Integer tests tự biến thành object tests"
+      ],
+      "correct": 2,
+      "explanation": "Generator và properties phải theo contract hiện tại."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Bảo toàn phần tử khi sắp xếp",
+      "question": "Hàm sort lỗi trả mảng toàn số 0 nhưng giữ độ dài. Ngoài độ dài và thứ tự tăng, property nào cần bổ sung để bắt lỗi thay giá trị?",
+      "options": [
+        "Chỉ kiểm đầu ra không giảm vì mảng toàn số 0 đã đủ đại diện",
+        "Chỉ kiểm số lần gọi comparator lớn hơn 0",
+        "Chỉ kiểm đầu ra và đầu vào là hai reference khác nhau",
+        "Multiset đầu ra bằng đầu vào, gồm cả số lần xuất hiện của từng giá trị"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự và độ dài không bảo đảm bảo toàn giá trị; tần suất từng phần tử phát hiện thay dữ liệu và xử lý đúng duplicates."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Degenerate sort",
+      "question": "Hàm lỗi trả n số0 vẫn pass ba invariants nguồn. Cần thêm gì để phân biệt?",
+      "options": [
+        "Bảo toàn multiset input/output, kết hợp order/length theo contract",
+        "Chỉ chạy idempotence nhiều hơn",
+        "Chỉ tăng numRuns mà không đổi oracle",
+        "Chỉ yêu cầu output truthy"
+      ],
+      "correct": 0,
+      "explanation": "Ba tính chất hiện tại không đủ mô tả sort đúng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Wrong SUT",
+      "question": "Property mô tả sortCustom nhưng trong Act vẫn gọi built-in sort. Test xanh chứng minh gì?",
+      "options": [
+        "Import sortCustom đủ để thực thi",
+        "Chỉ hành vi expression thực được chạy trong scope đó; cần gọi SUT thật để bảo vệ nó",
+        "SortCustom đã đúng vì tên suite",
+        "Mọi sort implementations đúng"
+      ],
+      "correct": 1,
+      "explanation": "Tên test không thay hành động thực."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Duplicate preservation",
+      "question": "Input[1,1,2], output[1,2,2] có length/order/cùngset đúng. Oracle cần gì?",
+      "options": [
+        "Chỉ min/max",
+        "Chỉ idempotence",
+        "Đếm multiplicity từng giá trị hoặc quan hệ permutation đúng",
+        "Chỉ Set equality"
+      ],
+      "correct": 2,
+      "explanation": "Bảo toàn set bỏ qua số lần xuất hiện."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Input contamination",
+      "question": "Property sort trực tiếp input rồi lấy input đã đổi làm expected. Nguy cơ và sửa đúng?",
+      "options": [
+        "Cùng array càng tăng độc lập",
+        "Shrinking tự khôi phục mọi input",
+        "Chỉ đổi tên arr",
+        "Oracle có thể tự tham chiếu; giữ bản đối chiếu độc lập và kiểm mutation nếu là contract"
+      ],
+      "correct": 3,
+      "explanation": "Input, Act và oracle phải có quan hệ đúng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Async false confidence",
+      "question": "Predicate async nằm trong API đồng bộ, runner không được await. Cần sửa toàn chuỗi nào?",
+      "options": [
+        "Dùng asyncProperty/runner API đúng version và chờ kết quả trong test, giữ lỗi được truyền",
+        "Chỉ đặt tên test async",
+        "Chỉ tăng timeout",
+        "Bỏ mọi assertions async"
+      ],
+      "correct": 0,
+      "explanation": "Cần đúng cả loại property và vòng đời test."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nondeterminism replay",
+      "question": "Property phụ thuộc Date.now và dịch vụ ngoài; replay seed/path vẫn khó lặp lỗi. Điều gì cần kiểm soát?",
+      "options": [
+        "Tăng numRuns sẽ làm mọi thứ xác định",
+        "Đồng hồ/side effects/dependency state trong phạm vi và config/version, không chỉ generator seed",
+        "Seed tự điều khiển mọi dịch vụ ngoài",
+        "Path là snapshot production"
+      ],
+      "correct": 1,
+      "explanation": "Generator không tự kiểm soát mọi nguồn bất định."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Domain excludes bug",
+      "question": "Generator chỉ positive integers, lỗi sort nằm ở âm/duplicate/rỗng. Hướng cải thiện?",
+      "options": [
+        "Đổi test title thành all cases",
+        "Coi positive pass là mọi số đúng",
+        "Chọn miền/case phù hợp contract và giữ những biên quan trọng, không chỉ tăng số run",
+        "Chỉ thêm seed mới với cùng miền hẹp"
+      ],
+      "correct": 2,
+      "explanation": "Không thể tìm giá trị không được sinh trong phạm vi đó."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Shrinking and preconditions",
+      "question": "Precondition loại gần hết input khiến test không đủ case hữu ích. Cách thiết kế tốt hơn?",
+      "options": [
+        "Nuốt mọi cảnh báo runner",
+        "Chỉ ghi pass vì không thấy counterexample",
+        "Thay predicate luôntrue",
+        "Arbitrary sinh cấu trúc hợp miền trực tiếp khi khả thi, theo dõi discarded/failure scope"
+      ],
+      "correct": 3,
+      "explanation": "Miền sinh cần hỗ trợ đánh giá chứ không làm test rỗng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Equivalent mutant",
+      "question": "Một mutant sort không bị property bắt. Có phải luôn cần thêm test cho đến kill mọi mutant bất kể ngữ nghĩa?",
+      "options": [
+        "Không, phân tích tương đương và contract trước khi quyết định oracle/case",
+        "Có, mọi mutant sống là bug thật",
+        "Có, chỉ cần tăng coverage",
+        "Không cần xem source"
+      ],
+      "correct": 0,
+      "explanation": "Tín hiệu kiểm thử cần được đánh giá theo hành vi yêu cầu."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Property too weak",
+      "question": "Pagination property chỉ length<=limit pass khi output luôn[]. Cần phối hợp gì?",
+      "options": [
+        "Chỉ test input rỗng",
+        "Đúng nội dung/page/order và quan hệ với nguồn theo contract, không chỉ bound",
+        "Chỉ assert array truthy",
+        "Chỉ giảm limit"
+      ],
+      "correct": 1,
+      "explanation": "Bound hữu ích nhưng chưa đủ đặc tả hành vi."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Search false property",
+      "question": "Search phải trả phần tử khớp query; property chỉ mọi output thuộc input, hàm luôn[]pass. Nên thêm gì?",
+      "options": [
+        "Chỉ length>=0",
+        "Chỉ gọi hàm hai lần",
+        "Tính đầy đủ theo tiêu chí query và lỗi/biên liên quan",
+        "Chỉ output subset lần nữa"
+      ],
+      "correct": 2,
+      "explanation": "Soundness và completeness là các chiều khác nhau."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Contract mock gap",
+      "question": "Consumer contract test dùng fixture đúng nhưng provider thay nullability rồi consumer crash. Kiểm bổ sung cần gì?",
+      "options": [
+        "Nhân bản fixture mock",
+        "Chỉ đổi tên contract",
+        "Tăng random sort runs",
+        "Verification provider/consumer theo schema/giá trị liên quan, cùng kiểm luồng xử lý phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Đúng fixture không xác minh biên thật đã tương thích."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Full behavior claim",
+      "question": "Provider/consumer shape hợp lệ có chứng minh authorization/transaction/load đúng chưa?",
+      "options": [
+        "Chưa, những hành vi đó cần contract/kiểm chứng riêng theo mục tiêu",
+        "Có, JSON schema bao mọi hành vi",
+        "Có, nhiều fields là đủ",
+        "Chỉ thiếu seed42"
+      ],
+      "correct": 0,
+      "explanation": "Contract scope không mở rộng vô điều kiện."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Failure useful report",
+      "question": "Để một lỗi property có thể điều tra lại, nên lưu nhóm thông tin nào?",
+      "options": [
+        "Chỉ thời gian mở editor",
+        "Counterexample, seed/path và source/config/tool version cần thiết, tránh dữ liệu bí mật",
+        "Chỉ badge đỏ",
+        "Chỉ tên generator"
+      ],
+      "correct": 1,
+      "explanation": "Provenance hỗ trợ replay đúng đối tượng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Exhaustive misconception",
+      "question": "Một nghìn random runs pass, nhóm công bố chứng minh toán học trên mọi array nguyên. Nhận xét đúng?",
+      "options": [
+        "Đúng vì integers đều được duyệt",
+        "Chỉ cần thêm Jest snapshot",
+        "Đó là bằng chứng hữu hạn theo miền/cấu hình, không theorem proof toàn bộ",
+        "Đúng vì shrinking thử mọi array"
+      ],
+      "correct": 2,
+      "explanation": "Không chuyển lấy mẫu thành vét cạn."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Keep known regression",
+      "question": "Sau khi sửa bug duplicate, team bỏ counterexample cụ thể vì đã có property random. Đánh giá phù hợp?",
+      "options": [
+        "Mọi example đều cấm khi dùng fast-check",
+        "Random bảo đảm tái sinh case đó mọi lần",
+        "Chỉ seed mới được phép lưu",
+        "Có thể giữ case hồi quy có ý nghĩa cùng property để lỗi đã biết luôn được nhắm"
+      ],
+      "correct": 3,
+      "explanation": "Property và example không loại trừ nhau."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "New object contract",
+      "question": "Sort chuyển sang objects có key và ổn định khi key bằng nhau. Cần điều chỉnh gì?",
+      "options": [
+        "Generator object/key và properties order/permutation/stability theo contract, không giữ chỉ integers",
+        "Chỉ đổi toBe thành toEqual",
+        "Chỉ thêm file extension TS",
+        "Integer generator tự bao mọi objects"
+      ],
+      "correct": 0,
+      "explanation": "Miền và oracle phải theo yêu cầu mới."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Globally minimal claim",
+      "question": "Report shrink tìm mảng hai phần tử. Có thể gọi đó là counterexample nhỏ nhất duy nhất toàn miền không?",
+      "options": [
+        "Chỉ khi comparator a-b",
+        "Không có đủ căn cứ; mô tả kết quả shrink trong scope thực tế",
+        "Có, hai là minimum mọi thuật toán",
+        "Có, path có mọi dữ liệu đầu vào"
+      ],
+      "correct": 1,
+      "explanation": "Giữ kết luận đúng phạm vi tìm kiếm."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Mutation during shrinking",
+      "question": "Predicate sửa arr và giữ global history khiến cùng input có kết quả tùy lần gọi. Cần gì?",
+      "options": [
+        "Coi shrinking tự sửa global",
+        "Bỏ seed/path",
+        "Cô lập/reset state và tránh mutation input ngoài contract để property/replay có ý nghĩa",
+        "Chỉ tăng retries để có run xanh"
+      ],
+      "correct": 2,
+      "explanation": "Tính xác định và vòng đời trạng thái ảnh hưởng chất lượng bằng chứng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Contract tiến hóa cho phép metadata",
+      "question": "Provider thêm field metadata được contract cho phép, consumer chỉ cần id/name nhưng test exact toàn object fail. Cách sửa đủ chặt?",
+      "options": [
+        "Bỏ toàn bộ assertions response",
+        "Cập nhật expected theo mọi output mà không review",
+        "Buộc provider không bao giờ thêm field bất kể contract",
+        "Kiểm field/type/semantics thực thuộc contract, cho phép extension hợp lệ và vẫn kiểm field cấm nếu có yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Mức chặt cần vừa bảo vệ thỏa thuận vừa không khóa chi tiết được phép tiến hóa."
+    }
+  ]
+}

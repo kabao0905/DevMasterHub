@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "java",
+  "level": "master",
+  "lesson": "jvm-internals",
+  "language": "vi",
+  "sourceHash": "957dd063725229b64de65679b5f840e5c23717577331fe25248e4eaa7c02da6a",
+  "status": "approved",
+  "review": "Tự biên soạn không API. Đối chiếu JVMS21, JDK WeakReference/ConcurrentHashMap/Runtime, GC và JFR docs. Snippet kiểm tra deterministic, không ép OOM hoặc dự đoán GC timing. Nêu đúng lỗi cache key chỉ String bỏ qua size, check-then-put không atomic, key/wrapper có thể tích lũy. Không coi JFR zero overhead hoặc GC pause mục tiêu là bảo đảm latency production.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Bytecode",
+      "question": "javac thường tạo sản phẩm nào từ source Java?",
+      "options": [
+        "Class files chứa bytecode và metadata.",
+        "SQL schema luôn.",
+        "Native executable duy nhất cho mọi OS.",
+        "JWT signed."
+      ],
+      "correct": 0,
+      "explanation": "JVM thực thi class files theo cơ chế implementation; có thể kết hợp interpreter/JIT."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "JVM heap",
+      "question": "Heap theo mô hình JVM chủ yếu chứa gì?",
+      "options": [
+        "Chỉ CPU registers.",
+        "Các class instances và arrays được cấp phát về mặt mô hình.",
+        "Chỉ file .java.",
+        "Chỉ HTTP headers."
+      ],
+      "correct": 1,
+      "explanation": "JIT có thể tối ưu allocation thực tế; mô hình runtime không buộc layout vật lý duy nhất."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Stack frames",
+      "question": "Mỗi lần gọi method JVM thường có gì trong mô hình thực thi?",
+      "options": [
+        "Một OS process mới.",
+        "Một heap riêng vô hạn.",
+        "Frame với local variables và operand stack.",
+        "Một database transaction bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Frame gắn với method invocation, không đồng nghĩa mỗi local variable là object trên stack vật lý."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "GC reachability",
+      "question": "Object còn được giữ mạnh từ GC roots thông thường có được thu gom như rác không?",
+      "options": [
+        "Có ngay khi tên biến ngắn.",
+        "Có ngay khi List.size()>0.",
+        "Chỉ phụ thuộc số dòng source.",
+        "Không khi vẫn reachable theo các điều kiện của collector."
+      ],
+      "correct": 3,
+      "explanation": "Reachability khác scope văn bản hoặc thời gian đã tồn tại."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "JIT",
+      "question": "JIT làm gì?",
+      "options": [
+        "Biên dịch code runtime thành machine code theo chiến lược JVM.",
+        "Chỉ format source.",
+        "Tự sửa mọi lỗi logic.",
+        "Tự tạo index SQL."
+      ],
+      "correct": 0,
+      "explanation": "Profiling runtime có thể hướng dẫn tối ưu và deoptimization."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Warmup",
+      "question": "Vì sao benchmark JVM cần xem warmup?",
+      "options": [
+        "Warmup bảo đảm mọi input production.",
+        "Code paths và tối ưu runtime có thể thay đổi trước khi ổn định.",
+        "Mọi method đều chạy tốc độ cố định từ lần đầu.",
+        "Warmup chỉ đổi output String."
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt startup, steady state và workload đại diện."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Initial heap",
+      "question": "-Xms thường cấu hình gì?",
+      "options": [
+        "Số dòng log tối đa.",
+        "Thời gian sống JWT.",
+        "Kích thước heap khởi đầu/tối thiểu theo JVM hỗ trợ.",
+        "Số core CPU."
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nghĩa toàn bộ bộ nhớ process."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Maximum heap",
+      "question": "-Xmx thường giới hạn phần nào?",
+      "options": [
+        "Toàn bộ RSS process tuyệt đối.",
+        "Mọi file trên disk.",
+        "Mọi off-heap allocation.",
+        "Maximum Java heap."
+      ],
+      "correct": 3,
+      "explanation": "Native buffers, stacks, metadata và thành phần JVM khác có thể ngoài heap."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Weak reference",
+      "question": "WeakReference chủ yếu khác strong reference ở điểm nào?",
+      "options": [
+        "Không giữ referent sống chỉ nhờ weak reachability.",
+        "Luôn giữ object đến OOM.",
+        "Tự mã hóa object.",
+        "Luôn clone referent."
+      ],
+      "correct": 0,
+      "explanation": "Collector có thể clear khi object weakly reachable; không cần chờ hết memory."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Get referent",
+      "question": "WeakReference.get() có thể trả gì sau khi bị clear?",
+      "options": [
+        "Một exception luôn.",
+        "null.",
+        "Một byte[] mới tự động.",
+        "Một copy sâu luôn."
+      ],
+      "correct": 1,
+      "explanation": "Caller cần xử lý referent vắng mặt."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Concurrent map",
+      "question": "ConcurrentHashMap hỗ trợ gì?",
+      "options": [
+        "Mọi value mutable tự thread-safe.",
+        "Mọi cache tự bounded.",
+        "Các thao tác map có contract concurrency phù hợp.",
+        "Mọi chuỗi get-then-put tự atomic theo nghiệp vụ."
+      ],
+      "correct": 2,
+      "explanation": "Thread-safe container không tự giải quyết logic ghép nhiều thao tác."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cache keys",
+      "question": "Trong cache nguồn, key thuộc kiểu nào?",
+      "options": [
+        "WeakReference<String>.",
+        "byte[] luôn.",
+        "Integer size.",
+        "String."
+      ],
+      "correct": 3,
+      "explanation": "Map giữ key String theo cơ chế reference thông thường; value là WeakReference<byte[]>."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Referent type",
+      "question": "WeakReference<byte[]> trong bài giữ reference yếu tới gì?",
+      "options": [
+        "Mảng byte.",
+        "Key String của map.",
+        "Class loader luôn.",
+        "Thread chạy main."
+      ],
+      "correct": 0,
+      "explanation": "Đừng nhầm value wrapper với referent bên trong."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Runtime memory",
+      "question": "Runtime.totalMemory() diễn đạt gì?",
+      "options": [
+        "Số object còn sống chính xác.",
+        "Tổng bộ nhớ heap JVM hiện có thể dùng theo API, không phải toàn bộ RAM máy.",
+        "RAM vật lý toàn hệ thống luôn.",
+        "Dung lượng SSD."
+      ],
+      "correct": 1,
+      "explanation": "Giá trị có thể thay đổi theo implementation và tiến trình."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Free heap",
+      "question": "Runtime.freeMemory() chủ yếu diễn đạt gì?",
+      "options": [
+        "Số file chưa mở.",
+        "Số byte được bảo đảm malloc native.",
+        "Ước lượng heap chưa được dùng trong phần JVM hiện có.",
+        "Tổng RAM trống toàn OS."
+      ],
+      "correct": 2,
+      "explanation": "Heap metrics không thay OS/process memory metrics."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "GC collector",
+      "question": "G1 và ZGC là ví dụ gì?",
+      "options": [
+        "Các HTTP method.",
+        "Các SQL joins.",
+        "Các Java access modifiers.",
+        "Các collector với mục tiêu và tradeoff khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Chọn collector theo workload/runtime và đo thực tế."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "JFR",
+      "question": "JFR cung cấp loại thông tin nào?",
+      "options": [
+        "Events/recording về runtime và ứng dụng theo cấu hình.",
+        "Mọi request body luôn.",
+        "Chỉ syntax errors trước compile.",
+        "Mọi đáp án quiz tự động."
+      ],
+      "correct": 0,
+      "explanation": "Event settings quyết định loại/độ chi tiết và chi phí ghi."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Profiling cost",
+      "question": "Nhận định JFR luôn zero-overhead có chính xác không?",
+      "options": [
+        "Chỉ cần SSD.",
+        "Không.",
+        "Có cho mọi event.",
+        "Chỉ cần -Xmx bằng-Xms là bằng0."
+      ],
+      "correct": 1,
+      "explanation": "Overhead thường thấp với cấu hình phù hợp nhưng phải đo theo events/workload."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Memory leak",
+      "question": "Trong Java có GC vẫn có thể leak kiểu nào?",
+      "options": [
+        "Chỉ leak khi quên free().",
+        "Chỉ leak nếu class không public.",
+        "Giữ mạnh object không còn cần dùng qua cấu trúc sống lâu.",
+        "Không thể leak vì có GC."
+      ],
+      "correct": 2,
+      "explanation": "Collector không biết object reachable còn hữu ích về nghiệp vụ hay không."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Measurement",
+      "question": "Trước tối ưu hiệu năng nên có gì?",
+      "options": [
+        "Một tỷ lệ tăng tốc tự đoán.",
+        "Chỉ tên pattern.",
+        "Chỉ thêm object pool khắp nơi.",
+        "Workload và số đo đại diện cho mục tiêu."
+      ],
+      "correct": 3,
+      "explanation": "Đo latency/throughput/resource phù hợp giúp xác định nút thắt."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Strong alias",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){byte[] b=new byte[2];var w=new WeakReference<>(b);System.out.print(w.get()==b);Reference.reachabilityFence(b);}}\n",
+      "options": [
+        "true",
+        "false",
+        "null",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "get trả cùng referent khi vẫn có strong reference b."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Explicit clear",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){var w=new WeakReference<>(new byte[2]);w.clear();System.out.print(w.get()==null);}}\n",
+      "options": [
+        "Không compile.",
+        "true",
+        "false",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "clear xóa referent khỏi wrapper một cách tường minh."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Clear not object mutation",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){byte[] b={7};var w=new WeakReference<>(b);w.clear();System.out.print(b[0]);}}\n",
+      "options": [
+        "null",
+        "Không compile.",
+        "7",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Clear weak reference không sửa object còn được giữ mạnh."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Cache hit",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",3);byte[] b=getCached(\"x\",3);System.out.print((a==b)+\" \"+b.length);Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "false 3",
+        "true 8",
+        "null",
+        "true 3"
+      ],
+      "correct": 3,
+      "explanation": "Strong local a giữ mảng sống; cùng key trả cùng mảng đã có."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Wrong size hit",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",3);byte[] b=getCached(\"x\",8);System.out.print(b.length);Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "3",
+        "8",
+        "0",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Cache chỉ key theo String nên bỏ qua size mới trên hit."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Shared mutable array",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",1);a[0]=9;byte[] b=getCached(\"x\",1);System.out.print(b[0]);Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "Không compile.",
+        "9",
+        "0",
+        "null"
+      ],
+      "correct": 1,
+      "explanation": "Hai caller cùng nhận array alias, không có defensive copy."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Clear keeps entry",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",2);cache.get(\"x\").clear();System.out.print(cache.size()+\" \"+(cache.get(\"x\").get()==null));Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "1 false",
+        "Không compile.",
+        "1 true",
+        "0 true"
+      ],
+      "correct": 2,
+      "explanation": "Clearing referent không remove key/wrapper khỏi map."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Rebuild missing referent",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",2);cache.get(\"x\").clear();byte[] b=getCached(\"x\",4);System.out.print((a==b)+\" \"+b.length);Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "true 2",
+        "false 2",
+        "Không compile.",
+        "false 4"
+      ],
+      "correct": 3,
+      "explanation": "Sau explicit clear, lookup tạo mảng mới theo size4 dù a cũ vẫn sống."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Separate keys",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",1);byte[] b=getCached(\"y\",1);System.out.print((a==b)+\" \"+cache.size());Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "false 2",
+        "true 1",
+        "true 2",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Hai key khác tạo hai entry và hai arrays khác."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Array initialization",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){byte[] b=new byte[3];System.out.print(b[1]);}}\n",
+      "options": [
+        "Không xác định.",
+        "0",
+        "1",
+        "null"
+      ],
+      "correct": 1,
+      "explanation": "Byte array mới có các phần tử khởi tạo bằng0 theo Java."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Negative size miss",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){try{getCached(\"x\",-1);}catch(NegativeArraySizeException e){System.out.print(\"bad\");}}}\n",
+      "options": [
+        "0",
+        "Không compile.",
+        "bad",
+        "-1"
+      ],
+      "correct": 2,
+      "explanation": "Array allocation với kích thước âm ném NegativeArraySizeException."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Invalid size hidden by hit",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",2);System.out.print(getCached(\"x\",-1).length);Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "bad",
+        "-1",
+        "Không compile.",
+        "2"
+      ],
+      "correct": 3,
+      "explanation": "Code nguồn không validate size trước hit; giữ strong a để hit deterministic."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Null map key",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){try{getCached(null,1);}catch(NullPointerException e){System.out.print(\"null-key\");}}}\n",
+      "options": [
+        "null-key",
+        "0",
+        "null",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "ConcurrentHashMap không chấp nhận null key."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Remove versus alias",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",1);a[0]=5;cache.remove(\"x\");System.out.print(a[0]+\" \"+cache.size());}}\n",
+      "options": [
+        "Không compile.",
+        "5 0",
+        "0 0",
+        "null 1"
+      ],
+      "correct": 1,
+      "explanation": "Remove entry không hủy array vẫn có strong reference."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Identity array",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){byte[] a={1};byte[] b={1};System.out.print(a.equals(b)+\" \"+Arrays.equals(a,b));}}\n",
+      "options": [
+        "false false",
+        "Không compile.",
+        "false true",
+        "true true"
+      ],
+      "correct": 2,
+      "explanation": "Arrays không override equals theo nội dung; Arrays.equals có so phần tử."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Weak map value wrapper",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{static final Map<String,WeakReference<byte[]>> cache=new ConcurrentHashMap<>();static byte[] getCached(String key,int size){var ref=cache.get(key);byte[] data=ref!=null?ref.get():null;if(data==null){data=new byte[size];cache.put(key,new WeakReference<>(data));}return data;} public static void main(String[]args){byte[] a=getCached(\"x\",1);cache.get(\"x\").clear();System.out.print(cache.containsKey(\"x\"));Reference.reachabilityFence(a);}}\n",
+      "options": [
+        "false",
+        "null",
+        "Không compile.",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Wrapper còn trong map dù referent bị explicit clear."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Put if absent value",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){var m=new ConcurrentHashMap<String,Integer>();m.put(\"k\",1);System.out.print(m.putIfAbsent(\"k\",2)+\" \"+m.get(\"k\"));}}\n",
+      "options": [
+        "1 1",
+        "2 2",
+        "null 2",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "putIfAbsent không ghi đè value đang có và trả value cũ."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Compute existing wrapper",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){var m=new ConcurrentHashMap<String,WeakReference<byte[]>>();var w=new WeakReference<byte[]>(null);m.put(\"k\",w);var r=m.computeIfAbsent(\"k\",k->new WeakReference<>(new byte[3]));System.out.print(r.get()==null);}}\n",
+      "options": [
+        "Không compile.",
+        "true",
+        "false",
+        "3"
+      ],
+      "correct": 1,
+      "explanation": "computeIfAbsent xem wrapper tồn tại, không xem referent đã clear."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Reference queue registration",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){var q=new ReferenceQueue<byte[]>();var w=new WeakReference<byte[]>(null,q);w.enqueue();System.out.print(q.poll()==w);}}\n",
+      "options": [
+        "null",
+        "Không compile.",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "enqueue tường minh đưa registered wrapper vào queue; không cần dự đoán GC."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Integer memory units",
+      "question": "Output là gì?",
+      "code": "import java.lang.ref.*;\nimport java.util.*;\nimport java.util.concurrent.*;\npublic class QuizCase{ public static void main(String[]args){long total=2L*1024*1024+100,free=1024L*1024+200;System.out.print((total/1024/1024-free/1024/1024)+\" \"+((total-free)/1024/1024));}}\n",
+      "options": [
+        "1 1",
+        "0 0",
+        "Không compile.",
+        "1 0"
+      ],
+      "correct": 3,
+      "explanation": "Chia từng số rồi trừ làm mất độ chính xác khác với trừ bytes rồi chia."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Max versus committed",
+      "question": "Heap đang dùng512MB với Xmx4GB có nghĩa process đã dùng đúng4GB RAM chưa?",
+      "options": [
+        "Không.",
+        "Có luôn.",
+        "Chỉ khi dùng G1.",
+        "Chỉ khi field static."
+      ],
+      "correct": 0,
+      "explanation": "Maximum, committed, used và RSS là các số đo khác nhau."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Source used calculation",
+      "question": "Nguồn trừ totalMB-freeMB sau hai phép chia integer có giới hạn gì?",
+      "options": [
+        "Không có bất kỳ sai số nào.",
+        "Đã làm tròn từng số nên khác tính chênh bytes trước rồi đổi đơn vị.",
+        "Luôn bằng số object live chính xác.",
+        "Luôn là RSS process."
+      ],
+      "correct": 1,
+      "explanation": "Đây là chỉ báo heap thô, không thay profiling."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Weak collection timing",
+      "question": "Bỏ strong reference rồi gọi System.gc có bảo đảm weak.get()==null ngay không?",
+      "options": [
+        "Có nếu array có1 byte.",
+        "Có nếu map final.",
+        "Không.",
+        "Có mọi JVM."
+      ],
+      "correct": 2,
+      "explanation": "Yêu cầu GC không là lịch thu gom deterministic."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Cache key contract",
+      "question": "getCached(key,size) cần luôn trả array đúng size; sửa contract/key nào hợp lý?",
+      "options": [
+        "Chỉ đổi HashMap thành ConcurrentHashMap.",
+        "Chỉ thêm final cho array local.",
+        "Chỉ đổi tên method.",
+        "Key gồm cả size hoặc validate size trên hit theo policy rõ."
+      ],
+      "correct": 3,
+      "explanation": "Thread safety của container không sửa key thiếu dữ liệu định danh."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Key retention",
+      "question": "Referent của mọi entry đã bị GC, map nguồn tự có size0 không?",
+      "options": [
+        "Không.",
+        "Có vì WeakReference tự remove key.",
+        "Có vì byte[] final.",
+        "Chỉ khi JDK21."
+      ],
+      "correct": 0,
+      "explanation": "Key và wrapper vẫn là entries; cần cleanup/eviction theo thiết kế."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Reference queue cleanup",
+      "question": "ReferenceQueue có thể hỗ trợ cache thế nào?",
+      "options": [
+        "Thay mọi lock.",
+        "Nhận thông báo wrapper được enqueue để cleanup mapping phù hợp.",
+        "Tự xóa mọi entry của mọi map.",
+        "Giữ byte[] mạnh vĩnh viễn."
+      ],
+      "correct": 1,
+      "explanation": "Queue chỉ cung cấp cơ chế; app phải liên kết wrapper/key và loại entry đúng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Object pool claim",
+      "question": "Mọi byte[] reuse qua cache có nhất thiết là pool quản lý checkout/return không?",
+      "options": [
+        "Có nếu map concurrent.",
+        "Có nếu size1.",
+        "Không.",
+        "Có vì comment Object pooling."
+      ],
+      "correct": 2,
+      "explanation": "Nguồn không có ownership/return protocol; nó là shared weak-value cache đơn giản."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Thread safety of values",
+      "question": "ConcurrentHashMap<String,byte[]> có bảo vệ mọi read/write phần tử array không?",
+      "options": [
+        "Có vì array nằm trong map.",
+        "Có nếu key String.",
+        "Có nếu map static final.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Publication và đồng bộ thay đổi value là vấn đề riêng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Allocation pressure",
+      "question": "Nhiều object ngắn sống có thể làm tăng gì?",
+      "options": [
+        "Allocation/GC work dù không là memory leak.",
+        "Chắc chắn số file mở.",
+        "Chắc chắn quyền admin.",
+        "Chắc chắn stack depth."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt churn với retention khi phân tích."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Leak diagnosis",
+      "question": "Một map static tăng key không giới hạn đáng kiểm tra theo hướng nào?",
+      "options": [
+        "Chỉ gọi equals.",
+        "Retention path và policy giới hạn/cleanup.",
+        "Chỉ format source.",
+        "Chỉ tăng font log."
+      ],
+      "correct": 1,
+      "explanation": "Long-lived roots có thể giữ object không còn cần dùng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "G1 default scope",
+      "question": "Câu G1 là default trên mọi Java11+ và mọi máy có chính xác tuyệt đối không?",
+      "options": [
+        "Có vì Java language spec bắt buộc.",
+        "Chỉ cần tên class PerformanceDemo.",
+        "Không; phụ thuộc implementation và cấu hình/hardware.",
+        "Có kể cả mọi JVM tùy biến."
+      ],
+      "correct": 2,
+      "explanation": "JDK docs nêu default trên phần lớn cấu hình, không toàn bộ nền tảng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "ZGC scope",
+      "question": "Chọn ZGC có bảo đảm mọi HTTP request dưới1ms không?",
+      "options": [
+        "Có vì GC pause mục tiêu.",
+        "Có nếu heap4GB.",
+        "Có nếu có cache.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Request latency còn phụ thuộc CPU, I/O, locks, scheduling và workload."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "JFR start",
+      "question": "Chỉ bật khả năng Flight Recorder có đồng nghĩa đã có recording chứa events cần xem chưa?",
+      "options": [
+        "Không; phải tạo/start recording và chọn settings phù hợp.",
+        "Có và luôn tự gửi file.",
+        "Có và chứa mọi password.",
+        "Có và không cần workload."
+      ],
+      "correct": 0,
+      "explanation": "Bật facility, ghi dữ liệu và phân tích là các bước khác nhau."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Recording settings",
+      "question": "JFR profile settings ghi nhiều events hơn default có tradeoff nào?",
+      "options": [
+        "Tự loại mọi event ứng dụng.",
+        "Thông tin chi tiết hơn có thể tăng overhead/dữ liệu.",
+        "Luôn ít chi phí hơn.",
+        "Luôn không ảnh hưởng."
+      ],
+      "correct": 1,
+      "explanation": "Đo cấu hình cần thiết trong phạm vi quan sát."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Allocation profile",
+      "question": "CPU thấp nhưng latency cao có thể cần xem gì ngoài CPU samples?",
+      "options": [
+        "Chỉ class names.",
+        "Chỉ tốc độ clock quảng cáo.",
+        "Blocking, lock contention, I/O và queues.",
+        "Chỉ số dòng source."
+      ],
+      "correct": 2,
+      "explanation": "CPU profile không mô tả đầy đủ thời gian chờ."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Heap dump",
+      "question": "Heap dump hữu ích chủ yếu để xem gì?",
+      "options": [
+        "Mọi network packet đã từng gửi.",
+        "Mọi request tương lai.",
+        "Tất cả native RAM chính xác luôn.",
+        "Object graph/retention tại thời điểm chụp theo công cụ."
+      ],
+      "correct": 3,
+      "explanation": "Cần bảo vệ dump vì có thể chứa dữ liệu nhạy cảm và gây chi phí tạo file."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Stack overflow",
+      "question": "Đệ quy quá sâu thường có nguy cơ lỗi nào?",
+      "options": [
+        "StackOverflowError.",
+        "SQLException bắt buộc.",
+        "JWT expiration.",
+        "ClassCastException luôn."
+      ],
+      "correct": 0,
+      "explanation": "Không chủ ý chạy recursion vô hạn để đoán đáp án."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Class loading",
+      "question": "Hai class cùng binary name nhưng khác defining class loader có thể là cùng kiểu JVM không?",
+      "options": [
+        "Chỉ khác comment.",
+        "Không nhất thiết; defining loader tham gia identity.",
+        "Luôn cùng type vì tên giống.",
+        "Luôn là String."
+      ],
+      "correct": 1,
+      "explanation": "Class loading isolation quan trọng với plugin và containers."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Native memory",
+      "question": "Direct buffers và thread stacks giúp giải thích tình huống nào?",
+      "options": [
+        "Mọi OOM chỉ do List.",
+        "GC luôn giải phóng socket ngay.",
+        "RSS lớn hơn used Java heap.",
+        "Heap luôn bằng RAM vật lý."
+      ],
+      "correct": 2,
+      "explanation": "Heap chỉ là một phần tài nguyên process."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Resource closing",
+      "question": "Vì sao không dựa GC để đóng file/socket đúng hạn?",
+      "options": [
+        "Vì try-with-resources chỉ cho SQL.",
+        "Vì mọi object không bao giờ bị GC.",
+        "Vì file descriptor là primitive int nên vô hạn.",
+        "GC timing không bảo đảm và resource bên ngoài cần lifecycle rõ."
+      ],
+      "correct": 3,
+      "explanation": "Dùng explicit close/try-with-resources theo API."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Atomic cache construction",
+      "question": "Hai thread cùng cache miss trong nguồn có thể xảy ra gì?",
+      "options": [
+        "Cả hai allocate và trả arrays khác, put sau ghi đè mapping trước.",
+        "Chắc chắn chỉ một allocation vì ConcurrentHashMap.",
+        "Chắc chắn crash JVM.",
+        "Luôn cùng array không cần kiểm tra."
+      ],
+      "correct": 0,
+      "explanation": "Các thao tác riêng thread-safe không biến get-check-new-put thành atomic use case."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Weak compute caveat",
+      "question": "Đổi thành computeIfAbsent(key,k->new WeakReference<>(...)) đã xử lý referent bị clear chưa?",
+      "options": [
+        "Đã biến array immutable.",
+        "Chưa; wrapper non-null khiến mapping function không chạy.",
+        "Đã xử lý mọi cache miss.",
+        "Đã bảo đảm bounded cache."
+      ],
+      "correct": 1,
+      "explanation": "Cần xem cả wrapper và referent, đồng thời giữ semantics đồng bộ phù hợp."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Queue stale removal",
+      "question": "Queue nhận wrapper cũ cho key k nhưng map đã chứa wrapper mới; cleanup nên tránh gì?",
+      "options": [
+        "remove(key,oldWrapper) theo contract.",
+        "Theo dõi metadata key.",
+        "remove(k) mù quáng có thể xóa entry mới; cần conditional removal phù hợp.",
+        "Kiểm tra wrapper identity."
+      ],
+      "correct": 2,
+      "explanation": "Reference notification có thể đến sau khi mapping được thay, tạo race cleanup."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Weak cache efficiency",
+      "question": "Cache chỉ weak values có thể mất hit rate khi nào?",
+      "options": [
+        "Chỉ khi heap hoàn toàn hết.",
+        "Không bao giờ vì map static.",
+        "Chỉ khi String key thay nội dung.",
+        "Khi caller không giữ mạnh và collector clear referents."
+      ],
+      "correct": 3,
+      "explanation": "Weak retention không bảo đảm caching utility hoặc mục tiêu latency."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Correctness under eviction",
+      "question": "Thuật toán phụ thuộc object luôn có trong weak cache để tính đúng có vấn đề gì?",
+      "options": [
+        "Cache eviction/GC có thể phá correctness; miss phải có đường tái tạo đúng.",
+        "Không vì weak giữ object đến OOM.",
+        "Không vì ConcurrentHashMap.",
+        "Chỉ cần gọi System.gc trước mỗi request."
+      ],
+      "correct": 0,
+      "explanation": "Cache thông thường là tối ưu, không nguồn chân lý duy nhất nếu dữ liệu có thể biến mất."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Pool hygiene",
+      "question": "Reuse byte[] chứa dữ liệu người dùng qua shared cache cần xét gì?",
+      "options": [
+        "Chỉ đổi collector.",
+        "Ownership, reset dữ liệu, kích thước và đồng bộ để tránh lộ/corruption.",
+        "Chỉ thêm final map.",
+        "Chỉ giảm số ký tự key."
+      ],
+      "correct": 1,
+      "explanation": "Reuse tài nguyên có tradeoff correctness/security ngoài allocation rate."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Heap pressure diagnosis",
+      "question": "Used heap tăng trong load rồi ổn định sau GC có đủ kết luận leak không?",
+      "options": [
+        "Có nếu heap trên1MB.",
+        "Chỉ khi class static.",
+        "Không; cần retention trend sau GC và workload phù hợp.",
+        "Có với mọi tăng heap."
+      ],
+      "correct": 2,
+      "explanation": "Heap growth có thể là working set hoặc allocation tạm; quan sát dài và đúng metric."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "RSS versus heap",
+      "question": "RSS tăng trong khi Java heap ổn định nên kiểm tra gì?",
+      "options": [
+        "Chỉ xóa mọi ArrayList.",
+        "Chỉ tăng Xmx vô hạn.",
+        "Kết luận metric sai ngay.",
+        "Native memory, direct buffers, stacks và mapping phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Chẩn đoán theo vùng tài nguyên, không mặc định mọi memory issue nằm trong heap."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Warmup versus cold start",
+      "question": "Benchmark steady-state nhanh có bảo đảm startup latency tốt không?",
+      "options": [
+        "Không.",
+        "Có vì JIT luôn compile sẵn mọi method.",
+        "Có vì cache static.",
+        "Có vì heap cố định."
+      ],
+      "correct": 0,
+      "explanation": "Startup, class loading và warmup là mục tiêu đo khác steady state."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Dead code elimination",
+      "question": "Benchmark tính kết quả rồi không dùng có rủi ro gì?",
+      "options": [
+        "Chỉ ảnh hưởng compile error.",
+        "Optimizer loại bớt công việc khiến số đo không đại diện.",
+        "Chắc chắn đo chính xác hơn.",
+        "JVM bắt mọi biến được in."
+      ],
+      "correct": 1,
+      "explanation": "Harness benchmark như JMH có cơ chế giúp tránh nhiều bẫy, vẫn cần thiết kế đúng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Constant folding benchmark",
+      "question": "Đo phép tính hằng trong loop có thể sai vì sao?",
+      "options": [
+        "JIT không tối ưu loop.",
+        "Chỉ do độ dài tên biến.",
+        "Compiler có thể fold/hoist công việc thay vì lặp như kỳ vọng.",
+        "Hằng luôn tốn thời gian cố định."
+      ],
+      "correct": 2,
+      "explanation": "Đảm bảo benchmark mô tả công việc production, không dùng random sai cách để bù."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Escape analysis",
+      "question": "JIT loại allocation trong microbenchmark có nghĩa object source chưa từng được new về semantics không?",
+      "options": [
+        "Có vì Java bỏ constructor luôn.",
+        "Có vì object ở SQL.",
+        "Có vì GC cấm object nhỏ.",
+        "Không; allocation vật lý có thể được tối ưu khi không quan sát được khác biệt."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt semantics chương trình và implementation optimization."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "GC tuning tradeoff",
+      "question": "Giảm pause bằng collector concurrent có thể đánh đổi điều gì?",
+      "options": [
+        "CPU, throughput và headroom bộ nhớ theo workload.",
+        "Luôn giảm mọi chi phí cùng lúc.",
+        "Không bao giờ dùng CPU.",
+        "Tự giảm I/O về0."
+      ],
+      "correct": 0,
+      "explanation": "Mục tiêu latency/throughput/resource cần đo cùng điều kiện."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Heap sizing at capacity",
+      "question": "Tăng Xmx gần toàn RAM/container limit có nguy cơ gì?",
+      "options": [
+        "Tự dành đủ RAM mọi thành phần khác.",
+        "Thiếu headroom native/OS khiến process bị lỗi hoặc kill ngoài heap GC.",
+        "Luôn là cấu hình tốt nhất.",
+        "Tự giới hạn thread stacks bằng0."
+      ],
+      "correct": 1,
+      "explanation": "Budget memory cần bao gồm ngoài heap và cơ chế container/runtime."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Percentile evidence",
+      "question": "Average latency tốt nhưng p99 xấu cần xem gì?",
+      "options": [
+        "Chỉ số method public.",
+        "Chỉ tăng số test getter.",
+        "Phân bố/tail events và các nguyên nhân chờ/pause theo timeline.",
+        "Chỉ average rồi bỏ p99."
+      ],
+      "correct": 2,
+      "explanation": "Average che các request chậm hiếm nhưng quan trọng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Load methodology",
+      "question": "Benchmark trước/sau khác dataset và concurrency có thể kết luận speedup đáng tin ngay không?",
+      "options": [
+        "Có vì version mới luôn nhanh hơn.",
+        "Có nếu tên file giống.",
+        "Có nếu số nhỏ hơn.",
+        "Không; cần điều kiện so sánh tương đương và mô tả thay đổi."
+      ],
+      "correct": 3,
+      "explanation": "Cần tách thay đổi workload khỏi hiệu quả tối ưu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Profiling privacy",
+      "question": "JFR/heap dump có thể chứa dữ liệu nhạy cảm; nên quản lý thế nào?",
+      "options": [
+        "Quyền truy cập, thu thập tối thiểu và retention theo nhu cầu.",
+        "Public toàn bộ để debug nhanh.",
+        "Cho token vào event để mọi người xem.",
+        "Coi mọi recording vô hại vì binary."
+      ],
+      "correct": 0,
+      "explanation": "File chẩn đoán vẫn thuộc ranh giới dữ liệu ứng dụng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Classloader leak",
+      "question": "Static registry sống lâu giữ listener từ plugin đã unload có thể gây gì?",
+      "options": [
+        "Không thể leak vì có WeakReference ở class khác.",
+        "Giữ object/class loader plugin và metadata không được reclaim.",
+        "JVM tự bỏ mọi static reference khi tab đóng.",
+        "Chỉ tăng số query."
+      ],
+      "correct": 1,
+      "explanation": "Cần unregister/lifecycle rõ ở ranh giới plugin."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Collector portability",
+      "question": "Một flag GC hoạt động ở JDK21 có bảo đảm hợp lệ trên mọi vendor/version/platform không?",
+      "options": [
+        "Có nếu có dấu XX.",
+        "Có nếu heap4GB.",
+        "Không.",
+        "Có vì flag thuộc Java language syntax."
+      ],
+      "correct": 2,
+      "explanation": "Ghi rõ runtime và kiểm tra hỗ trợ; đừng sao chép flags không có bằng chứng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Weak double get",
+      "question": "if(ref.get()!=null) return ref.get(); có bảo đảm lần trả thứ hai non-null không?",
+      "options": [
+        "Có vì điều kiện vừa true.",
+        "Có vì WeakReference giữ object tới OOM.",
+        "Có nếu ref là final.",
+        "Không; giữ referent trong strong local từ một lần get rồi dùng nó."
+      ],
+      "correct": 3,
+      "explanation": "Không giữ strong reference giữa hai lần get có thể cho collector clear referent; không dự đoán thời điểm GC cụ thể."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "mongodb",
+  "level": "mid",
+  "lesson": "indexing",
+  "language": "vi",
+  "sourceHash": "5b994f7816f49bed4e0cf04c63855525a7ee55b70ed9c8ac1ad9ede802574b63",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo email unique, compound category/price, text, GeoJSON near và TTL index trong bài. Đối chiếu primary docs; không coi IXSCAN luôn tốt/COLLSCAN luôn xấu hoặc TTL là hạn auth chính xác. Không tạo index, chạy explain, DB hay geo query.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Mục đích index",
+      "question": "Index thường hỗ trợ gì khi phù hợp workload?",
+      "options": [
+        "Tìm và sắp xếp dữ liệu hiệu quả hơn",
+        "Thay mọi kiểm tra quyền",
+        "Bảo đảm mọi truy vấn luôn dưới 1 ms",
+        "Tự sao lưu mọi document"
+      ],
+      "correct": 0,
+      "explanation": "Tác dụng phụ thuộc query, dữ liệu và kế hoạch thực thi."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Index email",
+      "question": "Index email trong source có thuộc tính nào?",
+      "options": [
+        "text",
+        "unique:true",
+        "expireAfterSeconds:3600",
+        "2dsphere"
+      ],
+      "correct": 1,
+      "explanation": "Unique ràng buộc giá trị key theo semantics và phạm vi index."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Direction",
+      "question": "Giá trị1 trong index {email:1} biểu diễn hướng nào?",
+      "options": [
+        "Email chỉ được dài một ký tự",
+        "Chỉ giữ một document",
+        "Tăng dần",
+        "Giảm dần"
+      ],
+      "correct": 2,
+      "explanation": "Hướng index khác với số lượng dữ liệu được phép."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Compound",
+      "question": "Index {category:1,price:-1} thuộc loại nào?",
+      "options": [
+        "Một TTL index",
+        "Một text index",
+        "Một index chỉ trên price",
+        "Compound index trên hai trường"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự key và hướng có ý nghĩa với các query/sort phù hợp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Key đầu",
+      "question": "Key đầu của compound index sản phẩm trong bài là gì?",
+      "options": [
+        "category",
+        "price",
+        "email",
+        "createdAt"
+      ],
+      "correct": 0,
+      "explanation": "Prefix của index bắt đầu từ category."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Price direction",
+      "question": "Hướng price trong compound index source là gì?",
+      "options": [
+        "Được hash tự động",
+        "Giảm dần",
+        "Tăng dần",
+        "Không được lưu trong index"
+      ],
+      "correct": 1,
+      "explanation": "Source khai báo price:-1."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Text fields",
+      "question": "Text index source bao gồm các trường nào?",
+      "options": [
+        "category và price",
+        "latitude và longitude",
+        "title và content",
+        "email và age"
+      ],
+      "correct": 2,
+      "explanation": "Đây là text index kiểu truy vấn $text, không đồng nghĩa Atlas Search index."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Geo index",
+      "question": "Index trên stores.location trong bài có loại nào?",
+      "options": [
+        "text",
+        "hashed",
+        "TTL",
+        "2dsphere"
+      ],
+      "correct": 3,
+      "explanation": "GeoJSON sphere queries cần index không gian phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Explain",
+      "question": "explain(\"executionStats\") dùng để làm gì?",
+      "options": [
+        "Xem kế hoạch và số liệu thực thi truy vấn theo API",
+        "Tự sửa mọi query chậm",
+        "Tạo ngay index tối ưu duy nhất",
+        "Xóa các document không khớp"
+      ],
+      "correct": 0,
+      "explanation": "Đây là công cụ phân tích, không là phép chứng nhận tốc độ."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "IXSCAN",
+      "question": "Tên stage IXSCAN thường biểu thị điều gì?",
+      "options": [
+        "Đồng bộ replica set",
+        "Quét index",
+        "Quét toàn collection trực tiếp",
+        "Hash password"
+      ],
+      "correct": 1,
+      "explanation": "Có dùng index không tự chứng minh đó là kế hoạch tốt nhất cho mọi dữ liệu."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "COLLSCAN",
+      "question": "COLLSCAN thường biểu thị điều gì?",
+      "options": [
+        "Chỉ đọc index key",
+        "Xóa collection",
+        "Quét collection",
+        "Dùng text score"
+      ],
+      "correct": 2,
+      "explanation": "Cần đánh giá trong ngữ cảnh kích thước/selectivity, không gán xấu tuyệt đối."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Text search",
+      "question": "Query text trong bài dùng toán tử nào?",
+      "options": [
+        "$near",
+        "$inc",
+        "$set",
+        "$text"
+      ],
+      "correct": 3,
+      "explanation": "$search là field bên trong query $text ở ví dụ này."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Geo point",
+      "question": "GeoJSON type được dùng trong query vị trí là gì?",
+      "options": [
+        "Point",
+        "Polygon",
+        "LineString",
+        "Circle"
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp trong bài truy vấn khoảng cách tới một điểm."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Coordinate order",
+      "question": "GeoJSON coordinates trong query điểm dùng thứ tự nào?",
+      "options": [
+        "Khoảng cách rồi tên thành phố",
+        "Kinh độ rồi vĩ độ",
+        "Vĩ độ rồi kinh độ",
+        "Cao độ rồi thời gian"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn là [105.8,21.0], theo longitude,latitude."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Near",
+      "question": "Toán tử $near có mục đích chính gì trong bài?",
+      "options": [
+        "Tạo index cho mọi field",
+        "Đếm số document expired",
+        "Tìm theo khoảng cách tới điểm",
+        "Sort email theo alphabet"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả $near được sắp theo khoảng cách trong semantics này."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Distance unit",
+      "question": "Trong $near với GeoJSON/2dsphere như source, maxDistance dùng đơn vị nào?",
+      "options": [
+        "Kilômét trực tiếp",
+        "Độ kinh tuyến",
+        "Giây",
+        "Mét"
+      ],
+      "correct": 3,
+      "explanation": "5000 tương ứng 5 km theo loại truy vấn được nêu."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Max distance",
+      "question": "maxDistance trong bài là bao nhiêu?",
+      "options": [
+        "5000",
+        "3600",
+        "105.8",
+        "21.0"
+      ],
+      "correct": 0,
+      "explanation": "Giá trị này giới hạn bán kính khoảng cách theo mét trong query source."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "TTL",
+      "question": "TTL index dùng chủ yếu để làm gì?",
+      "options": [
+        "Bảo đảm xóa đúng một nanosecond định sẵn",
+        "Tự động dọn document đủ điều kiện hết hạn",
+        "Chỉ thay field expired thành true",
+        "Tạo mật khẩu dùng một lần"
+      ],
+      "correct": 1,
+      "explanation": "Deletion có xử lý nền và có thể chậm hơn mốc đủ điều kiện."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "TTL field",
+      "question": "TTL index trong source đặt trên field nào?",
+      "options": [
+        "email của users",
+        "location của stores",
+        "createdAt của sessions",
+        "updatedAt của products"
+      ],
+      "correct": 2,
+      "explanation": "Source dùng sessions.createIndex({createdAt:1},...)."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "TTL seconds",
+      "question": "expireAfterSeconds được đặt bao nhiêu trong source?",
+      "options": [
+        "5000",
+        "60",
+        "30",
+        "3600"
+      ],
+      "correct": 3,
+      "explanation": "Giá trị cấu hình là một giờ tính từ thời điểm Date thích hợp."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Duplicate email",
+      "question": "Có unique email index hợp lệ đang được enforce, ghi email key trùng có thể gặp gì?",
+      "options": [
+        "Lỗi duplicate-key theo ràng buộc index",
+        "Luôn tự ghi đè user cũ",
+        "Tự đổi email thành chuỗi mới",
+        "Chỉ tăng updatedAt của user cũ"
+      ],
+      "correct": 0,
+      "explanation": "Ứng dụng cần phân loại và xử lý xung đột đúng hợp đồng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Dữ liệu trước index",
+      "question": "Collection đã có duplicate vi phạm unique email. Có thể tạo unique index đó thành công mà không xử lý xung đột không?",
+      "options": [
+        "Chỉ nếu dùng hướng giảm dần",
+        "Không; index build có thể bị từ chối do dữ liệu vi phạm",
+        "Có; mọi duplicate tự được xóa",
+        "Có; index chỉ áp cho dữ liệu tương lai nên bỏ qua cũ"
+      ],
+      "correct": 1,
+      "explanation": "Ràng buộc mới cần tương thích dữ liệu hiện có và quá trình rollout index."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Case policy",
+      "question": "email \"A@test.com\" và \"a@test.com\" có được coi trùng theo mọi unique index/collation không?",
+      "options": [
+        "Có; tên field email tự xác định collation",
+        "Không; vì unique index không hỗ trợ string",
+        "Không; cần chính sách normalization/collation cụ thể",
+        "Có; mọi string index luôn không phân biệt hoa thường"
+      ],
+      "correct": 2,
+      "explanation": "Uniqueness phải theo semantics được thiết kế, không chỉ ý nghĩa tên field."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Unique và required",
+      "question": "Unique email index có tự là kiểm tra email required hợp lệ trong ứng dụng không?",
+      "options": [
+        "Có; unique tự gửi thư xác minh",
+        "Có; unique kiểm mọi kiểu email",
+        "Không; vì unique chỉ áp dụng Number",
+        "Không; cần validation về tồn tại/hình dạng theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Duy nhất và hợp lệ là các thuộc tính khác nhau."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Missing unique đơn",
+      "question": "Với unique single-field email index thông thường không partial/sparse, nhiều document thiếu email có thể gây gì?",
+      "options": [
+        "Xung đột key null/missing theo semantics index",
+        "Luôn được phép vô hạn vì thiếu field không bao giờ được index",
+        "Tự tạo email từ _id",
+        "Tự bỏ ràng buộc unique"
+      ],
+      "correct": 0,
+      "explanation": "Câu hỏi nêu rõ loại index; các biến thể sparse/partial có quy tắc khác."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Prefix category",
+      "question": "Index {category:1,price:-1} có prefix key đơn nào?",
+      "options": [
+        "createdAt",
+        "category",
+        "price",
+        "email"
+      ],
+      "correct": 1,
+      "explanation": "Prefix là tập key bắt đầu từ bên trái của compound index."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Order key",
+      "question": "Index {price:-1,category:1} có hoàn toàn tương đương {category:1,price:-1} cho mọi workload không?",
+      "options": [
+        "Có; hướng1/-1 không bao giờ ảnh hưởng",
+        "Không; MongoDB không hỗ trợ hai field",
+        "Không; thứ tự key ảnh hưởng khả năng hỗ trợ query/sort",
+        "Có; object key trong index luôn bị sort alphabet"
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế index cần theo các predicate và thứ tự truy cập thực tế."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Equality rồi sort",
+      "question": "Query lọc category bằng một giá trị và sort price giảm. Index source có phải ứng viên hợp lý để đánh giá không?",
+      "options": [
+        "Không; index này chỉ dùng được cho email",
+        "Có; nên tuyên bố đã benchmark nhanh nhất",
+        "Không; compound index cấm sort",
+        "Có; equality trên category và hướng price phù hợp pattern đó"
+      ],
+      "correct": 3,
+      "explanation": "Ứng viên hợp lý vẫn cần explain và số liệu theo dữ liệu thật."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Price only",
+      "question": "Query chỉ lọc/sort price không ràng buộc category. Có nên suy nó hưởng cùng hiệu quả như có equality category từ index source không?",
+      "options": [
+        "Không; thiếu prefix có thể làm việc sử dụng index kém phù hợp",
+        "Có; mọi suffix đều là index độc lập tối ưu",
+        "Có; category bị bỏ tự động khỏi index mọi lần",
+        "Không; vì price không tồn tại trong index"
+      ],
+      "correct": 0,
+      "explanation": "Không gán công dụng prefix cho mọi suffix; kế hoạch cụ thể cần kiểm tra."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Index write cost",
+      "question": "Thêm nhiều index có thể tăng chi phí nào?",
+      "options": [
+        "Tự giảm mọi lần ghi xuống0",
+        "Ghi dữ liệu, storage và duy trì cấu trúc index",
+        "Chỉ kích thước tên collection",
+        "Không có chi phí nào ngoài lần tạo"
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu đọc có đánh đổi cần đo theo workload."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Index không projection",
+      "question": "Tạo index email có tự ngăn field password được trả trong query không?",
+      "options": [
+        "Có; mọi query chỉ trả index key",
+        "Không; vì MongoDB không có projection",
+        "Không; output selection/quyền là lớp riêng",
+        "Có; index tự ẩn field không nằm trong key"
+      ],
+      "correct": 2,
+      "explanation": "Cơ chế truy cập dữ liệu không thay hợp đồng response."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Small collection",
+      "question": "Collection rất nhỏ và query trả phần lớn dữ liệu. COLLSCAN có nhất thiết sai không?",
+      "options": [
+        "Có; COLLSCAN luôn là lỗi cú pháp",
+        "Có; mọi collection buộc có index mọi field",
+        "Không; vì explain không thể thấy COLLSCAN",
+        "Không; cần đánh giá chi phí/kế hoạch trong ngữ cảnh"
+      ],
+      "correct": 3,
+      "explanation": "Không chấm kế hoạch chỉ bằng một tên stage."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Key examined",
+      "question": "IXSCAN nhưng totalKeysExamined rất lớn so với nReturned. Nên xem gì?",
+      "options": [
+        "Selectivity, bounds, query/index design và workload",
+        "Chỉ có chữ IXSCAN là đủ dừng điều tra",
+        "Đổi status response của API",
+        "Chỉ tăng tên index cho dài"
+      ],
+      "correct": 0,
+      "explanation": "Tỷ lệ công việc so với kết quả có ích để tìm query chưa hiệu quả."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Docs examined",
+      "question": "Query trả5 document nhưng examines hàng trăm nghìn document. limit 5 có chứng minh chi phí thấp không?",
+      "options": [
+        "Không; vì limit không được dùng với index",
+        "Không; giới hạn output khác công việc thực thi",
+        "Có; limit luôn bằng docs examined",
+        "Có; response nhỏ luôn nghĩa DB không tốn CPU"
+      ],
+      "correct": 1,
+      "explanation": "Cần xem kế hoạch và metric liên quan thay vì chỉ kích thước response."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Sort stage",
+      "question": "Plan có SORT dù có một index khác. Điều gì cần xem?",
+      "options": [
+        "Chỉ source dùng String thay Number",
+        "Chỉ drop collection để mất SORT",
+        "Index có hỗ trợ đúng sort và predicate theo cấu hình đó không",
+        "Coi mọi index tự hỗ trợ mọi hướng sort"
+      ],
+      "correct": 2,
+      "explanation": "Có index không đồng nghĩa sort được giải quyết bằng thứ tự index phù hợp."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "ExecutionStats scope",
+      "question": "explain executionStats được dùng để phân tích điều gì?",
+      "options": [
+        "Mọi request tương lai dưới mọi mức tải",
+        "Mọi query trên mọi collection",
+        "Tính an toàn của HTTP authorization",
+        "Một query trong điều kiện và dữ liệu cụ thể"
+      ],
+      "correct": 3,
+      "explanation": "Một quan sát thực thi không thay toàn bộ đánh giá hệ thống."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Text words",
+      "question": "Query $text với $search:\"mongodb tutorial\" có mặc nhiên là tìm nguyên cụm chính xác đó không?",
+      "options": [
+        "Không; unquoted terms có semantics text search riêng",
+        "Có; mọi dấu cách nghĩa phrase chính xác",
+        "Có; $text chỉ tìm bằng chuỗi toànfield",
+        "Không; $text không nhận String"
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần phrase hoặc quy tắc relevance khác cần diễn đạt đúng cú pháp/chức năng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Text không regex",
+      "question": "$text và regex substring có phải hai cơ chế hoàn toàn giống nhau không?",
+      "options": [
+        "Không; vì regex không hỗ trợ String",
+        "Không; tokenization/language/index semantics khác",
+        "Có; text index chỉ lưu mọi substring liên tiếp",
+        "Có; MongoDB chuyển mọi regex thành$text"
+      ],
+      "correct": 1,
+      "explanation": "Nên chọn loại tìm kiếm theo hợp đồng và index thực tế."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Text index cần có",
+      "question": "Gọi query $text trên collection chưa có text index thích hợp có đủ chuẩn bị chưa?",
+      "options": [
+        "Rồi; title String tự là text index",
+        "Chưa; vì $text chỉ hoạt động trên email",
+        "Chưa; cần index và semantics phù hợp deployment",
+        "Rồi; query tự tạo index âm thầm trong mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "Khai báo query không thay quá trình cung cấp index."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Text và Search",
+      "question": "Text index createIndex({title:\"text\",content:\"text\"}) có tự tạo Atlas Search index tên default không?",
+      "options": [
+        "Có; mọi text index có tên default của Atlas",
+        "Có; $text tự đổi thành $search",
+        "Không; MongoDB không có tính năng search nào khác",
+        "Không; hai tính năng/index khác nhau"
+      ],
+      "correct": 3,
+      "explanation": "Không đánh đồng text query truyền thống và Search pipeline stage."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Geo trace",
+      "question": "coordinates:[105.8,21.0] trong source có kinh độ bao nhiêu?",
+      "options": [
+        "105.8",
+        "21.0",
+        "5000",
+        "3600"
+      ],
+      "correct": 0,
+      "explanation": "Longitude đứng đầu theo GeoJSON của query này."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Đảo tọa độ",
+      "question": "Đổi source thành coordinates:[21.0,105.8] tạo vấn đề gì rõ ràng?",
+      "options": [
+        "Chỉ thay hướng sort email",
+        "Vĩ độ105.8 vượt khoảng hợp lệ[-90,90]",
+        "Luôn tương đương điểm ban đầu",
+        "Tự chuyển thành đường tròn5000m"
+      ],
+      "correct": 1,
+      "explanation": "Ngoài đổi vị trí, giá trị vĩ độ này không hợp lệ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Khoảng cách geo",
+      "question": "Với source GeoJSON, maxDistance5000 có ý nghĩa gì?",
+      "options": [
+        "Giới hạn5000document trả về",
+        "TTL5000giây",
+        "Giới hạn tối đa khoảng5km từ điểm",
+        "Giới hạn5000km"
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm đơn vị khoảng cách với số lượng kết quả hoặc thời gian."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Near order",
+      "question": "Nếu không thêm sort khác, $near theo semantics được nêu sắp kết quả thế nào?",
+      "options": [
+        "Theo email alphabet",
+        "Theo thứ tự insert bắt buộc",
+        "Theo createdAt giảm",
+        "Từ gần tới xa"
+      ],
+      "correct": 3,
+      "explanation": "Thêm sort khác có thể đổi mục tiêu thứ tự và chi phí."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Near cần index",
+      "question": "GeoJSON near query cần index loại nào ở field location?",
+      "options": [
+        "2dsphere phù hợp",
+        "Chỉ TTL trên createdAt",
+        "Chỉ text trên location",
+        "Unique email index là đủ"
+      ],
+      "correct": 0,
+      "explanation": "Index trên field không liên quan không đáp ứng yêu cầu geo query."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Geo type contract",
+      "question": "Location lưu chuỗi \"Hanoi\" nhưng query mong GeoJSON Point. Cần gì?",
+      "options": [
+        "Chỉ tạo text index rồi coi như 2dsphere",
+        "Chuẩn hóa/validate dữ liệu geo đúng shape và hệ tọa độ",
+        "Chỉ đổi field name thành location",
+        "Chỉ tăng maxDistance để chuỗi thành Point"
+      ],
+      "correct": 1,
+      "explanation": "Cú pháp query không biến dữ liệu sai shape thành tọa độ."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "TTL đủ điều kiện",
+      "question": "Session có createdAt 12:00 UTC, TTL 3600 s. Khi nào đủ điều kiện tuổi hết hạn theo quy tắc đơn giản?",
+      "options": [
+        "12:00 UTC",
+        "Ngày hôm sau 12:00 UTC",
+        "13:00 UTC",
+        "12:30 UTC"
+      ],
+      "correct": 2,
+      "explanation": "Thời điểm đủ điều kiện không là cam kết xóa vật lý tức thì."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "TTL không đúng giây",
+      "question": "Đã qua mốc TTL nhưng document còn hiện trong một thời gian. Có thể kết luận ngay TTL hỏng không?",
+      "options": [
+        "Có; mọi TTL xóa đồng bộ đúng nanosecond",
+        "Có; collection sessions không được TTL",
+        "Không; vì TTL chỉ xóa field date",
+        "Không; dọn nền có độ trễ và điều kiện vận hành cần xem"
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm loại dữ liệu, index và cơ chế dọn thay vì giả thời hạn vật lý tuyệt đối."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Date field TTL",
+      "question": "createdAt lưu String ISO thay vì BSON Date theo hợp đồng TTL. Điều gì cần kiểm tra?",
+      "options": [
+        "Kiểu field đủ điều kiện TTL và chuẩn hóa dữ liệu",
+        "Tên createdAt tự cast mọi String",
+        "TTL chỉ đọc năm từString",
+        "Index tự đổi String thành Date ở mọi document"
+      ],
+      "correct": 0,
+      "explanation": "TTL dựa trên giá trị thời gian có kiểu phù hợp, không chỉ tên field."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "TTL single field",
+      "question": "TTL index thông thường trong bài có phải compound category/createdAt không?",
+      "options": [
+        "Không; vì TTL không phải index",
+        "Không; source là single-field createdAt",
+        "Có; collection name sessions là key thứ hai",
+        "Có; TTL luôn cần ít nhất hai field"
+      ],
+      "correct": 1,
+      "explanation": "Không gộp hai ví dụ index khác loại thành một cấu hình."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "TTL xóa document",
+      "question": "Khi TTL dọn một session đủ điều kiện, tác động chính là gì?",
+      "options": [
+        "Chỉ xóa index",
+        "Chỉ bỏ password khỏi response",
+        "Xóa document session",
+        "Chỉ đặt createdAt thành null"
+      ],
+      "correct": 2,
+      "explanation": "Đây là cơ chế vòng đời dữ liệu có tác động xóa thật trong môi trường thực."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "TTL auth",
+      "question": "App có được chấp nhận session quá expiresAt chỉ vì document chưa bị TTL xóa không?",
+      "options": [
+        "Có; document còn tồn tại luôn là quyền hợp lệ",
+        "Có; TTL là đồng hồ auth chính xác tuyệt đối",
+        "Chỉ cần đổi index direction",
+        "Không; auth phải kiểm expiry theo chính sách riêng"
+      ],
+      "correct": 3,
+      "explanation": "Thời hạn chấp nhận credential không nên phụ thuộc thời điểm cleanup nền."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Index lifecycle",
+      "question": "Index definition có trong tài liệu source. Có thể coi index thực đã tạo trên DB chưa?",
+      "options": [
+        "Chưa; cần triển khai và xác nhận trạng thái thực",
+        "Rồi; đọc comment tự tạo index",
+        "Rồi; schema quiz tạo index",
+        "Chưa; MongoDB không cho liệt kê index"
+      ],
+      "correct": 0,
+      "explanation": "Tác giả không chạy createIndex trong lần biên soạn này."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Benchmark workload",
+      "question": "Muốn so trước/sau thêm index, nên giữ điều gì rõ?",
+      "options": [
+        "Chỉ số trường JSON",
+        "Query, dataset, điều kiện đo và các metric liên quan",
+        "Chỉ tên index",
+        "Chỉ logo MongoDB"
+      ],
+      "correct": 1,
+      "explanation": "So sánh cần cùng phạm vi đủ để kết luận có căn cứ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Unique không secrecy",
+      "question": "Unique email index có tự làm email bí mật khỏi mọi query không?",
+      "options": [
+        "Có; IXSCAN không thể trả email",
+        "Không; index không thể chứa String",
+        "Không; ràng buộc duy nhất khác kiểm soát truy cập",
+        "Có; unique luôn mã hóa key"
+      ],
+      "correct": 2,
+      "explanation": "Bảo mật dữ liệu cần quyền và lựa chọn đầu ra riêng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Read/write tradeoff",
+      "question": "Một index ít dùng trong đọc nhưng tốn nhiều ghi. Hành động hợp lý là gì?",
+      "options": [
+        "Xóa ngay mọi index không xem unique/TTL",
+        "Giữ vì index luôn miễn phí",
+        "Tạo thêm bản sao giống hệt cho chắc",
+        "Đánh giá usage/workload và ràng buộc trước khi giữ hoặc thay đổi"
+      ],
+      "correct": 3,
+      "explanation": "Index có thể còn thực thi constraint hoặc lifecycle, không chỉ tăng tốc đọc."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Index redundant scope",
+      "question": "Có compound index và index prefix riêng. Có nên xóa prefix chỉ vì key trùng mà không xem unique/sparse/partial/collation không?",
+      "options": [
+        "Không; thuộc tính và workload có thể khác",
+        "Có; mọi prefix trùng đều hoàn toàn tương đương",
+        "Có; index không có thuộc tính nào khác key",
+        "Không; compound không bao giờ hỗ trợ prefix"
+      ],
+      "correct": 0,
+      "explanation": "Xem key pattern thôi chưa đủ đánh giá tính dư thừa."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source comment",
+      "question": "Comment IXSCAN good/COLLSCAN bad nên được diễn giải thế nào?",
+      "options": [
+        "Là quy tắc authorization",
+        "Là gợi ý quá đơn giản, cần đánh giá thực thi theo ngữ cảnh",
+        "Là định luật hiệu năng tuyệt đối",
+        "Là bằng chứng đã benchmark"
+      ],
+      "correct": 1,
+      "explanation": "Một tên stage không thể thay số liệu và mục tiêu workload."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không capacity proof",
+      "question": "Có bốn loại index mẫu có chứng minh hệ thống scale hàng triệu user không?",
+      "options": [
+        "Có; TTL tự mở rộng node",
+        "Không; MongoDB không thể scale",
+        "Không; cần dữ liệu, workload, hạ tầng và kiểm chứng năng lực",
+        "Có; đủ bốn loại index là chuẩn capacity"
+      ],
+      "correct": 2,
+      "explanation": "Tính năng công nghệ không tự là bằng chứng năng lực ứng dụng."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Full reverse sort",
+      "question": "Với các key scalar và các điều kiện áp dụng phù hợp, index {category:1,price:-1} có thể được duyệt ngược để hỗ trợ thứ tự nào?",
+      "options": [
+        "{category:1,price:1} trong mọi trường hợp",
+        "{email:1}",
+        "{createdAt:-1}",
+        "{category:-1,price:1}"
+      ],
+      "correct": 3,
+      "explanation": "Duyệt ngược đảo hướng toàn bộ key; không phải tùy ý đảo riêng một key của compound sort."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "IXSCAN tốn nhiều",
+      "question": "Query dùng IXSCAN nhưng scan phần lớn index rồi FETCH nhiều document để trả ít kết quả. Hướng phân tích nào đúng?",
+      "options": [
+        "Đối chiếu bounds/selectivity/covered fields/sort và index theo query thực",
+        "Dừng vì IXSCAN chứng minh tối ưu",
+        "Đổi query thành COLLSCAN không cần đo",
+        "Chỉ thêm unique để mọi filter nhanh"
+      ],
+      "correct": 0,
+      "explanation": "Hiệu quả phụ thuộc tổng công việc và mục tiêu, không chỉ một nhãn kế hoạch."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Equality sort",
+      "question": "Workload lọc category rồi sort price, nhưng index đang price trước category. Có nên chỉ đếm đủ hai field là coi tối ưu không?",
+      "options": [
+        "Không; index không hỗ trợ sort",
+        "Không; thứ tự key/equality/sort và dữ liệu cần được đánh giá",
+        "Có; mọi compound permutation giống nhau",
+        "Có; direction tự sửa mọi prefix"
+      ],
+      "correct": 1,
+      "explanation": "Cần nối pattern truy vấn với cấu trúc index phù hợp, rồi kiểm chứng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Unique rollout",
+      "question": "Muốn thêm unique email khi dữ liệu cũ có duplicate và có ghi liên tục. Cần kế hoạch gì?",
+      "options": [
+        "Tắt error handling để build tiếp",
+        "Chỉ đặt unique trong comment",
+        "Làm rõ policy chuẩn hóa, xử lý vi phạm và rollout constraint nhất quán",
+        "Chỉ chạy createIndex rồi mặc định mọi duplicate tự biến mất"
+      ],
+      "correct": 2,
+      "explanation": "Ràng buộc mới tác động dữ liệu đang có lẫn đường ghi đồng thời."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Email collation",
+      "question": "Business coi hai email khác hoa thường là một, raw client ghi khác normalization của ODM. Cần gì?",
+      "options": [
+        "Chỉ một setter lowercase ở một service",
+        "Chỉ query find trước insert không constraint",
+        "Chỉ đổi tên index",
+        "Invariant nhất quán qua normalization/index semantics và mọi đường ghi"
+      ],
+      "correct": 3,
+      "explanation": "Constraint phải phù hợp chính sách và phạm vi client thật, không chỉ ví dụ một đường ghi."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "TTL auth boundary",
+      "question": "Session hết hạn nhưng backgroundTTL chưa dọn. Thiết kế đúng cần phân biệt gì?",
+      "options": [
+        "Authorization kiểm hạn dùng;TTL chỉ hỗ trợ cleanup dữ liệu",
+        "TTL tồn tại là proof session chưa hết hạn",
+        "Client tự kiểm đồng hồ là đủ server",
+        "Chỉ tăng TTL để tránh expired"
+      ],
+      "correct": 0,
+      "explanation": "Quyết định chấp nhận credential phải theo hợp đồng server, không theo dọn vật lý."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "TTL backlog",
+      "question": "Giảm TTL mạnh làm rất nhiều document đủ điều kiện xóa cùng lúc. Cần đánh giá gì?",
+      "options": [
+        "Chỉ tăng query limit",
+        "Tải cleanup,capacity và kế hoạch thay đổi lifecycle có kiểm soát",
+        "Chỉ giảm số ký tự field",
+        "Coi TTL không bao giờ tạo chi phí ghi/xóa"
+      ],
+      "correct": 1,
+      "explanation": "Dọn dữ liệu là workload thật; thay retention có thể ảnh hưởng vận hành."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "TTL string migration",
+      "question": "Có TTL index nhưng createdAt của phần lớn session là String. Sửa nguyên nhân cần gì?",
+      "options": [
+        "Chỉ tăng expireAfterSeconds",
+        "Chỉ thêm text index cho String",
+        "Chuẩn hóa/migrate kiểu thời gian và xác nhận eligibility/index theo chính sách",
+        "Chỉ đổi têncollection thànhsessions2"
+      ],
+      "correct": 2,
+      "explanation": "Đúng loại index không bù cho dữ liệu không phù hợp hợp đồng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Geo đảo tọa độ hợp lệ",
+      "question": "Một vị trí có cả longitude/latitude nằm trong[-90,90]; đổi thứ tự vẫn qua validation range. Vì sao vẫn có thể sai?",
+      "options": [
+        "Range hợp lệ nghĩa hai thứ tự luôn tương đương",
+        "2dsphere tự đoán ý định và đảo lại",
+        "Tên field location tự chọn thành phố đúng",
+        "Điểm địa lý đã đổi dù các con số vẫn trong khoảng hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Validation range là cần nhưng không chứng minh hệ tọa độ/ý nghĩa dữ liệu đúng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Near sort thứ hai",
+      "question": "Muốn danh sách gần nhất nhưng thêm sort({name:1}) sau near. Cần xem gì?",
+      "options": [
+        "Thứ tự cuối có thể theo tên và phát sinh sort bổ sung, khác mục tiêu gần nhất",
+        "Near luôn ghi đè mọi sort khác",
+        "Tên index tự giữ khoảng cách làm key cuối",
+        "Sort name chỉ đổi projection"
+      ],
+      "correct": 0,
+      "explanation": "Mỗi thao tác có thể thay thứ tự/chi phí; phải giữ đúng hợp đồng output."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Text vs Atlas",
+      "question": "Đã có text index truyền thống nhưng gọi aggregate $search với index default. Vì sao không coi đủ phụ thuộc?",
+      "options": [
+        "Chỉ cần TTL để Search xuất hiện",
+        "Search dùng cấu hình/chức năng index riêng cần được provision đúng",
+        "Mọi text index tự là default Search index",
+        "Đổi $text thành $search là chuyển cú pháp thuần"
+      ],
+      "correct": 1,
+      "explanation": "Cần xác định nền tảng/tính năng và phiên bản, không suy hai hệ tìm kiếm giống nhau."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Index không quyền",
+      "question": "Thêm covered index giúp query nhanh nhưng filter thiếu tenant. Vấn đề nào còn nguyên?",
+      "options": [
+        "IXSCAN không bao giờ đọc dữ liệu tenant khác",
+        "Chỉ response body cần thêm page",
+        "Đọc sai phạm vi dữ liệu/phân quyền dù có thể nhanh",
+        "Covered index tự giới hạn tenant từ caller"
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu đường truy cập không thay ranh giới quyền của predicate."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Data distribution shift",
+      "question": "Index hiệu quả khi category rất chọn lọc, sau đó một category chiếm đa số. Cần làm gì?",
+      "options": [
+        "Giữ kết luận cũ vĩnh viễn vì index không đổi",
+        "Chỉ đổi index name",
+        "Coi mọi B-tree tự tối ưu workload không cần đo",
+        "Đánh giá lại query distribution, plan và metric với dữ liệu mới"
+      ],
+      "correct": 3,
+      "explanation": "Hiệu năng có thể đổi theo phân bố dữ liệu dù code và index key giữ nguyên."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Nhiều index",
+      "question": "Tạo index cho mọi field để tối ưu mọi read. Đánh đổi bị bỏ qua là gì?",
+      "options": [
+        "Write/storage/cache/bảo trì và việc nhiều index không bảo đảm mọi pattern",
+        "Không có vì index không dùng RAM/disk",
+        "Chỉ số dòng code",
+        "Mọi ghi tự nhanh hơn theo số index"
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế index nên theo nhu cầu và bằng chứng, không theo số lượng tối đa."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Unique scope sharding",
+      "question": "Chuyển sang sharded collection rồi muốn giữ uniqueness email toàn hệ thống. Cần xem gì?",
+      "options": [
+        "Chỉ thêm readPreference secondary",
+        "Quy tắc unique index/shard key và chiến lược invariant theo topology",
+        "Mọi unique key luôn toàn cluster bất kể shard key",
+        "Hash email tự cho unique index trực tiếp"
+      ],
+      "correct": 1,
+      "explanation": "Topology có thể ràng buộc khả năng enforce invariant; không áp quy tắc unsharded máy móc."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Index constraint removal",
+      "question": "Index email ít được dùng cho đọc nhưng unique. Có thể drop chỉ vì usage read thấp không?",
+      "options": [
+        "Có; ODM tự thay constraint trong mọi client",
+        "Không; mọi index đều bất biến không drop được",
+        "Không; còn đang thực thi invariant duy nhất cần được bảo toàn",
+        "Có; index không đọc nghĩa không có tác dụng"
+      ],
+      "correct": 2,
+      "explanation": "Chức năng constraint khác với chức năng tăng tốc query."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Explain một lần",
+      "question": "Một lần explain có thời gian thấp. Muốn claim cải thiện latency production cần thêm gì?",
+      "options": [
+        "Chỉ ảnh chụp có chữ IXSCAN",
+        "Chỉ nReturned bằng limit",
+        "Chỉ tên index mới",
+        "Phạm vi đo lặp/phân bố tải và điều kiện so sánh phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không suy hiệu quả dưới tải và mọi thời điểm từ một quan sát đơn lẻ."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Expiry dữ liệu lịch sử",
+      "question": "Bật TTL trên sessions nhưng audit cần giữ một số dữ liệu lâu hơn. Cần thiết kế gì?",
+      "options": [
+        "Lifecycle/retention tách đúng loại dữ liệu và yêu cầu khôi phục",
+        "Coi TTL tự hiểu quy định audit của ứng dụng",
+        "Chỉ đổi sort createdAt",
+        "Chỉ ghi chú không xóa trong comment"
+      ],
+      "correct": 0,
+      "explanation": "Tính năng dọn tự động cần phù hợp hợp đồng dữ liệu, không quyết định yêu cầu thay người thiết kế."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Index invalid shape",
+      "question": "Tạo geo index trên field lẫn GeoJSON hợp lệ và dữ liệu sai shape. Cần xem gì trước rollout?",
+      "options": [
+        "Chỉ explain query email",
+        "Dữ liệu hiện có,validation và tác động index build theo loại index",
+        "Tên location đủ bảo đảm shape",
+        "Chỉ maxDistance làm sạch dữ liệu"
+      ],
+      "correct": 1,
+      "explanation": "Quy trình tạo index cần đi cùng chất lượng dữ liệu, không chỉ câu lệnh mong muốn."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Đọc kế hoạch theo lượng công việc",
+      "question": "Query trả 10 document nhưng plan dùng IXSCAN phải examine 50.000 keys và fetch 20.000 document, còn có blocking sort. Đánh giá nào phù hợp nhất?",
+      "options": [
+        "Vì trả 10 document nên totalDocsExamined phải được coi là 10, bỏ qua số 20.000",
+        "Blocking sort không thể xuất hiện sau IXSCAN nên bỏ toàn bộ explain",
+        "IXSCAN chưa bảo đảm ít công việc; đối chiếu predicate/sort, selectivity và index ứng viên bằng cùng workload",
+        "IXSCAN chứng minh query tối ưu; chỉ cần tăng số bản ghi để tỷ lệ tốt hơn"
+      ],
+      "correct": 2,
+      "explanation": "Phải đọc keys/documents examined, nReturned và stage sort theo query cụ thể. Tên stage đơn lẻ không chứng minh chi phí hay chọn index thay thế."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "TTL và điều kiện xác thực",
+      "question": "Session tạo lúc 10:00 dùng TTL 3600 giây. Lúc 11:01 document vẫn còn do TTL chạy bất đồng bộ. API nên quyết định quyền session thế nào?",
+      "options": [
+        "Cho phép vì document còn tồn tại chứng minh TTL đã gia hạn",
+        "Gia hạn thêm 3600 giây mỗi lần thấy document chưa bị TTL xóa",
+        "Chỉ chạy explain để buộc TTL xóa đồng bộ trước khi xác thực",
+        "Kiểm thời điểm hết hạn trong logic xác thực và từ chối session đã hết hạn dù document chưa bị xóa"
+      ],
+      "correct": 3,
+      "explanation": "TTL là cơ chế dọn dữ liệu, không phải đồng hồ enforcement chính xác. Query/index và logic xác thực phải giữ cùng ngữ nghĩa expiresAt hoặc createdAt cộng thời hạn."
+    }
+  ]
+}

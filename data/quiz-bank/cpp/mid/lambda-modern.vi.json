@@ -1,0 +1,1164 @@
+{
+  "version": 1,
+  "tech": "cpp",
+  "level": "mid",
+  "lesson": "lambda-modern",
+  "language": "vi",
+  "sourceHash": "e8d4ce8c6ff77283c76c5da7a8485be8c39930b9138847a3862fc1707499d954",
+  "status": "approved",
+  "review": "Tự biên soạn trực tiếp, không API. C++17 lambda capture/lifetime, algorithms, structured bindings và optional. Phân biệt iterator range rỗng, optional có giá trị0 với không có giá trị, và erase-remove. C++20 chỉ nêu khác biệt phiên bản, không biên dịch như C++17.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Lambda syntax",
+      "question": "Dạng lambda C++ cơ bản nào đúng?",
+      "options": [
+        "[capture](parameters) { body }",
+        "lambda parameters => body bắt buộc",
+        "def lambda(parameters): body",
+        "function[capture] body không tham số"
+      ],
+      "correct": 0,
+      "explanation": "Capture list đứng trước danh sách tham số."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Lambda closure",
+      "question": "Một lambda expression tạo ra gì?",
+      "options": [
+        "Một object không thể gọi.",
+        "Closure object có kiểu riêng do compiler xác định.",
+        "Luôn một raw function pointer.",
+        "Luôn std::function cấp phát heap."
+      ],
+      "correct": 1,
+      "explanation": "Closure có toán tử gọi; cách lưu phụ thuộc kiểu và API."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Empty capture",
+      "question": "[] trên lambda biểu thị gì?",
+      "options": [
+        "Capture mọi biến bằng reference.",
+        "Lambda không được có tham số.",
+        "Không capture biến tự động từ scope ngoài.",
+        "Capture mọi biến bằng giá trị."
+      ],
+      "correct": 2,
+      "explanation": "Lambda vẫn có thể dùng tham số và các tên truy cập được không cần capture theo quy tắc ngôn ngữ."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Value capture",
+      "question": "[threshold] thường làm gì với biến int threshold local?",
+      "options": [
+        "Giữ alias tự cập nhật theo biến ngoài.",
+        "Chuyển threshold thành global.",
+        "Xóa biến threshold ngoài.",
+        "Lưu bản sao giá trị khi tạo closure."
+      ],
+      "correct": 3,
+      "explanation": "Đổi biến ngoài sau đó không tự đổi bản sao đã capture."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Reference capture",
+      "question": "[&threshold] thường diễn đạt gì?",
+      "options": [
+        "Capture tham chiếu tới threshold ngoài.",
+        "Sao chép int độc lập.",
+        "Cấp phát int trên heap tự động.",
+        "Làm threshold ngoài const vĩnh viễn."
+      ],
+      "correct": 0,
+      "explanation": "Cần bảo đảm biến ngoài sống đủ lâu khi lambda được dùng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Default value capture",
+      "question": "[=] thường làm gì với local cần được capture theo quy tắc phù hợp?",
+      "options": [
+        "Cấm tham số lambda.",
+        "Capture bằng giá trị mặc định.",
+        "Capture mọi biến luôn bằng reference.",
+        "Tự move mọi object ngoài."
+      ],
+      "correct": 1,
+      "explanation": "Không hiểu [=] như chụp toàn bộ RAM; chỉ các capture theo quy tắc của lambda."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Default reference capture",
+      "question": "[&] thường biểu thị gì?",
+      "options": [
+        "Chỉ capture biến bool.",
+        "Tự đồng bộ thread.",
+        "Capture bằng reference mặc định cho biến cần capture phù hợp.",
+        "Sao chép mọi object sâu."
+      ],
+      "correct": 2,
+      "explanation": "Reference capture không sở hữu hoặc kéo dài đời biến ngoài."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Count if",
+      "question": "std::count_if(first,last,pred) trả gì?",
+      "options": [
+        "Vector các phần tử thỏa.",
+        "Iterator phần tử đầu thỏa.",
+        "Số phần tử không thỏa luôn.",
+        "Số phần tử trong range thỏa predicate."
+      ],
+      "correct": 3,
+      "explanation": "Predicate được dùng để kiểm tra từng phần tử."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Comparator descending",
+      "question": "Comparator nào sắp int giảm dần với std::sort?",
+      "options": [
+        "[](int a,int b){return a>b;}",
+        "[](int a,int b){return a>=b;}",
+        "[](int a,int b){return true;}",
+        "[](int a,int b){return a+b;}"
+      ],
+      "correct": 0,
+      "explanation": "Comparator phải thỏa strict weak ordering; > hợp lệ cho các int."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Structured bindings",
+      "question": "auto [a,b]=std::pair<int,int>{1,2}; tạo gì?",
+      "options": [
+        "Một hàm template mới.",
+        "Hai tên binding để dùng các thành phần của đối tượng pair được phân rã.",
+        "Một mảng tên a,b có kích thước runtime.",
+        "Hai raw pointer bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Structured bindings có từ C++17."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Optional",
+      "question": "std::optional<T> biểu đạt gì?",
+      "options": [
+        "Một vector T vô hạn.",
+        "Một exception handler.",
+        "Có hoặc không có giá trị T.",
+        "Luôn một pointer nullable tới T heap."
+      ],
+      "correct": 2,
+      "explanation": "Optional lưu trạng thái có giá trị cùng value theo semantics của kiểu."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Nullopt",
+      "question": "std::nullopt thường dùng để làm gì?",
+      "options": [
+        "Chỉ biểu thị int0.",
+        "Trỏ tới địa chỉ0 của vector.",
+        "Tạo một giá trị T mặc định luôn.",
+        "Diễn đạt optional không chứa giá trị."
+      ],
+      "correct": 3,
+      "explanation": "Không có giá trị khác với có giá trị bằng0."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Optional bool",
+      "question": "if(val) khi val là optional<int> kiểm tra gì?",
+      "options": [
+        "Optional có giá trị hay không.",
+        "Số int bên trong luôn lớn hơn0.",
+        "Địa chỉ val có hợp lệ không.",
+        "Giá trị int có phải số chẵn không."
+      ],
+      "correct": 0,
+      "explanation": "optional<int>{0} vẫn có giá trị và kiểm tra bool là true."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Optional access",
+      "question": "Sau kiểm tra optional có giá trị, *val thường cho gì?",
+      "options": [
+        "Xóa giá trị khỏi optional.",
+        "Truy cập giá trị T chứa bên trong.",
+        "Địa chỉ raw pointer luôn.",
+        "Số phần tử vector."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ dereference khi precondition có giá trị được đáp ứng."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Optional value or",
+      "question": "val.value_or(defaultValue) thường làm gì?",
+      "options": [
+        "Luôn ném lỗi.",
+        "Chỉ dùng được cho pointer.",
+        "Trả giá trị đang có hoặc giá trị thay thế khi rỗng.",
+        "Luôn ghi defaultValue vào val."
+      ],
+      "correct": 2,
+      "explanation": "value_or không tự làm optional rỗng trở thành có giá trị."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Transform",
+      "question": "std::transform(inputFirst,inputLast,out,op) thường làm gì?",
+      "options": [
+        "Tự lọc bỏ phần tử false.",
+        "Luôn sort trước khi chạy op.",
+        "Luôn thay đổi size output vector dù iterator thường.",
+        "Ghi kết quả op cho từng phần tử input tới output phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Output cần có vùng ghi hợp lệ hoặc inserter thích hợp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Minmax result",
+      "question": "std::minmax_element trả gì?",
+      "options": [
+        "Pair iterator tới phần tử nhỏ nhất và lớn nhất theo comparator.",
+        "Hai giá trị được copy luôn.",
+        "Vector chỉ còn hai phần tử.",
+        "optional<int> duy nhất."
+      ],
+      "correct": 0,
+      "explanation": "Cần xét range rỗng trước dereference các iterator trả về."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Mutable lambda",
+      "question": "mutable trên lambda capture giá trị cho phép gì?",
+      "options": [
+        "Tắt mọi type checking.",
+        "Sửa các bản sao capture qua toán tử gọi non-const của closure.",
+        "Tự sửa biến gốc ngoài scope luôn.",
+        "Tự bật đa luồng."
+      ],
+      "correct": 1,
+      "explanation": "Bản sao capture vẫn khác object gốc nếu không có reference/pointer chia sẻ."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Generic lambda",
+      "question": "Tham số auto trong [](auto x){return x+x;} hỗ trợ gì?",
+      "options": [
+        "Chỉ nhận int.",
+        "Bỏ requirement phép cộng.",
+        "Toán tử gọi generic được suy kiểu theo đối số phù hợp.",
+        "Một biến runtime đổi kiểu tùy ý."
+      ],
+      "correct": 2,
+      "explanation": "Generic lambda có từ C++14; phép toán vẫn phải hợp lệ cho kiểu được gọi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Language versions",
+      "question": "ranges, concepts, coroutines được bài học xếp vào nhóm phiên bản nào?",
+      "options": [
+        "C++98.",
+        "C++11 cho cả ba.",
+        "C++17 cho cả ba.",
+        "C++20."
+      ],
+      "correct": 3,
+      "explanation": "Đừng dùng compiler flag C++17 rồi mặc định có mọi tính năng C++20."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Threshold sample",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int> v={5,2,8,1,9,3};int threshold=4;auto n=std::count_if(v.begin(),v.end(),[threshold](int x){return x>threshold;});std::cout<<n;\n}\n",
+      "options": [
+        "3",
+        "4",
+        "2",
+        "6"
+      ],
+      "correct": 0,
+      "explanation": "Các số5,8,9 lớn hơn4."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Value snapshot",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nint n=4;auto f=[n](){return n;};n=9;std::cout<<f();\n}\n",
+      "options": [
+        "Lỗi vì không thể capture int.",
+        "4",
+        "9",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Closure giữ bản sao4 từ thời điểm tạo."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Reference latest",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nint n=4;auto f=[&n](){return n;};n=9;std::cout<<f();\n}\n",
+      "options": [
+        "0",
+        "Lỗi vì reference capture không đọc được.",
+        "9",
+        "4"
+      ],
+      "correct": 2,
+      "explanation": "f đọc n ngoài vẫn còn sống và đã đổi thành9."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Mutable captured state",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nint n=4;auto f=[n]()mutable{return ++n;};std::cout<<f()<<\" \"<<f()<<\" \"<<n;\n}\n",
+      "options": [
+        "5 6 6",
+        "4 4 4",
+        "Lỗi vì mutable chỉ dùng với class.",
+        "5 6 4"
+      ],
+      "correct": 3,
+      "explanation": "Bản sao capture tăng giữa các lần gọi cùng closure; n gốc vẫn4."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Reference mutate",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nint n=4;auto f=[&n](){++n;};f();std::cout<<n;\n}\n",
+      "options": [
+        "5",
+        "4",
+        "0",
+        "Lỗi vì capture cần mutable để sửa n ngoài."
+      ],
+      "correct": 0,
+      "explanation": "Reference capture cho phép sửa n ngoài không const; không cần mutable cho việc này."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Value mutate no mutable",
+      "question": "Vì sao code không hợp lệ?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nint n=4;auto f=[n](){return ++n;};std::cout<<f();\n}\n",
+      "options": [
+        "int không dùng được trong closure.",
+        "Toán tử gọi mặc định const không cho tăng int capture bằng giá trị.",
+        "Lambda không được return int.",
+        "Mọi capture đều const vĩnh viễn dù mutable."
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng mutable để sửa bản sao; chọn reference nếu thật sự muốn sửa biến ngoài."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Descending sample",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={5,2,8,1,9,3};std::sort(v.begin(),v.end(),[](int a,int b){return a>b;});for(int x:v)std::cout<<x;\n}\n",
+      "options": [
+        "528193",
+        "Không có output.",
+        "985321",
+        "123589"
+      ],
+      "correct": 2,
+      "explanation": "Comparator > sắp các int giảm dần."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Minmax structured",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={5,2,8,1,9,3};auto [lo,hi]=std::minmax_element(v.begin(),v.end());std::cout<<*lo<<\" \"<<*hi;\n}\n",
+      "options": [
+        "9 1",
+        "0 6",
+        "3 8",
+        "1 9"
+      ],
+      "correct": 3,
+      "explanation": "Binding minIt,maxIt nhận hai iterator, cần dereference để đọc giá trị."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Pair copy binding",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::pair<int,int>p{1,2};auto [a,b]=p;a=9;std::cout<<p.first<<\" \"<<a;\n}\n",
+      "options": [
+        "1 9",
+        "9 9",
+        "1 1",
+        "Không thể gán tên binding."
+      ],
+      "correct": 0,
+      "explanation": "auto [a,b]=p tạo đối tượng backing copy; sửa a không sửa p.first."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Pair reference binding",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::pair<int,int>p{1,2};auto& [a,b]=p;a=9;std::cout<<p.first;\n}\n",
+      "options": [
+        "Reference binding không được hỗ trợ.",
+        "9",
+        "1",
+        "2"
+      ],
+      "correct": 1,
+      "explanation": "auto& giữ liên hệ tới các thành phần p."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Optional zero present",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v=0;if(v)std::cout<<\"yes \"<<*v;else std::cout<<\"no\";\n}\n",
+      "options": [
+        "yes 1",
+        "Optional coi0 là rỗng nên không biết.",
+        "yes 0",
+        "no"
+      ],
+      "correct": 2,
+      "explanation": "Có giá trị0 vẫn engaged."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Optional none fallback",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v=std::nullopt;std::cout<<v.value_or(7);\n}\n",
+      "options": [
+        "0",
+        "nullopt",
+        "Luôn ném bad_optional_access.",
+        "7"
+      ],
+      "correct": 3,
+      "explanation": "Rỗng nên value_or trả giá trị thay thế7."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Optional existing fallback",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v=3;std::cout<<v.value_or(7);\n}\n",
+      "options": [
+        "3",
+        "7",
+        "10",
+        "0"
+      ],
+      "correct": 0,
+      "explanation": "Engaged nên kết quả là3."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Optional value checked throw",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v;try{std::cout<<v.value();}catch(const std::bad_optional_access&){std::cout<<\"empty\";}\n}\n",
+      "options": [
+        "Địa chỉ0.",
+        "empty",
+        "0",
+        "Không bắt được lỗi."
+      ],
+      "correct": 1,
+      "explanation": "value() trên optional rỗng ném bad_optional_access."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Optional reset",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v=3;v.reset();std::cout<<v.has_value();\n}\n",
+      "options": [
+        "3",
+        "Reset không thay trạng thái.",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "reset hủy giá trị nếu có và để optional rỗng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Find even sample after sort",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={5,2,8,1,9,3};std::sort(v.begin(),v.end(),[](int a,int b){return a>b;});auto findEven=[](const std::vector<int>& xs)->std::optional<int>{for(int x:xs)if(x%2==0)return x;return std::nullopt;};std::cout<<findEven(v).value_or(-1);\n}\n",
+      "options": [
+        "2",
+        "0",
+        "9",
+        "8"
+      ],
+      "correct": 3,
+      "explanation": "Sau sort giảm,8 là số chẵn đầu tiên theo thứ tự vector hiện tại."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Find even none",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nauto findEven=[](const std::vector<int>&xs)->std::optional<int>{for(int x:xs)if(x%2==0)return x;return std::nullopt;};std::cout<<findEven({1,3,5}).value_or(-1);\n}\n",
+      "options": [
+        "-1",
+        "0",
+        "1",
+        "Không có output."
+      ],
+      "correct": 0,
+      "explanation": "Không có số chẵn nên lambda trả nullopt, fallback-1."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Transform in place",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={1,2,3};std::transform(v.begin(),v.end(),v.begin(),[](int x){return x*2;});for(int x:v)std::cout<<x;\n}\n",
+      "options": [
+        "Lỗi vì output trùng đầu input luôn.",
+        "246",
+        "123",
+        "135"
+      ],
+      "correct": 1,
+      "explanation": "Unary transform có thể áp dụng in-place tương ứng từng phần tử."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Transform inserter",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>src={1,2,3},dst;std::transform(src.begin(),src.end(),std::back_inserter(dst),[](int x){return x+1;});std::cout<<dst.size()<<\" \"<<dst.back();\n}\n",
+      "options": [
+        "3 2",
+        "Output vector rỗng không thể dùng back_inserter.",
+        "3 4",
+        "0 4"
+      ],
+      "correct": 2,
+      "explanation": "back_inserter thêm phần tử thay vì ghi vào vùng chưa có phần tử."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Filter erase remove",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={1,2,3,4};auto last=std::remove_if(v.begin(),v.end(),[](int x){return x%2==0;});v.erase(last,v.end());for(int x:v)std::cout<<x;\n}\n",
+      "options": [
+        "24",
+        "1234",
+        "0",
+        "13"
+      ],
+      "correct": 3,
+      "explanation": "remove_if dồn phần tử lẻ giữ lại, erase xóa phần đuôi bị loại khỏi size."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Remove size unchanged",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={1,2,3,4};std::remove_if(v.begin(),v.end(),[](int x){return x%2==0;});std::cout<<v.size();\n}\n",
+      "options": [
+        "4",
+        "2",
+        "0",
+        "1"
+      ],
+      "correct": 0,
+      "explanation": "remove_if không tự đổi size container; cần erase để xóa đuôi logic."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Copy if filter",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={1,2,3,4},out;std::copy_if(v.begin(),v.end(),std::back_inserter(out),[](int x){return x%2==0;});for(int x:out)std::cout<<x;\n}\n",
+      "options": [
+        "0",
+        "24",
+        "13",
+        "1234"
+      ],
+      "correct": 1,
+      "explanation": "copy_if chỉ chép phần tử thỏa predicate vào đích mới."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Generic lambda int",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nauto twice=[](auto x){return x+x;};std::cout<<twice(3);\n}\n",
+      "options": [
+        "9",
+        "auto parameter không hợp lệ trong C++17.",
+        "6",
+        "3"
+      ],
+      "correct": 2,
+      "explanation": "auto tham số được suy thành int cho lời gọi."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Explicit lambda return",
+      "question": "Dấu -> std::optional<int> trong lambda khai báo gì?",
+      "options": [
+        "Kiểu capture duy nhất.",
+        "Chuyển ownership thành pointer.",
+        "Một điều kiện if.",
+        "Kiểu trả về rõ ràng."
+      ],
+      "correct": 3,
+      "explanation": "Trailing return type giúp các đường return int và nullopt chuyển về cùng optional<int>."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Init capture snapshot",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nint n=4;auto f=[x=n+1](){return x;};n=9;std::cout<<f();\n}\n",
+      "options": [
+        "5",
+        "9",
+        "4",
+        "Lỗi vì init capture chỉ có C++20."
+      ],
+      "correct": 0,
+      "explanation": "Init capture x=n+1 được tính khi tạo lambda, x độc lập với n."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Init capture move owner",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nauto p=std::make_unique<int>(7);auto f=[q=std::move(p)](){return *q;};std::cout<<bool(p)<<\" \"<<f();\n}\n",
+      "options": [
+        "Unique_ptr không thể capture bằng move.",
+        "0 7",
+        "1 7",
+        "0 0"
+      ],
+      "correct": 1,
+      "explanation": "Init capture chuyển owner vào closure, biến p ngoài rỗng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Closure copies state",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nauto f=[n=0]()mutable{return ++n;};auto g=f;std::cout<<f()<<\" \"<<g();\n}\n",
+      "options": [
+        "2 2",
+        "Copy lambda luôn chia sẻ int capture.",
+        "1 1",
+        "1 2"
+      ],
+      "correct": 2,
+      "explanation": "g là bản sao closure trước lần gọi; mỗi closure có int n riêng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Parameter versus capture",
+      "question": "Trong [n](int x){return x+n;}, x và n đến từ đâu?",
+      "options": [
+        "Cả hai luôn là global.",
+        "x là capture còn n là đối số.",
+        "Cả hai phải cùng địa chỉ.",
+        "x là đối số mỗi lời gọi, n là bản sao capture lúc tạo closure."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt dữ liệu closure lưu với tham số lời gọi."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "No capture conversion",
+      "question": "Lambda không capture với chữ ký phù hợp có thể chuyển sang function pointer không?",
+      "options": [
+        "Có.",
+        "Không; mọi lambda chỉ lưu được trong std::function.",
+        "Chỉ nếu mutable capture int.",
+        "Chỉ trong C++20."
+      ],
+      "correct": 0,
+      "explanation": "Conversion tới function pointer áp dụng cho lambda không capture theo quy tắc tương ứng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Captured lambda pointer",
+      "question": "Lambda [n](int x){return n+x;} có tự chuyển sang int(*)(int) như lambda không capture không?",
+      "options": [
+        "Có nếu đặt auto.",
+        "Không.",
+        "Có; function pointer tự giữ n.",
+        "Có nếu n nhỏ."
+      ],
+      "correct": 1,
+      "explanation": "Function pointer thông thường không có vùng lưu trạng thái capture của closure."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "For each side effect",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v={1,2,3};int sum=0;std::for_each(v.begin(),v.end(),[&sum](int x){sum+=x;});std::cout<<sum;\n}\n",
+      "options": [
+        "123",
+        "Không thể capture reference trong for_each.",
+        "6",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Lambda cộng từng phần tử vào sum ngoài còn sống."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Optional emplace",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v;v.emplace(8);std::cout<<*v;\n}\n",
+      "options": [
+        "0",
+        "1",
+        "Optional rỗng không nhận emplace.",
+        "8"
+      ],
+      "correct": 3,
+      "explanation": "emplace tạo giá trị mới bên trong optional."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Empty minmax guard",
+      "question": "Với vector rỗng, minmax_element trả các iterator nào?",
+      "options": [
+        "Cả hai bằng end; không dereference chúng.",
+        "Hai iterator tới int0 mới được thêm.",
+        "Một nullopt.",
+        "Luôn ném out_of_range."
+      ],
+      "correct": 0,
+      "explanation": "Thuật toán có thể trả range-end mà không lỗi; caller phải xử lý không có phần tử."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Empty count if",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::vector<int>v;std::cout<<std::count_if(v.begin(),v.end(),[](int x){return x>0;});\n}\n",
+      "options": [
+        "Ném lỗi vì range rỗng.",
+        "0",
+        "1",
+        "Predicate chạy vô hạn."
+      ],
+      "correct": 1,
+      "explanation": "Range rỗng có0 phần tử thỏa."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Const binding",
+      "question": "const auto& [a,b]=pair; có cho gán a=3 qua binding đó không?",
+      "options": [
+        "Có nếu pair không const ban đầu.",
+        "Chỉ cần lambda mutable ở scope ngoài.",
+        "Không; binding theo đường const không cho sửa thành phần đó.",
+        "Có; auto bỏ mọi const."
+      ],
+      "correct": 2,
+      "explanation": "Const reference giới hạn thao tác qua binding, không nhất thiết biến object gốc thành const toàn cục."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Optional return versus sentinel",
+      "question": "Hàm tìm số chẵn có thể trả0 là kết quả hợp lệ. Vì sao optional<int> tốt hơn dùng0 báo không tìm thấy?",
+      "options": [
+        "Vì optional luôn nhỏ hơn int.",
+        "Vì optional tự lọc dữ liệu.",
+        "Vì int không chứa được0.",
+        "Phân biệt rõ có giá trị0 với không có giá trị."
+      ],
+      "correct": 3,
+      "explanation": "Không đánh đồng sentinel với một phần tử hợp lệ trong miền dữ liệu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Value or no mutate",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v;auto n=v.value_or(7);std::cout<<n<<\" \"<<v.has_value();\n}\n",
+      "options": [
+        "7 0",
+        "7 1",
+        "0 0",
+        "0 1"
+      ],
+      "correct": 0,
+      "explanation": "value_or trả fallback nhưng optional vẫn rỗng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Threshold edge",
+      "question": "Predicate n>threshold có tính phần tử bằng threshold không?",
+      "options": [
+        "Chỉ nếu capture reference.",
+        "Không.",
+        "Có.",
+        "Chỉ nếu vector đã sort."
+      ],
+      "correct": 1,
+      "explanation": "Biên điều kiện thuộc semantics predicate, không do capture hoặc thuật toán tự thay."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Filter order",
+      "question": "copy_if tuần tự với input {3,2,1,4}, predicate số lẻ và back_inserter giữ thứ tự nào?",
+      "options": [
+        "{2,4}",
+        "{3,2,1,4}",
+        "{3,1}",
+        "{1,3} luôn sort"
+      ],
+      "correct": 2,
+      "explanation": "copy_if giữ thứ tự các phần tử được chép từ input range."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Algorithm include",
+      "question": "Muốn dùng back_inserter trực tiếp nên include header nào?",
+      "options": [
+        "<fstream>",
+        "<optional> là header định nghĩa back_inserter",
+        "<sstream>",
+        "<iterator>"
+      ],
+      "correct": 3,
+      "explanation": "Include header của iterator adapter thay vì dựa vào include bắc cầu."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Escaping reference capture",
+      "question": "Hàm tạo local int n rồi return lambda [&n] dùng ở caller. Rủi ro gì?",
+      "options": [
+        "Lambda giữ reference tới local đã hết vòng đời.",
+        "Reference capture tự copy n lúc return.",
+        "Return closure kéo dài đời mọi local được tham chiếu.",
+        "Chỉ lỗi nếu n âm."
+      ],
+      "correct": 0,
+      "explanation": "Để closure sống lâu hơn scope, capture giá trị hoặc owner phù hợp; không chạy dangling reference để đoán output."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "This capture lifetime",
+      "question": "Trong member function C++17, [=] dùng non-static member qua this có mặc định copy toàn bộ object để sống độc lập không?",
+      "options": [
+        "Không và vì thế mọi dùng member đều không biên dịch.",
+        "Không; capture this theo con trỏ không tự sở hữu object.",
+        "Có; [=] luôn deep-copy toàn bộ object và mọi pointer đích.",
+        "Có; this tự chuyển thành shared_ptr."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm tra vòng đời object khi callback thoát scope; [*this] là lựa chọn copy object có semantics khác khi phù hợp."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Star this capture",
+      "question": "C++17 [*this] trong member function khác [this] chủ yếu thế nào?",
+      "options": [
+        "Tự tạo weak_ptr.",
+        "Không khác gì theo chuẩn.",
+        "Copy object hiện tại vào closure thay vì chỉ lưu con trỏ this.",
+        "Luôn chuyển ownership độc quyền khỏi caller."
+      ],
+      "correct": 2,
+      "explanation": "Copy vẫn theo semantics member, không tự deep-copy mọi pointee; kiểu object cần hỗ trợ copy phù hợp."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Init move closure copying",
+      "question": "Lambda [p=make_unique<int>(3)](){return *p;} có closure copyable mặc định không?",
+      "options": [
+        "Có vì mọi lambda luôn copyable.",
+        "Có vì toán tử gọi const làm deep-copy p.",
+        "Chỉ nếu đặt tên lambda dài.",
+        "Không vì member capture unique_ptr không copy được."
+      ],
+      "correct": 3,
+      "explanation": "Closure có thể move theo requirements; ownership capture quyết định các special member khả dụng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Std function copyability",
+      "question": "Trong C++17, đưa lambda capture unique_ptr bằng move vào std::function<int()> có luôn hợp lệ không?",
+      "options": [
+        "Không; std::function yêu cầu target CopyConstructible.",
+        "Có; std::function tự chuyển unique_ptr thành shared_ptr.",
+        "Có; type erasure xóa mọi requirement copy.",
+        "Chỉ cần lambda mutable."
+      ],
+      "correct": 0,
+      "explanation": "Có thể giữ closure bằng kiểu auto hoặc thiết kế ownership/API khác; đừng tự thêm shared ownership nếu không cần."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Mutable not synchronization",
+      "question": "Một mutable lambda capture int được gọi đồng thời trên cùng closure, cùng tăng int đó không đồng bộ. mutable có làm an toàn không?",
+      "options": [
+        "Có nếu return int.",
+        "Không; mutable không tạo đồng bộ hoặc atomic.",
+        "Có; mỗi lời gọi tự khóa closure.",
+        "Có; capture giá trị nghĩa là mỗi thread tự nhận bản sao dù cùng object."
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt mỗi thread có closure riêng với nhiều thread cùng sửa một closure."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Value capture pointer",
+      "question": "Capture int* p bằng giá trị rồi trong lambda gán *p=9 có thể đổi object ngoài không?",
+      "options": [
+        "Chỉ nếu lambda mutable.",
+        "Không; con trỏ trong closure luôn trỏ nullptr.",
+        "Có; copy địa chỉ vẫn trỏ cùng object, không deep-copy pointee.",
+        "Không; mọi capture giá trị tạo bản sao sâu toàn bộ dữ liệu."
+      ],
+      "correct": 2,
+      "explanation": "Giá trị capture và dữ liệu gián tiếp được tham chiếu có lifetime/mutation riêng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Transform destination bounds",
+      "question": "dst là vector rỗng; transform(src.begin(),src.end(),dst.begin(),op) với src không rỗng có hợp lệ không?",
+      "options": [
+        "Có; transform tự push_back qua mọi iterator.",
+        "Có nếu reserve đủ nhưng size vẫn0.",
+        "Có vì op trả int.",
+        "Không; dst.begin không có vùng phần tử đủ để ghi, cần resize hoặc back_inserter."
+      ],
+      "correct": 3,
+      "explanation": "Capacity không phải phần tử sống; không chạy ghi ngoài biên để suy đoán output."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Iterator invalidation after minmax",
+      "question": "Lưu iterator min/max từ vector rồi push_back gây tái cấp phát. Có được dereference các iterator cũ không?",
+      "options": [
+        "Không; chúng đã mất hiệu lực.",
+        "Có; structured bindings làm iterator bất tử.",
+        "Có nếu vector chứa int.",
+        "Chỉ iterator end bị mất, các iterator khác luôn sống."
+      ],
+      "correct": 0,
+      "explanation": "Structured bindings chỉ đặt tên cho kết quả; không thay quy tắc invalidation của container."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Erase remove tail",
+      "question": "Sau remove_if nhưng trước erase, có nên khẳng định mọi phần tử ở đoạn [newEnd,oldEnd) là đúng các phần tử bị loại theo thứ tự ban đầu không?",
+      "options": [
+        "Có nếu dùng auto cho newEnd.",
+        "Không; phần đuôi có giá trị không được đảm bảo theo ý đó, chỉ prefix giữ lại là phần kết quả logic.",
+        "Có; đuôi luôn chứa các phần tử bị loại đã sort.",
+        "Có; remove_if đổi size nên không còn đuôi."
+      ],
+      "correct": 1,
+      "explanation": "Dùng erase(newEnd,end) để bỏ đoạn không thuộc kết quả, không dựa vào nội dung đuôi."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Sort invalid comparator",
+      "question": "Comparator a>=b cho sort có thể được chấp nhận vì chỉ muốn giảm dần gồm phần tử bằng nhau không?",
+      "options": [
+        "Có nếu lambda không capture.",
+        "Có nếu vector không const.",
+        "Không; comparator không strict vì comp(x,x) true, vi phạm requirement.",
+        "Có; sort tự đổi >= thành >."
+      ],
+      "correct": 2,
+      "explanation": "Dùng >; kết quả chạy một lần không chứng minh comparator sai hợp lệ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Optional empty dereference",
+      "question": "So với value(), operator* trên optional rỗng trong C++17 có bảo đảm ném bad_optional_access không?",
+      "options": [
+        "Có; mọi cách truy cập optional rỗng đều ném cùng lỗi.",
+        "Có nếu T=int.",
+        "Không; * tự tạo T mặc định luôn.",
+        "Không; cần kiểm tra has_value trước dereference, hoặc dùng value để nhận lỗi kiểm tra."
+      ],
+      "correct": 3,
+      "explanation": "Đừng dùng dereference rỗng như một đường báo lỗi hợp lệ hoặc đoán output."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Value or eager fallback",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nstd::optional<int>v=3;int calls=0;auto make=[&calls](){++calls;return 7;};auto n=v.value_or(make());std::cout<<n<<\" \"<<calls;\n}\n",
+      "options": [
+        "3 1",
+        "3 0",
+        "7 1",
+        "7 0"
+      ],
+      "correct": 0,
+      "explanation": "Đối số make() được đánh giá trước lời gọi value_or dù optional đã có giá trị."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Lazy fallback alternative",
+      "question": "Nếu fallback đắt tiền và chỉ muốn tính khi optional rỗng, cách nào phù hợp?",
+      "options": [
+        "Đổi optional thành pointer mà không đổi logic.",
+        "Kiểm tra có giá trị rồi chọn nhánh gọi fallback khi cần.",
+        "Gọi value_or(expensive()) vì luôn lazy.",
+        "Dùng mutable để value_or trì hoãn tự động."
+      ],
+      "correct": 1,
+      "explanation": "Đánh giá tham số hàm thông thường là eager; thiết kế callback/lazy API riêng khi cần."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Return type deduction mismatch",
+      "question": "Vì sao lambda dưới không biên dịch?",
+      "code": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <optional>\n#include <utility>\n#include <iterator>\n#include <functional>\n#include <memory>\n#include <stdexcept>\nint main(){\nauto f=[](bool ok){if(ok)return 1;return std::nullopt;};std::cout<<f(true);\n}\n",
+      "options": [
+        "Vì nullopt luôn là int0.",
+        "Vì bool không làm tham số được.",
+        "Các return suy ra int và nullopt_t không cùng kiểu trả; cần ->optional<int> phù hợp.",
+        "Vì lambda không được có if."
+      ],
+      "correct": 2,
+      "explanation": "Deduced return type không tự chọn optional làm kiểu chung cho hai return này."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Optional nullable pointer nesting",
+      "question": "optional<shared_ptr<T>> v có giá trị nhưng shared_ptr bên trong rỗng. if(v) có chứng minh *v trỏ một T sống không?",
+      "options": [
+        "Có; optional tự cấp T nếu pointer rỗng.",
+        "Có; shared_ptr rỗng không được đặt trong optional.",
+        "Chỉ nếu v là const.",
+        "Không; cần phân biệt engaged optional với giá trị shared_ptr có object."
+      ],
+      "correct": 3,
+      "explanation": "Các tầng trạng thái khác nhau; thiết kế API tránh mơ hồ nếu không cần cả hai trạng thái rỗng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Optional reference type",
+      "question": "std::optional<T&> có phải cách hợp lệ để lưu reference optional trong C++17 chuẩn không?",
+      "options": [
+        "Không; có thể dùng optional<reference_wrapper<T>> hoặc pointer theo hợp đồng lifetime.",
+        "Có; optional tự sở hữu object tham chiếu.",
+        "Có và kéo dài đời mọi temporary.",
+        "Chỉ nếu T=int."
+      ],
+      "correct": 0,
+      "explanation": "Kiểu biểu diễn không sở hữu vẫn phải bảo đảm object đích sống đủ lâu."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Closure expression types",
+      "question": "Hai lambda expression [](int x){return x+1;} ở hai vị trí khác nhau có mặc định cùng closure type không?",
+      "options": [
+        "Chỉ nếu dùng auto.",
+        "Không; mỗi lambda expression có kiểu closure riêng.",
+        "Có nếu thân giống từng ký tự.",
+        "Có nếu đều không capture."
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng chung abstraction thích hợp, nhưng không coi mọi lambda cùng chữ ký là cùng kiểu cụ thể."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Stateful predicate assumptions",
+      "question": "Có nên dựa vào việc một thuật toán chỉ dùng đúng instance predicate gốc để cập nhật bộ đếm capture giá trị rồi đọc lại instance đó?",
+      "options": [
+        "Có vì mutable ngăn copy.",
+        "Có nếu lambda có auto parameter.",
+        "Không; thuật toán có thể copy function object theo API, nên thiết kế thu thập kết quả rõ ràng.",
+        "Có; mọi algorithm giữ reference duy nhất tới predicate gốc."
+      ],
+      "correct": 2,
+      "explanation": "Dùng kết quả thuật toán hoặc state được chia sẻ/thu thập đúng hợp đồng; với song song còn cần đồng bộ."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Transform filter contract tests",
+      "question": "Bộ ca nào tốt nhất cho pipeline lọc chẵn rồi nhân đôi giữ thứ tự?",
+      "options": [
+        "Chỉ {2,4}.",
+        "Chỉ xem có lambda trong source.",
+        "Chỉ so capacity đầu và cuối.",
+        "Rỗng, không khớp, tất cả khớp, có0/số âm/trùng, và kiểm tra nguồn có bị đổi theo hợp đồng không."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra điều kiện chọn, biên dữ liệu, thứ tự và tác dụng phụ; tránh đồng nhất không tìm thấy với giá trị0 hợp lệ."
+    }
+  ]
+}

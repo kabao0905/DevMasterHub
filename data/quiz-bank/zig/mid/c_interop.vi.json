@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "zig",
+  "level": "mid",
+  "lesson": "c_interop",
+  "language": "vi",
+  "sourceHash": "c97110348c2383541c4b370f49873ae84845180de0c6b9463d8ed12e0e27ac5f",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Zig 0.13.0: @cImport stdio.h/stdlib.h, gọi c.printf và bài tập rand. Đối chiếu language reference C translation/ABI/pointers cùng rand manual. Header declarations không thay implementation/link/libc; pointer, lifetime, format, allocator và target vẫn có hợp đồng riêng. Không chạy compiler/FFI/C hoặc lệnh mẫu.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "C import",
+      "question": "Builtin nào tạo namespace chứa các khai báo C được import trong source?",
+      "options": [
+        "@cImport",
+        "@import(\"std\")",
+        "@TypeOf",
+        "@sizeOf"
+      ],
+      "correct": 0,
+      "explanation": "@cImport tiếp nhận biểu thức mô tả các chỉ thị C ở thời điểm biên dịch."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Header include",
+      "question": "Trong khối @cImport, builtin nào thêm header?",
+      "options": [
+        "@field",
+        "@cInclude",
+        "@import",
+        "@cUndef"
+      ],
+      "correct": 1,
+      "explanation": "@cInclude khác với import một module Zig."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Header nguồn",
+      "question": "Source đưa những header nào vào khối import?",
+      "options": [
+        "stdlib.h và math.h",
+        "unistd.h và stdint.h",
+        "stdio.h và stdlib.h",
+        "stdio.h và string.h"
+      ],
+      "correct": 2,
+      "explanation": "Cặp header tương ứng lời gọi printf và ý tưởng bài tập rand."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Namespace",
+      "question": "Tên c trong source dùng để truy cập gì?",
+      "options": [
+        "Một đối tượng FILE đã mở",
+        "Một allocator C mới được tạo",
+        "Một handle thư viện động đã load thủ công",
+        "Các symbol C được dịch từ khối import"
+      ],
+      "correct": 3,
+      "explanation": "Tên namespace không tự chứng minh mọi symbol đã được link."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Hàm được gọi",
+      "question": "Hàm C nào thực sự xuất hiện trong main của source?",
+      "options": [
+        "printf",
+        "rand",
+        "malloc",
+        "srand"
+      ],
+      "correct": 0,
+      "explanation": "rand là yêu cầu bài tập, chưa là lời gọi trong main."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Bài tập",
+      "question": "Bài tập yêu cầu mở rộng bằng hàm C nào?",
+      "options": [
+        "memcpy",
+        "rand",
+        "free",
+        "fopen"
+      ],
+      "correct": 1,
+      "explanation": "Khai báo rand thuộc stdlib.h."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Discard",
+      "question": "_ = c.printf(...) thể hiện ý định gì?",
+      "options": [
+        "Lưu kết quả vào biến toàn cục _",
+        "Chờ stdout được ghi bền vững ra đĩa",
+        "Bỏ qua giá trị trả về của printf",
+        "Biến giá trị trả về thành lỗi Zig tự động"
+      ],
+      "correct": 2,
+      "explanation": "Bỏ kết quả không đồng nghĩa xử lý được lỗi ghi."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Newline",
+      "question": "Escape \n trong literal truyền printf biểu diễn gì?",
+      "options": [
+        "Một chuỗi backslash và n nguyên văn",
+        "Một sentinel kết thúc chuỗi thay NUL",
+        "Một lời gọi fflush tự động theo mọi môi trường",
+        "Ký tự xuống dòng"
+      ],
+      "correct": 3,
+      "explanation": "Xuống dòng và NUL có chức năng khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "C declarations",
+      "question": "Đọc prototype trong header cung cấp điều gì chính?",
+      "options": [
+        "Thông tin symbol/kiểu để biên dịch lời gọi",
+        "Toàn bộ machine code cho mọi hàm extern",
+        "Mọi thư viện động đã có trên target",
+        "Bảo đảm mọi pointer người gọi hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Định nghĩa hàm ngoài vẫn phải được giải quyết khi link/runtime phù hợp."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Libc",
+      "question": "printf và rand trong phạm vi bài gắn với thư viện nào?",
+      "options": [
+        "Build cache thay implementation",
+        "Thư viện C chuẩn theo target",
+        "Module std.debug của Zig theo cùng một API",
+        "C++ template library bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Target và cơ chế link libc là một phần cấu hình."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "ABI",
+      "question": "ABI liên quan điều gì trong gọi C?",
+      "options": [
+        "Chỉ định dạng comment trong header",
+        "Chỉ độ dài chuỗi được in",
+        "Quy ước truyền tham số, kiểu/layout và trả kết quả ở biên binary",
+        "Chỉ cách đặt tên biến cục bộ"
+      ],
+      "correct": 2,
+      "explanation": "Cùng tên hàm không đủ nếu ABI thực tế khác."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "C int",
+      "question": "Kiểu Zig nào biểu đạt C int theo target ABI?",
+      "options": [
+        "usize trong mọi target",
+        "i64 trong mọi target",
+        "comptime_int làm ABI runtime trực tiếp",
+        "c_int"
+      ],
+      "correct": 3,
+      "explanation": "Dùng kiểu C thích hợp thay giả định mọi C int có cùng nghĩa với kiểu tùy chọn."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "C long",
+      "question": "Kích thước C long có nên giả định luôn bằng 64 bit trên mọi target không?",
+      "options": [
+        "Không, cần theo ABI target",
+        "Có, vì tên long luôn nghĩa 64 bit",
+        "Có, chỉ cần host là 64 bit",
+        "Không, vì Zig không có c_long"
+      ],
+      "correct": 0,
+      "explanation": "Host và target có thể có mô hình kiểu khác nhau."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Null termination",
+      "question": "C string truyền cho API đọc đến NUL cần điều kiện nào?",
+      "options": [
+        "Chỉ cần pointer không phải null",
+        "Có byte kết thúc 0 ở vị trí hợp lệ trong vùng sống",
+        "Chỉ cần biết chiều dài slice ở phía Zig",
+        "Mọi []const u8 tự có NUL ở cuối"
+      ],
+      "correct": 1,
+      "explanation": "Slice mang length nhưng API C có thể không nhận length đó."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Lifetime",
+      "question": "Một pointer đưa qua C cần gì ngoài kiểu biên dịch?",
+      "options": [
+        "Chỉ header có include guard",
+        "Chỉ bỏ giá trị trả về bằng _",
+        "Vùng dữ liệu sống đủ lâu và quyền truy cập đúng hợp đồng",
+        "Chỉ tên biến là const"
+      ],
+      "correct": 2,
+      "explanation": "Type conversion không tự kéo dài lifetime của storage."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Format",
+      "question": "Chuỗi đầu tiên của printf có vai trò gì?",
+      "options": [
+        "Một slice length tự truyền kèm",
+        "Một error union Zig",
+        "Một tên file đích bắt buộc",
+        "Format string được printf diễn giải"
+      ],
+      "correct": 3,
+      "explanation": "Format directives phải phù hợp các đối số variadic."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Rand tính chất",
+      "question": "rand thuộc loại nguồn nào theo bài tập?",
+      "options": [
+        "Bộ sinh số giả ngẫu nhiên của C",
+        "Nguồn entropy mật mã được bảo đảm",
+        "Một hàm luôn trả số khác lần trước",
+        "Một phép đọc CPU id"
+      ],
+      "correct": 0,
+      "explanation": "Không dùng rand như một primitive tạo secret."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Seed",
+      "question": "Hàm C nào thiết lập seed cho chuỗi rand theo API chuẩn?",
+      "options": [
+        "rand_max",
+        "srand",
+        "printf",
+        "free"
+      ],
+      "correct": 1,
+      "explanation": "Seed không biến PRNG thành nguồn mật mã."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Cross compilation",
+      "question": "Khi C và Zig cùng project, điều gì phải khớp?",
+      "options": [
+        "Chỉ cùng thư mục nguồn",
+        "Chỉ cùng chế độ syntax highlighting",
+        "Target/ABI và các thiết lập ảnh hưởng giao diện binary",
+        "Chỉ tên hai file giống nhau"
+      ],
+      "correct": 2,
+      "explanation": "C source/header và library phải phục vụ cùng target hợp lệ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "C++ boundary",
+      "question": "@cImport có phải cầu nối tổng quát cho mọi C++ template/class không?",
+      "options": [
+        "Có, mọi header .h luôn chỉ chứa C thuần",
+        "Có, native ABI bỏ mọi khác biệt ngôn ngữ",
+        "Không, vì Zig không gọi được C function",
+        "Không, cần giao diện C hoặc giải pháp interop phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng import C không là cam kết hiểu mọi API C++."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Hai header một khối",
+      "question": "Vì sao source đặt hai @cInclude trong một @cImport?",
+      "options": [
+        "Để dịch chúng trong cùng ngữ cảnh C/preprocessor của khối",
+        "Để tạo hai process printf độc lập",
+        "Để tự link hai bản libc riêng",
+        "Để srand chạy trước main"
+      ],
+      "correct": 0,
+      "explanation": "Import declarations và thực thi hàm là hai giai đoạn khác nhau."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Compile time",
+      "question": "Biểu thức điều khiển include/define của @cImport được đánh giá khi nào?",
+      "options": [
+        "Mỗi lần người dùng nhập rand seed",
+        "Ở compile time",
+        "Mỗi lần printf ghi một byte",
+        "Chỉ sau khi main kết thúc"
+      ],
+      "correct": 1,
+      "explanation": "Nó có thể điều khiển ngữ cảnh dịch header, không lấy input runtime tùy ý."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Header thiếu",
+      "question": "Nếu compiler không tìm thấy stdio.h cho target, nên kiểm lớp nào?",
+      "options": [
+        "Giá trị rand hiện tại",
+        "Số lượng format directives của message cố định",
+        "Include paths/toolchain/libc headers tương ứng target",
+        "Quyền ghi stdout tại runtime trước tiên"
+      ],
+      "correct": 2,
+      "explanation": "Lỗi tìm header xảy ra trước việc thực thi printf."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Link thiếu symbol",
+      "question": "Header dịch được nhưng linker không tìm được implementation của hàm C. Điều gì cần xem?",
+      "options": [
+        "Chỉ lặp lại @cInclude nhiều lần",
+        "Đổi tên namespace c thành std",
+        "Thêm NUL vào tên header",
+        "Library/object và cấu hình link cho đúng target"
+      ],
+      "correct": 3,
+      "explanation": "Prototype không cung cấp toàn bộ implementation extern."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Include vs link",
+      "question": "Thêm @cInclude(\"mylib.h\") có tự tương đương link mylib binary không?",
+      "options": [
+        "Không, đó là hai trách nhiệm khác nhau",
+        "Có, tên header luôn chứa toàn thư viện",
+        "Có, mọi hàm trong header đều inline",
+        "Chỉ tương đương khi tên hàm không overload"
+      ],
+      "correct": 0,
+      "explanation": "Một header có thể mô tả API mà không chứa định nghĩa binary cần thiết."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "C translator",
+      "question": "@cImport và translate-c trong Zig 0.13 chia sẻ điều gì?",
+      "options": [
+        "Cùng làm mọi macro thành runtime function hợp lệ",
+        "Cơ chế dịch C nền tảng",
+        "Cùng là API gọi hàm ở runtime",
+        "Cùng luôn tải thư viện từ mạng"
+      ],
+      "correct": 1,
+      "explanation": "Khác biệt cách sử dụng không biến chúng thành compiler C++ tổng quát."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Macro limits",
+      "question": "Function-like macro có luôn dịch thành hàm Zig dùng được không?",
+      "options": [
+        "Có, miễn tên macro viết hoa",
+        "Không, vì không macro nào được dịch",
+        "Không, có cấu trúc không dịch được và có thể bị demote",
+        "Có, mọi token-pasting đều tự thành generic Zig"
+      ],
+      "correct": 2,
+      "explanation": "C translation là best effort với những giới hạn được tài liệu nêu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Opaque translation",
+      "question": "Một C type bị dịch thành opaque cho biết điều gì?",
+      "options": [
+        "Có thể tự chọn mọi layout tùy ý",
+        "Mọi pointer đến type đó bị cấm gọi qua C",
+        "Type đã được cấp phát và init tự động",
+        "Không thể dựa vào layout/fields đầy đủ của nó từ bản dịch đó"
+      ],
+      "correct": 3,
+      "explanation": "Opaque handle có thể vẫn hữu ích khi API giữ việc thao tác bên C."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Target khi dịch",
+      "question": "Dịch C cho target A rồi dùng kết quả để gọi library target B có rủi ro gì?",
+      "options": [
+        "Sai kiểu/layout/ABI dù tên symbol giống nhau",
+        "Chỉ đổi nội dung comment",
+        "Zig tự sửa mọi ABI bằng tên hàm",
+        "Chỉ printf string bị đổi ngôn ngữ"
+      ],
+      "correct": 0,
+      "explanation": "Translation flags và target phải khớp môi trường sử dụng."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "C flags",
+      "question": "Flag ảnh hưởng packing hoặc enum width trong C cần được xử lý thế nào?",
+      "options": [
+        "Đổi namespace để tránh mismatch",
+        "Nhất quán giữa header translation và library build",
+        "Chỉ áp cho tên file object",
+        "Bỏ vì mọi ABI layout cố định theo tên struct"
+      ],
+      "correct": 1,
+      "explanation": "Kiểu khai báo nhìn giống nhau vẫn có thể có representation khác."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Extern layout",
+      "question": "Muốn tự mô tả struct có layout tương thích C trong Zig, lựa chọn nào phù hợp để xem xét?",
+      "options": [
+        "packed struct luôn thay được mọi C struct",
+        "Một tuple bất kỳ cùng số field",
+        "extern struct cùng field types/ABI đúng",
+        "Mọi struct thường đều có layout C bảo đảm"
+      ],
+      "correct": 2,
+      "explanation": "Annotation không thay yêu cầu đối chiếu kích thước, alignment và header thực."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Pointer length",
+      "question": "Chuyển slice sang pointer C có tự chuyển length sang đối số thứ hai không?",
+      "options": [
+        "Có, mọi pointer C mang length ẩn",
+        "Có, nếu slice là const",
+        "Không, vì slice không bao giờ có pointer",
+        "Không, phải truyền theo chữ ký API"
+      ],
+      "correct": 3,
+      "explanation": "ABI không suy ra tham số mà prototype không nhận."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Embedded NUL",
+      "question": "Chuỗi có NUL ở giữa khi truyền tới hàm C đọc C string có thể được hiểu thế nào?",
+      "options": [
+        "Kết thúc ở NUL đầu tiên",
+        "Luôn dùng toàn bộ length của slice Zig",
+        "Tự bỏ NUL rồi nối phần sau",
+        "Trở thành UTF-16 ở mọi libc"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu binary hoặc text có NUL cần API length-aware khi yêu cầu giữ đủ bytes."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Literal nguồn",
+      "question": "Literal string Zig thông thường phù hợp ý tưởng C string ở điểm nào?",
+      "options": [
+        "Mọi literal tự mang FILE handle",
+        "Có sentinel 0 theo kiểu literal của Zig",
+        "Mọi literal luôn cấp phát bằng malloc",
+        "Mọi literal là buffer ghi được của C"
+      ],
+      "correct": 1,
+      "explanation": "Sentinel/lifetime vẫn phải phù hợp việc C chỉ đọc hay sửa/giữ pointer."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Writable C API",
+      "question": "API C muốn ghi vào buffer. Có nên truyền literal chỉ đọc bằng cast bỏ const không?",
+      "options": [
+        "Có, printf đã dùng literal nên mọi C API đều được ghi",
+        "Chỉ cần thêm sentinel",
+        "Không, cần storage writable đúng dung lượng và hợp đồng",
+        "Có, const chỉ là tên binding không ảnh hưởng storage"
+      ],
+      "correct": 2,
+      "explanation": "Cast không tạo vùng ghi hợp lệ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Buffer capacity",
+      "question": "C API nhận pointer và capacity thì capacity nên phản ánh gì?",
+      "options": [
+        "Số ký tự muốn hiển thị bất kể storage",
+        "Độ dài tên biến pointer",
+        "RAND_MAX của libc",
+        "Số byte thực sự có thể ghi trong vùng được cấp"
+      ],
+      "correct": 3,
+      "explanation": "Dung lượng thật khác độ dài nội dung hiện có hoặc số ký tự Unicode."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "UTF-8",
+      "question": "C API nhận byte count khi gửi text UTF-8 cần phân biệt gì?",
+      "options": [
+        "Số byte và số ký tự/code point",
+        "Chỉ số dòng và số thread",
+        "Chỉ local name và imported name",
+        "Mọi ký tự Unicode luôn đúng một byte"
+      ],
+      "correct": 0,
+      "explanation": "FFI contract thường mô tả bytes, không đơn vị giao diện người dùng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Format dữ liệu",
+      "question": "Muốn in input không tin cậy như text bằng printf, hướng đúng là gì?",
+      "options": [
+        "Thêm @cImport lần nữa để tự escape format",
+        "Dùng format cố định phù hợp và truyền dữ liệu làm đối số đúng kiểu",
+        "Dùng input làm format trực tiếp",
+        "Chỉ xóa newline rồi dùng input làm format"
+      ],
+      "correct": 1,
+      "explanation": "Input trở thành format có thể trao quyền điều khiển diễn giải cho dữ liệu."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Variadic ABI",
+      "question": "Khi thêm %d vào printf, cần kiểm điều gì với đối số?",
+      "options": [
+        "Chỉ số byte format string",
+        "Mọi kiểu Zig đều được printf tự nhận diện",
+        "Kiểu/truyền variadic phù hợp C ABI và directive",
+        "Chỉ giá trị có nhìn giống số không"
+      ],
+      "correct": 2,
+      "explanation": "Variadic API không mang metadata kiểu đầy đủ để tự sửa mismatch."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Return value",
+      "question": "Bỏ return value của printf có phát hiện được mọi lỗi output không?",
+      "options": [
+        "Có, _ tự bắt mọi lỗi âm",
+        "Có, main void tự biến lỗi C thành panic",
+        "Không, vì printf không có kiểu kết quả",
+        "Không, cần chính sách kiểm kết quả/lỗi của API theo mục tiêu"
+      ],
+      "correct": 3,
+      "explanation": "C return code không tự thành Zig error union."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Ownership C",
+      "question": "Pointer trả về từ API C có phải luôn do caller sở hữu không?",
+      "options": [
+        "Không, có thể borrowed hoặc owned theo contract",
+        "Có, mọi pointer trả về phải free ngay",
+        "Có, mọi pointer tự là ArrayList",
+        "Không, vì C không có allocation"
+      ],
+      "correct": 0,
+      "explanation": "Xác định quyền giải phóng và thời hạn dùng trước khi viết wrapper."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Allocator family",
+      "question": "Nếu library yêu cầu lib_destroy(handle), có nên thay bằng allocator.free của Zig tùy ý không?",
+      "options": [
+        "Chỉ cần pointer được cast về u8",
+        "Không, phải dùng cơ chế giải phóng đúng contract/family",
+        "Có, mọi allocator chung một heap/metadata",
+        "Có, nếu kích thước handle đã biết"
+      ],
+      "correct": 1,
+      "explanation": "Tương thích địa chỉ không chứng minh tương thích allocator."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Borrowed pointer",
+      "question": "API trả pointer vào internal buffer có thể bị ghi đè ở lần gọi sau. Caller muốn giữ lâu nên làm gì?",
+      "options": [
+        "Chỉ đổi tên biến thành owned",
+        "Gọi free ngay rồi dùng pointer cũ",
+        "Sao chép theo độ dài/hợp đồng vào storage mình sở hữu trước khi mất hiệu lực",
+        "Gán pointer vào const là tự snapshot bytes"
+      ],
+      "correct": 2,
+      "explanation": "Giữ địa chỉ không giữ nội dung hoặc kéo dài lifetime."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "C null",
+      "question": "Một API C có thể trả null khi lỗi cần wrapper gì?",
+      "options": [
+        "Dereference trước rồi mới kiểm để lấy message",
+        "Cast sang non-null luôn xác thực pointer",
+        "Bỏ const để null thành hợp lệ",
+        "Kiểm trạng thái/pointer và chuyển thành kết quả rõ trước dereference"
+      ],
+      "correct": 3,
+      "explanation": "Kiểu C pointer có thể yếu hơn invariant wrapper muốn cung cấp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Defer cleanup",
+      "question": "Nếu nhận tài nguyên C owned và cần cleanup cuối scope, defer nên gọi gì?",
+      "options": [
+        "Hàm release đúng của tài nguyên sau khi acquire thành công",
+        "Bất kỳ allocator.free nào có sẵn",
+        "rand để reset thư viện",
+        "printf để thay thế release"
+      ],
+      "correct": 0,
+      "explanation": "Defer sắp thứ tự cleanup nhưng không tự biết ownership của C API."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Rand range",
+      "question": "Theo API rand chuẩn, kết quả nằm trong miền nào?",
+      "options": [
+        "Luôn cùng một số trên mọi implementation",
+        "0 đến RAND_MAX, gồm hai đầu",
+        "Luôn 0 đến 255",
+        "Luôn số nguyên âm"
+      ],
+      "correct": 1,
+      "explanation": "Không dùng một output cụ thể làm kỳ vọng portable nếu contract không bảo đảm."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Seed lặp",
+      "question": "Cùng implementation rand được seed lại cùng seed thường cho điều gì?",
+      "options": [
+        "Các giá trị bắt buộc khác nhau mọi lần",
+        "Chuỗi giống mọi libc ở mọi hệ điều hành",
+        "Chuỗi giả ngẫu nhiên lặp lại theo contract",
+        "Entropy mới không thể đoán mỗi lần"
+      ],
+      "correct": 2,
+      "explanation": "Tính tái lập trong một contract không là tương thích chuỗi toàn nền tảng."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Rand token",
+      "question": "Muốn tạo session token, có nên thay nguồn mật mã bằng c.rand vì native nhanh không?",
+      "options": [
+        "Có, thêm stdlib.h là đủ bảo mật",
+        "Có, seed bằng giờ là chứng minh không đoán được",
+        "Chỉ cần RAND_MAX lớn",
+        "Không, cần nguồn ngẫu nhiên mật mã phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Hiệu năng native không cung cấp tính khó đoán cần cho secret."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Modulo bias",
+      "question": "Lấy rand() % n có tự bảo đảm phân bố đều cho mọi n không?",
+      "options": [
+        "Không, còn miền PRNG và việc miền có chia hết cho n",
+        "Có, modulo luôn tạo phân bố đều",
+        "Có, vì n là c_int",
+        "Không, vì rand không trả số nguyên"
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế mô phỏng và chọn ngẫu nhiên phải xét phân bố phù hợp."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Global PRNG state",
+      "question": "Nhiều thành phần cùng dùng srand/rand cần chú ý gì?",
+      "options": [
+        "Mọi libc luôn cấp một state riêng cho mỗi call site",
+        "State/seed dùng chung theo implementation có thể ảnh hưởng tái lập và phối hợp",
+        "Mỗi Zig namespace c tự có PRNG state riêng",
+        "Const c làm mọi lời gọi thuần"
+      ],
+      "correct": 1,
+      "explanation": "Không suy tính độc lập state từ một alias import."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Header version",
+      "question": "Header mới nhưng binary library cũ có thể dẫn tới vấn đề gì?",
+      "options": [
+        "Header tự nâng binary ở runtime",
+        "Chỉ cần reimport namespace",
+        "Thiếu symbol hoặc khác ABI/contract",
+        "Chỉ comment thay đổi nên luôn an toàn"
+      ],
+      "correct": 2,
+      "explanation": "Cần quản lý phiên bản của cả declarations và implementation."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "C callbacks",
+      "question": "API C lưu callback để gọi về sau cần biết gì?",
+      "options": [
+        "Chỉ tên hàm callback",
+        "Mọi closure Zig tự chuyển thành C function pointer",
+        "Defer ở caller tự đợi mọi callback xong",
+        "Calling convention, kiểu callback và lifetime của context liên quan"
+      ],
+      "correct": 3,
+      "explanation": "C function pointer không tự đóng gói môi trường closure tùy ý."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Concurrent callback",
+      "question": "Callback C được gọi từ thread khác có tự an toàn sửa state Zig không?",
+      "options": [
+        "Không, cần ownership/synchronization đúng hợp đồng",
+        "Có, crossing ABI tự khóa state",
+        "Có, nếu state binding const",
+        "Không, vì C không thể tạo thread"
+      ],
+      "correct": 0,
+      "explanation": "FFI không xóa yêu cầu đồng bộ."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Header macro define",
+      "question": "@cDefine trước include nhằm điều khiển gì?",
+      "options": [
+        "Password seed của rand",
+        "Ngữ cảnh preprocessor khi dịch header",
+        "Giá trị biến runtime trong mọi C thread",
+        "Nội dung libc binary đã build trước đó"
+      ],
+      "correct": 1,
+      "explanation": "Define có thể ảnh hưởng declarations/layout nên phải khớp implementation."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Include path scope",
+      "question": "Đặt header trong repo có tự khiến mọi cấu hình tìm được nó không?",
+      "options": [
+        "Có, filename .h tự đăng ký toàn cục",
+        "Chỉ cần import std",
+        "Không, phải thiết lập include path/ngữ cảnh phù hợp",
+        "Có, compiler luôn quét mọi thư mục con"
+      ],
+      "correct": 2,
+      "explanation": "Tìm file là phần của cấu hình build/translation."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Native không miễn phí",
+      "question": "Gọi C qua ABI có chứng minh không có allocation/I/O ẩn trong hàm C không?",
+      "options": [
+        "Có, native ABI làm mọi hàm không allocation",
+        "Có, không có wrapper nghĩa không side effect",
+        "Chỉ cần return type c_int",
+        "Không, phải xem hành vi implementation"
+      ],
+      "correct": 3,
+      "explanation": "Chi phí và tác dụng phụ nằm trong hàm được gọi, không chỉ lớp interop."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "C UB boundary",
+      "question": "Nếu hàm C đọc ngoài buffer do caller truyền length sai, Zig có tự sửa được không?",
+      "options": [
+        "Không, cần giữ đúng hợp đồng buffer/length/lifetime",
+        "Có, mọi C code được runtime safety Zig kiểm đầy đủ",
+        "Có, @cImport tự sao chép đủ dữ liệu",
+        "Chỉ cần chọn Debug"
+      ],
+      "correct": 0,
+      "explanation": "An toàn kiểu phía Zig không tự chứng minh mọi truy cập trong binary C."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Export C ABI",
+      "question": "Muốn C gọi một hàm Zig, điều gì phải được thiết kế?",
+      "options": [
+        "Chỉ dùng tên main cho mọi hàm",
+        "Symbol/chữ ký/calling convention tương thích và contract dữ liệu",
+        "Chỉ thêm @cInclude vào C source là đủ",
+        "Mọi hàm Zig tự export cho C"
+      ],
+      "correct": 1,
+      "explanation": "Import C và cung cấp API cho C là hai hướng của biên FFI."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Cross target libc",
+      "question": "Cross-build dùng printf cần chuẩn bị theo đối tượng nào?",
+      "options": [
+        "Chỉ file .zig vì header đã có",
+        "Mọi target freestanding đều có stdout",
+        "Libc/headers/linking và runtime phù hợp target",
+        "Chỉ libc host bất kỳ"
+      ],
+      "correct": 2,
+      "explanation": "Hosted C API có những phụ thuộc không tồn tại ở mọi môi trường."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "C++ library",
+      "question": "Một thư viện C++ chỉ lộ class/template nên thường cần hướng nào để gọi từ C interop này?",
+      "options": [
+        "Đổi đuôi header thành .h là đủ",
+        "Cast class thành c_int theo tên",
+        "Thêm stdlib.h để dịch mọi template",
+        "Một giao diện C ABI được thiết kế phù hợp hoặc giải pháp interop khác"
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm build C++ source với import mọi C++ API vào namespace C."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Format và lifetime",
+      "question": "Ứng dụng đưa input làm format printf; đồng thời input là slice không bảo đảm NUL. Thiết kế nào xử lý cả hai ranh giới?",
+      "options": [
+        "Dùng format cố định và dữ liệu có terminator/length phù hợp API, giữ storage sống trong suốt lời gọi",
+        "Chỉ thêm NUL rồi tiếp tục dùng input làm format",
+        "Chỉ dùng format cố định nhưng truyền mọi slice.ptr như C string đã hợp lệ",
+        "Chuyển pointer thành const để vừa escape format vừa kéo dài storage"
+      ],
+      "correct": 0,
+      "explanation": "Format policy và representation/lifetime của dữ liệu là hai yêu cầu độc lập."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Header link cross target",
+      "question": "Header dịch được trên host, nhưng link target ARM báo symbol thiếu và library đi kèm là x86_64. Hướng sửa nào có căn cứ?",
+      "options": [
+        "Chỉ đổi c_int thành i64 để linker nhận library",
+        "Đối chiếu target/ABI và cung cấp implementation/link config ARM đúng, thay vì chỉ sửa include",
+        "Lặp @cImport để translator sinh machine code ARM cho mọi extern",
+        "Giữ binary x86_64 vì tên hàm cùng header"
+      ],
+      "correct": 1,
+      "explanation": "Header success không chứng minh object/library của đúng architecture đã có."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "C layout flags",
+      "question": "Header được dịch với enum mặc định, library build với flag làm enum ngắn và struct chứa enum qua ABI. Cần gì?",
+      "options": [
+        "Dùng packed struct tùy ý để mọi layout tự khớp",
+        "Chỉ khớp tên field là đủ vì ABI không dùng offset",
+        "Khớp target/cflags/layout giữa translation và library, rồi kiểm hợp đồng giao diện",
+        "Chỉ cast pointer struct cho hết lỗi kiểu"
+      ],
+      "correct": 2,
+      "explanation": "Cùng declaration bề ngoài không bảo đảm kích thước/alignment/offset cùng nhau."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Retained local buffer",
+      "question": "API C giữ pointer sau khi hàm Zig trả về, nhưng wrapper truyền buffer local rồi defer cleanup. Cách thiết kế đúng?",
+      "options": [
+        "Đổi local binding sang const để C giữ bytes vĩnh viễn",
+        "Giữ defer vì nó tự đợi C callback bất kỳ",
+        "Chỉ thêm sentinel 0 mà không đổi lifetime",
+        "Chọn storage sống qua thời gian C giữ và cơ chế chuyển/trả ownership hoặc copy theo API"
+      ],
+      "correct": 3,
+      "explanation": "Lifetime phải theo thời điểm sử dụng cuối, không chỉ lúc gọi API."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Allocator mismatch",
+      "question": "C API tạo handle bằng allocator riêng và yêu cầu destroy; wrapper dùng Zig allocator.free rồi callback C còn giữ handle. Cần sửa gì?",
+      "options": [
+        "Đúng release family và phối hợp thời điểm hết tham chiếu/callback trước giải phóng",
+        "Chỉ cast handle thành []u8 để free hiểu allocator",
+        "Chỉ gọi destroy sau free để bảo đảm dọn hai lần",
+        "Đổi handle binding sang const để tránh dangling pointer"
+      ],
+      "correct": 0,
+      "explanation": "Allocator ownership và vòng đời tham chiếu đều cần được giữ."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Borrowed snapshot",
+      "question": "Hai lần gọi C trả cùng internal buffer; ứng dụng cần giữ cả hai kết quả độc lập. Hướng nào đúng?",
+      "options": [
+        "Đổi namespace import giữa hai lần để tự tách state library",
+        "Copy kết quả đầu vào storage owned trước lần gọi có thể ghi đè, theo length/termination contract",
+        "Lưu hai pointer const là tự có hai snapshot",
+        "Free pointer đầu để lần sau cấp buffer khác chắc chắn"
+      ],
+      "correct": 1,
+      "explanation": "Alias không tạo bản sao nội dung; borrowed data cần snapshot có ownership khi muốn giữ lâu."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Binary chứa NUL",
+      "question": "Cần gửi 5 byte gồm một NUL ở giữa, nhưng wrapper dùng API nhận C string không có length. Lựa chọn nào giữ đúng dữ liệu?",
+      "options": [
+        "Tăng capacity mà không đổi API để length tự truyền",
+        "Dùng rand tạo byte khác thay NUL để giữ nguyên dữ liệu",
+        "Chọn API nhận pointer+length hoặc contract binary tương ứng, với buffer đủ sống",
+        "Chỉ thêm NUL cuối để API C string đọc qua NUL giữa"
+      ],
+      "correct": 2,
+      "explanation": "Một sentinel string không thể biểu diễn mọi payload binary theo cùng semantics đọc đến NUL."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Variadic mismatch",
+      "question": "Format printf yêu cầu một kiểu nhưng caller truyền kiểu số khác qua varargs. Vì sao compile được không đủ bảo đảm lời gọi đúng?",
+      "options": [
+        "Printf mang đầy đủ type info Zig nên tự sửa",
+        "Mọi số cùng kích thước tên biến sẽ tương thích",
+        "Chỉ lỗi format text, không thể ảnh hưởng đọc tham số",
+        "Callee đọc theo format/ABI; cần làm khớp kiểu và promotions theo contract, không trông tự nhận dạng"
+      ],
+      "correct": 3,
+      "explanation": "Biên variadic yếu hơn hàm typed thông thường về kiểm chứng chữ ký từng đối số."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Rand reproducibility",
+      "question": "Một test đòi chuỗi rand giống hệt trên hai libc khác nhau chỉ vì seed bằng nhau; ứng dụng còn dùng chuỗi đó làm token. Cần gì?",
+      "options": [
+        "Tách yêu cầu PRNG tái lập có thuật toán xác định khỏi nguồn mật mã tạo token; không dựa tính portable/secret của rand",
+        "Chỉ tăng seed để hai libc tự cùng thuật toán",
+        "Dùng modulo lớn hơn để rand thành nguồn mật mã",
+        "Giữ rand cho token và bỏ salt khỏi test để chuỗi khớp"
+      ],
+      "correct": 0,
+      "explanation": "Tái lập và khó đoán là mục tiêu khác nhau; API rand không cung cấp mọi bảo đảm đó."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Macro không dịch",
+      "question": "Một macro token-pasting không dịch được nhưng C library có thể cung cấp function wrapper. Thiết kế nào hợp lý?",
+      "options": [
+        "Thêm stdio.h để mọi C token trở thành Zig syntax",
+        "Giữ giao diện wrapper C rõ kiểu và link implementation đúng, thay vì ép macro thành hàm Zig tùy ý",
+        "Đổi tên macro viết thường để translator luôn hiểu",
+        "Xóa prototype rồi cast tên macro thành function pointer"
+      ],
+      "correct": 1,
+      "explanation": "Có thể đặt biên API đơn giản quanh cấu trúc C không thể dịch trực tiếp."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Opaque handle",
+      "question": "Type C bị dịch opaque, người viết đoán layout rồi dereference sau cast. Hướng nào giữ hợp đồng tốt hơn?",
+      "options": [
+        "Dùng packed để mọi offset opaque tự biết",
+        "Coi opaque là pointer đã init và được sở hữu bởi caller",
+        "Dùng API thao tác handle từ phía library hoặc layout được đặc tả/đối chiếu, không đoán representation",
+        "Chọn struct có cùng số byte bất kỳ"
+      ],
+      "correct": 2,
+      "explanation": "Opaque cố ý không cung cấp cấu trúc đủ để caller suy field/layout."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Callback context",
+      "question": "C giữ callback và context để gọi trên thread nền sau khi đăng ký. Cần phối hợp điều gì?",
+      "options": [
+        "Chỉ đổi context thành const và bỏ teardown",
+        "Chỉ giữ function pointer; context local tự sống theo callback",
+        "Chỉ thêm sentinel vào context rồi free khi đăng ký xong",
+        "Calling convention/chữ ký, lifetime context và đồng bộ/ủy quyền truy cập state cho tới lúc callback dừng"
+      ],
+      "correct": 3,
+      "explanation": "Đúng function address không chứng minh state được dùng sau đó còn sống và an toàn đồng thời."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Header feature define",
+      "question": "Library build với feature define đổi struct, nhưng @cImport không dùng define đó. Cần sửa gốc thế nào?",
+      "options": [
+        "Đồng bộ cấu hình header translation với binary build/target và xác minh ABI contract",
+        "Chỉ thêm include guard khác tên",
+        "Cast mọi pointer qua anyopaque để layout không quan trọng",
+        "Giữ header mới vì compiler luôn biết cách binary đã build"
+      ],
+      "correct": 0,
+      "explanation": "Preprocessor có thể thay giao diện binary thật, không chỉ lời mô tả."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "C failure wrapper",
+      "question": "Wrapper muốn trả Zig error union nhưng chỉ _ = printf và luôn báo thành công. Cần bổ sung gì?",
+      "options": [
+        "Dùng defer print để mọi lỗi thành công",
+        "Đọc return/error contract C và ánh xạ thất bại vào lỗi/kết quả Zig theo chính sách",
+        "Chỉ đổi kiểu trả về thành !void mà không kiểm kết quả",
+        "Chỉ thêm try trước tên c.printf dù API trả c_int"
+      ],
+      "correct": 1,
+      "explanation": "Khai báo error union không tự tạo logic chuyển return code của C."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Mutable C output",
+      "question": "C hàm ghi tối đa capacity bytes và giữ pointer đến khi hoàn tất async. Caller truyền literal qua cast và length mong muốn. Sửa gì?",
+      "options": [
+        "Chỉ truyền số capacity lớn hơn để library cấp lại buffer hộ caller",
+        "Chỉ thêm NUL cuối mà không đổi storage/lifetime",
+        "Cấp storage writable đủ capacity thật, giữ lifetime đến hoàn tất và truyền đúng contract",
+        "Chỉ bỏ const để literal tự thành heap writable"
+      ],
+      "correct": 2,
+      "explanation": "Quyền ghi, dung lượng và thời gian sống đều độc lập với phép cast."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Library upgrade",
+      "question": "Nâng header lên v2 nhưng deploy vẫn load v1; API v2 thêm symbol và đổi ownership của kết quả. Cần kiểm gì?",
+      "options": [
+        "Chỉ reimport header để runtime v1 tự thành v2",
+        "Giữ mọi free cũ vì tên namespace không đổi",
+        "Chỉ đổi optimize sang ReleaseFast để symbol được tự tìm",
+        "Cả phiên bản implementation/link/runtime lẫn ownership contract, không chỉ translation success"
+      ],
+      "correct": 3,
+      "explanation": "ABI/version và semantics dữ liệu có thể đổi độc lập với việc header được parse."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Free and defer order",
+      "question": "C context chứa pointer đến buffer; release context có thể đọc buffer. Cần chọn thứ tự cleanup nào?",
+      "options": [
+        "Release context trước khi giải phóng buffer mà nó còn dùng, tổ chức defer/ownership theo thứ tự đó",
+        "Free buffer trước vì pointer trong context tự được cập nhật",
+        "Giải phóng cả hai bằng cùng allocator bất kể contract",
+        "Chỉ dựa vào thứ tự khai báo tên theo alphabet"
+      ],
+      "correct": 0,
+      "explanation": "Đồ thị phụ thuộc quyết định thứ tự giải phóng, không chỉ việc có đủ hai lời gọi cleanup."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cross compile và run",
+      "question": "Executable Zig/C build cho Linux ARM dùng libc target. Máy phát triển là Windows x86_64. Kết luận nào đúng?",
+      "options": [
+        "Chỉ cần đổi extension .exe để chạy mọi ABI",
+        "Tạo artifact đúng target khác khả năng chạy trực tiếp trên host; còn runtime/libc/loader phù hợp đích",
+        "Có C import là artifact tự đa nền tảng không cần target runtime",
+        "Build thành công tự chứng minh loader Linux ARM có trên Windows"
+      ],
+      "correct": 1,
+      "explanation": "Cross compilation không tự cung cấp môi trường thực thi của target."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Const alias",
+      "question": "Zig giữ const pointer tới C object nhưng library khác vẫn mutate object đó. Có thể dùng const binding làm snapshot/thread-safety proof không?",
+      "options": [
+        "Có, native ABI chặn mọi mutation từ library",
+        "Không, nhưng cast sang opaque sẽ tự đồng bộ",
+        "Không, cần ownership/copy và đồng bộ theo semantics C object",
+        "Có, const tự đóng băng mọi alias C"
+      ],
+      "correct": 2,
+      "explanation": "Binding không thay tính mutable của dữ liệu hay quyền của những alias khác."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Interop boundary design",
+      "question": "API cần nhận bytes binary, trả tài nguyên owned và có callback muộn. Giao diện nào làm rõ ba ranh giới?",
+      "options": [
+        "Chỉ một char* dùng cho mọi dữ liệu và caller free bằng allocator bất kỳ",
+        "Chỉ String NUL-terminated, không cần length vì mọi bytes là text",
+        "Một pointer const duy nhất thay cả length, ownership và callback context",
+        "Pointer+length có contract, release function đúng family và quy tắc lifetime/callback shutdown tường minh"
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế FFI tốt cần biểu diễn dữ liệu, sở hữu và thực thi rõ, thay vì dựa vào cast/alias tên."
+    }
+  ]
+}

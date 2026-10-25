@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "mid",
+  "lesson": "indexing",
+  "language": "vi",
+  "sourceHash": "198bf0fcd1648b6f40cadda9dfaf81023390fa5757df0078a936b29280afa709",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và docs PostgreSQL17 multicolumn/partial/index-only/EXPLAIN; không chạy PostgreSQL vì runtime không có trên PATH. Không khái quát leftmost thành tuyệt đối không dùng index, EXISTS luôn nhanh hơn IN, hay source lower date bound tương đương lọc riêng năm2025. Phân biệt estimated cost với ms, runtime loops, heap visibility và INCLUDE payload. Không fake benchmark/query plans.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Index purpose",
+      "question": "Index thường được tạo nhằm mục đích gì?",
+      "options": [
+        "Hỗ trợ tìm kiếm/truy cập dữ liệu cho một số query patterns.",
+        "Bảo đảm mọi query luôn O(1).",
+        "Tự giải quyết mọi authorization.",
+        "Thay toàn bộ bảng dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "Hiệu quả phụ thuộc query, loại index và dữ liệu."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Index tradeoff",
+      "question": "Một đánh đổi thông thường khi thêm index là gì?",
+      "options": [
+        "Tự bỏ mọi constraints.",
+        "Tốn storage và chi phí duy trì khi ghi.",
+        "Không có chi phí nào.",
+        "Tự giảm mọi dữ liệu xuống một row."
+      ],
+      "correct": 1,
+      "explanation": "Cần đánh giá cả reads và writes."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Btree role",
+      "question": "B-tree index thường phù hợp với dạng điều kiện nào?",
+      "options": [
+        "Chỉ ảnh JPEG.",
+        "Chỉ mật khẩu plaintext.",
+        "Equality và range theo kiểu/ordering được hỗ trợ.",
+        "Mọi regex tùy ý chắc chắn nhanh như nhau."
+      ],
+      "correct": 2,
+      "explanation": "B-tree không phải công cụ tối ưu duy nhất cho mọi query."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Explain purpose",
+      "question": "EXPLAIN dùng để làm gì?",
+      "options": [
+        "Tự chạy migration lên mọi server.",
+        "Tự sửa dữ liệu sai.",
+        "Tự xác thực người dùng.",
+        "Xem execution plan được planner chọn."
+      ],
+      "correct": 3,
+      "explanation": "Plan giúp hiểu access paths và estimates."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Analyze execution",
+      "question": "EXPLAIN ANALYZE khác EXPLAIN thông thường ở điểm quan trọng nào?",
+      "options": [
+        "Thực thi statement và bổ sung số liệu thực thi.",
+        "Luôn chỉ đọc syntax mà không chạy.",
+        "Luôn tạo index mới.",
+        "Luôn bỏ mọi side effects."
+      ],
+      "correct": 0,
+      "explanation": "Phải biết statement sẽ thực sự làm gì trước khi dùng ANALYZE."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Source query columns",
+      "question": "Query đầu nguồn lọc theo các cột nào?",
+      "options": [
+        "month và revenue.",
+        "customer_id và status.",
+        "name và email.",
+        "quantity và price."
+      ],
+      "correct": 1,
+      "explanation": "Source dùng customer42, status delivered."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Single index source",
+      "question": "idx_orders_customer nguồn đánh index cột nào?",
+      "options": [
+        "created_at.",
+        "total.",
+        "customer_id.",
+        "status."
+      ],
+      "correct": 2,
+      "explanation": "Tên index không thay columns thực sự được khai báo."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Composite meaning",
+      "question": "Composite index là gì?",
+      "options": [
+        "Một index chỉ chứa một row.",
+        "Một kiểu foreign key.",
+        "Một database replica.",
+        "Index có nhiều key columns/expressions theo khai báo."
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự keys ảnh hưởng khả năng truy cập/sort."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Source composite order",
+      "question": "Thứ tự key của idx_orders_cust_status nguồn là gì?",
+      "options": [
+        "customer_id, status, created_at.",
+        "status, customer_id, created_at.",
+        "created_at, status, customer_id.",
+        "id, total, name."
+      ],
+      "correct": 0,
+      "explanation": "Không suy thứ tự từ tên index, cần đọc definition."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Partial meaning",
+      "question": "Partial index chỉ chứa gì theo predicate của nó?",
+      "options": [
+        "Chỉ những rows mới hôm nay tự động.",
+        "Entries cho rows thỏa predicate.",
+        "Đúng một nửa rows bất kỳ.",
+        "Mọi rows nhưng chỉ một nửa columns."
+      ],
+      "correct": 1,
+      "explanation": "Từ partial không có nghĩa tỷ lệ cố định50%."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Source partial states",
+      "question": "Partial index nguồn dành cho các status nào?",
+      "options": [
+        "Mọi status.",
+        "Chỉ NULL.",
+        "pending và confirmed.",
+        "delivered và shipped."
+      ],
+      "correct": 2,
+      "explanation": "Predicate là status IN danh sách được khai báo."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Projection tip",
+      "question": "Vì sao source khuyên chỉ SELECT các cột cần dùng?",
+      "options": [
+        "Vì SELECT* luôn sai cú pháp.",
+        "Vì projection tự tạo mọi indexes.",
+        "Vì SELECT cột cụ thể luôn miễn mọi I/O.",
+        "Giảm dữ liệu và dependencies không cần thiết theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Cần tránh hứa performance tuyệt đối."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Exists role",
+      "question": "EXISTS(subquery) kiểm tra điều gì?",
+      "options": [
+        "Có ít nhất một row thỏa subquery hay không.",
+        "Giá trị tổng của mọi rows.",
+        "Số columns trong schema.",
+        "Database đã backup chưa."
+      ],
+      "correct": 0,
+      "explanation": "EXISTS phù hợp biểu đạt existence, không tự chứng minh luôn nhanh hơn IN."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Source exists relation",
+      "question": "EXISTS query nguồn tìm customers có orders theo relationship nào?",
+      "options": [
+        "o.total=c.id luôn.",
+        "o.customer_id=c.id.",
+        "o.id=c.name.",
+        "o.status=c.email."
+      ],
+      "correct": 1,
+      "explanation": "Correlated predicate gắn order với customer đang xét."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Recent orders source",
+      "question": "Query EXISTS nguồn giới hạn orders gần đây bằng gì?",
+      "options": [
+        "Chỉ status pending.",
+        "Một HTTP timeout30s.",
+        "created_at >= NOW()-INTERVAL30days theo cú pháp PostgreSQL.",
+        "Chỉ LIMIT30."
+      ],
+      "correct": 2,
+      "explanation": "Query thật dùng interval literal đúng quoting."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Index decision",
+      "question": "Có index trên một cột có nghĩa planner luôn phải dùng nó không?",
+      "options": [
+        "Có vì CREATE INDEX là query hint bắt buộc.",
+        "Có nếu tên bắt đầu idx.",
+        "Chỉ nếu cột INTEGER.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Planner so sánh các access paths theo estimates/cost."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Sequential scan",
+      "question": "Sequential scan nhìn chung mô tả gì?",
+      "options": [
+        "Đọc dữ liệu bảng theo một scan thay vì dùng index lookup cho từng match.",
+        "Xóa bảng lần lượt.",
+        "Một transaction tự động thất bại.",
+        "Một chứng minh query luôn sai."
+      ],
+      "correct": 0,
+      "explanation": "Scan có thể là lựa chọn hợp lý cho một workload."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Covering goal",
+      "question": "Covering index hướng đến lợi ích gì?",
+      "options": [
+        "Tự tạo API response.",
+        "Có các dữ liệu query cần trong index theo khả năng engine.",
+        "Tự che dữ liệu nhạy cảm khỏi user.",
+        "Tự mã hóa mọi columns."
+      ],
+      "correct": 1,
+      "explanation": "PostgreSQL index-only còn phải xét MVCC visibility."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Statistics purpose",
+      "question": "Statistics giúp planner làm gì?",
+      "options": [
+        "Tự xóa duplicate rows.",
+        "Tự cấp permissions.",
+        "Ước lượng cardinality/selectivity và cost.",
+        "Tự khẳng định mọi estimates chính xác tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Statistics có thể cần cập nhật khi dữ liệu thay đổi."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Optimization evidence",
+      "question": "Cách xác nhận một thay đổi index hữu ích là gì?",
+      "options": [
+        "Chỉ đếm số indexes mới.",
+        "Chỉ đổi tên query.",
+        "Chỉ lấy một ảnh đẹp của dashboard.",
+        "So sánh correctness, plan và số liệu trên workload đại diện."
+      ],
+      "correct": 3,
+      "explanation": "Optimization cần bằng chứng phù hợp với claim."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Leading equality",
+      "question": "Với B-tree(customer_id, status, created_at), query equality customer_id vàstatus rồi rangecreated_at có thuận lợi gì?",
+      "options": [
+        "Tạo một vùng truy cập theo keys đầu và range tiếp theo, tùy plan thực.",
+        "Tự làm mọi query không cần heap.",
+        "Luôn trả đúng một row.",
+        "Tự đổi timestamp thành date."
+      ],
+      "correct": 0,
+      "explanation": "Đây là pattern phù hợp với thứ tự index nguồn."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Right only condition",
+      "question": "Theo PostgreSQL17, query chỉ lọc created_at có tuyệt đối không thể dùng index composite nguồn không?",
+      "options": [
+        "Chỉ nếu created_at NOT NULL.",
+        "Không; có thể dùng nhưng thường kém hiệu quả vì thiếu leading constraints.",
+        "Có, parser cấm mọi index đó.",
+        "Có, index tự bị xóa."
+      ],
+      "correct": 1,
+      "explanation": "Leftmost efficiency rule khác cấm dùng tuyệt đối."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Range before trailing key",
+      "question": "Với index(a, b, c), a=5, b>=42, c<77 theo PostgreSQL17, phần nào giới hạn vùng scan chính?",
+      "options": [
+        "Mọi điều kiện luôn cắt vùng scan độc lập hoàn toàn.",
+        "Không có điều kiện nào.",
+        "Leading equality a và range ở b; c còn được kiểm tra trong index.",
+        "Chỉ c, bỏ a vàb."
+      ],
+      "correct": 2,
+      "explanation": "Trailing conditions có thể giảm heap visits dù không giảm cùng cách scan portion."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Order key choice",
+      "question": "Nếu workload chủ yếu lọc customer rồi sort created_at nhưng không lọc status, cần xét gì với index nguồn?",
+      "options": [
+        "Index luôn sort theo created_at độc lập mọi keys.",
+        "Chỉ tên index quyết định.",
+        "Chỉ cần thêm SELECT*.",
+        "Status ở giữa có thể ảnh hưởng khả năng cung cấp ordering mong muốn."
+      ],
+      "correct": 3,
+      "explanation": "Index order phải khớp predicates/order thật, không chỉ có các cột đâu đó."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Equality columns order",
+      "question": "Có thể chỉ theo câu thần chú cột selectivity cao nhất luôn đứng đầu mà bỏ workload không?",
+      "options": [
+        "Không; cần xét equality/range/sort và những queries khác.",
+        "Có, không cần EXPLAIN.",
+        "Có, mọi index cùng tập columns đều giống nhau.",
+        "Chỉ nếu có LIMIT."
+      ],
+      "correct": 0,
+      "explanation": "Design phải theo patterns và reuse thực."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Partial mismatched source",
+      "question": "idx_active_orders predicate pending/confirmed có bao phủ query status delivered đầu nguồn không?",
+      "options": [
+        "Chỉ cần SELECT*.",
+        "Không.",
+        "Có vì đều ở bảngorders.",
+        "Có vì customer_id có trong index."
+      ],
+      "correct": 1,
+      "explanation": "Query không thể lấy delivered rows từ index chỉ chứa active states kia."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Partial implication",
+      "question": "Muốn planner dùng partial index, điều gì quan trọng ở querypredicate?",
+      "options": [
+        "Tên query phải giống tênindex.",
+        "Mọi predicate đều tương đương nếu cùng table.",
+        "Planner nhận ra query condition hàm ý index predicate.",
+        "Query phải trả đúng50% bảng."
+      ],
+      "correct": 2,
+      "explanation": "Hàm ý cần được xác định ở planning theo engine/version."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Partial not exact same query",
+      "question": "Index WHEREprice>0 có thể hữu ích cho WHEREprice>10 về mặt logicalcoverage không?",
+      "options": [
+        "Không vì literals phải giống từng byte trong mọi tình huống.",
+        "Có và luôn được chọn.",
+        "Chỉ nếu priceTEXT.",
+        "Có vì >10 hàm ý >0, nhưng planner còn cần nhận ra và chọn plan."
+      ],
+      "correct": 3,
+      "explanation": "Coverage hợp lệ không đồng nghĩa index luôn thắngcost."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Partial missing filter",
+      "question": "Query chỉ customer_id=42 không ràng buộc status có thể mặc định dùng active-only index để trả mọi orders không?",
+      "options": [
+        "Không; các orders ngoài predicate có thể bị thiếu.",
+        "Có vì customer_id là key.",
+        "Có vì status không nằm trong SELECT.",
+        "Chỉ nếu index nhỏ."
+      ],
+      "correct": 0,
+      "explanation": "Đúng kết quả là tiền điều kiện trước lợi ích cost."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Partial size condition",
+      "question": "Partial index có luôn nhỏ và nhanh hơn full index cho mọi workload không?",
+      "options": [
+        "Chỉ nếu tênactive.",
+        "Không; phụ thuộc tỷ lệ/pattern, query applicability và chi phí duy trì.",
+        "Có, partial luôn bằng một nửa.",
+        "Có, không phải ghi khi status đổi."
+      ],
+      "correct": 1,
+      "explanation": "Đánh giá workload và distribution thực tế."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Function and index",
+      "question": "WHERE LOWER(name)=? có mặc định dùng index B-tree thường trênname như expression index không?",
+      "options": [
+        "Không index nào hỗ trợ expression.",
+        "Chỉ cần aliaslower_name.",
+        "Không; cần matching expression/collation và plan thích hợp.",
+        "Có, mọi function luôn giống rawcolumn."
+      ],
+      "correct": 2,
+      "explanation": "Expression index có thể là một phương án khi đúng yêu cầu."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Year lower bound bug",
+      "question": "WHEREcreated_at>=2025-01-01 có tương đương lọc riêng năm2025 không?",
+      "options": [
+        "Có trong mọi dataset.",
+        "Có vì query ghi số2025.",
+        "Chỉ nếu cóB-tree.",
+        "Không; còn nhận thời gian từ2026 trở đi."
+      ],
+      "correct": 3,
+      "explanation": "Source GOOD comment thiếu upper bound nếu ý định là đúng năm2025."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Half open year",
+      "question": "Để chọn đúng năm2025 với timestamp, range nào đúng hướng khi timezone policy đã rõ?",
+      "options": [
+        ">=đầu2025 và<đầu2026.",
+        ">=đầu2025 không giới hạn trên.",
+        ">cuối2025 và<đầu2025.",
+        "BETWEEN1AND12 trênid."
+      ],
+      "correct": 0,
+      "explanation": "Half-open interval tránh đoán cuối ngày theo precision."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Mixed dialect source",
+      "question": "YEAR(created_at) trong comment nguồn có thể được copy như PostgreSQL function chuẩn không?",
+      "options": [
+        "Chỉ nếu dùngSERIAL.",
+        "Không; cần syntax/function của dialect, ví dụ EXTRACT khi phù hợp.",
+        "Có vì mọi SQL functions giống nhau.",
+        "Có vì cóNOW trong file."
+      ],
+      "correct": 1,
+      "explanation": "Source đang dùng nhiều ký pháp minh họa, cần xác định engine."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Exists performance claim",
+      "question": "Source nói dùngEXISTS thayIN cho large subsets; nhận định nào đúng hơn?",
+      "options": [
+        "IN không bao giờ dùngindex.",
+        "EXISTS luôn trả customer một row dù không match.",
+        "Chọn theo semantics và đo plan; optimizer có thể xử lý tương đương trong nhiều trường hợp.",
+        "EXISTS luôn nhanh hơn 100lần."
+      ],
+      "correct": 2,
+      "explanation": "Không biến một tip thành bảo đảm phổ quát."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Exists duplicates",
+      "question": "Nếu customer có10orders khớpEXISTS, outercustomer xuất hiện bao nhiêu lần do riêng existencepredicate?",
+      "options": [
+        "10 lần bắt buộc.",
+        "100 lần.",
+        "0 lần.",
+        "Một lần cho một outerrow được giữ."
+      ],
+      "correct": 3,
+      "explanation": "Predicate kiểm tra có/không, khác joinfanout."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "In null semantics",
+      "question": "NOTIN với subquery cóNULL có luôn tương đương NOT EXISTS theo equality không?",
+      "options": [
+        "Không; cần phân tíchNULL semantics.",
+        "Có trong mọi trường hợp.",
+        "Chỉ nếu cóindexcustomer.",
+        "Chỉ nếu SELECT*."
+      ],
+      "correct": 0,
+      "explanation": "Đừng tối ưu bằng cách thay operator rồi đổi kết quả."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Small table scan",
+      "question": "Bảng rất nhỏ vàquery cần phần lớnrows, sequentialscan có thể hợp lý không?",
+      "options": [
+        "Chỉ khi driver lỗi.",
+        "Có.",
+        "Không, luôn là lỗi thiếu index.",
+        "Chỉ nếu không cóPK."
+      ],
+      "correct": 1,
+      "explanation": "Index lookup rồi heap fetches có thể đắt hơn scan phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Low selectivity",
+      "question": "Filterstatus khớp90%rows có bảo đảm indexstatus là accesspath nhanh nhất không?",
+      "options": [
+        "Có vì statusTEXT.",
+        "Chỉ cần LIMIT không ORDER BY.",
+        "Không.",
+        "Có vì status nằm trongWHERE."
+      ],
+      "correct": 2,
+      "explanation": "Tỷ lệmatch, data locality, projection vàplan đều quan trọng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Stale estimates",
+      "question": "Estimatedrows khácactual rows rất nhiều có thể gợi điều gì?",
+      "options": [
+        "Chắc chắn DB đã mất dữ liệu.",
+        "Chắc chắn chỉ thiếu semicolon.",
+        "Luôn phải bỏ mọiindexes.",
+        "Statistics/correlation/model estimates cần được xem xét cùng query."
+      ],
+      "correct": 3,
+      "explanation": "Điều tra bằng evidence, không đoán một nguyên nhân duy nhất."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Cost units",
+      "question": "Estimatedcost trong PostgreSQL EXPLAIN có trực tiếp là milliseconds không?",
+      "options": [
+        "Không; cost units là mô hình ước lượng tương đối.",
+        "Có, mọi cost bằngms.",
+        "Có, cost bằngbytes.",
+        "Chỉ nếu query dùngJOIN."
+      ],
+      "correct": 0,
+      "explanation": "Actualtime có đơn vị và semantics riêng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Analyze side effects",
+      "question": "EXPLAIN ANALYZE UPDATE có thực sự sửa dữ liệu nếu thực thi thông thường không?",
+      "options": [
+        "Chỉ nếu bảng khôngindex.",
+        "Có theo semantics statement; không được coi là chỉ xem plan.",
+        "Không, ANALYZE luônreadonly.",
+        "Chỉ nếu không cóWHERE."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ chạy trên target được phép và theo kế hoạch transaction/effects phù hợp."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Returned data timing",
+      "question": "EXPLAIN ANALYZE có đo đầy đủ networktransfer của API response tới user không?",
+      "options": [
+        "Có vìactual time bao gồm mọiclient.",
+        "Chỉ cần FORMATJSON.",
+        "Không.",
+        "Có kể cả chưa cóHTTPserver."
+      ],
+      "correct": 2,
+      "explanation": "DB execution metrics và end-to-end latency là các phép đo khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Loop averages",
+      "question": "Trongplan nodeactual rows3 loops10, cách hiểu sốrows được trả qua tổngloops là gì?",
+      "options": [
+        "Chỉ3 cho cảnode chắc chắn.",
+        "13.",
+        "100.",
+        "Khoảng30 theo actual rows trung bình mỗi loop."
+      ],
+      "correct": 3,
+      "explanation": "Cần đọc report theo semantics average/rounding của version."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Plan inclusive times",
+      "question": "Có nên cộng thời gian mọi plan nodes để ra querylatency không?",
+      "options": [
+        "Không; các times có quan hệ lồng nhau, có thể đếm lặp.",
+        "Có trong mọi plan.",
+        "Chỉ cần nhân sốindex.",
+        "Chỉ nếu dùngNestedLoop."
+      ],
+      "correct": 0,
+      "explanation": "Đọc totalexecution và cấu trúcplan thay vì cộng máy móc."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Covering heap visibility",
+      "question": "TrongPostgreSQL, index có mọi columns query cần có chắc tránh hoàn toànheapvisits không?",
+      "options": [
+        "Chỉ nếu query cóWHERE.",
+        "Không; còn kiểm tra MVCC visibility vàvisibilitymap.",
+        "Có, luôn0heap fetches.",
+        "Có nếu têncovering."
+      ],
+      "correct": 1,
+      "explanation": "Index-only possibility không đồng nghĩa noheapI/O trong mọi lần chạy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Include payload",
+      "question": "Column trongINCLUDE có vai trò gì ởPostgreSQL B-treeindex?",
+      "options": [
+        "Tự là foreignkey.",
+        "Tự mã hóa query.",
+        "Payload có thể trả về, không phải searchkey như keycolumns.",
+        "Tự thành đầu tiên trong searchorder."
+      ],
+      "correct": 2,
+      "explanation": "Tách searchkeys khỏi columns chỉ để coverage."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Unique include scope",
+      "question": "UNIQUE INDEXON x INCLUDE y enforce uniqueness theo gì?",
+      "options": [
+        "Cặp(x, y).",
+        "Chỉy.",
+        "Mọicolumns của bảng.",
+        "x."
+      ],
+      "correct": 3,
+      "explanation": "INCLUDEpayload không được thêm vào uniquenesskey."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Wide include cost",
+      "question": "Nhét nhiềucolumns rất rộng vàoINCLUDE có đánh đổi gì?",
+      "options": [
+        "Index lớn hơn và chi phí ghi/maintenance, có thể có giới hạn kích thước.",
+        "Không cóchi phí vìpayloadmiễnphí.",
+        "Luôn giảm RAM.",
+        "Tự bảo đảm mọi query thànhindexonly."
+      ],
+      "correct": 0,
+      "explanation": "Coverage cần có chọn lọc theo workload."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Index maintenance writes",
+      "question": "UPDATE mộtcolumn nằm trongindex có thể cần gì?",
+      "options": [
+        "Tự rollbackquery.",
+        "Duy trì index entries theo engine và updatepath.",
+        "Không bao giờ ảnh hưởngindex.",
+        "Luônxóa mọi rows."
+      ],
+      "correct": 1,
+      "explanation": "Không chỉINSERT/DELETE mới có chi phí liên quan indexes."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Partial membership updates",
+      "question": "Order đổi pending→delivered với active-only index nguồn có thể làm gì?",
+      "options": [
+        "Tự xóaorder khỏibảng.",
+        "Tự thêmcustomer.",
+        "Thay đổi membership của row trong index.",
+        "Luôn giữentry vĩnh viễn bất kểpredicate."
+      ],
+      "correct": 2,
+      "explanation": "Predicate được duy trì theo dữ liệu ghi, không chỉ áp dụng lúc tạoindex."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Redundant prefix index",
+      "question": "Đã có(customer_id, status, created_at), có nên mặc định xóa indexcustomer_id riêng không?",
+      "options": [
+        "Có, mọi prefixindex luôn vô ích tuyệt đối.",
+        "Không bao giờ được xóaindex.",
+        "Chỉ tênindex quyếtđịnh.",
+        "Không; cân nhắc size, workload, dependencies và plans trước."
+      ],
+      "correct": 3,
+      "explanation": "Có thể redundant nhưng cần bằng chứng và rollout an toàn."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Index versus result filter",
+      "question": "Thêm partialindex có đổi queryWHERE để tự lọcrows theo predicateindex không?",
+      "options": [
+        "Không; query semantics vẫn do statement.",
+        "Có, mọi query tự chỉcònactiveorders.",
+        "Có nếu indexnameactive.",
+        "Chỉ nếu SELECT*."
+      ],
+      "correct": 0,
+      "explanation": "Optimizer phải trả đúng result dù dùng index hay không."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Query correctness first",
+      "question": "Viết lạiquery nhanh hơn nhưng bỏ upperdatebound có phải tối ưu đúng không?",
+      "options": [
+        "Chỉ cần đổi tênmetric.",
+        "Không nếu làm đổi tập kết quả so với yêu cầu.",
+        "Có miễn runtime giảm.",
+        "Có nếu query ngắn hơn."
+      ],
+      "correct": 1,
+      "explanation": "Giữ semantics là điều kiện trước performancecomparison."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Explain planning statistics",
+      "question": "Tại sao nên dùng dữ liệu/statistics đại diện khi đánh giáindex?",
+      "options": [
+        "Vìtest một row luôn chứng minhtriệurows.",
+        "Chỉđể report dài hơn.",
+        "Distribution vàcardinality ảnh hưởng accesspath vàcost.",
+        "Vì mọi query đều chỉ phụ thuộc sốcolumns."
+      ],
+      "correct": 2,
+      "explanation": "Fixture correctness nhỏ không thay workload performance test."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Sort support",
+      "question": "Index có thể giúp ORDER BY theo keys phù hợp nhưng có bảo đảm mọi sort đều tránhSortnode không?",
+      "options": [
+        "Có, mọiindex sortmọicột.",
+        "Có, nếu cóDESC.",
+        "Chỉ nếu keyTEXT.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Ordering, direction, filters, collation vàplanner cần được xét."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Limit work",
+      "question": "LIMIT10 có đảm bảo DB chỉ phải xét đúng10rows không?",
+      "options": [
+        "Không; có thể scan/filter/sort nhiềurows trước khi có10results.",
+        "Có theo định nghĩaLIMIT.",
+        "Có nếu SELECT*.",
+        "Chỉ nếu bảng cóPK."
+      ],
+      "correct": 0,
+      "explanation": "Early-stop benefit phụ thuộc accesspath vàpredicates."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Analyze versus statistics command",
+      "question": "EXPLAIN ANALYZE và lệnhANALYZE TABLE theo nghĩa cập nhậtstatistics có cùng mục đích hoàn toàn không?",
+      "options": [
+        "Chỉ nếu dùngPostgreSQL.",
+        "Không; cần phân biệt syntax và công việc của từnglệnh theoDB.",
+        "Có chỉ khác sốchữ.",
+        "Có cả hai luôn tạoindex."
+      ],
+      "correct": 1,
+      "explanation": "PostgreSQLANALYZE thu statistics; EXPLAIN ANALYZE chạystatement để báoexecution."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Version scope",
+      "question": "Đọc ruleB-tree củaPostgreSQL17 có nên khẳngđịnh mọi version/enginefuture hoàn toàn như vậy không?",
+      "options": [
+        "Có nếuSQLviếthoa.",
+        "Chỉ nếu dùngcompoundkey.",
+        "Không; cần version-specificdocs vàplan.",
+        "Có vìindexkhông bao giờđổi."
+      ],
+      "correct": 2,
+      "explanation": "Giữ scope giúp tránh dạyabsolute rule sai khiimplementation phát triển."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Permission unchanged",
+      "question": "Tạo index có tự cho user quyềnSELECT cácrowsnhạy cảm không?",
+      "options": [
+        "Có vìindex làcopypublic.",
+        "Có nếuindex covering.",
+        "Chỉ nếu cóINCLUDE.",
+        "Không; quyền dữ liệu là yêu cầu riêng."
+      ],
+      "correct": 3,
+      "explanation": "Optimization không thay authorization/data exposure contract."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Source range counterexample",
+      "question": "Dataset cóorder2025-06 và2026-06. WHEREcreated_at>=2025-01-01 trảcả hai. Vì sao điều này quan trọng vớicomment nguồn?",
+      "options": [
+        "Nó cho thấy rewrite chưa tương đương filter riêng năm2025 nếu thiếuupperbound.",
+        "Nó chứng minhindexbịhỏng.",
+        "Nó chứng minhYEARluônsai.",
+        "Nó chứng minhWHEREkhônglọcđượcdates."
+      ],
+      "correct": 0,
+      "explanation": "Sửa performance phải giữ meaning của query gốc."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Partial generic plan",
+      "question": "Generic preparedplan với statusparameter có thể khó dùngactive-onlypartialindex vì sao?",
+      "options": [
+        "Vìmọipreparedquery cấmindexes.",
+        "Planner không thể suy predicate đúng cho mọi parameter value nếu chưa có điều kiện cần thiết.",
+        "Vìparameters luônSQLinjection.",
+        "Vìpartialindex chỉdùngINSERT."
+      ],
+      "correct": 1,
+      "explanation": "Custom/genericplanning vàpredicateimplication cần được phân tích theo thực tế."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Prepared custom nuance",
+      "question": "Có nên nói mọipreparedstatement tuyệt đối không dùngpartialindex không?",
+      "options": [
+        "Có vìbinding xóa mọiWHERE.",
+        "Chỉ nếu parameterINTEGER.",
+        "Không; cần xét knownpredicates vàcustom/genericplan, không chỉnhãnprepared.",
+        "Có cho mọi querymọi DB."
+      ],
+      "correct": 2,
+      "explanation": "Mộtclause chưa biết value không impliespredicate cho mọivalue, khác việc mọi queryprepared đều không hợp lệ choindex."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Leftmost absolute correction",
+      "question": "Team nói index(a, b, c) không bao giờ dùng được choWHEREb=7. Cách sửa nhận định theoPostgreSQL17 là gì?",
+      "options": [
+        "Đúng, parsercấm.",
+        "Sai, vìluônseekO(1).",
+        "Chỉ cần đổitênindex.",
+        "Có thể được dùng nhưng thiếuleadingconstraint thường phải scan phạmvirộng vàplanner có thểchọnpathkhác."
+      ],
+      "correct": 3,
+      "explanation": "Phânbiệt eligibility, scanextent vàcost-basedselection."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Include uniqueness mistake",
+      "question": "UNIQUE INDEXcustomer_idINCLUDEstatus có ngăn haiorderscùngcustomer khácstatus không?",
+      "options": [
+        "Có vìuniqueness chỉtheocustomer_id; có thểtrái domainmanyorders/customer.",
+        "Không vìstatuskhác làmkeykhác.",
+        "Không vìINCLUDEbỏuniqueness.",
+        "Chỉ nếucreated_atgiống nhau."
+      ],
+      "correct": 0,
+      "explanation": "Hiểuđúngpayload tránh triểnkhai constraintngoàiýmuốn."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Index only hot data",
+      "question": "Bảng bịUPDATEliên tục, index coverđủcolumns nhưngheap fetchescao. Cầnxem gì?",
+      "options": [
+        "Coi mọiheap fetchlàcorruption.",
+        "MVCC visibility/all-visiblebits, maintenance vàworkload trước claimindexonlybenefit.",
+        "Chỉ đổiindexname thànhcover.",
+        "ChỉthêmINCLUDElặplại."
+      ],
+      "correct": 1,
+      "explanation": "Source/speckhôngthay đoactualheapvisits."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Exists in equivalence",
+      "question": "Muốn thayIN bằngEXISTS, cần kiểm tra điều gì trước performance?",
+      "options": [
+        "Chỉviếthoaoperators.",
+        "Bỏ mọi constraints để dễđo.",
+        "Matching/NULLsemantics, duplicates vàintendedouterrows phải tương đương.",
+        "Chỉquerydàihayngắn."
+      ],
+      "correct": 2,
+      "explanation": "Khôngdùng benchmarkcho haiqueries khácmeaningđểclaimtối ưu."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Skew workload",
+      "question": "Mộtcustomer có90%orders, các customerkhác rấtít. PlanđãtốtchoIDnhỏ có thểvẫnkhôngtốtchoIDlớn vì sao?",
+      "options": [
+        "VìmọiB-tree chỉdùngIDnhỏ.",
+        "Vìcustomer_idkhông đượclặplại.",
+        "ChỉdoCSS.",
+        "Parameterselectivity vàdataskew có thểlàm accesspathcost rấtkhác."
+      ],
+      "correct": 3,
+      "explanation": "Cầnworkload đại diện vàplanningstrategy phù hợp."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Explain side effects nuance",
+      "question": "DùngBEGIN/ROLLBACK quanhEXPLAIN ANALYZEwrites có chứng minh mọiexternaleffects/sequencechanges đềubịhoàn tác không?",
+      "options": [
+        "Không; cầnbiết semantics của tất cảeffects, không co rollbacklà sandboxtoàndiện.",
+        "Có, rollback hoàn tác cảemailđã gửi.",
+        "Có, mọi sequencevalue được trảlại.",
+        "Chỉ nếuquery cóPK."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy statements cóeffects không đượcphép chỉđểprofile."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Timing cold cache",
+      "question": "Mộtlầnrunchậm trướcindex, một lầnsau nhanh hơn có đủquy nguyênnhân choindex không?",
+      "options": [
+        "Chỉ cầnchụpảnh.",
+        "Chưa; cache, state, concurrency, data vàmeasurementoverhead có thểkhác.",
+        "Đủnếusau đócóEXPLAIN.",
+        "Đủvìindexluôn sửa mọi latency."
+      ],
+      "correct": 1,
+      "explanation": "So sánh cầnconditions vàevidence phù hợp, khônghứa causalclaimtừmột sample."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Loops arithmetic",
+      "question": "Nodeactual rows4, loops25. Tổngrows qua các lần thực thi xấpxỉbao nhiêu?",
+      "options": [
+        "29.",
+        "25.",
+        "100.",
+        "4."
+      ],
+      "correct": 2,
+      "explanation": "Reportactual rows làtrungbìnhper loop, trongversionsemantics đang xét."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Plan timing accounting",
+      "question": "Parentnode đãbao gồmcôngviệcchild, theo câyplan. Cộngparent+child có thể gây lỗi gì?",
+      "options": [
+        "Tựtrừnetworktime.",
+        "Tựđổiunit sangbytes.",
+        "Luônđúngvì mọinodeđộclập.",
+        "Đếm lặp thời gian."
+      ],
+      "correct": 3,
+      "explanation": "Không diễn giải nodetimes như các khoảnglatency độc lập."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Statistics correction before index",
+      "question": "Estimate10rows nhưngactual10triệu rows có nghĩa luônphảithêmindex mới không?",
+      "options": [
+        "Không; cần điều tra estimates, filters, correlations vàworkload trước khichọnchange.",
+        "Có, cứthêmindexcho mọicột.",
+        "Có, vìstatisticskhông ảnh hưởngplan.",
+        "Chỉ cầnLIMIT1đểgiữmeaning."
+      ],
+      "correct": 0,
+      "explanation": "Rootcause có thểkhônglàthiếu index."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Partial update churn",
+      "question": "Activeorderschiếmsốít nhưngchuyểnstatusliên tục. Vì sao partialindex không đương nhiênrẻ?",
+      "options": [
+        "Chỉvìtênactive.",
+        "Membershipchanges tạo maintenancework vàwritecost cần đo.",
+        "Vìnóluônchứamọi rows.",
+        "Vìnókhôngdùngđượcstatus."
+      ],
+      "correct": 1,
+      "explanation": "Smallsize khôngđồngnghĩa small write cost trongmọiworkload."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Composite versus separate",
+      "question": "Baindexes riêngcustomer, status, date có luôn tương đương mộtcompositeindex không?",
+      "options": [
+        "Cóvì mọiindexesđượcmerge thànhmột.",
+        "Chỉ nếu dùngIN.",
+        "Không; access/order/combination, cost vàcoverage khác nhau.",
+        "Cóvì cùngbacột."
+      ],
+      "correct": 2,
+      "explanation": "Planner có thểcombine một sốpaths, khônglàm structuresidentical."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Expression boundary semantics",
+      "question": "ĐổiLOWER(name)=x thànhname=x đểdùngrawindex có thểsai vì sao?",
+      "options": [
+        "VìmọiTEXTđềucase-insensitive.",
+        "VìLOWERchỉtácđộngsort.",
+        "Chỉ cầnINDEXname.",
+        "Comparison semantics có thểđổi, nếuyêucầucase-insensitivematching."
+      ],
+      "correct": 3,
+      "explanation": "Tốiưu phải giữ searchcontract/collation/normalization phù hợp."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Sorting tie stable limit",
+      "question": "Index giúporderbyscore nhưngscoretieskhông cókeyphụ. Cóthểclaimstabletop10 không?",
+      "options": [
+        "Không; nênđịnh nghĩatie-breaker vàconsistencypolicy cầnthiết.",
+        "Có, indexluôn tự chọnIDnhỏ.",
+        "Có, LIMITloạibỏties theoquy tắcglobal.",
+        "Chỉ nếuquerynhanh."
+      ],
+      "correct": 0,
+      "explanation": "Orderingcontract làphầncorrectness riêng vớiperformance."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Index rollout risk",
+      "question": "Tạoindex trênbảng lớn production nênđánh giá gì?",
+      "options": [
+        "Chỉtênprefixidx.",
+        "Locking/buildresources, writes, dependencies, rollout vàrollbacktheo engine/version.",
+        "ChỉmàuSQLeditor.",
+        "CoiCREATEINDEXluôninstant."
+      ],
+      "correct": 1,
+      "explanation": "Không đưa ra one-size-fits-allcommand chạy trực tiếptrêndữ liệuthật."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Latency layers",
+      "question": "Query DB đã5ms nhưngAPI responsevẫn500ms. Chỉtạoindexthêm cóchắcgiảiđược không?",
+      "options": [
+        "Có, nếu cóEXPLAIN ANALYZE.",
+        "Chỉ cầnIGNOREerrors.",
+        "Không; cầnprofile cácstages nhưpool wait, network, serialization vàapp work.",
+        "Có, mọi latencyđềulàDBscan."
+      ],
+      "correct": 2,
+      "explanation": "DBplan làmột phần củaend-to-endpath."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Scope of completion",
+      "question": "Có80câuindexing vàreviewdocs có đủchứng minhwebchịutriệungười không?",
+      "options": [
+        "Có, vìB-treeO(logn).",
+        "Có, vìsourcecóEXISTS.",
+        "Chỉ cầnindexmọibảng.",
+        "Không; ngân hàngkiếnthứckhácbằngchứngsystem/loadcapacity củaứngdụng."
+      ],
+      "correct": 3,
+      "explanation": "Không đánhđồng tínhđầyđủnội dungquiz vớiarchitecture/performanceverification."
+    }
+  ]
+}

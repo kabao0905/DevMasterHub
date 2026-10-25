@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "senior",
+  "lesson": "unsafe",
+  "language": "vi",
+  "sourceHash": "d9328039cd5d6b75a3a5d87156fda5c2211c8577eb512a5233076211a6f086d0",
+  "status": "approved",
+  "review": "Soạn trực tiếp không API. Review Rust Reference soundness/UB, edition2024 unsafe extern, CString và from_raw_parts_mut docs. Chỉ chạy safe std boundary models và compiler rejects; không chạy raw-pointer dereference, FFI hoặc UB trials, không tuyên bố Miri/ASan. Source alias sequence không dùng làm bằng chứng an toàn; extern cũ cần unsafe trong edition2024.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Unsafe meaning",
+      "question": "unsafe block biểu thị điều gì?",
+      "options": [
+        "Lập trình viên chịu trách nhiệm đáp ứng các safety obligations của operations bên trong.",
+        "Compiler bỏ hết type checking.",
+        "Mọi pointer tự hợp lệ.",
+        "Mọi lỗi biến thành Result."
+      ],
+      "correct": 0,
+      "explanation": "unsafe không cho phép chương trình gây undefined behavior."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Raw const pointer",
+      "question": "*const i32 là kiểu gì?",
+      "options": [
+        "Một reference tự được kiểm chứng lifetime như &i32.",
+        "Raw pointer tới i32 qua đó không ghi trực tiếp như *mut.",
+        "Một owned Box<i32>.",
+        "Một Option<i32>."
+      ],
+      "correct": 1,
+      "explanation": "Raw pointer không mang đầy đủ guarantees của reference."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Raw mut pointer",
+      "question": "*mut i32 khác *const i32 ở khả năng cú pháp nào?",
+      "options": [
+        "Luôn non-null.",
+        "Luôn Send và Sync bất kể context.",
+        "Cho phép thao tác ghi qua dereference khi mọi yêu cầu an toàn được đáp ứng.",
+        "Luôn sở hữu allocation."
+      ],
+      "correct": 2,
+      "explanation": "Pointer mutability không chứng minh validity hoặc exclusivity."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Pointer construction",
+      "question": "Chỉ tạo raw pointer có đồng nghĩa đã dereference nó không?",
+      "options": [
+        "Có; tạo pointer luôn đọc toàn bộ vùng nhớ.",
+        "Có; luôn gọi C.",
+        "Chỉ nếu số âm.",
+        "Không; tạo hoặc giữ pointer khác với truy cập pointee."
+      ],
+      "correct": 3,
+      "explanation": "Phải phân biệt từng operation khi review."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Dereference obligation",
+      "question": "Raw pointer dereference cần chú ý gì?",
+      "options": [
+        "Validity, alignment, initialization và aliasing theo access thực hiện.",
+        "Chỉ pointer không bằng 0 là đủ.",
+        "Chỉ type name có i32 là đủ.",
+        "Chỉ có một lần println là đủ."
+      ],
+      "correct": 0,
+      "explanation": "unsafe block tự nó không xác minh các điều kiện đó."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "FFI name",
+      "question": "FFI là viết tắt của gì trong bài?",
+      "options": [
+        "Full Framework Import.",
+        "Foreign Function Interface.",
+        "Fast File Iterator.",
+        "Finite Future Instance."
+      ],
+      "correct": 1,
+      "explanation": "Nó liên quan tương tác với code qua biên ngôn ngữ/ABI."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "C ABI",
+      "question": "extern \"C\" chủ yếu xác định điều gì?",
+      "options": [
+        "Tự chuyển UTF-8 thành UTF-16.",
+        "Tự quản lý ownership của C pointers.",
+        "Calling convention/ABI C theo target.",
+        "Tự kiểm tra mọi buffer length."
+      ],
+      "correct": 2,
+      "explanation": "Signature và safety contract vẫn cần đúng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "CString role",
+      "question": "CString biểu diễn gì?",
+      "options": [
+        "Một borrowed Rust str bất kỳ.",
+        "Một JSON object.",
+        "Một C pointer có lifetime vô hạn.",
+        "Chuỗi C owned, có NUL cuối và không có NUL ở giữa theo invariant."
+      ],
+      "correct": 3,
+      "explanation": "Owned storage phải còn sống khi pointer được sử dụng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "CStr role",
+      "question": "CStr so với CString khác gì cơ bản?",
+      "options": [
+        "CStr là dạng borrowed của C string.",
+        "CStr luôn allocate mới.",
+        "CStr tự sở hữu mọi foreign allocation.",
+        "CStr chỉ lưu số nguyên."
+      ],
+      "correct": 0,
+      "explanation": "Owned và borrowed có contracts khác nhau."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Interior NUL",
+      "question": "CString::new làm gì khi input chứa byte NUL?",
+      "options": [
+        "Luôn trả CString hợp lệ không báo lỗi.",
+        "Trả lỗi NulError.",
+        "Tự cắt chuỗi âm thầm luôn.",
+        "Tự gọi strlen trước."
+      ],
+      "correct": 1,
+      "explanation": "Input không được có byte 0 trong data cung cấp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Terminator purpose",
+      "question": "NUL cuối chuỗi C thường dùng để làm gì?",
+      "options": [
+        "Cấp quyền đọc file.",
+        "Mã hóa dữ liệu.",
+        "Đánh dấu kết thúc chuỗi cho các APIs kiểu strlen.",
+        "Đếm Unicode graphemes."
+      ],
+      "correct": 2,
+      "explanation": "Length-delimited APIs có contract khác."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Pointer owner lifetime",
+      "question": "Pointer lấy từ CString.as_ptr() có làm owner sống lâu hơn không?",
+      "options": [
+        "Có; tự thêm strong reference.",
+        "Có; tự leak owner có chủ ý.",
+        "Chỉ nếu đặt biến tên safe.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Phải giữ CString sống đủ lâu theo contract."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Read-only C pointer",
+      "question": "Có được cho C ghi vào pointer lấy từ CString.as_ptr() không?",
+      "options": [
+        "Không theo contract read-only của pointer này.",
+        "Có; *const chỉ là gợi ý không có nghĩa.",
+        "Có nếu viết đúng số bytes.",
+        "Chỉ cần unsafe ở Rust caller."
+      ],
+      "correct": 0,
+      "explanation": "Không thực hiện thử việc ghi không hợp lệ."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Split goal",
+      "question": "split_at_mut nhằm cung cấp gì?",
+      "options": [
+        "Một global mutex.",
+        "Hai mutable slices không chồng lấn từ một mutable slice.",
+        "Hai owned Vec clones.",
+        "Hai arbitrary pointers không cần length."
+      ],
+      "correct": 1,
+      "explanation": "Safe abstraction phải giữ uniqueness của mutable references."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Mid check",
+      "question": "assert!(mid <= len) trong helper nguồn nhằm kiểm tra gì?",
+      "options": [
+        "Tự ngăn mọi data race toàn chương trình.",
+        "Tự tạo thêm memory.",
+        "Vị trí chia không vượt length.",
+        "Pointer luôn trỏ tới C string."
+      ],
+      "correct": 2,
+      "explanation": "Đây là một phần của lập luận an toàn, không là toàn bộ proof cho arbitrary pointers."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Safe wrapper",
+      "question": "Một public function không mang unsafe có thể chứa unsafe internals không?",
+      "options": [
+        "Không bao giờ.",
+        "Có và không cần bất kỳ invariant nào.",
+        "Chỉ nếu luôn return unit.",
+        "Có nếu implementation bảo đảm safe callers không gây UB qua API đó."
+      ],
+      "correct": 3,
+      "explanation": "Soundness phải được bảo đảm bởi abstraction."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Panic versus UB",
+      "question": "Panic và undefined behavior có cùng nghĩa không?",
+      "options": [
+        "Không; panic là cơ chế lỗi có semantics, UB vi phạm contract ngôn ngữ.",
+        "Có; mọi panic là memory corruption.",
+        "Có; mọi UB luôn in panic.",
+        "Chỉ khác tên log."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng việc không panic để chứng minh không UB."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Edition extern",
+      "question": "Trong edition2024, extern block cần đánh dấu gì?",
+      "options": [
+        "Không cần declaration.",
+        "unsafe extern.",
+        "async extern bắt buộc.",
+        "clone extern."
+      ],
+      "correct": 1,
+      "explanation": "Đây là thay đổi cú pháp/obligation của edition."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Unused import",
+      "question": "CStr được import nhưng không dùng trong source có tự tạo lỗi bắt buộc ở mặc định không?",
+      "options": [
+        "Tự gọi CStr constructor.",
+        "Tự xóa unsafe block.",
+        "Thường là warning, không phải mặc định compiler error vì import không dùng.",
+        "Có; Rust như Go cấm mọi unused import."
+      ],
+      "correct": 2,
+      "explanation": "Lint levels có thể được thay đổi qua config."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Exercise scope",
+      "question": "Bài tập unsafe yêu cầu hướng triển khai nào?",
+      "options": [
+        "Chỉ đổi tên hàm thành safe_.",
+        "Chỉ in pointer address.",
+        "Tự tắt mọi checks.",
+        "Bọc một C library bằng interface Rust an toàn."
+      ],
+      "correct": 3,
+      "explanation": "Tên function không là bằng chứng soundness."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "CString byte length",
+      "question": "Đoạn safe Rust này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"hi\").unwrap();println!(\"{} {}\",c.as_bytes().len(),c.as_bytes_with_nul().len());}\n",
+      "options": [
+        "2 3.",
+        "3 3.",
+        "2 2.",
+        "1 2."
+      ],
+      "correct": 0,
+      "explanation": "as_bytes bỏ terminator, as_bytes_with_nul bao gồm nó."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Empty C string",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"\").unwrap();println!(\"{} {}\",c.as_bytes().len(),c.as_bytes_with_nul().len());}\n",
+      "options": [
+        "CString cấm chuỗi rỗng.",
+        "0 1.",
+        "0 0.",
+        "1 1."
+      ],
+      "correct": 1,
+      "explanation": "Chuỗi rỗng vẫn có terminator."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Nul detection position",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let e=std::ffi::CString::new(b\"a\u0000b\".to_vec()).unwrap_err();println!(\"{}\",e.nul_position());}\n",
+      "options": [
+        "2.",
+        "Không có lỗi.",
+        "1.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "NulError ghi vị trí byte NUL đầu được phát hiện."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Nul error data recovery",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let e=std::ffi::CString::new(b\"a\u0000b\".to_vec()).unwrap_err();println!(\"{:?}\",e.into_vec());}\n",
+      "options": [
+        "[97, 98, 0].",
+        "[].",
+        "Tự gọi foreign free.",
+        "[97, 0, 98]."
+      ],
+      "correct": 3,
+      "explanation": "Có thể lấy lại input bytes từ lỗi an toàn."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Unicode byte counting",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"é\").unwrap();println!(\"{}\",c.as_bytes().len());}\n",
+      "options": [
+        "2.",
+        "1.",
+        "3.",
+        "Một lỗi vì C string bắt buộc ASCII."
+      ],
+      "correct": 0,
+      "explanation": "é trong UTF-8 là hai bytes; CString không giới hạn data vào ASCII."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "CString utf8 conversion",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"hi\").unwrap();println!(\"{}\",c.as_c_str().to_str().unwrap());}\n",
+      "options": [
+        "Một pointer address.",
+        "hi.",
+        "[104, 105, 0].",
+        "Compile error vì CStr không thể kiểm tra UTF-8."
+      ],
+      "correct": 1,
+      "explanation": "to_str kiểm tra UTF-8 và trả Result."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Nonutf8 C bytes",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(vec![255]).unwrap();println!(\"{}\",c.to_str().is_err());}\n",
+      "options": [
+        "CString::new reject mọi non-UTF8 byte.",
+        "UB vì byte255 tồn tại.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "C string không bắt buộc UTF-8; to_str có thể báo lỗi."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Safe CStr literal bytes",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CStr::from_bytes_with_nul(b\"hi\u0000\").unwrap();println!(\"{:?}\",c.to_bytes());}\n",
+      "options": [
+        "[104, 105, 0].",
+        "[].",
+        "Nó gọi strlen FFI.",
+        "[104, 105]."
+      ],
+      "correct": 3,
+      "explanation": "Safe checked constructor và to_bytes không cần foreign call."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Missing terminator rejected",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){println!(\"{}\",std::ffi::CStr::from_bytes_with_nul(b\"hi\").is_err());}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Tự đọc bytes ngoài slice để tìm NUL.",
+        "Luôn UB thay vì Result."
+      ],
+      "correct": 0,
+      "explanation": "Checked API kiểm tra input slice."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Interior terminator with suffix",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){println!(\"{}\",std::ffi::CStr::from_bytes_with_nul(b\"a\u0000b\u0000\").is_err());}\n",
+      "options": [
+        "Tự cấp phát CString.",
+        "true.",
+        "false.",
+        "Tự bỏ suffix và luôn Ok."
+      ],
+      "correct": 1,
+      "explanation": "from_bytes_with_nul yêu cầu một terminator đúng cuối, không interior NUL."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Safe split mutation",
+      "question": "Mô hình dùng std split_at_mut này in gì?",
+      "code": "fn main(){let mut a=[1,2,3,4];let (l,r)=a.split_at_mut(2);l[0]=10;r[0]=30;println!(\"{:?}\",a);}\n",
+      "options": [
+        "[10, 30, 3, 4].",
+        "Không thể có hai mutable halves.",
+        "[10, 2, 30, 4].",
+        "[1, 2, 3, 4]."
+      ],
+      "correct": 2,
+      "explanation": "Hai halves không chồng lấn, đây là std safe model chứ không chạy helper unsafe nguồn."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Split at zero",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let mut a=[1,2,3];let (l,r)=a.split_at_mut(0);println!(\"{} {}\",l.len(),r.len());}\n",
+      "options": [
+        "3 0.",
+        "0 0.",
+        "Panic vì empty mutable slice luôn sai.",
+        "0 3."
+      ],
+      "correct": 3,
+      "explanation": "Boundary0 hợp lệ với safe std API."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Split at length",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let mut a=[1,2,3];let (l,r)=a.split_at_mut(3);println!(\"{} {}\",l.len(),r.len());}\n",
+      "options": [
+        "3 0.",
+        "0 3.",
+        "3 3.",
+        "Panic vì mid==len."
+      ],
+      "correct": 0,
+      "explanation": "Boundary bằng length cũng hợp lệ."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Out of bounds safe split",
+      "question": "Đoạn std safe model này gặp gì?",
+      "code": "fn main(){let mut a=[1,2,3];let _=a.split_at_mut(4);}\n",
+      "options": [
+        "Tự resize array.",
+        "Panic vì mid vượt length.",
+        "UB mặc định.",
+        "Tự clamp mid xuống3."
+      ],
+      "correct": 1,
+      "explanation": "Safe API kiểm tra boundary, không tạo invalid mutable slices."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Checked split option",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let mut a=[1,2,3];println!(\"{}\",a.split_at_mut_checked(4).is_none());}\n",
+      "options": [
+        "UB.",
+        "Compiler reject mọi mid runtime.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "checked API trả None khi boundary không hợp lệ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Shared borrow mutation rejection",
+      "question": "Đoạn safe code này có compile không?",
+      "code": "fn main(){let a=1;let r=&a;*r=2;}\n",
+      "options": [
+        "Có vì function name là main.",
+        "Có; shared references tự thành mutable.",
+        "Chỉ runtime panic.",
+        "Không; không thể ghi qua shared reference này."
+      ],
+      "correct": 3,
+      "explanation": "Type checking vẫn giữ mutation rules."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Slice simultaneous borrow rejection",
+      "question": "Đoạn này có compile không?",
+      "code": "fn main(){let mut a=[1,2,3];let l=&mut a[..1];let r=&mut a[1..];println!(\"{} {}\",l[0],r[0]);}\n",
+      "options": [
+        "Không; borrow mutable toàn a khi l vẫn được dùng.",
+        "Có vì array chứa Copy values.",
+        "Có vì r chỉ dùng phần tử cuối.",
+        "Chỉ cần đổi tên l."
+      ],
+      "correct": 0,
+      "explanation": "Borrow checker không suy ra split disjoint từ hai borrows này."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Owned bytes excludes nul",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"a\").unwrap();println!(\"{:?}\",c.into_bytes());}\n",
+      "options": [
+        "Một pointer đã free.",
+        "[97].",
+        "[97, 0].",
+        "[]."
+      ],
+      "correct": 1,
+      "explanation": "into_bytes tiêu thụ owner và trả data không terminator."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Owned bytes includes nul",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"a\").unwrap();println!(\"{:?}\",c.into_bytes_with_nul());}\n",
+      "options": [
+        "[0, 97].",
+        "CString không thể tiêu thụ owner.",
+        "[97, 0].",
+        "[97]."
+      ],
+      "correct": 2,
+      "explanation": "into_bytes_with_nul trả vector bao gồm terminator."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Wrapper panic before FFI",
+      "question": "Mô hình bước chuẩn bị safe_strlen này gặp gì?",
+      "code": "fn main(){let _c=std::ffi::CString::new(\"a\u0000b\").unwrap();}\n",
+      "options": [
+        "Trả length1 tự động.",
+        "UB do đã gọi C với invalid pointer.",
+        "Tự bỏ byteNUL.",
+        "Panic ở unwrap của NulError trước foreign call."
+      ],
+      "correct": 3,
+      "explanation": "Mô hình không gọi FFI; nó kiểm tra failure path của CString::new."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Source function return",
+      "question": "safe_strlen nguồn trả kiểu gì?",
+      "options": [
+        "usize.",
+        "Result<usize,NulError>.",
+        "Option<String>.",
+        "Một owned CStr."
+      ],
+      "correct": 0,
+      "explanation": "Dùng unwrap không làm lỗi được biểu diễn trong return type."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Length semantics",
+      "question": "strlen trên một C string UTF-8 đếm gì theo contract?",
+      "options": [
+        "Số Unicode graphemes bắt buộc.",
+        "Bytes trước NUL, không phải số graphemes.",
+        "Số từ tiếng Việt.",
+        "Số pixels."
+      ],
+      "correct": 1,
+      "explanation": "Không gọi foreign strlen trong fixtures."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Source helper call",
+      "question": "Helper split_at_mut được định nghĩa lồng trong main nguồn có được main gọi rõ không?",
+      "options": [
+        "Có vì tên trùng std.",
+        "Chỉ cần dùng unsafe.",
+        "Không thấy lời gọi trong snippet.",
+        "Có vì định nghĩa tự thực thi body."
+      ],
+      "correct": 2,
+      "explanation": "Định nghĩa function khác với execution."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Source FFI call path",
+      "question": "safe_strlen có được main nguồn gọi rõ không?",
+      "options": [
+        "Có ở mọi println.",
+        "Có vì extern declaration tự gọi strlen.",
+        "Chỉ khi CStr import không dùng.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Không kết luận FFI đã chạy từ việc source có function."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Extern declaration validity",
+      "question": "Thêm unsafe trước extern trong edition2024 có tự xác minh C signature đúng không?",
+      "options": [
+        "Không; author vẫn phải xác nhận signature/ABI.",
+        "Có; compiler hỏi C library tự động.",
+        "Có; mọi usize đều đúng trên mọi platform.",
+        "Chỉ cần function tên strlen."
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp đúng không là full interop proof."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Raw slice empty preconditions",
+      "question": "from_raw_parts_mut với len0 có được nhận null chỉ vì không đọc data không?",
+      "options": [
+        "Chỉ cần unsafe block.",
+        "Không; API yêu cầu pointer non-null và aligned kể cả zero-length.",
+        "Có; mọi empty slice dùng null.",
+        "Có; alignment chỉ cần khi len>1."
+      ],
+      "correct": 1,
+      "explanation": "Đối chiếu contract API thay vì suy đoán từ bytes accessed."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Single allocation",
+      "question": "Raw slice được tạo từ memory spanning hai allocations liền địa chỉ có hợp lệ chỉ vì liền nhau không?",
+      "options": [
+        "Có; nếu cùng element type.",
+        "Chỉ cần cast usize.",
+        "Không; contract yêu cầu range thuộc một allocation phù hợp.",
+        "Có; địa chỉ liền là đủ."
+      ],
+      "correct": 2,
+      "explanation": "Không tạo hoặc chạy ví dụ vi phạm để thử."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Initialized elements",
+      "question": "from_raw_parts_mut<T> có tự initialize các T trong memory không?",
+      "options": [
+        "Có; tự gọi Default cho mọi T.",
+        "Có; tự zero memory.",
+        "Chỉ cần len nhỏ.",
+        "Không; memory phải chứa các values được initialize hợp lệ theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Allocation và initialized valid values là điều kiện khác nhau."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Returned lifetime",
+      "question": "Lifetime trả từ raw pointer constructor có tự được ràng buộc đúng với owner không?",
+      "options": [
+        "Không; abstraction phải bảo đảm lifetime hợp lệ.",
+        "Có; raw pointer mang owner lifetime hoàn chỉnh.",
+        "Có; mọi return luôn static an toàn.",
+        "Chỉ cần ghi tên safe_."
+      ],
+      "correct": 0,
+      "explanation": "Signature sai có thể tạo unsound API."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Unsafe typechecking",
+      "question": "Đặt gán String vào i32 bên trong unsafe có làm nó compile không?",
+      "options": [
+        "Chỉ cần extern C.",
+        "Không; type checking vẫn áp dụng.",
+        "Có; unsafe biến mọi types thành bytes.",
+        "Có; chỉ cần pointer tồn tại."
+      ],
+      "correct": 1,
+      "explanation": "unsafe cho phép một số operations, không vô hiệu hóa mọi checks."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Pointer address printing",
+      "question": "In raw pointer address có chứng minh memory access qua nó hợp lệ không?",
+      "options": [
+        "Có; địa chỉ khác0 bảo đảm lifetime.",
+        "Chỉ nếu hex dài16ký tự.",
+        "Không.",
+        "Có; format thành công là full validity proof."
+      ],
+      "correct": 2,
+      "explanation": "Một observation về address không xác minh provenance và aliasing."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Source shared then mutable casts",
+      "question": "Có nên lấy output chạy bình thường của chuỗi raw-pointer casts nguồn làm proof aliasing sound không?",
+      "options": [
+        "Có; không crash nghĩa là an toàn.",
+        "Có; i32 nhỏ nên không có UB.",
+        "Chỉ cần debug build.",
+        "Không; cần phân tích provenance/aliasing theo model, output không chứng minh soundness."
+      ],
+      "correct": 3,
+      "explanation": "Task không thực thi chuỗi dereference đó để xác minh an toàn."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Bounds subtraction order",
+      "question": "Vì sao check mid<=len phải trước len-mid trong helper?",
+      "options": [
+        "Đảm bảo phép tính length và vùng chia đáp ứng boundary đã định.",
+        "Để tự tạo CString.",
+        "Để vô hiệu hóa alignment.",
+        "Để đổi usize thành signed."
+      ],
+      "correct": 0,
+      "explanation": "Source check trước tạo các raw slices."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Disjointness reasoning",
+      "question": "Trong split_at_mut hợp lệ, hai ranges nào cần không chồng lấn về elements?",
+      "options": [
+        "Chỉ hai pointer variable names khác nhau.",
+        "0..mid và mid..len.",
+        "0..len và 0..len cùng mutable.",
+        "Mọi địa chỉ của process."
+      ],
+      "correct": 1,
+      "explanation": "Hai tên biến khác nhau không tự có nghĩa disjoint memory."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Mutable statics access",
+      "question": "unsafe liên quan mutable statics có nghĩa dùng global mutable state tự thread-safe không?",
+      "options": [
+        "Có; compiler tự tạo atomic cho mọi static.",
+        "Chỉ cần String type.",
+        "Không; vẫn cần synchronization và aliasing discipline phù hợp.",
+        "Có; keyword unsafe là mutex."
+      ],
+      "correct": 2,
+      "explanation": "Concurrency và memory safety obligations không biến mất."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Foreign ownership contract",
+      "question": "Trước khi wrap C allocation, cần biết điều gì về giải phóng?",
+      "options": [
+        "Chỉ pointer khác null.",
+        "Chỉ C function có tên new.",
+        "Không cần nếu Rust wrapper safe.",
+        "Ai sở hữu, khi nào được free và phải dùng allocator/API nào."
+      ],
+      "correct": 3,
+      "explanation": "Allocator mismatch hoặc double free có thể vi phạm safety."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Error versus invariant",
+      "question": "Một error return từ C có tự cho phép đọc mọi output buffer không?",
+      "options": [
+        "Không; phải theo contract về initialization/validity của outputs khi thất bại.",
+        "Có; error code làm memory hợp lệ.",
+        "Có; Rust đọc gì cũng được trong unsafe.",
+        "Chỉ cần cast thành u8."
+      ],
+      "correct": 0,
+      "explanation": "Failure paths cũng cần review đầy đủ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Safe wrapper naming",
+      "question": "Đổi tên unsafe wrapper thành safe_strlen có bảo đảm nó không panic không?",
+      "options": [
+        "Chỉ cần import CStr.",
+        "Không; source unwrap có thể panic khi gặp NUL.",
+        "Có; safe_ là compiler attribute.",
+        "Có; usize không thể lỗi."
+      ],
+      "correct": 1,
+      "explanation": "Safe trong Rust nói về safety contract, không hứa tổng quát không lỗi."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Tool proof limits",
+      "question": "Miri hoặc sanitizer chạy một tập inputs không lỗi có tự là proof mọi safe caller không gây UB không?",
+      "options": [
+        "Có; ABI tự được chứng minh.",
+        "Chỉ cần chạy một lần.",
+        "Không; là bằng chứng hữu ích có giới hạn theo phạm vi và model.",
+        "Có; mọi input tương lai đã được xét."
+      ],
+      "correct": 2,
+      "explanation": "Task hiện không chạy Miri/sanitizer."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Current execution scope",
+      "question": "Các CString/std split examples của bank chứng minh gì trực tiếp?",
+      "options": [
+        "C library integration đã hoàn thành.",
+        "Source raw-pointer helper đã được Miri chứng minh.",
+        "Mọi unsafe wrapper đều sound.",
+        "Các safe API outcomes chọn lọc trên local toolchain."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt safe model với implementation unsafe chưa chạy."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Existing terminator input",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){println!(\"{}\",std::ffi::CString::new(b\"a\u0000\".to_vec()).is_err());}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Nó tự nhận terminator và luôn Ok.",
+        "Nó tự gọi strlen."
+      ],
+      "correct": 0,
+      "explanation": "CString::new thêm terminator riêng và reject mọi NUL trong input, kể cả byte cuối."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Explicit nul vector constructor",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let c=std::ffi::CString::from_vec_with_nul(vec![97,0]).unwrap();println!(\"{}\",c.to_str().unwrap());}\n",
+      "options": [
+        "UB vì constructor không kiểm tra.",
+        "a.",
+        "a rồi byte0.",
+        "Compile error vì vector đã có terminator."
+      ],
+      "correct": 1,
+      "explanation": "from_vec_with_nul là checked API cho input đã có terminator đúng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Empty split model",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let mut a:[u8;0]=[];let(l,r)=a.split_at_mut(0);println!(\"{} {}\",l.len(),r.len());}\n",
+      "options": [
+        "UB vì empty slice luôn null.",
+        "1 0.",
+        "0 0.",
+        "Panic."
+      ],
+      "correct": 2,
+      "explanation": "std safe split xử lý empty boundary, không suy ra arbitrary null raw slice được phép."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Rejoining owner access",
+      "question": "Đoạn này in gì?",
+      "code": "fn main(){let mut a=[1,3];let(l,r)=a.split_at_mut(1);l[0]+=1;r[0]+=1;println!(\"{:?}\",a);}\n",
+      "options": [
+        "[1, 3].",
+        "Compiler cấm dùng owner sau mọi split vĩnh viễn.",
+        "UB do hai halves.",
+        "[2, 4]."
+      ],
+      "correct": 3,
+      "explanation": "Sau lần dùng cuối các borrows, owner có thể được quan sát theo NLL."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "CString moved owner rejection",
+      "question": "Đoạn này có compile không?",
+      "code": "fn main(){let c=std::ffi::CString::new(\"a\").unwrap();let _b=c.into_bytes();println!(\"{:?}\",c);}\n",
+      "options": [
+        "Không; into_bytes tiêu thụ c rồi code dùng lại c.",
+        "Có; CString là Copy.",
+        "Có; into_bytes chỉ borrow.",
+        "Chỉ runtime panic."
+      ],
+      "correct": 0,
+      "explanation": "Ownership vẫn được compiler kiểm tra ở các safe APIs."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Borrowed temporary pointer",
+      "question": "Vì sao lấy CString::new(...).unwrap().as_ptr() rồi dùng pointer về sau có thể nguy hiểm?",
+      "options": [
+        "Không có nguy cơ nếu C chỉ đọc.",
+        "Temporary owner có thể drop trước khi pointer được dùng.",
+        "as_ptr luôn leak owner.",
+        "Raw pointer tự gia hạn temporary tới hết process."
+      ],
+      "correct": 1,
+      "explanation": "Giữ owner trong binding có lifetime phù hợp, không thử dereference dangling."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "As ptr into raw distinction",
+      "question": "as_ptr và into_raw của CString khác nhau quan trọng ở đâu?",
+      "options": [
+        "Cả hai đều trả owned Vec.",
+        "into_raw tự clone CString.",
+        "as_ptr borrow storage, into_raw chuyển ownership ra ngoài theo contract.",
+        "Cả hai đều tự free ngay."
+      ],
+      "correct": 2,
+      "explanation": "Reclaim ownership cần đúng API và provenance."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Reclaim pointer source",
+      "question": "Có được dùng CString::from_raw với arbitrary pointer từ malloc chỉ vì đó là NUL string không?",
+      "options": [
+        "Có; mọi allocators tương đương.",
+        "Có; chỉ cần unsafe block.",
+        "Chỉ cần pointer aligned.",
+        "Không; API yêu cầu pointer phù hợp đã từ CString::into_raw và các invariants liên quan."
+      ],
+      "correct": 3,
+      "explanation": "Foreign allocations cần ownership/free contract riêng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Length modification during ownership transfer",
+      "question": "C sửa length chuỗi rồi trả pointer từng từ CString::into_raw có thể ảnh hưởng gì khi from_raw?",
+      "options": [
+        "Vi phạm yêu cầu về length và allocation reconstruction của API.",
+        "Luôn an toàn vì vẫn có NUL đâu đó.",
+        "Tự resize Rust allocation chính xác.",
+        "Chỉ làm Debug in khác."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy thử vi phạm ownership contract."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Aliasing proof completeness",
+      "question": "assert mid<=len có đủ để một function nhận arbitrary raw pointer tạo hai &mut slices sound không?",
+      "options": [
+        "Chỉ cần len bằng0.",
+        "Không; còn validity, allocation, alignment, initialization, uniqueness và lifetime.",
+        "Có; length là điều kiện duy nhất.",
+        "Có; pointer types đủ chứng minh owner."
+      ],
+      "correct": 1,
+      "explanation": "Source slice input cung cấp nhiều invariants mà raw pointer input không tự có."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Unsafe declaration versus safe method",
+      "question": "Safe API dùng unsafe internals phải đáp ứng yêu cầu nào với safe clients?",
+      "options": [
+        "Chỉ debug build thành công.",
+        "Chỉ tài liệu ghi người dùng cẩn thận.",
+        "Mọi cách sử dụng theo safe contract không gây UB qua implementation.",
+        "Chỉ input mẫu trong main chạy không crash."
+      ],
+      "correct": 2,
+      "explanation": "Không đẩy nghĩa vụ unsafe ẩn sang safe callers."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Panic safety state",
+      "question": "Nếu wrapper thay đổi state rồi có thể panic, cần xét gì?",
+      "options": [
+        "Mọi panic tự rollback mọi side effect.",
+        "Mọi panic luôn UB.",
+        "Chỉ tên function.",
+        "Cleanup, ownership và invariants còn lại khi unwind hoặc xử lý lỗi theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Panic safety và memory safety cần lập luận cụ thể."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "C ABI size agreement",
+      "question": "Đối chiếu signature strlen cần xem usize/size_t như thế nào?",
+      "options": [
+        "Xác nhận mapping ABI/types trên target thay vì giả mọi C declarations đều đúng.",
+        "Cứ tên strlen là compiler tự sửa type.",
+        "size_t luôn là u32 mọi platform.",
+        "usize luôn là i32."
+      ],
+      "correct": 0,
+      "explanation": "Task không build/link C wrapper nên không claim integration."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Foreign retains pointer",
+      "question": "Nếu C giữ pointer để dùng sau khi Rust call trở về, wrapper cần gì?",
+      "options": [
+        "Chỉ dùng *const thay *mut.",
+        "Contract giữ storage sống đủ lâu và quản lý ownership/synchronization phù hợp.",
+        "Chỉ giữ owner sống trong lúc gọi là đủ mọi trường hợp.",
+        "C tự clone data trong mọi API."
+      ],
+      "correct": 1,
+      "explanation": "Lifetime phải bao toàn thời gian foreign code còn truy cập."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Raw mut versus exclusive ref",
+      "question": "Có một *mut T có đồng nghĩa đang có một &mut T hợp lệ độc quyền không?",
+      "options": [
+        "Có nếu address không null.",
+        "Chỉ cần derive Clone.",
+        "Không; raw pointer type tự nó không chứng minh exclusivity.",
+        "Có; hai types chỉ khác spelling."
+      ],
+      "correct": 2,
+      "explanation": "Chuyển thành reference làm phát sinh obligations về validity/aliasing."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Data race versus timing race",
+      "question": "Một race về thứ tự logic có luôn là data race UB không?",
+      "options": [
+        "Có; mọi scheduling khác nhau là UB.",
+        "Không data race nào có thể UB trong unsafe.",
+        "Chỉ strings mới có data races.",
+        "Không; cần phân biệt logical interleavings với conflicting unsynchronized memory accesses."
+      ],
+      "correct": 3,
+      "explanation": "Không bỏ qua synchronization khi review FFI/global state."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Output cannot establish soundness",
+      "question": "Vì sao chạy source và thấy r1:5 r2:10 vẫn không chứng minh aliasing hợp lệ?",
+      "options": [
+        "UB có thể biểu hiện như output mong đợi; cần proof theo contract/model.",
+        "Output numbers tự là bằng chứng đầy đủ.",
+        "Debug build tự tắt mọi UB.",
+        "i32 không có aliasing rules."
+      ],
+      "correct": 0,
+      "explanation": "Task không sử dụng observation đó làm validation."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Edition migration limits",
+      "question": "cargo fix --edition thêm unsafe extern có tự audit được signature và foreign library lifetime không?",
+      "options": [
+        "Chỉ cần process exit0.",
+        "Không; migration cú pháp không thay manual contract review.",
+        "Có; tự đọc mọi C headers và prove mọi calls.",
+        "Có; tự viết wrapper SQLite."
+      ],
+      "correct": 1,
+      "explanation": "Không chạy migration không cần thiết trong task nội dung này."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "SQLite wrapper completion",
+      "question": "Một extern strlen declaration có hoàn thành bài tập safe SQLite wrapper không?",
+      "options": [
+        "Chỉ cần đổi symbol name.",
+        "Chỉ cần CString.",
+        "Chưa; đó là API khác và thiếu resource/error/thread/ownership contracts của SQLite.",
+        "Có; mọi C libraries cùng semantics."
+      ],
+      "correct": 2,
+      "explanation": "Không coi minh họa FFI nhỏ là production binding đầy đủ."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Zero length raw slice contract",
+      "question": "Muốn biểu diễn empty mutable slice bằng raw constructor, điều gì vẫn phải được bảo đảm?",
+      "options": [
+        "Null luôn hợp lệ vì không truy cập bytes.",
+        "Một integer address bất kỳ luôn đủ.",
+        "Chỉ cần đánh dấu function safe.",
+        "Pointer non-null, aligned và các safety requirements liên quan của API."
+      ],
+      "correct": 3,
+      "explanation": "Zero length không loại bỏ yêu cầu validity của reference representation; ưu tiên safe API khi có."
+    }
+  ]
+}

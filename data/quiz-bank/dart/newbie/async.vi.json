@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "dart",
+  "level": "newbie",
+  "lesson": "async",
+  "language": "vi",
+  "sourceHash": "b35157794c4ff941dc1a22b5d018d1e714d9ab0e4294ab99a80d8828776c9d66",
+  "status": "approved",
+  "review": "Tự soạn theo fetchUser/fetchAll/countDown/searchResults, đối chiếu Dart async API. fetchUser chỉ giả lập delay, searchResults chưa debounce/API, source chưa spawn isolate. Không chạy network/timer benchmark; chưa có Dart SDK local. Stream.listen cancelOnError mặc định false theo API reference, không theo mô tả blog cũ sai khác.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Future result type",
+      "question": "Future<String> của fetchUser mô tả gì?",
+      "options": [
+        "Một kết quả String hoặc lỗi khi hoàn tất",
+        "Một chuỗi sự kiện String vô hạn",
+        "Một thread mới bắt buộc",
+        "Một String đã có ngay luôn luôn"
+      ],
+      "correct": 0,
+      "explanation": "Future đại diện một lần hoàn tất bất đồng bộ."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Await expression",
+      "question": "await fetchUser(1) giúp làm gì?",
+      "options": [
+        "Chuyển Future thành Stream",
+        "Chờ kết quả tại điểm đó trong hàm async",
+        "Chặn mọi isolate toàn ứng dụng",
+        "Tự tạo database user"
+      ],
+      "correct": 1,
+      "explanation": "Hàm có thể tạm dừng để event loop xử lý việc khác."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Async modifier",
+      "question": "Từ khóa nào đánh dấu fetchUser là hàm bất đồng bộ?",
+      "options": [
+        "with",
+        "mixin",
+        "async",
+        "async* bắt buộc cho mọi Future"
+      ],
+      "correct": 2,
+      "explanation": "async phù hợp hàm trả một kết quả Future."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Delay simulation",
+      "question": "Future.delayed trong fetchUser đang làm gì?",
+      "options": [
+        "Gọi API tài khoản thật",
+        "Xác thực user trên server",
+        "Mở isolate mới",
+        "Giả lập chờ trước khi trả chuỗi"
+      ],
+      "correct": 3,
+      "explanation": "Không có network call trong hàm mẫu."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Wait aggregation",
+      "question": "Future.wait trong fetchAll dùng để làm gì?",
+      "options": [
+        "Gom kết quả nhiều future",
+        "Đếm số subscriber Stream",
+        "Tự retry mọi lỗi vô hạn",
+        "Tự tạo thread cho từng String"
+      ],
+      "correct": 0,
+      "explanation": "Future.wait trả future chứa list kết quả khi thành công."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Stream purpose",
+      "question": "Stream<int> phù hợp với dữ liệu nào?",
+      "options": [
+        "Một object không có event",
+        "Chuỗi nhiều sự kiện int theo thời gian",
+        "Một enum compile-time",
+        "Một int luôn sẵn đồng bộ"
+      ],
+      "correct": 1,
+      "explanation": "Stream có thể có data,error và done events."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Async generator",
+      "question": "async* trên countDown cho biết điều gì?",
+      "options": [
+        "Hàm trả List<int> đồng bộ",
+        "Hàm tự vô hiệu lỗi",
+        "Đây là hàm sinh Stream",
+        "Hàm luôn chạy trên nhiều core"
+      ],
+      "correct": 2,
+      "explanation": "async* dùng với yield để phát sự kiện."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Yield intent",
+      "question": "yield i trong countDown làm gì?",
+      "options": [
+        "Trả List toàn bộ rồi kết thúc ngay",
+        "Đổi i thành Future",
+        "Xóa subscriber",
+        "Phát một data event mang i"
+      ],
+      "correct": 3,
+      "explanation": "Generator có thể tiếp tục sau một lần yield."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Await for source",
+      "question": "await for phù hợp duyệt gì ở đây?",
+      "options": [
+        "Các sự kiện của Stream",
+        "Một Map không có iterator",
+        "Một int đơn lẻ",
+        "Một enum type declaration"
+      ],
+      "correct": 0,
+      "explanation": "await for tiêu thụ stream trong hàm async."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Listen return",
+      "question": "Stream.listen trả về gì?",
+      "options": [
+        "Một List<int> luôn hoàn chỉnh",
+        "StreamSubscription",
+        "Giá trị data cuối cùng ngay lập tức",
+        "WidgetRef"
+      ],
+      "correct": 1,
+      "explanation": "Subscription dùng điều khiển việc lắng nghe."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Data callback",
+      "question": "Callback đầu tiên của listen nhận gì?",
+      "options": [
+        "Chỉ done",
+        "Danh sách mọi isolate",
+        "Mỗi data event",
+        "Chỉ lỗi"
+      ],
+      "correct": 2,
+      "explanation": "Source in từng số từ countDown."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Done callback",
+      "question": "onDone được gọi khi nào?",
+      "options": [
+        "Sau mỗi số",
+        "Trước mọi onData",
+        "Mỗi khi timer được tạo",
+        "Khi stream đóng và gửi done event cho subscriber"
+      ],
+      "correct": 3,
+      "explanation": "Done biểu thị kết thúc stream."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Error callback",
+      "question": "onError dùng để làm gì?",
+      "options": [
+        "Xử lý error event từ stream",
+        "Tự retry HTTP bắt buộc",
+        "Biến mọi error thành dữ liệu 0",
+        "Tăng số lượng subscriber"
+      ],
+      "correct": 0,
+      "explanation": "Handler chỉ có behavior do caller viết."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Try await",
+      "question": "try/catch quanh await fetchUser có thể bắt gì?",
+      "options": [
+        "Mọi lỗi parse của thư viện khác chưa chạy",
+        "Lỗi từ future được await trong khối",
+        "Mọi lỗi của mọi stream về sau",
+        "Mọi exception toàn máy"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi và chain async quyết định nơi lỗi được xử lý."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Search length filter",
+      "question": "searchResults chỉ yield khi điều kiện nào đúng?",
+      "options": [
+        "query là null",
+        "query có dấu @",
+        "query.length >= 3",
+        "query luôn phải đúng 3"
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện mẫu chỉ kiểm độ dài tối thiểu."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Search yielded type",
+      "question": "searchResults phát kiểu data event nào?",
+      "options": [
+        "int",
+        "List<User> thật từ API",
+        "bool",
+        "String"
+      ],
+      "correct": 3,
+      "explanation": "Hàm yield chuỗi nội suy Results for."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Countdown order",
+      "question": "countDown giảm i theo bước nào?",
+      "options": [
+        "Giảm 1 mỗi lượt",
+        "Tăng 1 mỗi lượt",
+        "Nhân 2 mỗi lượt",
+        "Không đổi i"
+      ],
+      "correct": 0,
+      "explanation": "Vòng lặp dùng i--."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Zero inclusive",
+      "question": "Điều kiện i >= 0 có bao gồm số 0 không?",
+      "options": [
+        "Chỉ khi stream broadcast",
+        "Có",
+        "Không bao giờ",
+        "Chỉ nếu from bằng 5"
+      ],
+      "correct": 1,
+      "explanation": "Mốc cuối vòng lặp là 0."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Isolate implementation absence",
+      "question": "Code mẫu có spawn isolate thực tế không?",
+      "options": [
+        "Có, mỗi yield là isolate",
+        "Có, import dart:async tự tạo isolate riêng",
+        "Không, isolate chỉ được nhắc ở theory/title",
+        "Có, mọi async tự spawn"
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm chủ đề được nêu với implementation có trong source."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Exercise missing features",
+      "question": "Debounce và API search trong exercise đã có chưa?",
+      "options": [
+        "Đã gọi server tìm kiếm thật",
+        "Đã hủy HTTP cũ khi gõ",
+        "Đã cache và retry",
+        "Chưa, searchResults chỉ lọc độ dài rồi tạo chuỗi"
+      ],
+      "correct": 3,
+      "explanation": "Đây là phần cần xây thêm."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Fetch sample value",
+      "question": "Theo logic source, await fetchUser(7) hoàn tất thành giá trị nào?",
+      "options": [
+        "User 7",
+        "User 1",
+        "7 kiểu int",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "ID được nội suy vào chuỗi sau delay."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Negative id handling",
+      "question": "fetchUser(-1) có tự validate ID dương không?",
+      "options": [
+        "Có, id bị chuyển thành 1",
+        "Không, vẫn tạo chuỗi User -1 theo logic",
+        "Có, tự ném HTTP 400",
+        "Có, Future cấm số âm"
+      ],
+      "correct": 1,
+      "explanation": "Source không có điều kiện kiểm ID."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Fetch all list",
+      "question": "Nếu mọi future thành công, fetchAll trả list nào theo thứ tự?",
+      "options": [
+        "Một String nối ba user",
+        "Một Set không thứ tự",
+        "[User 1, User 2, User 3]",
+        "[User 3, User 2, User 1] bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Future.wait giữ thứ tự input futures cho values."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Completion versus result order",
+      "question": "Nếu future thứ ba xong trước thứ nhất, list Future.wait sắp theo gì?",
+      "options": [
+        "Thứ tự hoàn tất bắt buộc",
+        "ID tăng dần do Dart tự sort",
+        "Thứ tự hash của String",
+        "Thứ tự iterable futures đầu vào"
+      ],
+      "correct": 3,
+      "explanation": "Thời điểm hoàn tất không tự đổi vị trí kết quả."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Concurrent creation",
+      "question": "Trong fetchAll, ba lời gọi fetchUser được tạo lúc nào?",
+      "options": [
+        "Khi đánh giá list trước await Future.wait",
+        "Chỉ gọi user 2 sau await user 1 xong",
+        "Chỉ gọi user 3 khi caller đọc phần tử 3",
+        "Không hàm nào được gọi vì list lazy"
+      ],
+      "correct": 0,
+      "explanation": "List literal đánh giá các biểu thức lời gọi theo thứ tự tạo."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Sequential alternative",
+      "question": "Đoạn await fetchUser(1); await fetchUser(2); khác fetchAll ở điểm gì?",
+      "options": [
+        "Không cho phép bắt exception",
+        "Lần gọi thứ hai bắt đầu sau await thứ nhất",
+        "Luôn chạy nhanh gấp hai",
+        "Tự dùng hai core"
+      ],
+      "correct": 1,
+      "explanation": "Vị trí gọi và await ảnh hưởng overlap."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "No exact stopwatch claim",
+      "question": "Ba delay một giây trong Future.wait có chứng minh runtime luôn đúng 1.000 giây không?",
+      "options": [
+        "Có, Future.wait bỏ mọi overhead",
+        "Có, đồng thời nghĩa là thời gian cố định",
+        "Không, còn scheduling và overhead",
+        "Có, Duration là benchmark chính xác"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ mô tả overlap, không có phép đo exact duration."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Countdown five events",
+      "question": "countDown(5) khi nghe đến hết phát bao nhiêu data events?",
+      "options": [
+        "5",
+        "4",
+        "7",
+        "6"
+      ],
+      "correct": 3,
+      "explanation": "Dãy 5,4,3,2,1,0 gồm sáu giá trị."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Countdown zero events",
+      "question": "countDown(0) theo source phát data thế nào?",
+      "options": [
+        "Một event 0 sau delay",
+        "Không phát event nào",
+        "Phát 1 rồi 0",
+        "Phát vô hạn 0"
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện vòng lặp đúng một lần."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Countdown negative events",
+      "question": "countDown(-1) theo source có bao nhiêu data event?",
+      "options": [
+        "Vô hạn",
+        "0",
+        "1 mang -1",
+        "2 mang -1 và 0"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện i>=0 sai ngay từ đầu."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Countdown first emission",
+      "question": "Event đầu của countDown(3) xuất hiện trước hay sau Future.delayed đầu?",
+      "options": [
+        "Cùng lúc gọi hàm theo sync*",
+        "Chỉ sau done",
+        "Sau await delay",
+        "Trước delay"
+      ],
+      "correct": 2,
+      "explanation": "Delay đứng trước yield trong loop."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Countdown two sequence",
+      "question": "Bỏ qua timing, countDown(2) phát dãy nào?",
+      "options": [
+        "0,1,2",
+        "2,1",
+        "1,0",
+        "2,1,0"
+      ],
+      "correct": 3,
+      "explanation": "Dãy bao gồm điểm bắt đầu và zero."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Subscription laziness",
+      "question": "Chỉ gọi countDown(5) mà không lắng nghe có làm toàn bộ generator chạy ngay không?",
+      "options": [
+        "Không, async* bắt đầu tạo events khi có listener",
+        "Có, cả sáu print tự xuất hiện",
+        "Có, phải chờ sáu giây ngay ở lời gọi",
+        "Có, Stream luôn eager như List literal"
+      ],
+      "correct": 0,
+      "explanation": "Source generator trả stream, consumer kích hoạt việc lắng nghe."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Await loop completion",
+      "question": "Code sau await for countDown(5) chạy khi nào nếu stream kết thúc bình thường?",
+      "options": [
+        "Không bao giờ dù stream hữu hạn",
+        "Sau khi tiêu thụ stream đến done",
+        "Ngay trước data event đầu tiên",
+        "Sau mỗi event một lần"
+      ],
+      "correct": 1,
+      "explanation": "await for là điểm chờ hoàn tất vòng duyệt."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Separate countdown calls",
+      "question": "countDown(5) rồi countDown(3) trong main có dùng cùng một stream object không?",
+      "options": [
+        "Có, from bị ghi đè trong stream đầu",
+        "Có, stream thứ hai nối vào stream đầu tự động",
+        "Không, đó là hai lời gọi generator riêng",
+        "Có, mọi generator dùng singleton"
+      ],
+      "correct": 2,
+      "explanation": "Tạo stream mới khác việc listen lần hai cùng stream."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Single subscription behavior",
+      "question": "Gán s=countDown(3) rồi listen s hai lần có được như broadcast không?",
+      "options": [
+        "Có, mọi stream luôn broadcast",
+        "Có, lần thứ hai tự replay mọi event",
+        "Chỉ được nếu callback giống nhau",
+        "Không, stream async* là single-subscription"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế loại stream và fan-out có chủ đích."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Filter short query",
+      "question": "queries lần lượt là a,ab,abc; searchResults phát gì?",
+      "options": [
+        "Chỉ Results for: abc",
+        "Cả ba query",
+        "Chỉ Results for: a",
+        "Không query nào"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ abc đạt length>=3."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Filter empty query",
+      "question": "Query rỗng có được phát thành Results for: không?",
+      "options": [
+        "Có, vì empty là done event",
+        "Không, length=0",
+        "Có, vì mọi String non-null đều đạt >=3",
+        "Có, vì async* tự pad String"
+      ],
+      "correct": 1,
+      "explanation": "String rỗng là data nhưng bị filter."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Filter spaces",
+      "question": "Query gồm đúng ba dấu cách có qua điều kiện mẫu không?",
+      "options": [
+        "Không, whitespace luôn có length=0",
+        "Không, Future tự loại khoảng trắng",
+        "Có, source không trim và length=3",
+        "Không, Dart tự trim Stream<String>"
+      ],
+      "correct": 2,
+      "explanation": "Độ dài khác nội dung tìm kiếm hữu ích."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Repeated query handling",
+      "question": "Hai query abc liên tiếp được source xử lý thế nào?",
+      "options": [
+        "Tự distinct thành một",
+        "Tự cache thành Future duy nhất",
+        "Tự hủy query thứ nhất",
+        "Yield hai chuỗi kết quả giống nhau"
+      ],
+      "correct": 3,
+      "explanation": "Không có distinct/debounce trong code."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Search event ordering",
+      "question": "Với abc rồi xyz, source yield theo thứ tự nào?",
+      "options": [
+        "abc rồi xyz theo input stream",
+        "Luôn xyz rồi abc",
+        "Sort từ điển mọi query trước khi yield",
+        "Thứ tự ngẫu nhiên do isolate"
+      ],
+      "correct": 0,
+      "explanation": "Vòng await for xử lý tuần tự từng query."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Search output content",
+      "question": "Query Dart tạo chuỗi nào?",
+      "options": [
+        "Results for: query",
+        "Results for: Dart",
+        "User Dart",
+        "Dart kiểu List"
+      ],
+      "correct": 1,
+      "explanation": "Nội suy query vào literal trong yield."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Stream errors forwarding",
+      "question": "Nếu queries gửi error mà searchResults không catch, nên hiểu thế nào?",
+      "options": [
+        "Tự retry input vô hạn",
+        "Tự bỏ mọi error vì String non-null",
+        "Lỗi có thể đi ra stream output cho consumer xử lý",
+        "Tự đổi thành Results for: error"
+      ],
+      "correct": 2,
+      "explanation": "async* không tự biến lỗi thành data hợp lệ."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Listen completion wait",
+      "question": "Gọi countDown(3).listen(...) có chờ đến done như await for không?",
+      "options": [
+        "Có, luôn block main tới hết",
+        "Có, StreamSubscription là String kết quả",
+        "Chỉ khi có onError mới block",
+        "Không, lời gọi trả subscription"
+      ],
+      "correct": 3,
+      "explanation": "Cần cơ chế chờ riêng nếu bước sau phụ thuộc done."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Cancel default correction",
+      "question": "Theo API Stream.listen, cancelOnError mặc định là gì?",
+      "options": [
+        "false",
+        "true",
+        "Luôn phụ thuộc int from",
+        "Không tồn tại tham số này"
+      ],
+      "correct": 0,
+      "explanation": "Mặc định không tự cancel chỉ vì error event được giao; nguồn vẫn có thể tự đóng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Cancel on error explicit",
+      "question": "cancelOnError:true quy định gì?",
+      "options": [
+        "Hủy tất cả stream trong process",
+        "Tự cancel subscription khi nhận error event đầu",
+        "Retry mỗi data event",
+        "Xóa mọi lỗi và tiếp tục vô hạn"
+      ],
+      "correct": 1,
+      "explanation": "Đây là chính sách của subscription cụ thể."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Missing error handler",
+      "question": "Listen stream có error nhưng không onError thì sao?",
+      "options": [
+        "Luôn bị bỏ âm thầm",
+        "Tự biến thành số 0",
+        "Error có thể trở thành unhandled async error qua Zone",
+        "Tự được coi như done thành công"
+      ],
+      "correct": 2,
+      "explanation": "Cần gắn handler theo error contract."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Cancel future meaning",
+      "question": "subscription.cancel() trả Future<void> để báo gì?",
+      "options": [
+        "Giá trị cuối cùng của countdown",
+        "Kết quả mọi HTTP request toàn ứng dụng",
+        "Số event còn lại",
+        "Hoàn tất cleanup của subscription/source khi cần"
+      ],
+      "correct": 3,
+      "explanation": "Nếu bước sau cần resource đã giải phóng, cần đợi cleanup future."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Paused delivery",
+      "question": "Subscription đang pause thì có nhận onData callback mới không?",
+      "options": [
+        "Không trong thời gian pause",
+        "Có, pause chỉ đổi màu log",
+        "Có, nếu data là int",
+        "Có, onDone bắt buộc tiếp tục mỗi giây"
+      ],
+      "correct": 0,
+      "explanation": "Pause kiểm soát delivery; buffering/source behavior cần xem riêng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Wait empty iterable",
+      "question": "Future.wait<String>([]) khi thành công trả gì?",
+      "options": [
+        "Một String rỗng",
+        "List<String> rỗng",
+        "null",
+        "Một future không bao giờ xong"
+      ],
+      "correct": 1,
+      "explanation": "Không có kết quả nào để thu thập."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Wait failure value",
+      "question": "Một future trong Future.wait thất bại thì caller nhận list partial bình thường không?",
+      "options": [
+        "Có, lỗi được đổi thành String",
+        "Có, wait luôn bỏ lỗi",
+        "Không, aggregate future hoàn tất với lỗi theo chính sách",
+        "Có, chỗ lỗi tự là null dù T non-null"
+      ],
+      "correct": 2,
+      "explanation": "Muốn partial success cần thiết kế cách thu kết quả riêng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Wait eager default",
+      "question": "eagerError mặc định false của Future.wait nghĩa là gì?",
+      "options": [
+        "Không bao giờ báo lỗi",
+        "Hủy các future còn lại ngay",
+        "Chạy futures nối tiếp",
+        "Chờ các future hoàn tất trước khi báo lỗi đầu đã ghi nhận"
+      ],
+      "correct": 3,
+      "explanation": "Thời điểm aggregate error khác thời điểm tác vụ nền chấm dứt."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Wait eager enabled",
+      "question": "eagerError:true có tự hủy các future khác không?",
+      "options": [
+        "Không, nó đổi thời điểm báo lỗi aggregate",
+        "Có, Future có cancellation tự động toàn cục",
+        "Có, timer khác bị kill",
+        "Có, mọi isolate được dừng"
+      ],
+      "correct": 0,
+      "explanation": "API wait không cấp cơ chế cancel các operation đầu vào."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Delay nonblocking distinction",
+      "question": "await Future.delayed có giống busy loop một giây không?",
+      "options": [
+        "Không vì delayed tự dùng GPU",
+        "Không, nó nhường cơ hội xử lý event khác",
+        "Có, cả hai chiếm CPU như nhau bắt buộc",
+        "Có, main isolate luôn frozen hoàn toàn"
+      ],
+      "correct": 1,
+      "explanation": "Delay scheduling khác công việc CPU liên tục."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Await cpu work",
+      "question": "Thêm async trước hàm tính CPU nặng có tự offload không?",
+      "options": [
+        "Có, mọi await dùng isolate mới",
+        "Có, Dart tự chọn nhiều core cho loop",
+        "Không, code vẫn chạy trên isolate hiện tại trừ khi chủ động chuyển",
+        "Có, mỗi async tạo worker thread"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt async API với parallel computation."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Main try scope",
+      "question": "Try/catch đầu main có bao bọc cả listen ở cuối không?",
+      "options": [
+        "Có, try đầu hàm áp dụng mọi lệnh sau",
+        "Có, onDone tự nối về try cũ",
+        "Chỉ nếu countDown từ 3",
+        "Không, listen nằm ngoài khối try đó"
+      ],
+      "correct": 3,
+      "explanation": "Lexical scope vẫn quan trọng trong async code."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Countdown total schedule",
+      "question": "Vì delay ở mỗi lượt, countDown(5) có bao nhiêu lần await delay nếu nghe hết?",
+      "options": [
+        "6",
+        "5",
+        "1",
+        "0"
+      ],
+      "correct": 0,
+      "explanation": "Mỗi giá trị kể cả 0 đều có delay trước yield."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Async function return contract",
+      "question": "fetchUser khai báo Future<String> nhưng return \"User $id\" trong async có hợp lý không?",
+      "options": [
+        "Có vì return tự là Stream",
+        "Có, async hoàn tất future bằng giá trị String",
+        "Không, bắt buộc return Future.value ở mọi dòng",
+        "Không, phải dùng yield"
+      ],
+      "correct": 1,
+      "explanation": "Async function có cơ chế hoàn tất future với return value."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Await for break",
+      "question": "Thoát await for bằng break thường dẫn đến gì với subscription?",
+      "options": [
+        "Bắt buộc tiêu thụ nốt mọi event rồi mới break",
+        "Tự gọi lại generator từ đầu",
+        "Vòng lặp hủy subscription theo cơ chế async for",
+        "Tự chuyển source thành broadcast"
+      ],
+      "correct": 2,
+      "explanation": "Cleanup/cancellation là phần của control flow async iteration."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Stream length units",
+      "question": "query.length>=3 có đang đếm grapheme hiển thị luôn không?",
+      "options": [
+        "Có, mỗi emoji là một đơn vị",
+        "Có, đếm số từ theo khoảng trắng",
+        "Không, đây là số request đã gửi",
+        "Không, String.length đếm UTF-16 code units"
+      ],
+      "correct": 3,
+      "explanation": "Nếu policy theo ký tự người dùng nhìn thấy cần cách đếm khác."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Concurrency versus parallelism",
+      "question": "Vì sao fetchAll không chứng minh ba tác vụ CPU chạy song song ba core?",
+      "options": [
+        "Future aggregation không tự spawn isolate",
+        "Vì String không thể xử lý bất đồng bộ",
+        "Vì concurrent luôn đồng nghĩa sequential",
+        "Vì wait chỉ nhận đúng một future"
+      ],
+      "correct": 0,
+      "explanation": "Overlap chờ I/O/timer khác parallel execution code CPU."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Debounce missing behavior",
+      "question": "Để bài exercise thực sự debounce cần thêm behavior nào?",
+      "options": [
+        "Chỉ dùng Future.wait cho mọi ký tự",
+        "Chỉ phát query sau khoảng yên lặng theo policy, quản lý timer/lifecycle",
+        "Chỉ kiểm query.length>=3",
+        "Chỉ đổi async* thành async"
+      ],
+      "correct": 1,
+      "explanation": "Filter độ dài không gộp burst sự kiện."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Stale response prevention",
+      "question": "Nếu API query cũ trả sau query mới, UI nên làm gì?",
+      "options": [
+        "Dùng length>=3 làm bảo đảm thứ tự HTTP",
+        "Gắn async để mọi response tự đúng thứ tự UI",
+        "Chỉ áp dụng response còn khớp phiên/query hiện hành hoặc hủy operation có hỗ trợ",
+        "Luôn lấy response tới cuối bất kể query"
+      ],
+      "correct": 2,
+      "explanation": "Cần chính sách latest-result rõ khi các request overlap."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Cancellation versus ignoring",
+      "question": "Bỏ qua stale response có bảo đảm server dừng xử lý request cũ không?",
+      "options": [
+        "Có, garbage collector hủy mọi HTTP",
+        "Có, Stream<String> tự rollback server",
+        "Có, chỉ cần đổi biến query",
+        "Không, bỏ kết quả khác cancellation thực tế"
+      ],
+      "correct": 3,
+      "explanation": "Muốn cancel tài nguyên cần cơ chế transport và lifecycle tương ứng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Timeout not cancellation",
+      "question": "Future.timeout có bảo đảm operation gốc dừng lúc hết hạn không?",
+      "options": [
+        "Không, future gốc vẫn có thể hoàn tất sau",
+        "Có, tự kill isolate chứa operation",
+        "Có, tự rollback side effect",
+        "Có, timeout luôn close mọi socket"
+      ],
+      "correct": 0,
+      "explanation": "Timeout kiểm soát việc chờ/kết quả wrapper, không là cancel mặc định."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Resource cleanup after wait error",
+      "question": "Nếu Future.wait bỏ aggregate list vì lỗi nhưng successes giữ resource, cần cân nhắc gì?",
+      "options": [
+        "Coi resource chưa từng được tạo",
+        "Cleanup có chủ đích, gồm cleanUp API khi phù hợp",
+        "Cho rằng wait tự close mọi resource tùy ý",
+        "Chỉ đổi T thành dynamic"
+      ],
+      "correct": 1,
+      "explanation": "Phải nêu ownership và cleanup cả nhánh lỗi."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Wait cleanup throwing",
+      "question": "cleanUp callback của Future.wait nên tránh điều gì?",
+      "options": [
+        "Chạy sau một lỗi aggregate",
+        "Giải phóng resource thuộc quyền sở hữu",
+        "Ném lỗi khiến phát sinh uncaught async error",
+        "Nhận một success value"
+      ],
+      "correct": 2,
+      "explanation": "API yêu cầu callback cleanup không throw."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Subscription lifecycle",
+      "question": "Widget giữ subscription cần làm gì khi không còn dùng?",
+      "options": [
+        "Chỉ bỏ tham chiếu rồi bảo đảm stream dừng",
+        "Giữ listener mãi để khỏi tốn tạo mới",
+        "Đặt onDone rỗng để auto-dispose mọi nguồn",
+        "Cancel và quản lý cleanup theo lifecycle"
+      ],
+      "correct": 3,
+      "explanation": "Subscription có lifetime riêng cần được quản lý."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Backpressure scope",
+      "question": "Pause subscription có bảo đảm mọi producer ngoài hệ thống ngừng tạo dữ liệu không?",
+      "options": [
+        "Không, tùy source có thể pause hoặc buffer",
+        "Có, pause tự dừng toàn mạng",
+        "Có, Dart kiểm soát mọi server producer",
+        "Có, mọi stream đều cùng một policy bộ nhớ"
+      ],
+      "correct": 0,
+      "explanation": "Cần giới hạn buffer và hiểu nguồn sự kiện."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Async listener overlap",
+      "question": "Dùng listen((event) async { await work(event); }) có tự xử lý tuần tự mọi work không?",
+      "options": [
+        "Không vì listen cấm callback chứa await",
+        "Không, listen không await Future của callback void để serialize",
+        "Có, async callback luôn khóa subscription",
+        "Có, stream tự đợi như await for có await body"
+      ],
+      "correct": 1,
+      "explanation": "Muốn tuần tự cần chọn pipeline/iteration phù hợp."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Error continuation nuance",
+      "question": "cancelOnError:false có bảo đảm source sẽ tiếp tục phát data sau mọi lỗi không?",
+      "options": [
+        "Có, nó tự hồi sinh stream đã đóng",
+        "Có, nó tự retry network",
+        "Không, source có thể tự kết thúc",
+        "Có, nó bắt buộc generator chạy mãi"
+      ],
+      "correct": 2,
+      "explanation": "Chính sách subscription không thay logic và lifetime producer."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Isolate memory model",
+      "question": "Trao đổi công việc giữa isolate nên dựa vào gì?",
+      "options": [
+        "Chia sẻ trực tiếp mọi biến mutable như cùng stack",
+        "Gọi setState của widget từ isolate khác trực tiếp",
+        "Gắn final để mọi object thành shared memory",
+        "Message passing với dữ liệu gửi được theo API"
+      ],
+      "correct": 3,
+      "explanation": "Isolate có bộ nhớ/event loop riêng, không là thread dùng chung mọi object."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Isolate cost tradeoff",
+      "question": "Có nên spawn isolate mới cho mọi thao tác cộng hai int không?",
+      "options": [
+        "Không mặc định, cần xét overhead và workload",
+        "Có, luôn nhanh hơn tuyệt đối",
+        "Có, source title yêu cầu mọi hàm dùng isolate",
+        "Có, isolate không có startup/message cost"
+      ],
+      "correct": 0,
+      "explanation": "Chọn theo phép đo và độ nặng công việc."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Web platform difference",
+      "question": "Có thể giả mọi API isolate/native hoạt động y hệt trên web không?",
+      "options": [
+        "Có, chỉ cần thêm import dart:async",
+        "Không, phải xem target và API hỗ trợ",
+        "Có, Dart-to-JS tạo core CPU vô hạn",
+        "Có, Future.wait xóa khác biệt nền tảng"
+      ],
+      "correct": 1,
+      "explanation": "Khả năng concurrency phụ thuộc môi trường triển khai."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Retry idempotency",
+      "question": "Nếu mở rộng search/API có retry, điều gì quan trọng với operation có side effect?",
+      "options": [
+        "Mỗi lỗi gửi lại ngay không chờ",
+        "Coi async là tự chống trùng",
+        "Giới hạn retry và bảo đảm idempotency/chống lặp theo contract",
+        "Retry vô hạn cho mọi lỗi"
+      ],
+      "correct": 2,
+      "explanation": "Retry có thể lặp side effect nếu không thiết kế."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Unhandled future branch",
+      "question": "Tạo Future có thể fail rồi không await hay gắn error handler có rủi ro gì?",
+      "options": [
+        "Future tự chuyển thành success null",
+        "Không bao giờ có lỗi vì không đọc kết quả",
+        "Dart tự gọi catch trong hàm khác bất kỳ",
+        "Lỗi async không được xử lý đúng chain"
+      ],
+      "correct": 3,
+      "explanation": "Bỏ kết quả không làm lỗi biến mất."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Input validation async boundary",
+      "question": "Chỉ vì fetchUser trả Future<String> có chứng minh ID hợp lệ và dữ liệu tồn tại không?",
+      "options": [
+        "Không, type kết quả không xác thực business rule",
+        "Có, Future kiểm domain ID",
+        "Có, String bảo đảm user thật",
+        "Có, delayed xác thực server"
+      ],
+      "correct": 0,
+      "explanation": "Source thậm chí không gọi server hoặc kiểm ID."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Test time control",
+      "question": "Test countdown/debounce nên kiểm gì thay phụ thuộc ngủ thời gian thực dài?",
+      "options": [
+        "Chỉ so tốc độ máy local với server",
+        "Thứ tự/số event và thời gian ảo có kiểm soát khi công cụ hỗ trợ",
+        "Chỉ đợi chính xác 6.000 giây rồi coi pass",
+        "Chỉ kiểm file có chữ await"
+      ],
+      "correct": 1,
+      "explanation": "Behavior và scheduling control giúp test ổn định hơn stopwatch tùy môi trường."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Search failure UI",
+      "question": "Mở rộng search thực cần biểu diễn trạng thái nào?",
+      "options": [
+        "Chỉ done dùng chung cho tất cả query",
+        "Chỉ bool query.length>=3",
+        "Idle/loading/data/empty/error và query hiện hành",
+        "Chỉ một String luôn thành công"
+      ],
+      "correct": 2,
+      "explanation": "State cần phản ánh vòng đời request và kết quả."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Stream completion is not latest event",
+      "question": "Giao diện search muốn phân biệt chưa có kết quả với stream đã kết thúc. Vì sao chỉ lưu String event cuối chưa đủ?",
+      "options": [
+        "Mỗi event tự chứng minh stream đã kết thúc",
+        "String rỗng luôn có nghĩa subscription bị hủy",
+        "Stream chỉ có duy nhất một event như Future",
+        "Event dữ liệu và tín hiệu done là hai phần khác nhau của vòng đời stream"
+      ],
+      "correct": 3,
+      "explanation": "Cần biểu diễn completion riêng nếu UI cần biết nguồn sẽ không phát thêm event."
+    }
+  ]
+}

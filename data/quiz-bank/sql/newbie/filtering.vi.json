@@ -1,0 +1,1156 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "newbie",
+  "lesson": "filtering",
+  "language": "vi",
+  "sourceHash": "88570c61f433f0bf94a688b2c3f5ab60b2fde11c043426bbda9690a18b3ec781",
+  "status": "approved",
+  "review": "Tự soạn không API. SQLite cho executable fixtures và strftime/date trong source; không khái quát LIKE ASCII, LENGTH hay integer division cho mọi DB/collation. NULL/aggregate, grouping, HAVING, units/revenue/date/timezone được giải thích theo assumptions. Query examples chỉ chạy in-memory, không truy cập dữ liệu người dùng.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Between bounds",
+      "question": "price BETWEEN10AND50 với các số thông thường gồm những biên nào?",
+      "options": [
+        "Gồm cả10 và50.",
+        "Chỉ gồm số lớn hơn 10 nhỏ hơn50.",
+        "Chỉ gồm10.",
+        "Chỉ gồm50."
+      ],
+      "correct": 0,
+      "explanation": "BETWEEN tương ứng kiểm tra hai biên inclusive theo comparison semantics áp dụng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "In membership",
+      "question": "category IN(Books, Electronics) dùng để làm gì?",
+      "options": [
+        "Đếm độ dài category.",
+        "Kiểm tra category thuộc danh sách giá trị.",
+        "Sắp xếp category.",
+        "Đổi tên category."
+      ],
+      "correct": 1,
+      "explanation": "Danh sách thực tế dùng string literals có dấu nháy phù hợp."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Like percent",
+      "question": "Trong LIKE pattern, % thông thường khớp gì?",
+      "options": [
+        "Chỉ dấu phần trăm literal.",
+        "Một row của bảng.",
+        "Chuỗi có không hoặc nhiều ký tự.",
+        "Đúng một chữ số."
+      ],
+      "correct": 2,
+      "explanation": "Muốn tìm ký tự% literal cần escape phù hợp với dialect."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Like underscore",
+      "question": "Dấu _ trong LIKE pattern thông thường khớp gì?",
+      "options": [
+        "Không hoặc nhiều ký tự.",
+        "Mọi row NULL.",
+        "Một cột numeric.",
+        "Một ký tự."
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm nó với% hoặc ký tự underscore literal đã escape."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Null check",
+      "question": "Kiểm tra discount chưa có giá trị nên dùng gì?",
+      "options": [
+        "discount IS NULL.",
+        "discount=NULL.",
+        "discount=0 luôn.",
+        "discount=\"unknown\" luôn."
+      ],
+      "correct": 0,
+      "explanation": "NULL khác giá trị số0 hoặc một string."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Non null check",
+      "question": "discount IS NOT NULL chọn gì?",
+      "options": [
+        "Chỉ discount bằngNULL.",
+        "Rows có discount không NULL.",
+        "Chỉ discount dương.",
+        "Chỉ discount khác0."
+      ],
+      "correct": 1,
+      "explanation": "Discount0 vẫn không NULL."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Count rows",
+      "question": "COUNT(*) trong một nhóm đếm gì?",
+      "options": [
+        "Tổng giá trịprice.",
+        "Số columns của bảng.",
+        "Số rows của nhóm.",
+        "Chỉ rows có mọi cột không NULL."
+      ],
+      "correct": 2,
+      "explanation": "COUNT(column) có semantics khác khi column chứaNULL."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Average",
+      "question": "AVG(price) dùng để tính gì?",
+      "options": [
+        "Tổng quantity.",
+        "Số row tất cả.",
+        "Giá lớn nhất duy nhất.",
+        "Trung bình các price không NULL theo engine/kiểu dữ liệu."
+      ],
+      "correct": 3,
+      "explanation": "Không tự coi missing price là0 trong trường hợp numeric fixture này."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Maximum",
+      "question": "MAX(price) trả đại lượng nào?",
+      "options": [
+        "Giá lớn nhất trong các giá trị được tổng hợp.",
+        "Giá trung bình.",
+        "Số rows.",
+        "Giá nhỏ nhất."
+      ],
+      "correct": 0,
+      "explanation": "NULL handling và comparison/type cần xét theo engine."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Minimum",
+      "question": "MIN(price) có mục đích gì?",
+      "options": [
+        "Đếm tất cả columns.",
+        "Tìm giá trị nhỏ nhất.",
+        "Cộng mọi giá.",
+        "Đổi giá sang text."
+      ],
+      "correct": 1,
+      "explanation": "Nó không tự trả cả row chứa minimum."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Sum expression",
+      "question": "SUM(price*quantity) tổng hợp gì?",
+      "options": [
+        "Số categories.",
+        "Độ dài tên sản phẩm.",
+        "Tổng tích price và quantity của các rows có contribution phù hợp.",
+        "Tổng price cộng tổng quantity."
+      ],
+      "correct": 2,
+      "explanation": "Đơn vị/ý nghĩa kinh doanh phụ thuộc dữ liệu quantity và price."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Grouping",
+      "question": "GROUP BY category tạo nhóm theo gì?",
+      "options": [
+        "Vị trí cột trong file JavaScript.",
+        "Số chữ trongname.",
+        "Thời gian tải trang.",
+        "Giá trị category."
+      ],
+      "correct": 3,
+      "explanation": "Aggregate được tính theo từng nhóm tạo ra."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Having role",
+      "question": "HAVING trong query grouped nguồn dùng để làm gì?",
+      "options": [
+        "Lọc nhóm dựa trên điều kiện aggregate.",
+        "Thay mọi WHERE trước grouping.",
+        "Chỉ đổi tên output.",
+        "Chỉ giới hạn10 rows."
+      ],
+      "correct": 0,
+      "explanation": "WHERE lọc input rows; HAVING lọc nhóm trong mô hình query này."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Upper function",
+      "question": "UPPER(name) có mục đích gì?",
+      "options": [
+        "Bỏ mọi khoảng trắng.",
+        "Chuyển chữ thường thành chữ hoa theo hỗ trợ của engine.",
+        "Lấy giá cao nhất.",
+        "Sắp xếp tăng dần."
+      ],
+      "correct": 1,
+      "explanation": "Không suy hỗ trợ casing Unicode đầy đủ ở mọi implementation."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Lower function",
+      "question": "LOWER(name) dùng để làm gì?",
+      "options": [
+        "Chọn row cuối.",
+        "Xóa ký tự đầu.",
+        "Chuyển casing sang chữ thường theo hỗ trợ của engine.",
+        "Giảm price10%."
+      ],
+      "correct": 2,
+      "explanation": "String function khác numeric arithmetic."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Length function",
+      "question": "LENGTH(name) trả gì theo contract của engine đang dùng?",
+      "options": [
+        "Số rows của bảng.",
+        "GPA của người tạo.",
+        "Dung lượng của database chắc chắn.",
+        "Độ dài của giá trị theo semantics hàm đó."
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt characters/bytes và kiểu input theo dialect."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Date projection",
+      "question": "DATE(created_at) trong source nhằm lấy gì?",
+      "options": [
+        "Phần ngày theo cách xử lý date/time của SQLite.",
+        "Mọi dữ liệu không có tháng.",
+        "Một object Date của JavaScript.",
+        "Một foreign key."
+      ],
+      "correct": 0,
+      "explanation": "Không phải SQL date function có syntax/semantics giống nhau ở mọi DB."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Month format",
+      "question": "strftime(%Y-%m, created_at) trong SQLite tạo format nào?",
+      "options": [
+        "Một tên bảng.",
+        "Năm-tháng như2025-02.",
+        "Chỉ phút-giây.",
+        "Một số tiền."
+      ],
+      "correct": 1,
+      "explanation": "Trong query thật format là string literal có dấu nháy đơn."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Source group threshold",
+      "question": "HAVING COUNT(*)>5 giữ nhóm có ít nhất bao nhiêu rows?",
+      "options": [
+        "4.",
+        "1.",
+        "6.",
+        "5."
+      ],
+      "correct": 2,
+      "explanation": "Dấu> là so sánh chặt, không bao gồm5."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Revenue order",
+      "question": "ORDER BY revenue DESC trong source ưu tiên nhóm nào với revenue số không NULL?",
+      "options": [
+        "Category alphabet trước.",
+        "Số lượng rows ít nhất trước.",
+        "Không có sắp xếp nào.",
+        "Revenue lớn hơn trước."
+      ],
+      "correct": 3,
+      "explanation": "Alias revenue chỉ biểu thức aggregate được chọn."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Combined source filters",
+      "question": "Query cuối SQLite với LIKE mặc định ASCII trả tên nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT name FROM products WHERE price BETWEEN 10 AND 50 AND category IN('Electronics','Books') AND name LIKE '%phone%' AND discount IS NOT NULL ORDER BY id;",
+      "options": [
+        "Phone B.",
+        "phone A vàPhone B.",
+        "Book.",
+        "Không có row."
+      ],
+      "correct": 0,
+      "explanation": "phone A bị loại do discountNULL; Phone B thỏa tất cả điều kiện."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Inclusive result",
+      "question": "Query cuối đếm bao nhiêu giá từ10 đến50?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT COUNT(*) FROM products WHERE price BETWEEN 10 AND 50;",
+      "options": [
+        "4.",
+        "3.",
+        "1.",
+        "2."
+      ],
+      "correct": 1,
+      "explanation": "Giá10, 50, 20 được giữ; 5 vàNULL không được giữ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Zero discount",
+      "question": "Query cuối cho ids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT id FROM products WHERE discount IS NOT NULL ORDER BY id;",
+      "options": [
+        "1, 4.",
+        "Mọi id.",
+        "2, 3, 5.",
+        "Chỉ2."
+      ],
+      "correct": 2,
+      "explanation": "0 không phải NULL nên các rows3, 5 cũng được chọn."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Count comparison",
+      "question": "Query cuối trả COUNT(*), COUNT(price) bằng gì?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT COUNT(*),COUNT(price) FROM products;",
+      "options": [
+        "5, 5.",
+        "4, 5.",
+        "4, 4.",
+        "5, 4."
+      ],
+      "correct": 3,
+      "explanation": "Có5rows, trong đó1priceNULL."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Average with null",
+      "question": "AVG(price) của Books trong query cuối bằng bao nhiêu?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT AVG(price) FROM products WHERE category='Books';",
+      "options": [
+        "20.0.",
+        "10.0.",
+        "0.0.",
+        "NULL."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ một non-NULL price20 góp vào average."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Summed value",
+      "question": "SUM(price*quantity) cho Electronics bằng gì?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT SUM(price*quantity) FROM products WHERE category='Electronics';",
+      "options": [
+        "150.0.",
+        "170.0.",
+        "60.0.",
+        "250.0."
+      ],
+      "correct": 1,
+      "explanation": "10×2 +50×3=170."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Grouped counts",
+      "question": "Query cuối cho rows theo thứ tự category thế nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT category,COUNT(*) FROM products GROUP BY category ORDER BY category;",
+      "options": [
+        "ChỉElectronics:5.",
+        "Books:2; Electronics:1; Office:2.",
+        "Books:2; Electronics:2; Office:1.",
+        "Books:1; Electronics:2; Office:2."
+      ],
+      "correct": 2,
+      "explanation": "GROUP BY gộp theo category; ORDER BY làm kết quả ổn định."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Having filter",
+      "question": "Query cuối trả categories nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT category FROM products GROUP BY category HAVING COUNT(*)>1 ORDER BY category;",
+      "options": [
+        "ChỉOffice.",
+        "Cả ba categories.",
+        "Không có nhóm.",
+        "Books, Electronics."
+      ],
+      "correct": 3,
+      "explanation": "Hai nhóm cóCOUNT(*)>1."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Where before grouping",
+      "question": "Query cuối trả category, count nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT category,COUNT(*) FROM products WHERE price>20 GROUP BY category ORDER BY category;",
+      "options": [
+        "Electronics, 1.",
+        "Electronics, 2.",
+        "Books, 2.",
+        "Không có row."
+      ],
+      "correct": 0,
+      "explanation": "WHEREprice>20 chỉ giữ row2 trước khi grouping."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Uppercase ascii",
+      "question": "Query cuối cho chuỗi nào trên SQLite mặc định?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT UPPER(name) FROM products WHERE id=1;",
+      "options": [
+        "NULL.",
+        "PHONE A.",
+        "phone A.",
+        "PHONE A5."
+      ],
+      "correct": 1,
+      "explanation": "Tên trong fixture chỉ dùng ASCII nên UPPER chuyển được các chữ tương ứng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Lowercase ascii",
+      "question": "Query cuối trả chuỗi nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT LOWER(name) FROM products WHERE id=2;",
+      "options": [
+        "PHONE B.",
+        "B Phone.",
+        "phone b.",
+        "Phone B."
+      ],
+      "correct": 2,
+      "explanation": "LOWER áp dụng cho chữASCII trong fixture."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Text length",
+      "question": "Query cuối SQLite trả LENGTH(name) bằng gì?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT LENGTH(name) FROM products WHERE id=1;",
+      "options": [
+        "6.",
+        "8.",
+        "2.",
+        "7."
+      ],
+      "correct": 3,
+      "explanation": "phone A có5chữ phone, 1space và1chữ A."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Date extraction",
+      "question": "Query cuối trả ngày nào với ISO timestamp đã cho?",
+      "code": "-- result\nSELECT DATE('2025-02-03 12:34:56');",
+      "options": [
+        "2025-02-03.",
+        "2025-03-02.",
+        "12:34:56.",
+        "NULL."
+      ],
+      "correct": 0,
+      "explanation": "Input hợp lệ theo SQLite date function."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Month extraction",
+      "question": "Query cuối SQLite cho month nào của row3?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT strftime('%Y-%m',created_at) FROM products WHERE id=3;",
+      "options": [
+        "NULL.",
+        "2025-02.",
+        "2025-01.",
+        "02-2025-01."
+      ],
+      "correct": 1,
+      "explanation": "%Y lànăm, %m làtháng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Single character pattern",
+      "question": "Query cuối cho ids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT id FROM products WHERE name LIKE 'phone _' ORDER BY id;",
+      "options": [
+        "2, 3.",
+        "Mọi id.",
+        "1, 2.",
+        "Chỉ1."
+      ],
+      "correct": 2,
+      "explanation": "_ khớp đúng một ký tự A/B sau space; LIKE mặc định ở fixture không phân biệt ASCII case."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Literal wildcard",
+      "question": "SQLite query cuối cho id nào?",
+      "code": "CREATE TABLE t(id INTEGER,name TEXT);\nINSERT INTO t VALUES(1,'50% off'),(2,'50x off');\n-- result\nSELECT id FROM t WHERE name LIKE '50!% off' ESCAPE '!' ORDER BY id;",
+      "options": [
+        "2.",
+        "Cả1 và2.",
+        "Không có row.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "ESCAPE! khiến!% đại diện dấu% literal."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Empty aggregate",
+      "question": "Query cuối trên tập rỗng trả COUNT(*), SUM(price), AVG(price) là gì?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT COUNT(*),SUM(price),AVG(price) FROM products WHERE id<0;",
+      "options": [
+        "0, NULL, NULL.",
+        "0, 0, 0.",
+        "NULL, NULL, NULL.",
+        "Không có row kết quả."
+      ],
+      "correct": 0,
+      "explanation": "Aggregate không GROUP BY vẫn tạo một row; SUM/AVG không có input trảNULL."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Empty grouped input",
+      "question": "Query cuối có bao nhiêu rows kết quả?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT category,COUNT(*) FROM products WHERE id<0 GROUP BY category;",
+      "options": [
+        "5.",
+        "0.",
+        "1.",
+        "3."
+      ],
+      "correct": 1,
+      "explanation": "GROUP BY không tạo nhóm từ input rỗng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Null not in",
+      "question": "Query cuối cho COUNT(*) bằng gì?",
+      "code": "CREATE TABLE t(a INTEGER);\nINSERT INTO t VALUES(1),(2),(NULL);\n-- result\nSELECT COUNT(*) FROM t WHERE a NOT IN(1,NULL);",
+      "options": [
+        "2.",
+        "3.",
+        "0.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "1 đã nằm trong list; 2không bằng1 nhưng so vớiNULL thànhunknown, không đượcWHEREgiữ."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Logical precedence",
+      "question": "Query cuối cho ids nào?",
+      "code": "CREATE TABLE products(id INTEGER PRIMARY KEY,name TEXT,price REAL,quantity INTEGER,category TEXT,discount REAL,created_at TEXT);\nINSERT INTO products VALUES(1,'phone A',10,2,'Electronics',NULL,'2025-01-15'),(2,'Phone B',50,3,'Electronics',5,'2025-01-20'),(3,'Book',20,4,'Books',0,'2025-02-01'),(4,'Pen',5,10,'Office',NULL,'2025-02-10'),(5,'Guide',NULL,2,'Books',0,'2025-02-15');\n-- result\nSELECT id FROM products WHERE category='Books' OR category='Electronics' AND price>20 ORDER BY id;",
+      "options": [
+        "Chỉ2.",
+        "Chỉ3, 5.",
+        "Mọi id.",
+        "2, 3, 5."
+      ],
+      "correct": 3,
+      "explanation": "AND ưu tiên hơnOR: Books hoặc(Electronics vàprice>20)."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Source no matches",
+      "question": "Nếu fixture có mỗi category nhiều nhất2rows, HAVINGCOUNT(*)>5 của source giữ bao nhiêu nhóm?",
+      "options": [
+        "0.",
+        "1.",
+        "2.",
+        "3."
+      ],
+      "correct": 0,
+      "explanation": "Ngưỡng source không tự thay theo kích thước dữ liệu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Where aggregate misuse",
+      "question": "Muốn lọc nhóm có tổng quantity>10, nên đặt điều kiện aggregate ở đâu?",
+      "options": [
+        "LIMIT SUM(quantity).",
+        "HAVING sauGROUP BY trong query grouped.",
+        "WHERE SUM(quantity)>10 trong cùng mứcquery.",
+        "ORDER BY trướcFROM."
+      ],
+      "correct": 1,
+      "explanation": "WHERE lọc rows trước aggregate, nên không dùng aggregate tại đó theo cách này."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Count expression",
+      "question": "COUNT(discount) có đếm rows discount0 không?",
+      "options": [
+        "Chỉ khi price>0.",
+        "Chỉ khi cóHAVING.",
+        "Có.",
+        "Không, 0 luôn giốngNULL."
+      ],
+      "correct": 2,
+      "explanation": "COUNT(expression) bỏ NULL, không bỏ mọi giá trị falsy như JavaScript."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Null multiplication",
+      "question": "priceNULL vàquantity2 đóng góp giá trị numeric nào cho SUM(price*quantity) thông thường?",
+      "options": [
+        "Luôn0 với mọi engine.",
+        "Luôn2.",
+        "Luôn làm toàn querythrow.",
+        "Expression làNULL và không đóng góp số vàoSUM."
+      ],
+      "correct": 3,
+      "explanation": "Nếu muốn missing thành0 cần policy/COALESCE rõ ràng, không mặc định ý nghĩa đó."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Null category grouping",
+      "question": "Các rows categoryNULL đượcGROUP BY category xử lý ra sao trong SQLite?",
+      "options": [
+        "Được gom vào cùng một nhóm NULL.",
+        "Mỗi NULL tạo một nhóm riêng.",
+        "Luôn bị loại ngay.",
+        "Tự đổi thànhBooks."
+      ],
+      "correct": 0,
+      "explanation": "Grouping NULL khác phép category=NULL trongWHERE."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Null distinct aggregate",
+      "question": "COUNT(DISTINCT category) trong SQLite có đếm NULL như một category thông thường không?",
+      "options": [
+        "Tùyfont chữ.",
+        "Không.",
+        "Có, luôn thêm1.",
+        "Có, luôn thêm2."
+      ],
+      "correct": 1,
+      "explanation": "COUNT bỏ NULL của expression; đừng nhầm với SELECT DISTINCT có thể xuất mộtNULL."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Revenue semantics",
+      "question": "SUM(price*quantity) trên products có chắc là doanh thu bán hàng đã thu tiền không?",
+      "options": [
+        "Có, mọi product đều đãbán.",
+        "Chỉ cầnORDER BYDESC.",
+        "Không; cần biếtquantity nghĩa là gì và quy tắc orders/discount/refunds.",
+        "Có, tênaliasrevenue tự xác nhận."
+      ],
+      "correct": 2,
+      "explanation": "Alias không thay mô hình và định nghĩa metric kinh doanh."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Revenue discount",
+      "question": "Query revenue nguồn có trừ discount trong expression không?",
+      "options": [
+        "Có, discount IS NOT NULL tựtrừ.",
+        "Có, AVG tựtrừ.",
+        "Có, MAX tựtrừ.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Filter một cột không đồng nghĩa dùng nó trong công thức."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "String casing scope",
+      "question": "SQLite mặc định có bảo đảm UPPER/LOWER xử lý casing mọi chữ Unicode đầy đủ không?",
+      "options": [
+        "Không; built-in mặc định chủ yếu xử lýASCII, extension/cấu hình có thể khác.",
+        "Có, mọi ngônngữ hoàn toànnhưnhau.",
+        "Có, chỉ cầnTEXT.",
+        "Chỉ phụ thuộcLIMIT."
+      ],
+      "correct": 0,
+      "explanation": "Question snippets dùngASCII để giữ kỳ vọng rõ ràng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Like collation scope",
+      "question": "Có nên coi LIKE luôn case-insensitive cho mọi chữ và mọi DB không?",
+      "options": [
+        "Chỉ nếu querycóGROUP BY.",
+        "Không; phải xác định dialect, collation/implementation và cấu hình.",
+        "Có, từLIKE làquy tắc chungđó.",
+        "Có, nếu có%."
+      ],
+      "correct": 1,
+      "explanation": "Ví dụ SQLite mặc định vềASCII không chứng minh toànUnicode/DBkhác."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Null versus zero average",
+      "question": "Thay priceNULL bằng0 trướcAVG có thể làm gì?",
+      "options": [
+        "Chỉ đổi alias.",
+        "Tựbỏ nhómBooks.",
+        "Thay đổi mẫu số và kết quả trung bình.",
+        "Không bao giờthayđổi kết quả."
+      ],
+      "correct": 2,
+      "explanation": "COALESCE là một quyết định metric, không chỉ cosmetic."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Half open dates",
+      "question": "Để chọn một tháng timestamp, vì sao khoảng >=đầu tháng và <đầu tháng sau thường rõ ràng?",
+      "options": [
+        "VìBETWEEN không cóbiên.",
+        "Vìmọi timestampchỉ có ngày.",
+        "VìORDER BY tự lọc.",
+        "Bao phủ mọi thời điểm trong tháng mà không đoán mốc cuối ngày/độ chính xác."
+      ],
+      "correct": 3,
+      "explanation": "Vẫn cần thống nhất timezone và kiểu dữ liệu."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Date timezone",
+      "question": "Báo cáo theo tháng địa phương cần xác định thêm gì?",
+      "options": [
+        "Timezone và cách chuyển timestamps trước khi grouping.",
+        "Chỉ màu category.",
+        "Chỉ LIMIT10.",
+        "Chỉ tên aliasmonth."
+      ],
+      "correct": 0,
+      "explanation": "Cùng một instant có thể thuộc ngày/tháng khác nhau theo timezone."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Alias meaning",
+      "question": "AS revenue trong source có tự lưu cột revenue vào bảng products không?",
+      "options": [
+        "Chỉ khi dùngSUM.",
+        "Không; đặt tên expression trong result.",
+        "Có, luôn ALTERTABLE.",
+        "Có, luôn ghi vào mọi row."
+      ],
+      "correct": 1,
+      "explanation": "SELECT alias không phải migration hay update."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Group select portability",
+      "question": "SELECT category, name, SUM(price) GROUP BY category có bảo đảm name đại diện hợp lý ở mọi DB không?",
+      "options": [
+        "Có, SUM tự chọnname dài nhất.",
+        "Chỉ nếupriceREAL.",
+        "Không; cần quy tắc grouping/functional dependency rõ ràng và dialect phù hợp.",
+        "Có, mọi DB chọnname giống nhau."
+      ],
+      "correct": 2,
+      "explanation": "Bare non-grouped columns có semantics/validity khác nhau giữa engines."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Aggregate order",
+      "question": "ORDER BYrevenueDESC có thay các rows được cộng trong từng nhóm không?",
+      "options": [
+        "Có, nó nhân đôiquantity.",
+        "Có, nó tự lọc NULLprice.",
+        "Chỉ khi cóMAX.",
+        "Không; nó sắp các kết quả nhóm theo query này."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt input filtering, aggregation và result ordering."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Min whole row",
+      "question": "MIN(price) có tự trả name của sản phẩm rẻ nhất trong SQL portable không?",
+      "options": [
+        "Không; cần query xác định row và xử lýties.",
+        "Có, mọi aggregate đều trảwhole row.",
+        "Có, nếucộtnameTEXT.",
+        "Chỉ cầnCOUNT(*)."
+      ],
+      "correct": 0,
+      "explanation": "Đừng dựa extension bare-column của một engine như quy tắc SQL chung."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Like injection",
+      "question": "Bind parameter name LIKE? có ngăn người dùng gửi % để mở rộng pattern theo ý nghĩa LIKE không?",
+      "options": [
+        "Chỉ nếu dùngUPPER.",
+        "Không; binding bảo vệ syntax, còn wildcard policy/escaping là yêu cầu riêng.",
+        "Có, binding tựescape mọi wildcard.",
+        "Có, % trở thànhNULL."
+      ],
+      "correct": 1,
+      "explanation": "An toàn SQL syntax khác tìm kiếm literal/behavior mà sản phẩm muốn."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Index effect",
+      "question": "WHERE LOWER(name)=? với index thường trênname có bảo đảm index đó luôn được dùng không?",
+      "options": [
+        "Có, nếu cóLIMIT.",
+        "Không, indexkhông bao giờdùngđược.",
+        "Không; cần xem expression/index/collation và plan thực tế.",
+        "Có, mọi functionđều dùngindex."
+      ],
+      "correct": 2,
+      "explanation": "Expression indexes hoặc strategy khác có thể hữu ích theo DB."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Metric validation",
+      "question": "Tại sao cần fixture cóNULL, zero, ties và empty input khi test báo cáo?",
+      "options": [
+        "Vìmọi querytựfail vớiNULL.",
+        "Vìzero vàNULLluôngiống nhau.",
+        "Chỉđể tăngsốrows.",
+        "Chúng phân biệt nhiều semantics aggregate/filter dễ bị hiểu sai."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra biên cần gắn với meaning, không chỉ happy path."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Average denominator",
+      "question": "Hai sản phẩm giá20 vàNULL: AVG(price) khácAVG(COALESCE(price, 0)) ra sao?",
+      "options": [
+        "Lần lượt20 và10 trong numeric model này.",
+        "Đều20.",
+        "Đều10.",
+        "LầnlượtNULL và0."
+      ],
+      "correct": 0,
+      "explanation": "Bỏ missing và coi missing là0 là hai định nghĩa khác nhau."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Weighted metric",
+      "question": "Muốn giá trung bình theo số lượng bán, AVG(price) có luôn đúng không?",
+      "options": [
+        "Chỉ cầnORDER BYquantity.",
+        "Không; cần định nghĩa weighted average nhưSUM(price*quantity)/SUM(quantity) với policyNULL/zero phù hợp.",
+        "Có, AVG tựdùngquantity.",
+        "Có, nếu cóGROUP BY."
+      ],
+      "correct": 1,
+      "explanation": "Ví dụquantity chưa chắc làsales; metric cần contract dữ liệu trước."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Weighted null alignment",
+      "question": "Weighted average với priceNULL cần xét cả numerator và denominator vì sao?",
+      "options": [
+        "VìNULL tựtrởthànhprice1.",
+        "VìGROUP BY ngănmọiphépchia.",
+        "Nếu denominator vẫn cộngquantity của rows không cóprice, metric có thể bị lệch so với policy bỏ missing.",
+        "VìSUM luônbỏ mọiquantity."
+      ],
+      "correct": 2,
+      "explanation": "Hai phần công thức phải chọn cùng tập hợp dữ liệu theo định nghĩa metric."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Division by zero policy",
+      "question": "Khi tính một ratio với mẫu sốSUM(quantity), cần làm gì nếu mẫu số có thể0?",
+      "options": [
+        "Luônnhân tửsốvới100để sửa.",
+        "Coi mọi DBtựtrả0.",
+        "Chỉ đổiASratio.",
+        "Định nghĩa kết quả/lỗi mong muốn và guard nhưNULLIF theo dialect phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Engine khác nhau có hành vi chia0; guard phải phục vụ ý nghĩa báo cáo."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Not in alternative",
+      "question": "Khi subquery có thể chứaNULL, vì sao anti-join bằngNOT EXISTS thường dễ biểu đạt hơnNOT IN?",
+      "options": [
+        "Nó kiểm tra sự tồn tại row khớp theo predicate rõ ràng, tránh bẫyNULL trong list khi thiết kế đúng.",
+        "VìNOT EXISTS tự xóadữ liệu.",
+        "VìNOTIN luônchậm100lần.",
+        "VìNOT EXISTS bỏ qua mọiquyền."
+      ],
+      "correct": 0,
+      "explanation": "Vẫn phải định nghĩa handlingNULL của outer key và matching semantics."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Revenue refund scope",
+      "question": "Dashboard gọi stockvalue làrevenue sẽ gây vấn đề gì?",
+      "options": [
+        "Chỉ cầnCOUNT thaySUMmọi trường hợp.",
+        "Metric không phản ánh nghiệp vụ; cần join/filters và công thức đúng cho sales/refunds/discounts.",
+        "Khôngvấnđề vìalias quyếtđịnh truth.",
+        "Chỉ cầnđổi font."
+      ],
+      "correct": 1,
+      "explanation": "Cú pháp đúng không đủ bảo đảm báo cáo đúng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Source combined logic",
+      "question": "Vì sao thay bốn điều kiệnAND của source bằngOR làm thay meaning lớn?",
+      "options": [
+        "OR tựtăngđộchínhxác.",
+        "Chỉảnh hưởng sort.",
+        "Rows chỉ cần thỏa một nhánh thay vì tất cả, có thể bao gồm category/price/discount ngoài yêu cầu.",
+        "OR chỉlàviếttắt củaAND."
+      ],
+      "correct": 2,
+      "explanation": "Cần viết tests cho từng điều kiện và combinations."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Nonzero versus present",
+      "question": "Yêu cầu chỉ sản phẩm giảm giá dương: IS NOT NULL đã đủ chưa?",
+      "options": [
+        "Đủ, vì0 làNULL.",
+        "Đủ, mọi discountđều positive.",
+        "Chỉ cầnLIKE.",
+        "Chưa; cần điều kiện nhưdiscount>0 theo domain và policyNULL."
+      ],
+      "correct": 3,
+      "explanation": "Present và positive là các predicates khác nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Inclusive timestamp end",
+      "question": "Dùng BETWEEN đầu tháng và ngày cuối tháng lúc00:00 cho timestamp có rủi ro gì?",
+      "options": [
+        "Bỏ phần lớn ngày cuối tháng; half-open range tới đầu tháng sau thường rõ hơn.",
+        "Luônbao gồm mọi giờcuối tháng.",
+        "Chỉbịlỗinămnhuận.",
+        "Khôngthểlọctimestamp bằngWHERE."
+      ],
+      "correct": 0,
+      "explanation": "Cần xét kiểu dữ liệu, timezone và precision."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Aggregate after join",
+      "question": "Sau join orderitems làm một order thành nhiềurows, COUNT(*) có chắc làsốorders không?",
+      "options": [
+        "Chỉ nếuLIMIT lớn.",
+        "Không; cần metric/key đúng nhưCOUNT(DISTINCTorder ID) khi phù hợp.",
+        "Có, JOIN khôngnhânrows.",
+        "Có, COUNT tựbiếtbusiness entity."
+      ],
+      "correct": 1,
+      "explanation": "Cardinality của input quyết định ý nghĩa aggregate."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "SQLite length unicode",
+      "question": "SQLite query cuối trả LENGTH của chuỗiUnicode dưới đây bằng bao nhiêu?",
+      "code": "-- result\nSELECT LENGTH('éA');",
+      "options": [
+        "4.",
+        "1.",
+        "2.",
+        "3."
+      ],
+      "correct": 2,
+      "explanation": "LENGTH TEXT ở đây đếm codepoints, không phải byteUTF8 hay graphemeclusters tổng quát."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "SQLite numeric division",
+      "question": "Trên SQLite, query cuối trả a, b thế nào?",
+      "code": "-- result\nSELECT 5/2 AS a,5.0/2 AS b;",
+      "options": [
+        "2.5, 2.5.",
+        "2, 2.",
+        "0, 0.",
+        "2, 2.5."
+      ],
+      "correct": 3,
+      "explanation": "Hai integers chia cho nhau có integer arithmetic trong trường hợp này; 5.0 tạo phép chia floating-point."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Having versus where result",
+      "question": "Hai query trong tình huống sau có cùng meaning không: lọcprice>20 trướcSUM so vớiHAVINGSUM(price)>20 saugroup?",
+      "options": [
+        "Không; một loại inputrows, một loại nhóm dựa tổng.",
+        "Có, WHERE vàHAVING hoánđổi tựdo.",
+        "Có, nếu cùngbảng.",
+        "Chỉkhácalias."
+      ],
+      "correct": 0,
+      "explanation": "Ví dụ các giá10 và15 tổng25: HAVING giữ nhóm, WHERE>20 bỏ cả hai."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Empty coalesce",
+      "question": "Query cuối SQLite trả tổng dạng nào?",
+      "code": "CREATE TABLE t(price REAL);\n-- result\nSELECT COALESCE(SUM(price),0) FROM t;",
+      "options": [
+        "Lỗi vìemptytable.",
+        "0.",
+        "NULL.",
+        "Không córow."
+      ],
+      "correct": 1,
+      "explanation": "SUM rỗng làNULL, COALESCE chọn0 rõ ràng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Null group example",
+      "question": "Query cuối có kết quản nào theoORDER BY đã ghi?",
+      "code": "CREATE TABLE t(category TEXT);\nINSERT INTO t VALUES(NULL),(NULL),('A');\n-- result\nSELECT COUNT(*) AS n FROM t GROUP BY category ORDER BY n;",
+      "options": [
+        "Chỉ1.",
+        "Chỉ2.",
+        "1, 2.",
+        "2, 1."
+      ],
+      "correct": 2,
+      "explanation": "CategoryA có1row, categoryNULL có2; sort n tăng làm outputổn định."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Length graphemes",
+      "question": "LENGTH TEXT trả sốcodepoints có luôn bằng sốký tự mà người đọc nhìn thấy không?",
+      "options": [
+        "Có, mọiUnicodecharacter chỉ có1byte.",
+        "Có, LENGTH đo fontpixels.",
+        "Chỉ nếuTEXT UNIQUE.",
+        "Không; combining sequences có thể gồm nhiều codepoints cho một grapheme."
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt grapheme, codepoint, byte và rendered width."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Deterministic grouped top",
+      "question": "Hai categories có revenue ngang nhau; muốn top1 ổn định cần gì?",
+      "options": [
+        "Tie-breaker rõ ràng trongORDER BY ngoàirevenue.",
+        "ChỉLIMIT1.",
+        "ChỉMAX(price).",
+        "BỏGROUP BY."
+      ],
+      "correct": 0,
+      "explanation": "Tie-breaking không giải quyết thay đổi dataset giữa các lần đọc."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Wildcard literal search",
+      "question": "Sản phẩm muốn tìm đúng ký tự_ từ input. DùngLIKEparameter nguyên input có thể sai vì sao?",
+      "options": [
+        "VìLIKEchỉdùngsố.",
+        "_ được diễn giải làwildcard nếu khôngescape theo policy/dialect.",
+        "Vìbinding khôngchốngSQLinjection.",
+        "Vì_ luôn làNULL."
+      ],
+      "correct": 1,
+      "explanation": "Cần tách bảo vệ syntax và chuyển search literal thànhpattern đúng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Unicode normalization",
+      "question": "Tên có hai Unicode representations nhìn giống nhau; LOWER(name) có tự bảo đảm identity comparison đúng không?",
+      "options": [
+        "Có, nếuthêmCOUNT.",
+        "Chỉ cầnDATE.",
+        "Không; casing vànormalization/collation là các yêu cầu khác nhau.",
+        "Có, LOWER tựchuẩn hóa mọiUnicode."
+      ],
+      "correct": 2,
+      "explanation": "Chọn policy so sánh/search và test dữ liệu thực theo DB."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Source evidence limit",
+      "question": "Một query nhóm trả kết quả đúng trên5rows có chứng minh đủ cho báo cáo hàngtriệu rows không?",
+      "options": [
+        "Có, nếu cóGROUP BY.",
+        "Có, SUM luônO(1).",
+        "Chỉ cầnđổialiasrevenue.",
+        "Không; cần kế hoạch query, indexes, volume/concurrency và correctness theo dataset/domain."
+      ],
+      "correct": 3,
+      "explanation": "Fixture nhỏ kiểm tra semantics chọn lọc, không là bằng chứng capacity."
+    }
+  ]
+}

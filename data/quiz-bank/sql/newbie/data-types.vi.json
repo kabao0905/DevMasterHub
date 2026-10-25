@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "newbie",
+  "lesson": "data-types",
+  "language": "vi",
+  "sourceHash": "9b93e24bd396256d40e060d2f29c6747cd6dc24997c203bc192e6e2e53fb9c78",
+  "status": "approved",
+  "review": "Tự soạn không API. Source PostgreSQL được review theo docs17 về constraints, NUMERIC/SERIAL và transaction timestamps. Không chạy PostgreSQL integration vì psql/postgres/initdb không có trên PATH; không dùng SQLite để giả kiểm chứng PostgreSQL. Nêu đúng source thiếu price>=0, updated_at trigger, parent tables và tổng order consistency; CHECK/NULL và numeric NaN có scope PostgreSQL17 rõ.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Integer domain",
+      "question": "INTEGER thường phù hợp với dữ liệu nào trong order_items nguồn?",
+      "options": [
+        "Số lượng đơn vị nguyên quantity.",
+        "Nội dung ghi chú tự do.",
+        "Một ảnh nhị phân.",
+        "Một timezone name."
+      ],
+      "correct": 0,
+      "explanation": "Source dùng INTEGER và CHECK(quantity>0) cho quantity."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Text purpose",
+      "question": "notes TEXT phù hợp để lưu gì?",
+      "options": [
+        "Một SQL execution plan bắt buộc.",
+        "Ghi chú dạng văn bản.",
+        "Chỉ các số nguyên dương.",
+        "Một foreign key tự động."
+      ],
+      "correct": 1,
+      "explanation": "Kiểu dữ liệu và constraints cần theo domain."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Decimal purpose",
+      "question": "DECIMAL(10, 2) trong PostgreSQL nhằm biểu diễn gì?",
+      "options": [
+        "Một boolean có hai trạng thái.",
+        "Một số float32 bắt buộc.",
+        "Số thập phân với precision10 và scale2 được khai báo.",
+        "Luôn một chuỗi dài10 ký tự."
+      ],
+      "correct": 2,
+      "explanation": "DECIMAL là cách viết tương đương NUMERIC trong PostgreSQL."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Required field",
+      "question": "NOT NULL ngăn điều gì?",
+      "options": [
+        "Mọi giá trị0.",
+        "Mọi chuỗi rỗng.",
+        "Mọi giá trị trùng.",
+        "Giá trị NULL ở cột đó."
+      ],
+      "correct": 3,
+      "explanation": "Nullability khác uniqueness và validation nội dung."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Unique role",
+      "question": "UNIQUE(order_id, product_id) yêu cầu gì với các giá trị không NULL của source?",
+      "options": [
+        "Cặp order/product không lặp lại giữa các rows.",
+        "Mỗi order chỉ có một row bất kể product.",
+        "Mỗi product chỉ được mua một lần toàn hệ thống.",
+        "Hai cột phải bằng nhau."
+      ],
+      "correct": 0,
+      "explanation": "Uniqueness của cặp khác uniqueness riêng từng cột."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Check role",
+      "question": "CHECK(quantity>0) thể hiện quy tắc nào?",
+      "options": [
+        "Số lượng bằng product_id.",
+        "Số lượng phải lớn hơn0 khi có giá trị theo constraint.",
+        "Số lượng luôn là1.",
+        "Số lượng phải nhỏ hơn0."
+      ],
+      "correct": 1,
+      "explanation": "Source còn có NOT NULL để chặn quantityNULL."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Foreign key role",
+      "question": "customer_id REFERENCES customers(id) tạo ràng buộc gì?",
+      "options": [
+        "Tự gọi API khách hàng.",
+        "Tự tạo một customer khi thiếu.",
+        "Giá trị tham chiếu phải khớp khóa được tham chiếu theo FK.",
+        "Tự sao chép mọi thông tin khách hàng vào orders."
+      ],
+      "correct": 2,
+      "explanation": "Foreign key bảo vệ relationship integrity, không tự upsert parent."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Primary key role",
+      "question": "PRIMARY KEY của orders.id làm gì trong PostgreSQL?",
+      "options": [
+        "Tự mã hóa toàn row.",
+        "Tự tạo audit logs.",
+        "Tự cho phép user sửa mọi order.",
+        "Định danh duy nhất và không NULL cho mỗi row."
+      ],
+      "correct": 3,
+      "explanation": "Khóa định danh không thay access control."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Status default",
+      "question": "Status mặc định của orders nguồn là gì?",
+      "options": [
+        "pending.",
+        "shipped.",
+        "deleted.",
+        "paid."
+      ],
+      "correct": 0,
+      "explanation": "Default áp dụng khi cột bị bỏ qua trong INSERT thông thường."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Status list",
+      "question": "Giá trị nào nằm trong status CHECK nguồn?",
+      "options": [
+        "failed.",
+        "confirmed.",
+        "cancelled.",
+        "refunded."
+      ],
+      "correct": 1,
+      "explanation": "Danh sách còn cópending, shipped, delivered."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Nonnegative total",
+      "question": "CHECK(total>=0) cho phép giá trị hữu hạn nào?",
+      "options": [
+        "-100.",
+        "-0.01.",
+        "0.",
+        "-1."
+      ],
+      "correct": 2,
+      "explanation": "Nonnegative gồm0; đây chưa phải toàn bộ validation tiền theo domain."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cascade target",
+      "question": "ON DELETE CASCADE nằm trên relationship nào trong source?",
+      "options": [
+        "orders.customer_id tự cascade tới mọi khách hàng.",
+        "order_items.product_id tự xóa products.",
+        "notes tham chiếu users.",
+        "order_items.order_id tham chiếu orders.id."
+      ],
+      "correct": 3,
+      "explanation": "Hướng cascade đi từ parent order bị xóa tới items tham chiếu."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Index purpose",
+      "question": "CREATE INDEX idx_orders_customer ON orders(customer_id) nhằm hỗ trợ gì?",
+      "options": [
+        "Một số truy vấn/kiểm tra theo customer_id theo plan phù hợp.",
+        "Tự tạo constraint customer_id unique.",
+        "Tự tính lại total.",
+        "Tự ngăn user đọc trái phép."
+      ],
+      "correct": 0,
+      "explanation": "Index thường và UNIQUE constraint có semantics khác nhau."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Composite index",
+      "question": "idx_orders_status nguồn gồm những cột nào theo thứ tự?",
+      "options": [
+        "customer_id, status.",
+        "status, created_at.",
+        "created_at, status.",
+        "id, total."
+      ],
+      "correct": 1,
+      "explanation": "Thứ tự cột là một phần thiết kế index."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Created timestamp",
+      "question": "created_at nguồn có default nào?",
+      "options": [
+        "status.",
+        "COUNT(*).",
+        "NOW().",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "NOW là hàm PostgreSQL; cần xác định timestamp/timezone policy."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Updated timestamp",
+      "question": "updated_at nguồn được khai báo ra sao?",
+      "options": [
+        "Một generated column tự đổi theo mọi update.",
+        "Một trigger đã hoàn chỉnh.",
+        "Một foreign key.",
+        "TIMESTAMP DEFAULT NOW()."
+      ],
+      "correct": 3,
+      "explanation": "Tên updated_at không tự tạo hành vi update timestamp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Serial purpose",
+      "question": "SERIAL trong PostgreSQL nguồn chủ yếu hỗ trợ gì?",
+      "options": [
+        "Cột số nguyên với sequence/default cấp số tự động.",
+        "Một chuỗi JSON.",
+        "Một timezone.",
+        "Một loại index cho ảnh."
+      ],
+      "correct": 0,
+      "explanation": "Source bổ sung PRIMARY KEY riêng cho uniqueness."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Optional notes",
+      "question": "notes TEXT không có NOT NULL trong source có thể chứa gì?",
+      "options": [
+        "Chỉ delivered.",
+        "NULL.",
+        "Chỉ string không rỗng.",
+        "Chỉ số nguyên dương."
+      ],
+      "correct": 1,
+      "explanation": "Không nên suy optional field thành required chỉ từ tên cột."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Product relationship",
+      "question": "order_items.product_id tham chiếu bảng nào?",
+      "options": [
+        "user_changes.",
+        "events.",
+        "products.",
+        "customers."
+      ],
+      "correct": 2,
+      "explanation": "Source cần parent tables phù hợp tồn tại trước khi tạo FK."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Constraint location",
+      "question": "Vì sao dùng constraints ở DB ngoài validation giao diện?",
+      "options": [
+        "Để bỏ mọi authorization.",
+        "Để thay mọi error message.",
+        "Để biến mọi query thànhO(1).",
+        "Để bảo vệ invariants tại ranh giới ghi từ các write paths phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "UI validation hữu ích nhưng không phải ranh giới integrity duy nhất."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Precision digits",
+      "question": "NUMERIC(10, 2) cho phép tối đa bao nhiêu chữ số phía trái dấu thập phân đối với số hữu hạn phù hợp?",
+      "options": [
+        "8.",
+        "10.",
+        "12.",
+        "2."
+      ],
+      "correct": 0,
+      "explanation": "Precision trừ scale bằng8; rounding có thể dẫn tới overflow."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Decimal rounding",
+      "question": "Theo PostgreSQL17, lưu giá trị hữu hạn12.345 vào NUMERIC(10, 2) cho kết quả nào?",
+      "options": [
+        "Lỗi chỉ vì có3 số lẻ.",
+        "12.35.",
+        "12.34 do luôn cắt bỏ.",
+        "12.345 giữ nguyên."
+      ],
+      "correct": 1,
+      "explanation": "Giá trị được round về scale2; numeric ties được xử lý theo quy tắc của kiểu numeric."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Decimal overflow",
+      "question": "Giá trị100000000.00 có vừa NUMERIC(10, 2) không?",
+      "options": [
+        "Có; mọi số đều vừa.",
+        "Có; tự cắt chữ số đầu.",
+        "Không; có9 chữ số phần nguyên vượt8.",
+        "Có; miễn có2 số lẻ."
+      ],
+      "correct": 2,
+      "explanation": "Precision không chỉ đếm số chữ số sau dấu thập phân."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Empty versus null",
+      "question": "notes=NULL khác notes chuỗi rỗng ở điểm nào?",
+      "options": [
+        "Luôn là cùng một giá trị trong PostgreSQL.",
+        "Chuỗi rỗng luôn làm UNIQUE thất bại.",
+        "NULL luôn dài0 bytes theo mọi hàm.",
+        "Một giá trị missing/unknown khác một giá trị text rỗng."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế cần quy ước missing và empty theo domain."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Allowed zero total",
+      "question": "Order total0 với các trường khác hợp lệ có bị CHECK(total>=0) source chặn không?",
+      "options": [
+        "Không.",
+        "Có, >= có nghĩa>.",
+        "Có, DECIMAL cấm0.",
+        "Chỉ nếu statuspending."
+      ],
+      "correct": 0,
+      "explanation": "Nếu domain cần strictly positive phải quy định khác."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Negative quantity",
+      "question": "Item quantity=-1 có hợp lệ theo source không?",
+      "options": [
+        "Chỉ nếu product_id lớn.",
+        "Không vì CHECK(quantity>0).",
+        "Có vì INTEGER cho mọi số nguyên nên bỏ CHECK.",
+        "Có vì price không âm."
+      ],
+      "correct": 1,
+      "explanation": "Kiểu dữ liệu và constraint cùng giới hạn giá trị."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Null quantity",
+      "question": "quantityNULL có được source chấp nhận không?",
+      "options": [
+        "Có nếu order tồn tại.",
+        "Có nếu giá bằng0.",
+        "Không vì NOT NULL.",
+        "Có vì CHECK không chặn NULL nên mọi constraint đều bỏ qua."
+      ],
+      "correct": 2,
+      "explanation": "CHECK không chặn NULL không làm NOT NULL mất hiệu lực."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Null total",
+      "question": "Explicit totalNULL trong source sẽ ra sao?",
+      "options": [
+        "Tự thành0 do CHECK.",
+        "Tự thành0 do DECIMAL.",
+        "Tự thành NOW().",
+        "Vi phạm NOT NULL."
+      ],
+      "correct": 3,
+      "explanation": "Source không có DEFAULT cho total, và NOT NULL vẫn phải thỏa."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Missing total",
+      "question": "INSERT order bỏ cột total nhưng không có trigger hay default khác sẽ thế nào?",
+      "options": [
+        "Không thỏa NOT NULL cho total.",
+        "Tự SUM mọi items.",
+        "Tự lấy0 bắt buộc.",
+        "Tự lấy customer_id."
+      ],
+      "correct": 0,
+      "explanation": "Source chưa định nghĩa cơ chế tự tính tổng order."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Bad status",
+      "question": "Status cancelled có hợp lệ theo CHECK source không?",
+      "options": [
+        "Chỉ nếu total0.",
+        "Không.",
+        "Có vì TEXT nhận mọi chuỗi và bỏ CHECK.",
+        "Có vì DEFAULTpending vẫn áp dụng cho explicit cancelled."
+      ],
+      "correct": 1,
+      "explanation": "Explicit value không bị default thay trước khi constraint được kiểm tra."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Case status",
+      "question": "Status Pending có nhất thiết hợp lệ với danh sách literals lowercase nguồn trong PostgreSQL mặc định không?",
+      "options": [
+        "Có vì DEFAULT normalize mọi value.",
+        "Có nếu viết cột bằng uppercase.",
+        "Không; với so sánh text mặc định phân biệt case nó không bằngpending.",
+        "Có vì CHECK tự lowercase."
+      ],
+      "correct": 2,
+      "explanation": "Cần quy định comparison/type/collation nếu muốn semantics khác."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Duplicate pair",
+      "question": "Đã có item(order 1, product 7). Thêm item khác id nhưng cùng cặp1, 7 có hợp lệ không?",
+      "options": [
+        "Có vì id mới khác.",
+        "Có vì quantity khác.",
+        "Chỉ nếu price cao hơn.",
+        "Không theo UNIQUE(order_id, product_id)."
+      ],
+      "correct": 3,
+      "explanation": "Primary key và composite unique là hai constraints cùng phải thỏa."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Same order different product",
+      "question": "Order1 cóproduct 7; thêmproduct 8 vàoorder 1 có bị composite UNIQUE tự chặn không?",
+      "options": [
+        "Không nếu mọi constraints khác thỏa.",
+        "Có vì order_id riêng phải unique.",
+        "Có vì product 8 lớn hơn7.",
+        "Chỉ nếu name giống nhau."
+      ],
+      "correct": 0,
+      "explanation": "Cặp(1, 8) khác(1, 7)."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Same product different order",
+      "question": "Product7 có thể xuất hiện ởorder 1 vàorder2 theo composite constraint nguồn không?",
+      "options": [
+        "Chỉ nếu quantity0.",
+        "Có nếu các parents và constraints khác hợp lệ.",
+        "Không vì product_id tự unique.",
+        "Không vì product chỉ được bán một lần."
+      ],
+      "correct": 1,
+      "explanation": "Uniqueness theo cặp cho phép nhiều orders chứa cùng product."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Missing customer",
+      "question": "customer_id99 không có trong customers; source có tự tạo customer99 khi INSERTorder không?",
+      "options": [
+        "Có vì SERIAL có trênorders.",
+        "Chỉ khi statuspending.",
+        "Không; FK cần tham chiếu hợp lệ.",
+        "Có vì REFERENCES làupsert."
+      ],
+      "correct": 2,
+      "explanation": "Cần tạo/chọn parent theo transaction và quy trình ứng dụng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Missing product",
+      "question": "Item cóproduct_id không tồn tại nhưngorder_id hợp lệ có đủ hợp lệ không?",
+      "options": [
+        "Có vì chỉ cần một FK thỏa.",
+        "Có vì UNIQUE đủ thay mọi FK.",
+        "Chỉ nếu quantity1.",
+        "Không; FKproduct cũng phải thỏa."
+      ],
+      "correct": 3,
+      "explanation": "Constraints áp dụng đồng thời, không chọn một để bỏ qua các constraints khác."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Cascade direction",
+      "question": "Xóa một order theo FK cascade nguồn có xóa parentcustomer của order đó không?",
+      "options": [
+        "Không do cascade đã khai báo ởorder_items.",
+        "Có, cascade đi mọi hướng.",
+        "Có, mọi FOREIGN KEY đều xóa parent.",
+        "Chỉ nếu order không có notes."
+      ],
+      "correct": 0,
+      "explanation": "Cascade không lan ngược thành xóa mọi entity liên quan."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Delete item",
+      "question": "Xóa một order_item có tự xóaorder theo ON DELETE CASCADE này không?",
+      "options": [
+        "Chỉ nếu total0.",
+        "Không.",
+        "Có, cascade là hai chiều.",
+        "Có nếu nó là item cuối."
+      ],
+      "correct": 1,
+      "explanation": "Constraint mô tả xóa children khi parent bị xóa, không ngược lại."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Delete referenced product",
+      "question": "Source không ghi ON DELETE CASCADE cho product_id. Có thể mặc định xóaproduct sẽ tự xóaitems không?",
+      "options": [
+        "Có nếu có index.",
+        "Chỉ cần DELETE không WHERE.",
+        "Không; default FK action và các references hiện hữu phải được xét.",
+        "Có, mọi REFERENCES tự cascade."
+      ],
+      "correct": 2,
+      "explanation": "Trong PostgreSQL mặc định làNO ACTION, không phảiCASCADE."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Update timestamp gap",
+      "question": "Cập nhậtstatus của order có tự đổi updated_at nhờ DEFAULT NOW chưa?",
+      "options": [
+        "Có, tênupdated_at tự điều khiển.",
+        "Có, DEFAULT chạy sau mọi UPDATE.",
+        "Chỉ nếu statusshipped.",
+        "Chưa; cần explicit assignment hoặc cơ chế khác như trigger."
+      ],
+      "correct": 3,
+      "explanation": "Default dùng cho cột khi tạo giá trị mặc định, không phải update hook."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Transaction time",
+      "question": "NOW() của PostgreSQL17 thể hiện thời gian nào?",
+      "options": [
+        "Thời điểm bắt đầu transaction.",
+        "Thời gian thực luôn đổi mỗi lần gọi trong cùng statement.",
+        "Thời điểm compile project.",
+        "Một số giây cố định từ năm2025."
+      ],
+      "correct": 0,
+      "explanation": "NOW tương đươngtransaction_timestamp, khácclock_timestamp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Timestamp type",
+      "question": "TIMESTAMP không ghi timezone trong PostgreSQL nguồn tương ứng kiểu nào?",
+      "options": [
+        "Một kiểuDATE chỉ có ngày.",
+        "timestamp without time zone.",
+        "Luôn timestamp with time zone.",
+        "Một chuỗi UTC tự xác thực."
+      ],
+      "correct": 1,
+      "explanation": "Cần chọn kiểu/timezone policy theo ý nghĩa instant/local date-time."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Foreign key indexes",
+      "question": "Khai báo FK trong PostgreSQL17 có tự tạo index trên referencing column mọi lần không?",
+      "options": [
+        "Chỉ nếu columnNOT NULL.",
+        "Chỉ nếu cột tênid.",
+        "Không.",
+        "Có, mọi FK tạo index hai phía."
+      ],
+      "correct": 2,
+      "explanation": "Index phía referenced key có yêu cầu; phía referencing là quyết định riêng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Plain index uniqueness",
+      "question": "idx_orders_customer source có ngăn một customer có nhiềuorders không?",
+      "options": [
+        "Có vì tênindex cócustomer.",
+        "Có vì mọi index đều UNIQUE.",
+        "Chỉ nếu customer_idINTEGER.",
+        "Không; đây là index thường."
+      ],
+      "correct": 3,
+      "explanation": "Muốn uniqueness phải có constraint/index unique phù hợp với domain."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Write cost",
+      "question": "Thêm nhiềuindexes có thể đánh đổi gì?",
+      "options": [
+        "Tốn storage và chi phí duy trì trênwrites.",
+        "Không có bất cứ chi phí nào.",
+        "Luôn giảm mọi querytime về0.",
+        "Tự giảm sốorders."
+      ],
+      "correct": 0,
+      "explanation": "Index cần dựa trên workload và đo plan, không chỉ số lượng càng nhiều càng tốt."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Status index scope",
+      "question": "Index(status, created_at) có tự sắp toàn bộ SELECT không ORDER BY theo hai cột không?",
+      "options": [
+        "Chỉ nếu cóWHEREtotal.",
+        "Không có contract về output order nếu khôngORDER BY.",
+        "Có, mọi query tự sort như index.",
+        "Có, kể cả không đọcorders."
+      ],
+      "correct": 1,
+      "explanation": "Access path không thay yêu cầu sắp xếp output rõ ràng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Serial uniqueness",
+      "question": "SERIAL một mình có tương đương PRIMARY KEY không?",
+      "options": [
+        "Có, SERIAL tự permission.",
+        "Chỉ nếu tênid.",
+        "Không; source khai báoPRIMARY KEY riêng.",
+        "Có, SERIAL tự mọi FK."
+      ],
+      "correct": 2,
+      "explanation": "Serial cung cấp sequence/default và nullability theo shorthand, không tự thêm uniqueness như PK."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Sequence gaps",
+      "question": "Sequence dùng bởi SERIAL có thể có gap khi transactionrollback không?",
+      "options": [
+        "Không vì rollback luôn trả lại mọi sequence value.",
+        "Chỉ nếu id làTEXT.",
+        "Chỉ nếu cóDELETECASCADE.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "Allocated sequence values có semantics riêng, không phải số chứng từ gapless."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Price source gap",
+      "question": "order_items.price có ràng buộc ngăn giá âm trong source chưa?",
+      "options": [
+        "Chưa; cóNOT NULL nhưng không cóCHECK(price>=0).",
+        "Rồi, DECIMAL tự cấm âm.",
+        "Rồi, quantity>0 tự kiểm tra price.",
+        "Rồi, total>=0 tự truyền xuống mọi item."
+      ],
+      "correct": 0,
+      "explanation": "Constraint của một cột/bảng không tự chuyển thành validation của cột/bảng khác."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Totals source gap",
+      "question": "Cóitemquantity2 price10 vàordertotal999. Sourceconstraints có tự bắt total phải20 không?",
+      "options": [
+        "Chỉ khi cóidx_orders_status.",
+        "Không; chưa có cơ chế consistency đó.",
+        "Có vì FOREIGN KEY tự SUM.",
+        "Có vì cả hai DECIMAL(10, 2)."
+      ],
+      "correct": 1,
+      "explanation": "Cross-row/cross-table aggregate integrity cần thiết kế riêng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Parent schema prerequisite",
+      "question": "Trước khi tạoorders/order_items với cácFK, cần chuẩn bị gì?",
+      "options": [
+        "Chỉ route/auth.",
+        "Chỉ đặt tên database làshop.",
+        "Các parent tables/keys phù hợp và thứ tự migrations.",
+        "Chỉ một fileCSS."
+      ],
+      "correct": 2,
+      "explanation": "Source minh họa chưa cung cấp definitions customers/products."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Checks row scope",
+      "question": "CHECK đơn giản của source nên kiểm tra điều gì?",
+      "options": [
+        "Tùy ý truy vấn bảng khác rồi coi luôn ổn định qua mọi thay đổi.",
+        "Luôn gọi HTTP thanh toán.",
+        "Luôn tạo index tự động.",
+        "Điều kiện phù hợp với dữ liệu của row đó."
+      ],
+      "correct": 3,
+      "explanation": "PostgreSQL CHECK không phải cơ chế tổng quát enforce arbitrary cross-table invariants."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Nullable unique pg",
+      "question": "UNIQUE thường trong PostgreSQL17 mặc định có ngăn nhiềuNULL trong một nullablecolumn không?",
+      "options": [
+        "Không; có tùy chọnNULLS NOT DISTINCT để đổi semantics nếu phù hợp.",
+        "Có trong mọi trường hợp.",
+        "Chỉ nếu columnTEXT.",
+        "Chỉ nếu querycóLIMIT."
+      ],
+      "correct": 0,
+      "explanation": "Các cột trong compositeunique nguồn đềuNOT NULL nên không có lối điNULL ở đó."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Check unknown pg",
+      "question": "Trong PostgreSQL17, CHECKexpression trảNULL có làm constraint đó thất bại không?",
+      "options": [
+        "Tự chuyển row thànhDELETE.",
+        "Không; CHECK được thỏa khi true hoặcNULL.",
+        "Có nhưfalse.",
+        "Luôn gây SQLsyntaxerror."
+      ],
+      "correct": 1,
+      "explanation": "ThêmNOT NULL khi domain cần có giá trị."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Boolean portability",
+      "question": "Có nên dùng BOOLEAN và cú pháp kiểm tra boolean như nhau trên mọi engine không?",
+      "options": [
+        "Có nếu cóSERIAL.",
+        "Chỉ cần têncolumnis_active.",
+        "Không; cần xác định type/storage/SQLsemantics của DB.",
+        "Có vì mọi DB chỉ có một type system."
+      ],
+      "correct": 2,
+      "explanation": "Theory liệt kê types khái quát, không thay dialect docs."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Binary portability",
+      "question": "Theory ghiBLOB; PostgreSQL có nhất thiết dùng kiểu tênBLOB nhưSQLite cho mọi binarydata không?",
+      "options": [
+        "Có, mọi SQLtype names giống nhau.",
+        "Có vì BLOB luôn làTEXT.",
+        "Chỉ nếu cóPRIMARY KEY.",
+        "Không; PostgreSQL cóbytea và các cơ chế khác theo mục đích."
+      ],
+      "correct": 3,
+      "explanation": "Không copy names/types giữa engines mà bỏ qua docs."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Constraint error handling",
+      "question": "Ứng dụng gặp duplicateorder/product nên phản hồi thế nào?",
+      "options": [
+        "Diễn giải violation theo nghiệp vụ và tránh báo thành công sai.",
+        "Luôn bỏ constraint trongproduction.",
+        "Luôn thêm rowtrùng bằng cách đổiid.",
+        "Luôn trảstacktrace/credentials cho user."
+      ],
+      "correct": 0,
+      "explanation": "DB integrity cần đi cùng API/error contract phù hợp."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Id versus business key",
+      "question": "Primary key riêng củaitem vàUNIQUE(order, product) có thể cùng cần vì sao?",
+      "options": [
+        "Vì idkhông thểdùngtham chiếu.",
+        "Một khóa định danhrow; một constraint diễn tả business uniqueness theo cặp.",
+        "Vì mọi bảng bắt buộc cóhai PKs.",
+        "Vì UNIQUE tự thayINDEXstatus."
+      ],
+      "correct": 1,
+      "explanation": "Tách identity và domain uniqueness là một lựa chọn schema hợp lý."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Default explicit status",
+      "question": "Truyềnstatus=NULL có tự được thay bằngpending trong PostgreSQL source không?",
+      "options": [
+        "Có vìTEXT tựmapNULL.",
+        "Chỉ khi total0.",
+        "Không; explicitNULL vi phạmNOT NULL.",
+        "Có vìdefault thay mọiNULL."
+      ],
+      "correct": 2,
+      "explanation": "Default khi omitted khác valueNULL được chỉ định."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Migration validation",
+      "question": "Thêm constraint vào bảng có dữ liệu cần xét gì?",
+      "options": [
+        "Chỉ đổi filename.",
+        "Coi mọi row cũ tự hợp lệ.",
+        "Chỉ refreshbrowser.",
+        "Dữ liệu hiện hữu, validation/locks và lộ trình triển khai phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Schema change có ảnh hưởng thực tế khác việc chạy ví dụ trên bảng rỗng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Check alone gap",
+      "question": "BỏNOT NULL khỏiquantity nhưng giữCHECK(quantity>0) sẽ mở lỗ hổng domain nào?",
+      "options": [
+        "quantityNULL có thể vượt quaCHECK, dù ý định cần số lượng.",
+        "Mọi quantityâm đều được chấp nhận.",
+        "Mọi quantityphải thành1.",
+        "Primarykey bị xóa."
+      ],
+      "correct": 0,
+      "explanation": "CHECKNULL semantics đòi hỏi tách yêu cầu presence khỏi numeric condition."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Rounded overflow",
+      "question": "NUMERIC(10, 2) nhận99999999.995 có thể lỗi vì sao theo rounding củaPostgreSQLnumeric?",
+      "options": [
+        "VìNOT NULL ngăn mọi sốlớn.",
+        "Sau rounding thành100000000.00, phần nguyên vượt8 chữ số.",
+        "Vìnumeric luôn cắt thành99999999.99.",
+        "Vìmọi số có3số lẻ đều bịsyntaxerror."
+      ],
+      "correct": 1,
+      "explanation": "Phải xét rounding trước kiểm tra số chữ số phần nguyên."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Source money domain",
+      "question": "Muốn represent tiền chính xác có đủ chỉ chọnDECIMAL(10, 2) không?",
+      "options": [
+        "Đủ nếu têncolumnprice.",
+        "Chỉthêmindex làxong.",
+        "Chưa; cần currency, rounding, range, nonfinite policy và công thức nghiệp vụ.",
+        "Đủ cho mọi loại tiền và nghiệp vụ."
+      ],
+      "correct": 2,
+      "explanation": "Numeric representation không tự định nghĩa domain money."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Concurrent uniqueness",
+      "question": "Hai requests thêm cùng(order, product) đồng thời sau checkchưa có. Cần điều gì?",
+      "options": [
+        "BỏUNIQUE đểtránh lỗi.",
+        "CoiSELECTprechecklàlockvĩnhviễn.",
+        "Chỉ thêmdelay ởfrontend.",
+        "GiữUNIQUE ởDB và xử lý conflict theo contract, không chỉ precheck."
+      ],
+      "correct": 3,
+      "explanation": "Constraint là ranh giới quan trọng trước concurrency race."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Cascade blast radius",
+      "question": "Xóaorder cóhàngnghìnitems dướiCASCADE cần cân nhắc gì?",
+      "options": [
+        "Phạm viủyquyền, chi phí/locking, transaction và audit/retention theo yêu cầu.",
+        "ChỉmàunútDelete.",
+        "CoiCASCADE luônmiễnphí.",
+        "Đổiid thànhstring sẽxửlýmọirủi ro."
+      ],
+      "correct": 0,
+      "explanation": "Atomic relationship deletion vẫn có chi phí và lifecycle consequences."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Cross table total integrity",
+      "question": "Để totalorder luôn khớpitems khi nhiềurequests sửaitems, cần thiết kế gì?",
+      "options": [
+        "ChỉNOT NULL cho notes.",
+        "Transaction/concurrency strategy và cơ chế tính/enforce tổng nhất quán.",
+        "ChỉCHECK(total>=0).",
+        "Chỉindex(order_id)."
+      ],
+      "correct": 1,
+      "explanation": "Row-local condition không enforce aggregate invariant qua các bảng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Temporal precision policy",
+      "question": "Haiorders trong cùngtransaction cóNOW() giống nhau. Có thể dùngcreated_at làm unique sequence ordering duy nhất không?",
+      "options": [
+        "Có vìTIMESTAMP làPRIMARY KEY.",
+        "Chỉ nếu cóidxstatus.",
+        "Không; cần tie-breaker/key và policy ordering phù hợp.",
+        "Có vìNOWluôn tăngmỗi call."
+      ],
+      "correct": 2,
+      "explanation": "Transaction timestamp và độ chính xác thời gian không bảo đảm uniqueness."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Timestamp conversion risk",
+      "question": "GhiNOW() vàoTIMESTAMP withouttime zone có thể phụ thuộc gì?",
+      "options": [
+        "ChỉCSSlocale.",
+        "Chỉtênbảng.",
+        "Không bao giờcótimezone liên quan.",
+        "Conversion theo timezone/session và policy lưu trữ; không tự bảo toàn timezone identity."
+      ],
+      "correct": 3,
+      "explanation": "Cần chọn kiểu và quy ước khi biểu diễn instants giữa nhiều vùng giờ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Constraint scope versus permission",
+      "question": "MộtINSERT có mọiFK/CHECK hợp lệ có đủ chứng minh user được quyền tạoorder cho customer đó không?",
+      "options": [
+        "Không; authorization là yêu cầu riêng ở server/data boundary.",
+        "Có vì FK làpermission.",
+        "Có vì SERIAL cấpquyền.",
+        "Chỉ nếu totaldương."
+      ],
+      "correct": 0,
+      "explanation": "Integrity của quan hệ không thay kiểm soát ai được ghi quan hệ đó."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Index default correction",
+      "question": "Team nghĩ FKorder_items.order_id đã cóindex riêng tự động. Cách kiểm tra/sửa đúng là gì?",
+      "options": [
+        "CoiUNIQUEkhông bao giờtạoindex.",
+        "Kiểm tra indexes thực tế và workload trước khi thêm index phù hợp, tránh trùng vớiindex composite đã có.",
+        "Luôn thêm10indexes giống nhau.",
+        "BỏFK đi."
+      ],
+      "correct": 1,
+      "explanation": "UNIQUE(order_id, product_id) đã cung cấp mộtindex vớiorder_id ở đầu; cần đánh giá thay vì thêm máy móc."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Business unique revision",
+      "question": "Cần nhiều dòng cùngproduct trongorder vì discount khác nhau. UNIQUE hiện tại có phù hợp không?",
+      "options": [
+        "Chỉ đổi rowid làvượtđược.",
+        "BỏmọiFK làđủ.",
+        "Có thể không; cần xác định itemidentity/business key mới và migrate có kiểm soát.",
+        "Luônphù hợp vìUNIQUE không ảnh hưởngwrites."
+      ],
+      "correct": 2,
+      "explanation": "Schema constraints phải khớp domain thay vì được giữ hoặc xóa tùy tiện."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Negative item subtotal",
+      "question": "priceâm được source cho phép trong khiordertotal>=0. Có thể coi mọiline subtotal không âm không?",
+      "options": [
+        "Có vìordertotalcheckápdụngmọiitem.",
+        "Có vìDECIMAL tựbỏdấuâm.",
+        "Chỉ cầnUNIQUE(order, product).",
+        "Không; quantitydương nhânpriceâm cho subtotalâm, và source chưaenforce quan hệ tổng."
+      ],
+      "correct": 3,
+      "explanation": "Đánh giá toàn bộ expression theo constraints thực sự có."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Nullable unique migration",
+      "question": "Đổi một nullablebusiness key thànhUNIQUE nhưng vẫn choNULL có thể trái yêu cầu nào?",
+      "options": [
+        "Yêu cầu mỗi row cóbusiness key và không có nhiều missingkeys.",
+        "Yêu cầu đọc bảng.",
+        "Yêu cầu dùngTEXT.",
+        "Yêu cầu cóindex thường."
+      ],
+      "correct": 0,
+      "explanation": "CầnNOT NULL hoặcNULLS NOT DISTINCT theo semantics/businesspolicy cụ thể."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Sequence not invoice count",
+      "question": "DùngSERIAL id làm bộ đếm hóađơn liên tục có rủi ro gì?",
+      "options": [
+        "SERIAL tự encode timezone.",
+        "Sequence cógaps và không phải contract đánh số chứng từ gapless.",
+        "SERIAL chỉ có10giá trị.",
+        "SERIAL luôn làUUID."
+      ],
+      "correct": 1,
+      "explanation": "Yêu cầu chứng từ liên quan accounting cần cơ chế riêng được thiết kế cẩn thận."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Missing parent rollout",
+      "question": "Deployorder_items trước khiorders/products cókeys tương thích có thể thất bại vì sao?",
+      "options": [
+        "VìpriceDECIMAL cấmFK.",
+        "Vìmọibảngphảicùng tên.",
+        "FK cần references hợp lệ ngay khi tạo/validate theoDDL đang dùng.",
+        "Vìchildbảngkhông đượccóPK."
+      ],
+      "correct": 2,
+      "explanation": "Migration dependency ordering là một phần correctness."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Status workflow gap",
+      "question": "CHECKstatus chỉ thuộc4 giá trị có bảo đảm không chuyển thẳngpending→delivered trái quy trình không?",
+      "options": [
+        "Có vìIN tựbiết thứ tựworkflow.",
+        "Có vì DEFAULTpending khóa status.",
+        "Chỉ nếu cóINDEXstatus.",
+        "Không; allowedvalues khác allowedtransitions cần enforce theo workflow."
+      ],
+      "correct": 3,
+      "explanation": "Domain state machine cần quy tắc chuyển trạng thái, không chỉ enum membership."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "NaN domain exception",
+      "question": "TrongPostgreSQL17, numericNaN so sánh lớn hơn mọi numericnon-NaN. CHECK(total>=0) có đủ chặnNaN không?",
+      "options": [
+        "Không; cần policy/constraint rõ để loạiNaN nếu domain không cho phép.",
+        "Có vìNaN luônso sánhfalse nhưJavaScript.",
+        "Có vìDECIMAL tựcấmNaN trongmọi trường hợp.",
+        "Chỉ cầnNOT NULL."
+      ],
+      "correct": 0,
+      "explanation": "PostgreSQL numeric comparison có quy tắcNaN riêng; câu này là spec review, chưa chạy runtimePG."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Default versus trigger",
+      "question": "Mộttest INSERT thấyupdated_at đúng thời gian có chứng minh nó tự đổi khiUPDATE không?",
+      "options": [
+        "Chỉ nếu dùngNOWthayCURRENT_TIMESTAMP.",
+        "Không; phải kiểm tra đườngUPDATE và cơ chế explicit/trigger thật.",
+        "Có vì cùngcolumn.",
+        "Có vì DEFAULT tự đăng kýtrigger."
+      ],
+      "correct": 1,
+      "explanation": "Test phải gắn với hành vi cần xác nhận, không suy qua operation khác."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Review evidence honesty",
+      "question": "ChạySQLite với schema tương tự có thể được báo là testPostgreSQL17 nguồn đã đạt không?",
+      "options": [
+        "Có vì mọi SQLsyntax giống nhau.",
+        "Chỉ cầnđổi tênreport.",
+        "Không; dialect/typing/sequence/timezone/constraint semantics khác nhau.",
+        "Có vì cùngđuôi.sql."
+      ],
+      "correct": 2,
+      "explanation": "Ghi rõ engine/version và phạm vi review, không thay nhãn bằng chứng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Complete source assessment",
+      "question": "Nhận định nào đúng về schemaorders mẫu?",
+      "options": [
+        "Đãchứng minh chịu10triệu concurrentusers.",
+        "Đãcótựđộngsumitems vàupdatetimestamp.",
+        "Đãbao gồmđủparent tables/auth/audit.",
+        "Có nền constraints/indexes nhưng cần hoàn thiện domain, workflow, timekeeping, consistency và vận hành theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Ví dụ giảng dạy không tự thành kiến trúc production hoàn chỉnh."
+    }
+  ]
+}

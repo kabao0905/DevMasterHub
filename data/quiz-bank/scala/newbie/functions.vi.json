@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "scala",
+  "level": "newbie",
+  "lesson": "functions",
+  "language": "vi",
+  "sourceHash": "6140cd49d076e47d39795e79e97980c85b0861673d782b039573bc30940acc34",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo immutable List filter/map/reduce và bài tập trung bình điểm. Đối chiếu Collections 2.13/List API; phân biệt empty reduce, fold seed, thứ tự phép biến đổi, kiểu số và side effects. Không compiler/collection runtime execution.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "First class",
+      "question": "Hàm là first-class citizen có ý nghĩa nào?",
+      "options": [
+        "Có thể được truyền/lưu/trả như giá trị theo hệ thống kiểu",
+        "Mọi hàm đều chạy song song ngay khi định nghĩa",
+        "Hàm chỉ được gọi, không được truyền làm đối số",
+        "Mọi hàm phải trả Unit để được dùng như giá trị"
+      ],
+      "correct": 0,
+      "explanation": "Cách dùng hàm làm đối số là nền tảng của map/filter."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Nguồn collection",
+      "question": "numbers trong bài dùng collection nào?",
+      "options": [
+        "Vector",
+        "List",
+        "Array",
+        "Set"
+      ],
+      "correct": 1,
+      "explanation": "List nguồn là immutable List theo binding chuẩn trong phạm vi này."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Dữ liệu",
+      "question": "List nguồn chứa những giá trị nào?",
+      "options": [
+        "2,4,6",
+        "4,8,12",
+        "1,2,3,4,5,6",
+        "0,1,2,3,4,5"
+      ],
+      "correct": 2,
+      "explanation": "Dữ liệu ban đầu khác với các kết quả trung gian."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Filter",
+      "question": "filter chủ yếu làm gì?",
+      "options": [
+        "Biến đổi từng phần tử theo hàm trả giá trị mới",
+        "Gộp mọi phần tử bằng một accumulator",
+        "Loại phần tử trùng mà không cần predicate",
+        "Giữ phần tử thỏa predicate"
+      ],
+      "correct": 3,
+      "explanation": "Predicate quyết định chọn phần tử, không tự là mapper."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Map",
+      "question": "map chủ yếu làm gì?",
+      "options": [
+        "Áp hàm biến đổi lên từng phần tử và tạo kết quả",
+        "Chỉ giữ phần tử khi callback trả true",
+        "Kết hợp các phần tử thành một giá trị duy nhất",
+        "Sửa trực tiếp từng ô của List nguồn"
+      ],
+      "correct": 0,
+      "explanation": "Hàm mapping có thể đổi kiểu phần tử theo API phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Reduce",
+      "question": "reduce trong source dùng để làm gì?",
+      "options": [
+        "Lấy số phần tử thay vì giá trị của chúng",
+        "Kết hợp các phần tử bằng hàm cộng",
+        "Chỉ cộng các số chẵn đã được filter",
+        "Nhân đôi từng phần tử rồi trả List"
+      ],
+      "correct": 1,
+      "explanation": "Reduce cần chú ý collection rỗng và phép kết hợp."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Predicate chẵn",
+      "question": "_ % 2 == 0 kiểm điều kiện nào?",
+      "options": [
+        "Số chỉ bằng 0",
+        "Index của phần tử là chẵn thay vì giá trị",
+        "Số chia 2 dư 0",
+        "Số lớn hơn 2"
+      ],
+      "correct": 2,
+      "explanation": "Đây là predicate chẵn trong miền Int của ví dụ."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Double mapper",
+      "question": "_ * 2 trong map thể hiện gì?",
+      "options": [
+        "Lấy đúng hai phần tử đầu",
+        "Tạo hai bản sao của cả List",
+        "Giữ phần tử chia hết cho 2",
+        "Nhân mỗi đầu vào với 2"
+      ],
+      "correct": 3,
+      "explanation": "Không đồng nhất phép biến đổi giá trị và chọn phần tử."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Placeholder một tham số",
+      "question": "Trong numbers.map(_ * 2), dấu _ đại diện gì?",
+      "options": [
+        "Tham số của hàm mapping ngắn gọn",
+        "Index của phần tử đang được map",
+        "Toàn bộ List như một đối số duy nhất",
+        "Giá trị mặc định khi phần tử không tồn tại"
+      ],
+      "correct": 0,
+      "explanation": "Có thể viết lambda tường minh tương ứng khi cần rõ nghĩa."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Placeholder hai tham số",
+      "question": "_ + _ trong reduce thể hiện hàm có ý định nào?",
+      "options": [
+        "Lấy hiệu hai giá trị accumulator và phần tử",
+        "Cộng hai giá trị đang được kết hợp",
+        "Cộng một phần tử với chính nó ở mỗi bước",
+        "Một tham số được tham chiếu hai lần không phụ thuộc ngữ cảnh"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi placeholder thuộc một tham số của lambda theo ngữ cảnh."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Kết quả filter",
+      "question": "Lọc số chẵn từ List từ 1 đến 6 cho các phần tử nào?",
+      "options": [
+        "4,8,12",
+        "1,2,3",
+        "2,4,6",
+        "1,3,5"
+      ],
+      "correct": 2,
+      "explanation": "Giữ thứ tự các phần tử được chọn của List."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Kết quả nguồn",
+      "question": "evenDoubled theo source là List nào?",
+      "options": [
+        "List(2,4,6)",
+        "List(2,4,6,8,10,12)",
+        "List(1,3,5)",
+        "List(4,8,12)"
+      ],
+      "correct": 3,
+      "explanation": "Filter trước rồi map nhân 2."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Tổng nguồn",
+      "question": "numbers.reduce(_ + _) cho tổng số học nào với dữ liệu nguồn?",
+      "options": [
+        "21",
+        "12 là tổng các số chẵn",
+        "6 là số phần tử",
+        "42 là tổng sau nhân đôi"
+      ],
+      "correct": 0,
+      "explanation": "1+2+3+4+5+6 bằng 21."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Immutability",
+      "question": "Các thao tác filter/map trên immutable List nguồn có tự sửa numbers tại chỗ không?",
+      "options": [
+        "Chỉ map sửa nguồn còn filter tạo List mới",
+        "Không",
+        "Có, filter xóa phần tử của List nguồn tại chỗ",
+        "Có, map cập nhật phần tử của receiver"
+      ],
+      "correct": 1,
+      "explanation": "Chúng tạo kết quả theo API mà không thay List gốc."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "FlatMap",
+      "question": "flatMap thường kết hợp những ý tưởng nào?",
+      "options": [
+        "Map rồi làm phẳng đệ quy mọi tầng lồng",
+        "Chỉ filter bằng một predicate trả Boolean",
+        "Map sang các collection rồi làm phẳng một mức theo API",
+        "Map rồi tự dedup mọi phần tử"
+      ],
+      "correct": 2,
+      "explanation": "Không mặc định là flatten đệ quy mọi độ sâu."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "FoldLeft",
+      "question": "foldLeft cần thêm đầu vào nào so với reduce theo pattern thường dùng?",
+      "options": [
+        "Predicate Boolean để quyết định giữ phần tử",
+        "Kiểu phần tử đích được truyền như runtime value",
+        "Một List khác có cùng chiều dài để zip",
+        "Giá trị khởi đầu của accumulator"
+      ],
+      "correct": 3,
+      "explanation": "Seed ảnh hưởng kết quả và cách xử lý collection rỗng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Foreach",
+      "question": "foreach thường được chọn khi mục tiêu chính là gì?",
+      "options": [
+        "Thực hiện side effect cho các phần tử",
+        "Tạo List từ giá trị trả về của callback",
+        "Làm phẳng collection do callback trả về",
+        "Kết hợp phần tử thành giá trị accumulator"
+      ],
+      "correct": 0,
+      "explanation": "foreach có kiểu kết quả Unit, khác map giữ kết quả biến đổi."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Set",
+      "question": "Set khác List ở thuộc tính nào phù hợp trong bài?",
+      "options": [
+        "Luôn có truy cập index giống Array",
+        "Mô hình tập giá trị không giữ các phần tử trùng như List",
+        "Giữ mọi bản sao trùng giống List",
+        "Mọi implementation luôn giữ thứ tự insertion"
+      ],
+      "correct": 1,
+      "explanation": "Phải xét implementation nếu cần thứ tự cụ thể."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Map collection",
+      "question": "Map collection chủ yếu biểu diễn gì?",
+      "options": [
+        "Một phép biến đổi tên map duy nhất",
+        "Một tập phần tử trùng được giữ nguyên theo vị trí",
+        "Ánh xạ từ key sang value",
+        "Một danh sách các giá trị không có key"
+      ],
+      "correct": 2,
+      "explanation": "Tên collection Map khác method map trên List."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Bài tập",
+      "question": "Bài tập yêu cầu lọc điểm theo điều kiện nào?",
+      "options": [
+        "Chỉ giữ điểm > 8.0 và loại đúng 8.0",
+        "Tính trung bình toàn danh sách trước khi chọn điểm đạt",
+        "Chỉ giữ điểm bằng 10 rồi tính trung bình",
+        "Điểm >=8.0 rồi tính trung bình theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Cần xác định cách xử lý nếu không còn điểm sau lọc."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Lambda tường minh",
+      "question": "Dạng nào tương ứng _ * 2 trong mapping Int?",
+      "options": [
+        "x => x * 2",
+        "x => x % 2 == 0",
+        "(x,y) => x + y",
+        "() => 2"
+      ],
+      "correct": 0,
+      "explanation": "Predicate Boolean và mapper nhân có chữ ký/mục tiêu khác nhau."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Predicate tường minh",
+      "question": "Dạng nào tương ứng filter(_ % 2 == 0)?",
+      "options": [
+        "reduce((x,y) => x + y)",
+        "filter(x => x % 2 == 0)",
+        "filter(x => x * 2)",
+        "map(x => x % 2 == 0)"
+      ],
+      "correct": 1,
+      "explanation": "Filter cần predicate đúng kiểu, không một giá trị Int bất kỳ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Map boolean",
+      "question": "numbers.map(_ % 2 == 0) tạo loại dữ liệu nào?",
+      "options": [
+        "Một Boolean cho toàn List",
+        "Một Int tổng số chẵn",
+        "List Boolean tương ứng mỗi phần tử",
+        "List chỉ các số chẵn"
+      ],
+      "correct": 2,
+      "explanation": "Map không tự loại phần tử khi hàm trả false."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Thứ tự khác",
+      "question": "Nếu map(_ * 2) trước rồi filter(_ % 2 == 0) trên List nguồn, kết quả là gì?",
+      "options": [
+        "List(4,8,12)",
+        "List(1,3,5)",
+        "List(2,4,6)",
+        "List(2,4,6,8,10,12)"
+      ],
+      "correct": 3,
+      "explanation": "Mọi giá trị đã được nhân 2 nên đều chẵn; phép đổi thứ tự làm đổi nghĩa."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Giữ gốc",
+      "question": "Sau khi tạo evenDoubled, numbers còn dữ liệu nào?",
+      "options": [
+        "List(1,2,3,4,5,6)",
+        "List(4,8,12)",
+        "List rỗng",
+        "Một Map theo index"
+      ],
+      "correct": 0,
+      "explanation": "Immutable List gốc không bị filter/map sửa."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Biến đổi kiểu",
+      "question": "List(\"An\",\"Binh\").map(_.length) cho kết quả nào?",
+      "options": [
+        "6 như một Int duy nhất",
+        "List(2,4)",
+        "List(\"AN\",\"BINH\")",
+        "List(\"An\",\"Binh\")"
+      ],
+      "correct": 1,
+      "explanation": "Hàm mapping trả Int nên kiểu phần tử kết quả đổi."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Filter không đúng kiểu",
+      "question": "Filter một List[Int] với hàm x => x * 2 có phù hợp predicate thông thường không?",
+      "options": [
+        "Có, Scala tự chèn ==0 ở cuối",
+        "Chỉ khi List có hai phần tử",
+        "Không, hàm đó trả Int chứ không Boolean",
+        "Có, mọi số khác 0 tự là true trong Scala filter"
+      ],
+      "correct": 2,
+      "explanation": "Không áp truthiness kiểu JavaScript lên predicate Scala."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Reduce empty",
+      "question": "List.empty[Int].reduce(_ + _) có seed 0 tự động như sum không?",
+      "options": [
+        "Có, mọi reduce tự có 0",
+        "Có, tên Int xác định mọi kết quả là 0",
+        "Chỉ khi source được println",
+        "Không; reduce trên empty cần xử lý riêng theo API"
+      ],
+      "correct": 3,
+      "explanation": "Không suy seed từ ý nghĩa cộng nếu API không nhận seed."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Fold empty",
+      "question": "List.empty[Int].foldLeft(0)(_ + _) có kết quả nào?",
+      "options": [
+        "0",
+        "Một lỗi chỉ vì List rỗng",
+        "1",
+        "Unit"
+      ],
+      "correct": 0,
+      "explanation": "Khi không có phần tử, foldLeft trả seed."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Seed khác",
+      "question": "List(1,2,3).foldLeft(10)(_ + _) có kết quả nào?",
+      "options": [
+        "60",
+        "16",
+        "6",
+        "10"
+      ],
+      "correct": 1,
+      "explanation": "Seed 10 được kết hợp với tổng 6."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Identity cộng",
+      "question": "Nếu muốn fold tổng không thêm offset, seed phù hợp cho phép cộng Int là gì?",
+      "options": [
+        "-1",
+        "Số phần tử của List",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Cần seed là phần tử đơn vị theo mục tiêu phép tính."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Identity nhân",
+      "question": "Muốn fold tích List các số với phép nhân, seed thường dùng là gì?",
+      "options": [
+        "0",
+        "Số phần tử",
+        "Một String rỗng",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "Seed 0 sẽ làm mọi tích tiếp theo thành 0."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Fold thứ tự",
+      "question": "List(1,2,3).foldLeft(0)(_ - _) có kết quả nào?",
+      "options": [
+        "-6",
+        "2",
+        "6",
+        "0"
+      ],
+      "correct": 0,
+      "explanation": "Tính ((0-1)-2)-3, không tự đổi thành phép trừ giao hoán."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Reduce một phần tử",
+      "question": "List(7).reduce(_ + _) có kết quả nào?",
+      "options": [
+        "Lỗi vì reduce luôn cần ít nhất hai phần tử",
+        "7",
+        "14",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Không cần gọi hàm kết hợp để trả phần tử duy nhất."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Fold kiểu accumulator",
+      "question": "Muốn gom String từ List[Int] bằng foldLeft, accumulator có bắt buộc cùng kiểu Int với phần tử không?",
+      "options": [
+        "Chỉ nếu List rỗng",
+        "Không, vì foldLeft luôn trả Unit",
+        "Không; foldLeft hỗ trợ kiểu accumulator phù hợp chữ ký",
+        "Có, mọi fold đều cùng kiểu input/output"
+      ],
+      "correct": 2,
+      "explanation": "Chọn accumulator theo mục tiêu kết quả và API."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Map lồng",
+      "question": "List(1,2).map(x => List(x,x+10)) tạo shape nào?",
+      "options": [
+        "List(1,11,2,12)",
+        "List(11,12)",
+        "Một Map key/value",
+        "List(List(1,11),List(2,12))"
+      ],
+      "correct": 3,
+      "explanation": "Map giữ một kết quả List con cho mỗi phần tử."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "FlatMap lồng",
+      "question": "Cùng lambda List(x,x+10), dùng flatMap trên List(1,2) có kết quả nào?",
+      "options": [
+        "List(1,11,2,12)",
+        "List(List(1,11),List(2,12))",
+        "List(1,2)",
+        "Một Int 26"
+      ],
+      "correct": 0,
+      "explanation": "Làm phẳng một mức collection do mapping tạo ra."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Foreach không map",
+      "question": "val result = numbers.foreach(println) có result dùng như List[Int] được không?",
+      "options": [
+        "Chỉ khi println in đủ sáu số",
+        "Không, foreach trả Unit",
+        "Có, nó tự giữ numbers làm output",
+        "Có, nhưng chỉ số chẵn"
+      ],
+      "correct": 1,
+      "explanation": "Tác động in từng phần tử khác tạo collection kết quả."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Filter rỗng",
+      "question": "List(1,3,5).filter(_ % 2 == 0) tạo gì?",
+      "options": [
+        "Một lỗi luôn xảy ra",
+        "List(2,4,6)",
+        "List rỗng",
+        "List(0)"
+      ],
+      "correct": 2,
+      "explanation": "Filter không tự thay phần tử để thỏa điều kiện."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Map rỗng",
+      "question": "List.empty[Int].map(_ * 2) tạo gì?",
+      "options": [
+        "List(2)",
+        "Một Int 0",
+        "Một exception vì không có seed",
+        "List rỗng"
+      ],
+      "correct": 3,
+      "explanation": "Map giữ số kết quả tương ứng input, không cần seed."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Mean số nguyên",
+      "question": "Với điểm Int 8 và 9, sum/size bằng Int theo các toán hạng đó có vấn đề gì nếu cần 8.5?",
+      "options": [
+        "Phép chia Int mất phần thập phân, cần chuyển representation phù hợp trước chia",
+        "Scala tự luôn trả Double 8.5",
+        "Chỉ đổi println thành s-string là đủ",
+        "Reduce tự tính trung bình thay tổng"
+      ],
+      "correct": 0,
+      "explanation": "Kiểu số và công thức cần cùng phù hợp mục tiêu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Mean sau lọc",
+      "question": "Điểm List(7.0,8.0,10.0), giữ >=8.0. Trung bình của phần đã giữ là gì?",
+      "options": [
+        "2.0",
+        "9.0",
+        "8.3333 của toàn bộ ban đầu",
+        "18.0"
+      ],
+      "correct": 1,
+      "explanation": "Cần mẫu số là số phần tử của tập đã lọc."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Mẫu số sai",
+      "question": "Tổng điểm đạt sau filter chia cho size của List gốc có luôn là trung bình điểm đạt không?",
+      "options": [
+        "Có, map tự sửa mẫu số",
+        "Chỉ khi mọi điểm đều Int",
+        "Không",
+        "Có, filter giữ cùng size mọi trường hợp"
+      ],
+      "correct": 2,
+      "explanation": "Phải thống nhất tập của tử số và mẫu số."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Không điểm đạt",
+      "question": "Không có điểm >=8.0. Cần quyết định gì trước tính mean?",
+      "options": [
+        "Coi reduce tự sinh một điểm 8",
+        "Luôn báo mean 10 để không lỗi",
+        "Chỉ đổi tên List",
+        "Hợp đồng empty/no-result và cách trả/hiển thị phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không tự tạo dữ liệu để che trường hợp không có quan sát."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Giữ ngưỡng bằng",
+      "question": "Điểm đúng 8.0 có bị predicate >=8.0 loại không?",
+      "options": [
+        "Không",
+        "Có, chỉ giữ trên 8.0",
+        "Chỉ nếu là Double",
+        "Chỉ nếu đứng đầu List"
+      ],
+      "correct": 0,
+      "explanation": "Dấu bằng trong điều kiện phải được giữ khi diễn giải."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Thứ tự List",
+      "question": "List(3,1,2).map(_ * 2) có thứ tự nào?",
+      "options": [
+        "Không có thứ tự theo định nghĩa List",
+        "List(6,2,4)",
+        "List(2,4,6) tự sort",
+        "List(6,4,2)"
+      ],
+      "correct": 1,
+      "explanation": "Map trên List tuần tự giữ thứ tự tương ứng, không tự sort."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Phần tử trùng",
+      "question": "List(2,2,4).filter(_ % 2 == 0) có tự dedup không?",
+      "options": [
+        "Có, số chẵn luôn unique",
+        "Chỉ nếu thêm map",
+        "Không, vẫn có hai phần tử 2",
+        "Có, filter luôn đổi thành Set"
+      ],
+      "correct": 2,
+      "explanation": "Filter kiểm từng phần tử, không thay semantics duplicate của List."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Set biến đổi",
+      "question": "Nếu chuyển dữ liệu điểm sang Set trước tính mean, điều gì có thể đổi?",
+      "options": [
+        "Chỉ thứ tự in, không bao giờ đổi metric",
+        "Tự thêm điểm bị thiếu",
+        "Tự chuyển mọi Double thành String",
+        "Giá trị trùng bị loại, metric có thể khác mean theo từng sinh viên"
+      ],
+      "correct": 3,
+      "explanation": "Chọn collection là một phần ý nghĩa dữ liệu."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Placeholder nhiều bước",
+      "question": "Với lambda có nhiều tham chiếu cùng một tham số, viết tên x tường minh giúp gì?",
+      "options": [
+        "Làm rõ đâu là một tham số được dùng lại, tránh nhầm mỗi _ là placeholder riêng",
+        "Tự làm lambda async",
+        "Tự khóa mutable state",
+        "Loại mọi runtime exception"
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp ngắn không nên làm mơ hồ chữ ký hàm."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Hàm truyền vào",
+      "question": "val double = (x:Int) => x*2 có thể truyền cho numbers.map(double) không?",
+      "options": [
+        "Chỉ nếu List có đúng hai phần tử",
+        "Có, khi chữ ký phù hợp",
+        "Không, map chỉ nhận ký tự _",
+        "Chỉ nếu double là var"
+      ],
+      "correct": 1,
+      "explanation": "Hàm là giá trị, placeholder chỉ là một cách viết."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Map không mutate vật chứa",
+      "question": "numbers.map(_ * 2) rồi bỏ kết quả có làm numbers được nhân 2 không?",
+      "options": [
+        "Chỉ khi numbers là val",
+        "Chỉ khi đã println trước",
+        "Không",
+        "Có, mọi map cập nhật receiver"
+      ],
+      "correct": 2,
+      "explanation": "Muốn dùng kết quả phải giữ/truyền nó theo luồng dữ liệu."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Side effect lambda",
+      "question": "Immutable List có ngăn lambda map tăng một var bên ngoài không?",
+      "options": [
+        "Có, List tự đóng băng mọi scope",
+        "Có, chỉ cần method tên map",
+        "Chỉ khi var là String",
+        "Không, lambda vẫn có thể gây side effect"
+      ],
+      "correct": 3,
+      "explanation": "Immutability của collection không tự làm mọi hàm callback thuần."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Var giữ List",
+      "question": "var xs = List(1,2); xs = xs.map(_ * 2) có nghĩa gì?",
+      "options": [
+        "Binding xs được gán List kết quả mới, List cũ không bị sửa tại chỗ",
+        "List cũ tự đổi vì var làm collection mutable",
+        "Gán lại bị cấm vì mọi List là val",
+        "Map tự chuyển xs thành Array"
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt mutability binding và cấu trúc dữ liệu."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "List và truy cập",
+      "question": "List immutable Scala 2.13 là cấu trúc liên kết; truy cập index tùy ý có nên mặc định O(1) như Array không?",
+      "options": [
+        "Không, vì List không thể truy cập index",
+        "Không",
+        "Có, mọi collection Scala đều O(1) mọi operation",
+        "Có, nếu List dùng val"
+      ],
+      "correct": 1,
+      "explanation": "Chọn collection theo access pattern; không hứa hiệu năng từ cú pháp ngắn."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "FilterMap type",
+      "question": "filter giữ Int còn map sau đó trả String. Kết quả List thường có phần tử kiểu nào?",
+      "options": [
+        "Boolean vì có filter",
+        "Unit vì từng bước là method",
+        "String",
+        "Int bắt buộc theo nguồn"
+      ],
+      "correct": 2,
+      "explanation": "Theo dõi kiểu qua từng bước pipeline."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Không parallel tự động",
+      "question": "Chuỗi List.filter.map của source có tự phân tán qua Spark cluster không?",
+      "options": [
+        "Có, Scala tự chạy Spark mọi List",
+        "Có, reduce là lệnh cluster mặc định",
+        "Chỉ khi source extends App",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Collections cục bộ khác framework phân tán."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Thứ tự filter",
+      "question": "Hai predicate thuần liên tiếp có thể gộp bằng AND trong điều kiện phù hợp. Nếu predicate có side effects, cần xem thêm gì?",
+      "options": [
+        "Thứ tự/số lần đánh giá và semantics observable",
+        "Chỉ độ dài tên biến",
+        "Mọi filter luôn gọi predicate đúng một lần toàn List",
+        "Không cần xem vì List immutable"
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu không được âm thầm đổi hành vi cần giữ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Float precision",
+      "question": "Dùng Double cho điểm trung bình có tự loại mọi vấn đề biểu diễn số thực không?",
+      "options": [
+        "Không, vì Scala không có Double",
+        "Không, cần precision/rounding theo yêu cầu",
+        "Có, mọi Double chính xác vô hạn",
+        "Có, map tự làm tròn đúng mọi metric"
+      ],
+      "correct": 1,
+      "explanation": "Representation là một phần contract số liệu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Map collection lookup",
+      "question": "Map tên→điểm và List điểm có hoàn toàn cùng semantics khi nhiều sinh viên trùng tên không?",
+      "options": [
+        "Có, Map tự giữ mọi duplicate key như List",
+        "Chỉ nếu điểm lớn hơn 8",
+        "Không, key uniqueness của Map cần được xét khi mô hình hóa",
+        "Có, hai collection chỉ khác cách in"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng tên không duy nhất làm key mà bỏ qua entity identity."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Bằng chứng",
+      "question": "Suy ra List(4,8,12) từ công thức có chứng minh chương trình đã compile/chạy JVM không?",
+      "options": [
+        "Có, mọi quiz serialization chạy Scala",
+        "Có, có comment output trong source",
+        "Không, vì không thể suy luận bằng tay",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Suy luận semantics và runtime evidence cần phân biệt."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Map và filter đổi chỗ",
+      "question": "Đội đổi filter chẵn rồi nhân 2 thành nhân 2 rồi filter chẵn để tối ưu. Với source, vì sao không giữ cùng kết quả?",
+      "options": [
+        "Predicate sau mapper xét giá trị mới; các số lẻ ban đầu cũng thành chẵn nên được giữ",
+        "Map và filter luôn giao hoán trên mọi Int",
+        "Immutable List tự trả cùng tập bất kể thứ tự",
+        "Chỉ thứ tự in đổi còn tập phần tử không đổi"
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu pipeline phải giữ điều kiện trên đúng miền dữ liệu."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Mean sai tập",
+      "question": "Sau lọc điểm>=8, tổng dùng tập đã lọc còn mẫu số dùng lớp ban đầu. Kết quả nhìn hợp lệ nhưng metric sai. Cần sửa gì?",
+      "options": [
+        "Chỉ thêm val trước mean",
+        "Giữ cùng tập quan sát cho numerator/denominator và xử lý tập rỗng",
+        "Chỉ làm tròn hai chữ số",
+        "Chỉ đổi reduce thành map mà giữ mẫu số"
+      ],
+      "correct": 1,
+      "explanation": "Công thức cần đúng ý nghĩa dữ liệu, không chỉ kiểu hợp lệ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Empty và integer mean",
+      "question": "Không có điểm đạt, code dùng reduce rồi chia size Int và muốn mean thập phân. Cần giải quyết những lớp nào?",
+      "options": [
+        "Chỉ đặt seed 1 rồi luôn trả kết quả",
+        "Chỉ đổi List thành Set",
+        "Empty-result policy và kiểu/phép chia cho metric, không chỉ thay một tên method",
+        "Chỉ dùng s-string vì nó tự đổi số"
+      ],
+      "correct": 2,
+      "explanation": "Phải giữ cả điều kiện có dữ liệu và semantics số học."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Duplicate sinh viên",
+      "question": "Hai sinh viên cùng điểm 9, một người điểm 6. Chuyển List sang Set trước mean đã đổi metric như thế nào?",
+      "options": [
+        "Set tự giữ mọi multiplicity nên không đổi",
+        "Chỉ thay thứ tự, mean luôn giữ nguyên với mọi dữ liệu",
+        "Map tự phục hồi số người bị loại",
+        "Mất trọng số từ số người có cùng điểm; cần giữ representation theo từng quan sát"
+      ],
+      "correct": 3,
+      "explanation": "Collection choice ảnh hưởng ý nghĩa thống kê."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Reduce không associative",
+      "question": "Đội thay một foldLeft có thứ tự bằng reduce phân tán với phép trừ. Vì sao chưa thể giữ mọi kết quả?",
+      "options": [
+        "Phép trừ không associative và API/order/partitioning khác cần contract rõ",
+        "Mọi toán tử số học đều associative",
+        "Reduce luôn có cùng seed và thứ tự foldLeft trên mọi collection",
+        "Immutable nghĩa thứ tự tính không ảnh hưởng"
+      ],
+      "correct": 0,
+      "explanation": "Không chuyển cách kết hợp mà bỏ tính chất phép toán."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Seed nhân sai",
+      "question": "Code dùng foldLeft(0)(_ * _) và mong tích các điểm dương. Lỗi nguyên nhân là gì?",
+      "options": [
+        "Chỉ thiếu println",
+        "Seed 0 hấp thụ phép nhân; cần identity/empty policy đúng mục tiêu",
+        "List tự nhân đôi nên phải filter trước",
+        "JVM không nhân Int được"
+      ],
+      "correct": 1,
+      "explanation": "Seed là một phần phép tính, không chỉ cú pháp bắt buộc."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Mapper thay trạng thái",
+      "question": "Mapper tăng var đếm bên ngoài và log theo thứ tự, đội muốn reorder/fuse các bước. Cần đánh giá gì?",
+      "options": [
+        "Immutable receiver bảo đảm mọi side effect giống nhau",
+        "Chỉ đổi var thành val mà không đổi dữ liệu",
+        "Side effects và số/thứ tự đánh giá bên cạnh kết quả collection",
+        "Chỉ kết quả cuối List có cùng length"
+      ],
+      "correct": 2,
+      "explanation": "Luồng dữ liệu bất biến không tự làm callback pure."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Nested shape",
+      "question": "Một mapper trả List tag cho mỗi học viên, caller cần một List tag phẳng. Chọn thiết kế nào đúng và vẫn phải xét gì?",
+      "options": [
+        "Map tự phẳng mọi độ sâu và tự dedup",
+        "Reduce cộng số tag tự trả List chuỗi",
+        "Foreach vừa in vừa tự tạo List kết quả",
+        "FlatMap hoặc flatten một mức phù hợp, cùng policy trùng/thứ tự theo yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Shape và semantics duplicate/order đều thuộc contract output."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Mutable phần tử",
+      "question": "List là immutable nhưng mỗi phần tử là một mutable object được shared. Có thể claim snapshot sâu an toàn chỉ từ List không?",
+      "options": [
+        "Không; cần ownership/copy hoặc kiểu phần tử phù hợp",
+        "Có, immutable List đóng băng mọi object đệ quy",
+        "Có, chỉ cần dùng val numbers",
+        "Không, vì List không chứa được object"
+      ],
+      "correct": 0,
+      "explanation": "Tính bất biến của container và của phần tử khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Integer overflow",
+      "question": "Sum nhiều Int lớn rồi đổi tổng sang Double để chia. Vì sao chuyển sau cùng chưa chắc sửa tính đúng?",
+      "options": [
+        "Chỉ làm tròn sẽ phục hồi tổng",
+        "Tổng Int có thể overflow trước khi chuyển; cần representation/accumulator phù hợp từ đầu",
+        "Double sau cùng tự khôi phục mọi bit đã mất",
+        "Reduce tự tăng thành BigInt trong mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Kiểu accumulator quyết định phép tính trung gian."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Filter miền điểm",
+      "question": "Dữ liệu có điểm -1 hoặc 1000 do lỗi input; predicate >=8 vẫn giữ giá trị không hợp lệ. Cần gì?",
+      "options": [
+        "Chỉ đổi List thành Set",
+        "Chỉ in cảnh báo nhưng vẫn coi mean đúng yêu cầu",
+        "Validation miền điểm và chính sách dữ liệu lỗi trước metric, không chỉ điều kiện đạt",
+        "Chỉ giữ filter vì số lớn luôn tốt hơn"
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện chọn theo ngưỡng khác validation dữ liệu."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Tối ưu sai early limit",
+      "question": "Muốn mean toàn bộ học viên đạt nhưng lấy trước 10 phần tử rồi filter để nhanh hơn. Rủi ro gì?",
+      "options": [
+        "Limit trước filter không ảnh hưởng mọi phép tổng hợp",
+        "Scala tự đọc phần còn lại khi tính mean",
+        "Chỉ thứ tự String đổi",
+        "Tập quan sát thay đổi nên metric có thể không còn là mean toàn bộ tập đạt"
+      ],
+      "correct": 3,
+      "explanation": "Giảm công việc phải giữ đúng phạm vi dữ liệu."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "List index lặp",
+      "question": "Thuật toán lặp theo index và mỗi lần truy cập List(i), dù có cú pháp ngắn. Cần xem gì khi dữ liệu tăng?",
+      "options": [
+        "Đặc tính liên kết/chi phí truy cập và cách duyệt phù hợp, không suy random access O(1)",
+        "Mọi collection Scala có cùng hiệu năng Array",
+        "Val tự cache mọi List(i)",
+        "Chỉ đổi tên List thành FastList"
+      ],
+      "correct": 0,
+      "explanation": "Cấu trúc dữ liệu và access pattern phải phù hợp."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Map key trùng",
+      "question": "Mô hình điểm dùng Map(name→score) trong khi tên có thể trùng. Muốn giữ đủ người cần sửa gì?",
+      "options": [
+        "Map tự giữ hai value cho mọi key trùng",
+        "Dùng định danh/grouping/collection phù hợp để không mất entity do key uniqueness",
+        "Chỉ thêm filter>=8",
+        "Chỉ tăng precision score"
+      ],
+      "correct": 1,
+      "explanation": "Map không thay mô hình định danh nghiệp vụ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Foreach trả Unit",
+      "question": "Pipeline đã tính đúng từng điểm trong foreach nhưng caller không có List kết quả. Cách sửa nguyên nhân?",
+      "options": [
+        "Chỉ println kết quả cuối để Unit thành List",
+        "Đổi tên result thành numbers",
+        "Chọn phép biến đổi tạo dữ liệu như map/flatMap hoặc accumulator đúng, tách side effect",
+        "Chỉ đặt val result trước foreach"
+      ],
+      "correct": 2,
+      "explanation": "Giá trị trả về API cần phù hợp dữ liệu caller cần."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Predicate effect bị lặp",
+      "question": "Một bước filter gọi dịch vụ có side effect rồi mapper gọi lại để lấy dữ liệu. Có thể coi đây chỉ là hai phép biến đổi pure không?",
+      "options": [
+        "Có, mọi hàm trong List đều pure",
+        "Có, immutable List tự dedup mọi I/O",
+        "Chỉ thêm underscore là giải quyết",
+        "Không; cần thiết kế gọi/thu dữ liệu, lỗi và số lần side effect có chủ đích"
+      ],
+      "correct": 3,
+      "explanation": "Higher-order function không tự bảo đảm tính thuần của logic được truyền vào."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Mean và hiển thị",
+      "question": "Metric đúng là 8.666..., UI cần 8.67. Có nên làm tròn từng điểm trước cộng mà không xem policy?",
+      "options": [
+        "Không; representation và thời điểm làm tròn có thể thay metric, cần policy rõ",
+        "Có, mọi cách làm tròn luôn cho cùng kết quả",
+        "Chỉ dùng Set để tự làm tròn",
+        "S-interpolation luôn tự chọn đúng mọi quy tắc"
+      ],
+      "correct": 0,
+      "explanation": "Giá trị tính và format hiển thị là hai lớp khác nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Tái sử dụng hàm",
+      "question": "Cùng lambda dùng trong map và filter chỉ vì đều nhận Int. Vì sao phải kiểm thêm chữ ký kết quả?",
+      "options": [
+        "Chỉ số phần tử quyết định chữ ký",
+        "Filter cần Boolean predicate còn map có kiểu kết quả biến đổi; cùng input chưa đủ tương thích",
+        "Mọi hàm nhận Int đều thay thế được nhau",
+        "Kiểu trả về không được Scala kiểm tra"
+      ],
+      "correct": 1,
+      "explanation": "Contract hàm gồm cả input và output cùng semantics."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Suy luận và đo đạc",
+      "question": "Đội suy kết quả List đúng rồi công bố pipeline nhanh hơn 90% nhờ dùng map/filter. Cần gì để claim hiệu năng?",
+      "options": [
+        "Chỉ List immutable là luôn nhanh nhất",
+        "Chỉ comment output 21",
+        "Đo workload/implementation/điều kiện phù hợp; đúng semantics không tự chứng minh mức tiết kiệm",
+        "Chỉ tên method ngắn hơn là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Không đánh đồng tính đúng dự kiến với bằng chứng tốc độ."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Tập quan sát và empty policy",
+      "question": "Cần trung bình các điểm >= 8, trả None khi không có điểm đạt. Với List(6.0, 8.0, 10.0), cách tính nào đúng cả tập quan sát và trường hợp rỗng?",
+      "options": [
+        "Chia tổng mọi điểm cho số điểm lọc, ở đây Some(12.0), và trả Some(0.0) khi rỗng",
+        "Chia tổng điểm lọc cho số điểm ban đầu, ở đây Some(6.0), không cần xử lý rỗng",
+        "Dùng reduce trên tập lọc rồi chia độ dài, vì reduce luôn có seed 0 với List rỗng",
+        "Lọc trước; nếu tập lọc rỗng trả None, ngược lại Some(tổng điểm lọc / số điểm lọc), ở đây Some(9.0)"
+      ],
+      "correct": 3,
+      "explanation": "Tử và mẫu phải mô tả cùng tập điểm. reduce không có seed cho List rỗng; Option biểu diễn rõ trường hợp không có quan sát."
+    }
+  ]
+}

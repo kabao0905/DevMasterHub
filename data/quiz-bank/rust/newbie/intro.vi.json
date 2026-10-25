@@ -1,0 +1,1167 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "newbie",
+  "lesson": "intro",
+  "language": "vi",
+  "sourceHash": "88f6b1f03e31e476485404a1b3666e339527c3ce01776ce07ce906c2fefbe17b",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source và Rust Reference; selected stdlib examples kiểm tra riêng bằng rustc1.93.1,edition2024,overflow-checks=yes. Phân biệt String move/clone,Copy,NLL active borrows,len bytes và Unicode boundaries. Không coi safe Rust ngăn mọi leak/deadlock/logic error hoặc Clone luôn deep copy. Drop không guarantee mọi termination; nullable raw pointers và interior mutability là ngoại lệ cần scope đúng. Không Cargo fetch/network/unsafe memory trial.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Entry function",
+      "question": "Chương trình Rust executable thông thường bắt đầu ở hàm nào?",
+      "options": [
+        "fn main().",
+        "func start().",
+        "def run() duy nhất.",
+        "Một biến tên package."
+      ],
+      "correct": 0,
+      "explanation": "Source dùng fn main để minh họa execution."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Let default",
+      "question": "let age=20 tạo binding mặc định thế nào?",
+      "options": [
+        "Luôn là pointer nullable.",
+        "Không mutable nếu không thêm mut.",
+        "Tự mutable mọi lúc.",
+        "Luôn là global."
+      ],
+      "correct": 1,
+      "explanation": "Immutability của binding khác một lời hứa deep freeze mọi object graph."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Mutable binding",
+      "question": "Cú pháp source dùng để cho phép gán lại age là gì?",
+      "options": [
+        "let age mutable=20.",
+        "var age :=20.",
+        "let mut age=20.",
+        "mutable(age):20."
+      ],
+      "correct": 2,
+      "explanation": "mut đánh dấu binding mutable."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Age result",
+      "question": "Sau let mut age=20; age+=1, age bằng gì?",
+      "options": [
+        "20.",
+        "1.",
+        "Compiler luôn cấm +=.",
+        "21."
+      ],
+      "correct": 3,
+      "explanation": "Biến được khai báo mutable nên cập nhật hợp lệ."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Print macro",
+      "question": "println! là gì?",
+      "options": [
+        "Macro xuất định dạng và thêm newline.",
+        "Một method của String bắt buộc.",
+        "Một SQL query.",
+        "Một annotation type."
+      ],
+      "correct": 0,
+      "explanation": "Dấu ! phân biệt cú pháp macro invocation này với lời gọi hàm thường."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "String literal",
+      "question": "let name=\"DevMaster\" trong source thường cho name kiểu nào?",
+      "options": [
+        "Một char duy nhất.",
+        "&str, trỏ tới string literal.",
+        "String owned tự mutable.",
+        "Vec<u32>."
+      ],
+      "correct": 1,
+      "explanation": "String literal có lifetime tĩnh; &str khác owned String."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Owned String",
+      "question": "String::from(\"hello\") tạo gì?",
+      "options": [
+        "Một &mut str bắt buộc.",
+        "Một database row.",
+        "Owned String từ chuỗi đã cho.",
+        "Một char duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "String quản lý dữ liệu chuỗi UTF-8 có thể sở hữu riêng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Move assignment",
+      "question": "let s2=s1 khi s1 là String trong source có ý nghĩa gì?",
+      "options": [
+        "Tự clone buffer để cả hai owned strings độc lập.",
+        "Tự tạo shared mutable alias.",
+        "Chỉ copy char đầu.",
+        "Ownership chuyển sang s2, s1 không còn được dùng như trước."
+      ],
+      "correct": 3,
+      "explanation": "String không implement Copy."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Moved use",
+      "question": "Dòng println!(\"{s1}\") sau move bị comment vì sao?",
+      "options": [
+        "Dùng binding String sau khi nó đã bị move.",
+        "Rust cấm in string.",
+        "Macro luôn nhận int.",
+        "s1 tự thành nil."
+      ],
+      "correct": 0,
+      "explanation": "Compiler chặn use-after-move trong code này."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "String clone",
+      "question": "s2.clone() trong source giúp gì?",
+      "options": [
+        "Xóa s2.",
+        "Tạo String khác với dữ liệu chuỗi được clone, s2 vẫn dùng được.",
+        "Move s2 lần nữa.",
+        "Tự tạo &mut tới cùng buffer như một chủ sở hữu mới."
+      ],
+      "correct": 1,
+      "explanation": "Đang nói Clone của String cụ thể, không mọi Clone implementation."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Shared borrow",
+      "question": "&s truyền tới calculate_length nhằm gì?",
+      "options": [
+        "Tự copy toàn bộ heap buffer.",
+        "Đổi s thành global.",
+        "Cho hàm mượn shared reference thay vì lấy ownership String.",
+        "Move String vào hàm."
+      ],
+      "correct": 2,
+      "explanation": "Sau lời gọi, owner vẫn dùng được nếu các điều kiện borrow hợp lệ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Borrow signature",
+      "question": "calculate_length(s:&String) nguồn trả kiểu gì?",
+      "options": [
+        "String.",
+        "bool.",
+        "Một raw pointer bắt buộc.",
+        "usize."
+      ],
+      "correct": 3,
+      "explanation": "len trả kích thước theo bytes bằng usize."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Length ASCII source",
+      "question": "Chuỗi world trong source có len bằng gì?",
+      "options": [
+        "5bytes.",
+        "6bytes.",
+        "Một grapheme duy nhất.",
+        "Không xác định vì ASCII."
+      ],
+      "correct": 0,
+      "explanation": "ASCII mỗi ký tự ở đây chiếm một byte."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Mutable borrow",
+      "question": "&mut text trong change dùng để làm gì?",
+      "options": [
+        "Tự đổi kiểu text thành int.",
+        "Cho phép hàm sửa String qua mutable reference hợp lệ.",
+        "Tạo một owned String clone.",
+        "Tự đồng bộ mọi threads."
+      ],
+      "correct": 1,
+      "explanation": "Mutable borrow yêu cầu tuân aliasing/lifetime rules."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Change source",
+      "question": "change trong source thêm phần nào vào text?",
+      "options": [
+        "Chuỗi rỗng duy nhất.",
+        "Một byte NULL bắt buộc.",
+        ", world!.",
+        ", Rust?."
+      ],
+      "correct": 2,
+      "explanation": "push_str nối phần string cho trước."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Text final",
+      "question": "Sau change, text nguồn in gì?",
+      "options": [
+        "world.",
+        "hello.",
+        "Một địa chỉ pointer.",
+        "hello, world!."
+      ],
+      "correct": 3,
+      "explanation": "String ban đầu hello được append chuỗi , world!."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Shared refs",
+      "question": "Có thể có nhiều shared references tới cùng dữ liệu theo borrow rules không?",
+      "options": [
+        "Có, nếu không xung đột với mutable access theo contract.",
+        "Không, mọi reference đều độc quyền.",
+        "Chỉ nếu String rỗng.",
+        "Chỉ nếu dùng unsafe."
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất shared borrowing với mutable aliasing."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Exclusive borrow",
+      "question": "Quy tắc &mut nên được hiểu thế nào?",
+      "options": [
+        "&mut tự clone object.",
+        "Exclusive access theo phạm vi borrow đang có hiệu lực, không tạo alias truy cập xung đột.",
+        "Mỗi biến chỉ được mượn mutable đúng một lần suốt đời.",
+        "Mọi &mut luôn phải sống tới cuối file."
+      ],
+      "correct": 1,
+      "explanation": "Active lifetime quan trọng hơn chỉ số dấu &mut xuất hiện trong source."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Copy integers",
+      "question": "Gán i32 thông thường sang biến khác thường dùng semantics nào?",
+      "options": [
+        "Deep clone heap buffer bắt buộc.",
+        "Một network transfer.",
+        "Copy, nên biến gốc vẫn dùng được.",
+        "Move như String khiến mọi i32 không được dùng lại."
+      ],
+      "correct": 2,
+      "explanation": "Copy là trait cho types phù hợp, không mọi kiểu đều có."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Owned resource cleanup",
+      "question": "Ownership hỗ trợ quản lý tài nguyên thông thường qua gì?",
+      "options": [
+        "Một tracing GC bắt buộc cho mọi object.",
+        "User phải free mọi String thủ công trong safe code.",
+        "Một API trả phí để dọn memory.",
+        "Drop khi giá trị rời lifetime/scope theo semantics."
+      ],
+      "correct": 3,
+      "explanation": "Không suy destructor chắc chạy trong mọi abort/exit/forget path."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Immutable reassignment",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let x=1;x=2;println!(\"{x}\");}\n",
+      "options": [
+        "Không, binding x không mutable.",
+        "Có, let luôn mutable.",
+        "Có, compiler tự thêm mut.",
+        "Chỉ panic lúc runtime."
+      ],
+      "correct": 0,
+      "explanation": "Cần mut hoặc shadow binding mới nếu muốn hành vi tương ứng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Mutable update",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut age=20;age+=1;println!(\"{age}\");}\n",
+      "options": [
+        "Compiler cấm mutable integers.",
+        "21.",
+        "20.",
+        "1."
+      ],
+      "correct": 1,
+      "explanation": "Binding age mutable nên += hợp lệ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "String moved use",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let s1=String::from(\"hi\");let s2=s1;println!(\"{s1} {s2}\");}\n",
+      "options": [
+        "Có, s1 tự là empty String.",
+        "Chỉ nếu string dài hơn5.",
+        "Không, s1 đã move sang s2.",
+        "Có, cả hai tự deep clone."
+      ],
+      "correct": 2,
+      "explanation": "println sau move cố đọc s1 không còn sở hữu giá trị."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Independent String clone",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let s1=String::from(\"hi\");let mut s2=s1.clone();s2.push_str(\"!\");println!(\"{s1} {s2}\");}\n",
+      "options": [
+        "hi! hi!.",
+        "hi hi.",
+        "Compiler từ chối clone.",
+        "hi hi!."
+      ],
+      "correct": 3,
+      "explanation": "Clone String tạo dữ liệu sở hữu riêng; push_str trên clone không đổi s1."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Borrow keeps owner usable",
+      "question": "Chương trình in gì?",
+      "code": "fn length(s:&String)->usize{s.len()}\nfn main(){let s=String::from(\"world\");let n=length(&s);println!(\"{n} {s}\");}\n",
+      "options": [
+        "5 world.",
+        "0 world.",
+        "5 với owner đã invalid.",
+        "Không biên dịch vì &String move owner."
+      ],
+      "correct": 0,
+      "explanation": "Hàm chỉ borrow shared rồi trả len."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Mutable helper",
+      "question": "Chương trình in gì?",
+      "code": "fn change(s:&mut String){s.push_str(\"!\");}\nfn main(){let mut s=String::from(\"hello\");change(&mut s);println!(\"{s}\");}\n",
+      "options": [
+        "Compiler không cho function sửa String.",
+        "hello!.",
+        "hello.",
+        "!."
+      ],
+      "correct": 1,
+      "explanation": "Mutable borrow được dùng trong helper và kết thúc trước println."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Overlapping exclusive borrows",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let a=&mut s;let b=&mut s;println!(\"{a} {b}\");}\n",
+      "options": [
+        "Có, mỗi reference có tên khác là đủ.",
+        "Chỉ lỗi khi String rỗng.",
+        "Không, hai mutable borrows tới cùng String cùng được dùng về sau.",
+        "Có, Rust tự copy buffer."
+      ],
+      "correct": 2,
+      "explanation": "Việc dùng cả a và b giữ hai borrows xung đột có hiệu lực."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Shared mutable conflict",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let a=&s;let b=&mut s;println!(\"{a} {b}\");}\n",
+      "options": [
+        "Có, shared borrow luôn bỏ qua aliasing.",
+        "Có, println tự đồng bộ.",
+        "Chỉ lỗi trên Linux.",
+        "Không, shared borrow a vẫn được dùng khi có mutable borrow b."
+      ],
+      "correct": 3,
+      "explanation": "Không tạo mutable access xung đột với shared reference còn sống theo usage."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Multiple shared borrows",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let s=String::from(\"hi\");let a=&s;let b=&s;println!(\"{a} {b}\");}\n",
+      "options": [
+        "hi hi.",
+        "hi nil.",
+        "Compiler cấm hai shared refs.",
+        "Một địa chỉ cố định."
+      ],
+      "correct": 0,
+      "explanation": "Hai shared references tương thích khi chỉ đọc."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Last use permits mutation",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let r=&s;println!(\"{r}\");s.push_str(\"!\");println!(\"{s}\");}\n",
+      "options": [
+        "Một dòng hi duy nhất.",
+        "hi rồi hi! trên hai dòng.",
+        "Compiler luôn giữ shared borrow tới cuối block nên lỗi.",
+        "hi! rồi hi!."
+      ],
+      "correct": 1,
+      "explanation": "Non-lexical lifetimes cho phép shared borrow hết sau lần dùng cuối trước mutation."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Integer Copy",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a:i32=7;let b=a;println!(\"{a} {b}\");}\n",
+      "options": [
+        "0 7.",
+        "7 0.",
+        "7 7.",
+        "Use-after-move error như String."
+      ],
+      "correct": 2,
+      "explanation": "i32 implements Copy."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Str reference Copy",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a=\"Go\";let b=a;println!(\"{a} {b}\");}\n",
+      "options": [
+        "Compiler cấm dùng a sau assignment.",
+        "Go rồi pointer chỉ còn ở b.",
+        "Hai owned Strings được deep clone bắt buộc.",
+        "Go Go."
+      ],
+      "correct": 3,
+      "explanation": "&str shared reference là Copy; không tạo owned String mới."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Dangling local reference",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn bad()->&'static str{let s=String::from(\"hi\");&s}\nfn main(){}\n",
+      "options": [
+        "Không, không thể trả reference tới local String bị drop.",
+        "Có, annotation static tự kéo dài dữ liệu local.",
+        "Có, mọi String tự leak vĩnh viễn.",
+        "Chỉ lỗi nếu gọi bad."
+      ],
+      "correct": 0,
+      "explanation": "Lifetime annotation không làm owner sống lâu hơn thực tế."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "UTF8 length bytes",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let s=\"éA\";println!(\"{} {}\",s.len(),s.chars().count());}\n",
+      "options": [
+        "1 2.",
+        "3 2.",
+        "2 2.",
+        "3 3."
+      ],
+      "correct": 1,
+      "explanation": "len đếm bytes UTF-8, chars().count đếm Unicode scalar values."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "String integer indexing",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let s=String::from(\"hi\");println!(\"{}\",s[0]);}\n",
+      "options": [
+        "Có, luôn trả byte đầu thành char.",
+        "Chỉ khi ASCII mới compile.",
+        "Không, String không hỗ trợ integer indexing như s[0].",
+        "Có, luôn trả char đầu."
+      ],
+      "correct": 2,
+      "explanation": "UTF-8 không có một phép integer indexing chung trả ký tự theo cách đó."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Checked vector access",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let v=vec![1,2,3];println!(\"{}\",v.get(5).is_none());}\n",
+      "options": [
+        "false.",
+        "Panic vì get luôn dùng index trực tiếp.",
+        "Compiler yêu cầu vector dài6.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "get ngoài bounds trả None thay vì index panic."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Shadow type change",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let x=5;let x=\"abc\";println!(\"{}\",x.len());}\n",
+      "options": [
+        "3.",
+        "5.",
+        "Không compile vì shadow không đổi type được.",
+        "abc."
+      ],
+      "correct": 0,
+      "explanation": "let mới shadow x trước; shadow khác gán lại binding cũ."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Owned function argument",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn take(s:String){println!(\"{s}\");}\nfn main(){let s=String::from(\"hi\");take(s);println!(\"{s}\");}\n",
+      "options": [
+        "Chỉ lỗi nếu take return error.",
+        "Không, s bị move vào take rồi còn được dùng.",
+        "Có, function arguments luôn borrow tự động.",
+        "Có, compiler tự clone String."
+      ],
+      "correct": 1,
+      "explanation": "Tham số String nhận ownership trong lời gọi này."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Str slice helper flexibility",
+      "question": "Chương trình in gì?",
+      "code": "fn length(s:&str)->usize{s.len()}\nfn main(){let s=String::from(\"world\");println!(\"{} {}\",length(\"hello\"),length(&s));}\n",
+      "options": [
+        "Compiler cấm &String coercion sang &str.",
+        "5 0.",
+        "5 5.",
+        "0 5."
+      ],
+      "correct": 2,
+      "explanation": "Helper &str nhận string literal và borrow String qua coercion phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Boolean condition type",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){if 1 {println!(\"yes\");}}\n",
+      "options": [
+        "Có,1 tự là true.",
+        "Có, mọi int có truthiness.",
+        "Chỉ lỗi ở runtime.",
+        "Không, điều kiện if cần bool."
+      ],
+      "correct": 3,
+      "explanation": "Rust không tự dùng integer thay boolean condition."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Print borrow behavior",
+      "question": "println!(\"{s2}\") trong source có làm s2 mất ownership như assignment vào String khác không?",
+      "options": [
+        "Không; formatting dùng borrow phù hợp nên s2 tiếp tục được clone sau đó.",
+        "Có, mọi macro luôn consume mọi argument.",
+        "Có, source không thể compile.",
+        "Chỉ nếu string không rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Không đoán move chỉ từ việc một value xuất hiện trong macro."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "String owner versus reference",
+      "question": "Sau let r=&s, ai giữ ownership của String trong ví dụ thông thường này?",
+      "options": [
+        "Không còn ai sở hữu nên String tự drop ngay.",
+        "s; r chỉ shared-borrow dữ liệu.",
+        "r trở thành owner mới và s invalid.",
+        "Cả hai tự thành hai owned buffers."
+      ],
+      "correct": 1,
+      "explanation": "Reference lifetime ràng buộc với dữ liệu được borrow, không thay owner."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Borrow duration",
+      "question": "Có hai lần &mut s ở hai thời điểm tách biệt mà borrow đầu hết hiệu lực thì có thể hợp lệ không?",
+      "options": [
+        "Chỉ nếu s global.",
+        "Chỉ nếu dùng unsafe.",
+        "Có.",
+        "Không, mỗi variable chỉ có một mutable borrow suốt đời."
+      ],
+      "correct": 2,
+      "explanation": "Quy tắc về overlapping active borrows, không đếm tổng số lần trong chương trình."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Mutability of binding",
+      "question": "let mut s có nghĩa mọi references tới nó đều được phép sửa không?",
+      "options": [
+        "Có, mut lan tự động qua mọi alias.",
+        "Có, &String tự chuyển thành &mut String mọi lúc.",
+        "Chỉ nếu source có println.",
+        "Không; &s vẫn là shared borrow và không cho mutation thông thường qua reference đó."
+      ],
+      "correct": 3,
+      "explanation": "Binding mutability và reference access capability là hai điểm riêng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Clone cost",
+      "question": "String.clone trong source có thể có chi phí gì?",
+      "options": [
+        "Cấp phát/sao chép dữ liệu chuỗi theo implementation, cần đo nếu quan trọng.",
+        "Luôn0bytes và0CPU theo spec.",
+        "Tự dùng network.",
+        "Tự làm owner gốc invalid."
+      ],
+      "correct": 0,
+      "explanation": "Không dùng clone như cách né borrow mà bỏ qua ownership/performance design."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Unicode char count",
+      "question": "chars().count có luôn là số ký tự người dùng cảm nhận không?",
+      "options": [
+        "Chỉ nếu dùng String owned.",
+        "Không; Unicode scalar values khác grapheme clusters.",
+        "Có, mọi combining sequences là một char Rust.",
+        "Có, emoji luôn một byte."
+      ],
+      "correct": 1,
+      "explanation": "Chọn cách đếm theo yêu cầu UI/text cụ thể."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Function return borrow",
+      "question": "Annotation lifetime có tự tạo hoặc kéo dài vùng nhớ không?",
+      "options": [
+        "Có, mọi reference được heap-copy.",
+        "Chỉ nếu dùng &String.",
+        "Không; mô tả quan hệ lifetime được compiler kiểm tra.",
+        "Có, static luôn leak local thành vĩnh viễn."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng annotation để hợp thức hóa reference tới dữ liệu đã chết."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "String versus literal mutation",
+      "question": "Có thể push_str trực tiếp trên &str literal như owned String không?",
+      "options": [
+        "Có, literals luôn mutable heap.",
+        "Có, compiler tự đổi mọi literal thành String khi gọi method.",
+        "Chỉ cần let mut name.",
+        "Không; cần owned mutable String hoặc API phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Mutable binding &str không tự biến underlying string data thành mutable String."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Unused default lint",
+      "question": "Biến Rust chưa dùng có luôn là compiler error mặc định như Go local unused không?",
+      "options": [
+        "Không; thường là warning, trừ lint/config làm thành lỗi.",
+        "Có, mọi toolchain mặc định reject mọi unused binding.",
+        "Không bao giờ có bất kỳ warning nào.",
+        "Chỉ nếu String."
+      ],
+      "correct": 0,
+      "explanation": "Verification cần ghi flags/lints, không áp quy tắc Go sang Rust."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Ownership safety scope",
+      "question": "Ownership có tự ngăn mọi logic bug hoặc deadlock không?",
+      "options": [
+        "Chỉ cần không dùng unsafe.",
+        "Không.",
+        "Có, compile pass nghĩa mọi yêu cầu business đúng.",
+        "Có, kể cả lock order sai."
+      ],
+      "correct": 1,
+      "explanation": "Memory safety không đồng nhất correctness toàn hệ thống."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Scope string drop",
+      "question": "String owned rời scope thông thường không có move/leak path thì cleanup được tổ chức thế nào?",
+      "options": [
+        "User phải gọi free bằng C mỗi lần.",
+        "Tự chuyển thành global.",
+        "Drop theo semantics, không cần tracing GC bắt buộc để free buffer.",
+        "Luôn chờ một background tracing GC."
+      ],
+      "correct": 2,
+      "explanation": "RAII-like cleanup không có nghĩa mọi allocation không có chi phí."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Partial move fields",
+      "question": "Move một field String khỏi struct có nhất thiết cấm dùng mọi field khác chưa move không?",
+      "options": [
+        "Có, bất kỳ field move luôn xóa mọi field.",
+        "Chỉ với all-int structs.",
+        "Không bao giờ có partial move trong Rust.",
+        "Không; partial move có thể cho dùng các fields còn lại khi type/rules cho phép."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng toàn bộ partially moved object tùy ý; Drop types có restrictions riêng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Copy trait scope",
+      "question": "Mọi type implement Clone có tự implement Copy không?",
+      "options": [
+        "Không.",
+        "Có, Clone và Copy là alias.",
+        "Có, nếu có method len.",
+        "Chỉ nếu type tên String."
+      ],
+      "correct": 0,
+      "explanation": "Copy có yêu cầu riêng; String Clone nhưng không Copy."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "References and ownership return",
+      "question": "Hàm nhận String có thể trả chính String lại để caller nhận ownership không?",
+      "options": [
+        "Chỉ qua raw pointer.",
+        "Có, return value có thể chuyển ownership về binding của caller.",
+        "Không, ownership vào function là mất vĩnh viễn.",
+        "Chỉ nếu global."
+      ],
+      "correct": 1,
+      "explanation": "Borrowing thường tiện khi chỉ đọc, nhưng owned transfer cũng là API contract hợp lệ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "String move payload",
+      "question": "Có nên dạy mọi move String là deep copy toàn nội dung buffer không?",
+      "options": [
+        "Có, mỗi assignment có network copy.",
+        "Chỉ nếu trên Windows.",
+        "Không; move là chuyển giá trị/ownership, không clone buffer như String.clone.",
+        "Có, mọi move nhân đôi heap content."
+      ],
+      "correct": 2,
+      "explanation": "Đừng biến sơ đồ descriptor minh họa thành một địa chỉ/assembly guarantee."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Const and shadow",
+      "question": "let x=1; let x=2 có giống x=2 trên immutable binding đầu không?",
+      "options": [
+        "Có, compiler tự coi mọi assignment là shadow.",
+        "Chỉ khác whitespace.",
+        "Rust cấm mọi shadow.",
+        "Không; let thứ hai tạo binding shadow mới."
+      ],
+      "correct": 3,
+      "explanation": "Shadow có scope/type semantics riêng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Borrowed length source",
+      "question": "calculate_length nguồn chỉ đọc len nên API &str thay &String có lợi gì?",
+      "options": [
+        "Nhận được nhiều nguồn string slice hơn mà không yêu cầu owned String cụ thể.",
+        "Tự sửa mọi Unicode validation.",
+        "Tự tạo zero-copy parsing cho mọi binary.",
+        "Tự bảo đảm string không rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Đây là lựa chọn contract input, không là yêu cầu bắt buộc để source hiện tại compile."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Mutable alias not synchronized",
+      "question": "&mut có tự là một mutex cho arbitrary aliases trong unsafe/FFI không?",
+      "options": [
+        "Chỉ cần lifetime static.",
+        "Không; phải tuân validity/aliasing và synchronization contracts.",
+        "Có, pointer gửi vào C tự có runtime lock.",
+        "Có, mọi mutation được atomic hóa."
+      ],
+      "correct": 1,
+      "explanation": "Không dùng safe-borrow shorthand để hứa correctness của unsafe/foreign code."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Variable lifetime versus allocation",
+      "question": "Tên binding ra khỏi scope luôn đồng nghĩa mọi dữ liệu từng referenced bị free ngay không?",
+      "options": [
+        "Chỉ với references thì luôn free referent.",
+        "Chỉ nếu let immutable.",
+        "Không; ownership/shared owners/leaks/other references và types quyết định lifetime thực tế.",
+        "Có, mọi byte đã thấy đều bị xóa."
+      ],
+      "correct": 2,
+      "explanation": "Cần nêu đúng kiểu owner và contract thay vì suy từ tên biến."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Safe out of bounds",
+      "question": "Safe indexing vượt bounds có thể gây gì thay vì đọc memory tùy ý?",
+      "options": [
+        "Luôn đọc một byte rác hợp lệ.",
+        "Tự tạo thêm phần tử.",
+        "Compiler luôn biết mọi runtime index và reject trước.",
+        "Panic theo bounds-check semantics."
+      ],
+      "correct": 3,
+      "explanation": "Memory safety không có nghĩa chương trình không thể panic."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Drop order",
+      "question": "Chương trình in thứ tự nào?",
+      "code": "struct Trace(&'static str);impl Drop for Trace{fn drop(&mut self){println!(\"{}\",self.0);}}\nfn main(){let _a=Trace(\"A\");let _b=Trace(\"B\");println!(\"body\");}\n",
+      "options": [
+        "body rồi B rồi A.",
+        "A rồi B rồi body.",
+        "body rồi A rồi B.",
+        "Chỉ body vì Rust không có GC."
+      ],
+      "correct": 0,
+      "explanation": "Các locals này được drop theo thứ tự ngược khai báo lúc scope kết thúc."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Explicit drop consumes",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let s=String::from(\"hi\");drop(s);println!(\"{s}\");}\n",
+      "options": [
+        "Chỉ panic nếu text dài.",
+        "Không; drop(s) nhận ownership nên không được đọc s sau đó.",
+        "Có, drop chỉ là hint không consume.",
+        "Có, s tự thành empty String."
+      ],
+      "correct": 1,
+      "explanation": "std::mem::drop là hàm nhận giá trị, không là method cleanup có thể giữ binding cũ dùng tiếp."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Sequential reborrow",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let r1=&mut s;let r2=&mut *r1;r2.push_str(\"!\");println!(\"{r2}\");r1.push_str(\"?\");println!(\"{r1}\");}\n",
+      "options": [
+        "hi rồi hi.",
+        "Panic vì r1 hết hiệu lực vĩnh viễn.",
+        "hi! rồi hi!? trên hai dòng.",
+        "Compiler luôn cấm reborrow mutable reference."
+      ],
+      "correct": 2,
+      "explanation": "Reborrow r2 hết sau dùng cuối, r1 có thể được dùng tiếp."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Assign while borrowed",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let r=&mut s;s=String::from(\"new\");println!(\"{r}\");}\n",
+      "options": [
+        "Có, assignment tự clone object cho r.",
+        "Có, Rust cho dangling reference tới String cũ.",
+        "Chỉ lỗi vì tên s.",
+        "Không; s đang borrowed và r còn được dùng sau assignment."
+      ],
+      "correct": 3,
+      "explanation": "Owner không được gán lại phá reference còn dùng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Take replaces with default",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let t=std::mem::take(&mut s);println!(\"{} {t}\",s.is_empty());}\n",
+      "options": [
+        "true hi.",
+        "false hi.",
+        "true rồi chuỗi rỗng.",
+        "Compiler cấm chuyển ownership từ mutable borrow."
+      ],
+      "correct": 0,
+      "explanation": "mem::take thay s bằng default String rỗng và trả giá trị owned trước đó."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Mutable reference move",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let mut s=String::from(\"hi\");let r1=&mut s;let r2=r1;r2.push_str(\"!\");println!(\"{r1}\");}\n",
+      "options": [
+        "Chỉ panic nếu dùng push_str.",
+        "Không; r1 đã move vào r2 theo assignment này và còn bị dùng.",
+        "Có, &mut String luôn Copy như shared refs.",
+        "Có, r2 tự deep clone s."
+      ],
+      "correct": 1,
+      "explanation": "Mutable references không implement Copy; phân biệt move với reborrow tường minh."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Disjoint field borrows",
+      "question": "Chương trình in gì?",
+      "code": "struct Pair{a:i32,b:i32}\nfn main(){let mut p=Pair{a:1,b:2};let a=&mut p.a;let b=&mut p.b;*a=3;*b=4;println!(\"{} {}\",p.a,p.b);}\n",
+      "options": [
+        "Compiler cấm mọi hai &mut trên cùng struct dù fields khác.",
+        "Panic do alias.",
+        "3 4.",
+        "1 2."
+      ],
+      "correct": 2,
+      "explanation": "Compiler có thể nhận biết hai fields disjoint trong struct này."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Vector reference invalidation",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let mut v=vec![1,2];let first=&v[0];v.push(3);println!(\"{first}\");}\n",
+      "options": [
+        "Có, Vec luôn không bao giờ reallocate.",
+        "Có, first tự copy i32 dù khai báo &v[0].",
+        "Chỉ lỗi nếu capacity hiện tại không đủ mà compiler biết.",
+        "Không; push cần mutable borrow trong khi first reference còn được dùng."
+      ],
+      "correct": 3,
+      "explanation": "Borrow rule không cho giữ reference dùng sau mutation này."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Copy element before push",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut v=vec![1,2];let first=v[0];v.push(3);println!(\"{first} {}\",v.len());}\n",
+      "options": [
+        "1 3.",
+        "Compiler vẫn cấm vì mọi index tạo lifetime đến cuối main.",
+        "3 3.",
+        "Panic vì Vec push."
+      ],
+      "correct": 0,
+      "explanation": "first là copied i32, không là reference giữ borrow."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Explicit wrapping addition",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){println!(\"{}\",255u8.wrapping_add(1));}\n",
+      "options": [
+        "Compiler cấm wrapping_add.",
+        "0.",
+        "256.",
+        "Panic bất kể method wrapping."
+      ],
+      "correct": 1,
+      "explanation": "u8 wrapping_add cho kết quả modulo256 rõ ràng, độc lập flag overflow checks thông thường."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Checked arithmetic",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){println!(\"{}\",255u8.checked_add(1).is_none());}\n",
+      "options": [
+        "checked_add luôn panic.",
+        "Compiler tự chuyển u8 sang u16.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "checked_add trả None nếu kết quả vượt kiểu."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Runtime overflow flag",
+      "question": "Với rustc -C overflow-checks=yes, chương trình gặp gì?",
+      "code": "\nfn main(){let n=std::hint::black_box(255u8);println!(\"{}\",n+1);}\n",
+      "options": [
+        "Luôn in0 bất kể flags.",
+        "Luôn in256 bằng u8.",
+        "Compiler luôn reject mọi black_box call.",
+        "Panic do cộng u8 overflow tại runtime."
+      ],
+      "correct": 3,
+      "explanation": "black_box tránh biến đây thành constant overflow; kết quả phụ thuộc operation và flag được ghi."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Partial move remaining field",
+      "question": "Chương trình in gì?",
+      "code": "struct Pair{left:String,right:String}\nfn main(){let p=Pair{left:String::from(\"a\"),right:String::from(\"b\")};let name=p.left;println!(\"{name} {}\",p.right);}\n",
+      "options": [
+        "a b.",
+        "Compiler cấm dùng mọi field sau partial move không ngoại lệ.",
+        "b a.",
+        "Panic vì struct bị xóa ngay."
+      ],
+      "correct": 0,
+      "explanation": "Pair không implement Drop; field right chưa move vẫn dùng được."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Whole partially moved value",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "#[derive(Debug)]struct Pair{left:String,right:String}\nfn main(){let p=Pair{left:String::from(\"a\"),right:String::from(\"b\")};let name=p.left;println!(\"{name} {p:?}\");}\n",
+      "options": [
+        "Chỉ lỗi lúc formatting runtime.",
+        "Không; p đã bị partial move nhưng được dùng như whole value.",
+        "Có, derive Debug tự clone field thiếu.",
+        "Có, p.left tự thành empty String."
+      ],
+      "correct": 1,
+      "explanation": "Fields còn nguyên có thể dùng riêng không đồng nghĩa whole object còn usable."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "UTF8 slice boundary",
+      "question": "Chương trình gặp gì?",
+      "code": "\nfn main(){let s=String::from(\"é\");let i=std::hint::black_box(1);println!(\"{}\",&s[i..]);}\n",
+      "options": [
+        "In byte rác như string hợp lệ.",
+        "Compiler biết mọi string runtime và luôn reject.",
+        "Panic vì byte index1 nằm giữa encoding của é.",
+        "In é như một char duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Safe string slicing yêu cầu UTF-8 char boundaries; panic không là arbitrary memory read."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "No null scope",
+      "question": "Key point Rust no null nên hiểu chính xác thế nào?",
+      "options": [
+        "Không có bất kỳ null pointer nào trong toàn ngôn ngữ kể cả FFI.",
+        "Mọi Option luôn Some.",
+        "String rỗng chính là null.",
+        "Safe references non-null và Option biểu diễn absence; Rust vẫn có raw pointer có thể null."
+      ],
+      "correct": 3,
+      "explanation": "Không áp shorthand về safe references lên mọi raw/foreign representation."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Interior mutability scope",
+      "question": "Shared reference có nghĩa object tuyệt đối không thể có mutation nội bộ qua mọi API hợp lệ không?",
+      "options": [
+        "Không; interior mutability types có contract riêng như Cell/RefCell/locks.",
+        "Có, mọi shared object bị hardware freeze sâu.",
+        "Chỉ nếu binding tên r.",
+        "Rust cấm mọi interior mutability."
+      ],
+      "correct": 0,
+      "explanation": "Borrow explanation cần nêu ordinary access rules và ngoại lệ được thiết kế, không blanket deep immutability."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Clone semantics scope",
+      "question": "Từ String.clone có thể kết luận Clone luôn deep copy mọi graph cho mọi type không?",
+      "options": [
+        "Chỉ nếu derive Clone.",
+        "Không; Clone contract/implementation phụ thuộc type, shared owners có thể clone handle.",
+        "Có, trait bắt buộc mọi clone tách mọi allocations.",
+        "Có, references luôn clone referent sâu."
+      ],
+      "correct": 1,
+      "explanation": "Không đổi kiến thức cụ thể về String thành universal cloning guarantee."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Drop not all termination",
+      "question": "Drop có chắc chạy khi process abort hoặc giá trị bị mem::forget không?",
+      "options": [
+        "Có, OS luôn gọi Rust Drop.",
+        "Chỉ nếu String dài hơn1.",
+        "Không.",
+        "Có, ownership đảm bảo mọi destructor chạy trong mọi termination."
+      ],
+      "correct": 2,
+      "explanation": "Safety không dựa vào giả định destructor chắc chạy; leaks có thể vẫn memory-safe."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Safety not total correctness",
+      "question": "Code safe Rust compile và selected outputs đúng có đủ chứng minh production-ready mọi tải không?",
+      "options": [
+        "Có, borrow checker chứng minh mọi SLO.",
+        "Có, không GC nghĩa không latency.",
+        "Chỉ cần edition2024.",
+        "Không; cần logic/resource/concurrency/workload/integration evidence theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Không đánh đồng memory-safety checks với toàn bộ chất lượng hệ thống."
+    }
+  ]
+}

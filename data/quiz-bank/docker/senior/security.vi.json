@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "docker",
+  "level": "senior",
+  "lesson": "security",
+  "language": "vi",
+  "sourceHash": "15a7dde2e9f934780e248b799933f578159de986d4795d365ca53a14f67b93b6",
+  "status": "approved",
+  "review": "Tự soạn trực tiếp 80 câu theo Docker/Compose/Trivy nguồn và tài liệu chính thức. Nêu rõ RUN adduser chưa chọn USER, snippet chưa có CMD ứng dụng, bare --no-new-privileges không phải Docker run flag, secret file Compose khác cơ chế Swarm. Không chạy scanner, Docker, network hoặc thay quyền hệ thống.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Mục tiêu hardening",
+      "question": "Container hardening chủ yếu nhằm điều gì?",
+      "options": [
+        "Giảm bề mặt và tác động của rủi ro theo nhu cầu app",
+        "Bảo đảm không thể có lỗ hổng nào",
+        "Thay mọi kiểm thử nghiệp vụ",
+        "Bỏ hoàn toàn quản lý host"
+      ],
+      "correct": 0,
+      "explanation": "Hardening là nhiều lớp kiểm soát, không phải bảo đảm tuyệt đối."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Image tối giản",
+      "question": "Image tối giản có lợi ích bảo mật nào thường được hướng tới?",
+      "options": [
+        "Tự xác thực mọi request",
+        "Giảm thành phần không cần phải quản lý và cập nhật",
+        "Tự mã hóa mọi dữ liệu runtime",
+        "Tự loại mọi CVE của host kernel"
+      ],
+      "correct": 1,
+      "explanation": "Ít thành phần không thay thế đánh giá dependency thực tế."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Quét image",
+      "question": "trivy image myapp:latest nhằm làm gì?",
+      "options": [
+        "Tự sửa toàn bộ CVE",
+        "Tự triển khai image lên cluster",
+        "Phân tích image theo khả năng/cấu hình scanner",
+        "Khởi chạy app production"
+      ],
+      "correct": 2,
+      "explanation": "Scanner báo phát hiện, không tự chứng minh ứng dụng an toàn."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Docker Scout",
+      "question": "docker scout cves trong nguồn tập trung vào loại thông tin nào?",
+      "options": [
+        "Thông lượng API thực tế",
+        "Kết quả unit test tự viết",
+        "Độ trễ frontend",
+        "Vulnerabilities được công cụ biết và phân tích cho artifact"
+      ],
+      "correct": 3,
+      "explanation": "Cần hiểu cơ sở dữ liệu và phạm vi scanner."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Secret",
+      "question": "Secret trong ngữ cảnh này thường là gì?",
+      "options": [
+        "Dữ liệu nhạy cảm như password hoặc token",
+        "Mọi file JavaScript",
+        "Chỉ tên container",
+        "Mọi biến cấu hình công khai"
+      ],
+      "correct": 0,
+      "explanation": "Không phải mọi config đều là secret, nhưng secret cần quyền truy cập phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Read-only",
+      "question": "--read-only tác động chính lên phần nào?",
+      "options": [
+        "Mọi registry image trên internet",
+        "Root filesystem container theo cơ chế runtime",
+        "Mọi filesystem host",
+        "Mọi database qua mạng"
+      ],
+      "correct": 1,
+      "explanation": "Mount riêng có thể có quyền khác và cần xét độc lập."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Tmpfs",
+      "question": "--tmpfs /tmp tạo loại vùng lưu trữ nào trong Linux container phù hợp?",
+      "options": [
+        "Remote object storage",
+        "Một Git branch tạm",
+        "Mount tmpfs cho đường dẫn /tmp",
+        "Named volume backup vĩnh viễn"
+      ],
+      "correct": 2,
+      "explanation": "Đây không phải cơ chế backup dữ liệu bền."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Drop capabilities",
+      "question": "--cap-drop=ALL thể hiện ý định gì?",
+      "options": [
+        "Xóa mọi file app",
+        "Tắt mọi syscall của process",
+        "Xóa mọi tài khoản Linux",
+        "Bỏ các Linux capabilities trong tập được điều khiển theo runtime"
+      ],
+      "correct": 3,
+      "explanation": "Sau đó chỉ thêm lại quyền thực sự cần."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Add capability",
+      "question": "--cap-add=NET_BIND_SERVICE chọn quyền gì theo Linux capabilities?",
+      "options": [
+        "Quyền liên quan bind port đặc quyền theo môi trường",
+        "Quyền quản lý mọi interface mạng",
+        "Quyền đọc mọi secret host",
+        "Quyền điều khiển Docker daemon"
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất NET_BIND_SERVICE với NET_ADMIN."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "No new privileges",
+      "question": "no-new-privileges hướng tới việc gì?",
+      "options": [
+        "Tự khóa mọi kết nối mạng",
+        "Ngăn process tăng đặc quyền qua một số cơ chế exec theo Linux",
+        "Tự xóa mọi quyền đã có",
+        "Tự mã hóa private key"
+      ],
+      "correct": 1,
+      "explanation": "Nó không thay thế việc giới hạn quyền ban đầu."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Đúng flag Docker",
+      "question": "Cú pháp nào phù hợp trong docker run để đặt no-new-privileges?",
+      "options": [
+        "--cap-add=no-new-privileges",
+        "--user=no-new-privileges",
+        "--security-opt=no-new-privileges:true",
+        "--no-new-privileges như flag trần trong nguồn"
+      ],
+      "correct": 2,
+      "explanation": "Docker run dùng security-opt cho lựa chọn này."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Tạo user",
+      "question": "RUN addgroup và adduser trong Dockerfile nguồn làm gì?",
+      "options": [
+        "Tự chuyển mọi process sang user mới",
+        "Tự đặt mật khẩu registry",
+        "Tự triển khai app",
+        "Tạo group/user trong image"
+      ],
+      "correct": 3,
+      "explanation": "Cần USER hoặc cấu hình runtime để chọn identity chạy."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Tên user nguồn",
+      "question": "User được tạo trong ví dụ security tên gì?",
+      "options": [
+        "appuser",
+        "nodeapp",
+        "www-data",
+        "deploy"
+      ],
+      "correct": 0,
+      "explanation": "Tên tài khoản không tự làm process sử dụng tài khoản đó."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Compose secret nguồn",
+      "question": "Secret db_password lấy từ đâu trong ví dụ?",
+      "options": [
+        "Giá trị CPU request",
+        "./secrets/db_password.txt",
+        "GitHub public profile",
+        "Image tag myapp:latest"
+      ],
+      "correct": 1,
+      "explanation": "Đây là file nguồn cần được bảo vệ trên host."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Secret cấp service",
+      "question": "Đoạn services.app.secrets chỉ định điều gì?",
+      "options": [
+        "Secret được commit vào image",
+        "App tự có logic đọc password",
+        "Service app được cấp secret đã khai",
+        "Mọi service tự được cấp mọi secret"
+      ],
+      "correct": 2,
+      "explanation": "Cấp file và logic ứng dụng sử dụng file là hai việc khác nhau."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Mount secret mặc định",
+      "question": "Với Compose short syntax trên Linux, secret db_password thường xuất hiện tại đâu?",
+      "options": [
+        "/app/.git/db_password",
+        "/var/log/db_password",
+        "/etc/registry/latest",
+        "/run/secrets/db_password"
+      ],
+      "correct": 3,
+      "explanation": "Đây là đường dẫn mặc định theo cơ chế secret service."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Ignore scanner",
+      "question": "File .trivyignore có mục đích gì?",
+      "options": [
+        "Chỉ định phát hiện cần bỏ qua theo cơ chế Trivy",
+        "Vá vulnerability trong image",
+        "Xóa dependency khỏi runtime",
+        "Cấp quyền truy cập registry"
+      ],
+      "correct": 0,
+      "explanation": "Suppress phát hiện khác với sửa nguyên nhân."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Severity filter",
+      "question": "--severity HIGH,CRITICAL chọn điều gì?",
+      "options": [
+        "Chỉ package của tác giả app",
+        "Các mức severity cần xét trong kết quả theo cấu hình",
+        "Mọi lỗi nghiệp vụ app",
+        "Chỉ CVE không có bản vá"
+      ],
+      "correct": 1,
+      "explanation": "Severity là một yếu tố, không phải đánh giá rủi ro đầy đủ."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Exit code gate",
+      "question": "--exit-code 1 trong lệnh Trivy minh họa phục vụ gì?",
+      "options": [
+        "Tự dừng mọi container trên host",
+        "Tự revoke credentials",
+        "Cho CI nhận lỗi khi có phát hiện khớp điều kiện theo cơ chế công cụ",
+        "Bảo đảm mọi lỗi đều được sửa"
+      ],
+      "correct": 2,
+      "explanation": "Pipeline phải xử lý exit status đúng mới tạo gate hữu ích."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Defense in depth",
+      "question": "Defense in depth có nghĩa gì trong bài?",
+      "options": [
+        "Chọn một flag rồi bỏ các lớp khác",
+        "Chỉ tăng số container",
+        "Chỉ dùng image nhỏ nhất bất kể app",
+        "Phối hợp nhiều lớp kiểm soát phù hợp rủi ro"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi biện pháp có phạm vi và giới hạn riêng."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Thiếu USER",
+      "question": "Snippet tạo appuser nhưng không có USER appuser. Có thể kết luận đã chạy non-root chỉ từ RUN adduser không?",
+      "options": [
+        "Không, tạo user chưa chọn user chạy",
+        "Có, adduser tự thay USER metadata",
+        "Có, tên base stage quyết định user mới",
+        "Có, mọi Alpine image đều non-root"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm cấu hình image hoàn chỉnh hoặc runtime override."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Thiếu app command",
+      "question": "Dockerfile security đã khai CMD/ENTRYPOINT riêng cho ứng dụng chưa?",
+      "options": [
+        "Có, cap-drop khởi chạy Node",
+        "Chưa; cần kiểm phần kế thừa và cấu hình app thật",
+        "Có, adduser tự chọn server.js",
+        "Có, tên image myapp tạo command"
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất thiếu CMD app trong snippet với base image không có CMD."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Đọc secret file",
+      "question": "Service được mount secret có tự dùng password trong code chưa?",
+      "options": [
+        "Có, tên db_password tạo DATABASE_URL",
+        "Có, secret file tự đăng nhập PostgreSQL",
+        "Chưa, ứng dụng phải đọc hoặc được cấu hình đọc file",
+        "Có, Compose tự chèn vào mọi DB client"
+      ],
+      "correct": 2,
+      "explanation": "Secret delivery và ứng dụng tiêu thụ secret cần cùng hợp đồng."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Read-only mounts",
+      "question": "--read-only có tự khiến một bind mount riêng đang writable thành read-only không?",
+      "options": [
+        "Có, mọi mount luôn bị khóa theo flag này",
+        "Chỉ khi mount chứa .env",
+        "Có, tmpfs cũng luôn không ghi được",
+        "Không nên giả định; quyền mount riêng phải được xét/cấu hình"
+      ],
+      "correct": 3,
+      "explanation": "Root filesystem và các mount có chính sách quyền riêng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "App cần /tmp",
+      "question": "App cần ghi file tạm trong root filesystem read-only nên cân nhắc gì?",
+      "options": [
+        "Mount writable giới hạn như tmpfs tại đường dẫn cần thiết",
+        "Cho toàn container privileged",
+        "Tắt mọi quyền user",
+        "Ghi secret vào image layer"
+      ],
+      "correct": 0,
+      "explanation": "Giữ phạm vi ghi nhỏ và phù hợp nhu cầu thực."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Tmpfs durability",
+      "question": "Dữ liệu quan trọng chỉ đặt trên tmpfs có bảo đảm giữ qua container dừng/recreate không?",
+      "options": [
+        "Chỉ khi thư mục là /tmp",
+        "Không, cần storage bền phù hợp nếu yêu cầu giữ dữ liệu",
+        "Có, tmpfs là backup tự động",
+        "Có, read-only pin dữ liệu vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "Vùng tạm không thay thế cơ chế lưu bền và backup."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Tmpfs tài nguyên",
+      "question": "Tmpfs có cần được tính vào ngân sách tài nguyên không?",
+      "options": [
+        "Chỉ khi app là database",
+        "Có nhưng không thể giới hạn",
+        "Có, cần đánh giá dung lượng và hành vi môi trường",
+        "Không, không bao giờ dùng RAM hoặc storage"
+      ],
+      "correct": 2,
+      "explanation": "Mount tiện lợi vẫn có chi phí và giới hạn vận hành."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Giới hạn ban đầu",
+      "question": "no-new-privileges có tự tước mọi capability nguy hiểm process đã có không?",
+      "options": [
+        "Có, mọi quyền trở về rỗng",
+        "Có, nó tương đương cap-drop=ALL",
+        "Có, nó tự đổi UID thành non-root",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần phối hợp giới hạn identity và capabilities ban đầu."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Non-root không tuyệt đối",
+      "question": "USER non-root có bảo đảm không đọc được secret app được cấp không?",
+      "options": [
+        "Không, process vẫn đọc được tài nguyên được cấp quyền",
+        "Có, non-root luôn không đọc secret",
+        "Có, /run/secrets chỉ root đọc mọi lúc",
+        "Chỉ khi secret là password"
+      ],
+      "correct": 0,
+      "explanation": "Least privilege giảm quyền, không biến dữ liệu app cần dùng thành bất khả truy cập."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Socket daemon",
+      "question": "Mount Docker socket vào app có thể mở loại quyền gì?",
+      "options": [
+        "Chỉ thay CSS frontend",
+        "Khả năng điều khiển daemon rất lớn theo quyền/môi trường",
+        "Chỉ đọc metrics vô hại",
+        "Chỉ xem Dockerfile hiện tại"
+      ],
+      "correct": 1,
+      "explanation": "Quyền daemon có thể phá giả định cách ly container."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Cap thấp không auto cần",
+      "question": "App chạy port 3000 có mặc nhiên cần thêm NET_BIND_SERVICE không?",
+      "options": [
+        "Có, mọi healthcheck HTTP cần",
+        "Có, read-only bắt buộc capability này",
+        "Không, phải dựa nhu cầu và môi trường thật",
+        "Có, mọi Node app đều cần"
+      ],
+      "correct": 2,
+      "explanation": "Không thêm capability chỉ vì có trong mẫu."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Cap và filesystem",
+      "question": "cap-drop=ALL có thay quyền đọc/ghi Unix và mount permissions không?",
+      "options": [
+        "Có, file permissions không còn ý nghĩa",
+        "Có, mọi file biến thành readonly",
+        "Chỉ secret files bị ảnh hưởng",
+        "Không, các lớp quyền cần xét riêng"
+      ],
+      "correct": 3,
+      "explanation": "Capability và discretionary file access là các cơ chế khác nhau."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Scan tag mutable",
+      "question": "Quét myapp:latest rồi deploy latest sau đó có chắc cùng bytes không?",
+      "options": [
+        "Không, tag có thể đổi giữa hai thời điểm",
+        "Có, tên tag bảo đảm nội dung cố định",
+        "Có, Trivy khóa registry tag",
+        "Chỉ khi image có vulnerability"
+      ],
+      "correct": 0,
+      "explanation": "Nên liên kết kết quả với digest/artifact thực."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Scan không vá",
+      "question": "Scanner báo một vulnerability có nghĩa image đã được vá chưa?",
+      "options": [
+        "Có, .trivyignore cài bản mới",
+        "Chưa",
+        "Có, scan tự update mọi package",
+        "Có, exit 1 là đã sửa"
+      ],
+      "correct": 1,
+      "explanation": "Cần xử lý dependency/base và kiểm lại artifact thay đổi."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "DB scanner cũ",
+      "question": "Cơ sở dữ liệu vulnerability cũ có thể ảnh hưởng gì?",
+      "options": [
+        "Tự đổi binary của app",
+        "Chỉ ảnh hưởng format report",
+        "Bỏ sót thông tin mới hoặc làm kết quả thiếu cập nhật",
+        "Làm mọi phát hiện chắc chắn sai"
+      ],
+      "correct": 2,
+      "explanation": "Version và dữ liệu scanner thuộc provenance kết quả."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Không phát hiện",
+      "question": "Scanner không tìm thấy CVE có chứng minh không còn rủi ro bảo mật không?",
+      "options": [
+        "Có, không CVE đồng nghĩa an toàn tuyệt đối",
+        "Có, scanner thay pentest và review code",
+        "Có, image nhỏ không cần kiểm khác",
+        "Không, còn giới hạn nhận diện và các loại lỗi ngoài phạm vi"
+      ],
+      "correct": 3,
+      "explanation": "Kết quả âm tính phải được hiểu đúng scope."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Severity và risk",
+      "question": "Một finding HIGH có đủ quyết định ưu tiên chỉ bằng nhãn không?",
+      "options": [
+        "Không, còn exposure, exploitability và tác động trong môi trường",
+        "Có, mọi HIGH luôn giống nhau",
+        "Có, severity luôn đo đúng dữ liệu doanh nghiệp",
+        "Chỉ package size mới cần xét"
+      ],
+      "correct": 0,
+      "explanation": "Severity hỗ trợ phân loại, risk cần bối cảnh."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Ignore không fix",
+      "question": "Thêm CVE vào .trivyignore làm thay đổi điều gì?",
+      "options": [
+        "Secret tự được rotate",
+        "Cách báo/lọc phát hiện, không vá code bị ảnh hưởng",
+        "Binary runtime tự được thay",
+        "Host kernel tự được cập nhật"
+      ],
+      "correct": 1,
+      "explanation": "Quyết định chấp nhận rủi ro cần được quản lý riêng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Ngoại lệ có lý do",
+      "question": "Ngoại lệ scanner nên có thông tin gì?",
+      "options": [
+        "Chỉ tên người viết Dockerfile",
+        "Chỉ số dòng report",
+        "Lý do, phạm vi và điều kiện xem lại phù hợp policy",
+        "Chỉ một ID bất kỳ để pipeline xanh"
+      ],
+      "correct": 2,
+      "explanation": "Tránh biến suppressions thành nơi che rủi ro không được xét."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Gate bị bỏ qua",
+      "question": "Trivy trả exit 1 nhưng script tiếp tục và cuối cùng exit 0 có thể khiến gì?",
+      "options": [
+        "Image được vá tự động",
+        "Mọi deployment đều bị dừng chắc chắn",
+        "Scanner tự chạy lại ngoài pipeline",
+        "CI không chặn theo ý định nếu xử lý exit status sai"
+      ],
+      "correct": 3,
+      "explanation": "Cần nối kết quả kiểm với quyết định pipeline đúng cách."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Comment CI",
+      "question": "Các dòng Scan in CI trong Dockerfile comment có tự tạo workflow không?",
+      "options": [
+        "Không",
+        "Có, Docker đọc comment để cấu hình GitHub",
+        "Có, image tag tự tạo CI",
+        "Chỉ khi RUN có trong file"
+      ],
+      "correct": 0,
+      "explanation": "Nội dung hướng dẫn cần được đặt vào đúng file/công cụ thực."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Compose file-backed secret",
+      "question": "Secret khai từ file local có tự chứng minh được hưởng cơ chế encrypted Raft log của Swarm không?",
+      "options": [
+        "Có, thư mục secrets mặc định được mã hóa",
+        "Không, cần phân biệt triển khai file-backed Compose với Swarm secrets",
+        "Có, cùng từ secrets nghĩa cùng toàn bộ cơ chế",
+        "Có, YAML tự tạo Swarm cluster"
+      ],
+      "correct": 1,
+      "explanation": "Tên tính năng tương tự không đồng nhất backend và threat model."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Host secret storage",
+      "question": "File ./secrets/db_password.txt cần bảo vệ ở đâu nữa?",
+      "options": [
+        "Chỉ tên service app",
+        "Không đâu vì Compose luôn xóa file gốc",
+        "Trên host, backups, quyền truy cập và quy trình delivery",
+        "Chỉ trong label image"
+      ],
+      "correct": 2,
+      "explanation": "Secret mount không tự bảo vệ mọi bản sao của nguồn."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Secret qua logs",
+      "question": "App đọc secret file rồi log ra có được Compose ngăn tự động không?",
+      "options": [
+        "Có, mọi output chứa secret bị Docker chặn",
+        "Có, mount read-only không thể log",
+        "Chỉ nếu log driver là json",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần quản lý hành vi app và logging."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Secret rotation",
+      "question": "Đổi file secret trên host có chắc mọi app đang chạy tự nạp đúng ngay không?",
+      "options": [
+        "Không, cần hiểu delivery, cache và lifecycle reload của app",
+        "Có, mọi file mount luôn tạo lại DB connection",
+        "Có, Compose tự đổi password DB",
+        "Có, secret name ép app restart"
+      ],
+      "correct": 0,
+      "explanation": "Rotation cần hợp đồng giữa nguồn, runtime và dependency nhận credential."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Environment không encryption",
+      "question": "Đưa password vào ENV có tự mã hóa trong image/runtime metadata không?",
+      "options": [
+        "Chỉ khi NODE_ENV là production",
+        "Không",
+        "Có, tên biến PASSWORD kích hoạt mã hóa",
+        "Có, non-root mã hóa mọi ENV"
+      ],
+      "correct": 1,
+      "explanation": "Phải xem quyền quan sát metadata/process và cách phân phối secret."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Build layer secret",
+      "question": "COPY secret rồi RUN rm ở bước sau có đủ xóa khỏi mọi layer cũ không?",
+      "options": [
+        "Có, rm xóa registry history",
+        "Chỉ cần chmod 000 trước rm",
+        "Không",
+        "Có, final filesystem không thấy là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Tránh đưa secret vào image artifact ngay từ đầu."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Build secret mount",
+      "question": "Dùng secret mount khi build có tự ngăn lệnh build in hoặc copy secret vào output không?",
+      "options": [
+        "Có, mọi output được tự redact tuyệt đối",
+        "Có, secret mount cấm mọi file write",
+        "Có, chỉ RUN biết secret nên không thể rò rỉ",
+        "Không, lệnh dùng secret vẫn có thể làm lộ nó"
+      ],
+      "correct": 3,
+      "explanation": "Cơ chế delivery không thay việc kiểm hành vi tiêu thụ secret."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Gitignore khác Dockerignore",
+      "question": "Secret bị Gitignore loại nhưng không bị Dockerignore loại có thể vào image không?",
+      "options": [
+        "Có, nếu nằm context và được COPY",
+        "Không, Docker luôn dùng Gitignore",
+        "Chỉ khi secret từng được commit",
+        "Không, file ẩn không thể COPY"
+      ],
+      "correct": 0,
+      "explanation": "Tracking policy và build context policy cần xét riêng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Readonly và API",
+      "question": "Filesystem read-only có ngăn app gọi API nguy hiểm bằng token được cấp không?",
+      "options": [
+        "Chỉ khi token nằm ENV",
+        "Không",
+        "Có, read-only làm mọi network request chỉ đọc",
+        "Có, token không dùng được khi rootfs khóa"
+      ],
+      "correct": 1,
+      "explanation": "Quyền dữ liệu/identity và filesystem là các lớp khác nhau."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Network policy source",
+      "question": "Nguồn đã có cấu hình network policy cụ thể hạn chế app tới DB chưa?",
+      "options": [
+        "Có, read-only chặn mọi network",
+        "Có, appgroup tạo network riêng",
+        "Chưa, mới nêu khái niệm trong theory",
+        "Có, cap-drop là policy theo địa chỉ DB"
+      ],
+      "correct": 2,
+      "explanation": "Không suy diễn cơ chế chưa được hiện thực trong snippet."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Image base cũ",
+      "question": "Image ít package nhưng base hết hỗ trợ có nên mặc định coi là an toàn hơn không?",
+      "options": [
+        "Có, ít package luôn đủ",
+        "Có, Alpine tự vá mọi phiên bản mãi mãi",
+        "Chỉ cần không chạy root",
+        "Không, cần xét hỗ trợ, cập nhật và dependency thực"
+      ],
+      "correct": 3,
+      "explanation": "Lựa chọn base phải có chính sách vòng đời."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Host kernel",
+      "question": "Container dùng cơ chế kernel host/runtime tương ứng nên cần quan tâm gì?",
+      "options": [
+        "Bảo mật và cập nhật host/runtime ngoài image",
+        "Chỉ npm packages",
+        "Chỉ tên image",
+        "Không cần host patch khi cap-drop"
+      ],
+      "correct": 0,
+      "explanation": "Cách ly container không loại rủi ro ở lớp nền."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Rootless phân biệt",
+      "question": "Chạy app non-root trong container có đồng nghĩa Docker daemon rootless không?",
+      "options": [
+        "Chỉ khi UID là 1001",
+        "Không, đó là hai phạm vi identity khác nhau",
+        "Có, USER tự đổi daemon mode",
+        "Có, adduser tạo rootless host"
+      ],
+      "correct": 1,
+      "explanation": "Không nhập nhằng process app với quyền daemon/runtime."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Privileged tradeoff",
+      "question": "Thêm --privileged để app hết lỗi quyền có đánh đổi gì?",
+      "options": [
+        "Tương đương chỉ thêm NET_BIND_SERVICE",
+        "Chỉ đổi label của container",
+        "Mở rộng quyền rất lớn, cần tránh dùng như bản sửa chung",
+        "Tự giảm mọi attack surface"
+      ],
+      "correct": 2,
+      "explanation": "Cần tìm đúng quyền hoặc tài nguyên bị thiếu."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Bind mount host",
+      "question": "Mount writable thư mục host chứa source có thể cho app bị compromise làm gì?",
+      "options": [
+        "Chỉ sửa bản sao không liên quan host",
+        "Tự bị Docker chặn mọi write",
+        "Chỉ đọc container logs",
+        "Sửa nội dung host trong phạm vi quyền mount/filesystem"
+      ],
+      "correct": 3,
+      "explanation": "Mount xác định một ranh giới tài nguyên cần được cân nhắc."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Secret cấp tối thiểu",
+      "question": "Service không dùng db_password có cần được cấp secret này không?",
+      "options": [
+        "Không nên cấp nếu không có nhu cầu",
+        "Có, mọi service nên nhận mọi secret",
+        "Có, để healthcheck tự dò DB",
+        "Chỉ khi cùng base image"
+      ],
+      "correct": 0,
+      "explanation": "Quyền truy cập nên theo nhiệm vụ thực tế."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Scan khác runtime",
+      "question": "Image scan có bao trọn cấu hình mounts/capabilities khi deploy chưa?",
+      "options": [
+        "Chỉ secret file mới cần xem riêng",
+        "Không, runtime config cần được đánh giá riêng",
+        "Có, scanner đọc được mọi deployment tương lai",
+        "Có, tag image lưu mọi docker run flags"
+      ],
+      "correct": 1,
+      "explanation": "Artifact và cách chạy artifact có rủi ro khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Capability typo",
+      "question": "NET_BIND_SERVICE có phải quyền quản trị mạng tổng quát NET_ADMIN không?",
+      "options": [
+        "Có, mọi NET_* đều giống nhau",
+        "Chỉ khác chữ viết hoa",
+        "Không, capabilities có phạm vi khác nhau",
+        "Có, hai tên là alias"
+      ],
+      "correct": 2,
+      "explanation": "Chọn đúng capability thay cấp theo tên gần giống."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Bằng chứng scan",
+      "question": "Báo cáo scan hữu ích cần gắn tối thiểu với gì?",
+      "options": [
+        "Chỉ tag latest",
+        "Chỉ số lượng dòng report",
+        "Chỉ tên tác giả Dockerfile",
+        "Artifact/digest, thời điểm, công cụ/dữ liệu và cấu hình scan"
+      ],
+      "correct": 3,
+      "explanation": "Provenance làm rõ điều thực sự được kiểm."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Sửa non-root thực",
+      "question": "Source tạo appuser nhưng chưa chọn USER, app cần đọc code và ghi /tmp. Cách hoàn thiện hợp lý?",
+      "options": [
+        "Chọn identity non-root, chuẩn bị quyền đọc và vùng ghi cần thiết rồi kiểm runtime",
+        "Chỉ thêm comment không chạy root",
+        "Cấp privileged để app tự chọn user",
+        "Đổi tên base stage thành nonroot"
+      ],
+      "correct": 0,
+      "explanation": "Biện pháp phải tác động đúng config identity và filesystem."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Flag lỗi nguồn",
+      "question": "Lệnh hardening có cả bare --no-new-privileges và --security-opt=no-new-privileges:true. Cần đánh giá gì?",
+      "options": [
+        "Chỉ đổi image tag là đủ",
+        "Bỏ flag trần không phù hợp Docker CLI và giữ cú pháp security-opt đúng",
+        "Hai flag luôn là alias nên giữ cả hai",
+        "Bare flag tự cấu hình Compose secrets"
+      ],
+      "correct": 1,
+      "explanation": "Mẫu chú thích không được coi là lệnh đã hợp lệ hay đã chạy."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Scan deploy khác bytes",
+      "question": "Image digest A đã pass scan nhưng tag latest trỏ B khi deploy. Nên làm gì?",
+      "options": [
+        "Bỏ scanner để tránh race",
+        "Chỉ thêm .trivyignore",
+        "Liên kết gate và deployment với artifact chính xác thay chỉ tên tag",
+        "Coi report A áp cho B vì cùng tag"
+      ],
+      "correct": 2,
+      "explanation": "Bằng chứng bảo mật phải khớp artifact được dùng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Ngoại lệ scanner an toàn",
+      "question": "Một finding được chấp nhận tạm thời. Quy trình nên giữ gì?",
+      "options": [
+        "Xóa khỏi mọi report vĩnh viễn không ghi lý do",
+        "Đổi severity label tùy ý",
+        "Chỉ đổi tên image",
+        "Lý do theo bối cảnh, owner và thời điểm/điều kiện xét lại"
+      ],
+      "correct": 3,
+      "explanation": "Chấp nhận rủi ro cần có phạm vi rõ và được xem lại."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Read-only toàn hệ thống",
+      "question": "Rootfs read-only nhưng app được cấp DB credential có quyền xóa dữ liệu. Rủi ro còn gì?",
+      "options": [
+        "App bị chiếm vẫn có thể dùng quyền DB ngoài filesystem",
+        "Không còn vì mọi thao tác ghi đều bị chặn",
+        "Token tự thành read-only theo mount",
+        "DB tự hạ quyền user theo Docker flag"
+      ],
+      "correct": 0,
+      "explanation": "Least privilege cần áp ở từng hệ thống nhận credential."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Secret file lộ host",
+      "question": "Secret không nằm image nhưng file host có quyền rộng và bị backup công khai. Kết luận nào đúng?",
+      "options": [
+        "Chỉ ENV mới có thể bị lộ",
+        "Delivery qua file chưa đủ bảo vệ nguồn và các bản sao",
+        "Không có rủi ro vì /run/secrets là read-only",
+        "Docker tự mã hóa mọi backup"
+      ],
+      "correct": 1,
+      "explanation": "Threat model phải bao cả dữ liệu ngoài container."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "No new privileges giới hạn",
+      "question": "Container đã có quyền daemon qua socket. Chỉ thêm no-new-privileges có đủ thu hồi quyền đó không?",
+      "options": [
+        "Có, daemon tự thành rootless",
+        "Chỉ cần cap-drop cho mọi trường hợp",
+        "Không, cần loại hoặc giới hạn quyền socket và các quyền được cấp",
+        "Có, flag vô hiệu mọi API đặc quyền"
+      ],
+      "correct": 2,
+      "explanation": "Ngăn tăng quyền qua exec không đồng nghĩa thu hồi mọi quyền API hiện có."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "App không ghi được",
+      "question": "Read-only làm app lỗi do ghi cache. Hướng sửa nên ưu tiên gì?",
+      "options": [
+        "Bỏ toàn bộ hardening ngay",
+        "Cấp root và chmod 777 cho mọi mount",
+        "Tắt logs để không thấy lỗi",
+        "Tách nhu cầu ghi thật vào vùng giới hạn, giữ phần còn lại read-only nếu phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Khả năng hoạt động và giới hạn quyền cần được thiết kế cùng nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Scanner lỗi hạ tầng",
+      "question": "Scanner không tải được dữ liệu và không phân tích xong. Có thể báo image sạch không?",
+      "options": [
+        "Không, phải ghi scan chưa hoàn tất và xử lý theo policy",
+        "Có, không có findings nghĩa không có CVE",
+        "Có, miễn exit output trống",
+        "Chỉ cần đổi tag sang stable"
+      ],
+      "correct": 0,
+      "explanation": "Vắng bằng chứng không đồng nghĩa kết quả kiểm âm tính hợp lệ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Severity lọc bỏ",
+      "question": "Gate chỉ xét HIGH,CRITICAL có chứng minh không còn MEDIUM hoặc lỗi ngoài scanner không?",
+      "options": [
+        "Có, app non-root loại mọi MEDIUM",
+        "Không, điều kiện lọc giới hạn phạm vi được chặn",
+        "Có, severity thấp tự được sửa",
+        "Có, HIGH bao gồm mọi loại lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Báo cáo phải phản ánh đúng policy và giới hạn kiểm."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Secret app compromised",
+      "question": "App buộc phải đọc password DB và bị compromise. Secret mount bảo vệ được điều gì có giới hạn?",
+      "options": [
+        "Tự đổi credential trước mỗi request",
+        "Tự giới hạn DB permissions bất kể account",
+        "Có thể giảm lộ qua image/config nhưng không ngăn process được phép đọc và sử dụng secret",
+        "Ngăn tuyệt đối mọi truy cập password kể cả app"
+      ],
+      "correct": 2,
+      "explanation": "Cần phối hợp least privilege, network, quan sát và rotation."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Supply chain input",
+      "question": "Base pin digest nhưng package install dùng inputs không khóa. Đã tái lập toàn image chưa?",
+      "options": [
+        "Rồi, base digest khóa cả npm registry",
+        "Rồi, Dockerfile có USER là đủ",
+        "Chỉ cần image nhỏ hơn 200 MB",
+        "Chưa, mọi đầu vào quan trọng cần được kiểm soát"
+      ],
+      "correct": 3,
+      "explanation": "Một input cố định không làm các input còn lại bất biến."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Image tối giản probe",
+      "question": "Bỏ shell/wget khỏi runtime nhưng giữ healthcheck cũ có thể gây gì?",
+      "options": [
+        "Probe lỗi do thiếu công cụ dù app có thể chạy",
+        "App tự được bảo đảm khỏe hơn",
+        "Docker tự cài lại tool bị bỏ",
+        "HEALTHCHECK bị bỏ qua âm thầm mọi lúc"
+      ],
+      "correct": 0,
+      "explanation": "Hardening phải giữ hợp đồng vận hành hoặc thay probe thích hợp."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Secrets không mã hóa tự động",
+      "question": "Team thấy Compose file: secret rồi suy ra host file encrypted at rest. Điều gì cần làm rõ?",
+      "options": [
+        "Read-only đồng nghĩa encrypted",
+        "Backend delivery và bảo vệ host thực tế, phân biệt với Swarm",
+        "Mọi YAML secrets đều có encrypted Raft log",
+        "Tên folder secrets bảo đảm mã hóa"
+      ],
+      "correct": 1,
+      "explanation": "Quyền ghi/đọc và mã hóa là những thuộc tính khác nhau."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "CVE fix validation",
+      "question": "Nâng dependency để xử lý CVE cần kiểm gì ngoài scan mới?",
+      "options": [
+        "Chỉ tag latest đổi ngày",
+        "Chỉ report không còn màu đỏ",
+        "Artifact đúng và hành vi app tương thích với bản cập nhật",
+        "Chỉ số package ít đi"
+      ],
+      "correct": 2,
+      "explanation": "Sửa bảo mật có thể ảnh hưởng runtime và cần kiểm đúng hành vi."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Runtime escape boundary",
+      "question": "Chỉ scan packages trong image có đủ đánh giá khả năng ảnh hưởng host không?",
+      "options": [
+        "Có, scanner image bao trọn mọi host state",
+        "Có, Alpine không dùng host kernel",
+        "Chỉ cần .trivyignore trống",
+        "Không, còn kernel/runtime, capabilities, devices và mounts"
+      ],
+      "correct": 3,
+      "explanation": "Đánh giá theo lớp nền và quyền triển khai thực."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Network và identity",
+      "question": "App chỉ cần kết nối một DB nhưng có network rộng và DB admin token. Nên giảm rủi ro thế nào?",
+      "options": [
+        "Giới hạn network và quyền account theo nhu cầu cùng secret delivery phù hợp",
+        "Chỉ đổi USER trong image",
+        "Chỉ bật no-new-privileges",
+        "Chỉ bỏ devDependencies"
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi kết nối và quyền ở đích đều ảnh hưởng tác động sự cố."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Policy khả thi",
+      "question": "Một hardening rule làm app không chạy, có nên che lỗi bằng ignore scanner không?",
+      "options": [
+        "Chỉ cần chạy privileged mãi",
+        "Không, cần chẩn đoán quyền/config và điều chỉnh có lý do",
+        "Có, mọi lỗi runtime là false positive",
+        "Có, scanner ignore tự sửa permission"
+      ],
+      "correct": 1,
+      "explanation": "Sửa đúng nguyên nhân thay dùng ngoại lệ sai lớp."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Security claim",
+      "question": "Bộ flag trong source có đủ bằng chứng hệ thống production an toàn chưa?",
+      "options": [
+        "Rồi, scanner tìm được ít hơn 10 CVE",
+        "Rồi, appuser tồn tại trong image",
+        "Chưa, cần threat model, config thực và kiểm chứng phạm vi liên quan",
+        "Rồi, có cap-drop=ALL là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Không tuyên bố an toàn toàn hệ thống từ một ví dụ cấu hình."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Scan pass nhưng identity chưa rõ",
+      "question": "Image pass scan, Dockerfile chỉ tạo appuser mà thiếu USER, còn DB secret file host có quyền đọc rộng. Có thể coi hardening đã hoàn tất chưa?",
+      "options": [
+        "Rồi, scanner pass tự chứng minh non-root và host permissions",
+        "Rồi, tên appuser tự đổi user cho mọi process",
+        "Rồi, secret mount read-only tự mã hóa file host",
+        "Chưa, cần xác minh identity runtime và bảo vệ nguồn/delivery secret ngoài kết quả scan"
+      ],
+      "correct": 3,
+      "explanation": "Scanner artifact không kiểm thay mọi cấu hình quyền runtime hoặc bản sao secret trên host."
+    }
+  ]
+}

@@ -1,0 +1,1150 @@
+{
+  "version": 1,
+  "tech": "csharp",
+  "level": "junior",
+  "lesson": "async",
+  "language": "vi",
+  "sourceHash": "f197e6d4826924f2b017b6bad1d425208131f1b09076dfd670e2d64dd2045133",
+  "status": "approved",
+  "review": "Tự soạn không API. Microsoft task/async/cancellation/HTTP JSON docs và runtime8 source review. Selected exact C#5 Task/TCS/cancellation fixtures hữu hạn,không HTTP. Source User/imports/config thiếu,modern nullable syntax không chạy trên compiler cũ. Async có thể chạy sync tới await chưa hoàn tất,WhenAll không giới hạn concurrency hoặc tự hủy siblings;output order khác completion order. No downloads/listeners/paid calls.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Task generic meaning",
+      "question": "Task<User?> trong source biểu diễn điều gì?",
+      "options": [
+        "Một tác vụ trả kết quả User có thể null theo nullable contract.",
+        "Một OS thread bắt buộc riêng.",
+        "Một User đã được tạo đồng bộ trong mọi trường hợp.",
+        "Một HTTP request luôn thành công."
+      ],
+      "correct": 0,
+      "explanation": "Task biểu diễn completion/result, không hứa outcome thành công."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Await purpose",
+      "question": "await chủ yếu cho phép async method làm gì?",
+      "options": [
+        "Tự cache mọi results.",
+        "Tiếp tục khi awaitable hoàn tất mà không block thread chỉ để đợi tác vụ chưa hoàn tất.",
+        "Tự tạo một thread mới mỗi lần.",
+        "Tự retry mọi failure."
+      ],
+      "correct": 1,
+      "explanation": "Nếu awaitable đã hoàn tất, method có thể tiếp tục đồng bộ."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Injected client",
+      "question": "UserService nguồn nhận dependency nào qua constructor?",
+      "options": [
+        "Một User instance.",
+        "Một CancellationTokenSource duy nhất global.",
+        "HttpClient.",
+        "Một SQLite database bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Client configuration/lifetime là trách nhiệm wiring phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "HTTP method",
+      "question": "_http.GetAsync trong GetUserAsync nhằm HTTP method nào?",
+      "options": [
+        "POST.",
+        "DELETE.",
+        "PATCH.",
+        "GET."
+      ],
+      "correct": 3,
+      "explanation": "Source dùng URI có user ID."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Source request path",
+      "question": "Với id=7, string path nguồn là gì?",
+      "options": [
+        "/api/users/7.",
+        "/users?id=0.",
+        "/api/orders/7.",
+        "https://7 tự động."
+      ],
+      "correct": 0,
+      "explanation": "Đây là relative URI, cần client base address/context phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Success status check",
+      "question": "EnsureSuccessStatusCode kiểm điều gì?",
+      "options": [
+        "Request không bao giờ timeout.",
+        "Response có status success theo HTTP client contract.",
+        "Mọi JSON field đúng domain.",
+        "User đã được authorization."
+      ],
+      "correct": 1,
+      "explanation": "HTTP success và payload validity khác nhau."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "JSON step",
+      "question": "ReadFromJsonAsync<User> làm gì?",
+      "options": [
+        "Tự validate email tồn tại.",
+        "Tự refresh auth token.",
+        "Đọc/deserialize content thành User theo serializer contract.",
+        "Tự query user từ database."
+      ],
+      "correct": 2,
+      "explanation": "Source không định nghĩa User schema trong snippet."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Cancellation token",
+      "question": "CancellationToken chủ yếu cung cấp gì?",
+      "options": [
+        "Một cơ chế kill OS thread tùy ý.",
+        "Một transaction rollback tự động.",
+        "Một password.",
+        "Thông báo yêu cầu cancellation để operations hợp tác xử lý."
+      ],
+      "correct": 3,
+      "explanation": "Request cancellation không bảo đảm mọi work đã dừng ngay."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Default token",
+      "question": "ct=default trong source cho phép điều gì ở call site?",
+      "options": [
+        "Caller có thể không truyền token và dùng default token.",
+        "Tự tạo timeout5seconds cho mọi call.",
+        "Tự hủy request ngay.",
+        "Tự dùng một token global đã cancel."
+      ],
+      "correct": 0,
+      "explanation": "Default token không cùng timeout source được tạo trong method khác."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "WhenAll role",
+      "question": "Task.WhenAll chủ yếu trả task có ý nghĩa gì?",
+      "options": [
+        "Tự chọn result nhanh nhất.",
+        "Hoàn tất khi mọi input tasks đã hoàn tất.",
+        "Chỉ chờ input task đầu tiên.",
+        "Tự tạo semaphore giới hạn100requests."
+      ],
+      "correct": 1,
+      "explanation": "Khác WhenAny và khác concurrency admission control."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Source batch input",
+      "question": "GetManyUsersAsync nhận input nào?",
+      "options": [
+        "Một CancellationToken bắt buộc trong signature.",
+        "Một HttpResponseMessage[].",
+        "int[] ids.",
+        "Một SQL connection."
+      ],
+      "correct": 2,
+      "explanation": "Method này không expose cancellation parameter trong source."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Filter null results",
+      "question": "results.Where(u=>u!=null) nguồn nhằm gì?",
+      "options": [
+        "Biến mọi HTTP failure thành User.",
+        "Tự retry tasks lỗi.",
+        "Tự sort User theo name.",
+        "Loại các null result elements theo predicate."
+      ],
+      "correct": 3,
+      "explanation": "Filtering xảy ra sau WhenAll thành công; không bắt task failures."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Timeout duration",
+      "question": "GetWithTimeout nguồn tạo CTS với khoảng thời gian nào?",
+      "options": [
+        "5seconds.",
+        "5minutes.",
+        "500milliseconds.",
+        "Không có deadline intent."
+      ],
+      "correct": 0,
+      "explanation": "Deadline intent còn phụ thuộc cooperative operation và scheduling."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Timeout disposal",
+      "question": "using var cts chủ yếu giúp gì?",
+      "options": [
+        "Tự serialize User.",
+        "Dispose CTS khi rời scope theo semantics using.",
+        "Tự chặn mọi network call.",
+        "Tự gọi Cancel luôn với mọi successful request."
+      ],
+      "correct": 1,
+      "explanation": "Disposal khác với yêu cầu cancellation."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Caught exception type",
+      "question": "GetWithTimeout nguồn catch loại exception nào?",
+      "options": [
+        "Chỉ JsonException.",
+        "Chỉ NullReferenceException.",
+        "OperationCanceledException.",
+        "Mọi Exception."
+      ],
+      "correct": 2,
+      "explanation": "Các failures khác có thể propagate."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Timeout return value",
+      "question": "Khi catch block nguồn chạy, method trả gì?",
+      "options": [
+        "User id0 tự tạo.",
+        "Task bị bỏ không await.",
+        "Một retry result đã có.",
+        "null."
+      ],
+      "correct": 3,
+      "explanation": "Return null hợp nhất một số outcomes về cùng representation."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Timeout message",
+      "question": "Catch block nguồn in thông báo gì?",
+      "options": [
+        "Request timed out.",
+        "User created.",
+        "Database committed.",
+        "All retries passed."
+      ],
+      "correct": 0,
+      "explanation": "Thông báo này cần xét đúng nguyên nhân cancellation thực tế."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Async not parallel automatic",
+      "question": "Thêm async có tự làm toàn body chạy trên background thread không?",
+      "options": [
+        "Chỉ nếu return Task<T>.",
+        "Không.",
+        "Có; luôn một thread mới.",
+        "Có; luôn song song CPU."
+      ],
+      "correct": 1,
+      "explanation": "Task scheduling và asynchronous waiting khác nhau."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Source retry completion",
+      "question": "Source đã có retry loop theo bài tập chưa?",
+      "options": [
+        "Có; WhenAll tự retry.",
+        "Chỉ cần CancellationToken.",
+        "Chưa.",
+        "Có; await tự retry ba lần."
+      ],
+      "correct": 2,
+      "explanation": "Không coi yêu cầu exercise là implementation đã có."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Task failure visibility",
+      "question": "Task fault thường được quan sát thế nào trong code async?",
+      "options": [
+        "Bỏ task và coi thành công.",
+        "Chỉ đổi tên method thêm Async.",
+        "Chỉ gọi ToList.",
+        "Await task hoặc kiểm trạng thái/exception theo contract phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Không bỏ qua task failures."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Await ready task",
+      "question": "Finite C#5 model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{static async Task<int> F(){return await Task.FromResult(7);}\nstatic void Main(){Console.WriteLine(F().GetAwaiter().GetResult());}}\n",
+      "options": [
+        "7.",
+        "0.",
+        "Task.",
+        "Compiler không hỗ trợ async ở C#5."
+      ],
+      "correct": 0,
+      "explanation": "Task đã hoàn tất vẫn await được."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Synchronous async prefix",
+      "question": "Model này in gì trước và sau gate được hoàn tất?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{static int count;static async Task<int> F(Task<int> gate){count++;return await gate;}\nstatic void Main(){var gate=new TaskCompletionSource<int>();var t=F(gate.Task);Console.WriteLine(count+\" \"+t.IsCompleted);gate.SetResult(2);Console.WriteLine(t.GetAwaiter().GetResult());}}\n",
+      "options": [
+        "Async body luôn chờ caller await mới bắt đầu.",
+        "1 False rồi 2.",
+        "0 False rồi 2.",
+        "2 True rồi 2."
+      ],
+      "correct": 1,
+      "explanation": "Body chạy tới incomplete gate await rồi return task cho caller."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Completed await no forced suspension",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{static int count;static async Task<int> F(){count++;int x=await Task.FromResult(4);count++;return x;}\nstatic void Main(){var t=F();Console.WriteLine(count+\" \"+t.IsCompleted+\" \"+t.Result);}}\n",
+      "options": [
+        "0 False 0.",
+        "await luôn tạo thread mới nên output random.",
+        "2 True 4.",
+        "1 False 4."
+      ],
+      "correct": 2,
+      "explanation": "Await Task.FromResult không bắt buộc yield khi task đã hoàn tất."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "WhenAll result order",
+      "question": "Hai TCS hoàn tất ngược thứ tự input, model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new TaskCompletionSource<int>();var b=new TaskCompletionSource<int>();var all=Task.WhenAll(a.Task,b.Task);b.SetResult(2);a.SetResult(1);Console.WriteLine(string.Join(\",\",all.GetAwaiter().GetResult()));}}\n",
+      "options": [
+        "2,1.",
+        "Random completion order bắt buộc.",
+        "WhenAll chỉ trả một result.",
+        "1,2."
+      ],
+      "correct": 3,
+      "explanation": "Generic WhenAll results theo input order, không completion order."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "WhenAll waits remaining",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new TaskCompletionSource<int>();var b=new TaskCompletionSource<int>();var all=Task.WhenAll(a.Task,b.Task);a.SetResult(1);Console.WriteLine(all.IsCompleted);b.SetResult(2);all.GetAwaiter().GetResult();Console.WriteLine(all.IsCompleted);}}\n",
+      "options": [
+        "False rồi True.",
+        "True rồi True.",
+        "False rồi False.",
+        "SetResult tự hoàn tất mọi unrelated tasks."
+      ],
+      "correct": 0,
+      "explanation": "Một input chưa hoàn tất thì WhenAll chưa xong."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Empty WhenAll result",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){Console.WriteLine(Task.WhenAll(new Task<int>[0]).GetAwaiter().GetResult().Length);}}\n",
+      "options": [
+        "Không bao giờ hoàn tất.",
+        "0.",
+        "1.",
+        "ArgumentException."
+      ],
+      "correct": 1,
+      "explanation": "Empty generic task collection cho completed empty result."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Fault stored in task",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var s=new TaskCompletionSource<int>();s.SetException(new InvalidOperationException(\"quiz\"));try{s.Task.GetAwaiter().GetResult();}catch(InvalidOperationException){Console.WriteLine(\"InvalidOperationException\");}}}\n",
+      "options": [
+        "AggregateException bắt buộc khi GetAwaiter.GetResult.",
+        "Không có failure vì task đã hoàn tất.",
+        "InvalidOperationException.",
+        "7."
+      ],
+      "correct": 2,
+      "explanation": "Awaiter propagates stored exception; model bắt và in type rõ."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "WhenAll multiple faults",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new TaskCompletionSource<int>();var b=new TaskCompletionSource<int>();var all=Task.WhenAll(a.Task,b.Task);a.SetException(new InvalidOperationException(\"a\"));b.SetException(new ArgumentException(\"b\"));try{all.GetAwaiter().GetResult();}catch(Exception){Console.WriteLine(all.IsFaulted+\" \"+all.Exception.InnerExceptions.Count);}}}\n",
+      "options": [
+        "True 1.",
+        "False 0.",
+        "WhenAll tự bỏ fault thứ hai.",
+        "True 2."
+      ],
+      "correct": 3,
+      "explanation": "Combined task giữ aggregate exception information cho các input faults."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cancelled task state",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var s=new TaskCompletionSource<int>();s.SetCanceled();Console.WriteLine(s.Task.IsCanceled);}}\n",
+      "options": [
+        "True.",
+        "False.",
+        "SetCanceled làm task thành success.",
+        "Cancellation tự trả int0."
+      ],
+      "correct": 0,
+      "explanation": "TCS canceled task có IsCanceled true."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Token notification",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){using(var c=new CancellationTokenSource()){var t=c.Token;c.Cancel();Console.WriteLine(t.IsCancellationRequested);}}}\n",
+      "options": [
+        "Không thể đọc flag khi đã cancel.",
+        "True.",
+        "False.",
+        "Cancel tự dispose source trước khi đọc token."
+      ],
+      "correct": 1,
+      "explanation": "Cancel yêu cầu cancellation được token quan sát."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Default token capability",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var t=CancellationToken.None;Console.WriteLine(t.CanBeCanceled+\" \"+t.IsCancellationRequested);}}\n",
+      "options": [
+        "True True.",
+        "False True.",
+        "False False.",
+        "True False."
+      ],
+      "correct": 2,
+      "explanation": "CancellationToken.None không thể cancel và không được requested."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "ThrowIf cancellation",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){using(var c=new CancellationTokenSource()){c.Cancel();try{c.Token.ThrowIfCancellationRequested();}catch(OperationCanceledException){Console.WriteLine(\"OperationCanceledException\");}}}}\n",
+      "options": [
+        "0.",
+        "Không có exception vì chỉ một thread.",
+        "Thread tự bị kill.",
+        "OperationCanceledException."
+      ],
+      "correct": 3,
+      "explanation": "Cooperative check ném exception; model bắt hữu hạn."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Delay cancellation finite",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){using(var c=new CancellationTokenSource()){var t=Task.Delay(Timeout.Infinite,c.Token);c.Cancel();try{t.GetAwaiter().GetResult();}catch(OperationCanceledException){Console.WriteLine(t.IsCanceled);}}}}\n",
+      "options": [
+        "True.",
+        "False.",
+        "Chờ vô hạn vì token không có tác dụng.",
+        "Tự chờ5seconds."
+      ],
+      "correct": 0,
+      "explanation": "Delay vô hạn được cancel tường minh rồi await completion; không sleep dài."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "WhenAll cancelled combination",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new TaskCompletionSource<int>();a.SetCanceled();var all=Task.WhenAll(a.Task,Task.FromResult(2));try{all.GetAwaiter().GetResult();}catch(OperationCanceledException){Console.WriteLine(all.IsCanceled);}}}\n",
+      "options": [
+        "Luôn fault dù không input fault.",
+        "True.",
+        "False.",
+        "Combined task success vì một result hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Nếu không faults nhưng có canceled input, combined task canceled sau tất cả hoàn tất."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Deferred task selection",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int calls=0;var tasks=new[]{1,2}.Select(x=>{calls++;return Task.FromResult(x);});Console.Write(calls+\" \");var all=Task.WhenAll(tasks);Console.WriteLine(calls+\" \"+string.Join(\",\",all.GetAwaiter().GetResult()));}}\n",
+      "options": [
+        "0 0 1,2.",
+        "Select luôn chạy ở declaration.",
+        "0 2 1,2.",
+        "2 2 1,2."
+      ],
+      "correct": 2,
+      "explanation": "WhenAll enumerate deferred Select để lấy tasks; factory calls thực hiện lúc enumerate."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Source no concurrency bound",
+      "question": "GetManyUsersAsync có explicit admission/concurrency limit chưa?",
+      "options": [
+        "Có; mặc định tối đa4users.",
+        "Có; Select tự SemaphoreSlim100.",
+        "Chỉ cần int array.",
+        "Chưa; WhenAll không tự giới hạn số request đang thực hiện."
+      ],
+      "correct": 3,
+      "explanation": "Large input cần policy resource phù hợp."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Source null filter and faults",
+      "question": "Nếu một GetUserAsync task fault, Where(u!=null) có lọc bỏ failure như null không?",
+      "options": [
+        "Không; await WhenAll có thể throw trước khi đến filter.",
+        "Có; mọi exception tự thành null.",
+        "Có; ToList bắt mọi exceptions.",
+        "Chỉ nếu User reference type."
+      ],
+      "correct": 0,
+      "explanation": "Null result khác task fault."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Nullable element analysis",
+      "question": "ToList()! trên List<User?> có tự biến mọi element thành non-null trong compiler analysis không?",
+      "options": [
+        "Chỉ cần var results.",
+        "Không; postfix ! áp cho expression list, không tự refine từng element type.",
+        "Có; nó recursively suppress mọi nested nullable types.",
+        "Có; nó parse JSON lần nữa."
+      ],
+      "correct": 1,
+      "explanation": "Where loại null runtime nhưng annotation/type flow còn cần cách biểu diễn phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "OfType filtering alternative",
+      "question": "Với User reference results có thể null, OfType<User>() thường giúp biểu diễn gì?",
+      "options": [
+        "Tự chứng minh User domain valid.",
+        "Tự fix nullable annotation của mọi class khác.",
+        "Chọn elements đúng User non-null theo operator contract và typed sequence.",
+        "Tự retry HTTP failures."
+      ],
+      "correct": 2,
+      "explanation": "Không thay error handling cho faulted requests."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Http status success range",
+      "question": "Theo HttpResponseMessage contract, success status là range nào?",
+      "options": [
+        "Mọi status dưới500.",
+        "Chỉ200 duy nhất.",
+        "Mọi status có JSON body.",
+        "200..299."
+      ],
+      "correct": 3,
+      "explanation": "EnsureSuccessStatusCode khác chỉ parse response content."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Status404 source flow",
+      "question": "Nếu response404, EnsureSuccessStatusCode có tự trả null như not-found result trong source không?",
+      "options": [
+        "Không; nó throw theo contract, source không map404 riêng.",
+        "Có; mọi404 tự thành User?null.",
+        "Có; nullable return khiến mọi HTTP errors bị bắt.",
+        "Chỉ cần Where(u!=null)."
+      ],
+      "correct": 0,
+      "explanation": "Cần thiết kế not-found/error semantics riêng nếu muốn."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Json null body value",
+      "question": "HTTP success với JSON null có nhất thiết tạo một User instance không?",
+      "options": [
+        "Chỉ cần Task<User?>.",
+        "Không; nullable deserialize result có thể null.",
+        "Có; serializer luôn new User.",
+        "Có; EnsureSuccess tự validate object tồn tại."
+      ],
+      "correct": 1,
+      "explanation": "HTTP status,JSON syntax và domain object là các bước khác nhau."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Malformed JSON failure",
+      "question": "EnsureSuccessStatusCode thành công có bảo đảm ReadFromJsonAsync không thể lỗi không?",
+      "options": [
+        "Có; typed deserialize không thể fail.",
+        "Chỉ cần HttpClient injected.",
+        "Không; decoding/JSON/schema/cancellation và các errors khác vẫn có thể xảy ra.",
+        "Có;2xx nghĩa payload luôn hợp User."
+      ],
+      "correct": 2,
+      "explanation": "Không gộp các lớp validation."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Relative URI base",
+      "question": "Source dùng /api/users/{id} cần client configuration gì để resolve khi gọi HTTP thực tế?",
+      "options": [
+        "Chỉ constructor nhận HttpClient là đủ mọi config.",
+        "Tự lấy host từ User.Id.",
+        "Tự dùng website đang mở.",
+        "BaseAddress phù hợp hoặc request URI absolute theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Task không thực hiện request này."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Leading slash URI",
+      "question": "Leading slash trong /api/users/{id} cần lưu ý gì nếu BaseAddress có path prefix?",
+      "options": [
+        "URI resolution có thể thay path prefix thay vì append như chuỗi đơn giản.",
+        "Luôn nối sau prefix giữ mọi segments.",
+        "Tự chuyển GET thành POST.",
+        "Không ảnh hưởng URI."
+      ],
+      "correct": 0,
+      "explanation": "Cần test URI construction theo config thực tế, không gọi network để đoán."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Source response cleanup",
+      "question": "GetUserAsync nguồn có using/dispose response tường minh chưa?",
+      "options": [
+        "Chỉ cần field HttpClient readonly.",
+        "Chưa được thể hiện.",
+        "Có; await tự dispose mọi IDisposable locals.",
+        "Có; EnsureSuccess luôn dispose thành công."
+      ],
+      "correct": 1,
+      "explanation": "Ownership/lifetime của response cần được quản lý theo API contract."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Client lifetime",
+      "question": "Tái sử dụng HttpClient phù hợp có nghĩa mọi handler/connection/settings giữ vĩnh viễn bất kể deployment không?",
+      "options": [
+        "Có; readonly tự tối ưu DNS.",
+        "Chỉ cần Async suffix.",
+        "Không; client/handler lifetime và DNS/resource requirements cần cấu hình phù hợp.",
+        "Có; không bao giờ cần xét lifecycle."
+      ],
+      "correct": 2,
+      "explanation": "Không đưa recipe lifecycle mù khi chưa biết host setup."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Token at read step",
+      "question": "Source truyền token tới cả GetAsync và ReadFromJsonAsync để làm gì?",
+      "options": [
+        "Tự kill mọi threads sau đúng5seconds.",
+        "Tự rollback server-side mutation.",
+        "Tự bảo đảm JSON valid.",
+        "Cho hai bước liên quan cơ hội quan sát cancellation theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Operation cụ thể vẫn cần cooperate."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Batch cancellation missing",
+      "question": "Caller GetManyUsersAsync muốn hủy cả batch qua signature hiện tại có token riêng chưa?",
+      "options": [
+        "Chưa.",
+        "Có; ids là cancellation token.",
+        "Có; WhenAll tự lấy request token ambient trong mọi app.",
+        "Chỉ cần List<User>."
+      ],
+      "correct": 0,
+      "explanation": "Cần design propagation nếu requirement có cancellation."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Cancellation classification",
+      "question": "Catch mọi OperationCanceledException và luôn log timeout có thể thiếu chính xác ở đâu?",
+      "options": [
+        "Không có cancellation trong HTTP.",
+        "Cancellation có thể đến từ nguồn khác như client timeout; cần kiểm nguyên nhân/token policy.",
+        "Mọi OCE luôn là đúng CTS5seconds.",
+        "OCE chỉ đến khi user null."
+      ],
+      "correct": 1,
+      "explanation": "Thông báo nên phản ánh đúng contract và nguyên nhân."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Timeout guarantee limits",
+      "question": "CTS5seconds có bảo đảm method kết thúc đúng5seconds trong mọi circumstances không?",
+      "options": [
+        "Có; async tự realtime scheduling.",
+        "Chỉ cần try/catch.",
+        "Không; scheduling,cooperation và code paths ảnh hưởng quan sát và completion.",
+        "Có; CLR kill method ở nanosecond deadline."
+      ],
+      "correct": 2,
+      "explanation": "Timeout intent khác hard realtime guarantee."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Dispose versus cancel",
+      "question": "Dispose CTS có đồng nghĩa luôn yêu cầu cancel operations dùng token không?",
+      "options": [
+        "Có; mọi Dispose luôn send cancellation.",
+        "Có; mọi using là transaction rollback.",
+        "Chỉ nếu token default.",
+        "Không; Cancel và Dispose có vai trò khác."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng cleanup thay behavior signal nếu cần cancellation."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Blocking UI risk",
+      "question": ".Result hoặc .Wait trong UI context với async continuation cần context có thể gặp gì?",
+      "options": [
+        "Deadlock/blocking risk theo context và continuation behavior.",
+        "Luôn nhanh hơn await.",
+        "Tự tạo worker thread để tránh mọi deadlock.",
+        "Không có khác biệt với await."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy deadlock fixture; finite console models không chứng minh UI safety."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "ConfigureAwait scope",
+      "question": "ConfigureAwait(false) có tự tạo parallel task hoặc sửa mọi concurrency bug không?",
+      "options": [
+        "Chỉ cần thêm mọi nơi bất kể host.",
+        "Không; nó liên quan continuation context capture theo awaitable contract.",
+        "Có; luôn thread mới.",
+        "Có; tự giới hạn HTTP concurrency."
+      ],
+      "correct": 1,
+      "explanation": "Dùng theo library/host context và requirements."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "TaskRun for IO",
+      "question": "Bọc mọi HttpClient async call trong Task.Run có mặc định cần thiết để nó nonblocking không?",
+      "options": [
+        "Có; Task.Run tự tăng bandwidth vô hạn.",
+        "Chỉ nếu User? nullable.",
+        "Không; async I/O API đã có cơ chế chờ bất đồng bộ theo contract.",
+        "Có; await không thể đợi network nếu thiếu thread mới."
+      ],
+      "correct": 2,
+      "explanation": "CPU scheduling và I/O waiting là các nhu cầu khác nhau."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Await task reuse",
+      "question": "Một Task<T> đã hoàn tất có thể được await nhiều lần theo Task contract không?",
+      "options": [
+        "Không; Task luôn one-shot như mọi ValueTask source.",
+        "Chỉ khi int.",
+        "Chỉ nếu dùng WhenAll.",
+        "Có; quan sát completion/result của cùng task."
+      ],
+      "correct": 3,
+      "explanation": "Không tổng quát hóa Task behavior sang mọi awaitable."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Async void errors",
+      "question": "Vì sao library operations thường trả Task thay async void?",
+      "options": [
+        "Caller có thể await và quan sát completion/errors theo contract.",
+        "Task tự không thể fail.",
+        "Async void không bao giờ chạy.",
+        "Chỉ vì tên method dài hơn."
+      ],
+      "correct": 0,
+      "explanation": "Event handlers có context riêng; không đưa async void tùy tiện vào service."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "WhenAll partial result",
+      "question": "WhenAll input có fault có tự trả successful subset array bình thường không?",
+      "options": [
+        "Chỉ cần Task<User?>.",
+        "Không; muốn partial outcomes cần error/result handling theo từng operation.",
+        "Có; tự bỏ tasks lỗi như Where null.",
+        "Có; array chỉ thiếu vị trí failed."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế all-or-partial semantics rõ."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Retry requirement",
+      "question": "Thêm retry cho GetUserAsync cần xem gì ngoài vòng lặp?",
+      "options": [
+        "Bỏ cancellation để retry không dừng.",
+        "Đổi mọi status thành200.",
+        "Transient classification,bounds,delay/cancellation và idempotency theo operation.",
+        "Retry vô hạn mọi exceptions."
+      ],
+      "correct": 2,
+      "explanation": "Source hiện chưa triển khai retry."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Independent task completion",
+      "question": "WhenAll làm một input task lỗi có tự cancel mọi sibling tasks chưa xong không?",
+      "options": [
+        "Có; luôn kill mọi sibling.",
+        "Có; mọi WhenAll là transaction.",
+        "Chỉ nếu input array.",
+        "Không theo contract tự động đó."
+      ],
+      "correct": 3,
+      "explanation": "Cancellation ownership cần design rõ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Fault and cancel precedence",
+      "question": "Finite model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new TaskCompletionSource<int>();var b=new TaskCompletionSource<int>();var all=Task.WhenAll(a.Task,b.Task);a.SetCanceled();b.SetException(new ArgumentException(\"b\"));try{all.GetAwaiter().GetResult();}catch(Exception){Console.WriteLine(all.IsFaulted+\" \"+all.IsCanceled);}}}\n",
+      "options": [
+        "True False.",
+        "False True.",
+        "True True.",
+        "WhenAll luôn success nếu task count2."
+      ],
+      "correct": 0,
+      "explanation": "Có fault thì combined task faulted dù input khác canceled."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Fault does not finish siblings",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){var a=new TaskCompletionSource<int>();var b=new TaskCompletionSource<int>();var all=Task.WhenAll(a.Task,b.Task);a.SetException(new ArgumentException(\"a\"));Console.WriteLine(all.IsCompleted);b.SetResult(2);try{all.GetAwaiter().GetResult();}catch(Exception){Console.WriteLine(all.IsFaulted);}}}\n",
+      "options": [
+        "WhenAll tự cancel b nên không thể SetResult.",
+        "False rồi True.",
+        "True rồi True.",
+        "False rồi False."
+      ],
+      "correct": 1,
+      "explanation": "Combined task chờ cả b hoàn tất rồi fault; không fail-fast completion tự động."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Repeated factory enumeration",
+      "question": "Model này in gì?",
+      "code": "using System;using System.Linq;using System.Threading;using System.Threading.Tasks;using System.Collections.Generic;\nclass Program{\nstatic void Main(){int calls=0;var tasks=new[]{1,2}.Select(x=>{calls++;return Task.FromResult(x);});Task.WhenAll(tasks).GetAwaiter().GetResult();Task.WhenAll(tasks).GetAwaiter().GetResult();Console.WriteLine(calls);}}\n",
+      "options": [
+        "0.",
+        "WhenAll tự memoize factory query.",
+        "4.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "Deferred Select được enumerate hai lần nên factory calls lặp, dù đây chỉ Task.FromResult."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Already complete token independent",
+      "question": "Cancel một token không được nối vào task đã hoàn tất có tự đổi result không?",
+      "options": [
+        "Có; mọi task toàn process canceled.",
+        "Có; result tự về0.",
+        "Chỉ cần CTS cùng scope.",
+        "Không; cancellation không retroactively undo completed independent task."
+      ],
+      "correct": 3,
+      "explanation": "Relationship giữa token và operation phải được thiết lập có chủ ý."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Batch admission design",
+      "question": "Muốn batch hàng nghìn IDs không mở đồng thời mọi request, cần gì?",
+      "options": [
+        "Admission bound như semaphore/worker policy với cancellation,cleanup và error semantics phù hợp.",
+        "Chỉ WhenAll và hứa limit4.",
+        "Chỉ ids.Select.",
+        "Chỉ return List<User>."
+      ],
+      "correct": 0,
+      "explanation": "Không đánh đồng awaiting many với giới hạn active work."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Partial errors representation",
+      "question": "Nếu cần giữ kết quả và lỗi theo từng ID, representation nào có contract rõ hơn null cho mọi failure?",
+      "options": [
+        "Chỉ log timeout cho mọi exceptions.",
+        "Outcome theo ID với success/not-found/error/canceled được định nghĩa phù hợp.",
+        "Bỏ mọi failures khỏi list không ghi ID.",
+        "Đổi mọi errors thành empty User."
+      ],
+      "correct": 1,
+      "explanation": "Consumers cần hiểu sự khác biệt và correlation theo requirement."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cancellation and server actions",
+      "question": "Client request bị cancel có bảo đảm server không thực hiện side effects không?",
+      "options": [
+        "Có; CTS là distributed transaction.",
+        "Chỉ cần HttpClient.",
+        "Không; cần protocol/idempotency/outcome reconciliation theo operation.",
+        "Có; TCP cancel rollback mọi DB."
+      ],
+      "correct": 2,
+      "explanation": "Task không thực hiện network side effects."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Timeout versus not found null",
+      "question": "Return null cho timeout và JSON null có hệ quả API nào?",
+      "options": [
+        "Compiler tự tạo discriminated result theo exception.",
+        "Null luôn có stack trace nguyên nhân.",
+        "Không bao giờ ảnh hưởng UI logic.",
+        "Caller có thể không phân biệt nguyên nhân nếu contract không bổ sung thông tin."
+      ],
+      "correct": 3,
+      "explanation": "Chọn semantics theo nhu cầu, không tự gộp mọi failure."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Response cleanup and deserialize",
+      "question": "Dispose response trước khi async content read hoàn tất có thể sai ở đâu?",
+      "options": [
+        "Lifetime không bao phủ operation đang dùng content.",
+        "Dispose luôn chờ và materialize JSON thành User.",
+        "Response content không bao giờ cần storage.",
+        "Chỉ GET mới không có lifetime."
+      ],
+      "correct": 0,
+      "explanation": "Cleanup phải sau khi resource không còn được dùng theo contract."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Await fault aggregation",
+      "question": "Tại sao chỉ catch exception từ await WhenAll chưa tự là danh sách mọi failures?",
+      "options": [
+        "Exception đầu chứng minh siblings thành công.",
+        "Await propagates một exception path,combined task.Exception có aggregate information cần inspect theo policy.",
+        "WhenAll không bao giờ lưu exceptions.",
+        "Mọi task lỗi tự biến thành null."
+      ],
+      "correct": 1,
+      "explanation": "Không dựa thứ tự exception không được yêu cầu để suy business outcomes."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Retry deadline budget",
+      "question": "Retry nhiều lần dưới một total deadline nên xét điều gì?",
+      "options": [
+        "Bỏ CTS để retry nhanh hơn.",
+        "Chỉ đếm attempts không cần thời gian.",
+        "Remaining budget và cancellation propagation qua từng attempt/delay.",
+        "Reset timeout vô hạn và gọi là total5seconds."
+      ],
+      "correct": 2,
+      "explanation": "Per-attempt timeout khác total operation budget."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Shared mutable client settings",
+      "question": "Dùng chung HttpClient rồi đổi shared config tùy từng request có cần xét gì?",
+      "options": [
+        "Readonly field làm mọi nested config immutable.",
+        "Mọi HttpClient members đều mutate concurrent tùy ý.",
+        "Chỉ URL string là quan trọng.",
+        "API thread-safety/config mutation rules và per-request data isolation."
+      ],
+      "correct": 3,
+      "explanation": "Không suy toàn thread-safety từ thread-safe send usage."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Async synchronous exceptions",
+      "question": "Mọi method trả Task có bắt buộc có cùng exception timing như async method không?",
+      "options": [
+        "Không; non-async wrapper có thể throw trước khi trả task,phải hiểu implementation contract.",
+        "Có; return type Task ép mọi exceptions vào task.",
+        "Có; compiler tự thêm async.",
+        "Chỉ cần Async suffix."
+      ],
+      "correct": 0,
+      "explanation": "Validation wrappers và async state machine có behavior khác."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Cancellation task state",
+      "question": "Catch OCE rồi return null trong async method có thể khiến task caller quan sát trạng thái gì nếu không lỗi khác?",
+      "options": [
+        "Không bao giờ complete.",
+        "RanToCompletion với resultnull thay vì canceled task.",
+        "Luôn IsCanceled true dù đã return value.",
+        "Luôn Faulted."
+      ],
+      "correct": 1,
+      "explanation": "Error mapping ảnh hưởng completion semantics của API."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Null element generic annotations",
+      "question": "Tại sao ! trên cả list không là chứng minh mọi User element hợp lệ?",
+      "options": [
+        "Nó tự check user identity.",
+        "Nó tự sort IDs.",
+        "Nó không phải runtime validation hoặc recursive element refinement.",
+        "Nó tự deserialize mọi item lần hai."
+      ],
+      "correct": 2,
+      "explanation": "Cần biểu diễn và enforce invariant tại bước phù hợp."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Async no await warning",
+      "question": "Một async method không có await có tự chạy trên background thread không?",
+      "options": [
+        "Có; async keyword tạo thread mới.",
+        "Có; Task<T> luôn schedule CPU pool.",
+        "Chỉ cần HttpClient field.",
+        "Không; body có thể chạy đồng bộ và compiler có warning về thiếu await."
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm warning thiếu await với warning caller quên await."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Host context deadlock proof",
+      "question": "Các console fixtures GetAwaiter.GetResult không deadlock có đủ chứng minh UI sync-over-async an toàn không?",
+      "options": [
+        "Không; khác SynchronizationContext và continuation requirements.",
+        "Có; mọi hosts dùng context null.",
+        "Có; một lần chạy đại diện mọi apps.",
+        "Chỉ cần WhenAll."
+      ],
+      "correct": 0,
+      "explanation": "Không chạy deadlock để đoán; dùng đúng host contract."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Json endpoint compatibility",
+      "question": "HTTP200 và JSON deserialize được có bảo đảm schema evolution không phá business flow không?",
+      "options": [
+        "Chỉ cần EnsureSuccessStatusCode.",
+        "Không; cần version/field/default/domain compatibility policy và tests phù hợp.",
+        "Có; typed deserialize solve mọi evolution.",
+        "Có; nullability annotations pin remote schema."
+      ],
+      "correct": 1,
+      "explanation": "Structural parsing là một phần của contract boundary."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "CPU versus IO scheduling",
+      "question": "Nếu thêm CPU-heavy transform sau await HTTP, async keyword có tự ngăn nó block caller context không?",
+      "options": [
+        "Có; User type tự parallelize.",
+        "Chỉ cần ConfigureAwait ở caller.",
+        "Không; CPU work vẫn cần scheduling/design phù hợp với host.",
+        "Có; mọi code sau await luôn thread pool riêng."
+      ],
+      "correct": 2,
+      "explanation": "Continuation context và workload phải được xem cụ thể."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Completion and performance evidence",
+      "question": "Để đánh giá async batch tốt hơn sequential cho hệ thống thực, cần bằng chứng gì?",
+      "options": [
+        "Chỉ method tên GetManyUsersAsync.",
+        "Chỉ hai TCS hoàn tất đúng.",
+        "Chỉ return Task<List<User>>.",
+        "Workload/resource bounds/latency/error behavior trong môi trường phù hợp,bên cạnh correctness."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng selected finite Task fixtures làm capacity/network benchmark."
+    }
+  ]
+}

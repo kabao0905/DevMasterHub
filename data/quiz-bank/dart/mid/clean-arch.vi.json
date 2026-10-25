@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "dart",
+  "level": "mid",
+  "lesson": "clean-arch",
+  "language": "vi",
+  "sourceHash": "42678274d25f774637cfebe9140b29abc71f1e977f158340b9e807a59fc06c7b",
+  "status": "approved",
+  "review": "Tự soạn theo repository/usecase/cache/test source; Flutter architecture/testing và Mockito docs. Concrete UserRepositoryImpl thiếu getUsers; nhiều types/imports/mocks chưa có. Cache write nằm trong try, cache read trong catch còn có thể throw. Không chạy DB/API/Mockito/Flutter tests.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Architecture layers",
+      "question": "Theory tách những lớp chính nào?",
+      "options": [
+        "Domain,Data,Presentation",
+        "Icon,Color,Font",
+        "CPU,GPU,RAM",
+        "Login,Logout,Password"
+      ],
+      "correct": 0,
+      "explanation": "Các lớp có trách nhiệm khác nhau."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Repository abstraction",
+      "question": "UserRepository trong code là gì?",
+      "options": [
+        "Một file cache thật",
+        "Abstract contract truy cập user",
+        "Một widget hiển thị user",
+        "Một SQL connection đã mở"
+      ],
+      "correct": 1,
+      "explanation": "Interface mô tả operations,không chứa HTTP implementation."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Single user contract",
+      "question": "getUser(int id) khai báo trả kiểu gì?",
+      "options": [
+        "List<String>",
+        "Widget",
+        "Future<Result<User>>",
+        "User đồng bộ bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả có boundary async và Result."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Users contract",
+      "question": "getUsers() trong interface mô tả gì?",
+      "options": [
+        "Xóa mọi user",
+        "Lấy tên một route",
+        "Tạo Shape mới",
+        "Lấy danh sách User qua Future<Result<List<User>>>"
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt kết quả một user và list user."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Usecase role",
+      "question": "GetUserUseCase chứa operation chính nào?",
+      "options": [
+        "call(int id) chuyển tới repository",
+        "build widget tree",
+        "paint chart",
+        "open socket trực tiếp"
+      ],
+      "correct": 0,
+      "explanation": "Source usecase hiện chỉ delegate."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Constructor injection",
+      "question": "GetUserUseCase(this._repo) biểu diễn gì?",
+      "options": [
+        "Một route parameter",
+        "Truyền dependency qua constructor",
+        "Tự tìm database trên máy",
+        "Tự tạo mock trong production"
+      ],
+      "correct": 1,
+      "explanation": "Caller cung cấp repository implementation."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Data implementation",
+      "question": "UserRepositoryImpl implements UserRepository thuộc vai trò nào?",
+      "options": [
+        "Một method extension String",
+        "Một animation controller",
+        "Hiện thực data access sau interface",
+        "Một subclass của Widget"
+      ],
+      "correct": 2,
+      "explanation": "Class phối hợp API và local database."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Remote dependency",
+      "question": "_api trong repository dùng cho gì?",
+      "options": [
+        "Vẽ UI",
+        "Đổi theme",
+        "Đếm frame",
+        "Fetch user từ nguồn API được cung cấp"
+      ],
+      "correct": 3,
+      "explanation": "ApiClient chưa được định nghĩa trong snippet."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Local dependency",
+      "question": "_db trong repository dùng cho gì?",
+      "options": [
+        "Cache và đọc user local",
+        "Chỉ định tuyến app",
+        "Tạo Shader",
+        "Phát stream keyboard"
+      ],
+      "correct": 0,
+      "explanation": "LocalDatabase là dependency placeholder."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Happy path order",
+      "question": "Nhánh try lần lượt làm gì?",
+      "options": [
+        "Xóa cache rồi trả null",
+        "Fetch user,await cache,return success",
+        "Đọc cache trước mọi lần fetch",
+        "Return failure rồi fetch"
+      ],
+      "correct": 1,
+      "explanation": "Thứ tự các await là phần hợp đồng hiện tại."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Catch fallback",
+      "question": "Khi vào catch,source thử làm gì trước?",
+      "options": [
+        "Gọi paint",
+        "Chạy testWidgets",
+        "Đọc cached user theo id",
+        "Đăng xuất mọi user"
+      ],
+      "correct": 2,
+      "explanation": "Fallback cache sau lỗi trong try."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Cache hit result",
+      "question": "Có cached user non-null trong catch thì trả gì?",
+      "options": [
+        "Result.failure luôn luôn",
+        "null trực tiếp",
+        "Một String cache",
+        "Result.success(cached)"
+      ],
+      "correct": 3,
+      "explanation": "Source coi cache hit là success."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Cache miss result",
+      "question": "Cached user null trong catch thì source trả gì?",
+      "options": [
+        "Result.failure(e.toString())",
+        "User(id:0) tự tạo",
+        "Success(null) bắt buộc",
+        "Một Widget lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Dùng error của khối try làm chuỗi failure."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Group tests",
+      "question": "group(\"GetUserUseCase\",...) dùng để làm gì?",
+      "options": [
+        "Tạo route group",
+        "Nhóm test liên quan",
+        "Tạo repository thật",
+        "Gọi API user hàng loạt"
+      ],
+      "correct": 1,
+      "explanation": "Đây là cấu trúc test,snippet chưa chứng minh test đã chạy."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Setup tests",
+      "question": "setUp callback làm gì ở đây?",
+      "options": [
+        "Đăng ký login route",
+        "Chạy cache migration thật",
+        "Tạo mockRepo và useCase trước test",
+        "Tạo chart path"
+      ],
+      "correct": 2,
+      "explanation": "Mục tiêu là chuẩn bị test fixture."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Mock purpose",
+      "question": "MockUserRepository giúp gì trong test usecase?",
+      "options": [
+        "Chứng minh API thật hoạt động",
+        "Thay thế mọi integration test",
+        "Tự sinh user thật trên server",
+        "Kiểm soát phản hồi dependency"
+      ],
+      "correct": 3,
+      "explanation": "Mock chỉ mô hình hóa behavior được stub."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Async stub",
+      "question": "thenAnswer((_) async => ...) cung cấp gì?",
+      "options": [
+        "Future trả Result.success user giả",
+        "Một widget snapshot",
+        "Một HTTP call thật bắt buộc",
+        "Một String đồng bộ bất kể signature"
+      ],
+      "correct": 0,
+      "explanation": "Async answer phù hợp future-returning method."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Test expected name",
+      "question": "Test mẫu expect tên user là gì?",
+      "options": [
+        "User 1",
+        "An",
+        "DevMaster",
+        "Anonymous"
+      ],
+      "correct": 1,
+      "explanation": "User giả được tạo với name An."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Success assertion",
+      "question": "expect(result.isSuccess,true) kiểm điều gì?",
+      "options": [
+        "Database transaction đã commit",
+        "UI đã render",
+        "Cờ success của Result trả về",
+        "HTTP status thật"
+      ],
+      "correct": 2,
+      "explanation": "Scope assertion là object trong test."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Widget test absence",
+      "question": "Code mẫu hiện có testWidgets không?",
+      "options": [
+        "Có,group tự là testWidgets",
+        "Có,expect tự pump UI",
+        "Có,mọi Flutter test đều vẽ widget",
+        "Không,chỉ có test unit minh họa"
+      ],
+      "correct": 3,
+      "explanation": "Key point nhắc widget testing nhưng implementation chưa có."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Usecase delegation id",
+      "question": "useCase(7) truyền ID nào cho repository theo source?",
+      "options": [
+        "7",
+        "1 cố định",
+        "0",
+        "Không truyền ID"
+      ],
+      "correct": 0,
+      "explanation": "Arrow method chuyển nguyên tham số id."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Callable class",
+      "question": "Tại sao có thể gọi useCase(1) như hàm?",
+      "options": [
+        "Vì constructor có final field",
+        "Class có method call",
+        "Mọi Dart object đều gọi được không cần method",
+        "Vì biến tên useCase"
+      ],
+      "correct": 1,
+      "explanation": "Callable object dựa method call."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Abstraction dependency",
+      "question": "GetUserUseCase phụ thuộc type nào trực tiếp?",
+      "options": [
+        "ApiClient trực tiếp",
+        "LocalDatabase trực tiếp",
+        "UserRepository",
+        "UserRepositoryImpl cụ thể"
+      ],
+      "correct": 2,
+      "explanation": "Không cần biết nguồn remote/cache trong usecase mẫu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Data dependency direction",
+      "question": "Quan hệ compile-time phù hợp trong source là gì?",
+      "options": [
+        "Domain bắt buộc import class DB cụ thể",
+        "Presentation bắt buộc kế thừa ApiClient",
+        "Mock phải là superclass của Domain",
+        "Data implementation phụ thuộc contract Domain"
+      ],
+      "correct": 3,
+      "explanation": "Flow lời gọi và chiều dependency không là cùng một mũi tên."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Interface obligation",
+      "question": "UserRepositoryImpl còn thiếu method nào từ interface?",
+      "options": [
+        "getUsers()",
+        "getUser()",
+        "constructor nhận API/DB",
+        "toString() bắt buộc tự viết"
+      ],
+      "correct": 0,
+      "explanation": "Concrete class implements phải hoàn tất contract hoặc cách xử lý hợp lệ khác."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Concrete completeness",
+      "question": "Chỉ bổ sung User/Result types có đủ làm class repository mẫu hoàn chỉnh chưa?",
+      "options": [
+        "Đủ,vì method thiếu không bao giờ gọi",
+        "Chưa,còn thiếu getUsers và dependencies/imports khác",
+        "Đủ,vì implements tự sinh mọi body",
+        "Đủ,vì async tự tạo method thiếu"
+      ],
+      "correct": 1,
+      "explanation": "Không coi skeleton là chương trình compile được nguyên văn."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Await remote before cache",
+      "question": "cacheUser(user) có chạy trước khi fetchUser hoàn tất thành công không?",
+      "options": [
+        "Có,async luôn chạy mọi await song song",
+        "Có,vì _db được khai báo trước constructor",
+        "Không,theo source nó chờ fetchUser",
+        "Có,cả hai tự Future.wait"
+      ],
+      "correct": 2,
+      "explanation": "Thứ tự await trong try là tuần tự."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Await cache before success",
+      "question": "Nhánh success có đợi cacheUser hoàn tất không?",
+      "options": [
+        "Không,cache chạy fire-and-forget",
+        "Không,Result.success hủy cache",
+        "Chỉ nếu user.name là An",
+        "Có,có await trước return"
+      ],
+      "correct": 3,
+      "explanation": "Latency và lỗi cache ảnh hưởng kết quả API repository hiện tại."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Remote failure cache hit",
+      "question": "API lỗi,cache trả user cũ non-null,repository làm gì?",
+      "options": [
+        "Trả success với cached user",
+        "Ném lại lỗi API luôn luôn",
+        "Trả failure dù cache có user",
+        "Tự fetch lại vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "Đó là fallback policy được code."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Remote failure cache miss",
+      "question": "API lỗi,cache trả null,repository trả gì nếu cache read không throw?",
+      "options": [
+        "Không bao giờ hoàn tất",
+        "Failure từ e.toString() của try",
+        "Success user mới",
+        "List rỗng"
+      ],
+      "correct": 1,
+      "explanation": "Source không retry remote."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Cache write failure fallback",
+      "question": "Fetch thành công nhưng cacheUser ném lỗi,luồng nào xảy ra?",
+      "options": [
+        "Cache error tự bị bỏ qua",
+        "Tự gọi getUsers",
+        "Đi vào catch và thử getCachedUser",
+        "Vẫn return user mới ngay trước catch"
+      ],
+      "correct": 2,
+      "explanation": "Cache write nằm trong cùng try với fetch."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Fresh value discarded",
+      "question": "Vì sao có thể không trả user mới dù fetch đã thành công?",
+      "options": [
+        "Vì String name nullable",
+        "Vì Result tự ưu tiên user cũ",
+        "Vì usecase luôn trả user ID1",
+        "Lỗi cache write đưa control sang fallback và không return user mới"
+      ],
+      "correct": 3,
+      "explanation": "Cần quyết định cache failure có nên làm mất remote success không."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Cache read failure escapes",
+      "question": "Nếu getCachedUser trong catch ném lỗi thì sao?",
+      "options": [
+        "Lỗi đó có thể thoát ra Future,không được catch cùng khối bắt lại",
+        "Tự trở thành Result.failure(e cũ)",
+        "Tự trở thành success(null)",
+        "Tự retry cache vô hạn"
+      ],
+      "correct": 0,
+      "explanation": "Không có try/catch lồng cho fallback read."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Failure taxonomy",
+      "question": "Catch hiện phân biệt lỗi network và lỗi cache write bằng kiểu riêng chưa?",
+      "options": [
+        "Rồi,e.toString luôn mã hóa origin chuẩn",
+        "Chưa,dùng chung catch(e)",
+        "Rồi,dựa tên _api và _db tự động",
+        "Rồi,Result tự tạo enum lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Cùng một catch làm mờ nguồn thất bại nếu cần behavior riêng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Cache first misconception",
+      "question": "Có đúng repository này luôn đọc cache trước gọi API không?",
+      "options": [
+        "Có,cacheUser nghĩa là cache-first",
+        "Có,vì constructor nhận _db",
+        "Không,remote-first rồi fallback khi lỗi",
+        "Có,vì LocalDatabase field tồn tại"
+      ],
+      "correct": 2,
+      "explanation": "Không suy policy từ tên dependency."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "No ttl implementation",
+      "question": "Cache hit có được kiểm TTL trong source không?",
+      "options": [
+        "Có,getCachedUser tên tự bảo đảm freshness",
+        "Có,Result.success tự expire",
+        "Có,await tự đồng bộ clock",
+        "Không có kiểm timestamp/TTL"
+      ],
+      "correct": 3,
+      "explanation": "Có thể dependency có policy riêng nhưng snippet không chứng minh."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "No retry implementation",
+      "question": "Source có retry fetchUser theo backoff chưa?",
+      "options": [
+        "Chưa",
+        "Có,try/catch luôn lặp lại try",
+        "Có,async mặc định retry",
+        "Có,Mock tự retry API thật"
+      ],
+      "correct": 0,
+      "explanation": "Catch không quay lại đầu hàm."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "No id validation",
+      "question": "ID âm truyền usecase có bị source usecase từ chối không?",
+      "options": [
+        "Có,final repo tự validate",
+        "Không,delegate nguyên ID",
+        "Có,int type tự cấm số âm",
+        "Có,tên GetUser buộc ID dương"
+      ],
+      "correct": 1,
+      "explanation": "Business input validation chưa viết ở boundary đó."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Result null assertion test",
+      "question": "result.data!.name trong test có dựa tiền đề nào?",
+      "options": [
+        "Tên An làm data không thể null trong mọi Result",
+        "Mock class tự cấm null toàn app",
+        "Success chứa data non-null đúng kiểu",
+        "isSuccess true tự được compiler suy ra mọi invariant"
+      ],
+      "correct": 2,
+      "explanation": "Assertion runtime không là chứng minh type model an toàn."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Test subject actual",
+      "question": "Test hiện kiểm class nào trực tiếp?",
+      "options": [
+        "UserRepositoryImpl với API/DB thật",
+        "PostDetailScreen",
+        "BatteryService native",
+        "GetUserUseCase với repository mock"
+      ],
+      "correct": 3,
+      "explanation": "Repository data layer không được instantiate trong test này."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Stubbed identifier",
+      "question": "Stub when(mockRepo.getUser(1)) khớp input nào được viết?",
+      "options": [
+        "ID1",
+        "Mọi ID bất kể matcher",
+        "Chỉ ID0",
+        "Không có ID nào"
+      ],
+      "correct": 0,
+      "explanation": "Không có any matcher trong source."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Stub versus verify",
+      "question": "when(...).thenAnswer(...) có tự assert method được gọi đúng một lần không?",
+      "options": [
+        "Có,group kiểm call count",
+        "Không,đó là stubbing,verification là bước khác",
+        "Có,mọi stub là exact-once assertion",
+        "Có,async đảm bảo count=1"
+      ],
+      "correct": 1,
+      "explanation": "Nếu call count là yêu cầu cần verify tương ứng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Async test waiting",
+      "question": "Vì sao test callback dùng async và await useCase(1)?",
+      "options": [
+        "Để biến every expect thành network",
+        "Để thay thế setUp",
+        "Chờ future trước khi assert kết quả",
+        "Để tự chạy nhiều core"
+      ],
+      "correct": 2,
+      "explanation": "Không await có thể kiểm nhầm Future thay vì Result."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "ThenAnswer future practice",
+      "question": "Theo Mockito docs,stub Future nên ưu tiên dạng nào?",
+      "options": [
+        "thenReturn một Future tùy ý như quy tắc chuẩn cho mọi trường hợp",
+        "thenThrow luôn luôn",
+        "Không được stub Future",
+        "thenAnswer((_) async => value)"
+      ],
+      "correct": 3,
+      "explanation": "Mockito phân biệt async stubbing để tránh các vấn đề zone/error timing."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Mock generation omission",
+      "question": "MockUserRepository có định nghĩa/generate/import trong snippet chưa?",
+      "options": [
+        "Chưa",
+        "Có,extends abstract tự tạo mock",
+        "Có,group tạo class theo tên",
+        "Có,when sinh file Dart lúc runtime"
+      ],
+      "correct": 0,
+      "explanation": "Cần mock/fake implementation phù hợp dependencies/version."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Test imports omitted",
+      "question": "group/test/expect/when cần gì để file test runnable?",
+      "options": [
+        "Chỉ thêm comment Testing",
+        "Imports và test/mock dependencies phù hợp",
+        "Chỉ đổi String An thành final",
+        "Chỉ khai báo abstract repository"
+      ],
+      "correct": 1,
+      "explanation": "Identifier không tự xuất hiện vì có main."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Setup freshness",
+      "question": "Tạo mock mới trong setUp nhằm tránh điều gì?",
+      "options": [
+        "Mọi sai sót type model",
+        "Mọi chi phí test runner",
+        "Lịch sử/stub/state test trước rò sang test sau",
+        "Mọi lỗi network production"
+      ],
+      "correct": 2,
+      "explanation": "Isolation test giúp kết quả không phụ thuộc thứ tự."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Name assertion coverage",
+      "question": "Assert data.name=An có kiểm ID user trả về không?",
+      "options": [
+        "Có,tên tự bảo đảm ID=1",
+        "Có,Result.success chứa ID đúng tự động",
+        "Có,when tự verify object identity",
+        "Không,source test chưa assert data.id"
+      ],
+      "correct": 3,
+      "explanation": "Nên thêm assert theo contract thực sự cần,không suy coverage từ một field."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Repository cache test",
+      "question": "Muốn kiểm cacheUser được gọi sau remote success thì nên test gì?",
+      "options": [
+        "UserRepositoryImpl với fake/mock API và DB có verification theo yêu cầu",
+        "Chỉ mock UserRepository rồi assert usecase success",
+        "Chỉ kiểm code có chữ cacheUser",
+        "Chỉ gọi GetUserUseCase constructor"
+      ],
+      "correct": 0,
+      "explanation": "Phải instantiate layer đang có behavior muốn kiểm."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Unit versus widget",
+      "question": "Khác biệt căn bản của widget test so unit usecase này là gì?",
+      "options": [
+        "Widget test chỉ so text source",
+        "Widget test dựng/tương tác widget trong môi trường framework",
+        "Widget test luôn gọi server thật",
+        "Unit test bắt buộc mở emulator"
+      ],
+      "correct": 1,
+      "explanation": "Không có widget tree trong test hiện tại."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Pump purpose",
+      "question": "pump trong widget testing phục vụ gì?",
+      "options": [
+        "Tự xác minh API schema",
+        "Đổi mock thành server thật",
+        "Tiến framework/frame theo cách kiểm soát để dựng/cập nhật widget",
+        "Gọi database migration"
+      ],
+      "correct": 2,
+      "explanation": "Cần chọn pump strategy theo async/animation behavior."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Integration scope",
+      "question": "Integration test nên xác minh gì khác unit mock?",
+      "options": [
+        "Chỉ constructor mock có tồn tại",
+        "Chỉ source code đủ ba lớp",
+        "Chỉ String An bằng An",
+        "Các thành phần thật trong scope tích hợp hoạt động cùng nhau"
+      ],
+      "correct": 3,
+      "explanation": "Mock unit test không chứng minh wiring/platform behavior."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Usecase thin layer",
+      "question": "Usecase hiện có business policy riêng ngoài delegate chưa?",
+      "options": [
+        "Chưa",
+        "Có,validate tuổi user",
+        "Có,retry API",
+        "Có,merge cache mới cũ"
+      ],
+      "correct": 0,
+      "explanation": "Nó vẫn có thể là boundary kiến trúc nhưng không tự tạo logic chưa viết."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Repository dependency final",
+      "question": "final _api/_db bảo đảm điều gì?",
+      "options": [
+        "Mọi call đều thread-safe",
+        "Không gán lại references sau khởi tạo theo khai báo",
+        "API và DB không thể có mutable state",
+        "Tự đóng connection khi GC đúng lúc"
+      ],
+      "correct": 1,
+      "explanation": "Final binding không là guarantee cho hành vi dependency."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Error string effect",
+      "question": "e.toString() tạo loại dữ liệu nào cho failure?",
+      "options": [
+        "Một retry token",
+        "Một User mặc định",
+        "Chuỗi mô tả lỗi,không là taxonomy typed tự động",
+        "Một exception typed giữ stack nguyên vẹn bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "Cần model error rõ nếu caller phân nhánh theo nguyên nhân."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Cached success provenance",
+      "question": "Result.success(cached) có field nào trong source để báo dữ liệu stale/from-cache chưa?",
+      "options": [
+        "Có,success tự ghi isCached=true",
+        "Có,User luôn chứa TTL",
+        "Có,e được nhúng vào mọi User",
+        "Chưa có metadata đó trong luồng hiển thị"
+      ],
+      "correct": 3,
+      "explanation": "Caller không thấy provenance rõ nếu chỉ dùng contract này."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "User type missing",
+      "question": "User model có định nghĩa trong bài này không?",
+      "options": [
+        "Không,được tham chiếu như type placeholder",
+        "Có,nó là typedef của String",
+        "Có,Dart core có class User mặc định",
+        "Có,ApiClient tự sinh class User"
+      ],
+      "correct": 0,
+      "explanation": "Cần model/domain types thật để compile/test."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "GetUsers test absence",
+      "question": "Test mẫu có kiểm getUsers không?",
+      "options": [
+        "Có,mockRepo constructor chạy getUsers",
+        "Không",
+        "Có,test name usecase bao gồm mọi method",
+        "Có,group tự gọi mọi repository method"
+      ],
+      "correct": 1,
+      "explanation": "Không suy coverage bằng tên group."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Failure test absence",
+      "question": "Test mẫu đã kiểm nhánh failure của usecase chưa?",
+      "options": [
+        "Rồi,expect true đồng nghĩa false cũng đúng",
+        "Rồi,late bảo đảm mọi error",
+        "Chưa,chỉ stub success",
+        "Rồi,thenAnswer tự thử cả hai"
+      ],
+      "correct": 2,
+      "explanation": "Cần case riêng nếu failure propagation là contract."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Use case forwarding ID",
+      "question": "Với GetUserUseCase.call chỉ return _repo.getUser(id), gọi useCase(7) phải chuyển ID nào cho repository?",
+      "options": [
+        "1 vì mock mẫu có User(id:1)",
+        "0 vì use case không có await",
+        "Một ID mới do interface sinh",
+        "7, không tự đổi thành ID mẫu 1 trong test"
+      ],
+      "correct": 3,
+      "explanation": "Use case đang chuyển tiếp đầu vào, chưa có logic chuẩn hóa hay thay ID."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Dependency arrow caution",
+      "question": "Vì sao dòng Domain→Data→Presentation trong theory không nên hiểu là import rule bắt buộc?",
+      "options": [
+        "Cần phân biệt execution flow với dependency hướng vào abstraction",
+        "Vì mọi layer phải import mọi layer khác",
+        "Vì Domain phải chứa widget UI",
+        "Vì Data không được implement interface"
+      ],
+      "correct": 0,
+      "explanation": "Mã cho thấy usecase dùng contract,implementation nằm ở Data."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Cache write policy choice",
+      "question": "Muốn remote success vẫn được trả khi cache write lỗi,cần sửa theo hướng nào?",
+      "options": [
+        "Chỉ bỏ await mà không quản lý lỗi/resource",
+        "Tách policy/lỗi ghi cache khỏi kết quả fetch thành công",
+        "Chỉ thêm ! vào user",
+        "Chỉ đổi tên catch thành cache"
+      ],
+      "correct": 1,
+      "explanation": "Phải quyết định behavior và xử lý lỗi ghi rõ ràng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Fallback failure policy",
+      "question": "Muốn repository luôn trả Result kể cả cache read lỗi cần làm gì?",
+      "options": [
+        "Chỉ đặt final cached",
+        "Chỉ dùng result.data!",
+        "Xử lý lỗi fallback có chủ đích và giữ thông tin nguyên nhân phù hợp",
+        "Giả try cũ bắt lại exception trong catch"
+      ],
+      "correct": 2,
+      "explanation": "Cần boundary bắt lỗi cho operation trong fallback."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Concurrent fetch cache race",
+      "question": "Hai getUser cùng ID overlap có thể gặp vấn đề gì nếu cache không có version policy?",
+      "options": [
+        "Không thể vì từng hàm có await",
+        "Result tự sắp theo thời gian server",
+        "Final _db khóa mọi interleaving",
+        "Response cũ ghi đè dữ liệu mới trong cache"
+      ],
+      "correct": 3,
+      "explanation": "Async interleaving và freshness cần policy theo dữ liệu."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Cache namespace",
+      "question": "Nếu cache chứa dữ liệu theo tài khoản,cần key/scope như thế nào?",
+      "options": [
+        "Bao gồm identity/tenant phù hợp và invalidation khi session đổi",
+        "Chỉ ID số nếu ID có thể trùng giữa tenants mà không kiểm",
+        "Dùng name An cho mọi cache key",
+        "Dùng một biến global cachedUser cho mọi user"
+      ],
+      "correct": 0,
+      "explanation": "Tránh trộn dữ liệu giữa các phạm vi người dùng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Stale fallback product contract",
+      "question": "Trả cached user khi remote lỗi có luôn đúng với mọi nghiệp vụ không?",
+      "options": [
+        "Có,offline cho phép bỏ mọi kiểm quyền",
+        "Không,cần quy tắc freshness và mức chấp nhận dữ liệu cũ",
+        "Có,mọi cache hit là nguồn chân lý vĩnh viễn",
+        "Có,success nghĩa là mới nhất"
+      ],
+      "correct": 1,
+      "explanation": "Một số dữ liệu/operation không phù hợp stale fallback."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cancellation ownership",
+      "question": "Nếu UI không cần kết quả nữa,Future<Result<User>> có tự hủy network không?",
+      "options": [
+        "Có,mock đã chứng minh cancellation",
+        "Có,await luôn tự cancel khi widget biến mất",
+        "Không,cần cơ chế cancellation/lifecycle nếu transport hỗ trợ",
+        "Có,bỏ biến result là đủ dừng server"
+      ],
+      "correct": 2,
+      "explanation": "Future return type không là cancel protocol."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Typed errors design",
+      "question": "Muốn UI phân biệt offline/not-found/cache-corrupt nên ưu tiên gì?",
+      "options": [
+        "Parse chuỗi e.toString tùy SDK",
+        "Cho mọi lỗi thành User(id:0)",
+        "Dùng isSuccess=true cho mọi fallback lỗi",
+        "Error model typed/mã ổn định và mapping tại boundary"
+      ],
+      "correct": 3,
+      "explanation": "Hợp đồng lỗi giúp UI phản ứng đúng mà không phụ thuộc text diagnostics."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Retry side effect boundary",
+      "question": "Nếu mở rộng repository có retry ghi dữ liệu,cần xét gì?",
+      "options": [
+        "Idempotency,giới hạn retry và lỗi được phép retry",
+        "Retry mọi exception vô hạn",
+        "Mỗi cache miss tự tạo user mới",
+        "Dùng Future.wait để tự rollback"
+      ],
+      "correct": 0,
+      "explanation": "Đọc và ghi có semantics khác;không áp retry mù."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Mock false confidence",
+      "question": "Vì sao test usecase success không chứng minh remote/cache coordination đúng?",
+      "options": [
+        "Vì UserRepository không có method",
+        "Mock đã thay toàn repository implementation",
+        "Vì expect không thể kiểm String",
+        "Vì async test luôn sai"
+      ],
+      "correct": 1,
+      "explanation": "Behavior của Data layer không được thực hiện trong test đó."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Contract tests purpose",
+      "question": "Nếu có nhiều implementation repository,cần kiểm gì chung?",
+      "options": [
+        "Chỉ cùng số field private",
+        "Chỉ cùng tốc độ test",
+        "Các behavior contract như success/failure/domain/caching đã quy định",
+        "Chỉ cùng tên class prefix"
+      ],
+      "correct": 2,
+      "explanation": "Cùng interface signature chưa chứng minh cùng semantics."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Missing method compile impact",
+      "question": "getUsers chưa implement có thể bỏ qua chỉ vì test không gọi không?",
+      "options": [
+        "Có,compiler chỉ xem runtime calls",
+        "Có,late mockRepo bỏ mọi lỗi class khác",
+        "Có,Future generic tự sinh body",
+        "Không khi class concrete implements contract phải đầy đủ"
+      ],
+      "correct": 3,
+      "explanation": "Review completeness xảy ra trước claim test runnable."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Test failure expectations",
+      "question": "Khi repository intentionally trả Failure,test usecase nên kiểm gì?",
+      "options": [
+        "Failure được truyền đúng mà không đọc data! như success",
+        "Chỉ expect data.name=An",
+        "Coi failure là uncaught exception luôn luôn",
+        "Chỉ assert class name"
+      ],
+      "correct": 0,
+      "explanation": "Test phải theo cả result channels và exception policy."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Exceptions versus Result",
+      "question": "Future<Result<User>> có bảo đảm tuyệt đối future không bao giờ completeError không?",
+      "options": [
+        "Có,interface cấm error event",
+        "Không,implementation/callback/dependency vẫn có thể throw",
+        "Có,vì Result chặn mọi exception toàn bộ ngôn ngữ",
+        "Có,async không bao giờ ném lỗi"
+      ],
+      "correct": 1,
+      "explanation": "Cần contract rõ và implementation đủ boundary xử lý."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Cache write test scenario",
+      "question": "Test nào bắt được mất remote success do cache write lỗi?",
+      "options": [
+        "Chỉ success khi mọi dependency thành công",
+        "Chỉ getUsers interface có tên",
+        "API trả user mới,cache write throw,cache read có user cũ/không có rồi assert policy",
+        "Chỉ API throw và cache hit"
+      ],
+      "correct": 2,
+      "explanation": "Chọn input kích hoạt đúng nguyên nhân cần kiểm."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Fallback read test scenario",
+      "question": "Test nào kiểm được exception trong catch thoát ra?",
+      "options": [
+        "API success và cacheUser success",
+        "Mock usecase success duy nhất",
+        "Chỉ group name có cache",
+        "API throw và getCachedUser cũng throw"
+      ],
+      "correct": 3,
+      "explanation": "Cần làm operation bên trong catch thất bại."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Test doubles realism",
+      "question": "Fake DB in-memory pass có chứng minh transaction/corruption behavior DB thực không?",
+      "options": [
+        "Không,chỉ behavior fake đã mô hình hóa",
+        "Có,fake luôn tương đương mọi backend",
+        "Có,interface đã là proof storage",
+        "Có,nếu test chạy nhanh"
+      ],
+      "correct": 0,
+      "explanation": "Cần integration test có scope đúng cho storage thật khi yêu cầu."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "PumpAndSettle limit",
+      "question": "Có nên dùng pumpAndSettle vô điều kiện cho UI có animation/timer lặp mãi không?",
+      "options": [
+        "Có,nó tự mock mọi timer",
+        "Không,có thể không settle;chọn frame/time và assertion theo behavior",
+        "Có,nó luôn xong ngay",
+        "Có,nó dừng mọi animation production"
+      ],
+      "correct": 1,
+      "explanation": "Test phải hiểu vòng đời async của UI."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Architecture cost tradeoff",
+      "question": "Có cần thêm usecase riêng cho mọi getter bất kể độ phức tạp không?",
+      "options": [
+        "Có,Flutter compiler bắt buộc Domain folder",
+        "Có,repository không thể gọi trực tiếp từ bất kỳ layer nào",
+        "Không tự động,chọn boundary theo logic và nhu cầu kiểm thử",
+        "Có,càng nhiều class luôn càng đúng"
+      ],
+      "correct": 2,
+      "explanation": "Kiến trúc phục vụ trách nhiệm và thay đổi,không chỉ số lớp."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Completion scope",
+      "question": "Để nói exercise refactor hoàn tất cần gì ngoài skeleton này?",
+      "options": [
+        "Chỉ đặt tên folder Domain/Data/Presentation",
+        "Chỉ dùng mock trả An",
+        "Chỉ code có try/catch",
+        "Implementation đầy đủ,wiring đúng,test behavior/lỗi và integration theo yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Hiện ngân hàng câu hỏi không là bằng chứng app đã refactor/chạy."
+    }
+  ]
+}

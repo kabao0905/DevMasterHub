@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "bash",
+  "level": "junior",
+  "lesson": "monitoring",
+  "language": "vi",
+  "sourceHash": "0775e089a598aa39f5b3a366c81cce53643e2618d583a8acea5712514f2a232f",
+  "status": "approved",
+  "review": "Tự soạn theo status/check_alerts/analyze_logs và GNU Bash/awk/grep/procps-ng/iproute2 docs. Phát hiện CPU awk program bị nối ký tự %, metrics/parse/status có giới hạn. Cuối mẫu chỉ gọi status, không check_alerts/analyze_logs; webhook chỉ comment. Không giám sát máy thật hoặc gọi Docker/Slack/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Dashboard function",
+      "question": "Function nào tạo dashboard trạng thái trong source?",
+      "options": [
+        "status",
+        "deploy",
+        "atomic_write",
+        "ci_test"
+      ],
+      "correct": 0,
+      "explanation": "Cuối script gọi function này một lần."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Timestamp status",
+      "question": "$(date) ở banner có ý định bổ sung gì?",
+      "options": [
+        "Một health token",
+        "Thời điểm lấy thông tin",
+        "Mức CPU trung bình một giờ",
+        "Số lần retry"
+      ],
+      "correct": 1,
+      "explanation": "Timestamp không tự chứng minh tất cả metric được lấy cùng một thời điểm."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "CPU tool",
+      "question": "Source dùng công cụ nào làm đầu vào đọc CPU?",
+      "options": [
+        "wc",
+        "tar",
+        "top",
+        "df"
+      ],
+      "correct": 2,
+      "explanation": "Cú pháp và format top phụ thuộc môi trường."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Memory tool",
+      "question": "free -h trong source phục vụ metric nào?",
+      "options": [
+        "Dung lượng filesystem",
+        "Tần suất request",
+        "Danh sách image",
+        "Bộ nhớ"
+      ],
+      "correct": 3,
+      "explanation": "-h định dạng đơn vị dễ đọc cho người."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Disk tool",
+      "question": "df -h / kiểm filesystem liên quan đường dẫn nào?",
+      "options": [
+        "/",
+        "Thư mục log bất kỳ tự tìm",
+        "Mọi database remote",
+        "Chỉ file script"
+      ],
+      "correct": 0,
+      "explanation": "Không mặc định kiểm tất cả mount có ứng dụng dùng."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Socket tool",
+      "question": "ss được dùng nhằm xem nhóm thông tin nào?",
+      "options": [
+        "Archive backup",
+        "Socket mạng",
+        "Dependency npm",
+        "Nội dung CSV"
+      ],
+      "correct": 1,
+      "explanation": "Bộ option t/u/l/n chọn phạm vi/định dạng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Container IDs",
+      "question": "docker ps -q có ý định in gì?",
+      "options": [
+        "Chỉ số CPU",
+        "Mọi volume ID bất kể container",
+        "ID container theo lựa chọn ps, thường container đang chạy",
+        "Toàn bộ source Dockerfile"
+      ],
+      "correct": 2,
+      "explanation": "-q là output rút gọn của Docker command."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Process presence",
+      "question": "pgrep trong vòng service có ý định gì?",
+      "options": [
+        "Gửi HTTP health request",
+        "Tự restart process lỗi",
+        "Xóa PID khỏi kernel",
+        "Tìm process theo tiêu chí tên"
+      ],
+      "correct": 3,
+      "explanation": "pgrep và pkill có vai trò khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Exact process name",
+      "question": "Tùy chọn -x của pgrep nhằm gì?",
+      "options": [
+        "Yêu cầu pattern khớp toàn bộ tên theo chế độ đang dùng",
+        "Tự chạy process mới",
+        "Chỉ chọn process đang dùng100% CPU",
+        "Xóa mọi process không khớp"
+      ],
+      "correct": 0,
+      "explanation": "Không tự kiểm nghiệp vụ của process."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Service names",
+      "question": "Vòng kiểm process trong bài có những tên nào?",
+      "options": [
+        "mysql, apache, memcached, php",
+        "nginx, node, postgres, redis",
+        "python, ruby, java, go",
+        "docker, kubectl, bash, cron"
+      ],
+      "correct": 1,
+      "explanation": "Danh sách hardcode, không tự phát hiện toàn bộ service ứng dụng."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Alert function",
+      "question": "Function nào in thông báo ALERT?",
+      "options": [
+        "analyze_logs chỉ có vai trò gửi mail",
+        "rollback",
+        "alert",
+        "status tự là webhook"
+      ],
+      "correct": 2,
+      "explanation": "Source alert hiện dùng echo."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "CPU threshold",
+      "question": "Điều kiện CPU cảnh báo dùng phép so nào?",
+      "options": [
+        "Lớn hơn hoặc bằng90",
+        "Bằng90 duy nhất",
+        "Nhỏ hơn90",
+        "Lớn hơn90"
+      ],
+      "correct": 3,
+      "explanation": "-gt là so số nguyên lớn hơn, không bao gồm ngưỡng."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Memory threshold",
+      "question": "MEM được so với ngưỡng nào trong source?",
+      "options": [
+        "85",
+        "90",
+        "50",
+        "100"
+      ],
+      "correct": 0,
+      "explanation": "Điều kiện là -gt85 sau phép tính/truncation đã chọn."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Disk threshold",
+      "question": "DISK được so với ngưỡng nào?",
+      "options": [
+        "0",
+        "90",
+        "85",
+        "95"
+      ],
+      "correct": 1,
+      "explanation": "Không có hysteresis hay cửa sổ duy trì trong mẫu."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Default log path",
+      "question": "analyze_logs mặc định đọc đường dẫn nào?",
+      "options": [
+        "/etc/passwd",
+        "/tmp/nginx.sock",
+        "/var/log/app/access.log",
+        "./Dockerfile"
+      ],
+      "correct": 2,
+      "explanation": "Tham số1 có thể thay đường dẫn theo contract."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Log line count",
+      "question": "wc -l trong analyze_logs nhằm tính gì?",
+      "options": [
+        "Số byte request",
+        "Số endpoint duy nhất",
+        "Tổng latency",
+        "Số newline trong file log"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ tương ứng số request nếu format/lifecycle log bảo đảm điều đó."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Error range intention",
+      "question": "Pattern 5[0-9][0-9] có ý định tìm nhóm mã nào?",
+      "options": [
+        "5xx",
+        "4xx",
+        "Mọi mã từ0 đến9999",
+        "Chỉ200"
+      ],
+      "correct": 0,
+      "explanation": "Trong source còn có dấu cách hai bên nhưng chưa parse trường status cụ thể."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Endpoint extraction",
+      "question": "awk '{print $7}' có ý định lấy gì theo format log được giả định?",
+      "options": [
+        "PID của process ghi log",
+        "Field endpoint ở vị trí7",
+        "Trường JSON tên endpoint tự động",
+        "Tổng số byte"
+      ],
+      "correct": 1,
+      "explanation": "Giả định vị trí cần khớp format thật."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Final invocation",
+      "question": "Cuối script hiện gọi những function nào trực tiếp?",
+      "options": [
+        "Chỉ alert",
+        "Chỉ check_alerts",
+        "Chỉ status",
+        "Cả status, check_alerts và analyze_logs"
+      ],
+      "correct": 2,
+      "explanation": "Định nghĩa function không tự thực thi body."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Webhook comment",
+      "question": "Dòng curl gửi webhook đang comment có gửi thông báo thật không?",
+      "options": [
+        "Có, echo ALERT tự kích hoạt curl",
+        "Chỉ gửi nếu CPU trên90",
+        "Có, Bash luôn chạy command trong comment",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Kênh thông báo ngoài chưa được hiện thực hoạt động trong mẫu."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "CPU awk concatenation",
+      "question": "Ở dòng dashboard, đoạn awk có quoted program kết thúc bằng } rồi nối ngay ký tự % bên ngoài quote. Awk nhận program gì về ý nghĩa?",
+      "options": [
+        "Program bị nối thêm %, có thể là cú pháp awk không hợp lệ",
+        "Program nguyên vẹn rồi shell tự in hậu tố % used",
+        "Một flag tự đổi số thành phần trăm",
+        "Một biến CPU đã được xác thực"
+      ],
+      "correct": 0,
+      "explanation": "Trong shell, các mảnh quote và không quote liền nhau tạo cùng một argument."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "CPU percent placement fix",
+      "question": "Muốn hiển thị hậu tố % used mà không làm hỏng program awk, cách nào phù hợp?",
+      "options": [
+        "Đổi top thành date nhưng giữ lỗi parser",
+        "Đặt hậu tố trong output format đúng chỗ, không nối vào source awk",
+        "Nối thêm nhiều dấu % sau quote",
+        "Bỏ mọi quote và giữ nguyên program"
+      ],
+      "correct": 1,
+      "explanation": "Phải phân biệt ngôn ngữ shell với chương trình awk được truyền làm argument."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Echo substitution failure",
+      "question": "Command substitution lấy metric lỗi nhưng echo bên ngoài thành công có thể dẫn tới gì?",
+      "options": [
+        "Bash tự sửa metric theo số lần trước",
+        "Function luôn raise exception kiểu Java",
+        "Dashboard vẫn in dòng thiếu metric với status thành công của echo",
+        "Echo tự giữ mọi status lỗi từ mọi command con"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm status thu thập riêng nếu metric là điều kiện thành công."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "CPU user not total",
+      "question": "Ngay cả sửa cú pháp, chỉ lấy một field user CPU từ top có đủ đại diện mọi loại CPU busy không?",
+      "options": [
+        "Có, mọi CPU busy luôn bằng user field",
+        "Có, grep Cpu(s) tự cộng mọi field",
+        "Có, int tự tính100-idle",
+        "Không, còn các thành phần khác theo metric được định nghĩa"
+      ],
+      "correct": 3,
+      "explanation": "Phải định nghĩa metric trước khi chọn field/công thức."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "CPU truncation boundary",
+      "question": "Awk int(90.9) cho90, sau đó test -gt90 có cảnh báo không?",
+      "options": [
+        "Không",
+        "Có, vì90.9 lớn hơn90 trước khi truncate",
+        "Có, -gt luôn so float gốc",
+        "Luôn lỗi vì int không nhận số thực"
+      ],
+      "correct": 0,
+      "explanation": "Truncation có thể thay cách xử lý ngưỡng so với ý định ban đầu."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "CPU above integer boundary",
+      "question": "Sau int, CPU=91 với điều kiện -gt90 cho kết quả gì?",
+      "options": [
+        "False vì mọi số nguyên là string",
+        "True, gọi alert nếu function đang được chạy",
+        "False vì phải bằng90",
+        "True và tự restart process"
+      ],
+      "correct": 1,
+      "explanation": "So sánh đúng ngưỡng không đồng nghĩa quy trình thu thập đã đúng."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Memory ratio fixture",
+      "question": "Với total=1000 và used=860, int(used/total*100) cho bao nhiêu?",
+      "options": [
+        "0",
+        "86000",
+        "86",
+        "85"
+      ],
+      "correct": 2,
+      "explanation": "Phép chia trong awk là số học trước khi int cắt phần lẻ."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Memory equality threshold",
+      "question": "MEM=85 với -gt85 có gọi alert không?",
+      "options": [
+        "Có, luôn bao gồm ngưỡng",
+        "Chỉ khi CPU dưới90",
+        "Luôn gọi cả3 alert",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần chọn > hay >= theo hợp đồng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Memory fractional boundary",
+      "question": "total=1000, used=859 tạo MEM=int(85.9)=85. Vì sao có thể bỏ lỡ ý định cảnh báo trên85% thực?",
+      "options": [
+        "Phần lẻ đã bị cắt trước phép so",
+        "-gt tự làm tròn lên mọi giá trị",
+        "Awk trả integer division luôn0",
+        "free luôn tự gửi alert thay script"
+      ],
+      "correct": 0,
+      "explanation": "Nếu cần so giá trị thực, thiết kế phép tính/so phù hợp."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Zero memory denominator",
+      "question": "Dữ liệu parse cho total=0 cần xử lý gì trước used/total?",
+      "options": [
+        "Thêm -h để tự sửa denominator",
+        "Báo metric không hợp lệ thay vì coi là phần trăm bình thường",
+        "Luôn báo0% sử dụng",
+        "Luôn báo100% sử dụng"
+      ],
+      "correct": 1,
+      "explanation": "Dữ liệu thiếu/sai không nên thành số khỏe giả."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Free column assumption",
+      "question": "free | awk đọc $3/$2 chỉ đúng ý định khi nào?",
+      "options": [
+        "Chỉ cần shell tên Bash",
+        "Chỉ cần file script executable",
+        "Format và định nghĩa cột của free khớp giả định",
+        "Trong mọi ngôn ngữ/phiên bản/output mode"
+      ],
+      "correct": 2,
+      "explanation": "Đổi công cụ/phiên bản có thể đổi cách hiển thị và diễn giải metric."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Human readable arithmetic",
+      "question": "Vì sao không nên trực tiếp lấy chuỗi 1.5Gi/8Gi từ free -h để tính tỷ lệ như số thuần mà không parse đơn vị?",
+      "options": [
+        "Vì mọi chuỗi có Gi tự là byte chính xác trong Bash",
+        "Vì free -h không bao giờ có đơn vị",
+        "Vì awk tự đọc mọi suffix theo cùng chuẩn",
+        "Đơn vị và chuỗi định dạng cần được xử lý nhất quán"
+      ],
+      "correct": 3,
+      "explanation": "Mẫu alert dùng free không -h, khác dòng display."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Disk percent parsing",
+      "question": "Với field5 của df là 91%, awk int($5) theo numeric-prefix conversion thông thường cho gì?",
+      "options": [
+        "91",
+        "0",
+        "100",
+        "Chuỗi91% giữ nguyên kiểu số"
+      ],
+      "correct": 0,
+      "explanation": "Đây là dựa format cụ thể, không phải parser metric tổng quát."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Disk equality threshold",
+      "question": "DISK=90 với -gt90 có cảnh báo không?",
+      "options": [
+        "Luôn lỗi syntax",
+        "Không",
+        "Có",
+        "Chỉ nếu /var/log tồn tại"
+      ],
+      "correct": 1,
+      "explanation": "Ngưỡng loại trừ đúng giá trị90."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Root filesystem coverage",
+      "question": "Ứng dụng lưu data ở mount riêng /data. df / có đủ biết /data còn chỗ không?",
+      "options": [
+        "Có, awk tự duyệt tất cả mount khác",
+        "Có, status in Disk nghĩa kiểm toàn máy",
+        "Không, cần kiểm đúng filesystem/mount được sử dụng",
+        "Có, root luôn có cùng capacity với mọi mount"
+      ],
+      "correct": 2,
+      "explanation": "Đường dẫn đo phải bám tài nguyên thực."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Disk capacity versus inodes",
+      "question": "df báo còn nhiều byte nhưng tạo file mới thất bại có thể cần kiểm thêm gì?",
+      "options": [
+        "Chỉ CPU user",
+        "Chỉ số line log",
+        "Chỉ tên process redis",
+        "Inode, quota, quyền và lỗi filesystem theo tình huống"
+      ],
+      "correct": 3,
+      "explanation": "Dung lượng byte không phải điều kiện duy nhất của việc ghi file."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Listen text count",
+      "question": "ss -tuln | grep -c LISTEN đếm gì trực tiếp?",
+      "options": [
+        "Số dòng có chuỗi LISTEN",
+        "Số port duy nhất của mọi TCP và UDP chắc chắn",
+        "Số request HTTP thành công",
+        "Số người dùng online"
+      ],
+      "correct": 0,
+      "explanation": "Tên nhãn listening ports có thể rộng hơn metric thực tế."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "UDP state omission",
+      "question": "Vì sao grep LISTEN có thể không đếm UDP socket như mong muốn?",
+      "options": [
+        "Vì grep tự bỏ mọi số port chẵn",
+        "UDP thường không có cùng state LISTEN như TCP trong output đó",
+        "Vì -u của ss nghĩa chỉ username",
+        "Vì UDP không có socket"
+      ],
+      "correct": 1,
+      "explanation": "Cần dùng lựa chọn/parser phù hợp loại socket cần đo."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Socket duplicate port",
+      "question": "Hai socket bind cùng port trên địa chỉ khác nhau có nhất thiết là một dòng trong output không?",
+      "options": [
+        "Có, grep tự deduplicate port",
+        "Chỉ khi locale là C",
+        "Không, số dòng socket có thể khác số port phân biệt",
+        "Có, ss luôn chỉ một dòng cho mỗi port trên toàn máy"
+      ],
+      "correct": 2,
+      "explanation": "Cần định nghĩa đếm socket, address:port hay port number."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "No listen matches status",
+      "question": "GNU grep -c LISTEN không khớp dòng nào thường in gì và trả status nào?",
+      "options": [
+        "In1 và trả0",
+        "Không in gì và trả0 bắt buộc",
+        "InNULL và trả2",
+        "In0 và trả1"
+      ],
+      "correct": 3,
+      "explanation": "Không có kết quả tìm kiếm khác lỗi vận hành, cần xử lý theo contract."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Docker failure hidden count",
+      "question": "docker ps lỗi, stderr bị bỏ và wc -l đọc luồng rỗng có thể làm dashboard hiển thị gì?",
+      "options": [
+        "0 running dù thực ra chưa biết trạng thái Docker",
+        "Số container thực luôn được lấy từ cache",
+        "Một exception kiểu bắt buộc",
+        "Dashboard tự gọi docker start"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi thu thập không nên bị báo như giá trị0 hợp lệ."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Missing tool handling",
+      "question": "Nếu máy thiếu ss, script không có strict mode hay kiểm riêng thì có thể gặp gì?",
+      "options": [
+        "Shebang tự tạo binary ss",
+        "Metric lỗi/thiếu nhưng các dòng echo khác vẫn tiếp tục",
+        "Bash tự cài iproute2",
+        "Mọi metric còn lại chắc chắn cũng đúng0"
+      ],
+      "correct": 1,
+      "explanation": "Cần mô hình unknown/error cho dependency metric."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Pgrep match boundary",
+      "question": "Tên process nginx-worker có khớp pattern nginx với pgrep -x trong chế độ tên thông thường không?",
+      "options": [
+        "Có, dấu gạch ngang bị bỏ tự động",
+        "Chỉ nếu process dùng port80",
+        "Không, yêu cầu khớp toàn tên",
+        "Có, -x nghĩa substring"
+      ],
+      "correct": 2,
+      "explanation": "Pattern là regex theo công cụ, nhưng -x yêu cầu toàn chuỗi được chọn."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Presence versus readiness",
+      "question": "pgrep -x postgres thành công có tự chứng minh database nhận query nghiệp vụ đúng không?",
+      "options": [
+        "Có, có PID là đủ toàn bộ readiness",
+        "Có, pgrep tự chạy SQL",
+        "Có, process name được kernel xác thực thành DB health",
+        "Không, mới chỉ thấy process theo tiêu chí"
+      ],
+      "correct": 3,
+      "explanation": "Liveness process và readiness dịch vụ khác nhau."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Multiple matching processes",
+      "question": "Có nhiều worker cùng tên thì điều kiện if pgrep ... > /dev/null có nhất thiết chỉ chấp nhận đúng1 worker không?",
+      "options": [
+        "Không, nó kiểm status có match theo tiêu chí",
+        "Có, -x nghĩa đúng một PID",
+        "Có, redirection giữ duy nhất một PID",
+        "Không bao giờ có nhiều process cùng tên"
+      ],
+      "correct": 0,
+      "explanation": "Nếu số lượng worker là yêu cầu, cần kiểm riêng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Process user scope",
+      "question": "Vòng pgrep trong source có lọc user/owner hoặc PID file của deployment cụ thể chưa?",
+      "options": [
+        "Có, Bash luôn chỉ thấy process của app",
+        "Chưa",
+        "Có, tên service tự chỉ deployment hiện tại",
+        "Có, /dev/null tự lọc user"
+      ],
+      "correct": 1,
+      "explanation": "Tên chung có thể khớp process không thuộc instance cần giám sát."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Alerts not invoked",
+      "question": "Tại sao chạy source nguyên trạng không tự kiểm ba ngưỡng trong check_alerts?",
+      "options": [
+        "Các ngưỡng tự tắt vì emoji",
+        "Mọi function local đều bị cấm chạy",
+        "Function chưa được gọi ở luồng cuối",
+        "Bash không hỗ trợ function có underscore"
+      ],
+      "correct": 2,
+      "explanation": "Cần nối bước collect/evaluate/notify trong luồng điều khiển."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Logs not invoked",
+      "question": "analyze_logs được định nghĩa nhưng cuối chỉ gọi status. Log report có tự được in không?",
+      "options": [
+        "Có, mọi function có default argument tự chạy",
+        "Có, wc -l chạy khi parser gặp body",
+        "Chỉ chạy vào ngày Chủ nhật",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Định nghĩa function là chuẩn bị hành vi."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Line based request count",
+      "question": "Một request được ghi thành nhiều dòng có làm wc -l bằng số request chắc chắn không?",
+      "options": [
+        "Không",
+        "Có, wc hiểu cấu trúc HTTP",
+        "Có, tên access.log chuẩn hóa toàn bộ format",
+        "Chỉ nếu file dưới1MB"
+      ],
+      "correct": 0,
+      "explanation": "Cần xác định record boundary của log."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Missing final newline",
+      "question": "Log có một record cuối không kết thúc newline. wc -l có thể đếm thiếu bao nhiêu so với số record theo giả định mỗi dòng là một record?",
+      "options": [
+        "Toàn bộ số record",
+        "Một",
+        "Luôn hai",
+        "Không thể thiếu"
+      ],
+      "correct": 1,
+      "explanation": "Đếm newline khác đếm phần dữ liệu cuối chưa có delimiter."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Status pattern field ambiguity",
+      "question": "Một dòng có chuỗi “ 500 ” trong message nhưng status thật200 có thể bị grep pattern source tính là lỗi5xx không?",
+      "options": [
+        "Không, dấu cách hai bên là schema validation",
+        "Chỉ nếu có -E",
+        "Có, pattern chưa khóa vào trường status",
+        "Không, grep tự hiểu format access log"
+      ],
+      "correct": 2,
+      "explanation": "Khớp chuỗi toàn dòng không thay parser có cấu trúc."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Error line versus event count",
+      "question": "Một dòng chứa hai chuỗi5xx khớp thì grep -c thông thường đếm mấy dòng?",
+      "options": [
+        "Hai",
+        "Năm",
+        "Không dòng nào",
+        "Một"
+      ],
+      "correct": 3,
+      "explanation": "Tên Errors trong báo cáo cần khớp cách đếm thực."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Endpoint spaces format",
+      "question": "Nếu field7 không còn là endpoint do log format thay đổi, awk có nhất thiết báo lỗi không?",
+      "options": [
+        "Không, có thể trả text sai ý nghĩa hoặc chuỗi rỗng",
+        "Có, awk luôn biết schema HTTP",
+        "Có, sort từ chối mọi field sai",
+        "Có, uniq tự xác minh URL"
+      ],
+      "correct": 0,
+      "explanation": "Sai ngữ nghĩa có thể không tạo lỗi cú pháp/runtime."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Endpoint counts pipeline",
+      "question": "Với endpoint /a,/b,/a theo ba record được parse đúng, sort | uniq -c cho số nào?",
+      "options": [
+        "Không còn /b",
+        "/a có2 và /b có1",
+        "/a có1 và /b có2",
+        "Cả hai có3"
+      ],
+      "correct": 1,
+      "explanation": "Group count cần dữ liệu field đúng trước đó."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Top five endpoints",
+      "question": "head -5 có luôn tạo đủ5 endpoint khi chỉ có2 nhóm không?",
+      "options": [
+        "Có, lặp nhóm đầu cho đủ5",
+        "Chỉ in khi có đúng5 nhóm",
+        "Không, chỉ in2 nhóm",
+        "Có, tự thêm3 endpoint rỗng"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn output không tự tạo dữ liệu."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Grep status not failure kind",
+      "question": "Nếu file log không đọc được, có nên coi output lỗi grep là báo cáo0 lỗi nghiệp vụ không?",
+      "options": [
+        "Có, không có số nghĩa chắc chắn0",
+        "Có, echo tự khôi phục nội dung log",
+        "Có, -c chỉ trả lỗi khi file rỗng",
+        "Không, đó là lỗi thu thập cần phân biệt"
+      ],
+      "correct": 3,
+      "explanation": "Unknown/error không nên bị trộn với số0 hợp lệ."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Independent threshold checks",
+      "question": "Nếu CPU và MEM đều vượt ngưỡng, ba command && độc lập có thể làm gì khi check_alerts thực sự chạy?",
+      "options": [
+        "Gọi cả alert CPU và alert MEM theo thứ tự",
+        "Chỉ chọn một như if/elif",
+        "Tự exit sau alert đầu trong mọi cấu hình",
+        "Luôn chỉ alert DISK"
+      ],
+      "correct": 0,
+      "explanation": "Các kiểm tra độc lập khác chuỗi nhánh loại trừ."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Function final false status",
+      "question": "Nếu điều kiện DISK cuối không vượt ngưỡng và là command cuối check_alerts, function có thể trả gì?",
+      "options": [
+        "Luôn status của alert đầu tiên",
+        "Status khác0 của phép test cuối dù không có cảnh báo cần gửi",
+        "Luôn0 vì function đã định nghĩa",
+        "Số phần trăm CPU"
+      ],
+      "correct": 1,
+      "explanation": "Cần xác định status của helper có nghĩa khỏe/lỗi hay chỉ trạng thái test cuối."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Timestamp metric skew",
+      "question": "Các metric được gọi nối tiếp có tự là snapshot nguyên tử cùng thời điểm không?",
+      "options": [
+        "Có, banner date đồng bộ mọi command",
+        "Có, awk tạo transaction hệ thống",
+        "Không, thời điểm thu thập có thể lệch",
+        "Có, cùng function khóa toàn kernel"
+      ],
+      "correct": 2,
+      "explanation": "Nếu độ lệch quan trọng cần mô tả hoặc cơ chế thu thập phù hợp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "No persistence dashboard",
+      "question": "Source có lưu chuỗi thời gian metric để xem xu hướng dài hạn chưa?",
+      "options": [
+        "Có, echo tự lưu database",
+        "Có, date giữ lịch sử mọi metric",
+        "Có, status tự lập lịch mỗi phút",
+        "Chưa, chủ yếu in output một lần"
+      ],
+      "correct": 3,
+      "explanation": "Dashboard tức thời khác hệ thống quan sát có lưu trữ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Metric collection contract",
+      "question": "Để tránh báo0 containers khi Docker lỗi, nên thiết kế gì?",
+      "options": [
+        "Tách status thu thập và giá trị, biểu diễn unknown/error riêng",
+        "Bỏ mọi stderr rồi dùng wc0 làm khỏe",
+        "Chỉ tăng tần suất echo",
+        "Giả process Docker không bao giờ lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Metric cần mang đủ thông tin về chất lượng và khả dụng dữ liệu."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "CPU source repair validation",
+      "question": "Sau sửa lỗi ký tự % trong awk program, vì sao vẫn cần kiểm fixture format top?",
+      "options": [
+        "Awk tự chọn metric phù hợp sản phẩm",
+        "Cú pháp đúng chưa xác nhận field/công thức biểu diễn CPU busy đúng ý định",
+        "Sửa cú pháp tự chứng minh mọi metric Linux",
+        "Top luôn có cùng field ở mọi locale"
+      ],
+      "correct": 1,
+      "explanation": "Parser, công thức và ngữ nghĩa đều cần khớp hợp đồng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Locale aware parsing",
+      "question": "Một parser top dựa nhãn Cpu(s) và dấu thập phân chấm cần xét điều gì?",
+      "options": [
+        "Chỉ timestamp có năm4 chữ số",
+        "Mọi output Linux đều cố định tiếng Anh",
+        "Locale/phiên bản/output mode hoặc dùng nguồn metric ổn định hơn",
+        "Chỉ tên file script"
+      ],
+      "correct": 2,
+      "explanation": "Dữ liệu dành cho người đọc có thể thay đổi theo môi trường."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Alert hysteresis",
+      "question": "Metric dao động quanh ngưỡng khiến cảnh báo bật/tắt liên tục. Chính sách nào hữu ích?",
+      "options": [
+        "Gửi mọi mẫu thành thông báo mới vô hạn",
+        "Bỏ mọi metric để không có alert",
+        "Chỉ đổi màu emoji",
+        "Hysteresis/cửa sổ duy trì và chống lặp theo mức độ cần thiết"
+      ],
+      "correct": 3,
+      "explanation": "Cần giảm nhiễu mà vẫn giữ thông tin hành động được."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Alert delivery failure",
+      "question": "Kênh thông báo lỗi không có nghĩa metric đã trở lại bình thường. Nên giữ trạng thái nào?",
+      "options": [
+        "Tình trạng cảnh báo và kết quả delivery riêng",
+        "Luôn đổi metric về0 nếu webhook fail",
+        "Coi gửi thất bại là hệ thống khỏe",
+        "Xóa toàn bộ log vì không gửi được"
+      ],
+      "correct": 0,
+      "explanation": "Phát hiện và truyền đạt là hai bước có failure mode riêng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Percent rounding policy",
+      "question": "Muốn cảnh báo trên85% theo số thực, cách nào tránh lỗi do int trước so?",
+      "options": [
+        "Chỉ dùng free -h string làm số nguyên",
+        "So giá trị thực hoặc chọn quy tắc làm tròn/ngưỡng được công bố rõ",
+        "Luôn int trước rồi giả không mất thông tin",
+        "Đổi -gt thành so chuỗi alphabet"
+      ],
+      "correct": 1,
+      "explanation": "Chính sách tính và so phải nhất quán với nghĩa của ngưỡng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Memory pressure interpretation",
+      "question": "Vì sao chỉ thấy used cao chưa đủ kết luận ứng dụng sắp hết RAM?",
+      "options": [
+        "Free thấp luôn đồng nghĩa crash ngay",
+        "Cache luôn là bộ nhớ không thể thu hồi",
+        "Cần hiểu available/cache, swap, tải và định nghĩa metric của công cụ",
+        "Used luôn đồng nghĩa memory leak"
+      ],
+      "correct": 2,
+      "explanation": "Chẩn đoán cần ngữ cảnh và metric đúng, không chỉ một con số."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Disk coverage map",
+      "question": "Hệ thống dùng /, /data và volume container. Giám sát dung lượng nên dựa vào gì?",
+      "options": [
+        "Chỉ df / vì mọi đường dẫn chung một filesystem",
+        "Chỉ tên service postgres",
+        "Chỉ đếm container running",
+        "Danh sách tài nguyên/mount thực tế và chính sách ngưỡng riêng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Metric phải bao phủ nơi thực sự lưu dữ liệu."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Readiness layering",
+      "question": "Một process tồn tại và port LISTEN có đủ xác nhận request nghiệp vụ thành công không?",
+      "options": [
+        "Không, cần các lớp health/readiness theo dependency và nghiệp vụ cần kiểm",
+        "Có, hai điều kiện này thay mọi test",
+        "Có, port mở xác nhận mọi database transaction",
+        "Có, kernel tự chạy API test"
+      ],
+      "correct": 0,
+      "explanation": "Chọn mức kiểm phù hợp thay vì suy từ dấu hiệu thấp hơn."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Structured log schema",
+      "question": "Muốn đếm chính xác status5xx trong log có message tự do nên ưu tiên gì?",
+      "options": [
+        "Chỉ sort -rn rồi giả nhóm đầu là lỗi",
+        "Parse field status theo schema và validate record",
+        "Tìm chuỗi500 ở mọi vị trí",
+        "Chỉ awk $1 vì mọi log đặt status đầu"
+      ],
+      "correct": 1,
+      "explanation": "Đếm đúng field tránh false positive từ nội dung khác."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Log rotation boundary",
+      "question": "Đếm request từ một access.log tại một thời điểm có đủ báo cáo toàn ngày nếu log đã rotate chưa?",
+      "options": [
+        "Có, wc tự đọc mọi archive cũ",
+        "Có, grep tự tìm log ngày hôm qua",
+        "Không, cần phạm vi file/thời gian và chính sách rotation rõ",
+        "Có, file hiện tại chứa toàn bộ lịch sử mặc định"
+      ],
+      "correct": 2,
+      "explanation": "Khoảng thời gian phân tích phải khớp dữ liệu đầu vào."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Log privacy output",
+      "question": "Báo cáo top endpoint có thể chứa query string nhạy cảm. Cần thiết kế gì?",
+      "options": [
+        "In toàn bộ token để dễ debug",
+        "Coi text log luôn công khai",
+        "Chỉ đổi tên endpoint field",
+        "Chính sách chuẩn hóa/che dữ liệu và quyền xem log/report"
+      ],
+      "correct": 3,
+      "explanation": "Quan sát hệ thống không tự cho phép công bố mọi dữ liệu request."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Frequency versus severity",
+      "question": "Endpoint có nhiều hit nhất có nhất thiết là lỗi nghiêm trọng nhất không?",
+      "options": [
+        "Không, cần kết hợp status, latency, impact và mục tiêu giám sát",
+        "Có, count lớn luôn là outage",
+        "Có, uniq -c tự xếp mức độ nghiêm trọng",
+        "Có, sort -rn hiểu nghiệp vụ"
+      ],
+      "correct": 0,
+      "explanation": "Tần suất là một metric, không phải kết luận toàn diện."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Unknown service state",
+      "question": "pgrep lỗi vì quyền/tool không sẵn có có nên gộp vào NOT running như không khớp không?",
+      "options": [
+        "Có, /dev/null tự xác minh quyền",
+        "Không, nên phân biệt trạng thái không tìm thấy với lỗi kiểm tra",
+        "Có, mọi status khác0 đều là process chắc chắn chết",
+        "Có, shell tự restart service thiếu"
+      ],
+      "correct": 1,
+      "explanation": "Health reporting cần phản ánh độ tin cậy của phép kiểm."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "No absolute snapshot guarantee",
+      "question": "Nếu CPU từ thời điểmA và memory từB, điều gì cần ghi khi phân tích tương quan sự cố ngắn?",
+      "options": [
+        "Mọi metric đều là hằng số trong một giây",
+        "Timestamp log tự sửa dữ liệu quá khứ",
+        "Độ lệch thời gian/độ phân giải và phương pháp thu thập",
+        "Cùng banner là đủ chứng minh đồng thời"
+      ],
+      "correct": 2,
+      "explanation": "Độ chính xác thời gian phải phù hợp hiện tượng cần quan sát."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Monitoring overhead budget",
+      "question": "Chạy top/docker/parse log rất thường xuyên có thể cần xét gì?",
+      "options": [
+        "Monitoring luôn miễn phí tài nguyên",
+        "Tăng tần suất vô hạn luôn tốt hơn",
+        "Awk tự chạy trên máy khác",
+        "Chi phí thu thập, tần suất và ảnh hưởng lên hệ thống cần đo"
+      ],
+      "correct": 3,
+      "explanation": "Công cụ giám sát cũng là workload."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Bounded observer work",
+      "question": "Để monitor không bị treo mãi khi một dependency chậm nên có gì?",
+      "options": [
+        "Timeout và cách báo metric không khả dụng theo contract",
+        "Chỉ bỏ stderr",
+        "Chỉ chờ mọi command vô hạn",
+        "Chỉ dùng emoji cảnh báo"
+      ],
+      "correct": 0,
+      "explanation": "Quan sát phải có giới hạn thời gian phù hợp."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Fixture parsing strategy",
+      "question": "Muốn kiểm logic parser mà không phụ thuộc trạng thái máy thật, fixture nào cần có?",
+      "options": [
+        "Chỉ giá trị CPU50 rồi kết luận mọi ngưỡng đúng",
+        "Format hợp lệ, thiếu field, lỗi command, zero và biên ngưỡng với output kỳ vọng",
+        "Chỉ screenshot top hiện tại",
+        "Chỉ một dòng hello"
+      ],
+      "correct": 1,
+      "explanation": "Fixture cho phép kiểm các đường dữ liệu/lỗi đã thiết kế."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "End to end alert wiring",
+      "question": "Để bài tập dashboard có cảnh báo thật cần nối những phần nào?",
+      "options": [
+        "Chỉ giữ webhook trong comment",
+        "Chỉ in status một lần",
+        "Thu thập, kiểm dữ liệu, đánh giá ngưỡng, delivery và báo lỗi của từng phần",
+        "Chỉ định nghĩa alert rồi không gọi"
+      ],
+      "correct": 2,
+      "explanation": "Các helper hiện chưa được nối thành chu kỳ giám sát và truyền cảnh báo đầy đủ."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Operational completeness",
+      "question": "Có dashboard process/CPU/memory đã đủ chứng minh hệ thống sẵn sàng cho hàng triệu người dùng chưa?",
+      "options": [
+        "Rồi, mọi metric có emoji là đủ",
+        "Rồi, pgrep xác nhận mọi request",
+        "Rồi, đếm port thay toàn bộ load test",
+        "Chưa, cần mục tiêu tải, capacity, độ tin cậy và phép kiểm tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "Quan sát là một phần vận hành, không tự chứng minh khả năng chịu tải."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cicd",
+  "level": "newbie",
+  "lesson": "intro",
+  "language": "vi",
+  "sourceHash": "e993f26e68abea4e1abf72f958adc24f6354603e39fe5ae9abf03c678df2abbd",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo workflow CI mẫu và tài liệu GitHub Actions/setup-node v4. Phân biệt trigger, job, step, cache, coverage và điều kiện thực thi; không chạy workflow, npm trong bài, Codecov hay mạng.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Mục tiêu CI",
+      "question": "CI trong bài giúp nhóm phát hiện vấn đề bằng cách nào?",
+      "options": [
+        "Tự động chạy các bước kiểm tra khi có thay đổi phù hợp",
+        "Chỉ triển khai production sau mỗi lần mở trình soạn thảo",
+        "Thay mọi lượt review mã bằng một nhãn xanh",
+        "Tự viết mọi bài kiểm thử còn thiếu"
+      ],
+      "correct": 0,
+      "explanation": "CI tự động hóa kiểm tra; chất lượng vẫn phụ thuộc nội dung kiểm tra."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Phân biệt CD",
+      "question": "Continuous delivery thường khác continuous deployment ở điểm nào?",
+      "options": [
+        "Delivery luôn triển khai mọi commit lỗi",
+        "Delivery có thể giữ bước phê duyệt phát hành, deployment tự phát hành thay đổi đã đạt điều kiện",
+        "Delivery không cần build còn deployment không cần test",
+        "Delivery chỉ dùng cho frontend còn deployment chỉ cho backend"
+      ],
+      "correct": 1,
+      "explanation": "CD là thuật ngữ có hai cách mở rộng; không nên suy mọi pipeline đều tự triển khai production."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Vị trí workflow",
+      "question": "File ci.yml của ví dụ nằm trong thư mục nào?",
+      "options": [
+        "node_modules/workflows/",
+        "public/ci/",
+        ".github/workflows/",
+        ".github/issues/"
+      ],
+      "correct": 2,
+      "explanation": "GitHub Actions tìm các workflow YAML trong .github/workflows."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Tên hiển thị",
+      "question": "name: CI Pipeline có vai trò gì?",
+      "options": [
+        "Đổi tên nhánh Git thành CI Pipeline",
+        "Chọn phiên bản Node.js",
+        "Tạo một package npm mới",
+        "Đặt tên hiển thị cho workflow"
+      ],
+      "correct": 3,
+      "explanation": "Tên workflow không phải điều kiện trigger hay lệnh thực thi."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Khai báo sự kiện",
+      "question": "Khóa on trong workflow mẫu mô tả gì?",
+      "options": [
+        "Các sự kiện có thể kích hoạt workflow",
+        "Danh sách dependency npm",
+        "Các biến CSS được xuất bản",
+        "Số luồng CPU của runner"
+      ],
+      "correct": 0,
+      "explanation": "on khai báo trigger và các bộ lọc sự kiện."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Push hợp lệ",
+      "question": "Theo mẫu, push trực tiếp lên nhánh nào có thể kích hoạt CI?",
+      "options": [
+        "Chỉ nhánh feature bất kỳ",
+        "main hoặc develop",
+        "Chỉ release",
+        "Mọi nhánh không cần bộ lọc"
+      ],
+      "correct": 1,
+      "explanation": "push.branches chỉ liệt kê main và develop."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Nhánh đích PR",
+      "question": "pull_request.branches: [main] lọc theo nhánh nào?",
+      "options": [
+        "Theo nhánh mặc định của mọi fork",
+        "Theo tên nhánh có nhiều commit nhất",
+        "Nhánh đích của pull request",
+        "Luôn theo nhánh nguồn của pull request"
+      ],
+      "correct": 2,
+      "explanation": "Bộ lọc branches của pull_request xét base branch."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Job định danh",
+      "question": "Trong jobs: test: của mẫu, test là gì?",
+      "options": [
+        "Lệnh npm test đã được chạy",
+        "Tên bắt buộc của mọi workflow",
+        "Tên của runner được tự tạo trong repository",
+        "ID của một job"
+      ],
+      "correct": 3,
+      "explanation": "Job ID dùng để tham chiếu, chẳng hạn qua needs khi có job phụ thuộc."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Runner",
+      "question": "runs-on: ubuntu-latest chọn gì?",
+      "options": [
+        "Môi trường runner có nhãn ubuntu-latest",
+        "Nhánh Git có tên ubuntu-latest",
+        "Version Ubuntu của máy mọi người dùng web",
+        "Docker image ứng dụng sẽ được push"
+      ],
+      "correct": 0,
+      "explanation": "Runner thực thi các bước CI; đây không phải cấu hình máy người dùng sản phẩm."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Các bước",
+      "question": "steps chứa những thành phần nào trong mẫu?",
+      "options": [
+        "Chỉ tên các nhánh được bảo vệ",
+        "Các lần dùng action và các lệnh shell",
+        "Chỉ các job chạy song song",
+        "Chỉ secrets của production"
+      ],
+      "correct": 1,
+      "explanation": "Một job gồm chuỗi steps, có thể uses action hoặc run command."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Action có sẵn",
+      "question": "uses: actions/checkout@v4 yêu cầu thao tác gì?",
+      "options": [
+        "Cài Node.js phiên bản 4 cho ứng dụng",
+        "Chuyển repository sang nhánh v4 bất kể action",
+        "Dùng phiên bản tham chiếu v4 của action checkout",
+        "Chạy lệnh shell có tên uses"
+      ],
+      "correct": 2,
+      "explanation": "uses tham chiếu action; checkout lấy nội dung repository vào workspace."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Lệnh shell",
+      "question": "run: npm ci được hiểu là gì?",
+      "options": [
+        "Đăng ký một sự kiện CI mới",
+        "Bật mọi secret cho pull request",
+        "Tự tạo GitHub repository",
+        "Chạy npm ci trong môi trường step"
+      ],
+      "correct": 3,
+      "explanation": "run thực thi lệnh trong shell của runner."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Cài Node",
+      "question": "Trong mẫu, action nào thiết lập Node.js theo cấu hình?",
+      "options": [
+        "actions/setup-node@v4",
+        "actions/checkout@v4",
+        "codecov/codecov-action@v3",
+        "Khóa name: CI Pipeline"
+      ],
+      "correct": 0,
+      "explanation": "setup-node cấu hình Node; checkout và Codecov có nhiệm vụ khác."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Phiên bản runtime",
+      "question": "node-version: 20 chỉ định gì?",
+      "options": [
+        "Số job chạy đồng thời tối đa là 20",
+        "Dòng phiên bản Node.js 20 cho step setup",
+        "Đúng 20 lượt chạy test",
+        "Phiên bản YAML 20"
+      ],
+      "correct": 1,
+      "explanation": "Đây là đầu vào của setup-node; không nên coi mọi patch của dòng 20 là một binary cố định."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Dependency cache",
+      "question": "cache: npm trong setup-node v4 nhằm hỗ trợ gì?",
+      "options": [
+        "Lưu sẵn toàn bộ máy production",
+        "Tự cache mọi thư mục node_modules của mọi repository",
+        "Khôi phục và lưu cache dữ liệu package manager npm",
+        "Thay npm test bằng kết quả test cũ"
+      ],
+      "correct": 2,
+      "explanation": "setup-node v4 không cache node_modules; workflow vẫn cần bước cài dependency."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Cài dependency theo lock",
+      "question": "npm ci thường cần đầu vào nào?",
+      "options": [
+        "Chỉ một file ảnh logo",
+        "Một biến môi trường đặt tên CI là đủ",
+        "Một report coverage đã upload",
+        "Manifest và lockfile hợp lệ, nhất quán"
+      ],
+      "correct": 3,
+      "explanation": "npm ci dùng lockfile, không tự sửa lockfile không khớp như một cách giải quyết mặc định."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Lint",
+      "question": "npm run lint trong mẫu lấy nội dung lệnh từ đâu?",
+      "options": [
+        "Script lint trong package.json của dự án",
+        "Tên hiển thị của workflow",
+        "Danh sách reviewers của environment",
+        "Tên action checkout"
+      ],
+      "correct": 0,
+      "explanation": "Workflow gọi script đã định nghĩa; không chứng minh dự án có script đó."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Test",
+      "question": "npm test trong mẫu nhằm thực thi gì?",
+      "options": [
+        "Tự đánh giá toàn bộ trải nghiệm người dùng",
+        "Lệnh test do dự án cấu hình",
+        "Tự phát sinh đầy đủ mọi test còn thiếu",
+        "Tự bật HTTPS cho website"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi kiểm tra phụ thuộc script test và các test thực có."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Build",
+      "question": "npm run build trong mẫu có nghĩa gì?",
+      "options": [
+        "Luôn tạo Docker image đã ký",
+        "Tự merge pull request",
+        "Gọi script build của dự án",
+        "Tự động deploy production dù không có bước deploy"
+      ],
+      "correct": 2,
+      "explanation": "Build và deploy là các thao tác riêng."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Coverage artifact",
+      "question": "file: ./coverage/lcov.info của step Codecov trỏ tới gì?",
+      "options": [
+        "File định nghĩa nhánh main",
+        "Khóa bí mật của dịch vụ Codecov",
+        "Lệnh bắt buộc để test tự tạo coverage",
+        "Đường dẫn report coverage dự kiến để action sử dụng"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ định đường dẫn không tự sinh ra report coverage."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Thứ tự steps",
+      "question": "Nếu mọi bước trước đó thành công, chuỗi lệnh npm trong mẫu chạy theo thứ tự nào?",
+      "options": [
+        "ci → lint → test → build",
+        "test → ci → build → lint",
+        "build → test → lint → ci",
+        "Cả bốn lệnh luôn chạy đồng thời"
+      ],
+      "correct": 0,
+      "explanation": "Các steps trong cùng job chạy tuần tự theo cấu hình."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Bộ lọc push",
+      "question": "Chỉ xét trigger của mẫu, push lên feature/cart không kèm sự kiện PR có kích hoạt CI không?",
+      "options": [
+        "Không, vì GitHub Actions không hỗ trợ nhánh feature",
+        "Không, vì push.branches không gồm feature/cart",
+        "Có, vì mọi nhánh đều khớp main",
+        "Có, vì tên job là test"
+      ],
+      "correct": 1,
+      "explanation": "Kết luận dựa trên bộ lọc push cụ thể, không phải giới hạn nền tảng."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "PR vào main",
+      "question": "Một PR từ feature/cart vào main được mở. Bộ lọc nhánh của pull_request có phù hợp không?",
+      "options": [
+        "Không, vì nhánh nguồn không phải develop",
+        "Chỉ khi cả hai nhánh cùng tên",
+        "Có, vì nhánh đích là main",
+        "Không, vì nhánh nguồn không phải main"
+      ],
+      "correct": 2,
+      "explanation": "branches ở pull_request xét nhánh đích; còn điều kiện quyền và chính sách chạy là phạm vi khác."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "PR vào develop",
+      "question": "Một PR từ feature/cart vào develop được mở, không có push nào vào main/develop. Trigger PR của mẫu có khớp không?",
+      "options": [
+        "Có, vì develop xuất hiện ở push.branches",
+        "Có, vì mọi cấu hình branches được gộp chung",
+        "Có, vì checkout bỏ qua bộ lọc PR",
+        "Không, vì pull_request chỉ lọc đích main"
+      ],
+      "correct": 3,
+      "explanation": "Bộ lọc từng loại sự kiện được xét riêng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Ranh giới job",
+      "question": "Đội thêm job docs độc lập, không có needs. Quan hệ giữa docs và test mặc định là gì?",
+      "options": [
+        "Có thể chạy song song khi runner và giới hạn cho phép",
+        "docs luôn chờ test vì được viết phía dưới",
+        "test luôn chờ docs vì tên ngắn hơn",
+        "Hai job tự chia sẻ cùng một shell"
+      ],
+      "correct": 0,
+      "explanation": "Không có needs thì thứ tự viết YAML không tạo dependency."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Tạo dependency",
+      "question": "Muốn job deploy chỉ chạy sau khi job test thành công theo luồng mặc định, nên khai báo gì trong deploy?",
+      "options": [
+        "name: test",
+        "needs: test",
+        "steps: test",
+        "runs-on: test"
+      ],
+      "correct": 1,
+      "explanation": "needs thể hiện dependency giữa các job."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Lint lỗi",
+      "question": "Giả sử không có continue-on-error hay điều kiện đặc biệt, step lint thất bại thì step test phía sau ra sao?",
+      "options": [
+        "Tự sửa lỗi lint trước khi chạy",
+        "Được chuyển sang một runner khác để thử",
+        "Mặc định bị bỏ qua",
+        "Vẫn luôn chạy vì tên là test"
+      ],
+      "correct": 2,
+      "explanation": "Các step sau mặc định cần trạng thái thành công trước đó."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Chẩn đoán npm ci",
+      "question": "Runner báo lockfile không khớp package.json ở npm ci. Hướng sửa phù hợp là gì?",
+      "options": [
+        "Xóa step npm ci để mọi lệnh sau luôn có dependency",
+        "Đổi tên workflow để npm bỏ kiểm tra lockfile",
+        "Thêm Codecov trước npm ci để tự sửa dependency",
+        "Cập nhật và review lockfile tương ứng với thay đổi dependency rồi commit cùng manifest"
+      ],
+      "correct": 3,
+      "explanation": "CI cần đầu vào tái lập; bỏ cài dependency không giải quyết nguyên nhân."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cache hit",
+      "question": "setup-node báo cache hit. Vì sao vẫn giữ npm ci?",
+      "options": [
+        "Cache package manager không bảo đảm node_modules của workspace đã được cài đúng",
+        "Cache hit có nghĩa mọi tests đã pass ở commit hiện tại",
+        "npm ci chỉ dùng để upload coverage",
+        "Có cache thì npm ci trở thành lệnh deploy"
+      ],
+      "correct": 0,
+      "explanation": "Cache giảm tải tải package, không thay thao tác dựng dependency tree."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Thiếu script",
+      "question": "npm run lint báo Missing script: lint. Dữ kiện nào cần kiểm tra đầu tiên?",
+      "options": [
+        "Tên runner có chứa từ test không",
+        "package.json có khai báo script lint đúng thư mục làm việc không",
+        "Nhánh main có được đặt tên bằng chữ hoa không",
+        "Codecov có đăng nhập trên máy cá nhân không"
+      ],
+      "correct": 1,
+      "explanation": "Workflow chỉ gọi script, không tạo script lint."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Test không tạo coverage",
+      "question": "npm test thành công nhưng không có coverage/lcov.info. Kết luận phù hợp là gì?",
+      "options": [
+        "Đổi ID job thành coverage sẽ sinh report",
+        "Checkout tự tạo coverage sau mỗi commit",
+        "Cần cấu hình công cụ test và chế độ coverage tạo đúng report",
+        "Report chắc chắn tồn tại vì có step Upload coverage"
+      ],
+      "correct": 2,
+      "explanation": "Kết quả test pass và sinh report coverage là hai điều kiện khác nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Tên step",
+      "question": "Step có name: Upload coverage nhưng action lỗi. Điều gì đúng?",
+      "options": [
+        "Tên step bảo đảm report đã được gửi",
+        "Tên step biến action thành một lệnh shell cục bộ",
+        "Tên step tự cấu hình quyền truy cập dịch vụ",
+        "Tên step chỉ mô tả, không chứng minh upload đã thành công"
+      ],
+      "correct": 3,
+      "explanation": "Cần xem kết quả action và đầu vào thực tế."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Một job nhiều steps",
+      "question": "Các step run liên tiếp trong cùng job GitHub-hosted có thể dùng file workspace tạo ở step trước không?",
+      "options": [
+        "Có, nếu file vẫn ở workspace và không bị xóa hoặc đổi đường dẫn",
+        "Không, mỗi step luôn có filesystem hoàn toàn mới",
+        "Chỉ khi mọi step cùng một name",
+        "Chỉ khi file đã được deploy production"
+      ],
+      "correct": 0,
+      "explanation": "Các steps chia sẻ filesystem của job, nhưng không phải cùng một tiến trình shell."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Biến shell",
+      "question": "Một step chạy export MODE=test. Step run kế tiếp có mặc định nhận biến shell đó không?",
+      "options": [
+        "Không; GitHub Actions cấm mọi biến môi trường",
+        "Không; cần cơ chế env hoặc GITHUB_ENV phù hợp để truyền qua steps",
+        "Có, vì mọi step dùng chung một tiến trình shell",
+        "Có, nếu đặt tên hai step giống nhau"
+      ],
+      "correct": 1,
+      "explanation": "Shell mới của step khác không tự kế thừa thay đổi môi trường từ shell step trước."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Checkout cần thiết",
+      "question": "Nếu bỏ checkout trên runner GitHub-hosted mới rồi chạy npm ci ở workspace, vấn đề thường gặp là gì?",
+      "options": [
+        "GitHub tự tạo mọi file dự án từ tên workflow",
+        "Codecov tự tải source thay checkout",
+        "Không có manifest/lockfile repository tại vị trí mong đợi",
+        "Node tự clone repository trước khi cài dependency"
+      ],
+      "correct": 2,
+      "explanation": "Không nên mặc định source dự án đã hiện diện nếu chưa checkout hay có bước lấy source khác."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Version action và Node",
+      "question": "actions/setup-node@v4 với node-version: 20 có mối quan hệ nào?",
+      "options": [
+        "Cả hai cùng chỉ Node.js 4.20",
+        "v4 buộc tests dùng Node.js 4 bất kể input",
+        "20 là số phiên bản checkout sẽ dùng",
+        "v4 là tham chiếu action, 20 là runtime Node được yêu cầu cho dự án"
+      ],
+      "correct": 3,
+      "explanation": "Version action và version runtime mục tiêu là hai khái niệm riêng."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Tái lập runner",
+      "question": "ubuntu-latest có bảo đảm hệ điều hành và công cụ không bao giờ thay đổi không?",
+      "options": [
+        "Không; nhãn runner được cập nhật, cần quản lý mức cố định phù hợp",
+        "Có; latest là một snapshot bất biến vĩnh viễn",
+        "Có; checkout khóa toàn bộ hệ điều hành theo commit",
+        "Không; vì nhãn đó chọn Windows ngẫu nhiên"
+      ],
+      "correct": 0,
+      "explanation": "Nhãn latest tiện dùng nhưng không phải bằng chứng môi trường bất biến."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Test pass và deploy",
+      "question": "Workflow mẫu toàn bộ xanh. Có thể khẳng định app đã được triển khai production không?",
+      "options": [
+        "Có, push vào main tự tạo deployment cho mọi dự án",
+        "Không, mẫu không có bước triển khai ứng dụng",
+        "Có, npm run build luôn triển khai lên tên miền thật",
+        "Có, Codecov là dịch vụ triển khai production"
+      ],
+      "correct": 1,
+      "explanation": "Phải có cấu hình và bằng chứng deploy riêng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Kiểm tra từng commit",
+      "question": "Phát biểu nào phản ánh đúng hơn câu CI chạy mỗi commit trong lý thuyết khi áp vào mẫu?",
+      "options": [
+        "Không thể kiểm tra pull request",
+        "Chỉ chạy commit đầu tiên của mỗi nhánh",
+        "Chạy theo các sự kiện và bộ lọc đã cấu hình, không phải mọi commit ở mọi nhánh",
+        "Luôn chạy mọi commit lịch sử khi mở repository"
+      ],
+      "correct": 2,
+      "explanation": "Cách nói khái quát không thay nội dung on thực tế."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Kết quả lint",
+      "question": "Lint pass trong mẫu chứng minh điều gì hợp lý nhất?",
+      "options": [
+        "Ứng dụng chắc chắn không có lỗi nghiệp vụ",
+        "Mọi dependency đều không có lỗ hổng",
+        "Hệ thống chịu được hàng triệu người dùng đồng thời",
+        "Các quy tắc lint thực sự được cấu hình đã không báo lỗi chặn"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi bước kiểm tra chỉ cung cấp bằng chứng trong phạm vi của nó."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Giảm thời gian phản hồi",
+      "question": "Muốn phát hiện lỗi cú pháp/quy tắc rẻ trước bước build đắt, cách sắp xếp nào phù hợp?",
+      "options": [
+        "Giữ lint trước test/build theo mục tiêu phản hồi sớm",
+        "Luôn bỏ lint vì build có tên dài hơn",
+        "Upload report trước khi tạo report",
+        "Deploy production trước khi cài dependency"
+      ],
+      "correct": 0,
+      "explanation": "Đặt kiểm tra nhanh ở trước giúp phát hiện lỗi sớm; không tự đo được mức tiết kiệm."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Lệnh build riêng",
+      "question": "Dự án có test pass nhưng script build lỗi vì cấu hình bundler. Vì sao mẫu vẫn hữu ích?",
+      "options": [
+        "Lỗi build chỉ ảnh hưởng tên workflow",
+        "Nó kiểm tra build riêng sau tests và có thể chặn trạng thái xanh toàn job",
+        "Test pass khiến GitHub bỏ qua mọi lỗi build",
+        "Codecov tự sửa cấu hình bundler"
+      ],
+      "correct": 1,
+      "explanation": "Tests và build phát hiện những nhóm lỗi khác nhau."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Fork và secrets",
+      "question": "Một PR từ fork cần gửi coverage tới dịch vụ có token. Thiết kế nào hợp lý?",
+      "options": [
+        "Chuyển mọi secrets thành file public trong repository",
+        "Cho mã PR quyền production để upload dễ hơn",
+        "Xét chính sách secrets của PR fork và cấu hình upload có quyền phù hợp, không mặc định token luôn có",
+        "In toàn bộ secrets ra log để kiểm tra"
+      ],
+      "correct": 2,
+      "explanation": "Mã PR không đáng tin không nên được cấp bí mật chỉ để bước upload thuận tiện."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Lỗi dịch vụ phụ trợ",
+      "question": "Upload coverage thất bại nhưng build/test trước đó thành công. Nhận định nào chính xác?",
+      "options": [
+        "Tất cả tests chắc chắn đã fail",
+        "Build chắc chắn chưa được chạy",
+        "Nhánh Git bị đổi tên do Codecov",
+        "Cần phân biệt lỗi upload với lỗi test và xem chính sách action/job để kết luận trạng thái"
+      ],
+      "correct": 3,
+      "explanation": "Một bước phụ trợ có thể ảnh hưởng trạng thái job nhưng không đổi lịch sử kết quả các bước trước."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Phạm vi cache",
+      "question": "Dự án chuyển lockfile sang thư mục web. Cấu hình cache cần kiểm tra gì?",
+      "options": [
+        "Đường dẫn lockfile được setup-node dùng để tạo key, chẳng hạn cache-dependency-path",
+        "Tên reviewer của môi trường production",
+        "Thứ tự các trường color trong package.json",
+        "Độ dài tên workflow tính bằng byte"
+      ],
+      "correct": 0,
+      "explanation": "Cache cần gắn với dependency đúng dự án và lockfile thực tế."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Thư mục chạy lệnh",
+      "question": "Source dự án ở web/package.json nhưng workflow chạy npm ci ở gốc không có package.json. Sửa phù hợp là gì?",
+      "options": [
+        "Bỏ checkout để npm tự tìm dự án trên mạng",
+        "Cấu hình working-directory đúng cho các lệnh tương ứng",
+        "Đổi cache: npm thành cache: web để tự chuyển thư mục mọi lệnh",
+        "Đặt name: web cho job để tự đổi thư mục"
+      ],
+      "correct": 1,
+      "explanation": "working-directory và cache-dependency-path giải quyết những vấn đề khác nhau."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Xem bước gây lỗi",
+      "question": "Job test đỏ với nhiều steps. Cách xác định nguyên nhân trực tiếp phù hợp là gì?",
+      "options": [
+        "Xóa mọi test đang tồn tại",
+        "Đổi tất cả action sang nhánh main ngay lập tức",
+        "Xem step lỗi đầu tiên cùng log và mã thoát, có che thông tin nhạy cảm",
+        "Suy chắc chắn npm test lỗi vì job có ID test"
+      ],
+      "correct": 2,
+      "explanation": "Tên job không xác định step nào thực tế thất bại."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Hai trigger",
+      "question": "Push cập nhật một PR đang mở vào main có thể tạo cả run push và PR khi nhánh nguồn cũng khớp push.branches không?",
+      "options": [
+        "Không, on luôn chỉ cho một sự kiện trong cả repository",
+        "Không, PR tự tắt mọi push trigger",
+        "Có, nhưng hai run bắt buộc chia sẻ cùng job filesystem",
+        "Có, hai loại sự kiện có thể tạo các run riêng"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình nhiều trigger có thể dẫn đến nhiều run; cần xét chính sách tránh trùng khi cần."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Job phụ thuộc thất bại",
+      "question": "Giả sử deploy có needs: test, không có điều kiện ghi đè và test thất bại. deploy mặc định ra sao?",
+      "options": [
+        "Bị skip vì dependency không thành công",
+        "Vẫn chạy trước test",
+        "Tự nhận trạng thái test thành công",
+        "Tự rollback database production"
+      ],
+      "correct": 0,
+      "explanation": "needs là cổng dependency, không phải cơ chế rollback."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Chạy chẩn đoán sau lỗi",
+      "question": "Muốn thu log chẩn đoán kể cả khi test lỗi, nên làm gì?",
+      "options": [
+        "Đổi tên job thành success",
+        "Dùng điều kiện step thích hợp như failure() hoặc always() theo phạm vi mong muốn",
+        "Đặt tên step là always để điều kiện tự thay đổi",
+        "Xóa mã thoát lỗi của test trong mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện phải được cấu hình thực; không nên che lỗi chỉ để pipeline xanh."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Không giới hạn song song",
+      "question": "Hai job độc lập chưa chạy đồng thời dù không có needs. Điều gì có thể giải thích?",
+      "options": [
+        "Tên job chứa dấu gạch ngang cấm chạy song song",
+        "Checkout buộc mọi repository toàn cầu chạy tuần tự",
+        "Giới hạn concurrency hoặc tình trạng runner khả dụng",
+        "YAML luôn thực thi job theo thứ tự chữ cái"
+      ],
+      "correct": 2,
+      "explanation": "Khả năng chạy song song không đồng nghĩa bảo đảm bắt đầu cùng thời điểm."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Artifact và cache",
+      "question": "Nếu tách build/test thành hai job GitHub-hosted và cần chuyển bundle đã build, cơ chế nào phù hợp hơn?",
+      "options": [
+        "Chỉ đặt hai job cùng name để chia sẻ ổ đĩa",
+        "Dùng cache npm như kho phát hành bundle bắt buộc",
+        "Mặc định đọc file job trước qua thư mục hiện tại",
+        "Upload/download artifact với liên kết đúng run và đường dẫn"
+      ],
+      "correct": 3,
+      "explanation": "Artifact phục vụ chuyển sản phẩm build; cache dependency có mục tiêu và vòng đời khác."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Coverage và chất lượng",
+      "question": "Coverage cao cho phép kết luận gì một cách thận trọng?",
+      "options": [
+        "Nhiều dòng/nhánh theo cách công cụ đo đã được test chạm tới, không bảo đảm assertion đúng",
+        "Mọi hành vi nghiệp vụ đều đúng",
+        "Không còn trường hợp biên cần kiểm tra",
+        "Không cần review hoặc kiểm thử bảo mật"
+      ],
+      "correct": 0,
+      "explanation": "Coverage đo độ bao phủ, không thay chất lượng kiểm tra."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "YAML thụt dòng",
+      "question": "Vì sao khi thêm run mới cần giữ thụt dòng đúng dưới steps?",
+      "options": [
+        "Vì mọi chuỗi trong YAML phải là lệnh Bash",
+        "Để nó là phần tử step của đúng job theo cấu trúc YAML",
+        "Vì số dấu cách quyết định tốc độ Node",
+        "Để GitHub tự cấp secret production"
+      ],
+      "correct": 1,
+      "explanation": "Cấu trúc YAML ảnh hưởng ý nghĩa workflow, không chỉ hình thức."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Đầu vào chưa chứng minh",
+      "question": "Source chỉ có run: npm test. Thông tin nào chưa thể suy chắc từ dòng đó?",
+      "options": [
+        "Nó là một step run",
+        "Lệnh có sử dụng npm",
+        "Test runner cụ thể, coverage mode và assertion thực sự được cấu hình",
+        "Tên lệnh shell mà step định chạy"
+      ],
+      "correct": 2,
+      "explanation": "Cần đọc package.json và cấu hình test để biết nội dung thật."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Giữ lỗi có ý nghĩa",
+      "question": "Đề xuất đổi npm test thành npm test || true để job luôn xanh có vấn đề gì?",
+      "options": [
+        "Làm mọi test chạy hai lần theo mặc định",
+        "Tự upload secret vào Codecov",
+        "Buộc npm ci cập nhật mọi dependency",
+        "Che mã thoát thất bại, khiến trạng thái CI không còn phản ánh lỗi test đó"
+      ],
+      "correct": 3,
+      "explanation": "Bỏ qua lỗi phải có chính sách rõ và không trình bày thành kiểm tra đã pass."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Thêm trigger thủ công",
+      "question": "Muốn có nút chạy workflow thủ công, cần thêm trigger nào?",
+      "options": [
+        "workflow_dispatch",
+        "manual-approval trong name",
+        "runs-on: manual",
+        "cache: dispatch"
+      ],
+      "correct": 0,
+      "explanation": "workflow_dispatch là trigger riêng; tên hiển thị không tạo nút chạy."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Cố định action",
+      "question": "Tham chiếu @v4 có bảo đảm chính xác cùng commit action mãi mãi không?",
+      "options": [
+        "Không; vì tag luôn bị đổi mỗi giây",
+        "Không; muốn cố định mã action cần tham chiếu full commit SHA đã được review",
+        "Có; mọi tag luôn bất biến do Git bắt buộc",
+        "Có; version Node khóa source action"
+      ],
+      "correct": 1,
+      "explanation": "Tag và full commit SHA có mức cố định khác nhau; vẫn cần cập nhật có kiểm soát."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Báo cáo kết quả",
+      "question": "Bằng chứng nào phù hợp khi nói workflow đã kiểm tra commit X?",
+      "options": [
+        "Tên file CI Pipeline trong repository",
+        "Việc đã viết xong YAML nhưng chưa chạy",
+        "Run gắn với commit/ref cụ thể và kết quả các bước liên quan",
+        "Một ảnh chụp nhãn xanh của commit bất kỳ từ tháng trước"
+      ],
+      "correct": 2,
+      "explanation": "Cần gắn kết quả kiểm tra với đúng đầu vào."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Không tự tạo chất lượng",
+      "question": "Đội thêm bước npm test nhưng script test chỉ in OK rồi exit 0. Trạng thái xanh có ý nghĩa gì?",
+      "options": [
+        "Chứng minh toàn bộ chức năng đúng",
+        "Chứng minh mọi test ẩn của GitHub đã pass",
+        "Chứng minh website đạt mọi chuẩn accessibility",
+        "Chỉ chứng minh script đơn giản đó kết thúc thành công, không chứng minh kiểm thử ứng dụng"
+      ],
+      "correct": 3,
+      "explanation": "Đầu ra thành công phải được đánh giá theo nội dung kiểm tra thực."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Hai bộ lọc độc lập",
+      "question": "Push lên develop đồng thời mở PR từ develop vào main. Nếu quyền chạy cho phép, tình huống nào có thể xảy ra với mẫu?",
+      "options": [
+        "Cả run push và run pull_request vì mỗi sự kiện khớp bộ lọc riêng",
+        "Chỉ PR vì pull_request xóa cấu hình push",
+        "Không có run vì develop không thể làm nhánh nguồn",
+        "Chỉ build được chạy vì hai trigger gộp thành một step"
+      ],
+      "correct": 0,
+      "explanation": "Bộ lọc push xét ref được push, bộ lọc PR xét base; hai sự kiện có thể tạo run riêng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Coverage sau thất bại",
+      "question": "Test lỗi nhưng đã tạo một phần coverage. Muốn giữ test đỏ và vẫn thu report để chẩn đoán, thiết kế nào phù hợp?",
+      "options": [
+        "Dùng cache npm làm report coverage",
+        "Giữ mã thoát test, thêm bước thu report có điều kiện sau lỗi và xử lý trường hợp file chưa tồn tại",
+        "Đổi test thành luôn exit 0 rồi gọi đó là pass",
+        "Đưa upload trước test để luôn có report"
+      ],
+      "correct": 1,
+      "explanation": "Cần tách ghi nhận thất bại khỏi việc thu bằng chứng; file coverage không chắc tồn tại khi test dừng sớm."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Chuyển sang nhiều job",
+      "question": "Đội tách lint, test, build thành ba job riêng trên GitHub-hosted và chỉ đặt checkout/npm ci ở lint. Vì sao thiết kế chưa đủ?",
+      "options": [
+        "needs tự sao chép toàn bộ filesystem của lint",
+        "GitHub không hỗ trợ nhiều job trong một workflow",
+        "Các job có môi trường riêng; test/build cần tự chuẩn bị source/dependency hoặc nhận artifact thích hợp",
+        "Các job luôn dùng chung node_modules nên chỉ thiếu name"
+      ],
+      "correct": 2,
+      "explanation": "needs chỉ lập dependency, không chuyển source, dependency hay artifact."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Cache và tái lập",
+      "question": "Sau khi sửa lockfile, CI dùng cache cũ nhưng vẫn chạy npm ci đúng thư mục. Vì sao cache không nên là nguồn quyết định version dependency?",
+      "options": [
+        "Cache luôn có quyền ghi đè lockfile mà không thông báo",
+        "Tên cache tự quyết định version trong package.json",
+        "Không thể chạy CI nếu cache miss lần đầu",
+        "Lockfile và cài đặt kiểm soát dependency tree; cache là dữ liệu hỗ trợ và có thể miss/stale"
+      ],
+      "correct": 3,
+      "explanation": "CI đúng phải hoạt động cả khi không có cache; không coi cache là sản phẩm phát hành đã kiểm tra."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "PR không đáng tin",
+      "question": "Một PR từ fork muốn thay workflow để in token coverage nhằm chẩn đoán. Hướng xử lý nào bảo toàn mục tiêu kiểm tra?",
+      "options": [
+        "Review thay đổi workflow, dùng log không chứa bí mật và cơ chế upload phù hợp quyền của fork",
+        "Cấp token production để PR tự kiểm tra mọi quyền",
+        "Commit token vào package.json để checkout lấy được",
+        "In token rồi xóa log sau, coi như không lộ"
+      ],
+      "correct": 0,
+      "explanation": "Không cần tiết lộ bí mật để chứng minh kiểm tra chạy; mã không đáng tin là một ranh giới quyền."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Biến môi trường và report",
+      "question": "Step test đặt export REPORT=coverage/lcov.info nhưng upload ở step sau không thấy REPORT. Nguyên nhân và sửa phù hợp là gì?",
+      "options": [
+        "Codecov luôn yêu cầu chạy trong cùng một lệnh npm test",
+        "Môi trường shell không tự truyền qua steps; dùng env/GITHUB_ENV hoặc output đúng cơ chế",
+        "File report chắc chắn bị checkout tự xóa sau mỗi step",
+        "Tên biến REPORT bị GitHub cấm hoàn toàn"
+      ],
+      "correct": 1,
+      "explanation": "Filesystem chung không đồng nghĩa shell environment chung."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Hiểu trạng thái đỏ",
+      "question": "Lint fail nên test/build/upload đều skip. Có thể kết luận điều gì?",
+      "options": [
+        "Build chắc chắn tạo bundle hỏng",
+        "Codecov xác nhận coverage bằng 0",
+        "Lint thất bại; chưa có kết quả thực thi test/build/upload từ run đó",
+        "Tất cả tests đã thực thi và fail"
+      ],
+      "correct": 2,
+      "explanation": "Skip là chưa chạy theo điều kiện, không phải kết quả kiểm tra thất bại riêng của từng bước."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Kiểm soát phát hành",
+      "question": "Nhóm muốn production chỉ nhận commit CI xanh. Chỉ thêm on.push.branches: [main] đã đủ chưa?",
+      "options": [
+        "Đủ, vì tên main chứng minh mọi test đã pass",
+        "Đủ, vì checkout không thể lấy commit lỗi",
+        "Chưa, chỉ cần đổi tên job thành approved là đủ",
+        "Chưa; cần dependency hoặc cơ chế ràng buộc kết quả kiểm tra đúng commit và chính sách phát hành"
+      ],
+      "correct": 3,
+      "explanation": "Trigger xác định khi chạy; không tự chứng minh điều kiện an toàn của sản phẩm triển khai."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Nguồn lỗi môi trường",
+      "question": "Một test pass local nhưng fail trên ubuntu-latest với Node20. Cách điều tra phù hợp là gì?",
+      "options": [
+        "So phiên bản runtime, lockfile, môi trường/thư mục chạy và log lỗi của đúng commit trước khi sửa",
+        "Đổi test thành luôn pass để đồng bộ với local",
+        "Suy chắc chắn runner bị hỏng vì local pass",
+        "Xóa lockfile để mỗi run dùng dependency ngẫu nhiên"
+      ],
+      "correct": 0,
+      "explanation": "Khác biệt môi trường có thể ảnh hưởng kết quả; cần bằng chứng cụ thể thay vì che lỗi."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Coverage không có artifact",
+      "question": "Report lcov tồn tại trong job test, job upload mới không thấy dù có needs: test. Sửa nào phù hợp?",
+      "options": [
+        "Đổi branches từ main sang develop để giữ file",
+        "Chuyển report qua artifact hoặc tạo/upload trong cùng job, thay vì mong needs chia sẻ file",
+        "Đặt cả hai job tên test để dùng chung thư mục",
+        "Thêm cache: npm để tự truyền mọi report"
+      ],
+      "correct": 1,
+      "explanation": "needs không chuyển filesystem giữa các job."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Sắp xếp check và tốc độ",
+      "question": "Muốn rút ngắn thời gian phản hồi bằng cách chạy lint và test song song, cần đánh đổi nào?",
+      "options": [
+        "Không cần cài dependency vì hai job tự chia sẻ npm ci",
+        "Phải bỏ mọi bước build vì GitHub không tổng hợp nhiều kết quả",
+        "Mỗi job cần chuẩn bị môi trường riêng và phải tổng hợp kết quả để giữ cổng kiểm tra đúng",
+        "Song song bảo đảm nhanh gấp đôi trên mọi repository"
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu cần đo thời gian thực; độ song song không tự bảo đảm tốc độ hay correctness."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Phiên bản chưa cố định",
+      "question": "Team gọi workflow hoàn toàn tái lập chỉ vì có node-version: 20 và ubuntu-latest. Nhận xét nào đúng?",
+      "options": [
+        "Đủ, vì mọi patch Node20 có cùng binary và ảnh runner không đổi",
+        "Đủ, vì lockfile tự khóa cả hệ điều hành",
+        "Sai chỉ vì tên workflow có dấu cách",
+        "Chưa đủ: dòng Node, ảnh runner, action refs và dependency đều có mức cố định cần xét"
+      ],
+      "correct": 3,
+      "explanation": "Tái lập liên quan nhiều đầu vào; không cần hứa bất biến tuyệt đối từ các nhãn rộng."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Coverage không đồng nghĩa bảo mật",
+      "question": "Pipeline lint/test/build/coverage đều xanh. Có thể khẳng định không có lỗi phân quyền không?",
+      "options": [
+        "Không; cần kiểm tra phân quyền thực sự và đánh giá phạm vi tests đã chạy",
+        "Có, vì Codecov tự kiểm tra mọi role người dùng",
+        "Có, vì build không cho phép mã thiếu auth",
+        "Có, nếu nhánh tên main"
+      ],
+      "correct": 0,
+      "explanation": "Một nhãn xanh không mở rộng phạm vi bằng chứng sang các hành vi chưa được kiểm tra."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Tên đường dẫn và chế độ test",
+      "question": "Test script chạy chế độ watch nên CI không kết thúc và không upload coverage. Hướng sửa phù hợp là gì?",
+      "options": [
+        "Chỉ tăng số nhánh trong trigger",
+        "Cấu hình chế độ chạy một lượt phù hợp CI, coverage khi cần, và timeout hợp lý",
+        "Đặt Upload coverage ở name của job để tự kết thúc watch",
+        "Bỏ mọi assertions để tiến trình thoát ngay"
+      ],
+      "correct": 1,
+      "explanation": "Lệnh test cho CI cần kết thúc hữu hạn; timeout không thay nội dung kiểm tra."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Action phụ trợ và trạng thái",
+      "question": "Team muốn upload coverage không chặn CI khi dịch vụ ngoài tạm lỗi, nhưng test thất bại vẫn phải đỏ. Thiết kế nào phù hợp?",
+      "options": [
+        "Đổi npm test thành echo passed",
+        "Dùng nhãn workflow success để thay trạng thái thật",
+        "Áp chính sách lỗi riêng cho bước upload và giữ nguyên cổng test, ghi rõ giới hạn report",
+        "Bọc toàn bộ job bằng cơ chế bỏ qua mọi lỗi"
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi bỏ qua lỗi phải nhỏ và đúng mục tiêu, không che lỗi kiểm tra chính."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Bảo toàn đầu vào kiểm tra",
+      "question": "Run CI xanh cho commit A, sau đó nhánh cập nhật commit B. Tại sao chưa thể nói B đã được kiểm tra?",
+      "options": [
+        "Mọi commit cùng nhánh có nội dung giống nhau",
+        "Checkout tự chạy lại toàn bộ tests ngoài workflow",
+        "Codecov tự đổi mọi nhãn xanh sang commit mới",
+        "Kết quả gắn với đầu vào A; cần kết quả cho B hoặc artifact đúng nguồn được ràng buộc rõ"
+      ],
+      "correct": 3,
+      "explanation": "Bằng chứng cần gắn với đúng revision thay vì chỉ tên nhánh."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Nhiều dự án trong repo",
+      "question": "Repository có package.json ở gốc và web/package.json, workflow định kiểm web nhưng chạy gốc và cache lock gốc. Cần sửa gì đồng bộ?",
+      "options": [
+        "Căn chỉnh working-directory, lockfile cache và đường dẫn report theo dự án web thực sự",
+        "Chỉ đổi tên workflow thành Web CI",
+        "Chỉ đổi node-version sang một số lớn hơn",
+        "Chỉ đưa web vào branches"
+      ],
+      "correct": 0,
+      "explanation": "Các đường dẫn có nhiệm vụ khác nhau nhưng phải cùng phản ánh đầu vào cần kiểm."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Giải thích default skip",
+      "question": "Đội thêm job tổng hợp needs: [lint, test] để xuất báo cáo kể cả khi lỗi, nhưng job bị skip khi lint fail. Điều gì còn thiếu?",
+      "options": [
+        "Bỏ needs sẽ tự giữ đúng quan hệ và file báo cáo",
+        "Điều kiện chạy job tổng hợp sau trạng thái thất bại/skip phù hợp, đồng thời vẫn phản ánh lỗi upstream",
+        "Một action checkout phiên bản cao hơn luôn bỏ skip",
+        "Đổi tên lint thành test để dependency thành công"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện trạng thái và dependency là hai phần cần thiết kế; báo cáo không được làm mất lỗi kiểm tra."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Không coi cấu hình là thực thi",
+      "question": "Đã viết xong YAML đúng cú pháp nhưng chưa có run nào. Mô tả nào trung thực nhất?",
+      "options": [
+        "Đã xác nhận dependency cache làm nhanh hơn 90%",
+        "Đã chứng minh mọi script tồn tại nhờ tên workflow",
+        "Đã cấu hình pipeline dự kiến; chưa có bằng chứng runtime các lệnh hoặc upload thành công",
+        "Đã kiểm tra mọi commit và deploy thành công"
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình là đầu vào; kết quả thực thi cần được quan sát riêng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Chẩn đoán source thiếu",
+      "question": "Mẫu có Codecov và đường dẫn lcov nhưng không cho package.json hay cấu hình test. Cần xác minh gì trước khi công bố coverage hoạt động?",
+      "options": [
+        "Chỉ số lượng bước name trong YAML",
+        "Màu biểu tượng CI trên giao diện",
+        "Tên nhánh có chứa từ coverage hay không",
+        "Script test, chế độ/report coverage, đường dẫn file và quyền/cấu hình action đúng phiên bản"
+      ],
+      "correct": 3,
+      "explanation": "Không suy khả năng tạo report và upload từ một đường dẫn khai báo."
+    }
+  ]
+}

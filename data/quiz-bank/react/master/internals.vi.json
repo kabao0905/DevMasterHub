@@ -1,0 +1,1142 @@
+{
+  "version": 1,
+  "tech": "react",
+  "level": "master",
+  "lesson": "internals",
+  "language": "vi",
+  "sourceHash": "7558b00a24dfc73f9403c5a0ea9a4473b0f65a0ae376969646b4dade616b2543",
+  "status": "approved",
+  "review": "Tự viết không API. React render/commit/state identity/useRef/useTransition/useDeferredValue docs; Fiber/lanes là implementation details không API ổn định. Nguồn tăng và đọc ref trong render không là bộ đếm commit đáng tin; startTransition chưa dùng, HeavyList chưa cung cấp. Không cam kết timings hoặc 100k rows mượt.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Reconciliation",
+      "question": "Reconciliation nói tới việc gì?",
+      "options": [
+        "Đối chiếu mô tả UI mới/cũ để xác định thay đổi cần thiết.",
+        "Tự reconcile mọi giao dịch ngân hàng.",
+        "Mã hóa JSX.",
+        "Tự tạo database index."
+      ],
+      "correct": 0,
+      "explanation": "React dùng mô tả UI và identity để quản lý cập nhật."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Render phase",
+      "question": "Render phase chủ yếu làm gì?",
+      "options": [
+        "Tự commit DB.",
+        "Tính mô tả UI từ props/state/context.",
+        "Bắt buộc ghi mọi thay đổi DOM ngay trong function.",
+        "Luôn gửi analytics."
+      ],
+      "correct": 1,
+      "explanation": "Component render cần thuần."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Commit phase",
+      "question": "Commit phase liên quan việc gì?",
+      "options": [
+        "Chỉ tính một callback không output.",
+        "Tự tải lại browser.",
+        "Áp các thay đổi cần thiết lên host UI theo renderer.",
+        "Parse mọi SQL."
+      ],
+      "correct": 2,
+      "explanation": "Với React DOM, commit có thể cập nhật DOM và refs/lifecycle phù hợp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Render versus DOM",
+      "question": "Component render lại có đồng nghĩa mọi DOM node của nó bị thay mới không?",
+      "options": [
+        "Có; React xóa toàn subtree mỗi lần.",
+        "Chỉ khi state là number.",
+        "Chỉ khi không có CSS.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "React có thể giữ/reuse nodes khi đối chiếu phù hợp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Concurrent meaning",
+      "question": "Concurrent rendering có nghĩa mọi component JS tự chạy song song trên nhiều CPU cores không?",
+      "options": [
+        "Không.",
+        "Có; mỗi component tự có một OS thread.",
+        "Có; JSX là GPU code.",
+        "Chỉ khi dùng useState."
+      ],
+      "correct": 0,
+      "explanation": "Scheduling/interruption khác parallel execution."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Fiber scope",
+      "question": "Fiber nên được hiểu ở mức nào với app developer?",
+      "options": [
+        "Một auth token.",
+        "Cấu trúc/cơ chế nội bộ phục vụ reconciliation và scheduling, không API để app sửa tùy ý.",
+        "Một public database ORM.",
+        "Một CSS framework."
+      ],
+      "correct": 1,
+      "explanation": "Không dựa business logic vào internals không được cam kết."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Transition hook",
+      "question": "useTransition trả về những gì?",
+      "options": [
+        "DB client và cursor.",
+        "DOM node và key.",
+        "isPending và startTransition.",
+        "Chỉ một Promise."
+      ],
+      "correct": 2,
+      "explanation": "Hook giúp theo dõi một luồng transition theo API."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Deferred hook",
+      "question": "useDeferredValue cung cấp gì?",
+      "options": [
+        "Một timeout cố định300ms.",
+        "Một distributed cache.",
+        "Một quyền admin.",
+        "Phiên bản giá trị được defer cho phần UI ít khẩn cấp hơn."
+      ],
+      "correct": 3,
+      "explanation": "Nó điều chỉnh rendering priority, không tự debounce network."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Urgent text",
+      "question": "Text input controlled khi người dùng gõ cần được cập nhật thế nào?",
+      "options": [
+        "Backing state cập nhật kịp tương tác, không đặt chính input update thành transition.",
+        "Luôn chờ mọi heavy list render xong.",
+        "Chỉ mutate DOM rồi bỏ state.",
+        "Luôn gửi API trước khi hiện chữ."
+      ],
+      "correct": 0,
+      "explanation": "Có thể tách state hiển thị nặng hoặc dùng deferred value."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Keys identity",
+      "question": "Key ổn định hỗ trợ giữ gì khi reorder trong cùng parent?",
+      "options": [
+        "Mọi DB connections.",
+        "Identity/state của item theo dữ liệu.",
+        "Mọi quyền server.",
+        "Mọi browser history."
+      ],
+      "correct": 1,
+      "explanation": "Type và vị trí trong cây cũng liên quan identity."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Type identity",
+      "question": "Thay component type ở cùng vị trí thường ảnh hưởng gì?",
+      "options": [
+        "Tự persist disk.",
+        "Chỉ đổi tên DevTools.",
+        "Có thể thay subtree và reset state.",
+        "Luôn giữ mọi local state."
+      ],
+      "correct": 2,
+      "explanation": "State gắn với cấu trúc/identity, không tên biến đơn thuần."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Ref mutation",
+      "question": "Gán ref.current có tự yêu cầu render mới không?",
+      "options": [
+        "Có; giống setter trong mọi trường hợp.",
+        "Chỉ khi ref là number.",
+        "Chỉ trong StrictMode.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Ref là container mutable, state là nguồn render reactive."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Source counter",
+      "question": "RenderTracker nguồn tăng bộ đếm ở đâu?",
+      "options": [
+        "Trong function render bằng renderCount.current++.",
+        "Trong click handler.",
+        "Trong DB transaction.",
+        "Chỉ sau commit."
+      ],
+      "correct": 0,
+      "explanation": "Đây là mutation trong render, không nên dùng làm mẫu purity đúng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Source transition call",
+      "question": "SearchWithTransition nguồn có gọi startTransition không?",
+      "options": [
+        "Chỉ khi query rỗng.",
+        "Không.",
+        "Có; useDeferredValue tự gọi biến đó.",
+        "Có; input onChange luôn gọi."
+      ],
+      "correct": 1,
+      "explanation": "Đã destructure hook không có nghĩa đã sử dụng action."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Source HeavyList",
+      "question": "HeavyList trong snippet đã được định nghĩa/import đầy đủ chưa?",
+      "options": [
+        "Rồi; có useDeferredValue là đủ.",
+        "Chỉ cần tên viết hoa.",
+        "Chưa.",
+        "Rồi; React tự tạo từ tag."
+      ],
+      "correct": 2,
+      "explanation": "Cần component thật và workload trước khi đánh giá performance."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Pure rendering",
+      "question": "Vì sao không ghi external counter trong render để đếm giao dịch?",
+      "options": [
+        "Vì JavaScript không có counters.",
+        "Vì React chỉ render trên server.",
+        "Vì key phải là string.",
+        "Render có thể lặp hoặc bị bỏ, không tương ứng business events."
+      ],
+      "correct": 3,
+      "explanation": "Ghi nghiệp vụ ở luồng được thiết kế cho sự kiện/side effect."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "State snapshot",
+      "question": "Biến state trong một render là gì?",
+      "options": [
+        "Snapshot dùng bởi render/closures đó.",
+        "Một mutable global tự thay ngay khi setter được gọi.",
+        "DB cursor.",
+        "Một DOM attribute bắt buộc."
+      ],
+      "correct": 0,
+      "explanation": "Hiểu snapshots giúp tránh stale closures."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Profiler commit",
+      "question": "Profiler/render logs có nên được coi là cùng metric trong mọi chế độ không?",
+      "options": [
+        "Chỉ nếu list dưới10items.",
+        "Không.",
+        "Có; mọi render đều commit đúng một lần.",
+        "Chỉ khi không có hooks."
+      ],
+      "correct": 1,
+      "explanation": "Định nghĩa metric và mode trước khi đo."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Stable public API",
+      "question": "Ứng dụng nên ưu tiên dựa vào gì?",
+      "options": [
+        "Hardcode lane bitmasks không pin version.",
+        "Dùng tên function nội bộ làm auth.",
+        "Public documented APIs và behavior contracts.",
+        "Tự sửa private Fiber fields ở runtime."
+      ],
+      "correct": 2,
+      "explanation": "Internals có thể thay đổi giữa các releases."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Performance exercise",
+      "question": "Bài tập virtual list100k có chứng minh snippet đã chạy mượt100k rows chưa?",
+      "options": [
+        "Rồi; useDeferredValue bảo đảm60fps.",
+        "Rồi; mọi Fiber app tự virtualization.",
+        "Chỉ cần build pass.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Mục tiêu bài tập khác kết quả đo."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "State preserve same type",
+      "question": "Click Add rồi Change label; p trong Counter hiển thị gì?",
+      "code": "import React from\"react\";function Counter({label}){const[n,setN]=React.useState(0);return <><button onClick={()=>setN(v=>v+1)}>Add</button><p>{label}:{n}</p></>;}export default function App(){const[label,setLabel]=React.useState(\"A\");return <><button onClick={()=>setLabel(\"B\")}>Change</button><Counter label={label}/></>;}",
+      "options": [
+        "B:1.",
+        "B:0.",
+        "A:1.",
+        "undefined."
+      ],
+      "correct": 0,
+      "explanation": "Cùng type/vị trí/key nên local state được giữ khi prop đổi."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Key reset",
+      "question": "Click Add rồi Change key; p hiển thị gì?",
+      "code": "import React from\"react\";function Counter({label}){const[n,setN]=React.useState(0);return <><button onClick={()=>setN(v=>v+1)}>Add</button><p>{label}:{n}</p></>;}export default function App(){const[label,setLabel]=React.useState(\"A\");return <><button onClick={()=>setLabel(\"B\")}>Change</button><Counter key={label} label={label}/></>;}",
+      "options": [
+        "undefined.",
+        "B:0.",
+        "B:1.",
+        "A:1."
+      ],
+      "correct": 1,
+      "explanation": "Key mới remount Counter và khởi tạo state0."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Conditional unmount",
+      "question": "Click Add, Hide rồi Show, counter hiển thị gì?",
+      "code": "import React from\"react\";function Counter(){const[n,setN]=React.useState(0);return <button onClick={()=>setN(v=>v+1)}>Count:{n}</button>;}export default function App(){const[show,setShow]=React.useState(true);return <><button onClick={()=>setShow(v=>!v)}>Toggle</button>{show&&<Counter/>}</>;}",
+      "options": [
+        "2.",
+        "undefined.",
+        "0.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Unmount bỏ local state của Counter; mount mới khởi tạo lại."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Ref event no render",
+      "question": "Click Mutate ref một lần; p còn hiển thị giá trị nào?",
+      "code": "import React from\"react\";export default function App(){const r=React.useRef(0);const[display]=React.useState(0);return <><button onClick={()=>{r.current++;}}>Mutate</button><p>{display}</p></>;}",
+      "options": [
+        "1.",
+        "2.",
+        "undefined.",
+        "0."
+      ],
+      "correct": 3,
+      "explanation": "Event thay ref nhưng không setState nên chưa render lại UI."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Ref event read",
+      "question": "Click Read một lần thì p là gì?",
+      "code": "import React from\"react\";export default function App(){const r=React.useRef(0);const[n,setN]=React.useState(0);return <><button onClick={()=>{r.current++;setN(r.current);}}>Read</button><p>{n}</p></>;}",
+      "options": [
+        "1.",
+        "0.",
+        "2.",
+        "undefined."
+      ],
+      "correct": 0,
+      "explanation": "Handler sửa ref rồi đưa dữ liệu cần hiển thị vào state."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Deferred initial",
+      "question": "useDeferredValue(\"A\") không initialValue riêng; text render ban đầu là gì?",
+      "code": "import React from\"react\";export default function App(){const v=React.useDeferredValue(\"A\");return <p>{v}</p>;}",
+      "options": [
+        "B.",
+        "A.",
+        "undefined.",
+        "Rỗng luôn."
+      ],
+      "correct": 1,
+      "explanation": "Initial render không defer khi không truyền initialValue khác."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Deferred final update",
+      "question": "Gõ B và đợi React hoàn tất cập nhật, p cuối cùng là gì?",
+      "code": "import React from\"react\";export default function App(){const[q,setQ]=React.useState(\"A\");const d=React.useDeferredValue(q);return <><input aria-label=\"Query\" value={q} onChange={e=>setQ(e.target.value)}/><p>{d}</p></>;}",
+      "options": [
+        "undefined.",
+        "AB.",
+        "B.",
+        "A mãi."
+      ],
+      "correct": 2,
+      "explanation": "Deferred UI bắt kịp current value khi background render hoàn tất, không hứa thời gian cố định."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Transition final",
+      "question": "Click Change và đợi transition hoàn tất, p là gì?",
+      "code": "import React from\"react\";export default function App(){const[s,setS]=React.useState(\"A\");const[pending,start]=React.useTransition();return <><button onClick={()=>start(()=>setS(\"B\"))}>Change</button><p>{s}</p><span>{pending?\"pending\":\"idle\"}</span></>;}",
+      "options": [
+        "A mãi.",
+        "undefined.",
+        "AB.",
+        "B."
+      ],
+      "correct": 3,
+      "explanation": "Transition cập nhật state ít khẩn cấp, không có nghĩa bỏ update."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Stable keyed reorder",
+      "question": "Nhập X vào rowA rồi reorder B,A với key=id; input của rowA còn gì?",
+      "code": "import React from\"react\";function Row({id}){const[s,setS]=React.useState(id);return <input aria-label={id} value={s} onChange={e=>setS(e.target.value)}/>;}export default function App(){const[xs,setXs]=React.useState([\"A\",\"B\"]);return <><button onClick={()=>setXs(v=>[...v].reverse())}>Reverse</button>{xs.map(x=><Row key={x} id={x}/>)}</>;}",
+      "options": [
+        "X.",
+        "B.",
+        "A mặc định được reset.",
+        "Rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Local state theo item identity trong cùng sibling list."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Index keyed reorder",
+      "question": "Nhập X vào rowA rồi reorder B,A với key=index; input gắn labelB có thể giữ gì?",
+      "code": "import React from\"react\";function Row({id}){const[s,setS]=React.useState(id);return <input aria-label={id} value={s} onChange={e=>setS(e.target.value)}/>;}export default function App(){const[xs,setXs]=React.useState([\"A\",\"B\"]);return <><button onClick={()=>setXs(v=>[...v].reverse())}>Reverse</button>{xs.map((x,i)=><Row key={i} id={x}/>)}</>;}",
+      "options": [
+        "undefined.",
+        "X.",
+        "B mới được reset tự động.",
+        "A sau khi decode key."
+      ],
+      "correct": 1,
+      "explanation": "Instance ở vị trí0 vẫn giữ stateX dù prop id đổi thànhB."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "DOM reuse",
+      "question": "Text p đổi từA sangB có bắt buộc element p cũ bị thay mới không?",
+      "options": [
+        "Chỉ nếu có style.",
+        "Chỉ nếu props lànumber.",
+        "Không; React DOM có thể giữ p và cập nhật text.",
+        "Có; mọi text update xóa node cha."
+      ],
+      "correct": 2,
+      "explanation": "Host node identity phụ thuộc reconciliation, không đồng nghĩa function render count."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Same value update",
+      "question": "Setter nhận state bằng Object.is với state hiện tại có thể làm gì?",
+      "options": [
+        "Luôn deep clone toàn tree.",
+        "Luôn gửi network request.",
+        "Bắt buộc remount mọi child.",
+        "Bỏ cập nhật không thay đổi theo semantics React."
+      ],
+      "correct": 3,
+      "explanation": "Không hứa số lần function được gọi tuyệt đối trong mọi kiểm tra/mode."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Props default comparison",
+      "question": "Default memo comparison có nên mô tả chính xác là Object.is từng prop không?",
+      "options": [
+        "Có.",
+        "Không; luôn deep compare JSON.",
+        "Không; luôn chỉ so tên prop.",
+        "Không; React không có comparator."
+      ],
+      "correct": 0,
+      "explanation": "Nguồn viết=== là cách nói thiếu sắc thái, ví dụNaN và signed zero khác nhau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "NaN comparison",
+      "question": "Object.is(NaN,NaN) và NaN===NaN lần lượt là gì?",
+      "options": [
+        "false và true.",
+        "true và false.",
+        "false và false.",
+        "true và true."
+      ],
+      "correct": 1,
+      "explanation": "So sánh Object.is không đồng nhất=== trong mọi trường hợp."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Signed zero comparison",
+      "question": "Object.is(0,-0) và 0===-0 lần lượt là gì?",
+      "options": [
+        "false và false.",
+        "true và false.",
+        "false và true.",
+        "true và true."
+      ],
+      "correct": 2,
+      "explanation": "Đây là một khác biệt khác của comparator semantics."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Parent render rule",
+      "question": "Có nên nói parent render thì mọi descendants luôn thực thi function lại bất kể memo/bailout không?",
+      "options": [
+        "Có; mọi tối ưu đều vô nghĩa.",
+        "Chỉ nếu dùng key.",
+        "Chỉ nếu context là undefined.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Mô tả nguồn đơn giản hóa, cần xét memo/state/context/element identity và scheduling."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Context consumer rule",
+      "question": "Context thay đổi có phải mọi component trong app đều nhận rerender vì subscribe context đó không?",
+      "options": [
+        "Không; xét consumers và provider scope, cùng các nguyên nhân render khác.",
+        "Có; mọi component tự subscribe mọi context.",
+        "Chỉ khi contextboolean.",
+        "Chỉ khi khôngcóJSX."
+      ],
+      "correct": 0,
+      "explanation": "Không suy all-app subscription từ một context update."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Ref render counter issue",
+      "question": "renderCount.current++ trong render có vấn đề gì?",
+      "options": [
+        "Ref luôn là state reactive.",
+        "Mutation trong render và đếm attempts không chắc là commits.",
+        "Tự bảo đảm commit count chính xác.",
+        "Chỉ làm CSS border đậm."
+      ],
+      "correct": 1,
+      "explanation": "Không dùng ví dụ này làm bằng chứng purity hoặc benchmark tin cậy."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Source isPending",
+      "question": "Trong source chưa gọi startTransition, query onChange chỉ setQuery. isPending có tự theo useDeferredValue không?",
+      "options": [
+        "Chỉ khi querydài.",
+        "Chỉ nếu HeavyList được memo.",
+        "Không.",
+        "Có; hai hooks tự chia sẻ mọi pending state."
+      ],
+      "correct": 2,
+      "explanation": "useTransition pending theo transition scope của hook, không mọi deferred render."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Deferred no debounce",
+      "question": "useDeferredValue có cố định delay300ms không?",
+      "options": [
+        "Có; mọi version đều delay 300ms.",
+        "Có; delay dựa vào độ dài.",
+        "Chỉ khi string.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Background scheduling không là timer debounce."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Deferred network",
+      "question": "Effect fetch phụ thuộc query vẫn chạy theo query; dùng deferredQuery chỉ cho HeavyList có tự giảm requests không?",
+      "options": [
+        "Không.",
+        "Có; mọi fetch tự theo deferred value.",
+        "Có; useDeferredValue là HTTP cache.",
+        "Chỉ cần query chữ thường."
+      ],
+      "correct": 0,
+      "explanation": "Request rate cần debounce/cache/cancellation theo thiết kế riêng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Transition immediate action",
+      "question": "startTransition(action) có trì hoãn việc gọi action như setTimeout không?",
+      "options": [
+        "Chỉ nếu action đồng bộ.",
+        "Không; action được gọi ngay, state updates được đánh dấu theo contract.",
+        "Có; action luôn chạy sau300ms.",
+        "Có; action chạy ở server."
+      ],
+      "correct": 1,
+      "explanation": "Đánh dấu priority khác lập timer cho toàn function."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Heavy synchronous function",
+      "question": "Đặt một vòng lặp JS đồng bộ rất lâu trong action có khiến nó tự chia nhỏ và chạy trên worker không?",
+      "options": [
+        "Chỉ cần gọi useMemo.",
+        "Chỉ nếu có Suspense.",
+        "Không.",
+        "Có; transition tự parallel hóa mọi JS."
+      ],
+      "correct": 2,
+      "explanation": "Scheduling React không tự biến mọi computation thành interruptible worker task."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Commit interruption",
+      "question": "Concurrent rendering có nghĩa React commit nửa DOM rồi cho người dùng thấy trạng thái nửa cũ nửa mới tùy tiện không?",
+      "options": [
+        "Có; đó là mục đích của Fiber.",
+        "Có; mọi DOM write đều có thể bỏ giữa chừng.",
+        "Chỉ khi list dài.",
+        "Không; render interruption khác commit consistency."
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm work preparation với việc áp UI đã được chọn commit."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Abandoned render effects",
+      "question": "Render attempt bị bỏ trước commit có bắt buộc effect của attempt đó đã chạy không?",
+      "options": [
+        "Không.",
+        "Có; effects là code chạy ngay trong render.",
+        "Có; mọi componentcall đều setup effect.",
+        "Chỉ nếu dependency[]."
+      ],
+      "correct": 0,
+      "explanation": "Effects gắn với commits/lifecycle theo API."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Priority lanes",
+      "question": "Có nên hardcode số lane bitmask nội bộ để phân quyền người dùng không?",
+      "options": [
+        "Chỉ nếu TypeScript pass.",
+        "Không.",
+        "Có; lanes là auth API.",
+        "Có; giá trị không bao giờ đổi."
+      ],
+      "correct": 1,
+      "explanation": "Lanes không là public permission model."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Key remount scope",
+      "question": "Đổi key của list container có thể reset gì?",
+      "options": [
+        "Mọi DB records.",
+        "Mọi browser tabs.",
+        "State trong subtree bị remount theo identity mới.",
+        "Chỉ text key trong DOM."
+      ],
+      "correct": 2,
+      "explanation": "Không dùng key như nút render-force vô hại."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Sibling state scopes",
+      "question": "Hai Counter cùng type cùng props nhưng ở hai vị trí khác nhau có share local state không?",
+      "options": [
+        "Có; cùng function là cùng state.",
+        "Chỉ nếu không có key.",
+        "Chỉ nếu initial state bằng 0.",
+        "Không theo mặc định."
+      ],
+      "correct": 3,
+      "explanation": "State gắn với instances trong cây, không chỉ function definition."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "New component function",
+      "question": "Định nghĩa Child bên trong App mỗi render có thể đổi gì?",
+      "options": [
+        "Component type identity và local state lifetime.",
+        "Tự giữ mọi state vĩnh viễn.",
+        "Tự thêm memo.",
+        "Chỉ đổi source map."
+      ],
+      "correct": 0,
+      "explanation": "Đặt component definitions ở scope ổn định khi phù hợp."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Profiler metric",
+      "question": "actualDuration của Profiler nên được hiểu là gì trong phạm vi API?",
+      "options": [
+        "DB commit duration.",
+        "Chi phí render được đo cho update/subtree theo profiler, không toàn bộ network/end-to-end latency.",
+        "Tổng thời gian mọi server requests.",
+        "Luôn browser paint time."
+      ],
+      "correct": 1,
+      "explanation": "Chọn metric đúng phạm vi và môi trường đo."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Complexity heuristic",
+      "question": "Nhắc heuristic diff O(n) có đủ suy toàn render của mọi app O(n) không?",
+      "options": [
+        "Có; React đổi mọi thuật toán.",
+        "Chỉ cần key ổn định.",
+        "Không; user code, computations và host work có chi phí riêng.",
+        "Có; mọi filter/sort đều thành O(n)."
+      ],
+      "correct": 2,
+      "explanation": "Complexity của cơ chế đối chiếu không là bound cho mọi công việc ứng dụng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Memo context",
+      "question": "Memo child own props giữ nguyên nhưng nó đọc context đổi; có thể render không?",
+      "options": [
+        "Không; memo chặn mọi subscriptions.",
+        "Chỉ khi key ngẫu nhiên.",
+        "Chỉ trong SSR.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "Context subscription không bị prop memo hóa ngăn."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Source pending spinner",
+      "question": "Nguồn hiển thị isPending spinner nhưng không start transition; cải thiện nào khớp intent?",
+      "options": [
+        "Dùng transition đúng cho nonurgent state hoặc chỉ báo stale/deferred theo thiết kế khác.",
+        "Chỉ đổi màu spinner.",
+        "Chỉ gọi JSON.stringify(query).",
+        "Giả định mọi pending status tự liên kết."
+      ],
+      "correct": 0,
+      "explanation": "Nối chỉ báo với cơ chế đang thực sự dùng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Urgent selection",
+      "question": "Một transition đang render list nặng, user gõ tiếp; mục đích concurrency là gì?",
+      "options": [
+        "Tự tăng server connections.",
+        "Cho phép ưu tiên update mới/khẩn cấp và bỏ hoặc làm lại work render phù hợp.",
+        "Khóa input đến khi list xong.",
+        "Tự giảm mọi CPU cost về 0."
+      ],
+      "correct": 1,
+      "explanation": "Responsiveness có thể cải thiện dù không tự giảm complexity."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Deferred object churn",
+      "question": "Truyền object literal mới mỗi render vào useDeferredValue có rủi ro gì?",
+      "options": [
+        "Không thể defer object.",
+        "Chỉ đổi CSS.",
+        "Identity liên tục đổi, có thể tạo background renders không cần thiết.",
+        "Luôn deep memo tự động."
+      ],
+      "correct": 2,
+      "explanation": "Ưu tiên primitive hoặc stable object theo semantics."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Background effects",
+      "question": "Background render chưa commit có nên gửi analytics impression bằng render side effect không?",
+      "options": [
+        "Có; work bắt đầu là impression.",
+        "Có; React rollback analytics.",
+        "Chỉ cầnrefcounter.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Impression cần định nghĩa theo visibility/commit/business policy phù hợp."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Virtualization data",
+      "question": "Virtual list100k items có nhất thiết render100k DOM rows cùng lúc không?",
+      "options": [
+        "Không; mục tiêu thường là window các rows cần thấy.",
+        "Có; virtualization chỉ đổi tên.",
+        "Có; key tạo DOM cho mọi rows.",
+        "Chỉ nếu dùng Fragments."
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu lớn và DOM lớn là hai phạm vi khác nhau."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "State lifting",
+      "question": "Editable row bị virtualizer unmount, muốn giữ draft cần cân nhắc gì?",
+      "options": [
+        "Chỉ giữ ref trong row đã unmount.",
+        "Đặt draft ở owner/store có lifetime phù hợp và key theo dữ liệu.",
+        "Tin DOM giữ state khi bị xóa.",
+        "Đổi index key ngẫu nhiên."
+      ],
+      "correct": 1,
+      "explanation": "State ownership phải đáp ứng lifetime mong muốn."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Ref latest value",
+      "question": "Cần đọc ref hiện tại trong event handler có thể hợp lệ không?",
+      "options": [
+        "Chỉ nếu ref chứa DOM.",
+        "Chỉ trong server action.",
+        "Có khi đúng mục đích và không dùng ref mutation thay reactive UI state.",
+        "Không; mọi ref read đều bị cấm."
+      ],
+      "correct": 2,
+      "explanation": "Quy tắc purity tập trung render; refs có vai trò hợp lệ trong handlers/effects."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source missing benchmark",
+      "question": "Snippet không có HeavyList implementation hoặc measurements; có thể kết luận gì?",
+      "options": [
+        "Đã chứng minh 60fps.",
+        "Đã chứng minh 100.000 rows production.",
+        "Đã chứng minh một triệu users.",
+        "Chỉ mô tả ý định API, chưa chứng minh độ mượt/throughput."
+      ],
+      "correct": 3,
+      "explanation": "Không thay bằng chứng thực bằng tên component HeavyList."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Aborted render count",
+      "question": "Ref counter tăng trong render rồi attempt bị bỏ có thể báo gì sai?",
+      "options": [
+        "Đếm work chưa từng commit như UI đã được hiển thị.",
+        "Luôn tự rollback counter chính xác.",
+        "Chỉ đếm event handlers.",
+        "Không thể có render bị bỏ."
+      ],
+      "correct": 0,
+      "explanation": "Render-phase mutation không là thước đo commit/business event."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "External store tearing",
+      "question": "External mutable store cần tích hợp nhất quán với concurrent React nên cân nhắc API nào?",
+      "options": [
+        "Chỉ dùng random key.",
+        "useSyncExternalStore với snapshot/subscription contract đúng.",
+        "Đọc global mutable object tùy ý trong render rồi không subscribe.",
+        "Chỉ memo mọi child."
+      ],
+      "correct": 1,
+      "explanation": "Store integration cần snapshot consistency, không chỉ một ref đọc tùy ý."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Await transition updates",
+      "question": "State update sau await trong transition action cần lưu ý gì theo docs hiện hành?",
+      "options": [
+        "Chỉ cần đổi tên setter.",
+        "await tự tạo một OS thread.",
+        "Có thể cần bọc update sau await trong startTransition nữa theo API limitation.",
+        "Mọi update ở mọi task sau đó tự thành transition mãi."
+      ],
+      "correct": 2,
+      "explanation": "Đọc scope async transition theo version, không suy một marker truyền qua mọi async boundary."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Transition ordering",
+      "question": "Hai async transitions ghi cùng resource nhưng responses đảo thứ tự cần gì?",
+      "options": [
+        "Giả định mọi transitions tự biết nghiệp vụ latest wins.",
+        "Chỉ isPending=true là lock phân tán.",
+        "Chỉ useDeferredValue.",
+        "Concurrency/ownership strategy hoặc API hỗ trợ ordering phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Scheduling render không tự giải quyết mọi request race."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Deferred stale UI",
+      "question": "Hiển thị deferred results cũ khi query mới đang nhập cần cân nhắc UX gì?",
+      "options": [
+        "Chỉ báo stale/pending phù hợp để user hiểu kết quả đang thuộc query nào.",
+        "Giả báo mọi kết quả đã mới.",
+        "Tắt input vĩnh viễn.",
+        "Chỉ tăng font."
+      ],
+      "correct": 0,
+      "explanation": "Responsiveness không nên làm người dùng hiểu sai freshness."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Concurrent not free",
+      "question": "Một UI phản hồi tốt hơn nhờ bỏ render trung gian có chứng minh backend request rate đã giảm không?",
+      "options": [
+        "Chỉ cần useTransition.",
+        "Không; cần đo/thiết kế request lifecycle riêng.",
+        "Có; React scheduler tự hủy mọi HTTP requests.",
+        "Có; lanes là rate limiter."
+      ],
+      "correct": 1,
+      "explanation": "Render work và network workload có liên hệ nhưng không tự đồng nhất."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "State identity parent move",
+      "question": "Giữ key giống nhau nhưng chuyển component sang parent khác có bảo đảm giữ state không?",
+      "options": [
+        "Có; props giống là đủ.",
+        "Chỉ cần memo.",
+        "Không; key không là global identity xuyên mọi parent.",
+        "Có; UUID luôn giữ instance toàn app."
+      ],
+      "correct": 2,
+      "explanation": "Identity xét trong cấu trúc cây."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Component definition inner",
+      "question": "App tạo component Child mới mỗi render rồi gắn key ổn định. Key có luôn cứu state khỏi type change không?",
+      "options": [
+        "Có; key ưu tiên hơn mọi type.",
+        "Có; cùng tên Child là cùng function object.",
+        "Chỉ khi dùng fragment.",
+        "Không; type identity mới vẫn có thể remount."
+      ],
+      "correct": 3,
+      "explanation": "Type và key đều liên quan reconciliation."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Deep mutation snapshots",
+      "question": "Mutate object state cũ khi transition đang tính UI có rủi ro gì?",
+      "options": [
+        "Phá snapshot assumptions, khiến các render thấy dữ liệu không nhất quán.",
+        "Tự làm rendering nhanh và luôn đúng.",
+        "React deep clone mọi snapshot trước mutation.",
+        "Chỉ ảnh hưởng logs."
+      ],
+      "correct": 0,
+      "explanation": "Immutable updates hỗ trợ semantics không phụ thuộc scheduling."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Render side effect rollback",
+      "question": "Ghi analytics hoặc gửi mutation trong render rồi render bị bỏ có được React rollback mọi external effects không?",
+      "options": [
+        "Chỉ nếu có key.",
+        "Không.",
+        "Có; mọi HTTP request có transaction tự động.",
+        "Có; cleanup tự đảo server writes."
+      ],
+      "correct": 1,
+      "explanation": "Không làm external side effects trong render."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Commit duration versus render",
+      "question": "Render đã nhanh nhưng page vẫn giật do layout/paint; chỉ tối ưu memo có đủ chưa?",
+      "options": [
+        "Đủ; Fiber loại bỏ browser layout.",
+        "Chỉ cần giảm số hooks.",
+        "Chưa; cần đo host/layout/paint và tối ưu đúng bottleneck.",
+        "Đủ; mọi độ trễ là function renders."
+      ],
+      "correct": 2,
+      "explanation": "Đánh giá pipeline end-to-end theo metric đúng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Transition setter same input",
+      "question": "Đặt chính text input value setter trong transition là phương án đúng để gõ không giật chưa?",
+      "options": [
+        "Đúng; input luôn phải đợi background.",
+        "Đúng; transition là debounce.",
+        "Chỉ cần useMemo cho value.",
+        "Không; giữ input update urgent, tách phần nặng/deferred theo API."
+      ],
+      "correct": 3,
+      "explanation": "Controlled input cần cập nhật kịp tương tác."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Time slicing granularity",
+      "question": "Một component tự chạy synchronous loop1giây có được React tự yield giữa từng vòng lặp JS không?",
+      "options": [
+        "Không; cần chia work/thuật toán/worker hoặc thiết kế khác khi phù hợp.",
+        "Có; Fiber tự cắt mọi câu lệnh JS.",
+        "Có; useTransition biến function thành generator.",
+        "Chỉ cần key ổn định."
+      ],
+      "correct": 0,
+      "explanation": "Scheduler không thể biến arbitrary blocking code thành hợp tác tự động."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Lane number guarantee",
+      "question": "Code test dựa vào private lane numeric value cố định qua upgrades có rủi ro gì?",
+      "options": [
+        "TypeScript tự bảo đảm ABI React internals.",
+        "Phụ thuộc implementation không được public API cam kết.",
+        "Không có vì lanes là chuẩn Web.",
+        "Chỉ ảnh hưởng CSS."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm thử hành vi public thay vì khóa vào private scheduling fields."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Profiler production equivalence",
+      "question": "Đếm render qua console trong StrictMode dev rồi quy đổi trực tiếp thành cost production có đáng tin không?",
+      "options": [
+        "Có; dev checks giống production tuyệt đối.",
+        "Chỉ cần chia đôi mọi con số.",
+        "Không; mode, instrumentation và workload khác cần đo phù hợp.",
+        "Có; console không có overhead bao giờ."
+      ],
+      "correct": 2,
+      "explanation": "Không áp hệ số tùy ý thay measurement."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Heuristic limits",
+      "question": "Keys đầy đủ có biến mọi reorder thành không có DOM work không?",
+      "options": [
+        "Có; mọi reorder miễn phí.",
+        "Có; key là GPU instruction.",
+        "Chỉ cần key là number.",
+        "Không; React vẫn có thể cần di chuyển/cập nhật nodes, keys giữ identity."
+      ],
+      "correct": 3,
+      "explanation": "Identity assistance khác zero-cost rendering."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Virtualization scroll target",
+      "question": "Virtual list chỉ render viewport; tìm/focus một row chưa mounted cần thiết kế gì?",
+      "options": [
+        "Điều hướng/scroll-to-index và focus lifecycle/accessibility phù hợp.",
+        "Gọi querySelector row bất kể nó chưa tồn tại.",
+        "Giả định key tạo DOM node ẩn cho mọi row.",
+        "Chỉ thêm memo."
+      ],
+      "correct": 0,
+      "explanation": "DOM windowing thay đổi cách tương tác với nội dung ngoài viewport."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Deferred within transition",
+      "question": "Update đã ở transition, useDeferredValue có nhất thiết tạo thêm một deferred background render riêng nữa không?",
+      "options": [
+        "Chỉ khi value là number.",
+        "Không theo API được mô tả; trong transition nó có thể trả giá trị mới mà không tạo vòng defer riêng.",
+        "Có; luôn lồng vô hạn background renders.",
+        "Có; mỗi hook tạo một worker."
+      ],
+      "correct": 1,
+      "explanation": "Không suy mỗi API đồng nghĩa thêm một thread hoặc fixed delay."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Source imported pending",
+      "question": "Chỉ destructure startTransition/isPending nhưng không dùng startTransition có thể làm spinner sai intent thế nào?",
+      "options": [
+        "Nó tự đo mọi CPU tasks.",
+        "Nó tự tính network progress.",
+        "Spinner không phản ánh background work của deferredQuery như tác giả có thể mong đợi.",
+        "Nó luôn hiển thị true."
+      ],
+      "correct": 2,
+      "explanation": "Chỉ báo phải gắn đúng công việc được theo dõi."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Rendering proof",
+      "question": "Muốn đánh giá virtual list100k có thật sự dùng tốt cần gì?",
+      "options": [
+        "Chỉ đọc tên HeavyList.",
+        "Chỉ build thành công.",
+        "Chỉ count useMemo calls.",
+        "Workload/thiết bị đại diện, scroll/typing/focus behavior và measurements liên quan."
+      ],
+      "correct": 3,
+      "explanation": "Không tuyên bố hiệu năng từ một snippet chưa có phần triển khai chính."
+    }
+  ]
+}

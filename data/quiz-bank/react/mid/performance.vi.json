@@ -1,0 +1,1142 @@
+{
+  "version": 1,
+  "tech": "react",
+  "level": "mid",
+  "lesson": "performance",
+  "language": "vi",
+  "sourceHash": "45fc73a18cbe4a3f1fab0cfa8eac055e9fd606f16baedcb1de554fa37ead9ec2",
+  "status": "approved",
+  "review": "Tự viết không API. Đối chiếu React memo/useMemo/useCallback và Compiler docs. Không cam kết memo bỏ mọi render hoặc giảm50%; phép tính/query semantics kiểm tra riêng. Source10k rows chưa virtualization, selectedId chưa hiển thị; giữ dependencies/purity và phân biệt render với DOM commit.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Memo role",
+      "question": "React.memo chủ yếu hỗ trợ gì?",
+      "options": [
+        "Có thể bỏ render lại do parent khi props tương đương theo comparator.",
+        "Chặn mọi state/context updates.",
+        "Tự cache database toàn cầu.",
+        "Mã hóa component."
+      ],
+      "correct": 0,
+      "explanation": "Đây là tối ưu, không là hợp đồng rằng component không bao giờ render lại."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "useMemo value",
+      "question": "useMemo dùng để cache loại kết quả nào?",
+      "options": [
+        "Chỉ CSS strings bắt buộc.",
+        "Kết quả tính toán giữa các render theo dependencies.",
+        "Mọi HTTP responses toàn app tự động.",
+        "DOM node đã mount toàn browser."
+      ],
+      "correct": 1,
+      "explanation": "Callback tính toán phải thuần."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "useCallback value",
+      "question": "useCallback thường cache gì?",
+      "options": [
+        "Một database transaction.",
+        "HTML document trên server.",
+        "Function reference theo dependencies.",
+        "Kết quả của mọi lần gọi function theo arguments."
+      ],
+      "correct": 2,
+      "explanation": "Nó không tự memoize return values của function khi được gọi."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Profiler purpose",
+      "question": "React DevTools Profiler thường giúp gì?",
+      "options": [
+        "Tự chứng minh endpoint chịu1triệu users.",
+        "Tự bỏ mọi bugs.",
+        "Thay validation.",
+        "Tìm component/interaction tốn thời gian và lý do render."
+      ],
+      "correct": 3,
+      "explanation": "Đo workload cụ thể trước khi tối ưu."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Source list size",
+      "question": "Dashboard nguồn khởi tạo bao nhiêu items?",
+      "options": [
+        "10000.",
+        "100.",
+        "1000.",
+        "1000000."
+      ],
+      "correct": 0,
+      "explanation": "Array.from có length10000."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Source item name",
+      "question": "Item id7 trong nguồn có name gì?",
+      "options": [
+        "Item 8.",
+        "Item 7.",
+        "User 7.",
+        "A 7."
+      ],
+      "correct": 1,
+      "explanation": "Name dùng template Item ${i}."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Source filter",
+      "question": "Filter nguồn dựa vào field nào?",
+      "options": [
+        "id numeric equality duy nhất.",
+        "selectedId duy nhất.",
+        "name.",
+        "category duy nhất."
+      ],
+      "correct": 2,
+      "explanation": "Nó so includes trên name lowercased."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Source filter deps",
+      "question": "useMemo filtered trong nguồn phụ thuộc gì?",
+      "options": [
+        "Chỉ selectedId.",
+        "Chỉ handleSelect.",
+        "Không có dependency array.",
+        "items và filter."
+      ],
+      "correct": 3,
+      "explanation": "Cả dữ liệu và điều kiện lọc là inputs."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Source select callback",
+      "question": "handleSelect nguồn thực hiện gì?",
+      "options": [
+        "setSelectedId(id).",
+        "Gọi server xóa item.",
+        "Sort items trực tiếp.",
+        "Tăng count toàn cục."
+      ],
+      "correct": 0,
+      "explanation": "Callback được useCallback với[] vì chỉ dùng setter ổn định."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Source selected display",
+      "question": "selectedId có được dùng để render highlight trong snippet không?",
+      "options": [
+        "Chỉ khi id=0.",
+        "Chưa.",
+        "Có; React tự highlight theo tênstate.",
+        "Có; memo tự tô li."
+      ],
+      "correct": 1,
+      "explanation": "Cần UI/class logic cụ thể để biểu diễn selection."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Object equality",
+      "question": "Object.is({}, {}) là gì?",
+      "options": [
+        "null.",
+        "Lỗi.",
+        "false.",
+        "true."
+      ],
+      "correct": 2,
+      "explanation": "Hai object literals là hai references khác nhau."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Primitive equality",
+      "question": "Object.is(3,3) là gì?",
+      "options": [
+        "false.",
+        "undefined.",
+        "Lỗi.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Primitive bằng nhau có thể so ổn định mà không cần memo thêm object."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "New callback prop",
+      "question": "Arrow function tạo trong render có thường là reference mới không?",
+      "options": [
+        "Có.",
+        "Không; cùng source text luôn cùng function.",
+        "Chỉ trong production.",
+        "Chỉ khi tên dài."
+      ],
+      "correct": 0,
+      "explanation": "Bản thân tạo function không mặc nhiên là bottleneck."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Memo purity",
+      "question": "Callback useMemo có nên mutate props array không?",
+      "options": [
+        "Chỉ được khi có key.",
+        "Không.",
+        "Có; useMemo là sandbox clone sâu.",
+        "Chỉ được nếu array dài10000."
+      ],
+      "correct": 1,
+      "explanation": "Memoization không làm mutation thành an toàn."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Stable data update",
+      "question": "Khi data thay đổi cần React nhận biết, thường nên làm gì?",
+      "options": [
+        "Đổi className của app.",
+        "Xóa dependencies.",
+        "Immutable update tạo references mới phù hợp.",
+        "Mutate cùng object rồi hy vọng deep compare."
+      ],
+      "correct": 2,
+      "explanation": "Identity-based comparison cần dữ liệu phản ánh thay đổi."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Compiler setup",
+      "question": "Chỉ cài React19 có đủ khẳng định Compiler tự tối ưu mọi code không?",
+      "options": [
+        "Có; runtime tự biến mọi function thành compiled.",
+        "Có; không cần build tool.",
+        "Chỉ cần tênApp.",
+        "Không; cần tích hợp/cấu hình React Compiler tương ứng."
+      ],
+      "correct": 3,
+      "explanation": "Compiler là cơ chế build-time có điều kiện áp dụng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Memo not storage",
+      "question": "useMemo có tự lưu kết quả qua reload browser không?",
+      "options": [
+        "Không.",
+        "Có; dùng localStorage mặc định.",
+        "Có; theo tênfunction.",
+        "Chỉ khi kết quả là number."
+      ],
+      "correct": 0,
+      "explanation": "Cache giữa renders khác persistence."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Large DOM",
+      "question": "Render danh sách rất dài còn có chi phí nào ngoài lọc array?",
+      "options": [
+        "Không có vì Virtual DOM miễn phí.",
+        "DOM/layout/paint và memory của items đang render.",
+        "Chỉ độ dài tênhook.",
+        "Chỉ file CSS import."
+      ],
+      "correct": 1,
+      "explanation": "Virtualization/pagination có thể hữu ích tùy trải nghiệm."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Optimization goal",
+      "question": "Tối ưu nên được đánh giá bằng gì?",
+      "options": [
+        "Số dòng càng ít luôn nhanh.",
+        "Một tỷ lệ giảm cố định chưa đo.",
+        "Độ trễ/hành vi và tài nguyên theo workload đại diện.",
+        "Số hooks memo càng nhiều càng tốt."
+      ],
+      "correct": 2,
+      "explanation": "Giữ correctness và đo kết quả thực."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Source exercise claim",
+      "question": "Bài tập giảm re-renders50% có phải kết quả đã chứng minh của snippet không?",
+      "options": [
+        "Có; chỉ cần useCallback là đúng50%.",
+        "Có; memo đảm bảo cùng tỷ lệ mọi app.",
+        "Chỉ khi items10000.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Mục tiêu bài tập khác bằng chứng benchmark."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Memo computation",
+      "question": "Click Add một lần, p double là gì?",
+      "code": "import React from\"react\";export default function App(){const[n,setN]=React.useState(1);const d=React.useMemo(()=>n*2,[n]);return <><button onClick={()=>setN(v=>v+1)}>Add</button><p>{d}</p></>;}",
+      "options": [
+        "4.",
+        "2.",
+        "1.",
+        "0."
+      ],
+      "correct": 0,
+      "explanation": "n đổi từ1 lên2, dependency khiến tính lại."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Stale memo",
+      "question": "Click Add một lần, p double vẫn là gì?",
+      "code": "import React from\"react\";export default function App(){const[n,setN]=React.useState(1);const d=React.useMemo(()=>n*2,[]);return <><button onClick={()=>setN(v=>v+1)}>Add</button><p>{d}</p></>;}",
+      "options": [
+        "undefined.",
+        "2.",
+        "4.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Dependency[] thiếu n nên cache theo initial snapshot."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Memo props update",
+      "question": "Child memo nhận n; click Add một lần, p hiển thị gì?",
+      "code": "import React from\"react\";const Child=React.memo(function Child({n}){return <p>{n}</p>;});export default function App(){const[n,setN]=React.useState(1);return <><button onClick={()=>setN(v=>v+1)}>Add</button><Child n={n}/></>;}",
+      "options": [
+        "0.",
+        "undefined.",
+        "2.",
+        "1 không đổi."
+      ],
+      "correct": 2,
+      "explanation": "Prop n đổi, memo không khóa props cũ."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Own state memo",
+      "question": "Button nằm trong memo component tự có state. Click một lần text là gì?",
+      "code": "import React from\"react\";const Child=React.memo(function Child(){const[n,setN]=React.useState(0);return <button onClick={()=>setN(v=>v+1)}>{n}</button>;});export default function App(){return <Child/>;}",
+      "options": [
+        "0 không đổi.",
+        "2.",
+        "undefined.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "memo không ngăn own-state update."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Callback return",
+      "question": "Click button gọi callback trả3, p hiển thị gì?",
+      "code": "import React from\"react\";export default function App(){const[n,setN]=React.useState(0);const read=React.useCallback(()=>3,[]);return <><button onClick={()=>setN(read())}>Read</button><p>{n}</p></>;}",
+      "options": [
+        "3.",
+        "undefined.",
+        "Một function string.",
+        "0."
+      ],
+      "correct": 0,
+      "explanation": "useCallback trả function, handler gọi function rồi lưu kết quả."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Stable updater callback",
+      "question": "Callback[] dùng setN(v=>v+1); click hai lần, text là gì?",
+      "code": "import React from\"react\";export default function App(){const[n,setN]=React.useState(0);const inc=React.useCallback(()=>setN(v=>v+1),[]);return <button onClick={inc}>{n}</button>;}",
+      "options": [
+        "undefined.",
+        "2.",
+        "1.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Updater không đọc n từ closure cũ."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Stale callback",
+      "question": "Callback[] dùng setN(n+1); click hai lần tách biệt, text là gì?",
+      "code": "import React from\"react\";export default function App(){const[n,setN]=React.useState(0);const inc=React.useCallback(()=>setN(n+1),[]);return <button onClick={inc}>{n}</button>;}",
+      "options": [
+        "0.",
+        "3.",
+        "1.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "Callback giữ n=0 vì dependency thiếu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Filter correctness",
+      "question": "Gõ query b, ul hiển thị item nào?",
+      "code": "import React from\"react\";const items=[{id:1,name:\"An\"},{id:2,name:\"Binh\"}];export default function App(){const[q,setQ]=React.useState(\"\");const xs=React.useMemo(()=>items.filter(x=>x.name.toLowerCase().includes(q.toLowerCase())),[q]);return <><input aria-label=\"Filter\" value={q} onChange={e=>setQ(e.target.value)}/><ul>{xs.map(x=><li key={x.id}>{x.name}</li>)}</ul></>;}",
+      "options": [
+        "An và Binh.",
+        "An.",
+        "Không item nào.",
+        "Binh."
+      ],
+      "correct": 3,
+      "explanation": "Filter case-insensitive trên name."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Memo local mutation",
+      "question": "useMemo tạo array mới rồi push vào nó có luôn vi phạm purity không?",
+      "code": "import React from\"react\";export default function App(){const xs=React.useMemo(()=>{const a=[1];a.push(2);return a;},[]);return <p>{xs.join(\",\")}</p>;}",
+      "options": [
+        "Không; mutation cục bộ trên dữ liệu vừa tạo, không ảnh hưởng inputs/external state có thể hợp lệ.",
+        "Có; mọi push trong mọi function đều bị cấm.",
+        "Có; JS arrays không được dùng trongmemo.",
+        "Không; vì useMemo cho phép sửa mọi props."
+      ],
+      "correct": 0,
+      "explanation": "Phân biệt local mutation với sửa object chia sẻ."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Custom comparator wrong",
+      "question": "Comparator luôn true trong ví dụ khiến click Change rồi Pick có thể giữ output nào?",
+      "code": "import React from\"react\";const Child=React.memo(function Child({onPick}){return <button onClick={onPick}>Pick</button>;},()=>true);export default function App(){const[name,setName]=React.useState(\"A\");const[out,setOut]=React.useState(\"\");return <><button onClick={()=>setName(\"B\")}>Change</button><Child onPick={()=>setOut(name)}/><p>{out}</p></>;}",
+      "options": [
+        "Lỗi cú pháp.",
+        "A.",
+        "B chắc chắn.",
+        "undefined."
+      ],
+      "correct": 1,
+      "explanation": "Memo child giữ callback props cũ vì comparator bỏ qua function thay đổi."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Filter empty source",
+      "question": "Filter chuỗi rỗng trong source giữ bao nhiêu items?",
+      "options": [
+        "1.",
+        "9999.",
+        "10000.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "Mọi name string includes(\"\") đều true."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Source A count",
+      "question": "Trong ids0..9999, categoryA khi i%3===0 có bao nhiêu items?",
+      "options": [
+        "3333.",
+        "5000.",
+        "6666.",
+        "3334."
+      ],
+      "correct": 3,
+      "explanation": "Các bội3 gồm0 đến9999:9999/3+1."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Source B count",
+      "question": "Theo category source, có bao nhiêu itemB?",
+      "options": [
+        "6666.",
+        "3334.",
+        "5000.",
+        "10000."
+      ],
+      "correct": 0,
+      "explanation": "10000 trừ3334."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Filter exact suffix",
+      "question": "Filter \"item 9999\" trong source giữ bao nhiêu item?",
+      "options": [
+        "9999.",
+        "1.",
+        "0.",
+        "10."
+      ],
+      "correct": 1,
+      "explanation": "Chỉ Item 9999 chứa toàn substring đó trong tập này."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Substring count",
+      "question": "Filter \"item 1\" trên Item0..9999 giữ bao nhiêu item?",
+      "options": [
+        "1000.",
+        "10000.",
+        "1111.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Gồm1,10..19,100..199,1000..1999."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "No trim source",
+      "question": "Filter \" Item 1\" có leading space trong source có tự trim không?",
+      "options": [
+        "Có; toLowerCase luôn trim.",
+        "Có; includes tự bỏ whitespace.",
+        "Chỉ khi items đãmemo.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Nguồn chỉ lowercase, không normalize whitespace."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Selection cache",
+      "question": "selectedId đổi mà items/filter references không đổi; useMemo filtered thường có thể làm gì?",
+      "options": [
+        "Tái dùng kết quả lọc trước.",
+        "Tự đổi filtered thành selected item duy nhất.",
+        "Tự gọi server.",
+        "Luôn clear items."
+      ],
+      "correct": 0,
+      "explanation": "selectedId không là input của phép tính lọc nguồn."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Callback no execution",
+      "question": "useCallback(()=>save(),[save]) có tự gọi save ngay không?",
+      "options": [
+        "Chỉ trong production.",
+        "Không.",
+        "Có; mọi function argument chạy ngay.",
+        "Chỉ khi save trảPromise."
+      ],
+      "correct": 1,
+      "explanation": "Hook cache definition, caller/event mới gọi callback."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Memo initial work",
+      "question": "useMemo có loại bỏ chi phí tính ban đầu không?",
+      "options": [
+        "Chỉ nếu array có 10.000 phần tử.",
+        "Có; callback không bao giờ chạy.",
+        "Không; cần tính để có kết quả lần đầu.",
+        "Có; kết quả tự có từ compiler mọi lúc."
+      ],
+      "correct": 2,
+      "explanation": "Caching có ích khi tái sử dụng kết quả với dependencies phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Changing dependency",
+      "question": "Filter đổi mỗi lần gõ; useMemo có luôn bỏ được phép filter ở những lần đó không?",
+      "options": [
+        "Có; memo bỏ mọi phép tính sau mount.",
+        "Có; mọi query tự giống nhau.",
+        "Chỉ cần useCallback cho input.",
+        "Không; dependency đổi thì cần tính lại theo semantics."
+      ],
+      "correct": 3,
+      "explanation": "Memo giúp tránh tính lại khi inputs không đổi, không tự debounce."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Object dependency",
+      "question": "useMemo(()=>search(options),[options]) nhưng options literal mới mỗi render có vấn đề gì?",
+      "options": [
+        "Dependency luôn khác identity, giảm cơ hội tái dùng cache.",
+        "Tự deep compare options.",
+        "Tự biến options thành constant.",
+        "Chỉ ảnh hưởng key."
+      ],
+      "correct": 0,
+      "explanation": "Tạo object trong phép tính và phụ thuộc primitives thật hoặc ổn định input phù hợp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Missing dependency",
+      "question": "Memo filter dùng cảitems/query nhưng chỉ khai [items] có nguy cơ gì?",
+      "options": [
+        "Compiler luôn sửa dependency thiếu.",
+        "Query mới không cập nhật kết quả đúng.",
+        "Chỉ chậm hơn nhưng luôn đúng.",
+        "React tự thêmquery."
+      ],
+      "correct": 1,
+      "explanation": "Correctness của data flow phải được giữ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "New array parent",
+      "question": "Parent truyền items={[...oldItems]} mỗi render, child memo có coi prop đó bằng ref cũ không?",
+      "options": [
+        "Có nếu length giống.",
+        "Chỉ cần key trên child.",
+        "Không.",
+        "Có vì phần tử giống."
+      ],
+      "correct": 2,
+      "explanation": "Default comparison shallow per prop."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Primitive prop projection",
+      "question": "Child chỉ cần hasGroups boolean; truyền boolean thay object user lớn có thể giúp gì?",
+      "options": [
+        "Tự xác thựcgroups.",
+        "Bảo đảm không render lại vì own state.",
+        "Tự giảm network payload.",
+        "Giảm prop changes không liên quan khi boolean không đổi."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế props tối thiểu có thể đơn giản hơn thêm deep comparator."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Context bypass memo",
+      "question": "memo child có context subscription, context value đổi thì sao?",
+      "options": [
+        "Vẫn nhận context mới và có thể render lại.",
+        "Luôn giữ context cũ vì props không đổi.",
+        "Tự unsubscribe.",
+        "Chỉ khi key đổi."
+      ],
+      "correct": 0,
+      "explanation": "Memo không chặn subscription updates."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Custom equal meaning",
+      "question": "arePropsEqual trả true biểu thị gì?",
+      "options": [
+        "Một lỗi comparator.",
+        "Props mới được coi tương đương về output/hành vi để có thể bỏ parent-driven render.",
+        "Bắt buộc render lại.",
+        "Chỉ so key khác nhau."
+      ],
+      "correct": 1,
+      "explanation": "Không nhầm chiều boolean của comparator."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Function comparator",
+      "question": "Custom comparator bỏ qua onClick có thể gây lỗi gì?",
+      "options": [
+        "Không thể vì functions không có closures.",
+        "React tự thay callback dù comparatortrue.",
+        "Giữ closure cũ và hành vi click dùng dữ liệu cũ.",
+        "Chỉ ảnh hưởng màu button."
+      ],
+      "correct": 2,
+      "explanation": "So sánh mọi props ảnh hưởng output/hành vi."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Deep equal cost",
+      "question": "Deep equality comparator luôn tốt hơn render chưa đo có đúng không?",
+      "options": [
+        "Đúng; mọi object có độ sâu cố định nhỏ.",
+        "Đúng; deep compare là miễn phí.",
+        "Chỉ cầnJSON.stringify.",
+        "Không; nó có thể đắt và khó dự đoán."
+      ],
+      "correct": 3,
+      "explanation": "Đo trên production-like workload và giới hạn cấu trúc nếu cần."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "JSON comparator limitation",
+      "question": "JSON.stringify props để so có thể sai vì sao?",
+      "options": [
+        "Bỏ function/undefined, không hỗ trợ mọi kiểu và có chi phí/semantics riêng.",
+        "Luôn so mọi closures chính xác.",
+        "Tự xử lý circular graph mọi trường hợp.",
+        "Luôn nhanh hơn shallow comparison."
+      ],
+      "correct": 0,
+      "explanation": "Serialization không là comparator props tổng quát."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "useMemo cache scope",
+      "question": "Hai instances cùng component có tự dùng chung một useMemo cache không?",
+      "options": [
+        "Chỉ khi component có memo.",
+        "Không theo mặc định.",
+        "Có; cùngfunction là global cache.",
+        "Có; dependencies giống tự chia sẻ toàn app."
+      ],
+      "correct": 1,
+      "explanation": "Cache thuộc invocation/component instance, khác shared computation cache."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Side effects memo",
+      "question": "Có nên gửi analytics trong useMemo callback không?",
+      "options": [
+        "Chỉ khi dependency[].",
+        "Chỉ cần trảundefined.",
+        "Không; callback là tính toán render phải thuần.",
+        "Có; memo bảo đảm exactly once."
+      ],
+      "correct": 2,
+      "explanation": "Render computations có thể bị kiểm tra/tính lại hoặc bỏ."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Callback memory",
+      "question": "Memoization có luôn giảm memory không?",
+      "options": [
+        "Có; mọi closure cache bị xóa ngay.",
+        "Có; useMemo là GC.",
+        "Chỉ nếu function đặt tên.",
+        "Không; cache giữ references/kết quả và có overhead."
+      ],
+      "correct": 3,
+      "explanation": "Đánh đổi CPU/memory/complexity theo workload."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Virtualization purpose",
+      "question": "Virtualization danh sách thường giảm gì?",
+      "options": [
+        "Số rows DOM đang render bằng cách chỉ giữ vùng cần thiết.",
+        "Số dữ liệu server bắt buộc bằng0.",
+        "Mọi logic filtering tự động.",
+        "Quyền truy cập của người dùng."
+      ],
+      "correct": 0,
+      "explanation": "Có tradeoffs về scrolling,focus,accessibility và kích thước rows."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Pagination distinct",
+      "question": "Pagination khác memo thế nào?",
+      "options": [
+        "Pagination tự so mọi function props.",
+        "Giới hạn tập dữ liệu/UI theo trang; memo tái dùng kết quả theo inputs.",
+        "Cả hai đều là compiler encryption.",
+        "Memo tự tạo server pages."
+      ],
+      "correct": 1,
+      "explanation": "Có thể phối hợp nhưng không đồng nghĩa."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Debounce distinct",
+      "question": "Debounce input request có được useMemo tự cung cấp không?",
+      "options": [
+        "Có; dependencies tự gom mọi ký tự.",
+        "Chỉ nếu query được chuyển thành chữ thường.",
+        "Không.",
+        "Có; useMemo mặc định có delay 300 ms."
+      ],
+      "correct": 2,
+      "explanation": "Memoization không là cơ chế timing."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Profiler dev",
+      "question": "Số lần render trong StrictMode dev có thể khác production không?",
+      "options": [
+        "Không; mọi checks giống tuyệt đối.",
+        "Chỉ nếu query rỗng.",
+        "Chỉ khi số items nhỏ hơn 10.",
+        "Có."
+      ],
+      "correct": 3,
+      "explanation": "Đo performance bằng cấu hình và workload thích hợp."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "List keyboard source",
+      "question": "li chỉ có onClick trong nguồn cần cân nhắc gì?",
+      "options": [
+        "Hành vi keyboard/semantics; dùng control thích hợp cho thao tác chọn.",
+        "Memo tự làm li thànhbutton.",
+        "Chỉ key=id là đủ truy cập.",
+        "Tất cả li tự focusable mặc định."
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu không bỏ qua khả năng sử dụng UI."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "List bottleneck",
+      "question": "Nếu filter1ms nhưng DOM render200ms, chỉ thêm useCallback đã giải quyết chính chưa?",
+      "options": [
+        "Chỉ cần đổi tênhook.",
+        "Chưa; tối ưu đúng phần DOM/list theo đo đạc.",
+        "Rồi; Function reference quyết định mọi chi phí.",
+        "Rồi; memo xóa DOM hoàn toàn."
+      ],
+      "correct": 1,
+      "explanation": "Chi phí thực quyết định ưu tiên tối ưu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source items lazy",
+      "question": "useState(()=>Array.from(...)) trong nguồn nhằm gì?",
+      "options": [
+        "Tự virtualization cho 10.000 rows.",
+        "Tự lưu list.",
+        "Lazy initialization cho danh sách ở lần khởi tạo state.",
+        "Tự fetch thêm items mỗiscroll."
+      ],
+      "correct": 2,
+      "explanation": "Không suy những tính năng khác từ lazy initializer."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Compiler manual removal",
+      "question": "Có nên xóa hàng loạt memo hooks cũ chỉ vì nâng React19 mà không kiểm thử/Compiler setup không?",
+      "options": [
+        "Có; mọi memo hook đã thành lỗi runtime.",
+        "Có; runtime tự compiles mọi app.",
+        "Chỉ cầnbuildpass là đủ hành vi.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra cấu hình và semantics/performance trước thay đổi."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Memo semantic dependency",
+      "question": "Ứng dụng chỉ hoạt động đúng khi cache useMemo không bao giờ bị bỏ có phải thiết kế vững không?",
+      "options": [
+        "Không; dùng state/ref hoặc cấu trúc đúng cho semantics cần bền, memo là tối ưu.",
+        "Có; useMemo cam kết cache vĩnh viễn.",
+        "Có; dependency[] lưu qua refresh.",
+        "Chỉ cần component được memo."
+      ],
+      "correct": 0,
+      "explanation": "Không đặt correctness lên lifetime cache tối ưu."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Mutation invisible deps",
+      "question": "items reference giữ nguyên nhưng nội dung bị mutate; useMemo[items] có thể làm gì?",
+      "options": [
+        "Tựchặn mọi mutation.",
+        "Giữ kết quả cũ không phản ánh mutation.",
+        "Luôn deep observe và tính lại.",
+        "Tựcloneitems."
+      ],
+      "correct": 1,
+      "explanation": "Immutable data flow là nền tảng cho identity-based caching."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Closure comparator bug",
+      "question": "arePropsEqual so items nhưng bỏ onSelect, logic selection của parent logic đổi. Rủi ro chính là gì?",
+      "options": [
+        "Không có vì phần text của function giống nhau.",
+        "React tự cập nhật prop bị bỏ khỏi comparator.",
+        "Child dùng handler closure cũ dù UI data nhìn vẫn đúng.",
+        "Chỉ tốn thêm một comparison."
+      ],
+      "correct": 2,
+      "explanation": "Correctness bao gồm behavior, không chỉ markup."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Stable callback stale intent",
+      "question": "Ép callback với dependencies [] để giữ reference dù nó đọc changing permission có thể gây gì?",
+      "options": [
+        "Tự đọc permission mới nhất vì function được giữ ổn định.",
+        "Tự verify server authorization.",
+        "Chỉ giảm performance không ảnh hưởng logic.",
+        "Hành vi dùng permission snapshot cũ; cần dependencies/architecture đúng."
+      ],
+      "correct": 3,
+      "explanation": "Không đổi correctness lấy reference stability."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Memo concurrent purity",
+      "question": "React gọi phép tính useMemo thêm trong dev hoặc bỏ render attempt. Side effect trong callback có thể gì?",
+      "options": [
+        "Chạy lặp hoặc chạy cho UI không commit, gây sai nghiệp vụ.",
+        "Luôn được rollback tự động.",
+        "Được gộp exactly once.",
+        "Chỉ ảnh hưởng h1."
+      ],
+      "correct": 0,
+      "explanation": "Tính toán render cần thuần và có thể lặp an toàn."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Variable dependency length",
+      "question": "useMemo deps conditionally là[a] hoặc[a,b] có phải mẫu hợp lệ thông thường không?",
+      "options": [
+        "Chỉ cầnkey ổn định.",
+        "Không; dependency list cần số lượng ổn định và viết rõ.",
+        "Có; React tự nhớ tênbiến.",
+        "Có; b là optional nên không cần giữ rules."
+      ],
+      "correct": 1,
+      "explanation": "Giữ contract hooks/cấu trúc dependencies nhất quán."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "10000 not scale proof",
+      "question": "List10000items hiển thị được có chứng minh app phục vụ triệu người dùng không?",
+      "options": [
+        "Có; React.memo là distributed cache.",
+        "Chỉ cần build pass.",
+        "Không; client rendering và backend/concurrency capacity là các câu hỏi khác cần đo.",
+        "Có;10.000 rows tương đương 1.000.000 users."
+      ],
+      "correct": 2,
+      "explanation": "Không suy quy mô hệ thống từ một ví dụ UI."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Filter algorithm",
+      "question": "useMemo có thay đổi complexity của phép filter khi query thật sự đổi không?",
+      "options": [
+        "Có; mọi phép filter đều thành O(1).",
+        "Có; tự tạo index trên server.",
+        "Chỉ nếuquery được chuyển thành chữ thường.",
+        "Không tự đổi; vẫn duyệt items theo thuật toán hiện có."
+      ],
+      "correct": 3,
+      "explanation": "Caching và cải thiện thuật toán là hai hướng khác nhau."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Scheduling versus work",
+      "question": "useDeferredValue có tự giảm tổng work cần tính cho mọi query bằng cache kết quả không?",
+      "options": [
+        "Không; ưu tiên/scheduling khác memoization, có thể làm UI phản hồi tốt hơn mà work vẫn cần.",
+        "Có; nó là cache lọc toàn ứng dụng.",
+        "Có; tự hủy mọi HTTP requests.",
+        "Chỉ nếu có memo."
+      ],
+      "correct": 0,
+      "explanation": "Đánh giá responsiveness, dropped intermediate work và tổng chi phí riêng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Virtual row state",
+      "question": "Virtualization unmount rows ngoài viewport có rủi ro gì cho editable local state?",
+      "options": [
+        "Row không thể bị unmount.",
+        "Draft có thể mất; cần state ownership/key/lifetime phù hợp.",
+        "State luôn tự lưu ra disk.",
+        "Index key luôn giữ state đúng theo dữ liệu qua sort."
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu DOM có thể thay lifetime, cần giữ behavior."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Measurement bias",
+      "question": "So optimized production với baseline StrictMode dev rồi báo tăng tốc có vấn đề gì?",
+      "options": [
+        "Chỉ cần báo một số tròn.",
+        "React Profiler tự sửa mọi khác biệt cấu hình.",
+        "Cấu hình đo không tương đương, kết luận tỷ lệ không đáng tin.",
+        "Không vấn đề vì memo luôn nhanh."
+      ],
+      "correct": 2,
+      "explanation": "So sánh cùng workload/mode và phương pháp đo."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Comparator main thread",
+      "question": "Deep comparator trên cấu trúc không giới hạn có thể gây gì?",
+      "options": [
+        "Tự chạy trong worker.",
+        "Luôn có độ phức tạp O(1).",
+        "Tự chia sẻ thread với server.",
+        "Block main thread lâu, thậm chí tệ hơn render muốn tránh."
+      ],
+      "correct": 3,
+      "explanation": "Không đưa chi phí không kiểm soát vào optimization hook."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Stable element identity",
+      "question": "Tạo child JSX mới ở mỗi render rồi truyền children vào memo wrapper có thể làm gì?",
+      "options": [
+        "children prop có reference mới, giảm khả năng bỏ render theo shallow comparison.",
+        "Tự ngăn mọi subtree render lại.",
+        "Không thể truyền children vào component memo.",
+        "Luôn thành một DOM node dùng chung."
+      ],
+      "correct": 0,
+      "explanation": "Element objects cũng có identity, nhưng chỉ tối ưu khi cần và giữ pure structure."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "State correction",
+      "question": "Code sai nếu bỏ useMemo nhưng đúng khi có useMemo nên đánh giá thế nào?",
+      "options": [
+        "Đổi React key ngẫu nhiên.",
+        "Tìm mutation/side effect hoặc semantics sai; không dùng memo để che lỗi correctness.",
+        "Coi đó là API bắt buộc cho mọi logic.",
+        "Chỉ đặt dependencies thành [] là đủ."
+      ],
+      "correct": 1,
+      "explanation": "Optimization nên giữ hành vi của code vốn đúng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Network bottleneck",
+      "question": "Memo child list có giảm số requests do useEffect sai dependencies tự động không?",
+      "options": [
+        "Chỉ cần useCallback với [] bất kể inputs.",
+        "Có; React Compiler tạo cache API toàn cầu.",
+        "Không; sửa request lifecycle/dependencies/cache tại nguồn.",
+        "Có; memo tự khử mọi fetch trùng."
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu đúng boundary gây chi phí."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Selected ID not UI",
+      "question": "Source setSelectedId rồi không dùng nó trong output; muốn feature lựa chọn có ích cần gì?",
+      "options": [
+        "Chỉ memo callback là đã hoàn thiện tính năng.",
+        "Chỉ ghi id vào console.",
+        "Đổi key của mọi item theo selectedId mỗi lần.",
+        "Nối selectedId vào UI/behavior phù hợp và kiểm tra tương tác."
+      ],
+      "correct": 3,
+      "explanation": "State update một mình không chứng minh feature đã hiện ra."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Manual memo dependencies",
+      "question": "Compiler có làm dependency thiếu trong useMemo/useCallback thành chấp nhận được không?",
+      "options": [
+        "Không; tính đúng của data flow và dependencies vẫn cần đúng.",
+        "Có; luôn sửa mọi closure bị lỗi.",
+        "Có; compiler bỏ Rules of Hooks.",
+        "Chỉ nếu tên function viết hoa."
+      ],
+      "correct": 0,
+      "explanation": "Không trông chờ optimizer sửa logic sai."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "GC retention",
+      "question": "Callback cached đóng over một object lớn có thể ảnh hưởng memory thế nào?",
+      "options": [
+        "Closure không thể giữ references.",
+        "Giữ object còn reachable theo lifetime closure/cache, cần xét retention thực tế.",
+        "Tự giải phóng object ngay sau khi tạo.",
+        "Luôn serialize object ra disk."
+      ],
+      "correct": 1,
+      "explanation": "Memoization không miễn phí về memory."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Performance acceptance",
+      "question": "Muốn đánh giá tối ưu search có giá trị cho người dùng, nên đo gì?",
+      "options": [
+        "Chỉ kích thước file minified, bỏ qua runtime.",
+        "Chỉ tên công cụ Profiler.",
+        "Typing responsiveness và thời gian hiển thị kết quả dưới dữ liệu/thiết bị đại diện, cùng correctness.",
+        "Chỉ số lượng useMemo hooks."
+      ],
+      "correct": 2,
+      "explanation": "Chọn metric theo tác vụ thay vì hứa một tỷ lệ chưa đo."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Optimization preservation",
+      "question": "Sau thay comparator để giảm render, test nào quan trọng?",
+      "options": [
+        "Chỉ assert số render nhỏ hơn.",
+        "Chỉ snapshot imports.",
+        "Chỉ đếm số từ memo.",
+        "Cập nhật props/callback/state/context và xác nhận UI lẫn hành vi vẫn mới đúng."
+      ],
+      "correct": 3,
+      "explanation": "Performance improvement không được giữ stale behavior."
+    }
+  ]
+}

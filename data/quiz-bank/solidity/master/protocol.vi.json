@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "solidity",
+  "level": "master",
+  "lesson": "protocol",
+  "language": "vi",
+  "sourceHash": "5e81cddc163525bbc6582dfc7edd708510bcec7002aa2d6005a12164ee8b828f",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo DaoGovernance và bài tập voting on-chain; Solidity 0.8.20, OZ Governor 5.x khái niệm, ERC-5805/6372 và Ethereum MEV docs. Source chỉ tạo proposal, chưa có vote/execute/timelock; các mở rộng được ghi rõ giả định. Không compile/deploy/RPC/wallet/transaction/bot MEV.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "DAO",
+      "question": "DAO governance trong bài hướng tới gì?",
+      "options": [
+        "Cơ chế cộng đồng quyết định và thực thi thay đổi theo quy tắc",
+        "Mọi token holder tự sở hữu private key treasury",
+        "Một bảo đảm mọi đề xuất đều tốt",
+        "Một token giá cố định bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Quy tắc governance cần được hiện thực, không chỉ tên DAO."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Proposal",
+      "question": "Proposal nguồn biểu diễn bằng cấu trúc nào?",
+      "options": [
+        "Một private key",
+        "struct Proposal",
+        "event Transfer",
+        "mapping(address => bool) duy nhất"
+      ],
+      "correct": 1,
+      "explanation": "Struct gom các field của đề xuất."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "ID type",
+      "question": "id của Proposal có kiểu gì?",
+      "options": [
+        "string",
+        "bool",
+        "uint256",
+        "address"
+      ],
+      "correct": 2,
+      "explanation": "ID số nguyên khác description."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Description",
+      "question": "description trong source có kiểu gì?",
+      "options": [
+        "bytes32 bắt buộc",
+        "address",
+        "uint256",
+        "string"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung văn bản không tự chứa hành động có thể thực thi."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Votes for",
+      "question": "votesFor lưu đại lượng nào theo tên field?",
+      "options": [
+        "Tổng phiếu ủng hộ được ghi nhận",
+        "Số token tự mint khi tạo proposal",
+        "Thời gian bắt đầu bỏ phiếu",
+        "Địa chỉ proposer"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn hiện chưa có hàm tăng bộ đếm này."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Votes against",
+      "question": "votesAgainst được khởi tạo bằng gì khi tạo?",
+      "options": [
+        "block.timestamp",
+        "0",
+        "1",
+        "nextProposalId"
+      ],
+      "correct": 1,
+      "explanation": "Constructor struct nguồn đặt cả hai bộ đếm phiếu bằng zero."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Deadline",
+      "question": "Deadline nguồn được tính từ gì?",
+      "options": [
+        "msg.value + 3 days",
+        "Timestamp frontend truyền vào",
+        "block.timestamp + 3 days",
+        "block.number + 3"
+      ],
+      "correct": 2,
+      "explanation": "Source dùng clock timestamp của chain."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Executed",
+      "question": "executed biểu diễn trạng thái gì theo tên field?",
+      "options": [
+        "Caller có đủ Ether hay chưa",
+        "Proposal có description rỗng hay không",
+        "Compiler đã build thành công hay chưa",
+        "Đã thực thi đề xuất hay chưa"
+      ],
+      "correct": 3,
+      "explanation": "Đặt field không tự tạo logic thực thi."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Mapping proposals",
+      "question": "proposals ánh xạ gì?",
+      "options": [
+        "uint256 sang Proposal",
+        "address sang token balance",
+        "string sang bool",
+        "Proposal sang private key"
+      ],
+      "correct": 0,
+      "explanation": "Khóa ID dùng truy cập từng đề xuất."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Next ID",
+      "question": "nextProposalId dùng làm gì?",
+      "options": [
+        "Lưu hash của description",
+        "Cấp ID tuần tự theo code tạo proposal",
+        "Tính quorum theo supply",
+        "Giữ địa chỉ owner"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn dùng bộ đếm chứ không hash proposal data như một số Governor."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Default counter",
+      "question": "nextProposalId mặc định ban đầu là gì?",
+      "options": [
+        "3",
+        "Giá trị ngẫu nhiên theo block",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Default của state uint256 là zero."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Create visibility",
+      "question": "createProposal nguồn có visibility nào?",
+      "options": [
+        "private",
+        "internal",
+        "Chỉ constructor",
+        "external"
+      ],
+      "correct": 3,
+      "explanation": "Source không có modifier hạn chế ai tạo proposal."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Calldata desc",
+      "question": "desc nhận vào được khai báo location nào?",
+      "options": [
+        "calldata",
+        "storage reference",
+        "memory state toàn cục",
+        "Một topic indexed"
+      ],
+      "correct": 0,
+      "explanation": "Data input được sao chép khi gán vào state description."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Return ID",
+      "question": "createProposal khai báo trả về kiểu gì?",
+      "options": [
+        "Toàn bộ struct Proposal",
+        "uint256",
+        "bool",
+        "address"
+      ],
+      "correct": 1,
+      "explanation": "Body trả local id đã cấp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Initial executed",
+      "question": "Proposal mới trong source có executed bằng gì?",
+      "options": [
+        "votesFor > votesAgainst",
+        "msg.sender == owner",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Đây là field được gán trực tiếp, chưa có execution path."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Voting code",
+      "question": "Nguồn hiện có hàm castVote không?",
+      "options": [
+        "Có, public mapping tự tạo hàm vote",
+        "Có, createProposal tự cast một phiếu",
+        "Có, deadline tự tăng votesFor",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Bài tập yêu cầu xây thêm voting workflow."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Timelock purpose",
+      "question": "Timelock trong governance thường tạo gì?",
+      "options": [
+        "Khoảng trì hoãn trước execution theo policy",
+        "Một đảm bảo proposal luôn an toàn",
+        "Một cách xóa mọi voting power",
+        "Một phép tự chuyển owner cho caller"
+      ],
+      "correct": 0,
+      "explanation": "Delay tạo thời gian phản ứng, không chứng minh nội dung đúng."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Quorum",
+      "question": "Quorum thường diễn tả gì?",
+      "options": [
+        "Số token được mint mỗi proposal",
+        "Ngưỡng tham gia được quy tắc governance yêu cầu",
+        "Luôn đúng 51% phiếu ủng hộ bất kể tham gia",
+        "Số ngày compiler chấp nhận"
+      ],
+      "correct": 1,
+      "explanation": "Quorum và điều kiện thắng là các quy tắc có thể khác nhau."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "MEV",
+      "question": "MEV liên quan khả năng nào?",
+      "options": [
+        "Chỉ bẻ mọi hash của blockchain",
+        "Chỉ mint token trong constructor",
+        "Khai thác giá trị từ inclusion/exclusion/ordering giao dịch",
+        "Chỉ sửa biến private từ frontend"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất MEV với mọi bot hoặc mọi hành vi cùng loại."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Tokenomics",
+      "question": "Tokenomics liên quan nhóm thiết kế nào?",
+      "options": [
+        "Chỉ tên file ERC20.sol",
+        "Chỉ compiler optimization flag",
+        "Chỉ số ký tự của symbol",
+        "Cung, phân phối, incentive và quyền gắn với token"
+      ],
+      "correct": 3,
+      "explanation": "Đây không tự là bảo đảm giá/lợi nhuận."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Post increment",
+      "question": "Dòng uint256 id = nextProposalId++; khi counter đang 0 sẽ gán id gì và counter mới gì?",
+      "options": [
+        "id 0, counter 1",
+        "id 1, counter 1",
+        "id 1, counter 2",
+        "id 0, counter 0"
+      ],
+      "correct": 0,
+      "explanation": "Post-increment dùng giá trị cũ rồi tăng state counter."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Second proposal",
+      "question": "Hai lần create thành công liên tiếp từ counter 0 có ID nào?",
+      "options": [
+        "Hash caller rồi hash description",
+        "0 rồi 1",
+        "1 rồi 2",
+        "0 rồi 0"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn dùng counter tuần tự."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Counters no votes",
+      "question": "Tạo proposal có tự tăng votesFor của người tạo không?",
+      "options": [
+        "Có, public tự tính token balance",
+        "Chỉ nếu desc không rỗng",
+        "Không, nguồn gán 0",
+        "Có, proposer luôn có một phiếu"
+      ],
+      "correct": 2,
+      "explanation": "Không có voting logic trong createProposal."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Empty description",
+      "question": "createProposal với desc rỗng có bị source chặn bằng require không?",
+      "options": [
+        "Có, string không được rỗng",
+        "Có, calldata yêu cầu ít nhất 32 ký tự",
+        "Chỉ owner được tạo desc rỗng",
+        "Không có điều kiện đó"
+      ],
+      "correct": 3,
+      "explanation": "Validation phải được viết nếu yêu cầu sản phẩm cần."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Three days unit",
+      "question": "Trong literal Solidity của source, 3 days bằng bao nhiêu giây?",
+      "options": [
+        "259.200",
+        "3",
+        "72",
+        "3 block"
+      ],
+      "correct": 0,
+      "explanation": "Time unit literal là quy đổi số, không lịch tháng hoặc DST."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "No scheduler",
+      "question": "Thời gian vượt deadline có tự làm executed thành true theo source không?",
+      "options": [
+        "Chỉ nếu votesAgainst bằng 0",
+        "Không, chưa có code tự đổi hoặc execute",
+        "Có, struct tự cập nhật theo timestamp",
+        "Có, EVM chạy mọi proposal mỗi block"
+      ],
+      "correct": 1,
+      "explanation": "Thời gian trôi không tự kích hoạt hàm."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "No execution action",
+      "question": "Description nói chuyển token có tự được EVM thực thi thành transfer không?",
+      "options": [
+        "Có, chỉ cần tên Proposal",
+        "Chỉ nếu description có địa chỉ ví",
+        "Không, text không tự thành calldata/hành động",
+        "Có, EVM hiểu ý nghĩa description"
+      ],
+      "correct": 2,
+      "explanation": "Cần representation hành động và execution logic rõ."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "No vote auth",
+      "question": "Public proposals getter có cấp quyền sửa votesFor trực tiếp ngoài contract không?",
+      "options": [
+        "Có, public mở storage write",
+        "Có, caller biết ID là đủ",
+        "Chỉ proposer có setter tự sinh",
+        "Không, getter chỉ đọc"
+      ],
+      "correct": 3,
+      "explanation": "Phải triển khai đường vote/điều kiện riêng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Mapping enumeration",
+      "question": "proposals tự có length để liệt kê mọi đề xuất như array không?",
+      "options": [
+        "Không",
+        "Có, length luôn bằng nextProposalId",
+        "Chỉ khi struct có string",
+        "Có, Solidity thêm iterator mặc định"
+      ],
+      "correct": 0,
+      "explanation": "Counter có thể giúp phạm vi ID theo source, không phải mapping length."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Uncreated default",
+      "question": "Đọc entry ID chưa tạo có field mặc định. Có nên dùng id == 0 làm dấu tồn tại duy nhất không?",
+      "options": [
+        "Chỉ nếu description public",
+        "Không, proposal hợp lệ đầu tiên cũng có id 0",
+        "Có, ID đầu tiên bắt buộc 1",
+        "Có, mapping không cho default zero"
+      ],
+      "correct": 1,
+      "explanation": "Cần quy tắc tồn tại không nhầm entry zero hợp lệ."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Copy input",
+      "question": "desc là calldata nhưng được gán vào proposals[id].description. Nó có mất khi lời gọi xong không?",
+      "options": [
+        "Chỉ giữ đến block kế tiếp",
+        "Chỉ giữ nếu proposer là owner",
+        "Không, assignment sao chép nội dung sang storage",
+        "Có, mọi calldata được gán chỉ còn pointer tạm"
+      ],
+      "correct": 2,
+      "explanation": "Location input không làm state assignment thành tham chiếu ngoài lifetime."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Description public",
+      "question": "Calldata/string description có tự giữ nội dung bí mật không?",
+      "options": [
+        "Có, calldata chỉ caller thấy",
+        "Có, mapping che mọi string",
+        "Chỉ cần không emit event",
+        "Không, input/state on-chain không được mã hóa bởi keyword đó"
+      ],
+      "correct": 3,
+      "explanation": "Không đưa secret vào dữ liệu công khai rồi dựa visibility."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "No threshold",
+      "question": "Nguồn có proposal threshold theo voting power chưa?",
+      "options": [
+        "Chưa",
+        "Có, external tự yêu cầu có token",
+        "Có, struct votesFor tự kiểm threshold",
+        "Chỉ khi deadline 3 ngày"
+      ],
+      "correct": 0,
+      "explanation": "Threshold là policy cần triển khai riêng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Spam proposals",
+      "question": "Không hạn chế createProposal có thể làm phát sinh vấn đề nào cần xem theo yêu cầu?",
+      "options": [
+        "Tự làm block.timestamp giảm",
+        "Spam và chi phí xử lý/indexing dù người gửi trả gas",
+        "Tự tạo private key treasury",
+        "Tự biến mọi proposal thành executed"
+      ],
+      "correct": 1,
+      "explanation": "Chi phí caller không tự loại mọi tác động vận hành của open creation."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Concurrent ID UI",
+      "question": "UI đọc nextProposalId rồi người khác create trước. ID dự đoán của UI có bảo đảm là ID giao dịch nó sắp gửi không?",
+      "options": [
+        "Có, calldata giữ reservation ID",
+        "Chỉ cần UI refresh một lần",
+        "Không, thứ tự thực thi có thể khác",
+        "Có, getter tự đặt khóa toàn chain"
+      ],
+      "correct": 2,
+      "explanation": "Dự đoán off-chain không tự đặt trước ID."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Overflow counter",
+      "question": "Ở Solidity 0.8.20 mặc định, nextProposalId++ vượt uint256 sẽ thế nào?",
+      "options": [
+        "Wrap về 0 không lỗi",
+        "Tự đổi counter thành string",
+        "Tự ghi đè ID 0 rồi tăng",
+        "Revert"
+      ],
+      "correct": 3,
+      "explanation": "Checked arithmetic không tự tăng miền số."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Voting extension",
+      "question": "Để mở rộng vote chỉ trong thời gian cho phép, cần kiểm gì?",
+      "options": [
+        "Existence/state của proposal và clock/deadline theo policy",
+        "Chỉ description không rỗng",
+        "Chỉ caller đã đọc getter",
+        "Chỉ gas price lớn hơn 0"
+      ],
+      "correct": 0,
+      "explanation": "Thời gian và trạng thái là phần hợp đồng voting."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Boundary policy",
+      "question": "Nếu rule vote là timestamp < deadline, tại timestamp == deadline có được vote không?",
+      "options": [
+        "Chỉ proposer được thêm phiếu",
+        "Không",
+        "Có, luôn thêm 1 giây grace ngầm",
+        "Có, vì deadline public"
+      ],
+      "correct": 1,
+      "explanation": "Điều kiện biên cần được xác định rõ."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Double vote",
+      "question": "Thêm hàm vote nhưng không tracking ai đã vote có thể gây gì?",
+      "options": [
+        "Counter proposal tự ngăn lặp voter",
+        "Calldata chỉ dùng được một lần",
+        "Cùng voting entitlement được ghi nhiều lần ngoài policy",
+        "EVM tự chặn cùng address gọi lại"
+      ],
+      "correct": 2,
+      "explanation": "Cần state theo proposal/voter hoặc cơ chế tương đương."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Weight source",
+      "question": "balanceOf hiện tại có tự cung cấp voting weight lịch sử ở snapshot cũ không?",
+      "options": [
+        "Có, ERC20 bắt buộc lưu mọi snapshot trong balanceOf",
+        "Có, decimals làm balance có lịch sử",
+        "Chỉ cần caller là owner",
+        "Không, cần checkpoints hoặc nguồn lịch sử theo thiết kế"
+      ],
+      "correct": 3,
+      "explanation": "Balance hiện tại không tự là past votes."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Snapshot purpose",
+      "question": "Vì sao token voting thường dùng snapshot theo proposal?",
+      "options": [
+        "Cố định quyền theo mốc để không đếm lại token chuyển qua nhiều account trong kỳ",
+        "Để tự tăng totalSupply",
+        "Để mọi token giữ giá",
+        "Để bỏ cần kiểm ai đã vote"
+      ],
+      "correct": 0,
+      "explanation": "Snapshot bổ sung, không thay mọi điều kiện voting."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Delegation",
+      "question": "Trong cơ chế voting delegation kiểu ERC-5805, delegation có tự chuyển ownership token không?",
+      "options": [
+        "Chỉ cần allowance để delegate tự có token",
+        "Không, voting power và token balance/ownership khác nhau",
+        "Có, delegatee tự nhận toàn token",
+        "Có, trừ self-delegation"
+      ],
+      "correct": 1,
+      "explanation": "Quyền biểu quyết được ủy thác theo policy riêng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Self delegation",
+      "question": "Trong ERC20Votes-style flow, holder muốn tự dùng voting power có thể cần gì?",
+      "options": [
+        "Chỉ transfer 0 token cho mình",
+        "Chỉ đọc totalSupply",
+        "Self-delegate theo cơ chế voting token được dùng",
+        "Chỉ approve Governor để tự có votes"
+      ],
+      "correct": 2,
+      "explanation": "Balance và delegated voting weight không mặc định đồng nhất."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Clock mode",
+      "question": "ERC-6372 giúp consumer biết điều gì?",
+      "options": [
+        "Private key người vote",
+        "Mọi proposal đã thực thi đúng",
+        "Token có đủ thanh khoản không",
+        "Clock của contract dùng mode/đơn vị nào"
+      ],
+      "correct": 3,
+      "explanation": "Cần khớp timepoints giữa các contract liên quan."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Block versus timestamp",
+      "question": "Voting token dùng block-number clock, UI nhập 3 days như 259200 mà coi là giây. Vấn đề là gì?",
+      "options": [
+        "Giá trị được hiểu thành số đơn vị clock khác, duration sai ý định",
+        "Compiler tự chuyển theo block time thực tế",
+        "Chỉ ảnh hưởng text mà không thời hạn on-chain",
+        "Không vấn đề vì mọi block đúng 1 giây"
+      ],
+      "correct": 0,
+      "explanation": "Không đổi giây sang block bằng giả định ngầm."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Quorum and majority",
+      "question": "Một proposal có đa số phiếu tham gia ủng hộ nhưng không đạt quorum. Theo policy yêu cầu cả hai thì thế nào?",
+      "options": [
+        "Chỉ cần proposer đồng ý",
+        "Không đạt điều kiện thành công",
+        "Luôn được thông qua vì đa số là đủ",
+        "Tự giảm quorum về lượng tham gia"
+      ],
+      "correct": 1,
+      "explanation": "Cần xét đồng thời các điều kiện policy."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Counting Simple",
+      "question": "Trong OZ GovernorCountingSimple theo docs 5.x được đối chiếu, nhóm phiếu nào tính quorum?",
+      "options": [
+        "For và Against nhưng không Abstain",
+        "Mọi policy luôn chỉ For",
+        "For và Abstain",
+        "Chỉ Against"
+      ],
+      "correct": 2,
+      "explanation": "Đây là quy tắc module nêu rõ, không của mọi DAO."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Proposal threshold",
+      "question": "Proposal threshold thường kiểm mục tiêu nào?",
+      "options": [
+        "Lượng gas mọi voter phải trả",
+        "Giá token thị trường tối thiểu",
+        "Số lần timelock được execute",
+        "Ai đủ voting power để tạo đề xuất theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Khác quorum để quyết định participation của voting."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Timelock clock",
+      "question": "Hết voting period có tự bằng hết timelock delay không?",
+      "options": [
+        "Không, hai mốc/lifecycle riêng theo thiết kế",
+        "Có, cùng tên deadline nên cùng mốc",
+        "Có, vote cuối tự execute ngay",
+        "Chỉ nếu description dài hơn 32 byte"
+      ],
+      "correct": 0,
+      "explanation": "Cần nối kết quả vote, queue và execution availability."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Proposer role",
+      "question": "Trong OZ TimelockController flow được mô tả, proposer role chủ yếu làm gì?",
+      "options": [
+        "Tự cast phiếu thay mọi voter",
+        "Queue operations",
+        "Tự có quyền bỏ mọi delay",
+        "Trực tiếp sửa token balance của mọi ví"
+      ],
+      "correct": 1,
+      "explanation": "Role queue khác quyền thực hiện một thao tác đã sẵn sàng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Executor role",
+      "question": "Executor role trong timelock phục vụ gì?",
+      "options": [
+        "Đổi mọi voting power",
+        "Bỏ qua minDelay tự động",
+        "Execute operations đã đủ điều kiện theo cơ chế",
+        "Tạo proposal tùy ý bỏ governance"
+      ],
+      "correct": 2,
+      "explanation": "Role không tự bỏ điều kiện của operation."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Executor open",
+      "question": "Cho phép executor mở với mọi người có tự nghĩa mọi người được execute bất kỳ payload không?",
+      "options": [
+        "Có, open executor bỏ mọi operation check",
+        "Có, zero address đại diện mọi admin",
+        "Chỉ cần biết treasury address",
+        "Không, vẫn phải là operation được schedule và đủ điều kiện"
+      ],
+      "correct": 3,
+      "explanation": "Permission gọi hàm và tính hợp lệ operation là các lớp khác nhau."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Governance ownership",
+      "question": "Nếu timelock là nơi execute hành động quản trị, target cần cấp quyền phù hợp cho ai?",
+      "options": [
+        "Địa chỉ thực thi timelock theo mô hình đó",
+        "Chỉ EOA từng tạo proposal",
+        "Mọi voter không phân biệt",
+        "Chỉ frontend governance"
+      ],
+      "correct": 0,
+      "explanation": "Target kiểm caller trực tiếp của thao tác quản trị."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Payload binding",
+      "question": "Description và calldata thực thi có nên được ràng buộc với proposal được thông qua không?",
+      "options": [
+        "Chỉ cần timestamp vượt deadline",
+        "Có, tránh nội dung được vote khác thao tác execute",
+        "Không, chỉ title giống là đủ",
+        "Không, ai execute tự chọn calldata"
+      ],
+      "correct": 1,
+      "explanation": "Vote phải gắn đúng hành động được ủy quyền."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Executed flag",
+      "question": "Thêm executed field nhưng execute không đọc/ghi nó hoặc state tương đương có tự chặn replay không?",
+      "options": [
+        "Có, public mapping tự dedup execution",
+        "Chỉ cần event Executed",
+        "Không",
+        "Có, field bool tự cấm lần hai"
+      ],
+      "correct": 2,
+      "explanation": "State cần được dùng trong guard/lifecycle thực."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Execution failure",
+      "question": "Nếu execution atomic revert sau khi đặt executed true, thay đổi flag trong call đó thường ra sao?",
+      "options": [
+        "Giữ true vì ghi trước external call",
+        "Tự đổi sang uint256",
+        "Chỉ rollback nếu có event",
+        "Rollback theo transaction lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Cần policy lỗi và state machine đúng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Reentrancy execution",
+      "question": "Khi execute có external call, điều gì nên được xét ngoài hết deadline?",
+      "options": [
+        "State lifecycle, quyền, payload và tái nhập/rollback của execution",
+        "Chỉ số ký tự description",
+        "Chỉ token symbol",
+        "Chỉ pragma caret"
+      ],
+      "correct": 0,
+      "explanation": "Execution là đường chuyển control và có thể chuyển tài sản."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "MEV and timelock",
+      "question": "Có timelock có tự loại mọi rủi ro MEV cho swap của treasury không?",
+      "options": [
+        "Chỉ cần voting period dài",
+        "Không",
+        "Có, delay mã hóa mọi transaction",
+        "Có, DAO name chặn mọi searcher"
+      ],
+      "correct": 1,
+      "explanation": "Delay governance và ordering risk là mục tiêu khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Slippage bound",
+      "question": "Một hành động swap treasury có giới hạn output phù hợp giúp kiểm điều gì?",
+      "options": [
+        "Tự làm mọi token có giá cố định",
+        "Tự ngăn mọi lỗi access control",
+        "Điều kiện chấp nhận giá thực thi theo policy",
+        "Bảo đảm không tồn tại mọi MEV"
+      ],
+      "correct": 2,
+      "explanation": "Ràng buộc execution có phạm vi hữu hạn."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Sustainable incentives",
+      "question": "Phát thưởng bằng token có tự chứng minh incentive bền vững không?",
+      "options": [
+        "Có, smart contract tự bảo đảm nhu cầu",
+        "Có, tổng cung càng lớn càng bền vững",
+        "Chỉ cần dùng ERC20 chuẩn",
+        "Không, cần xét nguồn lực, phân phối, quyền và hành vi theo mô hình"
+      ],
+      "correct": 3,
+      "explanation": "Cơ chế kỹ thuật không là bảo đảm kinh tế."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Proposal zero tồn tại",
+      "question": "Source cấp proposal đầu ID 0; extension vote coi proposals[id].id == 0 là chưa tồn tại. Sửa invariant nào?",
+      "options": [
+        "Dùng quy tắc tồn tại rõ như cờ/counter range hợp lệ và giữ ID 0 hợp lệ",
+        "Bỏ proposal đầu để mọi mapping default thành hợp lệ",
+        "Chỉ description không rỗng là luôn đủ theo source cho phép rỗng",
+        "Đổi getter public thành private để ID zero không lỗi"
+      ],
+      "correct": 0,
+      "explanation": "ID hợp lệ đầu và default entry phải được phân biệt nhất quán."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Đếm token hai ví",
+      "question": "Extension chỉ hasVoted theo address và lấy balanceOf hiện tại; A vote rồi chuyển token sang B để B vote. Cần phối hợp gì?",
+      "options": [
+        "Chỉ kéo dài deadline để không chuyển được token",
+        "Voting weight tại snapshot phù hợp và tracking vote theo proposal/chủ thể, không chỉ balance hiện tại",
+        "Chỉ hasVoted toàn contract không theo proposal",
+        "Chỉ khóa description sau khi tạo"
+      ],
+      "correct": 1,
+      "explanation": "Snapshot và chống ghi phiếu lặp giải quyết các phần khác nhau."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Flash balance voting",
+      "question": "Rule dùng số dư tức thời trong transaction để quyết định proposal, không snapshot/delay. Cần đánh giá gì?",
+      "options": [
+        "Chỉ decimals 18 loại quyền tạm thời",
+        "Một timelock tự sửa mọi cách đếm phiếu",
+        "Khả năng quyền ngắn hạn/nguồn token và thiết kế checkpoint/lifecycle theo threat model",
+        "Mọi ERC20 cấm vay token nên không rủi ro"
+      ],
+      "correct": 2,
+      "explanation": "Không coi snapshot hoặc delay riêng lẻ là chứng minh chống mọi governance attack."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Clock mismatch",
+      "question": "Voting token checkpoint dùng block number nhưng Governor extension truy vấn past votes bằng timestamp. Hậu quả và hướng sửa?",
+      "options": [
+        "Timestamp lớn hơn nên luôn chính xác hơn",
+        "ERC20 tự quy đổi mọi clock",
+        "Chỉ frontend cần đổi ngày hiển thị",
+        "Sai timepoint/ngữ nghĩa, có thể lỗi hoặc sai quyền; thống nhất clock mode và duration"
+      ],
+      "correct": 3,
+      "explanation": "Consumer và producer historical voting data phải cùng semantics clock."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Vote thắng chưa quorum",
+      "question": "Giả sử policy cần quorum 100 và For > Against; For 60, Against 10, Abstain 20, quorum tính For+Abstain. Kết quả?",
+      "options": [
+        "Không thành công vì quorum chỉ 80 dù For thắng Against",
+        "Thành công vì 60 lớn hơn 10",
+        "Thành công vì tổng ba nhóm là 90 lớn hơn 0",
+        "Quorum tự thành 70 vì không tính Abstain"
+      ],
+      "correct": 0,
+      "explanation": "Cần áp đúng cả cách đếm quorum và điều kiện thắng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Deadline thành execute",
+      "question": "Developer thêm execute chỉ kiểm timestamp > proposal.deadline mà không kiểm vote/quorum/flag. Thiếu gì?",
+      "options": [
+        "Chỉ description phải có chữ passed",
+        "State thành công theo vote/quorum, payload/quyền và chống replay/execution lifecycle",
+        "Chỉ thêm 3 days vào deadline lần nữa",
+        "Chỉ public getter cho votesFor"
+      ],
+      "correct": 1,
+      "explanation": "Hết thời gian không chứng minh đề xuất được ủy quyền thực thi."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Thông qua một đằng execute một nẻo",
+      "question": "Voter duyệt grant cho A nhưng execute nhận recipient/amount tùy caller. Cần sửa contract dữ liệu nào?",
+      "options": [
+        "Chỉ kiểm msg.sender đã từng vote",
+        "Chỉ tăng quorum để caller đáng tin hơn",
+        "Ràng buộc payload/target/value với proposal được thông qua và trạng thái thực thi",
+        "Chỉ hiển thị đúng A trong UI"
+      ],
+      "correct": 2,
+      "explanation": "Nội dung vote và hành động có thể thực thi phải cùng một quyết định."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Timelock bị bypass",
+      "question": "DAO có timelock nhưng target owner vẫn là EOA được phép đổi tham số trực tiếp. Điều gì cần xét?",
+      "options": [
+        "Timelock tự chặn mọi call ngoài nó dù target không kiểm",
+        "Chỉ đổi tên EOA thành DAO",
+        "Chỉ tăng votingPeriod",
+        "Đường quyền EOA có thể bypass governance/delay; quản lý owner/roles theo mô hình mong muốn"
+      ],
+      "correct": 3,
+      "explanation": "Control chỉ có hiệu lực nếu mọi đường quyền liên quan được thiết kế đúng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Proposer phụ rộng",
+      "question": "Timelock chỉ định Governor và một EOA tùy ý đều proposer. Vì sao cần review?",
+      "options": [
+        "EOA có thể schedule ngoài luồng vote theo quyền; cần policy role phù hợp mục tiêu governance",
+        "Proposer role chỉ đọc nên không tác động",
+        "Governor tự vô hiệu mọi proposer khác",
+        "Chỉ executor mới ảnh hưởng nên queue không cần xét"
+      ],
+      "correct": 0,
+      "explanation": "Delay không đồng nghĩa mọi operation đã qua bỏ phiếu."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Executed sau external",
+      "question": "Execute gửi Ether rồi mới đánh executed; recipient callback gọi execute cùng proposal. Cần phối hợp gì?",
+      "options": [
+        "Chỉ tx.origin kiểm recipient",
+        "Guard/state transition trước external interaction cùng checks/payload và rollback policy",
+        "Chỉ deadline quá hạn là đủ",
+        "Chỉ emit Executed trước call mà không state"
+      ],
+      "correct": 1,
+      "explanation": "Replay/tái nhập cần được xét trong state machine execution."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Execution revert flag",
+      "question": "Execute đặt flag true trước call nhưng call thất bại, toàn transaction revert; UI muốn coi đã executed vì flag từng được gán. Cách hiểu đúng?",
+      "options": [
+        "Event log trước revert giữ executed vĩnh viễn",
+        "Tăng gas price hồi tố làm flag giữ lại",
+        "Flag của thao tác bị rollback; UI cần theo kết quả/state canonical và policy retry",
+        "Gán trước call luôn giữ true"
+      ],
+      "correct": 2,
+      "explanation": "Thứ tự state write và kết quả commit không đồng nhất khi lỗi."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "ID bị dự đoán sai",
+      "question": "Hai user cùng đọc nextProposalId = 5; UI A gắn mô tả local vào ID 5 trước khi giao dịch B chạy trước. Cần quản lý thế nào?",
+      "options": [
+        "Mọi user đọc counter tự được giữ cùng ID",
+        "Chỉ sắp UI theo thời gian nhấn nút",
+        "Đổi description sang calldata sẽ reserve ID",
+        "Lấy ID/kết quả thực của giao dịch bằng cơ chế giao diện phù hợp, không coi getter là reservation"
+      ],
+      "correct": 3,
+      "explanation": "Giao dịch được tuần tự hóa theo chain, dự đoán client có thể lỗi."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Desc không hành động",
+      "question": "Source lưu description nói nâng cấp vault nhưng không lưu target/calldata và không execute. Để vote có thể ủy quyền đúng upgrade cần gì?",
+      "options": [
+        "Representation hành động, quyền target và lifecycle vote/queue/execute ràng buộc nhất quán",
+        "Chỉ thêm executed bool là EVM hiểu nội dung",
+        "Chỉ chờ 3 ngày để text tự chạy",
+        "Chỉ đặt description thành địa chỉ implementation"
+      ],
+      "correct": 0,
+      "explanation": "Văn bản giải thích không là chương trình thực thi có quyền."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Thay quorum hồi tố",
+      "question": "Quorum parameter đổi giữa thời gian proposal đang vote; extension dùng giá trị mới với mọi proposal cũ mà policy không nêu. Cần thiết kế gì?",
+      "options": [
+        "Cùng uint256 bảo đảm không thay kết quả",
+        "Semantics tham số theo snapshot/version/lifecycle rõ để kết quả không thay ngoài ý định",
+        "Mọi parameter mới tự đúng cho lịch sử",
+        "Chỉ đổi tên field quorum"
+      ],
+      "correct": 1,
+      "explanation": "Governance rule cũng có chiều thời gian như voting weight."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Delegation nhầm token transfer",
+      "question": "UI hướng holder approve Governor rồi báo đã self-delegate, nhưng voting token theo delegation có votes 0. Cần sửa gì?",
+      "options": [
+        "Chỉ chuyển 0 token cho Governor",
+        "Chỉ gọi totalSupply để kích hoạt phiếu",
+        "Dùng đúng delegation API/policy và snapshot; allowance không tự là voting delegation",
+        "Approve tự tạo checkpoint vote sau 3 ngày"
+      ],
+      "correct": 2,
+      "explanation": "Quyền chi tài sản và quyền biểu quyết có cơ chế khác nhau."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Execution caller target",
+      "question": "Timelock execute upgrade, nhưng vault chỉ cho Governor contract làm owner. Vì sao có thể bị từ chối?",
+      "options": [
+        "Mọi DAO contract đều tự là cùng address",
+        "Governor vote thành công bỏ qua onlyOwner",
+        "Chỉ cần emitter event giống nhau",
+        "Caller tại target là timelock; roles/ownership phải khớp execution path được thiết kế"
+      ],
+      "correct": 3,
+      "explanation": "Quyền phải cấp cho chủ thể thực thực hiện lời gọi."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Timelock và swap MEV",
+      "question": "Proposal treasury swap đã được vote/queue; payload để output tối thiểu bằng 0 bất kể thị trường. Có timelock giải quyết hết không?",
+      "options": [
+        "Không, còn ordering/giá thực thi; cần giới hạn và policy execution phù hợp ngoài delay",
+        "Có, thời gian chờ làm pool price cố định",
+        "Có, DAO vote tự mã hóa mempool",
+        "Chỉ amount token quyết định MEV bằng 0"
+      ],
+      "correct": 0,
+      "explanation": "Governance approval không tự là điều kiện giao dịch kinh tế an toàn."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cancel role rộng",
+      "question": "Một EOA ngoài Governor giữ canceller và liên tục hủy operation đã được thông qua. Vấn đề kiến trúc nào?",
+      "options": [
+        "Timelock delay dài hơn tự chặn EOA",
+        "Role có thể phá liveness governance; cần policy cấp/thu hồi và quyền emergency rõ",
+        "Cancel chỉ đổi UI nên không tác động",
+        "Quorum cao tự vô hiệu canceller"
+      ],
+      "correct": 1,
+      "explanation": "Quyền bảo vệ khẩn cấp và khả năng vận hành cần được cân bằng cụ thể."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Snapshot mới thiếu lịch sử",
+      "question": "DAO đổi sang dùng getPastVotes nhưng token chỉ ERC20 balanceOf không checkpoints. Chọn cách tích hợp đúng?",
+      "options": [
+        "Chỉ thêm uint256 timestamp vào balanceOf client",
+        "Chỉ tăng votingPeriod để dữ liệu cũ xuất hiện",
+        "Dùng voting token/nguồn historical weight tương thích hoặc migration có thiết kế, không ép interface để giả có dữ liệu",
+        "IERC20 cast tự tạo lịch sử mọi ví"
+      ],
+      "correct": 2,
+      "explanation": "Interface expectations phải khớp cơ chế dữ liệu của token."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Incentive và quyền tập trung",
+      "question": "Token phân phối phần lớn cho một chủ thể, DAO dùng voting power theo token và không có kiểm soát bổ sung. Điều cần đánh giá?",
+      "options": [
+        "ERC20 tự bảo đảm mỗi người một phiếu",
+        "Nhiều address khác nhau luôn nghĩa nhiều chủ độc lập",
+        "Timelock tự chia lại token supply",
+        "Tập trung quyền/khả năng thông qua theo rule, incentive và đường thực thi; tên DAO không tự tạo phân quyền"
+      ],
+      "correct": 3,
+      "explanation": "Quyền thực tế phụ thuộc phân phối và cơ chế governance, không nhãn hệ thống."
+    }
+  ]
+}

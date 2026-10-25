@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "nginx",
+  "level": "master",
+  "lesson": "architecture",
+  "language": "vi",
+  "sourceHash": "b3cedcee743294674762edb2dfe381324d2fc1341454b097626b5d7d7c32ec7c",
+  "status": "approved",
+  "review": "Biên soạn trực tiếp theo nguồn và Nginx core/HTTP core/limit_req/stub_status, headers-more và nginx-prometheus-exporter docs chính thức. Không xem comment là triển khai: zone chưa áp limit_req, stub_status chưa là exporter, backup/monitoring/logging chưa wiring. Không chạy Nginx, exporter, cron, network hay lệnh quản trị; không có bằng chứng năng lực tải thực.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Luồng kiến trúc",
+      "question": "Comment kiến trúc trong nguồn mô tả thứ tự tầng nào?",
+      "options": [
+        "CDN → Nginx load balancer → app servers",
+        "App servers → browser → CDN",
+        "Database → cron → compiler",
+        "Prometheus → TLS key → Git"
+      ],
+      "correct": 0,
+      "explanation": "Đây là mô tả ý tưởng, chưa phải cấu hình triển khai đủ các tầng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Vai trò CDN",
+      "question": "Trong kiến trúc web, CDN thường đứng ở vị trí nào so với origin Nginx?",
+      "options": [
+        "Là một process compiler của Nginx",
+        "Tầng phía trước nhận lưu lượng theo cấu hình phân phối nội dung",
+        "Bên trong file server.js như biến PORT",
+        "Thay thế mọi database transaction"
+      ],
+      "correct": 1,
+      "explanation": "Hành vi cache và bảo vệ phụ thuộc cấu hình CDN cụ thể."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Worker count",
+      "question": "worker_processes auto điều khiển đối tượng gì?",
+      "options": [
+        "Số bản sao database",
+        "Số certificate phải cấp",
+        "Số worker process do Nginx xác định tự động",
+        "Số tài khoản website"
+      ],
+      "correct": 2,
+      "explanation": "Auto không có nghĩa tài nguyên xử lý vô hạn."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Connection budget",
+      "question": "worker_connections 65535 đặt giới hạn liên quan tới đâu?",
+      "options": [
+        "Số user duy nhất toàn đời website",
+        "Số file HTML trong repo",
+        "Số query DB luôn hoàn thành mỗi giây",
+        "Số kết nối đồng thời một worker có thể mở"
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn thực tế còn chịu tài nguyên và các ràng buộc khác."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Open file limit",
+      "question": "worker_rlimit_nofile liên quan tới giới hạn nào?",
+      "options": [
+        "Số file descriptor mở của worker",
+        "Số user đăng ký",
+        "Số route frontend",
+        "Số byte của password"
+      ],
+      "correct": 0,
+      "explanation": "Socket cũng sử dụng file descriptor trên hệ điều hành liên quan."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Events context",
+      "question": "worker_connections nằm trong khối nào của nguồn?",
+      "options": [
+        "upstream",
+        "events",
+        "server",
+        "location"
+      ],
+      "correct": 1,
+      "explanation": "Context chỉ thị phải phù hợp cấu trúc cấu hình."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Linux event mechanism",
+      "question": "use epoll chọn loại cơ chế nào?",
+      "options": [
+        "Chuẩn TLS mới",
+        "Cơ chế sao lưu file",
+        "Cơ chế xử lý sự kiện hỗ trợ trên Linux",
+        "Thuật toán đồng bộ database"
+      ],
+      "correct": 2,
+      "explanation": "Không phải mọi hệ điều hành đều hỗ trợ epoll."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Accept nhiều kết nối",
+      "question": "multi_accept on liên quan tới hành vi nào?",
+      "options": [
+        "Tạo nhiều tài khoản từ một cookie",
+        "Gửi mỗi request tới tất cả database",
+        "Bật mọi module bên thứ ba",
+        "Worker nhận các kết nối mới đang chờ thay vì chỉ một theo cơ chế áp dụng"
+      ],
+      "correct": 3,
+      "explanation": "Cần xét nền tảng và workload khi điều chỉnh cơ chế nhận kết nối."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Ẩn version",
+      "question": "server_tokens off chủ yếu kiểm soát thông tin nào?",
+      "options": [
+        "Thông tin phiên bản Nginx được phát ra theo chỉ thị này",
+        "Mọi header HTTP một cách tuyệt đối",
+        "Mọi lỗi bảo mật của ứng dụng",
+        "Mọi địa chỉ IP client"
+      ],
+      "correct": 0,
+      "explanation": "Ẩn phiên bản không phải thay thế cập nhật hay phân quyền."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Third-party header module",
+      "question": "more_clear_headers thuộc module nào được dùng trong nguồn?",
+      "options": [
+        "systemd unit manager",
+        "headers-more",
+        "HTTP gzip module",
+        "HTTP upstream module"
+      ],
+      "correct": 1,
+      "explanation": "Đây không phải chỉ thị stock luôn có trong mọi build Nginx."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Header xóa",
+      "question": "more_clear_headers Server nhằm tác động tới header nào?",
+      "options": [
+        "Content-Type",
+        "Strict-Transport-Security",
+        "Server",
+        "Authorization"
+      ],
+      "correct": 2,
+      "explanation": "Khả năng dùng còn tùy module được build/load đúng."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Zone general",
+      "question": "Tên zone giới hạn tổng quát được định nghĩa trong nguồn là gì?",
+      "options": [
+        "backend",
+        "addr",
+        "metrics",
+        "general"
+      ],
+      "correct": 3,
+      "explanation": "Tên zone là định danh để các chỉ thị áp dụng tham chiếu."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Rate login",
+      "question": "Nguồn đặt rate của zone login ở mức nào?",
+      "options": [
+        "5r/m",
+        "5r/s",
+        "50r/s",
+        "10m/s"
+      ],
+      "correct": 0,
+      "explanation": "r/m là request mỗi phút, khác r/s."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Khóa rate",
+      "question": "Hai limit_req_zone trong nguồn đều dùng khóa gì?",
+      "options": [
+        "$server_port",
+        "$binary_remote_addr",
+        "$request_method",
+        "$cookie_session"
+      ],
+      "correct": 1,
+      "explanation": "Cấu hình hiện tại nhóm theo địa chỉ IP Nginx quan sát."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Endpoint quan sát",
+      "question": "Server dành cho status trong nguồn listen cổng nào?",
+      "options": [
+        "3000",
+        "22",
+        "9113",
+        "443"
+      ],
+      "correct": 2,
+      "explanation": "Số port không tự quyết định định dạng body hoặc loại exporter."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Status handler",
+      "question": "location /metrics trong nguồn gọi chỉ thị nào?",
+      "options": [
+        "proxy_cache",
+        "limit_req",
+        "ssl_certificate",
+        "stub_status"
+      ],
+      "correct": 3,
+      "explanation": "Tên URI không biến handler này thành Prometheus exporter."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Dữ liệu stub_status",
+      "question": "stub_status cung cấp nhóm dữ liệu cơ bản nào?",
+      "options": [
+        "Kết nối và request theo dạng status cơ bản của Nginx",
+        "Mọi transaction database",
+        "Mọi session người dùng",
+        "Mọi trace ứng dụng đầy đủ"
+      ],
+      "correct": 0,
+      "explanation": "Muốn có định dạng/chiều đo khác cần tích hợp phù hợp."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Cron time",
+      "question": "Nếu được cài đúng trong cron có định dạng phù hợp, 0 2 * * * mô tả lịch nào?",
+      "options": [
+        "Chỉ ngày thứ hai hằng tháng",
+        "Mỗi ngày lúc 02:00 theo múi giờ scheduler áp dụng",
+        "Mỗi hai phút",
+        "Mỗi ngày lúc 00:02"
+      ],
+      "correct": 1,
+      "explanation": "Trong nguồn hiện tại dòng này còn là comment."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Backup script",
+      "question": "Tên script backup được nhắc trong nguồn là gì?",
+      "options": [
+        "/usr/bin/node",
+        "/metrics",
+        "/usr/local/bin/backup.sh",
+        "/etc/nginx/nginx.conf"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ thấy đường dẫn trong comment chưa chứng minh script tồn tại."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Monitoring comment",
+      "question": "Dòng # Monitoring: Prometheus + Grafana + AlertManager là gì về mặt cấu hình đang chạy?",
+      "options": [
+        "Bằng chứng ba dịch vụ đã chạy",
+        "Cấu hình gửi alert đầy đủ",
+        "Một scrape job hợp lệ",
+        "Chú thích nêu ý tưởng tích hợp"
+      ],
+      "correct": 3,
+      "explanation": "Comment không khởi tạo service hoặc kết nối chúng với nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Định nghĩa chưa áp dụng",
+      "question": "Nguồn đã có limit_req_zone general và login. Có chỉ thị limit_req áp hai zone đó vào request chưa?",
+      "options": [
+        "Chưa thấy trong đoạn nguồn",
+        "Có, khai báo zone tự áp toàn bộ request",
+        "Có, server_tokens tự áp zone",
+        "Có, stub_status áp zone login"
+      ],
+      "correct": 0,
+      "explanation": "Định nghĩa nơi lưu trạng thái không tự gắn chính sách vào route."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Áp zone có chủ đích",
+      "question": "Muốn giới hạn endpoint đăng nhập theo zone login, cần bổ sung gì trong context phù hợp?",
+      "options": [
+        "Chỉ đặt tên location là login",
+        "limit_req tham chiếu zone=login tại nơi chính sách phải có hiệu lực",
+        "Chỉ thêm comment DDoS",
+        "Chỉ đổi port metrics"
+      ],
+      "correct": 1,
+      "explanation": "Cần đối chiếu route được chọn và chính sách mong muốn."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Đơn vị phút",
+      "question": "Vì sao không nên đọc 5r/m thành 5 request mỗi giây?",
+      "options": [
+        "Vì rate là dung lượng RAM",
+        "Vì login luôn có đúng năm user",
+        "r/m và r/s là hai đơn vị tốc độ khác nhau",
+        "Vì m luôn là triệu request"
+      ],
+      "correct": 2,
+      "explanation": "Sai đơn vị có thể tạo chênh lệch chính sách lớn."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Zone size không là rate",
+      "question": "Trong zone=login:10m rate=5r/m, hai chữ m có cùng ý nghĩa không?",
+      "options": [
+        "Có, cả hai đều là mười phút",
+        "Có, cả hai là số máy",
+        "Có, cả hai là số user",
+        "Không, 10m là kích thước nhớ, r/m là request mỗi phút"
+      ],
+      "correct": 3,
+      "explanation": "Cần đọc cú pháp từng tham số, không chỉ nhìn hậu tố."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Nguồn IP sau CDN",
+      "question": "Sau CDN, $binary_remote_addr có thể đại diện cho ai nếu chưa có xử lý real IP phù hợp?",
+      "options": [
+        "Proxy/CDN kết nối trực tiếp tới Nginx",
+        "Luôn tài khoản thật của user",
+        "Luôn IP database",
+        "Luôn IP do cookie tự tạo"
+      ],
+      "correct": 0,
+      "explanation": "Trust proxy và nhận diện IP gốc chưa được cấu hình trong nguồn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Header giả mạo",
+      "question": "Vì sao không nên tin bất kỳ header IP do client gửi để vượt qua vấn đề CDN?",
+      "options": [
+        "Vì Nginx tự mã hóa mọi header đó",
+        "Nguồn không tin cậy có thể giả mạo giá trị nếu thiếu trust policy",
+        "Vì IP header tự là certificate",
+        "Vì mọi request có một user duy nhất"
+      ],
+      "correct": 1,
+      "explanation": "Cần giới hạn các proxy được tin và ngăn bypass phù hợp thiết kế."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "CDN chưa được triển khai",
+      "question": "Comment Cloudflare → Nginx có chứng minh DNS, proxy mode và origin policy đã cấu hình chưa?",
+      "options": [
+        "Rồi, use epoll là DNS resolver",
+        "Rồi, worker_processes tạo zone DNS",
+        "Chưa, các phần đó không xuất hiện như cấu hình triển khai ở đây",
+        "Rồi, chỉ cần có từ Cloudflare"
+      ],
+      "correct": 2,
+      "explanation": "Sơ đồ ý tưởng không thay cấu hình dịch vụ thực tế."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Thiếu app upstream",
+      "question": "Nguồn architecture có cung cấp nhóm app upstream và route proxy tới app không?",
+      "options": [
+        "Có, comment App Servers tự tạo route",
+        "Có, stub_status chọn app",
+        "Có, general là nhóm backend",
+        "Không, chưa có upstream/proxy_pass tương ứng trong đoạn này"
+      ],
+      "correct": 3,
+      "explanation": "Không coi sơ đồ luồng là code định tuyến đã tồn tại."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Thiếu TLS route",
+      "question": "Nguồn có listen 9113 cho status. Có cấu hình certificate/TLS app frontend trong đoạn này không?",
+      "options": [
+        "Chưa có",
+        "Có, cổng 9113 tự là HTTPS",
+        "Có, server_tokens cấp certificate",
+        "Có, epoll đàm phán TLS thay certificate"
+      ],
+      "correct": 0,
+      "explanation": "TLS cần cấu hình riêng hoặc bằng chứng tầng khác."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Status không là metrics format",
+      "question": "Vì sao đặt stub_status dưới URI /metrics chưa đủ cho Prometheus scrape đúng dạng metrics?",
+      "options": [
+        "Vì mọi status đều bắt buộc là JSON",
+        "Body vẫn là định dạng stub_status, cần exporter/tích hợp chuyển đổi phù hợp",
+        "Vì Prometheus chỉ đọc URL /status",
+        "Vì port 9113 không thể dùng HTTP"
+      ],
+      "correct": 1,
+      "explanation": "Tên đường dẫn và port không quyết định định dạng dữ liệu."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Vai trò exporter",
+      "question": "NGINX Prometheus Exporter có vai trò nào trong phương án quan sát OSS tương ứng?",
+      "options": [
+        "Tự tạo database sản xuất",
+        "Tự chạy cron backup",
+        "Đọc status Nginx rồi xuất metric theo định dạng phù hợp Prometheus",
+        "Tự thay mọi backend Node"
+      ],
+      "correct": 2,
+      "explanation": "Cần cấu hình cả nguồn scrape và Prometheus thu thập."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Port trùng chức năng",
+      "question": "9113 thường là cổng mặc định của exporter, nhưng nguồn đặt Nginx listen 9113. Điều gì không thể suy ra?",
+      "options": [
+        "Không thể biết số port đã viết",
+        "Không thể biết có server block",
+        "Không thể biết location có stub_status",
+        "Không thể suy ra process exporter đã tồn tại hay body đúng format"
+      ],
+      "correct": 3,
+      "explanation": "Số port quen thuộc không chứng minh loại dịch vụ đang chạy."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Bảo vệ endpoint quan sát",
+      "question": "Đoạn /metrics hiện có allowlist hoặc auth tường minh không?",
+      "options": [
+        "Không thấy trong nguồn",
+        "Có, đường dẫn /metrics tự là mật khẩu",
+        "Có, server_tokens tự xác thực",
+        "Có, cổng lớn hơn 1024 luôn private"
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi truy cập còn phụ thuộc bind, firewall và cấu hình triển khai."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Module status availability",
+      "question": "Để dùng stub_status, điều kiện build nào cần được xem xét?",
+      "options": [
+        "Chỉ cần đặt limit_req_zone",
+        "Nginx phải có module stub_status tương ứng được hỗ trợ trong build",
+        "Mọi build đều bắt buộc có mọi module",
+        "Chỉ cần đổi tên file thành metrics"
+      ],
+      "correct": 1,
+      "explanation": "Tài liệu module mô tả tùy chọn build; package thực tế cần được xác minh riêng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Headers-more thiếu module",
+      "question": "Build không có headers-more mà gặp more_clear_headers có thể xảy ra gì?",
+      "options": [
+        "Tự bỏ qua chỉ thị không biết mà không báo",
+        "Tự chuyển sang CDN",
+        "Không nhận diện được chỉ thị đó khi kiểm cấu hình",
+        "Tự tải module từ Internet"
+      ],
+      "correct": 2,
+      "explanation": "Khả năng parse phụ thuộc module, không chỉ nội dung file."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Ẩn version không xóa mọi dấu vết",
+      "question": "server_tokens off có tự bảo đảm không còn header Server hay mọi fingerprint không?",
+      "options": [
+        "Có, nó xóa mọi header HTTP",
+        "Có, nó sửa mọi response ứng dụng",
+        "Có, nó chặn scanner toàn Internet",
+        "Không, nó không phải cam kết xóa mọi dấu hiệu nhận diện"
+      ],
+      "correct": 3,
+      "explanation": "Giảm lộ thông tin và loại bỏ mọi nhận diện là hai mức khác nhau."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Security patch",
+      "question": "Ẩn version có thay việc cập nhật bản vá Nginx/module không?",
+      "options": [
+        "Không, lỗi phần mềm vẫn tồn tại nếu chưa được xử lý",
+        "Có, scanner không thấy version là không còn lỗi",
+        "Có, server_tokens tự cập nhật binary",
+        "Có, more_clear_headers biên dịch bản mới"
+      ],
+      "correct": 0,
+      "explanation": "Giấu thông tin không khắc phục lỗ hổng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Worker connections gồm upstream",
+      "question": "Một request proxy có cả kết nối client và upstream. Vì sao không thể dành toàn bộ worker_connections cho số client?",
+      "options": [
+        "Vì con số này đếm account chứ không phải connection",
+        "Giới hạn bao gồm cả kết nối tới proxied servers và kết nối khác",
+        "Vì upstream không dùng socket",
+        "Vì mỗi worker luôn chỉ có một client"
+      ],
+      "correct": 1,
+      "explanation": "Ngân sách kết nối phải bao quát các loại kết nối đang mở."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "File descriptor constraint",
+      "question": "Đặt worker_connections cao nhưng giới hạn file descriptor hiệu lực thấp có thể gây hạn chế gì?",
+      "options": [
+        "Tự xóa mọi log để tạo socket",
+        "Tự dùng RAM thay mọi descriptor",
+        "Năng lực mở kết nối thực tế vẫn bị giới hạn tài nguyên thấp hơn",
+        "Tự tăng OS limit vô hạn"
+      ],
+      "correct": 2,
+      "explanation": "Các ràng buộc cấu hình và hệ điều hành cần phù hợp với nhau."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "User không bằng socket",
+      "question": "Một người mở nhiều tab hoặc nhiều request đồng thời cho thấy điều gì khi sizing?",
+      "options": [
+        "Mỗi user luôn chính xác một socket",
+        "HTTP không có kết nối",
+        "Worker_connections chính là số account",
+        "Số người dùng không ánh xạ cố định một-một sang số kết nối"
+      ],
+      "correct": 3,
+      "explanation": "HTTP/2, keepalive và workload cũng làm quan hệ phức tạp hơn."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Auto và CPU",
+      "question": "worker_processes auto có tự tạo thêm CPU vật lý khi tải tăng không?",
+      "options": [
+        "Không, nó xác định số worker, không cấp tài nguyên hạ tầng mới",
+        "Có, mỗi request sinh một CPU",
+        "Có, CDN tạo CPU trong kernel",
+        "Có, epoll là autoscaler đám mây"
+      ],
+      "correct": 0,
+      "explanation": "Tăng worker và tăng tài nguyên máy là các thao tác khác nhau."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Portability epoll",
+      "question": "Mang nguyên use epoll sang hệ không hỗ trợ epoll có cần đánh giá lại không?",
+      "options": [
+        "Không, worker_processes biên dịch kernel",
+        "Có, cơ chế sự kiện phụ thuộc nền tảng",
+        "Không, epoll là cú pháp độc lập mọi OS",
+        "Không, header Server tự chuyển nền tảng"
+      ],
+      "correct": 1,
+      "explanation": "Không coi cấu hình Linux là phổ quát mọi nền tảng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Multi_accept và fairness",
+      "question": "multi_accept on có chứng minh latency luôn tốt hơn off với mọi workload không?",
+      "options": [
+        "Có, nó bỏ mọi queue vô hạn",
+        "Có, nó tăng RAM vật lý",
+        "Không, cần đo tác động nhận kết nối, tài nguyên và phân phối tải",
+        "Có, mọi cấu hình có on luôn nhanh hơn"
+      ],
+      "correct": 2,
+      "explanation": "Một lựa chọn tuning không phải định luật hiệu năng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Static status fields",
+      "question": "stub_status hiển thị Waiting có ý nghĩa loại kết nối nào?",
+      "options": [
+        "Query database đang khóa",
+        "Task backup trong cron",
+        "User chưa đăng nhập",
+        "Kết nối client nhàn rỗi đang chờ request"
+      ],
+      "correct": 3,
+      "explanation": "Waiting trong module status không phải queue nghiệp vụ của app."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Active gồm waiting",
+      "question": "Theo stub_status docs, Active connections có bao gồm Waiting không?",
+      "options": [
+        "Có",
+        "Không, chỉ request đang query DB",
+        "Không, chỉ kết nối TLS đang handshake",
+        "Không, chỉ socket đã đóng"
+      ],
+      "correct": 0,
+      "explanation": "Cần đọc định nghĩa chỉ số trước khi tạo biểu đồ hoặc alert."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Counter requests",
+      "question": "Trường requests trong stub_status mô tả đại lượng nào?",
+      "options": [
+        "Số backup restore thành công",
+        "Tổng request client đã được đếm",
+        "Số user online duy nhất",
+        "Số query DB lỗi trong phút"
+      ],
+      "correct": 1,
+      "explanation": "Không suy ra unique user hay latency từ một counter request."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Accepted và handled",
+      "question": "accepts khác handled trong số liệu status có thể gợi ý cần xem điều gì?",
+      "options": [
+        "CSS bị cache một năm",
+        "Cron đã chạy đủ lần",
+        "Giới hạn tài nguyên hoặc điều kiện khiến không xử lý được mọi kết nối đã nhận",
+        "Mật khẩu user bị đổi"
+      ],
+      "correct": 2,
+      "explanation": "Theo tài liệu, resource limits có thể tạo chênh lệch; cần dữ liệu bổ sung để chẩn đoán."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Đổi counter thành rate",
+      "question": "Muốn xem tốc độ request từ counter tích lũy, cần làm gì về nguyên tắc?",
+      "options": [
+        "Đọc một số tích lũy như requests/giây luôn",
+        "Lấy số user chia port",
+        "Đổi worker_connections thành giây",
+        "Xem mức tăng theo thời gian và xử lý reset phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Một counter snapshot không tự là rate hay phân vị latency."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Latency chưa có",
+      "question": "Chỉ có stub_status cơ bản có cung cấp trực tiếp đầy đủ latency p95 của từng endpoint không?",
+      "options": [
+        "Không, cần quan sát bổ sung",
+        "Có, Waiting chính là p95 milliseconds",
+        "Có, Active chính là latency",
+        "Có, port 9113 mã hóa p95"
+      ],
+      "correct": 0,
+      "explanation": "Cần metric/log/tracing phù hợp câu hỏi vận hành."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Alert wiring",
+      "question": "Có tên AlertManager trong comment đã đủ để gửi cảnh báo khi app lỗi chưa?",
+      "options": [
+        "Đủ, worker_processes luôn tạo receiver",
+        "Chưa, thiếu rule, route, receiver và kết nối dữ liệu tương ứng",
+        "Đủ, comment tự gửi email",
+        "Đủ, stub_status tự gọi điện"
+      ],
+      "correct": 1,
+      "explanation": "Không có thông báo nào được gửi trong công việc biên soạn này."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Grafana vai trò",
+      "question": "Trong ý tưởng monitoring, dashboard Grafana có tự chứng minh mọi cảnh báo và nguồn dữ liệu đã hoạt động không?",
+      "options": [
+        "Có, dashboard tự triển khai Prometheus",
+        "Có, mọi alert đều nằm trong CSS",
+        "Không, cần cấu hình data source, query và kiểm chứng riêng",
+        "Có, chỉ cần tên Grafana trong file"
+      ],
+      "correct": 2,
+      "explanation": "Sự có mặt của một tên công cụ không phải tích hợp hoàn chỉnh."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Cron comment",
+      "question": "Vì sao dòng # 0 2 * * * /usr/local/bin/backup.sh trong nginx.conf không tạo lịch chạy?",
+      "options": [
+        "Nginx bắt buộc chạy mọi comment lúc 2h",
+        "Stub_status là cron parser",
+        "Server_tokens tự đọc crontab",
+        "Nó là comment Nginx và chưa được cài vào scheduler"
+      ],
+      "correct": 3,
+      "explanation": "Đúng cú pháp cron trong comment vẫn không phải job đã được đăng ký."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Backup script existence",
+      "question": "Chỉ đường dẫn backup.sh có chứng minh script tồn tại, có quyền chạy và thực sự sao lưu dữ liệu cần thiết chưa?",
+      "options": [
+        "Chưa",
+        "Rồi, mọi /usr/local/bin đều tự sinh script",
+        "Rồi, cron tự viết nội dung backup",
+        "Rồi, Nginx mặc định sao lưu database"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm tra artifact, quyền, phạm vi dữ liệu và kết quả thực tế."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Backup restore",
+      "question": "Backup job báo thành công có tự chứng minh khôi phục đáp ứng yêu cầu không?",
+      "options": [
+        "Có, more_clear_headers xác nhận dữ liệu",
+        "Không, cần kiểm tra khả năng restore và dữ liệu khôi phục",
+        "Có, exit0 tương đương mọi restore test",
+        "Có, file tên backup luôn đầy đủ"
+      ],
+      "correct": 1,
+      "explanation": "Một bản sao chưa được thử khôi phục có giới hạn bằng chứng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Múi giờ scheduler",
+      "question": "Muốn lịch 02:00 hằng ngày có ý nghĩa vận hành rõ ràng, cần xác định gì?",
+      "options": [
+        "Chỉ số port app",
+        "Chỉ tên server_tokens",
+        "Múi giờ và scheduler thực tế áp dụng",
+        "Chỉ màu badge master"
+      ],
+      "correct": 2,
+      "explanation": "Giờ máy, cấu hình scheduler và biến đổi giờ địa phương có thể liên quan."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Logging pipeline comment",
+      "question": "Nguồn có comment rsyslog → Elasticsearch → Kibana. Có cấu hình forwarding/retention cụ thể không?",
+      "options": [
+        "Có, dấu mũi tên tự cấu hình mạng",
+        "Có, use epoll tạo index Elasticsearch",
+        "Có, limit_req_zone chứa log",
+        "Chưa thấy"
+      ],
+      "correct": 3,
+      "explanation": "Pipeline log cần cấu hình, quyền và ngân sách lưu trữ riêng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Log privacy",
+      "question": "Khi thiết kế log tập trung, điều nào cần được xét?",
+      "options": [
+        "Tránh ghi bí mật và kiểm soát truy cập/retention phù hợp",
+        "Ghi mọi password để debug nhanh",
+        "Đặt private key vào mỗi dòng log",
+        "Cho mọi user tải log production"
+      ],
+      "correct": 0,
+      "explanation": "Quan sát hệ thống không biện minh cho lộ credential hoặc dữ liệu nhạy cảm."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "DDoS nhiều tầng",
+      "question": "Rate limit HTTP theo IP có bảo đảm chặn mọi dạng bão lưu lượng trước origin không?",
+      "options": [
+        "Có, 5r/m chặn mọi packet UDP",
+        "Không, cần bảo vệ cả tầng mạng và hạ tầng liên quan",
+        "Có, nó kiểm soát toàn bộ đường truyền Internet",
+        "Có, 10m zone là băng thông vô hạn"
+      ],
+      "correct": 1,
+      "explanation": "Cơ chế tầng ứng dụng có phạm vi tác động hữu hạn."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "HA frontend",
+      "question": "Nhiều app servers sau một Nginx đơn lẻ có tự loại điểm lỗi Nginx không?",
+      "options": [
+        "Có, worker_processes auto tạo vùng mới",
+        "Có, CDN luôn thay được mọi origin lỗi mà không config",
+        "Không, cần dự phòng điểm vào nếu yêu cầu tính sẵn sàng đó",
+        "Có, app tự thay địa chỉ IP của Nginx"
+      ],
+      "correct": 2,
+      "explanation": "Phải đánh giá từng miền lỗi và đường phục vụ."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Năng lực chưa đo",
+      "question": "65535 worker_connections có đủ để công bố site phục vụ hàng triệu người dùng không?",
+      "options": [
+        "Có, mỗi connection tương đương một triệu user",
+        "Có, con số càng lớn là SLA càng cao",
+        "Có, chữ production trong title là bằng chứng",
+        "Không, chưa xét worker, descriptor, workload, app, DB và đo tải"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình giới hạn không phải kết quả capacity planning."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Chẩn đoán cấu hình nguồn",
+      "question": "Muốn chạy mẫu architecture trên một build Nginx stock chưa có headers-more, rủi ro cụ thể đầu tiên cần xử lý là gì?",
+      "options": [
+        "Khả năng không nhận more_clear_headers; cần module hoặc cách cấu hình phù hợp",
+        "Worker auto tự tải module",
+        "Tên Server tự tạo module",
+        "Cron comment sẽ biên dịch plugin"
+      ],
+      "correct": 0,
+      "explanation": "Không được công bố mẫu chạy được nếu chưa kiểm tương thích module."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Monitoring thực sự",
+      "question": "Muốn Prometheus thu Nginx OSS theo ý tưởng nguồn, chuỗi việc nào hợp lý?",
+      "options": [
+        "Chỉ thêm chữ Grafana trong comment",
+        "Có status nguồn phù hợp, exporter chuyển đổi và Prometheus scrape đúng đích được kiểm chứng",
+        "Chỉ đổi URI thành /metrics là đủ",
+        "Chỉ đặt Nginx cổng 9113 và coi là exporter"
+      ],
+      "correct": 1,
+      "explanation": "Cần nối nguồn dữ liệu, định dạng và bộ thu; không chỉ tên đường dẫn."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Đụng cổng exporter",
+      "question": "Dùng Nginx status và exporter cùng bind đúng một địa chỉ:9113 trên một host có thể gây vấn đề gì?",
+      "options": [
+        "Tự giảm rate login",
+        "Tự cấp certificate cho cả hai",
+        "Xung đột listener nếu không bố trí địa chỉ/cổng riêng phù hợp",
+        "Tự hợp nhất hai response thành Prometheus"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt process cung cấp status nguồn và process exporter."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Định danh client sau CDN",
+      "question": "Tăng cường rate limit sau CDN cần giải quyết đồng thời điều gì?",
+      "options": [
+        "Chỉ tăng zone memory là mọi user được phân biệt",
+        "Chỉ dùng header tự khai không kiểm nguồn",
+        "Chỉ đặt server_tokens off",
+        "Chuỗi proxy tin cậy, IP thật, khả năng giả mạo và bypass origin"
+      ],
+      "correct": 3,
+      "explanation": "Tính đúng của khóa và đường truy cập ảnh hưởng hiệu quả chính sách."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Policy chưa có hiệu lực",
+      "question": "Nhóm vận hành tin login đã bị giới hạn 5r/m vì có limit_req_zone. Review nào đúng?",
+      "options": [
+        "Chưa có limit_req áp vào route trong nguồn; cần wiring và kiểm chứng route thực tế",
+        "Zone tự chặn mọi request website",
+        "Stub_status tự gắn zone vào login",
+        "Rate trong comment CDN sẽ ghi đè zone"
+      ],
+      "correct": 0,
+      "explanation": "Mục đích khai báo không đồng nghĩa policy được thực thi."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Budget kết nối proxy",
+      "question": "Mỗi request proxy có thể dùng client socket và upstream socket, ngoài file log/descriptor khác. Cách sizing nào có căn cứ?",
+      "options": [
+        "Chỉ đếm tài khoản đăng ký",
+        "Tính theo các loại kết nối, giới hạn hiệu lực và workload rồi đo kiểm",
+        "Coi65535 là 65535 user an toàn mỗi worker trong mọi trường hợp",
+        "Bỏ mọi giới hạn OS vì config có nofile"
+      ],
+      "correct": 1,
+      "explanation": "Ngân sách resource không ánh xạ trực tiếp thành số người dùng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Tuning theo môi trường",
+      "question": "Chuyển từ Linux sang hệ khác và giữ use epoll cùng mọi giá trị worker có đủ bảo đảm tương thích/nhanh không?",
+      "options": [
+        "Có, epoll chạy được trên mọi kernel",
+        "Có, worker auto thay được mọi API OS",
+        "Không, cần xem nền tảng, module, tài nguyên và đo lại theo workload",
+        "Có, Nginx bỏ qua mọi chỉ thị không hỗ trợ"
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình triển khai cần phù hợp môi trường thực tế."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Ẩn banner và bảo mật",
+      "question": "Đã xóa Server header bằng module nhưng app có lỗi quyền truy cập. Kết luận nào đúng?",
+      "options": [
+        "Không còn header là không còn lỗ hổng",
+        "Module header tự xác thực mọi user",
+        "Server_tokens tự mã hóa database",
+        "Ẩn banner không sửa lỗi phân quyền hoặc thay bản vá/kiểm soát ứng dụng"
+      ],
+      "correct": 3,
+      "explanation": "Bảo mật cần kiểm soát ở đúng lớp nguyên nhân."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Backup và disaster recovery",
+      "question": "Có cron backup mỗi ngày nhưng chưa biết dữ liệu sao lưu, nơi giữ và cách restore. Có thể tuyên bố disaster recovery hoàn chỉnh không?",
+      "options": [
+        "Không, cần phạm vi dữ liệu, tính toàn vẹn, lưu giữ và diễn tập khôi phục",
+        "Có, lịch cron tự bảo đảm mọi mất dữ liệu bằng0",
+        "Có, script tên backup là đủ",
+        "Có, CDN thay mọi bản backup"
+      ],
+      "correct": 0,
+      "explanation": "Kế hoạch phục hồi cần bằng chứng sử dụng được, không chỉ lịch chạy."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "RPO từ lịch chưa đủ",
+      "question": "Lịch backup ngày một lần có tự chứng minh mất dữ liệu tối đa đúng24 giờ cho mọi tình huống không?",
+      "options": [
+        "Có, nofile biến mọi ghi thành bản sao",
+        "Không, còn kết quả job, dữ liệu bao phủ, consistency và cơ chế dữ liệu khác",
+        "Có, comment cron là cam kết thành công tuyệt đối",
+        "Có, worker_connections xác nhận mọi snapshot"
+      ],
+      "correct": 1,
+      "explanation": "Lịch dự kiến không thay bằng chứng backup thành công và khôi phục được."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "RTO cần đo",
+      "question": "Muốn xác định thời gian phục hồi dịch vụ, bằng chứng nào phù hợp hơn chỉ nhìn lịch cron?",
+      "options": [
+        "Tên màu dashboard",
+        "Số port metrics",
+        "Diễn tập restore và phục hồi các phụ thuộc theo mục tiêu đã đặt",
+        "Số ký tự trong backup.sh"
+      ],
+      "correct": 2,
+      "explanation": "Khôi phục dữ liệu và toàn bộ đường phục vụ cần được kiểm chứng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Metric đúng mục tiêu",
+      "question": "Dashboard chỉ có Active/Waiting nhưng cần biết p95 và tỷ lệ lỗi của API checkout. Cần làm gì?",
+      "options": [
+        "Đọc Waiting như milliseconds p95",
+        "Đọc port 9113 như số lỗi",
+        "Đọc worker_connections như checkout success rate",
+        "Bổ sung dữ liệu phù hợp từng endpoint và định nghĩa chỉ số rõ ràng"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ số có sẵn không tự trả lời mọi câu hỏi vận hành."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Alert có hành động",
+      "question": "Có metric nhưng alert chưa có rule/receiver. Vì sao vẫn thiếu khả năng phản ứng?",
+      "options": [
+        "Dữ liệu chưa được nối với điều kiện cảnh báo và người/kênh nhận được cấu hình",
+        "Vì metric tự gửi mọi email ngoài ý muốn",
+        "Vì Grafana luôn làm thay receiver",
+        "Vì mỗi request lỗi tự tạo cuộc gọi"
+      ],
+      "correct": 0,
+      "explanation": "Quan sát và thông báo cần cấu hình cùng kiểm chứng riêng; không tự gửi tin trong tác vụ này."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Private monitoring",
+      "question": "Endpoint status đang lắng nghe trên địa chỉ ngoài mà chưa có hạn chế truy cập. Cần review điều gì?",
+      "options": [
+        "Chỉ xóa Server header là xác thực",
+        "Phạm vi bind, mạng, allowlist/auth và dữ liệu được lộ theo nhu cầu",
+        "Chỉ đổi tên /metrics thành /secret là đủ",
+        "Chỉ tăng cổng trên 10000 là private"
+      ],
+      "correct": 1,
+      "explanation": "Tên đường dẫn và port lạ không thay kiểm soát truy cập."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Origin bypass",
+      "question": "CDN có rule giới hạn nhưng origin vẫn truy cập trực tiếp được. Cần xét rủi ro nào?",
+      "options": [
+        "Server_tokens là origin authentication",
+        "Epoll làm origin không có IP",
+        "Lưu lượng có thể đi vòng policy phía CDN nếu origin không được bảo vệ phù hợp",
+        "CDN tự chặn mọi đường IP gốc không cần config"
+      ],
+      "correct": 2,
+      "explanation": "Kiến trúc đường vào phải khớp giả định bảo vệ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Log cost và retention",
+      "question": "Đẩy mọi log lên Elasticsearch mà không giới hạn retention có thể tạo vấn đề gì?",
+      "options": [
+        "Tự tăng độ chính xác mọi query",
+        "Tự bảo đảm không lộ bí mật",
+        "Tự thay backup database",
+        "Tăng chi phí/tài nguyên và rủi ro lưu dữ liệu quá lâu"
+      ],
+      "correct": 3,
+      "explanation": "Pipeline quan sát cần ngân sách lưu trữ, quyền và vòng đời dữ liệu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Năng lực toàn hệ thống",
+      "question": "Nginx có nhiều worker nhưng database bị nghẽn. Vì sao chỉ tăng worker_connections không đủ để đáp ứng thêm user?",
+      "options": [
+        "Nút nghẽn phụ thuộc vẫn tồn tại và có thể bị thêm tải",
+        "Vì DB tự mở rộng theo con số worker",
+        "Vì nofile là chỉ số tốc độ query",
+        "Vì Nginx tự thay mọi SQL bằng cache"
+      ],
+      "correct": 0,
+      "explanation": "Sizing phải xét cả đường request và tài nguyên phía sau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Sẵn sàng đa tầng",
+      "question": "CDN và app servers đã dự phòng nhưng chỉ có một kho session và một DB chưa có phương án phục hồi. Kết luận phù hợp là gì?",
+      "options": [
+        "Backup cron comment loại mọi lỗi DB",
+        "Còn các miền lỗi phụ thuộc cần đánh giá, không thể chỉ đếm tầng frontend",
+        "Đã loại mọi điểm lỗi vì có CDN",
+        "Session tự nhân bản do nhiều worker"
+      ],
+      "correct": 1,
+      "explanation": "Tính sẵn sàng của hệ thống phụ thuộc chuỗi thành phần và trạng thái."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Giới hạn bằng chứng kiểm câu hỏi",
+      "question": "Script xác minh80 câu/20-40-20 và shuffle đúng có chứng minh production infrastructure đã được load test không?",
+      "options": [
+        "Có,JSON approved tự triển khai monitoring",
+        "Có,sourceHash là tốc độ request",
+        "Không, chỉ chứng minh các thuộc tính dữ liệu và cơ chế quiz được kiểm",
+        "Có,80 câu là 80 kết nối thử tải"
+      ],
+      "correct": 2,
+      "explanation": "Không đánh đồng kiểm nội dung bài học với thực thi hệ thống."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Kết luận tổng hợp nguồn",
+      "question": "Nhận định cuối nào mô tả chính xác phạm vi mẫu architecture?",
+      "options": [
+        "Đã là hệ thống hàng triệu user chuẩn đầy đủ",
+        "Đã có CDN/TLS/HA đa vùng và khôi phục tự động",
+        "Đã chứng minh không còn điểm lỗi hay rủi ro dữ liệu",
+        "Có ý tưởng topology và vài chỉ thị tuning/status; chưa hoàn thiện module,route,rate enforcement,monitoring,backup hay bằng chứng tải"
+      ],
+      "correct": 3,
+      "explanation": "Giữ kết luận tương xứng với điều có trong nguồn và bằng chứng thực tế."
+    }
+  ]
+}

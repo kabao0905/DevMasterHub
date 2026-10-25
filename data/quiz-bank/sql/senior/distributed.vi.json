@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "sql",
+  "level": "senior",
+  "lesson": "distributed",
+  "language": "vi",
+  "sourceHash": "2fd0332271905226267c3597b3a0783ee598814547a5192766eb141ed96c67f9",
+  "status": "approved",
+  "review": "Tự soạn không API. Source/spec review PostgreSQL17 partition/replication và CAP paper Gilbert-Lynch bản author-host MIT. Không fake distributed execution/load/failover proof. Sửa scope chọn2/3,CP/AP labels tuyệt đối,range partitioning không tự thành multi-server sharding,replica stale reads vàcache invalidation races. Hash arithmetic chỉ mô hình với integer dương.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "CAP names",
+      "question": "Ba chữ CAP thường chỉ gì?",
+      "options": [
+        "Consistency, Availability, Partition tolerance.",
+        "Cache, Array, Password.",
+        "Commit, Audit, Procedure.",
+        "Column, Aggregate, Projection."
+      ],
+      "correct": 0,
+      "explanation": "Cần đọc định nghĩa/model thay vì chỉ nhớ khẩu hiệu."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "CAP consistency scope",
+      "question": "Consistency trong mô hình CAP paper được dùng theo nghĩa nào?",
+      "options": [
+        "Chỉ mọi responseHTTP200.",
+        "Atomic/linearizable consistency của data object.",
+        "Chỉ kiểm traCHECKconstraint.",
+        "Chỉ mọi schema có cùng têncột."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất nó với mọi nghĩa của consistency trong ACID/app."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Network partition",
+      "question": "Network partition trong thảo luận phân tán có nghĩa gì?",
+      "options": [
+        "TạoB-treeindex.",
+        "ChiaCSSfile thành nhiều phần.",
+        "Một số nhóm nodes không trao đổi được messages qua phần mạng bị chia.",
+        "Chia bảng theo tháng trên mộtserver."
+      ],
+      "correct": 2,
+      "explanation": "Network partition và tablepartition là hai khái niệm khác nhau."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Replication purpose",
+      "question": "Replication chủ yếu làm gì?",
+      "options": [
+        "Chia mỗi row thành nhiềucolumns.",
+        "Tự bảo đảm không cólatency.",
+        "Thay mọibackup.",
+        "Duy trì các bản sao dữ liệu theo protocol/configuration."
+      ],
+      "correct": 3,
+      "explanation": "Sao chép dữ liệu khác phân phối ownership theo shard key."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Sharding purpose",
+      "question": "Sharding thường có mục đích gì?",
+      "options": [
+        "Chia dữ liệu thành các phần do cácshards quản lý theo strategy.",
+        "Tạo nhiều bản sao giống hệt trên mọishard bắtbuộc.",
+        "Chỉ sắp xếp mộtresultset.",
+        "Tự cấp quyềnuser."
+      ],
+      "correct": 0,
+      "explanation": "Cần thiết kế routing, migration vàcross-shard operations."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Read replica purpose",
+      "question": "Readreplica thường giúp gì?",
+      "options": [
+        "Tự trả dữ liệu mới nhất mọi lúc.",
+        "Phân phối một số readworkload theo freshness/consistency requirements.",
+        "Tự nhân khả năng ghi một primary vô hạn.",
+        "Tự xử lýmọi write thayprimary."
+      ],
+      "correct": 1,
+      "explanation": "Readscaling cần biết replicationlag vàtopology."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Source shard count",
+      "question": "Ví dụ user_id%4 nguồn mô tả mấyshards?",
+      "options": [
+        "5.",
+        "10.",
+        "4.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "Đây chỉ là strategyminh họa, không cóclusterimplementation."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Positive modulus bucket",
+      "question": "Với user_id nguyên dương, %4 tạo cácbucket nào?",
+      "options": [
+        "1, 2, 3, 4.",
+        "Chỉ0, 4.",
+        "Mọiinteger khônggiớihạn.",
+        "0, 1, 2, 3."
+      ],
+      "correct": 3,
+      "explanation": "Không khái quát sign của modulo cho mọi input/language."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Partition source key",
+      "question": "events nguồn partition theo cột nào?",
+      "options": [
+        "created_at.",
+        "event_type.",
+        "payload.",
+        "id duy nhất."
+      ],
+      "correct": 0,
+      "explanation": "Source dùngPARTITION BYRANGE."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Partition data model",
+      "question": "payload source có kiểu PostgreSQL nào?",
+      "options": [
+        "BOOLEANNOT NULL.",
+        "JSONB.",
+        "tsquery.",
+        "SERIAL."
+      ],
+      "correct": 1,
+      "explanation": "KiểuJSONB không tự định nghĩa validations của từngpayload."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Partition first start",
+      "question": "Partition Q1 nguồn bắt đầu từ mốc nào?",
+      "options": [
+        "2025-07-01.",
+        "2024-01-01.",
+        "2025-01-01.",
+        "2025-04-01."
+      ],
+      "correct": 2,
+      "explanation": "FROM bound làinclusive trong range partitioningPostgreSQL."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Partition second start",
+      "question": "Partition Q2 nguồn bắt đầu từ mốc nào?",
+      "options": [
+        "2025-01-01.",
+        "2025-07-01.",
+        "2026-01-01.",
+        "2025-04-01."
+      ],
+      "correct": 3,
+      "explanation": "Mốc này chính làexclusiveend củaQ1."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Partition upper bound",
+      "question": "TO của range partitionPostgreSQL được hiểu thế nào?",
+      "options": [
+        "Không bao gồmupperbound.",
+        "Luôn bao gồmupperbound.",
+        "Chỉ làcomment.",
+        "Tự giới hạn sốrows."
+      ],
+      "correct": 0,
+      "explanation": "Các ranges kế tiếp có thể ghép biên màkhôngoverlap."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Primary routing",
+      "question": "Comment source hướngwrites tới đâu?",
+      "options": [
+        "MọibrowserlocalStorage.",
+        "Primary DB.",
+        "Readreplica bất kỳ nhưsourceđãwrite-enable.",
+        "Redisluôn lànguồnduy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Source mới làroutingconcept, chưa cópool/replicationsetup chạy thật."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Cache aside hit",
+      "question": "Theo cache-aside outline nguồn, khi cache hit phù hợp thì thường làm gì?",
+      "options": [
+        "Luôn mởtransactionghi.",
+        "Tựpromotereplica.",
+        "Dùng dữ liệu cache theo freshness/permissionpolicy.",
+        "Luôn xóaDBrow."
+      ],
+      "correct": 2,
+      "explanation": "Hit không tự chứng minh data mới/đúngquyền."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Cache aside miss",
+      "question": "Cache miss trongoutline nguồn thường dẫn đến gì?",
+      "options": [
+        "Luôn trảerrorvĩnhviễn.",
+        "Tựxóaaccount.",
+        "Tựshardlạidữ liệu.",
+        "Đọc DB rồi có thểpopulatecache theo policy."
+      ],
+      "correct": 3,
+      "explanation": "Cần bounds/failurehandling cho path xuốngDB."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "TTL role",
+      "question": "TTL của cache thường nhằm gì?",
+      "options": [
+        "Giới hạn thời gian tồn tại của entry theo cơ chếcache.",
+        "Chứngminh data luônfresh trong toànTTL.",
+        "Thay mọiauthorization.",
+        "Bảođảm khôngcần invalidation."
+      ],
+      "correct": 0,
+      "explanation": "Expiration vàconsistency là các khía cạnh khác nhau."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Cache invalidation",
+      "question": "Invalidation sauwrite nhằm gì?",
+      "options": [
+        "Tựgiảm mọi querycost về0.",
+        "Tránh tiếp tục dùng cachecũ theo strategy thiết kế.",
+        "TựrollbackDBwrite.",
+        "TựtạoWAL."
+      ],
+      "correct": 1,
+      "explanation": "Cần xử lý thứ tự, races vàdeliveryfailures phù hợp."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Partition versus shard",
+      "question": "Tạo native rangepartitions nhưsource cótự phân phối dữ liệu ra nhiềumáy không?",
+      "options": [
+        "Có, vì cóhai PARTITION OF.",
+        "Chỉ nếupayloadJSONB.",
+        "Không theo riêng đoạnDDL đó.",
+        "Có, vìcommentghi built-insharding."
+      ],
+      "correct": 2,
+      "explanation": "Phân chia tablelocal vàmulti-serverdata ownership không đồngnhất."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "System proof",
+      "question": "Cóđủschema vàcomments replication/cache có đủchứng minh chịu10Musers chưa?",
+      "options": [
+        "Rồi, nếu cóCAP.",
+        "Rồi, vìhashmod4.",
+        "Chỉ cầnthêmTTL.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Cần workload, capacity, failure vàcorrectness evidence thực."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Inclusive quarter start",
+      "question": "Event created_at đúng2025-01-01 thuộcpartition nguồn nào?",
+      "options": [
+        "Q1.",
+        "Q2.",
+        "Khôngpartitionnào vìFROMexclusive.",
+        "Cảhai."
+      ],
+      "correct": 0,
+      "explanation": "LowerboundQ1inclusive."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Quarter end interior",
+      "question": "Event 2025-03-31 trước2025-04-01 thuộcpartition nào?",
+      "options": [
+        "Khôngpartitionnào.",
+        "Q1.",
+        "Q2.",
+        "Cảhai."
+      ],
+      "correct": 1,
+      "explanation": "Timestamp cần được hiểu theo kiểu/timepolicy củaschema."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Shared boundary",
+      "question": "Event đúng2025-04-01 đượcroute tới đâu theo ranges nguồn?",
+      "options": [
+        "Cảhai.",
+        "Tựduplicate sangmọipartitions.",
+        "Q2.",
+        "Q1."
+      ],
+      "correct": 2,
+      "explanation": "UpperQ1exclusive, lowerQ2inclusive."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Missing future range",
+      "question": "Event đúng2025-07-01 với chỉhaipartitionssource, khôngdefault/khôngcơ chếkhác, cóvấnđềgì?",
+      "options": [
+        "TựrơiQ2 vìTOinclusive.",
+        "TựrơiQ1.",
+        "Tựtạomọiquarters sauđó.",
+        "Khôngcópartitionkhớp; insert có thểbị reject thayvìtự tạopartition."
+      ],
+      "correct": 3,
+      "explanation": "Cần partitionlifecycle/defaultstrategy theo requirements."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Missing past range",
+      "question": "Dữliệu2024-12-31 có được bao phủbởihairangesđãkhai báo không?",
+      "options": [
+        "Không.",
+        "Có, vìid BIGSERIAL.",
+        "Có, vìQ1tựbaogồmmọi quákhứ.",
+        "Chỉ nếuevent_typekhông NULL."
+      ],
+      "correct": 0,
+      "explanation": "Routingcoverage cầnđượcxétđủdata lifecycle."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Null partition key",
+      "question": "created_at NULL có được schemaevents nguồn chấpnhận không?",
+      "options": [
+        "Chỉ nếuid0.",
+        "Không vì NOT NULL.",
+        "Có vìRANGEtự tạoNULLpartition.",
+        "Có vìpayloadJSONB."
+      ],
+      "correct": 1,
+      "explanation": "Columnconstraint vẫnphảithỏa ngoài range coverage."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Serial not unique constraint",
+      "question": "id BIGSERIAL trongevents source có đủthànhPRIMARY KEY chưa?",
+      "options": [
+        "Rồi, vìcóPARTITION BY.",
+        "Chỉ nếuiddương.",
+        "Chưa; source không khai báoPK/UNIQUEchoid.",
+        "Rồi, vì mọiSERIALđềuPK."
+      ],
+      "correct": 2,
+      "explanation": "Sequence/default vàuniquenessconstraint khác nhau."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Overlapping range",
+      "question": "Cóthểthêmpartition cùngparent vớirange overlapQ1/Q2 tùyý không?",
+      "options": [
+        "Có đểmỗi rowlưuhaibản.",
+        "Có, nếutênpartitionkhác.",
+        "Chỉ nếu cóJSONB.",
+        "Không; declarative ranges phảikhôngoverlap theoquy tắcDB."
+      ],
+      "correct": 3,
+      "explanation": "Replicas không đượctạobằngoverlappingtablepartitions nhưvậy."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Default partition purpose",
+      "question": "DEFAULTpartition nếuđượcthiết kếthêm có thểgiúp gì?",
+      "options": [
+        "Nhận values khôngthuộcrangeskhác theoDBsemantics.",
+        "Tựđịnh nghĩamọifuturequarters.",
+        "Tựreplicatecrossregion.",
+        "Tựenforceuniqueidtoàncluster."
+      ],
+      "correct": 0,
+      "explanation": "Cầngiámsát/maintenance, khôngcoidefaultlàtoàn bộpartitionstrategy."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Partition pruning",
+      "question": "Queryfiltercreated_at có thểgiúpplanner/executor làm gì?",
+      "options": [
+        "Tựdùngreadreplica.",
+        "Bỏqua cácpartitions không thểchứamatches theođiều kiện/pruningcapability.",
+        "Luônđọcmột rowduy nhất.",
+        "Luônxóapartitionscũ."
+      ],
+      "correct": 1,
+      "explanation": "Pruning khácindexlookupvàkhôngbảo đảmmọifilterđềuproperprune."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Positive hash example nine",
+      "question": "Theo strategy%4, user_id 9 vào shard bucket nào?",
+      "options": [
+        "2.",
+        "3.",
+        "1.",
+        "0."
+      ],
+      "correct": 2,
+      "explanation": "9%4=1 trong mô hìnhintegerdương này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Positive hash example ten",
+      "question": "Theo strategy%4, user_id 10 vào shard bucket nào?",
+      "options": [
+        "0.",
+        "1.",
+        "3.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "10%4=2; bucketđượcmapping đếnshard theo routingconfig."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Shard count change",
+      "question": "Đổi%4thành%5 cótựgiữmọi usertrênshardcũ không?",
+      "options": [
+        "Không; nhiềukeysmappingđổi, cầnmigration/routingstrategy.",
+        "Có, vìhashstablemọiN.",
+        "Có, nếuidINTEGER.",
+        "Chỉ nếureplicabậtsync."
+      ],
+      "correct": 0,
+      "explanation": "Hashpartitionmapping không tự migratephysicaldata."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Hot user skew",
+      "question": "Mộtusercónhiềuwritesnhất có đượcchiađềutừngwrite trên4 shards bằnguser_id%4 không?",
+      "options": [
+        "Chỉ nếu cóTTL.",
+        "Không; userđóvẫnroutecùng bucket theo strategy này.",
+        "Có, mỗiwrite tựroundrobin.",
+        "Có, vìCAP."
+      ],
+      "correct": 1,
+      "explanation": "Keydistribution vàworkloaddistribution làhaivấnđềkhác nhau."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Cross shard unit",
+      "question": "Chuyển tiền giữaaccountskhácshards có thểcầnthêm gì?",
+      "options": [
+        "Chỉ đổiid.",
+        "Chỉthêmindexdate.",
+        "Protocol/transaction/sagastrategy phù hợp vớiguarantee nghiệp vụ.",
+        "ChỉlocalBEGINởmột shardlàđủmọieffects."
+      ],
+      "correct": 2,
+      "explanation": "Localatomicity không tựbao phủhaiindependentdatastores."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Scatter query",
+      "question": "Querykhông cóshard key có thểtốn thêm gì?",
+      "options": [
+        "Luônchỉ đọcmộtbyte.",
+        "Tựrouteđúngshardnhờnamequery.",
+        "ChỉCPUfrontend.",
+        "Fanouttớinhiềushards vàmerge/aggregate kết quả."
+      ],
+      "correct": 3,
+      "explanation": "Cầnaccesspatternrõkhi chọnshard key."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Mutable shard key",
+      "question": "Nếuđổiuser_idhoặckeyquyếtđịnhownership, cầnxét gì?",
+      "options": [
+        "Move/routing/consistency vàreferences theo migrationpolicy.",
+        "ChỉUPDATEở browser.",
+        "Coi mọi rowtựdi chuyểnserver.",
+        "ChỉTTL20s."
+      ],
+      "correct": 0,
+      "explanation": "Keymutability cóảnh hưởngdomain vàoperations."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Consistent hashing scope",
+      "question": "Consistenthashing cótựbảo đảm mọishardcùngCPU/storage/hotkeyload không?",
+      "options": [
+        "Chỉ nếu có4 shards.",
+        "Không; nócó thểgiảmmovementkhireshard nhưngvẫncầnload/placementstrategy.",
+        "Có, vìtênconsistent.",
+        "Có, mọikeycùngcost."
+      ],
+      "correct": 1,
+      "explanation": "Mộttechniquephân phối khôngthayworkloadmeasurement."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "CAP versus ACID consistency",
+      "question": "CóthểcoiCAP consistency chỉlàCHECKbalance>=0 không?",
+      "options": [
+        "Có, vì cùngchữC.",
+        "Chỉ nếuB-tree.",
+        "Không; CAP paperxétatomic/linearizable data object consistency.",
+        "Có, chỉ cầnconstraintđó."
+      ],
+      "correct": 2,
+      "explanation": "Cácđịnh nghĩacầnđượctáchđúng scope."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "CAP availability latency",
+      "question": "Availabilityđịnh nghĩatrongCAP paper cótựcamkếtresponsep99<100ms không?",
+      "options": [
+        "Có, theođịnhlý.",
+        "Có, nếuserverkhôngcrash.",
+        "Chỉ nếuconsistent.",
+        "Không; terminationdefinition khôngđưa ra latencybound đó."
+      ],
+      "correct": 3,
+      "explanation": "CAP availability vàlatencySLO làcácyêucầukhác nhau."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Replica lag",
+      "question": "Đọcreplica ngay sauprimary commit trongasync replication có thểthấy gì?",
+      "options": [
+        "Dữliệucũ do chưaapplywrite.",
+        "Luôndữ liệumới nhấttức thời.",
+        "Luônsqlsyntaxerror.",
+        "Tựrollbackprimary."
+      ],
+      "correct": 0,
+      "explanation": "Read-after-write needsphảiđượcroute/coordinatephù hợp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Own write visibility",
+      "question": "Mộtstrategyđơn giảncho đọc đúngwritevừacommit có thểlà gì nếuprimary readđápứngrequirements?",
+      "options": [
+        "Chỉsortid DESC.",
+        "Route readliên quan vềprimary theo session/operationpolicy.",
+        "Luônrandommọi replicakhôngkiểm tralag.",
+        "ĐặtTTLcachevô hạn."
+      ],
+      "correct": 1,
+      "explanation": "Cầnxétfailover/sessionsemantics, khônghứauniversalguarantee bằnghostname."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Remote apply scope",
+      "question": "synchronous_commit remote_apply trongPostgreSQL17 cóliên quan gì?",
+      "options": [
+        "Tựapplymọicached responses.",
+        "Tựshardtable.",
+        "Chờselected synchronous standbysapplycommit theoconfig, khôngmọi replica bất kỳ.",
+        "ChỉđợiTCPconnect."
+      ],
+      "correct": 2,
+      "explanation": "Synchronousstandbyselection vàconfig làphầnguarantee."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Received versus visible",
+      "question": "StandbyđãnhậnWAL có đủkếtluậnquerytrênđóđãnhìnthấytransaction chưa?",
+      "options": [
+        "Rồi, vì mọimốcgiống nhau.",
+        "Chỉ nếupayloadJSONB.",
+        "Chỉ nếuidSERIAL.",
+        "Chưa; receive/flush/replayvisibility làcácmốc khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Cầnbiếtack/replaysemantics thực."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Read scale write limit",
+      "question": "Thêmreadreplicas cótựchiawritesrađều4primary writers theooutline nguồnkhông?",
+      "options": [
+        "Không; commentvẫnroutewrites về primary.",
+        "Có, vì mọi replicađềuwriteenable.",
+        "Có, nếuReadDBpool.",
+        "Chỉ nếu cóCAP."
+      ],
+      "correct": 0,
+      "explanation": "Readscaling không tựgiảiquyếtwritebottleneck."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Async failover data loss",
+      "question": "Primarycrashtrướcwriteđượcreplicateđủcó thểgâygì khi failover?",
+      "options": [
+        "Chỉ đổimàuDB.",
+        "Một sốacknowledgedwrites có thểkhông cóởstandbyđượcpromote, theoconfig.",
+        "Khôngbaogiờmấtwritevìreplication.",
+        "TựtạolạitừHTTPheaders."
+      ],
+      "correct": 1,
+      "explanation": "RPO/durabilityrequirements cầnđượccấuhìnhvàtest."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Backup distinction",
+      "question": "Replica cóthaymọibackup/PITR không?",
+      "options": [
+        "Có, nếustandbyasync.",
+        "Chỉ cầncacheRedis.",
+        "Không; logicaldeletes/errors có thểđượcpropagate vàcầnrecoverystrategy khác.",
+        "Có, cứcóreplica làrestorebất kỳquákhứ."
+      ],
+      "correct": 2,
+      "explanation": "HAcopy vàpoint-in-timerecoveryphục vụfailureskhác nhau."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Lag observability",
+      "question": "Metricnàoquantrọngkhiqueryrouteđếnreplicas?",
+      "options": [
+        "Chỉfont DBconsole.",
+        "ChỉsốCSSrules.",
+        "Chỉđộdàitênpool.",
+        "Replicationapplylag/freshness theo requirements vàtopology."
+      ],
+      "correct": 3,
+      "explanation": "Cầnđánh giávisibledata, khôngchỉserverđangpingđược."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Locking select routing",
+      "question": "MọiSQLbắt đầubằngSELECTcóđềunênrouteđếnread-onlystandby không?",
+      "options": [
+        "Không; cáclocking/side-effect/transactioncontextrequirements cầnđượcxét.",
+        "Có, chỉnhìnkeywordđầu tiênlàđủ.",
+        "Chỉ nếu cóWHERE.",
+        "Chỉ nếu cóLIMIT."
+      ],
+      "correct": 0,
+      "explanation": "Read/writeclassification phảiđúngsemantics, khôngchỉtextprefix."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Absolute engine labels",
+      "question": "GắnPostgreSQLluônCP, cácheenginekhác luônAP có đủmô tảmọideployments không?",
+      "options": [
+        "Chỉ nếungười dùngdưới1triệu.",
+        "Không; topology, protocol, operation vàconfiguration quyếtđịnhguarantees.",
+        "Có, vìmỗiDBchỉ cómộtmode.",
+        "Có, khôngcầnđọcdocs."
+      ],
+      "correct": 1,
+      "explanation": "Khẩuhiệuenginekhôngthayconsistencymodelthực."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Cache hit freshness",
+      "question": "Cache hit cótựchứng minh giá trịkhớpDBmới nhất không?",
+      "options": [
+        "Có, nếukeyngắn.",
+        "Chỉ nếuJSONB.",
+        "Không.",
+        "Có, vìmỗihitđềugọilạiDB."
+      ],
+      "correct": 2,
+      "explanation": "Freshness cầnversion/TTL/invalidation/validationpolicy phù hợp."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Cache miss populate",
+      "question": "DBquerythành côngsaucache miss rồicache write fail, cầnxửlýthế nào?",
+      "options": [
+        "Luônxóadữ liệuDB.",
+        "Luôntạo5 shardsmới.",
+        "Chỉbỏ qua mọimonitoring.",
+        "Theoavailability/failurepolicy; khôngmặcđịnhbusinessreadfail hayDB rollbacknếukhôngcần."
+      ],
+      "correct": 3,
+      "explanation": "Cachelàlayercófailuremodes riêng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "TTL stale period",
+      "question": "TTL60s có nghĩa dữ liệuluônfresh trong60sđó không?",
+      "options": [
+        "Không; nócó thểstale trước lúc expire nếuDBđổi.",
+        "Có, theođịnh nghĩaTTL.",
+        "Có, nếup.primary.",
+        "Chỉ cầnsortdate."
+      ],
+      "correct": 0,
+      "explanation": "TTLgiớihạntồntại, không tựphát hiệnwrites."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Stale repopulation race",
+      "question": "ReadDBcũbắt đầutrướcwrite, invalidatexong, readđósaumớipopulatecachecũ.Córủi rogì?",
+      "options": [
+        "Tựsyncmọi replicas.",
+        "Cachebịđưadữ liệucũtrởlại.",
+        "Khôngvìinvalidationđãxảyra.",
+        "Tựrollbackwrite."
+      ],
+      "correct": 1,
+      "explanation": "Cầnconsistencystrategy theo version/order/reconciliation phù hợp."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Cache outage load",
+      "question": "Cacheoutage có thểdồnloadxuốngDB, bạncầnxétgì?",
+      "options": [
+        "CoiDBluônsẵn100lầnheadroom.",
+        "Chỉ đổitêncache key.",
+        "Bounds/backpressure, fallback vàcapacitypolicy phù hợp.",
+        "Luôntạoconnectionsvô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Cacheđượcxemnhưdependencycófailuremode, không phảioptimizationmiễnrủi ro."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Write invalidation durability",
+      "question": "DBwritecommitnhưnginvalidationmessagebịmấtcó thểgâygì?",
+      "options": [
+        "DBtự rollbackcommit.",
+        "Mọireplicasbiếnmất.",
+        "Chỉaffectedfont.",
+        "Cachetiếp tụctrảstaledatachođếnkhipolicykhácsửa/expire."
+      ],
+      "correct": 3,
+      "explanation": "Cầnreliabledelivery/versioning/reconciliationtùyrequirement."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Tenant cache key",
+      "question": "Cachekeykhôngchứatenant/scopekhi cùng resource idđược dùngởnhiềutenantscóvấnđềgì?",
+      "options": [
+        "Cóthểtrảsainội dunghoặclộdatacross-tenant.",
+        "KhôngvìRedisautoauthorizeuser.",
+        "Chỉgiảmhitrate.",
+        "ChỉtăngTTL."
+      ],
+      "correct": 0,
+      "explanation": "Keydesign vàauthorization cầnđápứngdataboundary."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Cache capacity",
+      "question": "CacheentriesluôntồntạiđếnhếtTTL dùmemoryevictionpolicycó thểđẩyra không?",
+      "options": [
+        "Chỉ nếureplicaasync.",
+        "Không; nênxétcapacity/evictionsemantics thực.",
+        "Có, TTLkhóamọiRAM.",
+        "Chỉ nếukeyTEXT."
+      ],
+      "correct": 1,
+      "explanation": "Misses có thểxảyra vìnhiềunguyênnhân, khôngchỉexpiration."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Cache stampede",
+      "question": "Nhiềurequestsđồng thờimisscùngkey có thểcầntechniquenào?",
+      "options": [
+        "TăngDBpoolvô hạn.",
+        "Chỉchọnkeydàihơn.",
+        "Requestcoalescing/singleflight, bounds vàexpirationpolicy phù hợp.",
+        "Retryngayvô hạntrênmọiclient."
+      ],
+      "correct": 2,
+      "explanation": "Giảm một loại load không chứng minh toàn bộ capacity."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source cache scope",
+      "question": "Redisoutlinecomment trongsource có đượccoiđã cóconnection/invalidationimplementation thật chưa?",
+      "options": [
+        "Rồi, vìcó4bước.",
+        "Rồi, vì mọicommentsđược thực thi.",
+        "Chỉ nếu cóPARTITIONOF.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Conceptualsteps khôngthayworkingcode vàintegrationevidence."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "CAP partition choice",
+      "question": "Khimạng chia hai phần không trao đổimessages, muốnvẫngiữlinearizabilitymọi operations, có thểphảichấpnhận gì?",
+      "options": [
+        "Khôngphục vụthành côngmột sốoperations ởmộtphía thayvìbảocả haiđềuluôn available.",
+        "Luônbảocả haiC/Amàkhôngcầnliên lạc.",
+        "TựhếtpartitionnhờSQL.",
+        "ChỉthêmB-tree."
+      ],
+      "correct": 0,
+      "explanation": "TheoCAP model, khôngbảocảlinearizableconsistency vàavailability trong mọi executions cópartition."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "CAP error response shortcut",
+      "question": "Trảmọi write mộterrornhanhtrongpartition cótựchứng minhservicevẫnavailabletheointendedvalidoperationmodel không?",
+      "options": [
+        "Chỉ nếusortid.",
+        "Không; không đượcthaythành côngnghiệp vụbằngmọi error đểnétradeoff.",
+        "Có, vìHTTP500cũnglàresponse.",
+        "Có, nếuresponseJSON."
+      ],
+      "correct": 1,
+      "explanation": "Địnhnghĩaavailability gắnvớivaliddata objectoperations, khôngchỉping."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "CAP not always choose two",
+      "question": "Vì saokhẩuhiệuluôn chọnbất kỳ2trong3 có thểgâymisunderstanding?",
+      "options": [
+        "Vìmọi DBchỉchọn1.",
+        "Chỉvìviếttắt3chữ.",
+        "TradeoffC/Ađặctrưngkhi cópartition theo model; không phảimộtmenu bỏhẳnnetworkfailure ngoài thực tế.",
+        "VìCAP đãbịhủybỏ."
+      ],
+      "correct": 2,
+      "explanation": "Cầnmô tảoperations, failuremodel vàguarantees cụthể."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Table partition not distribution",
+      "question": "Commentbuilt-insharding trênCREATEPARTITIONEDTABLEsource dễgâynhầmgì?",
+      "options": [
+        "PostgreSQLkhông hỗ trợpartitioning.",
+        "MọipartitionđềulàmộtRedisnode.",
+        "Tựtạo4 serverstheo%4.",
+        "Native partition DDL không tựxây dựngmulti-serverrouting/ownership/shardcluster."
+      ],
+      "correct": 3,
+      "explanation": "Đọcđúng nhữnggìmãtriểnkhai, khôngchỉnhãn."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Global partition unique key",
+      "question": "PostgreSQL17events partitionbycreated_at, muốnPKchỉidcó thểvướnggì?",
+      "options": [
+        "Unique/PKconstrainttrênparent cầnbaogồmpartitionkeytheolimitations đang xét.",
+        "KhôngvìBIGSERIALtựglobalPK.",
+        "Chỉ cầnđổitênid.",
+        "Chỉ nếucreated_at NULL."
+      ],
+      "correct": 0,
+      "explanation": "Localpartitionindexes không tựenforcecrosspartitionuniquenesscủaidđộc lập."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Composite unique meaning",
+      "question": "ThêmPK(id, created_at) cótựchứng minh riêngidunique độc lậpcreated_at không?",
+      "options": [
+        "Chỉ nếu cósequence.",
+        "Không; uniquenesscủacặpkhácuniquenesscủaid.",
+        "Cóvìidđứngđầu.",
+        "Cóvì mọicộtPK đềuriêngunique."
+      ],
+      "correct": 1,
+      "explanation": "Sequencegeneration vàconstraintguarantee phảiđượctáchrõ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Partition lifecycle operations",
+      "question": "Apptiếp tụcinsertfutureevents nhưngkhôngtạoquarter mới, cầnkếhoạchgì?",
+      "options": [
+        "ChỉtăngTTLcache.",
+        "Chỉ đổinetworkregion.",
+        "Partitionprovisioning/coverage, defaultpolicy, monitoring vàrollout đúngrequirements.",
+        "CoiTO boundtựmởrộngvô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Partitioningthêmoperationalresponsibilities, chưaphảichỉDDLmột lần."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Reshard migration correctness",
+      "question": "Đổimapping4→5 shards màappđọcmappingmớitrướcdatamigration hoànthành có thểgâygì?",
+      "options": [
+        "Mọiro ws tựnhảyqua mạng.",
+        "Luôntự rollbackserver.",
+        "Chỉ đổisốID.",
+        "Misses/inconsistentreads hoặcwritesvàsaiownershipnếuthiếu protocolchuyểnđổi."
+      ],
+      "correct": 3,
+      "explanation": "Routing vàphysicaldata migrationphảiphốihợp."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Hot key beyond hash",
+      "question": "Hashđềusốkeysnhưngmộtkeychiếm80%traffic, cầnxem gì?",
+      "options": [
+        "Accesspatterns/hot-keystrategy, capacity vàinvariants chứkhôngchỉđếmkeys.",
+        "Chỉtănghashlength.",
+        "Coiđềukeyslàđềutải.",
+        "ChỉthêmGROUP BY."
+      ],
+      "correct": 0,
+      "explanation": "Distributionmetrics phảiđochi phíthực."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Cross shard identity",
+      "question": "Mỗishardtựcấpidsequencebắt đầutừ1, cần thiết kế gì khiidphảiglobalunique?",
+      "options": [
+        "Chỉsortcreated_at.",
+        "Globalidentityscheme hoặckeynamespacing/protocol phù hợp.",
+        "ChỉcólocalPKlàđủtoàncluster.",
+        "ChỉdùngINTEGERlớnhơn."
+      ],
+      "correct": 1,
+      "explanation": "Localuniqueness không tựthànhglobaluniqueness."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Read your write plus cache",
+      "question": "Read route primaryđúngsauwrite nhưngcachevẫntrảold value, có đủread-your-writesguarantee chưa?",
+      "options": [
+        "Rồi, vìcache hitnhanh.",
+        "Chỉ cầncóreplica.",
+        "Chưa; mọilayers trongread pathphảiđápứngpolicy.",
+        "Rồi, vìDBprimaryfresh."
+      ],
+      "correct": 2,
+      "explanation": "End-to-endconsistency khôngchỉmộtendpoint."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Failover fencing",
+      "question": "Primarycũvẫnnhậnwrites sauthếchỗprimarymớicó thểcần cơ chếgì?",
+      "options": [
+        "Chỉ đổidomainCSS.",
+        "Luônchohaiphíaghiđộc lậpvàhứalinearizable.",
+        "ChỉthêmTTL.",
+        "Leader/epoch/fencing vàroutingcontrol đúngprotocol đểtránhsplit-brain theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Failovercorrectnesscần được thiết kếvàtest, khôngtừmộthostname."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Synchronous ack nuance",
+      "question": "SynchronouscommitđãđợiWAL flush ởselectedstandby cóđồngnghĩa mọiotherreplicađãapply/readvisible chưa?",
+      "options": [
+        "Không; acklevel vàstandbyselection matters.",
+        "Có, mọi replicasluôntức thời.",
+        "Chỉ nếupayloadJSONB.",
+        "Chỉ nếuDBtênprimary."
+      ],
+      "correct": 0,
+      "explanation": "Receive, flush, apply vàreadrouting phảiđược phânbiệt."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Cache double delete claim",
+      "question": "DeletecachetrướcvàsauDBwrite có đủproofkhông bao giờstale dưới mọi ordering/failures không?",
+      "options": [
+        "Chỉ nếuTTL60.",
+        "Không; cầnphân tíchraces, failure/delivery vàversion/consistencystrategy thực.",
+        "Cóvì mọiraceschỉ cóhai bước.",
+        "Có, nếudelay1giây."
+      ],
+      "correct": 1,
+      "explanation": "Khôngcoimộtheuristiclàdistributedproof."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "DB cache atomicity",
+      "question": "DB transactioncommitcóbao phủRediswrite/invalidationngoài DBtựđộng không?",
+      "options": [
+        "Có, nếucùngJSON.",
+        "Chỉ nếu cóSAVEPOINT.",
+        "Không; cầncoordination/delivery/idempotencypattern theo requirements.",
+        "Có, vì cùngbackendprocess."
+      ],
+      "correct": 2,
+      "explanation": "Ranhgiớitransaction thựcquantrọnghơnlệnhởgầnnhautrongsource."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Outbox scope",
+      "question": "Outboxeventghi cùngDBwrite có thểgiúpgì vàvẫncần gì?",
+      "options": [
+        "Tựchứng minhmọiconsumerchạyđúngmột lần.",
+        "Tựxóamọioutages.",
+        "Chỉthaymọiindexes.",
+        "GiữýđịnhpublishatomicvớiDBwrite; vẫncầndelivery, retries, idempotentconsumers vàobservability."
+      ],
+      "correct": 3,
+      "explanation": "Mỗipatterncóguarantee vàfailuremode, cầnmô tảđúng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Monotonic replica reads",
+      "question": "Randomroutegiữacácreplicas lagkhác nhau có thểlàmread đi lùi thời gian không?",
+      "options": [
+        "Có, nếuchưacóconsistencysession/positionstrategy phù hợp.",
+        "Khôngvìmỗi replicacócopy.",
+        "Chỉ nếuquerykhôngWHERE.",
+        "Chỉ nếuidâm."
+      ],
+      "correct": 0,
+      "explanation": "Eventualconvergence không tựmonotonicreadspersession."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cache authorization invalidation",
+      "question": "Permissionthayđổi nhưngcached responsecũvẫncóprivate data, cầnxét gì?",
+      "options": [
+        "Chỉ đổitênuser.",
+        "Keyscope, accesschecks vàinvalidation/TTLpolicy theo dataauthorizationrequirements.",
+        "CoiTTLhếthạnrồimớiápquyềnlàmặcđịnhđúng.",
+        "ChỉnénJSON."
+      ],
+      "correct": 1,
+      "explanation": "Authorizationupdates phảiđượcthiết kếxuyênquacachelayer."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Capacity numbers",
+      "question": "Schemaevents và4hashbuckets có đủkếtluận capacity10Musers không?",
+      "options": [
+        "Có, vìCAPchọn2.",
+        "Chỉ cầnreadreplica.",
+        "Không; users/workload/concurrency, storage, latency, failure vàoperationaltests cần bằngchứngriêng.",
+        "Có, vì4 shardsnhân4tốcđộ."
+      ],
+      "correct": 2,
+      "explanation": "Sốusersđăngkýkhông tương đươngthroughputhayconcurrentload."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Distributed source scope",
+      "question": "Đoạnsourceđã thực hiệnđủdistributeddatabase, routing, replication vàRedisimplementationchưa?",
+      "options": [
+        "Rồi, vìcótênread-replica.db.comtrongcomment.",
+        "Rồi, vì%4tựmởserver.",
+        "Chỉ cầnbuildfrontend.",
+        "Chưa; chủyếulàDDLlocalpartitioning vàconceptualcomments."
+      ],
+      "correct": 3,
+      "explanation": "Nộidungquizreviewconcepts, khônggiảbằngchứngclusterintegration."
+    }
+  ]
+}

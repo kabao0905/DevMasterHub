@@ -1,0 +1,1152 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "senior",
+  "lesson": "macros",
+  "language": "vi",
+  "sourceHash": "26630c0439d5db05a025dc55c85d42edbfb790e36212ce6174c0cf201284520a",
+  "status": "approved",
+  "review": "Tự soạn trực tiếp, không API. Đối chiếu Rust Reference macro/procedural contracts, edition2024 gen keyword, quote format_ident docs. Native fixtures chỉ macro_rules/std, không build procedural crate, không tải dependencies. Source Builder là comment chưa hoàn thiện; không coi token paste hoặc generics support là đã hoạt động.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Declarative purpose",
+      "question": "macro_rules! chủ yếu định nghĩa gì?",
+      "options": [
+        "Macro khai báo bằng matcher và phần mở rộng tokens.",
+        "Một HTTP server tự chạy.",
+        "Một garbage collector.",
+        "Một database transaction."
+      ],
+      "correct": 0,
+      "explanation": "Compiler mở rộng macro theo các rules."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Invocation marker",
+      "question": "Dấu nào phân biệt lời gọi hashmap! với lời gọi hàm thông thường?",
+      "options": [
+        "Dấu # sau mọi values.",
+        "Dấu ! sau tên macro.",
+        "Dấu ? trước tên.",
+        "Dấu @ trước mọi arguments."
+      ],
+      "correct": 1,
+      "explanation": "Macro có cú pháp invocation riêng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Source collection",
+      "question": "Macro hashmap! nguồn tạo collection nào?",
+      "options": [
+        "VecDeque.",
+        "BinaryHeap.",
+        "std::collections::HashMap.",
+        "BTreeSet."
+      ],
+      "correct": 2,
+      "explanation": "Phần mở rộng tạo map rồi insert từng cặp."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Key fragment",
+      "question": "Trong $key:expr, expr biểu diễn gì?",
+      "options": [
+        "Một field bắt buộc là String.",
+        "Một giá trị đã chạy tại compile time.",
+        "Một regular expression trên text.",
+        "Một syntax fragment dạng biểu thức."
+      ],
+      "correct": 3,
+      "explanation": "Matcher làm việc với cú pháp, không tính mọi giá trị."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Pair separator",
+      "question": "Ký hiệu nào tách key với value trong lời gọi nguồn?",
+      "options": [
+        "=>.",
+        "==.",
+        ":::.",
+        "<- ."
+      ],
+      "correct": 0,
+      "explanation": "Đây là literal token trong matcher."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Repeated separator",
+      "question": "Dấu phẩy trong $(...),* có vai trò gì?",
+      "options": [
+        "Tự clone values.",
+        "Phân cách các lần lặp được match.",
+        "Bắt buộc map phải có một phần tử.",
+        "Tự sort keys."
+      ],
+      "correct": 1,
+      "explanation": "Dấu * cho phép không hoặc nhiều lần."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Optional trailing comma",
+      "question": "$(,)? ở cuối matcher hỗ trợ gì?",
+      "options": [
+        "Một vòng lặp runtime.",
+        "Một exception handler.",
+        "Một dấu phẩy cuối tùy chọn.",
+        "Một key tùy chọn bất kỳ không cần value."
+      ],
+      "correct": 2,
+      "explanation": "? trong macro repetition khác toán tử lan truyền Result."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Block return",
+      "question": "Trong block mở rộng, map không có dấu chấm phẩy cuối dùng để làm gì?",
+      "options": [
+        "Xóa map trước khi dùng.",
+        "Trả unit bắt buộc.",
+        "Tự in map.",
+        "Trả map làm giá trị của block expression."
+      ],
+      "correct": 3,
+      "explanation": "Tail expression quyết định giá trị block."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Source scores",
+      "question": "Source tạo bao nhiêu entry với các keys math, cs, english khác nhau?",
+      "options": [
+        "3.",
+        "0.",
+        "2.",
+        "4."
+      ],
+      "correct": 0,
+      "explanation": "Ba lần insert vào map mới với ba keys khác nhau."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Math value",
+      "question": "Theo source, scores lưu giá trị nào cho math?",
+      "options": [
+        "100.",
+        "95.",
+        "88.",
+        "92."
+      ],
+      "correct": 1,
+      "explanation": "Không cần phụ thuộc thứ tự iteration để đọc theo key."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Output order",
+      "question": "Có nên cố định thứ tự keys trong println Debug của HashMap nguồn không?",
+      "options": [
+        "Có; luôn theo source.",
+        "Có; luôn theo value giảm dần.",
+        "Không; thứ tự iteration không được bảo đảm như thứ tự nhập.",
+        "Có; luôn theo alphabet."
+      ],
+      "correct": 2,
+      "explanation": "Dùng lookup hoặc sort khi cần kết quả có thứ tự."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Procedural input",
+      "question": "Procedural macro nhận và trả dạng dữ liệu cốt lõi nào?",
+      "options": [
+        "HTTP Response.",
+        "Một thread handle.",
+        "Một file descriptor bắt buộc.",
+        "TokenStream."
+      ],
+      "correct": 3,
+      "explanation": "Nó biến đổi cú pháp khi biên dịch."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Derive role",
+      "question": "#[derive(MyTrait)] thường dùng cho việc gì?",
+      "options": [
+        "Gọi derive macro để sinh thêm items như trait implementation.",
+        "Gọi một HTTP API ở mỗi runtime request.",
+        "Tự chứng minh mọi invariant domain.",
+        "Bắt buộc clone mọi struct."
+      ],
+      "correct": 0,
+      "explanation": "Derive capability phụ thuộc macro thực sự được triển khai."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Quote role",
+      "question": "quote! trong proc macro thường hỗ trợ gì?",
+      "options": [
+        "Tự cấp quyền filesystem.",
+        "Tạo tokens cho code đầu ra từ cú pháp và interpolation.",
+        "Tự kiểm thử toàn ứng dụng.",
+        "Tự tải compiler mới nhất."
+      ],
+      "correct": 1,
+      "explanation": "Sinh tokens chưa bảo đảm code mở rộng hợp lệ về types."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Syn role",
+      "question": "syn thường dùng để làm gì trong proc macro?",
+      "options": [
+        "Quản lý HTTP sessions.",
+        "Thay thế rustc hoàn toàn.",
+        "Phân tích Rust tokens thành cấu trúc cú pháp.",
+        "Chạy SIMD cho mọi code."
+      ],
+      "correct": 2,
+      "explanation": "Parse tree khác type information đầy đủ của compiler."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Source comments",
+      "question": "Đoạn Builder trong source hiện ở trạng thái nào?",
+      "options": [
+        "Một derive crate đã build và test.",
+        "Một runtime plugin đang chạy.",
+        "Một Builder hỗ trợ mọi generics đã xác minh.",
+        "Các dòng comment minh họa còn thiếu implementation."
+      ],
+      "correct": 3,
+      "explanation": "Comment không được compiler thực thi như code."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Crate kind",
+      "question": "Crate định nghĩa procedural macro cần cấu hình loại nào?",
+      "options": [
+        "proc-macro.",
+        "Một binary main duy nhất là đủ trong mọi trường hợp.",
+        "Một HTML module.",
+        "Một SQL migration."
+      ],
+      "correct": 0,
+      "explanation": "Proc macro được định nghĩa trong crate phù hợp."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Compile phase",
+      "question": "Macro expansion chủ yếu thuộc giai đoạn nào?",
+      "options": [
+        "Chỉ sau khi process kết thúc.",
+        "Biên dịch.",
+        "Mỗi lần HashMap get ở runtime.",
+        "Mỗi lần browser render."
+      ],
+      "correct": 1,
+      "explanation": "Code được sinh vẫn có thể chứa công việc runtime."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Macro versus function",
+      "question": "Macro và hàm khác nhau điểm nào liên quan arguments?",
+      "options": [
+        "Hàm không thể generic.",
+        "Macro không bao giờ có lỗi types.",
+        "Macro match cú pháp, hàm nhận các giá trị theo signature đã kiểm tra.",
+        "Macro luôn chạy nhanh hơn mọi hàm."
+      ],
+      "correct": 2,
+      "explanation": "Không suy luận hiệu năng từ tên cơ chế."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Exercise target",
+      "question": "Bài tập macro yêu cầu xây dựng gì?",
+      "options": [
+        "Một SQL database engine.",
+        "Một image compressor hoàn chỉnh.",
+        "Một OAuth provider.",
+        "Derive macro cho Builder pattern."
+      ],
+      "correct": 3,
+      "explanation": "Source hiện chỉ là điểm bắt đầu cho bài tập."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Lookup expansion",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"math\"=>95,\"cs\"=>88);println!(\"{}\",m[\"math\"]);}\n",
+      "options": [
+        "95.",
+        "3.",
+        "88.",
+        "Thứ tự hash làm lookup random."
+      ],
+      "correct": 0,
+      "explanation": "Lookup theo key không phụ thuộc vị trí in Debug."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Duplicate replacement",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"x\"=>1,\"x\"=>2);println!(\"{} {}\",m.len(),m[\"x\"]);}\n",
+      "options": [
+        "Compile error vì duplicate key trong macro.",
+        "1 2.",
+        "2 1.",
+        "2 2."
+      ],
+      "correct": 1,
+      "explanation": "HashMap insert lần sau thay value của key bằng nhau."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Empty typed invocation",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m:std::collections::HashMap<&str,i32>=hashmap!();println!(\"{}\",m.len());}\n",
+      "options": [
+        "Không macro nào match được zero pairs.",
+        "Tự tạo key mặc định.",
+        "0.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Type annotation cung cấp key/value types cho map rỗng."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Trailing comma accepted",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"x\"=>7,);println!(\"{}\",m.len());}\n",
+      "options": [
+        "0.",
+        "Syntax error vì dấu phẩy cuối.",
+        "2.",
+        "1."
+      ],
+      "correct": 3,
+      "explanation": "Matcher cho phép dấu phẩy cuối."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "No trailing comma accepted",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"x\"=>7);println!(\"{}\",m[\"x\"]);}\n",
+      "options": [
+        "7.",
+        "0.",
+        "Syntax error vì thiếu dấu phẩy cuối.",
+        "Một tuple."
+      ],
+      "correct": 0,
+      "explanation": "Dấu phẩy cuối là tùy chọn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Block local hygiene",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let map=9;let m=hashmap!(\"x\"=>2);println!(\"{} {}\",map,m[\"x\"]);}\n",
+      "options": [
+        "Macro đổi caller map thành collection.",
+        "9 2.",
+        "2 2.",
+        "9 9."
+      ],
+      "correct": 1,
+      "explanation": "Tên local được đưa vào từ macro không ghi đè local map của caller."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Value expression evaluation",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let mut n=0;let m=hashmap!(\"x\"=>{n+=1;n});println!(\"{} {}\",n,m[\"x\"]);}\n",
+      "options": [
+        "0 0.",
+        "Macro bắt buộc tính expression ở compile time.",
+        "1 1.",
+        "2 2."
+      ],
+      "correct": 2,
+      "explanation": "Value expression xuất hiện một lần trong một insert của expansion."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Key expression evaluation",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let mut n=0;let m=hashmap!({n+=1;n}=>7);println!(\"{} {}\",n,m[&1]);}\n",
+      "options": [
+        "2 7.",
+        "0 7.",
+        "Không cho phép block expression làm key.",
+        "1 7."
+      ],
+      "correct": 3,
+      "explanation": "Key expression cũng chỉ được chèn một lần cho entry này."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Owned value moved",
+      "question": "Đoạn này có compile không?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let s=String::from(\"a\");let _m=hashmap!(1=>s);println!(\"{s}\");}\n",
+      "options": [
+        "Không; String s đã move vào map rồi bị dùng lại.",
+        "Có; macro luôn tự clone arguments.",
+        "Có; String là Copy.",
+        "Có; HashMap chỉ giữ tên biến."
+      ],
+      "correct": 0,
+      "explanation": "Macro không vô hiệu hóa ownership rules."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Borrowed value retained",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let s=String::from(\"a\");let m=hashmap!(1=>&s);println!(\"{} {}\",s,m[&1]);}\n",
+      "options": [
+        "Hai chuỗi rỗng.",
+        "a a.",
+        "a rồi panic.",
+        "Compile error vì mọi map bắt buộc own String."
+      ],
+      "correct": 1,
+      "explanation": "Value có thể là reference nếu lifetime hợp lệ."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Homogeneous values",
+      "question": "Đoạn này có compile không?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let _m=hashmap!(\"x\"=>1i32,\"y\"=>true);}\n",
+      "options": [
+        "Có; macro bỏ entry thứ hai.",
+        "Có; bool tự chuyển thành i32.",
+        "Không; các values 1i32 và true không cùng value type.",
+        "Có; HashMap tự đổi value type theo key."
+      ],
+      "correct": 2,
+      "explanation": "Type checking vẫn áp lên expansion."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Empty inference",
+      "question": "Đoạn này có compile không?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let _m=hashmap!();}\n",
+      "options": [
+        "Có; luôn mặc định String/String.",
+        "Có; luôn mặc định u8/u8.",
+        "Không vì * bắt buộc một pair.",
+        "Không; map rỗng thiếu thông tin suy ra key/value types."
+      ],
+      "correct": 3,
+      "explanation": "Zero repetitions hợp cú pháp nhưng type inference vẫn cần context."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Checked order observation",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"b\"=>2,\"a\"=>1);let mut k:Vec<_>=m.keys().copied().collect();k.sort();println!(\"{:?}\",k);}\n",
+      "options": [
+        "[\"a\", \"b\"].",
+        "Luôn [\"b\", \"a\"].",
+        "Thứ tự mỗi lần khác dù đã sort.",
+        "Compiler cấm collect keys."
+      ],
+      "correct": 0,
+      "explanation": "Sort tường minh tạo kết quả quan sát ổn định."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Entry count versus syntax count",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"x\"=>1,\"y\"=>1,\"x\"=>3);println!(\"{}\",m.len());}\n",
+      "options": [
+        "Macro reject duplicate value.",
+        "2.",
+        "3.",
+        "1."
+      ],
+      "correct": 1,
+      "explanation": "Hai keys khác nhau còn lại; lặp key x thay value."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Block expression argument",
+      "question": "Đoạn này in gì?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m=hashmap!(\"x\"=>{let a=3;a*2});println!(\"{}\",m[\"x\"]);}\n",
+      "options": [
+        "9.",
+        "Macro chỉ nhận literal numbers.",
+        "6.",
+        "3."
+      ],
+      "correct": 2,
+      "explanation": "expr matcher nhận block expression hợp lệ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Repetition operators",
+      "question": "So với * thì + trong macro repetition thay đổi gì?",
+      "options": [
+        "Tự cộng các values.",
+        "Tự tăng capacity map.",
+        "Tự cho phép trailing commas bất kỳ.",
+        "Yêu cầu ít nhất một lần match."
+      ],
+      "correct": 3,
+      "explanation": "Đây là cú pháp số lần lặp trong matcher/transcriber."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Optional repetition separator",
+      "question": "Có thể viết repetition ? kèm separator như mọi * không?",
+      "options": [
+        "Không; ? biểu diễn tối đa một occurrence và không dùng separator như vậy.",
+        "Có; ? luôn lặp vô hạn.",
+        "Có; separator trở thành key.",
+        "Chỉ khi value là bool."
+      ],
+      "correct": 0,
+      "explanation": "Dùng đúng grammar của macro repetition."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "First matching arm",
+      "question": "Nếu arm đầu tiên match nhưng expansion bị lỗi types, compiler có tự thử arm sau không?",
+      "options": [
+        "Chỉ nếu HashMap rỗng.",
+        "Không; chọn arm match đầu tiên rồi xử lý expansion đó.",
+        "Có; thử mọi arm tới khi runtime chạy được.",
+        "Có; tự thay types."
+      ],
+      "correct": 1,
+      "explanation": "Matcher không là overload resolver theo thành công type checking."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Expression not evaluation",
+      "question": "Match $value:expr có nghĩa expression đó đã được thực thi tại compile time không?",
+      "options": [
+        "Có; macro không thể sinh runtime work.",
+        "Chỉ nếu có dấu phẩy.",
+        "Không; nó chỉ được nhận dạng theo syntax fragment.",
+        "Có; mọi function call trong expr chạy lúc compile."
+      ],
+      "correct": 2,
+      "explanation": "Expression được đặt vào code đầu ra với semantics tương ứng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Block scope reason",
+      "question": "Hai cặp braces trong expansion nguồn giúp biểu thức map dùng thế nào?",
+      "options": [
+        "Tạo hai OS threads.",
+        "Tạo hai maps bắt buộc.",
+        "Tự khóa shared state.",
+        "Một block expression chứa local statements và giá trị trả về."
+      ],
+      "correct": 3,
+      "explanation": "Scope local giúp gói construction trong một expression."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Insert old value ignored",
+      "question": "Source làm gì với giá trị Option trả từ từng map.insert?",
+      "options": [
+        "Bỏ qua nó; câu lệnh có dấu chấm phẩy.",
+        "Trả nó làm toàn bộ map.",
+        "Tự báo duplicate key.",
+        "Tự ghi warning runtime."
+      ],
+      "correct": 0,
+      "explanation": "Không có duplicate detection domain được triển khai."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Hashable key bound",
+      "question": "Keys của HashMap cần đáp ứng điều kiện cơ bản nào?",
+      "options": [
+        "Bắt buộc là &str mọi trường hợp.",
+        "Eq và Hash theo API, cùng invariant tương thích.",
+        "Chỉ Display.",
+        "Chỉ Clone."
+      ],
+      "correct": 1,
+      "explanation": "Macro không biến mọi arbitrary type thành hợp lệ làm key."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Macro expansion borrowing",
+      "question": "Một macro sinh ra &mut borrow sai có được bỏ qua borrow checker không?",
+      "options": [
+        "Có; nếu tên macro có safe.",
+        "Chỉ cần derive Debug.",
+        "Không; code mở rộng vẫn chịu các rules liên quan.",
+        "Có; mọi macro tương đương unsafe."
+      ],
+      "correct": 2,
+      "explanation": "Syntax generation không là escape khỏi type safety."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "External path hygiene",
+      "question": "Dùng std::collections::HashMap trong expansion có tác dụng gì?",
+      "options": [
+        "Tự hỗ trợ no_std không cần alloc.",
+        "Tự tải std từ internet.",
+        "Tự cấp map static lifetime.",
+        "Chỉ rõ path thay vì phụ thuộc caller import tên HashMap đơn giản."
+      ],
+      "correct": 3,
+      "explanation": "Path resolution vẫn cần context phù hợp."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "No std portability",
+      "question": "Macro nguồn có dùng nguyên xi trong mọi môi trường no_std không?",
+      "options": [
+        "Không; nó tham chiếu std và cần thiết kế dependency/allocator phù hợp.",
+        "Có; mọi macro tự loại std.",
+        "Có; HashMap nằm trong core.",
+        "Chỉ cần đổi tên macro."
+      ],
+      "correct": 0,
+      "explanation": "Macros không tự giải quyết portability."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Derive generated items",
+      "question": "Derive macro thường thêm output ở đâu so với item đầu vào?",
+      "options": [
+        "Tự chèn vào JavaScript bundle.",
+        "Sinh thêm items theo contract; derive input item vẫn tồn tại.",
+        "Luôn xóa item đầu vào.",
+        "Chỉ trả runtime value."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt derive với attribute macro có thể thay item tokens."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Attribute macro input",
+      "question": "Attribute procedural macro nhận những gì theo dạng API thông thường?",
+      "options": [
+        "Chỉ resolved trait objects.",
+        "Một file bytecode đã link.",
+        "Tokens của arguments attribute và tokens của item được gắn.",
+        "Một Vec HTTP requests."
+      ],
+      "correct": 2,
+      "explanation": "Nó có hai TokenStream đầu vào, khác derive API."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Functionlike procedural macro",
+      "question": "Function-like proc macro thường được gọi theo kiểu nào?",
+      "options": [
+        "Chỉ #[derive(name)].",
+        "Chỉ impl name for T.",
+        "Chỉ name.await.",
+        "name!(...)."
+      ],
+      "correct": 3,
+      "explanation": "Các loại procedural macros có invocation contracts khác nhau."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Separate crate usage",
+      "question": "Có nên định nghĩa và dùng procedural macro như một local macro_rules trong chính crate định nghĩa không?",
+      "options": [
+        "Không; proc macros có ràng buộc crate và được dùng từ crate khác.",
+        "Có; mọi loại macro cùng scope rules.",
+        "Chỉ cần gọi bên dưới fn main.",
+        "Chỉ cần thêm Clone."
+      ],
+      "correct": 0,
+      "explanation": "Không áp textual scope macro_rules cho proc macro crate."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Parse failure",
+      "question": "Gọi unwrap trên syn::parse bị lỗi có cho diagnostic domain được thiết kế tốt tự động không?",
+      "options": [
+        "Chỉ cần quote.",
+        "Không; panic không thay thông báo compile error có span/context phù hợp.",
+        "Có; luôn chỉ đúng field và cách sửa.",
+        "Có; tự sửa source."
+      ],
+      "correct": 1,
+      "explanation": "Proc macro nên báo lỗi có cấu trúc theo contract hỗ trợ."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Builder name construction",
+      "question": "#name##Builder trong comment có phải cách ghép Ident chuẩn đã hoàn chỉnh của quote không?",
+      "options": [
+        "Có; compiler tự định nghĩa Builder struct.",
+        "Chỉ cần đổi HashMap thành BTreeMap.",
+        "Không; cần tạo identifier hợp lệ, chẳng hạn bằng format_ident rồi interpolate.",
+        "Có; ## tự ghép mọi token trong Rust."
+      ],
+      "correct": 2,
+      "explanation": "Identifier construction không tự tạo các type và methods còn thiếu."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Reserved gen name",
+      "question": "Nếu bỏ comment let gen trong edition2024 thì cần lưu ý gì?",
+      "options": [
+        "gen luôn được tự suy ra là generic.",
+        "gen tự trở thành generator đã ổn định.",
+        "Không có thay đổi nào theo edition.",
+        "gen là keyword được reserved; dùng tên khác hoặc raw identifier thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Comment hiện không gây lỗi; đây là lưu ý khi triển khai thật."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Generic struct implementation",
+      "question": "Sinh impl cho Foo<T> cần xử lý gì ngoài ast.ident?",
+      "options": [
+        "Generics, lifetimes, bounds và where clauses phù hợp.",
+        "Chỉ nối chuỗi FooBuilder là đủ.",
+        "Xóa mọi field generic.",
+        "Đổi mọi T thành String."
+      ],
+      "correct": 0,
+      "explanation": "AST identifier đơn lẻ chưa biểu diễn full type application."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Builder required fields",
+      "question": "Builder cho field bắt buộc cần quyết định gì?",
+      "options": [
+        "Không bao giờ cần build method.",
+        "Cách báo thiếu field hoặc biểu diễn trạng thái đã cung cấp field.",
+        "Tự lấy mọi field từ internet.",
+        "Mọi type đều có giá trị 0 hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Default/Option/type state là các thiết kế khác nhau."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Visibility handling",
+      "question": "Vì sao proc macro cần xử lý visibility cẩn thận?",
+      "options": [
+        "Visibility chỉ ảnh hưởng runtime speed.",
+        "Mọi builder bắt buộc private.",
+        "API sinh ra có thể public/private khác kỳ vọng và lộ types không phù hợp.",
+        "Compiler tự biến mọi generated item thành public."
+      ],
+      "correct": 2,
+      "explanation": "Giữ contract API của crate dùng macro."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Diagnostic test intent",
+      "question": "Một compile-fail fixture cho derive cần xác nhận gì?",
+      "options": [
+        "Chỉ file có tên fail.",
+        "Chỉ macro crate build không lỗi.",
+        "Chỉ stdout ghi pass.",
+        "Input không được hỗ trợ bị reject với diagnostic phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Test generated code cần cả thành công và thất bại có lý do."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Expansion size",
+      "question": "Macro có thể ảnh hưởng compile time/binary size không?",
+      "options": [
+        "Có; phải đo theo expansion/workload thay vì hứa không có chi phí.",
+        "Không; mọi macro xóa hết code runtime.",
+        "Không; compiler luôn chia sẻ mọi generated function.",
+        "Chỉ phụ thuộc tên macro dài hay ngắn."
+      ],
+      "correct": 0,
+      "explanation": "Không đưa ra kết luận hiệu năng khi chưa đo."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Runtime allocation",
+      "question": "Macro hashmap! có tránh runtime allocation chỉ vì expansion xảy ra khi compile không?",
+      "options": [
+        "Chỉ cần dùng literal keys.",
+        "Không; code tạo và insert HashMap vẫn có công việc runtime.",
+        "Có; HashMap tự thành static array.",
+        "Có; mọi heap allocation chạy trước build."
+      ],
+      "correct": 1,
+      "explanation": "Phase expansion khác phase thực thi code sinh ra."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Source derive completeness",
+      "question": "Source comment đã sinh Builder fields, setters và build method đầy đủ chưa?",
+      "options": [
+        "Rồi; syn tự sinh Builder cho mọi struct.",
+        "Chỉ cần chạy println.",
+        "Chưa; nhiều phần chỉ là placeholder.",
+        "Rồi; quote tự suy ra mọi methods."
+      ],
+      "correct": 2,
+      "explanation": "Không đánh đồng mô tả bài tập với implementation."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Proof scope macro",
+      "question": "Chạy macro_rules fixtures có chứng minh proc macro Builder đã hoạt động không?",
+      "options": [
+        "Có; mọi macro cùng một compiler pass là đủ.",
+        "Chỉ cần HashMap có ba entries.",
+        "Chỉ cần docs của quote.",
+        "Không; hai phần có implementation và toolchain requirements khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Ghi đúng phạm vi thực thi và phần chỉ đối chiếu tài liệu."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Repeated expression duplication",
+      "question": "Macro mô hình này in gì?",
+      "code": "macro_rules! twice{($e:expr)=>{{($e)+($e)}}}\nfn main(){let mut n=0;let x=twice!({n+=1;n});println!(\"{} {}\",n,x);}\n",
+      "options": [
+        "2 3.",
+        "1 2.",
+        "1 1.",
+        "Compile error vì block expr."
+      ],
+      "correct": 0,
+      "explanation": "$e xuất hiện hai lần nên side effect chạy hai lần; không tổng quát hóa từ macro hashmap cụ thể. Ngoặc quanh mỗi expr bảo đảm block argument được dùng làm toán hạng của phép cộng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Single evaluation alternative",
+      "question": "Macro mô hình này in gì?",
+      "code": "macro_rules! twice{($e:expr)=>{{let t=$e;t+t}}}\nfn main(){let mut n=0;let x=twice!({n+=1;n});println!(\"{} {}\",n,x);}\n",
+      "options": [
+        "Compiler luôn chạy expression hai lần.",
+        "1 2.",
+        "2 3.",
+        "0 0."
+      ],
+      "correct": 1,
+      "explanation": "Local t lưu kết quả một lần rồi dùng hai lần với i32 Copy."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Captured caller identifier",
+      "question": "Macro mô hình này in gì?",
+      "code": "macro_rules! bump{($x:ident)=>{{$x+=1;}}}\nfn main(){let mut n=2;bump!(n);println!(\"{n}\");}\n",
+      "options": [
+        "1.",
+        "Không thể dùng ident fragment để cập nhật caller variable.",
+        "3.",
+        "2."
+      ],
+      "correct": 2,
+      "explanation": "Tên ident được capture từ invocation trỏ tới binding của caller."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Arm selection type error",
+      "question": "Đoạn này có compile không?",
+      "code": "macro_rules! pick{($x:expr)=>{String::from(\"bad\")};($x:tt)=>{7};}\nfn main(){let _x:i32=pick!(1);}\n",
+      "options": [
+        "Có; compiler sẽ thử arm tt sau để trả 7.",
+        "Có; String tự parse thành i32.",
+        "Có; type annotation bị macro bỏ qua.",
+        "Không; arm expr đầu đã match và trả String không phù hợp i32."
+      ],
+      "correct": 3,
+      "explanation": "Không fallback sang arm sau khi expansion của arm đã chọn lỗi types."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Borrow lifetimes preserved",
+      "question": "Đoạn này có compile không?",
+      "code": "macro_rules! hashmap {($($key:expr => $value:expr),* $(,)?) => {{let mut map=std::collections::HashMap::new();$(map.insert($key,$value);)* map}};}\nfn main(){let m;{let s=String::from(\"a\");m=hashmap!(1=>&s);}println!(\"{}\",m[&1]);}\n",
+      "options": [
+        "Không; reference trong map sống lâu hơn String s.",
+        "Có; macro tự nâng s thành static.",
+        "Có; HashMap clone mọi references thành owned String.",
+        "Có; block expression luôn kéo dài owners ra ngoài."
+      ],
+      "correct": 0,
+      "explanation": "Expansion không gia hạn lifetime của owner cục bộ."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Heterogeneous strategy",
+      "question": "Nếu muốn lưu số nguyên và bool trong một map, hướng thiết kế nào giữ type contract rõ?",
+      "options": [
+        "Thêm dấu phẩy cuối hai lần.",
+        "Dùng enum value với các variants phù hợp hoặc abstraction đã thiết kế.",
+        "Tin rằng macro tự thay HashMap thành dynamic object.",
+        "Bỏ type checking bằng đổi tên macro."
+      ],
+      "correct": 1,
+      "explanation": "Macro syntax không tự quyết định data model thay lập trình viên."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Duplicate side effects",
+      "question": "Nếu key đầu và key sau bằng nhau nhưng value expressions có side effects, điều gì cần phân biệt?",
+      "options": [
+        "Duplicate key luôn gây compile error.",
+        "HashMap tự rollback expression đầu.",
+        "Value cuối được lưu không có nghĩa effects của expression trước bị xóa.",
+        "Compiler tự bỏ mọi expression bị thay value."
+      ],
+      "correct": 2,
+      "explanation": "Statements sinh ra vẫn được thực thi theo semantics của code."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Builder error representation",
+      "question": "Chọn Option<T> cho fields trong Builder có nghĩa build không bao giờ lỗi không?",
+      "options": [
+        "Có; Option tự tạo T mặc định bất kỳ.",
+        "Có; None không tồn tại ở runtime.",
+        "Chỉ cần derive Debug.",
+        "Không; fields chưa được set cần xử lý theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Representation của trạng thái thiếu không là validation hoàn chỉnh."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Generic bounds design",
+      "question": "Sinh setters clone mọi field mà không thêm bound tương ứng có vấn đề gì?",
+      "options": [
+        "Có thể làm expansion lỗi với field type không Clone hoặc ép bound quá mức.",
+        "Mọi Rust type mặc định Clone.",
+        "Compiler tự thêm Clone khi quote dùng clone.",
+        "Không bao giờ ảnh hưởng API."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ yêu cầu capabilities thực sự cần cho thiết kế."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Generated path collisions",
+      "question": "Macro sinh tên helper phổ thông có rủi ro gì?",
+      "options": [
+        "Mọi helper tự private trong module vô danh.",
+        "Có thể xung đột tên hoặc resolution nếu không thiết kế namespace/path phù hợp.",
+        "Proc macros mặc định tuyệt đối hygienic mọi identifiers.",
+        "Generated code không tham gia name resolution."
+      ],
+      "correct": 1,
+      "explanation": "Proc macro output được tích hợp vào code của crate gọi."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Span diagnostics",
+      "question": "Vì sao span hữu ích khi báo lỗi proc macro?",
+      "options": [
+        "Tự giảm runtime memory.",
+        "Tự bỏ qua compiler errors.",
+        "Liên kết diagnostic với vị trí input liên quan giúp người dùng sửa.",
+        "Tự chứng minh code không UB."
+      ],
+      "correct": 2,
+      "explanation": "Diagnostic chất lượng cần thông tin đúng, không chỉ panic."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Unsupported enums",
+      "question": "Builder macro chỉ hỗ trợ named structs nên làm gì khi gặp enum?",
+      "options": [
+        "Âm thầm sinh Builder cho variant đầu bất kỳ.",
+        "Bỏ input không báo lỗi và tuyên bố thành công.",
+        "Đổi enum thành String tự động.",
+        "Reject rõ input không hỗ trợ hoặc triển khai semantics enum có chủ ý."
+      ],
+      "correct": 3,
+      "explanation": "Input contract phải được thể hiện và kiểm thử."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Compile versus runtime evidence",
+      "question": "Một generated Builder compile thành công đã đủ bảo đảm field validation nghiệp vụ chưa?",
+      "options": [
+        "Chưa; còn cần kiểm tra behavior và invariants được yêu cầu.",
+        "Đủ; mọi field types luôn là business rules hoàn chỉnh.",
+        "Đủ; proc macros được compiler tin tuyệt đối.",
+        "Chỉ cần TokenStream không rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Type correctness là một phần của correctness."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Reserved identifier migration",
+      "question": "Chỉ đổi let gen thành let generated có hoàn thành Builder comment không?",
+      "options": [
+        "Chỉ cần thêm dấu chấm phẩy.",
+        "Không; còn token identifier construction, fields, methods, generics và diagnostics.",
+        "Có; đây là lỗi duy nhất có thể có.",
+        "Có; quote tự điền mọi placeholders."
+      ],
+      "correct": 1,
+      "explanation": "Sửa một vấn đề edition không hoàn thành implementation còn thiếu."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Identifier formatting validity",
+      "question": "format_ident tạo chuỗi không hợp lệ làm identifier thì có nên coi nó tự sửa an toàn không?",
+      "options": [
+        "Có; luôn trả Result với fallback tự động.",
+        "Chỉ cần dùng edition2024.",
+        "Không; API có thể panic, cần kiểm soát input và thông báo lỗi phù hợp.",
+        "Có; tự đổi mọi punctuation thành underscore."
+      ],
+      "correct": 2,
+      "explanation": "Docs của helper không bảo đảm mọi format input đều hợp lệ."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Recursive expansion bounds",
+      "question": "Một recursive macro thiếu điểm dừng có rủi ro gì?",
+      "options": [
+        "Compiler luôn suy ra kết quả mong muốn.",
+        "Chỉ làm HashMap mất thứ tự.",
+        "Tự tắt borrow checker.",
+        "Lỗi expansion/recursion limits và compile cost, không tự thành runtime loop được kiểm soát."
+      ],
+      "correct": 3,
+      "explanation": "Không chạy thử expansion khổng lồ để minh họa."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Derive testing coverage",
+      "question": "Với generic Builder, bộ ví dụ nào có giá trị hơn chỉ một struct hai String?",
+      "options": [
+        "Có lifetimes/generics/where bounds, trường thiếu và input không hỗ trợ đúng contract.",
+        "Chỉ đổi tên struct nhiều lần.",
+        "Chỉ lặp cùng input với comments khác.",
+        "Chỉ đếm số dòng generated code."
+      ],
+      "correct": 0,
+      "explanation": "Chọn ranh giới behavior thay vì quota hình thức."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Deterministic output checks",
+      "question": "Để test nội dung HashMap sinh từ macro, cách nào tránh dựa thứ tự không được bảo đảm?",
+      "options": [
+        "Tăng capacity tới khi đúng snapshot.",
+        "So sánh theo key/value hoặc sort dữ liệu trước khi đối chiếu.",
+        "Chụp Debug một lần và coi là contract.",
+        "Dùng thời gian hệ thống để chọn thứ tự."
+      ],
+      "correct": 1,
+      "explanation": "Test nên theo contract collection."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Macro security boundary",
+      "question": "Proc macro là code chạy trong build, vậy khi thêm dependency cần quan tâm gì?",
+      "options": [
+        "Nó không bao giờ được chạy.",
+        "Chỉ tên crate dài hay ngắn.",
+        "Nguồn tin cậy và quyền môi trường build, không coi macro chỉ là text vô hại.",
+        "Nó luôn bị sandbox tuyệt đối bởi Rust type system."
+      ],
+      "correct": 2,
+      "explanation": "Task này không tải hoặc chạy procedural dependencies mới."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Type-state builder design",
+      "question": "Builder dùng type-state để phân biệt field đã set cần xử lý điều gì khi thêm một required field mới?",
+      "options": [
+        "Chỉ đổi tên struct là đủ.",
+        "Compiler tự thêm mọi state methods theo tên field.",
+        "Không cần cập nhật bất kỳ test nào.",
+        "Trạng thái types, transitions và build availability phải tiếp tục biểu diễn đủ invariant."
+      ],
+      "correct": 3,
+      "explanation": "Type-state có thể đưa invariant vào API nhưng implementation và compatibility vẫn cần thiết kế."
+    }
+  ]
+}

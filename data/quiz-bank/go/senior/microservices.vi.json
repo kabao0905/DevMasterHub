@@ -1,0 +1,1147 @@
+{
+  "version": 1,
+  "tech": "go",
+  "level": "senior",
+  "lesson": "microservices",
+  "language": "vi",
+  "sourceHash": "8c1bdfd907700ba3f76a2aac82b84142d78bc9f675ebe3435b0ab683fc5e33a6",
+  "status": "approved",
+  "review": "Tự soạn không API. gRPC/protobuf/Docker/OpenTelemetry source/spec review, không cài deps/generate/build image/mở network. Selected fixtures là plain Go map/pointer/context/JSON/duration models, không giả là gRPC integration. Source thiếu package/imports/pb generated types/startTime/bootstrap/server registration, chỉ GetUser implement; health tĩnh chưa readiness và Docker size không được đo. Không clone protobuf bằng shallow struct copy hoặc hứa durable/exactly-once từ RPC.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Service boundary",
+      "question": "Microservice thường là gì?",
+      "options": [
+        "Service có ranh giới trách nhiệm/API và vòng đời triển khai phù hợp.",
+        "Mỗi hàm bắt buộc là một process riêng.",
+        "Một cách tự xóa mọi lỗi phân tán.",
+        "Một struct Go có nhiều fields."
+      ],
+      "correct": 0,
+      "explanation": "Chia services là quyết định kiến trúc, không chỉ số lượng repository."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "RPC meaning",
+      "question": "RPC trong gRPC liên quan gì?",
+      "options": [
+        "Một type alias.",
+        "Gọi operation ở service qua giao thức RPC.",
+        "Một phép gọi hàm local không bao giờ có network failure.",
+        "Một lệnh SQL bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Remote calls có latency/failure/compatibility concerns riêng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Protobuf role",
+      "question": "Protocol Buffers trong bài chủ yếu dùng làm gì?",
+      "options": [
+        "Tự xác thực mọi user.",
+        "Tự tạo Docker daemon.",
+        "Định nghĩa và serialize messages theo schema.",
+        "Tự triển khai database."
+      ],
+      "correct": 2,
+      "explanation": "Schema/type safety không thay validation hay authorization."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Proto syntax",
+      "question": "syntax=\"proto3\" trong comment nguồn thể hiện gì?",
+      "options": [
+        "Một Go import đã compile.",
+        "Một gRPC server đã chạy.",
+        "Một Docker image đã được build.",
+        "Dự định dùng cú pháp proto3 cho định nghĩa protobuf."
+      ],
+      "correct": 3,
+      "explanation": "Comment không được compiler Go tự biến thành generated code."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Unary GetUser",
+      "question": "GetUser(request) returns(UserResponse) trong proto sketch là kiểu RPC nào?",
+      "options": [
+        "Unary: một request và một response theo contract.",
+        "Client streaming bắt buộc.",
+        "Bidirectional streaming bắt buộc.",
+        "Một query SQL trực tiếp."
+      ],
+      "correct": 0,
+      "explanation": "Khác ListUsers có stream ở response."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Server stream",
+      "question": "returns(stream UserResponse) mô tả gì?",
+      "options": [
+        "Tự tạo infinite stream không thể dừng.",
+        "Server gửi luồng nhiều response messages cho một request theo API đó.",
+        "Client bắt buộc gửi nhiều requests trên cùng RPC.",
+        "Một HTTP JSON array tự động."
+      ],
+      "correct": 1,
+      "explanation": "Streaming cần lifecycle/error/cancellation và flow-control handling."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Generated package",
+      "question": "pb trong source thường đại diện gì?",
+      "options": [
+        "Một database connection string.",
+        "Một keyword thay package.",
+        "Alias/import package chứa code protobuf/gRPC được generate phù hợp.",
+        "Một built-in Go tự có trong mọi file."
+      ],
+      "correct": 2,
+      "explanation": "Source chưa cung cấp generated files/import path cụ thể."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Embedded server",
+      "question": "pb.UnimplementedUserServiceServer thường giúp gì theo generated contract?",
+      "options": [
+        "Tự mở listener ngay khi embed.",
+        "Tự load tất cả users từ DB.",
+        "Tự cấp quyền admin.",
+        "Cung cấp phần implementation mặc định cho methods chưa implement và hỗ trợ compatibility theo generator API."
+      ],
+      "correct": 3,
+      "explanation": "Embed không thay registration hay business handlers."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Map storage",
+      "question": "users map[int64]*pb.UserResponse nguồn lưu gì?",
+      "options": [
+        "Ánh xạ ID tới con trỏ response trong RAM.",
+        "Dữ liệu durable tự replication.",
+        "Mỗi ID tới một gRPC connection bắt buộc.",
+        "Một transaction serializable."
+      ],
+      "correct": 0,
+      "explanation": "Map và response pointers có concurrency/ownership concerns."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Lookup bool",
+      "question": "user,ok := s.users[req.Id] dùng ok để biết gì?",
+      "options": [
+        "Connection đã mã hóa.",
+        "Khóa có tồn tại trong map hay không.",
+        "User đã được authorization.",
+        "Request đã hết deadline."
+      ],
+      "correct": 1,
+      "explanation": "Existence khác quyền truy cập và khác pointer value non-nil."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Not found source",
+      "question": "Nếu không có ID, GetUser nguồn trả gì?",
+      "options": [
+        "Panic vô điều kiện.",
+        "Tự tạo user mới.",
+        "nil response và status error codes.NotFound.",
+        "User rỗng với nil error."
+      ],
+      "correct": 2,
+      "explanation": "Application chọn status cho tình huống không tìm thấy trong ví dụ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Found source",
+      "question": "Nếu tìm thấy, GetUser trả response thế nào?",
+      "options": [
+        "Luôn deep clone response.",
+        "Luôn đọc lại DB.",
+        "Luôn tạo một transaction mới.",
+        "Trả con trỏ đang lưu trong map và nil error."
+      ],
+      "correct": 3,
+      "explanation": "Return pointer không tự bảo đảm isolation khỏi mutation."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Context parameter",
+      "question": "ctx trong GetUser dùng cho mục tiêu gì khi implementation quan sát nó?",
+      "options": [
+        "Cancellation/deadline và request-scoped context.",
+        "Tự serialize mọi message.",
+        "Tự kiểm tra mọi quyền chỉ bằng tên biến.",
+        "Một connection pool tự có."
+      ],
+      "correct": 0,
+      "explanation": "Source hiện chưa dùng ctx trong body lookup."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Health fields",
+      "question": "Health map trong source chứa những keys nào?",
+      "options": [
+        "ReadTimeout,WriteTimeout,IdleTimeout.",
+        "status,version,uptime.",
+        "password,secret,token.",
+        "users,orders,payments."
+      ],
+      "correct": 1,
+      "explanation": "Đây là metadata tĩnh/dynamic đơn giản, không là full dependency check."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Version env",
+      "question": "os.Getenv(\"APP_VERSION\") nhằm lấy gì?",
+      "options": [
+        "Một secret gRPC tự tạo.",
+        "Một status code.",
+        "Chuỗi cấu hình version từ environment khi chạy ứng dụng.",
+        "Version compiler Go bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Tên env không tự có giá trị nếu deployment chưa cung cấp."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Uptime source",
+      "question": "time.Since(startTime) muốn đo gì?",
+      "options": [
+        "Latency của mọi RPC riêng lẻ.",
+        "Tuổi của database row.",
+        "Dung lượng Docker image.",
+        "Thời gian đã qua từ mốc startTime."
+      ],
+      "correct": 3,
+      "explanation": "Source chưa định nghĩa startTime trong snippet."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Build stages",
+      "question": "Dockerfile nhiều FROM trong sketch nhằm gì?",
+      "options": [
+        "Tách stage build và stage runtime.",
+        "Chạy hai databases tự động.",
+        "Tự tạo gRPC schema.",
+        "Tự đo production throughput."
+      ],
+      "correct": 0,
+      "explanation": "Chỉ copy artifacts cần thiết sang final stage."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Scratch base",
+      "question": "FROM scratch biểu thị gì?",
+      "options": [
+        "Một database tích hợp.",
+        "Base image tối thiểu trống cho final filesystem.",
+        "Một Linux distro đầy shell/package manager.",
+        "Một Go compiler đã cài sẵn."
+      ],
+      "correct": 1,
+      "explanation": "Ứng dụng phải có đủ runtime files/dependencies cần thiết."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Builder copy",
+      "question": "COPY --from=builder /app/server /server làm gì?",
+      "options": [
+        "Tự generate protobuf.",
+        "Tự chạy binary qua mạng.",
+        "Copy binary từ stage builder vào final stage.",
+        "Copy mọi compiler cache bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Copy artifact khác thực thi một integration test."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "No complete application",
+      "question": "Snippet nguồn đã là Go app gRPC hoàn chỉnh chưa?",
+      "options": [
+        "Có, comment proto tự được runtime xử lý.",
+        "Có, embed tự đăng ký service.",
+        "Chỉ cần đổi filename thành server.go.",
+        "Chưa; thiếu package/imports/generated definitions/bootstrap và startTime."
+      ],
+      "correct": 3,
+      "explanation": "Không tuyên bố app chạy nguyên trạng từ một sketch."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Local lookup model",
+      "question": "Mô hình Go thuần này in gì?",
+      "code": "package main\nimport \"fmt\"\ntype User struct{Name string}\nfunc main(){users:=map[int64]*User{1:{Name:\"An\"}};u,ok:=users[1];fmt.Println(u.Name,ok)}\n",
+      "options": [
+        "An true.",
+        "An false.",
+        "nil true.",
+        "Tự thực hiện gRPC request."
+      ],
+      "correct": 0,
+      "explanation": "Đây là map/pointer semantics trong RAM, không có RPC library."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Missing local entry",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype User struct{Name string}\nfunc main(){users:=map[int64]*User{};u,ok:=users[7];fmt.Println(u==nil,ok)}\n",
+      "options": [
+        "Map tự tạo User khi đọc.",
+        "true false.",
+        "false true.",
+        "true true."
+      ],
+      "correct": 1,
+      "explanation": "Missing pointer value là nil kèm ok=false."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Nil map read model",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype User struct{Name string}\nfunc main(){var users map[int64]*User;u,ok:=users[7];fmt.Println(u==nil,ok)}\n",
+      "options": [
+        "Panic khi đọc nil map.",
+        "Tự gọi database.",
+        "true false.",
+        "false false."
+      ],
+      "correct": 2,
+      "explanation": "Đọc nil map hợp lệ, nhưng không chứng minh store có dữ liệu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Pointer alias model",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype User struct{Name string}\nfunc main(){users:=map[int64]*User{1:{Name:\"An\"}};response:=users[1];response.Name=\"Binh\";fmt.Println(users[1].Name)}\n",
+      "options": [
+        "An.",
+        "nil.",
+        "Return pointer tự clone.",
+        "Binh."
+      ],
+      "correct": 3,
+      "explanation": "response và map entry trỏ cùng plain Go object."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Existing nil entry",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype User struct{Name string}\nfunc main(){users:=map[int64]*User{1:nil};u,ok:=users[1];fmt.Println(u==nil,ok)}\n",
+      "options": [
+        "true true.",
+        "true false.",
+        "false true.",
+        "Compiler cấm nil map value."
+      ],
+      "correct": 0,
+      "explanation": "Key có thể tồn tại với nil pointer value; ok không chứng minh response non-nil."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Health JSON model",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\")\n\nfunc main(){payload:=map[string]string{\"status\":\"healthy\",\"version\":\"demo\"};b,e:=json.Marshal(payload);if e!=nil{panic(e)};var out map[string]string;if e=json.Unmarshal(b,&out);e!=nil{panic(e)};fmt.Println(out[\"status\"],out[\"version\"])}\n",
+      "options": [
+        "Tự probe gRPC service.",
+        "healthy demo.",
+        "healthy nil.",
+        "failed demo."
+      ],
+      "correct": 1,
+      "explanation": "Encode/decode metadata fixed trong RAM, không đọc env thật."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Missing version config model",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){config:=map[string]string{};fmt.Println(config[\"APP_VERSION\"]==\"\")}\n",
+      "options": [
+        "Mọi config key tự có version latest.",
+        "Tự đọc environment thật.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Map config minh họa trả zero string cho missing key; không gọi os.Getenv."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Fixed uptime formatting",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"time\")\n\nfunc main(){fmt.Println((1500*time.Millisecond).String())}\n",
+      "options": [
+        "1500s.",
+        "1s bắt buộc.",
+        "Một timestamp tuyệt đối.",
+        "1.5s."
+      ],
+      "correct": 3,
+      "explanation": "Duration.String biểu diễn duration đã biết; không đo uptime runtime của app."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Undefined generated package",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "package main\n\nfunc main(){_ = pb.UserResponse{}}\n",
+      "options": [
+        "Không; pb chưa được khai báo/import trong fixture.",
+        "Có, pb là built-in Go.",
+        "Có, Go tự tải mọi protobuf package theo identifier.",
+        "Chỉ lỗi nếu request Id0."
+      ],
+      "correct": 0,
+      "explanation": "Source cần generated definitions và imports thực sự, không chỉ comment."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Ignored cancellation model",
+      "question": "Mô hình lookup này in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\ntype User struct{Name string}\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();lookup:=func(ctx context.Context,id int64)(*User,bool){u,ok:=map[int64]*User{1:{Name:\"An\"}}[id];return u,ok};_,ok:=lookup(ctx,1);fmt.Println(ctx.Err()==context.Canceled,ok)}\n",
+      "options": [
+        "Context tự ngăn mọi map lookup.",
+        "true true.",
+        "true false.",
+        "false true."
+      ],
+      "correct": 1,
+      "explanation": "Context đã cancel không tự ép hàm bỏ việc nếu body không quan sát nó."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Generated files missing",
+      "question": "Comment .proto có tự làm Go compiler tạo pb package không?",
+      "options": [
+        "Có, import context kích hoạt generate.",
+        "Chỉ cần Docker FROM.",
+        "Không; cần công cụ generate/build pipeline và files phù hợp.",
+        "Có, compiler đọc comment và gọi protoc tự động."
+      ],
+      "correct": 2,
+      "explanation": "Không thực hiện downloads/generation trong tác vụ soạn quiz này."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Server registration missing",
+      "question": "Ngoài viết GetUser, cần gì để service được server phục vụ?",
+      "options": [
+        "Chỉ embed struct là mọi port tự mở.",
+        "Chỉ log healthy.",
+        "Chỉ tạo map users.",
+        "Tạo/đăng ký implementation với gRPC server cùng bootstrap/listener phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Exact generated API phụ thuộc version/generator; source chưa có phần này."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "ListUsers absent",
+      "question": "Source đã thực hiện ListUsers server-streaming chưa?",
+      "options": [
+        "Chưa có method implementation tương ứng trong snippet.",
+        "Có, khai báo proto comment tự viết body.",
+        "Có, GetUser tự trả mọi users.",
+        "Chỉ cần map có nhiều entries."
+      ],
+      "correct": 0,
+      "explanation": "Theory/proto declaration khác implementation."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Concurrent map conditions",
+      "question": "Nhiều GetUser chỉ đọc map đã được publish bất biến có nhất thiết là data race không?",
+      "options": [
+        "Chỉ cần map có ít hơn10 entries.",
+        "Không; vấn đề xuất hiện nếu có unsynchronized writes hoặc mutable pointed data được sửa đồng thời.",
+        "Có, mọi concurrent map reads luôn lỗi.",
+        "Không và mọi writes cũng tự an toàn."
+      ],
+      "correct": 1,
+      "explanation": "Nêu đúng điều kiện thay vì nói mọi concurrent access đều sai."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Mutable response risk",
+      "question": "Return pointer map entry có rủi ro gì khi dữ liệu đó còn bị sửa?",
+      "options": [
+        "Map pointer tự immutable.",
+        "Không thể sửa generated message theo mọi API.",
+        "Alias/lifetime/concurrency có thể ảnh hưởng serialization và clients khác.",
+        "gRPC luôn deep clone object trước mọi mutation chắc chắn."
+      ],
+      "correct": 2,
+      "explanation": "Cần ownership/snapshot phù hợp generated-message contract."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Nil map entry handling",
+      "question": "Nếu key tồn tại nhưng stored pointer nil, source GetUser có check riêng không?",
+      "options": [
+        "Có, ok tự kiểm tra pointer non-nil.",
+        "Có, status.NotFound tự chạy.",
+        "Compiler luôn cấm map nil values.",
+        "Chưa; nhánh ok=true trả user nil với nil error theo body hiện tại."
+      ],
+      "correct": 3,
+      "explanation": "Nên giữ invariant map entries hoặc xử lý explicit theo contract."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Authentication missing",
+      "question": "Source có kiểm tra identity/permission của caller không?",
+      "options": [
+        "Chưa.",
+        "Có, Protobuf type safety tự là authentication.",
+        "Có, req.Id chứng minh ownership.",
+        "Chỉ cần dùng gRPC thay HTTP."
+      ],
+      "correct": 0,
+      "explanation": "Transport/API types không thay authn/authz."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Request ID validation",
+      "question": "req.Id tồn tại có đủ để chấp nhận mọi ID theo business rules không?",
+      "options": [
+        "Chỉ cần key không0.",
+        "Không; cần domain validation và access checks phù hợp.",
+        "Có, int64 luôn là ID hợp lệ.",
+        "Có, proto3 tự kiểm tra ID dương."
+      ],
+      "correct": 1,
+      "explanation": "Schema type không biểu diễn mọi invariant nghiệp vụ."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Default deadline",
+      "question": "Có nên giả mọi gRPC client tự có deadline hữu hạn phù hợp không?",
+      "options": [
+        "Có, server bắt buộc tự chọn1s.",
+        "Chỉ cần unary method.",
+        "Không; docs khuyên đặt deadline thực tế vì mặc định có thể không đặt.",
+        "Có, mặc định mọi call5s."
+      ],
+      "correct": 2,
+      "explanation": "Budget cần được thiết kế và propagate qua các calls liên quan."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Cancellation work",
+      "question": "RPC bị cancel có tự dừng mọi goroutine do application tạo không?",
+      "options": [
+        "Có, gRPC runtime kill mọi goroutine.",
+        "Có, context key user tự quản lý.",
+        "Chỉ nếu status.NotFound.",
+        "Không; application phải quan sát cancellation và dừng/cleanup công việc."
+      ],
+      "correct": 3,
+      "explanation": "Không suy caller ngừng chờ thành server đã hoàn tất cleanup."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Deadline status",
+      "question": "DeadlineExceeded có chắc operation thay đổi trạng thái chưa thành công ở server không?",
+      "options": [
+        "Không; response có thể trễ sau khi operation đã hoàn tất.",
+        "Có, mọi deadline failure tự rollback server.",
+        "Có, gRPC đúng là transaction protocol.",
+        "Chỉ cần retry ngay vô điều kiện."
+      ],
+      "correct": 0,
+      "explanation": "Write retries cần idempotency/outcome handling phù hợp."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Retry safety",
+      "question": "Retry RPC tạo tài nguyên nên cân nhắc gì?",
+      "options": [
+        "Protobuf tự chống duplicate writes.",
+        "Idempotency key/invariant và outcome chưa rõ, cùng budget/backoff.",
+        "Mọi RPC đều retry vô hạn an toàn.",
+        "Chỉ cần binary nhỏ."
+      ],
+      "correct": 1,
+      "explanation": "Transport reliability không tự bảo đảm business exactly-once."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Status categories",
+      "question": "NotFound và PermissionDenied có thể được dùng thay nhau tùy ý cho mọi chính sách không?",
+      "options": [
+        "Có, client không quan tâm status.",
+        "Chỉ cần message giống nhau.",
+        "Không; cần đúng API/security contract và status semantics.",
+        "Có, mọi error đều nên NotFound."
+      ],
+      "correct": 2,
+      "explanation": "Không lộ thông tin trái policy; xem quy tắc status cho trường hợp cụ thể."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Streaming lifecycle",
+      "question": "Server-streaming handler cần xử lý gì ngoài loop gửi messages?",
+      "options": [
+        "Chỉ CPU nhanh là đủ.",
+        "Tự assume client luôn đọc vô hạn.",
+        "Không bao giờ được return error.",
+        "Send errors,cancellation,resource bounds và kết thúc stream đúng."
+      ],
+      "correct": 3,
+      "explanation": "Flow control và stream completion không là durable application queue."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Proto field tags",
+      "question": "Vì sao không tái dùng field number đã bỏ cho ý nghĩa khác tùy tiện?",
+      "options": [
+        "Có thể phá wire compatibility khi đọc dữ liệu/calls từ version khác.",
+        "Vì Go compiler tự cấm mọi migration.",
+        "Vì field names luôn quyết định binary tags duy nhất.",
+        "Chỉ ảnh hưởng comment."
+      ],
+      "correct": 0,
+      "explanation": "Quản lý schema evolution theo protobuf rules và contract."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Health not readiness",
+      "question": "Health luôn healthy có phát hiện users store stale hoặc dependency down không?",
+      "options": [
+        "Chỉ cần APP_VERSION non-empty.",
+        "Chưa có logic kiểm tra đó trong source.",
+        "Có, json.NewEncoder tự probe dependencies.",
+        "Có, uptime>0 chứng minh dữ liệu đúng."
+      ],
+      "correct": 1,
+      "explanation": "Readiness/liveness cần định nghĩa mục tiêu riêng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Version truth",
+      "question": "APP_VERSION có đủ chứng minh image đang chạy đúng commit không?",
+      "options": [
+        "Có, mọi container version latest là đúng.",
+        "Chỉ cần field tên version.",
+        "Không tự thân; cần provenance/cấu hình build-deploy đúng và xác minh phù hợp.",
+        "Có, env string tự được ký bởi compiler."
+      ],
+      "correct": 2,
+      "explanation": "Metadata hữu ích nhưng có thể thiếu hoặc sai nếu pipeline không quản lý."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Start time absent",
+      "question": "healthHandler nguồn thiếu biến nào để tính uptime?",
+      "options": [
+        "rate.",
+        "b.N.",
+        "ReadHeaderTimeout.",
+        "startTime."
+      ],
+      "correct": 3,
+      "explanation": "Source sketch không định nghĩa nó, chưa là một file executable đầy đủ."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "JSON media type",
+      "question": "healthHandler đã đặt application/json trước Encode chưa?",
+      "options": [
+        "Chưa.",
+        "Có, map string tự đổi headers chắc chắn.",
+        "Có, method health tự có JSON header.",
+        "Chỉ cần type-safe RPC."
+      ],
+      "correct": 0,
+      "explanation": "Nên đặt explicit media type theo API contract."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Docker CGO flag",
+      "question": "CGO_ENABLED=0 trong builder chủ yếu yêu cầu gì?",
+      "options": [
+        "Tự đo image10MB.",
+        "Build với cgo bị tắt; dependencies cần cgo có thể không phù hợp.",
+        "Tự cung cấp mọi native shared libraries.",
+        "Tự bảo đảm mọi cross-platform executable chạy."
+      ],
+      "correct": 1,
+      "explanation": "Không coi một flag là proof mọi dependency/runtime requirement được đáp ứng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Scratch CA",
+      "question": "Go app HTTPS outbound trong scratch có thể cần thêm gì?",
+      "options": [
+        "Mọi shell scripts được tự thêm.",
+        "Không bao giờ cần trust material.",
+        "CA certificate roots hoặc cấu hình trust phù hợp.",
+        "Bắt buộc full Go compiler trong final image."
+      ],
+      "correct": 2,
+      "explanation": "Tùy workload, static binary không có nghĩa đủ mọi runtime assets."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Scratch timezone",
+      "question": "Ứng dụng cần timezone database/named locations nên cân nhắc gì?",
+      "options": [
+        "Scratch tự có mọi timezone của mọi OS.",
+        "Go tự tải network mỗi time.Now.",
+        "Chỉ đổi APP_VERSION.",
+        "Cung cấp dữ liệu timezone phù hợp hoặc embed khi thiết kế cần."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra runtime files thực sự cần, không thêm mọi thứ vô điều kiện."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Image size claim",
+      "question": "~10MB trong key point có phải kích thước image đã đo ở dự án này không?",
+      "options": [
+        "Không; chỉ mô tả ước lượng, chưa build/đo image.",
+        "Có, specification quy định mọi Go image10MB.",
+        "Có, FROM scratch tự giữ đúng10MB.",
+        "Chỉ khi có2 services."
+      ],
+      "correct": 0,
+      "explanation": "Size phụ thuộc binary,assets,architecture và build choices."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Docker go mod download",
+      "question": "RUN go mod download trong Dockerfile là gì?",
+      "options": [
+        "Một guarantee mọi dependency an toàn.",
+        "Lệnh chuẩn bị dependencies trong build, có thể cần network/cache theo môi trường.",
+        "Một bước đã được agent thực hiện trong tác vụ này.",
+        "Một lệnh tạo câu hỏi qua AI."
+      ],
+      "correct": 1,
+      "explanation": "Source command được review, không chạy build/download trong tác vụ này."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Multi stage artifact scope",
+      "question": "Final scratch stage có tự chứa Go compiler/build cache từ builder không?",
+      "options": [
+        "Có, AS builder là global volume.",
+        "Chỉ cần COPY server để copy cả /app.",
+        "Không; chỉ những artifacts được copy vào final filesystem.",
+        "Có, mọi stage luôn merge toàn bộ filesystem."
+      ],
+      "correct": 2,
+      "explanation": "Hiểu đúng artifact boundary giúp giảm final image nhưng không tự chứng minh an toàn."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Nonroot user gap",
+      "question": "Docker sketch đã thể hiện USER non-root rõ ràng chưa?",
+      "options": [
+        "Có, scratch tự cấp user riêng theo mọi policy.",
+        "Có, CGO0 nghĩa uid1000.",
+        "Chỉ cần binary tên server.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Runtime identity/file permissions cần cấu hình theo deployment."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Tracing scope",
+      "question": "Source đã instrument OpenTelemetry và export traces chưa?",
+      "options": [
+        "Chưa; chỉ theory/key point nhắc.",
+        "Có, every gRPC call auto thành distributed trace đầy đủ.",
+        "Có, health version tự là traceID.",
+        "Chỉ cần import time."
+      ],
+      "correct": 0,
+      "explanation": "Instrumentation,propagation,sampling/exporter là công việc khác."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Network failure separation",
+      "question": "RPC thay lời gọi local có thêm điều gì cần thiết kế?",
+      "options": [
+        "Tự durable mọi response.",
+        "Latency,partial failures,timeouts,retries và compatibility.",
+        "Bảo đảm mọi operation atomic toàn cluster.",
+        "Xóa mọi nhu cầu auth."
+      ],
+      "correct": 1,
+      "explanation": "Microservices có chi phí phân tán, không chỉ lợi ích tổ chức."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Local memory replicas",
+      "question": "Hai replicas cùng source map users có tự chia sẻ dữ liệu không?",
+      "options": [
+        "Có, gRPC serialize tự sync store mọi lúc.",
+        "Chỉ cần cùng APP_VERSION.",
+        "Không; mỗi process có memory riêng.",
+        "Có, cùng module path tự replicate."
+      ],
+      "correct": 2,
+      "explanation": "Cần storage/state ownership/replication theo kiến trúc."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Build image versus service test",
+      "question": "Docker build thành công có đủ chứng minh RPC/auth/readiness hoạt động không?",
+      "options": [
+        "Có, build tự gọi mọi production endpoints.",
+        "Có, protobuf đảm bảo mọi data đúng.",
+        "Chỉ cần image nhỏ.",
+        "Không; còn runtime/config/integration checks đúng phạm vi."
+      ],
+      "correct": 3,
+      "explanation": "Build artifacts và service behavior là các lớp bằng chứng khác."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Plain struct snapshot",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\ntype User struct{Name string}\nfunc main(){stored:=&User{Name:\"An\"};snapshot:=*stored;snapshot.Name=\"Binh\";fmt.Println(stored.Name,snapshot.Name)}\n",
+      "options": [
+        "An Binh.",
+        "Binh Binh.",
+        "An An.",
+        "Pointer được copy sâu tự động trong mọi protobuf."
+      ],
+      "correct": 0,
+      "explanation": "Fixture dùng plain struct chỉ có string; không hướng dẫn shallow-copy generated protobuf messages."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Nested reference shallow copy",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport \"fmt\"\n\nfunc main(){type Data struct{Values []int};a:=Data{Values:[]int{1}};b:=a;b.Values[0]=9;fmt.Println(a.Values[0])}\n",
+      "options": [
+        "Struct copy tự deep clone slices.",
+        "9.",
+        "1.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Plain Go struct copy vẫn giữ alias backing array; không là protobuf clone test."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Cooperative lookup check",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"context\")\n\nfunc main(){ctx,cancel:=context.WithCancel(context.Background());cancel();lookup:=func(ctx context.Context)error{if e:=ctx.Err();e!=nil{return e};return nil};fmt.Println(lookup(ctx)==context.Canceled)}\n",
+      "options": [
+        "Context tự gọi lookup qua network.",
+        "Lỗi compiler vì ctx.Err không phải error.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Helper kiểm tra ctx trước công việc; chỉ plain Go, không RPC integration."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Metadata is not dependent health",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"encoding/json\")\n\nfunc main(){status:=map[string]string{\"status\":\"healthy\",\"version\":\"\"};b,e:=json.Marshal(status);if e!=nil{panic(e)};var out map[string]string;if e=json.Unmarshal(b,&out);e!=nil{panic(e)};fmt.Println(out[\"status\"],out[\"version\"]==\"\")}\n",
+      "options": [
+        "unhealthy false.",
+        "healthy false.",
+        "Không encode được version rỗng.",
+        "healthy true."
+      ],
+      "correct": 3,
+      "explanation": "Map health tĩnh vẫn healthy khi version trống; không có dependency validation."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Fixed elapsed interval",
+      "question": "Chương trình in gì?",
+      "code": "package main\nimport (\"fmt\";\"time\")\n\nfunc main(){start:=time.Unix(0,0);end:=start.Add(90*time.Second);fmt.Println(end.Sub(start).String())}\n",
+      "options": [
+        "1m30s.",
+        "90ms.",
+        "1h30m.",
+        "Một giá trị uptime ngẫu nhiên."
+      ],
+      "correct": 0,
+      "explanation": "Hai mốc cố định cho duration90s, không đo uptime service thật."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Generated message cloning",
+      "question": "Có nên áp dụng *copy shallow của plain struct như clone an toàn cho mọi generated protobuf object không?",
+      "options": [
+        "Chỉ cần field export.",
+        "Không; dùng API/ownership theo protobuf runtime và cấu trúc message cụ thể.",
+        "Có, mọi generated message chỉ có strings.",
+        "Có, pointer copy luôn deep clone."
+      ],
+      "correct": 1,
+      "explanation": "Generated internals/nested references có contract riêng, chưa có thư viện local để kiểm tra."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Map concurrency fix scope",
+      "question": "Chỉ khóa map lookup rồi trả pointer có đủ nếu object bị sửa sau khi unlock không?",
+      "options": [
+        "Đủ, gRPC serializer luôn atomic mọi field.",
+        "Chỉ cần RWMutex.",
+        "Chưa; cần bảo vệ cả lifetime/mutation của pointed data hoặc snapshot/immutable ownership.",
+        "Đủ, map lock tự theo pointer vĩnh viễn."
+      ],
+      "correct": 2,
+      "explanation": "Lock scope phải bao invariant dữ liệu thực sự, không chỉ container."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Deadline propagation",
+      "question": "Server gọi downstream mà dùng Background thay ctx request có rủi ro gì?",
+      "options": [
+        "Tự tăng reliability không giới hạn.",
+        "Tự giữ deadline gốc theo tên method.",
+        "Chỉ ảnh hưởng log format.",
+        "Mất budget/cancellation liên quan request nếu không có thiết kế vòng đời riêng rõ."
+      ],
+      "correct": 3,
+      "explanation": "Propagation cần dùng context đúng qua outgoing calls; không giả mọi việc tự nối."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Retry cancellation outcome",
+      "question": "Client timeout sau mutation đã commit, retry không idempotent có thể gây gì?",
+      "options": [
+        "Duplicate side effects hoặc kết quả khó xác định.",
+        "Mọi error tự rollback cả cluster.",
+        "gRPC tự xác minh business uniqueness.",
+        "Chỉ cần NotFound status."
+      ],
+      "correct": 0,
+      "explanation": "Status/transport semantics khác durable business outcome."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Stream recovery",
+      "question": "Streaming reconnect có tự replay chính xác mọi messages chưa xử lý không?",
+      "options": [
+        "Chỉ cần ctx timeout.",
+        "Không; cần cursor/sequence/ack/durability contract nếu yêu cầu.",
+        "Có, mọi gRPC stream là durable queue.",
+        "Có, protobuf field number là offset."
+      ],
+      "correct": 1,
+      "explanation": "Flow control giữ tài nguyên khác với application delivery guarantees."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Schema compatibility",
+      "question": "Đổi field type/number có cần xem cả binary và JSON consumers không?",
+      "options": [
+        "Chỉ cần đổi version env.",
+        "Protobuf luôn tương thích mọi chỉnh sửa.",
+        "Có; wire/JSON/API compatibility không đồng nhất và phải kiểm tra thay đổi cụ thể.",
+        "Không, compiler của server đủ sửa mọi clients."
+      ],
+      "correct": 2,
+      "explanation": "Không hứa tương thích tuyệt đối chỉ vì dùng schema."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Service boundary transaction",
+      "question": "Tách user/order sang hai services có giữ local ACID transaction cũ tự động không?",
+      "options": [
+        "Có, gRPC tự distributed transaction.",
+        "Có, cùng ngôn ngữ Go là một DB connection.",
+        "Chỉ cần Docker network.",
+        "Không; cần thiết kế invariant/workflow/consistency qua ranh giới mới."
+      ],
+      "correct": 3,
+      "explanation": "Tránh chia nhỏ services mà bỏ business consistency requirements."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Observability correlation",
+      "question": "Chỉ log APP_VERSION và uptime có đủ trace request đi qua nhiều services không?",
+      "options": [
+        "Chưa; cần correlation/trace context và instrumentation/export phù hợp.",
+        "Có, uptime là traceID unique.",
+        "Có, JSON tự propagate metadata.",
+        "Chỉ cần server port khác nhau."
+      ],
+      "correct": 0,
+      "explanation": "Observability phải nối được causal path theo contract."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "mTLS versus permissions",
+      "question": "Mã hóa/xác thực transport bằng mTLS có tự bảo đảm caller được đọc mọi req.Id không?",
+      "options": [
+        "Chỉ cần NotFound message.",
+        "Không; authorization theo resource/operation vẫn cần policy riêng.",
+        "Có, TLS grant toàn bộ quyền.",
+        "Có, certificate tự chứa mọi user rows."
+      ],
+      "correct": 1,
+      "explanation": "Identity và quyền truy cập là các lớp liên quan nhưng khác."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Docker mutable tag",
+      "question": "Tag builder golang:1.22-alpine có đủ tái lập byte-for-byte artifact vô hạn không?",
+      "options": [
+        "Có, go mod download không ảnh hưởng versions.",
+        "Chỉ cần scratch final.",
+        "Không; cần quản lý toolchain/dependency/base digest và build inputs phù hợp nếu yêu cầu reproducibility.",
+        "Có, mọi tag luôn bất biến tuyệt đối."
+      ],
+      "correct": 2,
+      "explanation": "Không tự cập nhật/chạy Docker để suy artifact đã được tái lập."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Scratch runtime dependencies",
+      "question": "Binary build cgo0 có nghĩa không cần thêm assets/config/trust ở runtime trong mọi app không?",
+      "options": [
+        "Có, mọi Go app chỉ cần một file và không có ngoại lệ.",
+        "Có, scratch tự tải mọi missing file.",
+        "Chỉ nếu image dưới10MB.",
+        "Không; workload có thể cần CA/timezone/templates/config hoặc files khác."
+      ],
+      "correct": 3,
+      "explanation": "Phải kiểm tra yêu cầu app cụ thể, không suy chỉ từ compile flag."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Protocol health distinction",
+      "question": "HTTP healthHandler có tự thực hiện gRPC Health Checking Protocol không?",
+      "options": [
+        "Không; đó là HTTP JSON endpoint riêng, protocol health cần implementation/registration tương ứng.",
+        "Có, tên healthHandler tự đủ.",
+        "Có, mọi HTTP200 được gRPC client hiểu là SERVING.",
+        "Chỉ cần uptime."
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất các health surfaces vì tên giống nhau."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Data model test scope",
+      "question": "Các map/context/JSON fixtures Go thuần pass có chứng minh protobuf serialization hoặc gRPC status wire đúng chưa?",
+      "options": [
+        "Chỉ cần compiler Go.",
+        "Chưa; không có gRPC/protobuf runtime được thực thi trong fixtures này.",
+        "Có, tất cả APIs gọi pb đều tự mô phỏng hoàn hảo.",
+        "Có, chỉ cần150 câu khác pass."
+      ],
+      "correct": 1,
+      "explanation": "Ghi đúng source/model/spec versus actual integration."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Capacity microservices claim",
+      "question": "Tách nhiều Go services có tự đủ phục vụ triệu người dùng không?",
+      "options": [
+        "Có, image10MB chứng minh RPS.",
+        "Chỉ cần nhiều containers.",
+        "Không; cần workload/storage/network/resources/SLAs và bằng chứng capacity cụ thể.",
+        "Có, microservice tự scale vô hạn."
+      ],
+      "correct": 2,
+      "explanation": "Kích thước binary không là capacity planning."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Review completeness",
+      "question": "Để gọi sketch này hoàn chỉnh cần làm rõ gì?",
+      "options": [
+        "Chỉ đổi comment thành production.",
+        "Chỉ in healthy một lần.",
+        "Chỉ tạo hai empty services.",
+        "Schema/generated APIs,bootstrap/registration,storage/ownership,auth,deadlines,health,tracing và runtime/deployment tests theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Không tuyên bố hoạt động đã được kiểm chứng cho những phần chưa triển khai/chạy."
+    }
+  ]
+}

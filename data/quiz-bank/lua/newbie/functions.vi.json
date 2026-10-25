@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "lua",
+  "level": "newbie",
+  "lesson": "functions",
+  "language": "vi",
+  "sourceHash": "e07935e462a56e9c6879e3d90f44666eccd8b268df86479d959b1169d2347e44",
+  "status": "approved",
+  "review": "Tự soạn theo divide và Lua5.4 manual multires/closures. Numeric quotient khác format print tùy runtime,không claim exact5/5.0 stdout. Guard chỉ b==0,không general validation/protected execution. Closure examples là tình huống phân tích,source chưa triển khai closure. Không chạy Lua.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Function first class",
+      "question": "First-class function nghĩa là gì?",
+      "options": [
+        "Có thể gán/truyền/trả function như value",
+        "Mọi hàm tự chạy nhiều core",
+        "Hàm chỉ được khai báo global",
+        "Hàm luôn là table"
+      ],
+      "correct": 0,
+      "explanation": "Function là một basic type của Lua."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Local function syntax",
+      "question": "local function divide(a, b) khai báo gì?",
+      "options": [
+        "Một global luôn luôn",
+        "Hàm local nhận hai parameters",
+        "Một class Divide",
+        "Một table literal"
+      ],
+      "correct": 1,
+      "explanation": "Binding function có lexical scope."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Parameter roles",
+      "question": "a, b trong divide dùng như gì?",
+      "options": [
+        "Hai callback bắt buộc",
+        "Width và Color",
+        "Tử số và mẫu số",
+        "Tên và email"
+      ],
+      "correct": 2,
+      "explanation": "Source tính a/b khi guard cho qua."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Zero guard",
+      "question": "Điều kiện nào được kiểm trước division?",
+      "options": [
+        "a==0",
+        "a>b",
+        "b==nil luôn luôn",
+        "b==0"
+      ],
+      "correct": 3,
+      "explanation": "Không phải mọi invalid input đều được kiểm."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Zero failure values",
+      "question": "b=0 khiến hàm return gì?",
+      "options": [
+        "nil và chuỗi lỗi",
+        "0 và nil",
+        "true và false",
+        "Một table có hai fields bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Nhiều values riêng, không tự là container."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Success values",
+      "question": "Nhánh bình thường return gì?",
+      "options": [
+        "Array quotient/error",
+        "a/b và nil",
+        "Chỉ true",
+        "Một error String luôn luôn"
+      ],
+      "correct": 1,
+      "explanation": "Second value nil biểu diễn không lỗi theo convention này."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Return statement",
+      "question": "return làm gì trong hàm?",
+      "options": [
+        "Tiếp tục mọi lệnh phía sau bắt buộc",
+        "Tạo coroutine",
+        "Kết thúc lời gọi với values đã chỉ định",
+        "Chỉ in values"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nghĩa print."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Multiple assignment",
+      "question": "local result, err=divide(10,2) nhận gì theo thứ tự?",
+      "options": [
+        "Đảo hai value",
+        "Chỉ err nhận mọi values",
+        "Tự tạo table result",
+        "Value đầu vào result, value thứ hai vào err"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự return là phần API contract."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Error test",
+      "question": "if err then trong caller đang kiểm gì?",
+      "options": [
+        "Error indicator theo truthiness",
+        "Result phải khác0",
+        "Function object có tồn tại",
+        "Input name String"
+      ],
+      "correct": 0,
+      "explanation": "Convention nhánh success err=nil."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Error text prefix",
+      "question": "Nhánh có err in prefix nào?",
+      "options": [
+        "Total: ",
+        "Loi: ",
+        "Ket qua: ",
+        "User: "
+      ],
+      "correct": 1,
+      "explanation": "Caller nối error text vào prefix."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Success text prefix",
+      "question": "Nhánh else của caller in prefix nào?",
+      "options": [
+        "Count: ",
+        "HP: ",
+        "Ket qua: ",
+        "Loi: "
+      ],
+      "correct": 2,
+      "explanation": "Không in error text ở success flow."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Numeric success",
+      "question": "divide(10,2) có numeric quotient nào?",
+      "options": [
+        "2",
+        "10",
+        "nil",
+        "5"
+      ],
+      "correct": 3,
+      "explanation": "Không khẳng định String formatting của5.0 ở mọi runtime."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Function type query",
+      "question": "type(divide) trong scope phù hợp trả gì?",
+      "options": [
+        "function",
+        "table",
+        "number",
+        "thread"
+      ],
+      "correct": 0,
+      "explanation": "Function value khác kết quả gọi."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Call versus value",
+      "question": "divide và divide(10,2) khác nhau thế nào?",
+      "options": [
+        "Một bên class, một bên instance",
+        "Một bên function value, một bên invocation",
+        "Cả hai luôn quotient5",
+        "divide tự gọi không cần parentheses mọi context"
+      ],
+      "correct": 1,
+      "explanation": "Đọc tên function không tự thực thi body."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Closure concept",
+      "question": "Closure giữ khả năng truy cập gì?",
+      "options": [
+        "Một copy disk database",
+        "Chỉ arguments của lần gọi cuối",
+        "Bindings lexical bên ngoài được capture",
+        "Mọi biến toàn máy"
+      ],
+      "correct": 2,
+      "explanation": "Upvalue có lifetime không chỉ block đang chạy."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Callback concept",
+      "question": "Truyền hàm làm đối số cho hàm khác nhằm gì?",
+      "options": [
+        "Bắt buộc spawn thread",
+        "Mã hóa source thành JSON",
+        "Tự gọi HTTP",
+        "Cho receiver gọi behavior được cung cấp"
+      ],
+      "correct": 3,
+      "explanation": "Receiver phải có protocol invocation rõ."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Rectangle exercise",
+      "question": "Exercise yêu cầu hàm trả những giá trị nào?",
+      "options": [
+        "Chu vi và diện tích hình chữ nhật",
+        "Chỉ width",
+        "Chỉ error code",
+        "Một render object"
+      ],
+      "correct": 0,
+      "explanation": "Đây là nhiều kết quả cùng lời gọi."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Exercise implementation gap",
+      "question": "Code mẫu đã có hàm rectangle chưa?",
+      "options": [
+        "Có, print tạo hàm đó",
+        "Chưa",
+        "Có, divide chính là rectangle",
+        "Có, Lua tự sinh từ exercise"
+      ],
+      "correct": 1,
+      "explanation": "Cần tự viết phần thực hành."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Closure source gap",
+      "question": "Source divide có ví dụ closure counter thực tế chưa?",
+      "options": [
+        "Có, division tự lưu counter",
+        "Có, if err tạo closure shared",
+        "Chưa",
+        "Có, mọi nil là closure"
+      ],
+      "correct": 2,
+      "explanation": "Theory nêu khả năng, code mới minh họa multires."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "No exception for guarded case",
+      "question": "Nhánh return nil, error có ý định giao lỗi bằng gì?",
+      "options": [
+        "Raise luôn luôn",
+        "Global last_error bắt buộc",
+        "OS exit code",
+        "Return-value protocol"
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm lỗi được trả với exception."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Success error slot",
+      "question": "Sau result, err=divide(10,2), err là gì?",
+      "options": [
+        "nil",
+        "false bắt buộc",
+        "String rỗng",
+        "5"
+      ],
+      "correct": 0,
+      "explanation": "Nhánh success return a/b, nil."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Success branch choice",
+      "question": "Caller source đi nhánh nào với divide(10,2)?",
+      "options": [
+        "Không print",
+        "Else in kết quả",
+        "Then in lỗi",
+        "Cả hai"
+      ],
+      "correct": 1,
+      "explanation": "err nil là false condition."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Guarded zero output",
+      "question": "divide(10,0) khiến result, err có gì?",
+      "options": [
+        "0 và nil",
+        "false và0",
+        "nil và Khong the chia cho 0!",
+        "Infinity và nil"
+      ],
+      "correct": 2,
+      "explanation": "Guard trả protocol riêng trước arithmetic."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Zero branch choice",
+      "question": "Caller theo source với divide(10,0) in nhánh nào?",
+      "options": [
+        "Ket qua với0",
+        "Cả hai",
+        "Không nhánh nào",
+        "Loi với error text"
+      ],
+      "correct": 3,
+      "explanation": "Error String truthy."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Zero numerator success",
+      "question": "divide(0,2) có được coi lỗi theo source không?",
+      "options": [
+        "Không, result numeric 0 và err nil",
+        "Có, mọi0 làfalse nên lỗi",
+        "Có, a==0 đượcguard",
+        "Có, division chỉ nhận số dương"
+      ],
+      "correct": 0,
+      "explanation": "Guard chỉ denominator0."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Negative quotient",
+      "question": "divide(-10,2) theo code cho numeric value nào?",
+      "options": [
+        "0",
+        "-5",
+        "5",
+        "nil với error vì âm"
+      ],
+      "correct": 1,
+      "explanation": "Không có rule cấm negatives trong source."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Fraction quotient",
+      "question": "divide(5,2) theo / trong Lua 5.4 có numeric value nào?",
+      "options": [
+        "nil",
+        "5",
+        "2.5",
+        "2 floor bắt buộc"
+      ],
+      "correct": 2,
+      "explanation": "/ là division float semantics, khác //."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Single receiver",
+      "question": "local result=divide(10,0) giữ value nào?",
+      "options": [
+        "Toàn bộ hai values trong table",
+        "Chuỗi error duy nhất",
+        "false",
+        "nil, value đầu"
+      ],
+      "correct": 3,
+      "explanation": "Second return bị bỏ nếu caller chỉ nhận một."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Extra receiver nil",
+      "question": "local a, b, c=divide(10,2) cho c value nào?",
+      "options": [
+        "nil",
+        "5",
+        "0",
+        "Chuỗi lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Assignment thêm nil khi thiếu results."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Parenthesized result",
+      "question": "local r, e=(divide(10,0)) cho e value nào?",
+      "options": [
+        "0",
+        "nil, vì ngoặc ép một result",
+        "Error String như không ngoặc",
+        "true"
+      ],
+      "correct": 1,
+      "explanation": "Parentheses điều chỉnh multires xuống một value."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Literal return count",
+      "question": "Hàm f return1,2; local a, b=f() nhận gì?",
+      "options": [
+        "2 và1",
+        "Một table",
+        "1 và2",
+        "1 vànil"
+      ],
+      "correct": 2,
+      "explanation": "Lời gọi cuối RHS mở rộng results trước adjustment."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Nonlast call adjustment",
+      "question": "f return1,2; local a, b, c=f(),9 nhận gì?",
+      "options": [
+        "1,2,9",
+        "9,1,2",
+        "1, nil,9",
+        "1,9, nil"
+      ],
+      "correct": 3,
+      "explanation": "Lời gọi không ở cuối list chỉ một result."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Last call expansion",
+      "question": "f return1,2; local a, b, c=9, f() nhận gì?",
+      "options": [
+        "9,1,2",
+        "9,1, nil",
+        "1,2,9",
+        "9, nil, nil"
+      ],
+      "correct": 0,
+      "explanation": "Final multires call mở rộng trước fixed-length adjustment."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Return forwarding",
+      "question": "Wrapper return divide(a, b) có thể chuyển tiếp bao nhiêu kết quả của divide?",
+      "options": [
+        "Một table tự tạo",
+        "Cả hai theo return-list rules",
+        "Chỉ quotient bắt buộc",
+        "Chỉ error"
+      ],
+      "correct": 1,
+      "explanation": "Call ở cuối return list được mở rộng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Parenthesized forwarding",
+      "question": "Wrapper return (divide(a, b)) khác gì?",
+      "options": [
+        "Tự bắt exception",
+        "Tự đổi nil thành0",
+        "Chỉ chuyển result đầu",
+        "Luôn chuyển cả hai"
+      ],
+      "correct": 2,
+      "explanation": "Ngoặc ép single result."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "No values function",
+      "question": "Hàm kết thúc không return explicit có kết quả thế nào?",
+      "options": [
+        "Luôn trả true",
+        "Luôn trả last expression như Ruby",
+        "Luôn trả0",
+        "Không trả values; assignment có thể được pad nil"
+      ],
+      "correct": 3,
+      "explanation": "Không áp implicit return Ruby sang Lua."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Explicit return needed",
+      "question": "Trong function f() local x=5 end, x có tự được return không?",
+      "options": [
+        "Không",
+        "Có, mọi last local thànhreturn",
+        "Có, local keyword trảx",
+        "Có, nếu x number"
+      ],
+      "correct": 0,
+      "explanation": "Cần return x nếu contract đòi."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Too many args basic",
+      "question": "Function Lua cố định a, b được gọi thêm argument thứ ba thì sao với args không dùng?",
+      "options": [
+        "B tự thànhtable",
+        "Extra args bị bỏ qua nếu function không vararg dùng chúng",
+        "Luôn compile error",
+        "Tự tạo named parameters"
+      ],
+      "correct": 1,
+      "explanation": "Cần validate API nếu muốn reject arity sai."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Missing args basic",
+      "question": "divide(10) nhận b giá trị nào trước guard?",
+      "options": [
+        "1 tự động",
+        "String rỗng",
+        "nil",
+        "0 tự động"
+      ],
+      "correct": 2,
+      "explanation": "Parameters thiếu được nil pad."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Missing denominator handling",
+      "question": "divide(10) có được guard b==0 nhận như zero không?",
+      "options": [
+        "Có, nil luôn bằng 0",
+        "Có, if tự convert",
+        "Có, return error ở mọi missing args",
+        "Không, nil khác0; arithmetic sau đó có thể lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Chưa có type/presence validation."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Invalid numerator",
+      "question": "divide(nil,2) có được source chuyển thành nil, error bình thường không?",
+      "options": [
+        "Không, có thể raise khi arithmetic vì chưaguard type",
+        "Có, mọi failure được chuyển thành return-value protocol",
+        "Có, nil tự0",
+        "Có, err tự gán"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ một guard không bảo vệ toàn hàm."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Empty error string truthy",
+      "question": "Nếu một API trả nil,\"\", if err then có xem error String là true không?",
+      "options": [
+        "Chỉ vớiRuby",
+        "Có, empty String truthy trong Lua",
+        "Không, empty falsy",
+        "Không, err luônbool"
+      ],
+      "correct": 1,
+      "explanation": "Protocol nên dùng nil làm no-error rõ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "False error indicator",
+      "question": "Nếu một API khác trả result, false, if err then xử lý thế nào?",
+      "options": [
+        "Tự raise",
+        "Tự tạo error String",
+        "Không vào then vì false false-value",
+        "Vào then vìfield có tồn tại"
+      ],
+      "correct": 2,
+      "explanation": "Error protocol phải nhất quán giữa producer/consumer."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Numeric success truthiness",
+      "question": "if result then với result0 trong Lua vào nhánh nào?",
+      "options": [
+        "Else, vì0 falsy",
+        "Luônerror",
+        "Không cho number condition",
+        "Then, vì0 truthy"
+      ],
+      "correct": 3,
+      "explanation": "Không mang bug falsy0 từ ngôn ngữ khác sang Lua."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Swap assignment",
+      "question": "local a, b=1,2; a, b=b, a cho giá trị gì?",
+      "options": [
+        "2 và1",
+        "2 và2",
+        "1 và1",
+        "nil vànil"
+      ],
+      "correct": 0,
+      "explanation": "RHS values được lấy trước assignments."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Function alias",
+      "question": "local f=divide; f(8,2) gọi behavior nào?",
+      "options": [
+        "Chỉ in function name",
+        "Cùng function divide",
+        "Một clone source khác semantics",
+        "Tự thànhtable"
+      ],
+      "correct": 1,
+      "explanation": "Function có thể được gán như value."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Passed function reference",
+      "question": "Muốn truyền divide cho callback runner dùng gì?",
+      "options": [
+        "runner(local divide)",
+        "runner(\"divide\") luôn gọi được nhưfunction",
+        "runner(divide)",
+        "runner(divide(10,2)) nếu muốn function reference"
+      ],
+      "correct": 2,
+      "explanation": "Truyền function khác truyền results invocation."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Factory closure counter",
+      "question": "Factory tạo local n=0 rồi return function() n=n+1; return n end; lần gọi đầu trả gì?",
+      "options": [
+        "0",
+        "nil",
+        "Mộtthread",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "Closure capture binding n rồi mutate."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Counter second call",
+      "question": "Cùng closure counter đó gọi hai lần theo thứ tự cho gì?",
+      "options": [
+        "1 rồi2",
+        "1 rồi1",
+        "0 rồi0",
+        "2 rồi1"
+      ],
+      "correct": 0,
+      "explanation": "Upvalue state tồn tại qua calls."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Separate factories",
+      "question": "Gọi factory counter hai lần tạo c1, c2; gọi mỗi cái một lần cho gì?",
+      "options": [
+        "Chỉ một closure hợp lệ",
+        "Mỗi cái1 vìbindings riêng",
+        "c1=1, c2=2 do global n bắt buộc",
+        "Cả hainil"
+      ],
+      "correct": 1,
+      "explanation": "Factory local mới theo từng invocation."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Shared closures one factory",
+      "question": "Hai closures từ cùng factory cùng đọc/ghi một local n có thể chia state không?",
+      "options": [
+        "Không, vì functions không state",
+        "Chỉ nếu n global",
+        "Có, cùng captured binding",
+        "Không, mọi closure deep copy local"
+      ],
+      "correct": 2,
+      "explanation": "Closure capture không đồng nghĩa immutable snapshot."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Upvalue after factory",
+      "question": "Factory đã return có làm captured n biến mất ngay với closure còn sống không?",
+      "options": [
+        "Có, mọi local bị xóa nênclosureinvalid",
+        "Có, trừ khi dùngglobal",
+        "Có, Lua tự thay bằngnil",
+        "Không, closure giữ binding cần dùng"
+      ],
+      "correct": 3,
+      "explanation": "Lifetime closure kéo dài state được tham chiếu."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Lexical versus caller name",
+      "question": "Closure capture local x ở nơi định nghĩa có tự dùng local x cùng tên của caller không?",
+      "options": [
+        "Không, dựa lexical binding đã capture",
+        "Có, dynamic scope mọi local",
+        "Có, nếu caller x lớn hơn",
+        "Có, nếu xString"
+      ],
+      "correct": 0,
+      "explanation": "Lexical scoping khác dynamic lookup."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Rectangle values",
+      "question": "Rectangle width3, height4 có chu vi/diện tích toán học nào?",
+      "options": [
+        "14 và7",
+        "14 và12",
+        "12 và14",
+        "7 và12"
+      ],
+      "correct": 1,
+      "explanation": "2*(3+4)=14,3*4=12; thứ tự API cần thống nhất."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Rectangle receiver order",
+      "question": "Nếu hàm return perimeter, area thì local area, perimeter=f() có tự đảo theo tên biến không?",
+      "options": [
+        "Có, nếu locals đúng tên",
+        "Có, Lua dùngnamed returns",
+        "Không, nó vẫn gán theo vị trí return",
+        "Có, names tự map"
+      ],
+      "correct": 2,
+      "explanation": "Tên receiver không thay positional assignment."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Multires table constructor",
+      "question": "f return1,2; local t={f()} có các list values nào?",
+      "options": [
+        "Chỉ1",
+        "Chỉ2",
+        "Một function",
+        "1 và2"
+      ],
+      "correct": 3,
+      "explanation": "Final call trong list constructor có thể mở rộng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Nonlast constructor call",
+      "question": "f return1,2; local t={f(),9} có dense values nào?",
+      "options": [
+        "1 và9",
+        "1,2,9",
+        "9,1,2",
+        "1, nil,9"
+      ],
+      "correct": 0,
+      "explanation": "Nonlast call bị điều chỉnh single result."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Nil result table problem",
+      "question": "{divide(10,0)} có bảo đảm là dense sequence hai items không?",
+      "options": [
+        "Có, table literal tự tạo sentinel",
+        "Không, result đầu nil tạo hole/absence",
+        "Có, nil là một stored slot riêng",
+        "Có,# luôn 2"
+      ],
+      "correct": 1,
+      "explanation": "Không dùng# làm tuple arity khi có nil."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Pack explicit count",
+      "question": "table.pack(...) trong Lua 5.4 giúp giữ thông tin gì ngoài slots?",
+      "options": [
+        "Dữ liệu tựpersistent",
+        "KeyString cho mọi argument",
+        "Field n là số arguments kể cảnil",
+        "Mọi value tự deep clone"
+      ],
+      "correct": 2,
+      "explanation": "Cần count để phân biệt trailing nil/missing results."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Unpack arity preservation",
+      "question": "Muốn unpack packed results có trailing nil nên xét end index nào?",
+      "options": [
+        "Luôn#pack bất kểholes",
+        "Luôn0",
+        "TênerrorString",
+        "pack.n thay dựa# không chắc đúng"
+      ],
+      "correct": 3,
+      "explanation": "Explicit bounds giúp giữ số values theo contract."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Error protocol completeness",
+      "question": "Vì sao divide chưa là safe arithmetic API tổng quát?",
+      "options": [
+        "Chỉguard b==0, chưa kiểm type/presence/finite/domain",
+        "Vìreturn nhiều values không được Lua hỗ trợ",
+        "Vìnil không được trả",
+        "Vìfunction local không thể cóerror"
+      ],
+      "correct": 0,
+      "explanation": "Protocol returned error chỉ cover nhánh được cài."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Argument coercion guard",
+      "question": "Nếu caller đưa String \"0\" cho b, có nên giả b==0 đã xác thực denominator numericzero không?",
+      "options": [
+        "Có, if tự normalize input",
+        "Không, String khác number; phải parse/validate rõ",
+        "Có, mọi equality tựparse String",
+        "Có, local keyword ép kiểu"
+      ],
+      "correct": 1,
+      "explanation": "Không dựa coercion ngầm để giữ error contract."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Float special values",
+      "question": "Kiểm b~=0 có tự bảo đảm quotient hữu hạn không?",
+      "options": [
+        "Có, Lua number vô hạn precision",
+        "Có, return nil lọc mọi special values",
+        "Không, còn NaN/infinity/overflow và domain số",
+        "Có, mọi division nonzero finite"
+      ],
+      "correct": 2,
+      "explanation": "Cần numeric contract nếu finite result bắt buộc."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Multiple values not container",
+      "question": "Vì sao không gọi return x, y là luôn một Array tuple object?",
+      "options": [
+        "Vì Lua không có tables",
+        "Vì hai values luôn mất",
+        "Vìreturn chỉ một value",
+        "Đó là multiple results được context điều chỉnh, khác table value"
+      ],
+      "correct": 3,
+      "explanation": "Caller/context ảnh hưởng arity."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Wrapper drops errors",
+      "question": "Wrapper chỉ return (divide(...)) có thể làm caller mất gì?",
+      "options": [
+        "Second result error text",
+        "Quotient đầu mọi lần",
+        "Function definition",
+        "Local name"
+      ],
+      "correct": 0,
+      "explanation": "Parentheses có thể đổi error propagation contract."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Callback interface",
+      "question": "Runner nhận function cần xác định gì?",
+      "options": [
+        "Mặc định callback chạy trên core riêng",
+        "Arguments, return arity, error/exception và side-effect contract",
+        "Chỉ type(function) là đủ mọi semantics",
+        "Coi callback không bao giờ raise"
+      ],
+      "correct": 1,
+      "explanation": "First-class function không tự tương thích protocol."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Protected call distinction",
+      "question": "pcall có thể giúp boundary nào khác convention nil, error?",
+      "options": [
+        "Tự cancel mọi I/O",
+        "Tự chuyển mọi result thành JSON",
+        "Bắt Lua error theo protected-call protocol khi được dùng đúng",
+        "Tự validate mọi data"
+      ],
+      "correct": 2,
+      "explanation": "Returned failure và raised error là hai channels khác nhau."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Pcall return arity",
+      "question": "Khi pcall thành công gọi hàm multires, cần lưu ý gì?",
+      "options": [
+        "Chỉ quotient không có flag",
+        "Luôn một String",
+        "Return values tự đảo theo alphabet",
+        "Có success boolean trước các results của hàm"
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm status flag với result đầu của divide."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Error object type",
+      "question": "Có nên giả mọi Lua error luôn là String để nối .. trực tiếp không?",
+      "options": [
+        "Không, error objects có thể kiểu khác; cần formatting/contract",
+        "Có, error luônString theo type system",
+        "Có, printép tất cảerrors thànhString trongvariable",
+        "Có, chỉnil lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Bắt lỗi không làm object tự thành message String."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Closure mutation ownership",
+      "question": "Expose nhiều closures cùng state cần xét gì?",
+      "options": [
+        "Không cần test vì upvalue private",
+        "Ai được mutate, invariants và lifetime của state",
+        "Mọi closure readonly tựđộng",
+        "Local nghĩa làatomic transaction"
+      ],
+      "correct": 1,
+      "explanation": "Encapsulation không tự bảo toàn domain."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Captured resource lifetime",
+      "question": "Closure còn giữ object/resource có thể ảnh hưởng gì?",
+      "options": [
+        "Tựghi object xuốngdisk",
+        "Biếnresource thànhconstant",
+        "Kéo dài lifetime/retention, cleanup cần ownership phù hợp",
+        "Tự giải phóng mọi thứ ngay factory return"
+      ],
+      "correct": 2,
+      "explanation": "Không dùng closure retention vô thức."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Closure snapshot alternative",
+      "question": "Muốn closure nhìn snapshot thay current mutable table cần gì?",
+      "options": [
+        "Chỉ gán local alias mới cùng table",
+        "Chỉ dùng keyword function",
+        "Chỉ đổi tên upvalue",
+        "Copy/immutable snapshot theo độ sâu contract"
+      ],
+      "correct": 3,
+      "explanation": "Reference alias không là snapshot."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Recursive local declaration",
+      "question": "Vì sao local function f(...) thường hữu ích cho recursion lexical?",
+      "options": [
+        "Binding local f có hiệu lực trong body theo declaration form",
+        "Vì mọi recursion dùng global",
+        "Vì function không có scope",
+        "Vì f tự memoize"
+      ],
+      "correct": 0,
+      "explanation": "Không suy recursion-safe binding từ một assignment khác mà chưa xét scope."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Rectangle domain validation",
+      "question": "Exercise rectangle cần quy định input nào?",
+      "options": [
+        "Luôn chấp nhận mọi NaN",
+        "Numeric/finite và độ dài không âm/dương theo contract",
+        "Mọi String tự là dimension",
+        "Chỉ width khác nil là đủ"
+      ],
+      "correct": 1,
+      "explanation": "Toán học formula đúng không tự validate domain."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Return order evolution",
+      "question": "Đổi API từ return perimeter, area sang area, perimeter cần làm gì?",
+      "options": [
+        "Chỉ đổi comment",
+        "Luôn tương thích vì đều number",
+        "Cập nhật callers/tests hoặc version contract rõ",
+        "Không vì names tự map"
+      ],
+      "correct": 2,
+      "explanation": "Positional protocol dễ bị sai im lặng."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Nil-aware result transport",
+      "question": "Đóng gói multires để truyền qua API/storage cần gì?",
+      "options": [
+        "Chỉ{...} rồi # là đủ mọi case",
+        "Tự để nil slots rồi JSON biết số lượng",
+        "Chỉ tostring(table)",
+        "Schema/count/sentinel hoặc object fields rõ cho absence"
+      ],
+      "correct": 3,
+      "explanation": "Các transport có data model khác multires."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Truthiness portability",
+      "question": "Khi port error/result convention giữa Lua và ngôn ngữ có falsy0/empty cần gì?",
+      "options": [
+        "Kiểm lại branch semantics theo từng language",
+        "Giả mọi if giống nhau",
+        "Đổi biến thành global",
+        "Chỉ dùng cùng tên err"
+      ],
+      "correct": 0,
+      "explanation": "0/empty String truthy trong Lua là điểm khác quan trọng."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Tests multires edge cases",
+      "question": "Case nào soi mất error/arity?",
+      "options": [
+        "Chỉ print prefix",
+        "Success, zero guard, missing/wrong-type args, parentheses và trailingnil",
+        "Chỉ divide(10,2)",
+        "Chỉtype(function)"
+      ],
+      "correct": 1,
+      "explanation": "Test theo boundary/context có thể thay results."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Tests closure behavior",
+      "question": "Closure counter cần test gì ngoài một call?",
+      "options": [
+        "Chỉ n khởi tạo 0",
+        "Chỉ code không có global",
+        "Repeated calls, separate factories và shared-upvalue contract",
+        "Chỉ factory trả function"
+      ],
+      "correct": 2,
+      "explanation": "Không suy state/lifetime correctness từ type đơn."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Protected application failure",
+      "question": "pcall(divide,10,0) thành công ở mức protected call nhưng divide trả nil, error. Caller cần phân biệt gì?",
+      "options": [
+        "Cờ true tự chứng minh thương số hợp lệ",
+        "pcall tự chuyển nil, error thành thương số 0",
+        "pcall luôn trả false khi hàm trả nil",
+        "Cờ pcall báo không raise; nil, error vẫn báo thất bại nghiệp vụ của divide"
+      ],
+      "correct": 3,
+      "explanation": "Returned-error convention và raised-error convention là hai tầng; wrapper phải giữ và kiểm cả hai."
+    }
+  ]
+}

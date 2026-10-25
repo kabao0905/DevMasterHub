@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "lua",
+  "level": "senior",
+  "lesson": "embedding",
+  "language": "vi",
+  "sourceHash": "3e322a9adff6b8a5dfd2039274f1dc0116b814c98f7f9124417b3afbdffab1b9",
+  "status": "approved",
+  "review": "Tự soạn theo ví dụ C đang được comment và Lua 5.4 Reference Manual: state, thư viện, virtual stack, protected call và ownership. Không biên dịch/chạy C API; không suy diễn hiệu năng, sandbox hay tương thích ABI từ chú thích.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Embedding purpose",
+      "question": "Nhúng Lua vào chương trình C thường nhằm mục đích gì?",
+      "options": [
+        "Cho phần mềm chủ thực thi kịch bản Lua",
+        "Chuyển mọi mã C thành HTML",
+        "Tự triển khai máy chủ mạng",
+        "Loại bỏ mọi cấp phát bộ nhớ"
+      ],
+      "correct": 0,
+      "explanation": "Host giữ ứng dụng chính và cung cấp môi trường chạy script."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Host language",
+      "question": "Ví dụ nhúng trong bài được viết theo cú pháp ngôn ngữ nào?",
+      "options": [
+        "Bash",
+        "C",
+        "SQL",
+        "Dart"
+      ],
+      "correct": 1,
+      "explanation": "Các khai báo lua_State và main thuộc ví dụ C."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "State handle",
+      "question": "lua_State *L đại diện cho gì trong giao tiếp C API?",
+      "options": [
+        "Một file ảnh của game",
+        "Số lượng người dùng trực tuyến",
+        "Con trỏ trạng thái Lua dùng khi gọi API",
+        "Chuỗi chứa toàn bộ mã nguồn Lua"
+      ],
+      "correct": 2,
+      "explanation": "L là handle để API biết đang thao tác trạng thái nào."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Create state",
+      "question": "Hàm nào trong mẫu tạo trạng thái Lua mới?",
+      "options": [
+        "lua_close",
+        "lua_pop",
+        "lua_gettop",
+        "luaL_newstate"
+      ],
+      "correct": 3,
+      "explanation": "luaL_newstate dùng bộ cấp phát mặc định dựa trên thư viện C."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Close state",
+      "question": "Hàm nào giải phóng trạng thái Lua khi host không dùng nữa?",
+      "options": [
+        "lua_close",
+        "luaL_openlibs",
+        "lua_pushnumber",
+        "lua_getglobal"
+      ],
+      "correct": 0,
+      "explanation": "Đóng state là bước kết thúc vòng đời của nó."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Open libraries",
+      "question": "luaL_openlibs(L) có vai trò gì?",
+      "options": [
+        "Chỉ tạo một biến local x",
+        "Mở các thư viện chuẩn Lua trong state",
+        "Biên dịch toàn bộ ứng dụng C",
+        "Tạo trình duyệt web"
+      ],
+      "correct": 1,
+      "explanation": "State mới và việc mở thư viện là hai bước riêng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "String execution helper",
+      "question": "luaL_dostring dùng để làm gì?",
+      "options": [
+        "Chỉ so sánh hai chuỗi C",
+        "Đóng tất cả state trong tiến trình",
+        "Nạp và chạy một chuỗi mã Lua",
+        "Ghi mã Lua thành ảnh PNG"
+      ],
+      "correct": 2,
+      "explanation": "Đây là helper kết hợp nạp chuỗi và gọi được bảo vệ."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Virtual stack",
+      "question": "Virtual stack trong Lua C API dùng chủ yếu để làm gì?",
+      "options": [
+        "Lưu toàn bộ pixel màn hình",
+        "Thay thế mọi biến C bằng file",
+        "Đếm số lần cài LuaRocks",
+        "Trao đổi giá trị giữa C và Lua"
+      ],
+      "correct": 3,
+      "explanation": "Host đẩy, đọc và lấy bớt các giá trị trên stack."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Stack top index",
+      "question": "Chỉ số -1 thường tham chiếu vị trí nào của stack hiện tại?",
+      "options": [
+        "Phần tử trên cùng",
+        "Phần tử dưới cùng trong mọi trường hợp",
+        "Một global tên minus",
+        "Vị trí luôn không hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ số âm tính tương đối từ đỉnh stack."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Stack first index",
+      "question": "Với stack không rỗng, chỉ số dương 1 chỉ gì?",
+      "options": [
+        "Số byte của toàn bộ state",
+        "Phần tử đầu tiên tính từ đáy",
+        "Phần tử mới đẩy cuối cùng trong mọi trường hợp",
+        "Ô đứng trước phần tử đầu"
+      ],
+      "correct": 1,
+      "explanation": "Lua C API dùng chỉ số dương bắt đầu từ 1."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Stack size query",
+      "question": "lua_gettop(L) trả về gì?",
+      "options": [
+        "Tên file đang chạy",
+        "Thời gian thực thi script",
+        "Chỉ số đỉnh, cũng là số phần tử trên stack",
+        "Dung lượng RAM toàn máy"
+      ],
+      "correct": 2,
+      "explanation": "Với stack rỗng, kết quả là 0."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Push number",
+      "question": "Thao tác lua_pushnumber(L, 2.5) làm gì?",
+      "options": [
+        "Xóa cả state",
+        "Mở thư viện io",
+        "Gọi hàm Lua tên 2.5",
+        "Đẩy một số Lua lên stack"
+      ],
+      "correct": 3,
+      "explanation": "Đẩy giá trị làm tăng số phần tử stack thêm một nếu thành công."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Pop values",
+      "question": "lua_pop(L, 1) trong trường hợp hợp lệ nhằm làm gì?",
+      "options": [
+        "Bỏ một giá trị ở đỉnh stack",
+        "Đóng một tiến trình hệ điều hành",
+        "Lấy giá trị rồi tự trả về cho C",
+        "Xóa global có tên 1"
+      ],
+      "correct": 0,
+      "explanation": "Pop thay đổi stack; muốn đọc giá trị phải dùng API đọc phù hợp."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Protected call purpose",
+      "question": "Protected call hữu ích vì sao?",
+      "options": [
+        "Tự mã hóa mã nguồn Lua",
+        "Cho host nhận trạng thái lỗi thay vì mặc định bỏ qua lỗi",
+        "Bảo đảm script luôn đúng nghiệp vụ",
+        "Tự hoàn tác mọi tác dụng phụ"
+      ],
+      "correct": 1,
+      "explanation": "Bắt lỗi thực thi không đồng nghĩa rollback hay sandbox."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "New state failure",
+      "question": "luaL_newstate có thể trả về giá trị nào khi cấp phát thất bại?",
+      "options": [
+        "Số người chơi hiện tại",
+        "Một state vẫn luôn hợp lệ",
+        "NULL",
+        "Một chuỗi lỗi thay cho con trỏ"
+      ],
+      "correct": 2,
+      "explanation": "Host phải kiểm tra con trỏ trước khi dùng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Core header role",
+      "question": "Header lua.h cung cấp nhóm khai báo nào?",
+      "options": [
+        "Chỉ API đồ họa LÖVE",
+        "Chỉ truy vấn SQL",
+        "Toàn bộ source của chương trình host",
+        "Lua C API cốt lõi"
+      ],
+      "correct": 3,
+      "explanation": "lauxlib.h và lualib.h bổ sung helper và khai báo thư viện."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Auxiliary header",
+      "question": "Các helper như luaL_newstate thuộc nhóm thư viện nào?",
+      "options": [
+        "Thư viện phụ trợ, thường khai báo qua lauxlib.h",
+        "Thư viện trình duyệt DOM",
+        "API riêng của Roblox",
+        "Thư viện kiểm thử của C++"
+      ],
+      "correct": 0,
+      "explanation": "Tiền tố luaL thường chỉ auxiliary library."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Source comments",
+      "question": "Các dòng bắt đầu bằng // trong ví dụ C hiện tại có được thực thi không?",
+      "options": [
+        "Chỉ dòng lua_close được thực thi",
+        "Không, chúng là comment",
+        "Có, chúng tạo thread riêng",
+        "Có, compiler luôn bỏ dấu //"
+      ],
+      "correct": 1,
+      "explanation": "Ví dụ đang mô tả luồng nhúng, chưa có main hoạt động."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Script message",
+      "question": "Nếu bỏ comment, cấu hình đúng và chạy thành công, chuỗi Lua trong mẫu làm gì?",
+      "options": [
+        "Gửi một HTTP request",
+        "Đọc toàn bộ ổ đĩa",
+        "In thông báo Lua chay tu ben trong C!",
+        "Tạo một cửa sổ đồ họa"
+      ],
+      "correct": 2,
+      "explanation": "Chuỗi chứa lời gọi print; điều kiện chạy thành công được nêu rõ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Exercise focus",
+      "question": "Bài tập yêu cầu tìm hiểu thêm thao tác nào?",
+      "options": [
+        "Huấn luyện mô hình AI từ đầu",
+        "Viết toàn bộ game engine",
+        "Đổi Lua thành ngôn ngữ truy vấn",
+        "Đẩy và lấy giá trị giữa C và Lua stack"
+      ],
+      "correct": 3,
+      "explanation": "Mẫu chưa trình bày các lệnh push/read cụ thể."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Lifecycle order",
+      "question": "Trình tự nào hợp lý cho một host đơn giản khi các bước thành công?",
+      "options": [
+        "Tạo state, mở thư viện cần thiết, chạy script, đóng state",
+        "Đóng state rồi chạy script trên cùng con trỏ",
+        "Chạy script trước khi tạo state",
+        "Mở thư viện trên con trỏ NULL"
+      ],
+      "correct": 0,
+      "explanation": "Mỗi bước cần state hợp lệ và quyền sở hữu rõ ràng."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Null guard placement",
+      "question": "Nên kiểm tra L==NULL ở đâu?",
+      "options": [
+        "Không cần vì kiểu con trỏ bảo đảm cấp phát",
+        "Ngay sau luaL_newstate và trước mọi thao tác dùng L",
+        "Chỉ sau lua_close",
+        "Chỉ sau khi script đã in xong"
+      ],
+      "correct": 1,
+      "explanation": "Nếu không tạo được state, không được tiếp tục mở thư viện trên nó."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Missing standard libraries",
+      "question": "Một state vừa tạo chưa mở thư viện có bảo đảm global print sẵn dùng không?",
+      "options": [
+        "Có, tên biến L tự tạo print",
+        "Có, lua_close sẽ bổ sung print",
+        "Không, phải mở thư viện chứa print theo chính sách host",
+        "Có, mọi thư viện tự được mở bởi C compiler"
+      ],
+      "correct": 2,
+      "explanation": "Tạo state không đồng nghĩa mở toàn bộ thư viện chuẩn."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Dostring success test",
+      "question": "Theo Lua 5.4, kiểm tra nào nhận diện luaL_dostring thành công?",
+      "options": [
+        "Giá trị trả về là con trỏ L",
+        "Giá trị trả về luôn âm",
+        "Giá trị trả về bằng số dòng script",
+        "Giá trị trả về bằng LUA_OK, tức 0"
+      ],
+      "correct": 3,
+      "explanation": "Helper trả 0 khi thành công, 1 khi có lỗi do macro dùng toán tử ||."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Dostring error detail",
+      "question": "Vì sao không nên dựa vào luaL_dostring để phân biệt mọi loại mã lỗi chi tiết?",
+      "options": [
+        "Macro dùng || nên lỗi được quy về 1; có thể tách load và pcall để giữ mã",
+        "Vì hàm không bao giờ báo lỗi",
+        "Vì mọi lỗi đều là lỗi mạng",
+        "Vì nó trả tên header thay cho số"
+      ],
+      "correct": 0,
+      "explanation": "LUA_ERRSYNTAX và các mã chi tiết cần lấy từ API nạp/gọi tương ứng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Error object",
+      "question": "Khi pcall gặp lỗi và không dùng message handler, host thường kiểm tra gì trên stack?",
+      "options": [
+        "Toàn bộ tham số đã biến thành JSON",
+        "Giá trị lỗi ở đỉnh stack",
+        "Một ảnh chụp màn hình tự tạo",
+        "Một biến C tự có tên exception"
+      ],
+      "correct": 1,
+      "explanation": "Đối tượng lỗi không nhất thiết là chuỗi."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Error display type",
+      "question": "Tại sao không nên mặc định mọi đối tượng lỗi Lua đều là chuỗi C hợp lệ?",
+      "options": [
+        "Vì mọi lỗi đều là số 0",
+        "Vì lua_close tự chuyển lỗi thành file",
+        "Lua có thể ném đối tượng lỗi với kiểu khác chuỗi",
+        "Vì Lua không có chuỗi"
+      ],
+      "correct": 2,
+      "explanation": "Đọc/chuyển đổi lỗi cần kiểm tra và xử lý giá trị không phải chuỗi."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Print return values",
+      "question": "Chuỗi chỉ gọi print trong mẫu có cung cấp kết quả số cho host không?",
+      "options": [
+        "Có, print luôn trả số ký tự đã in",
+        "Có, chuỗi tự trả về 1",
+        "Có, luaL_dostring trả thông báo như số",
+        "Không có lệnh return số; in ra không phải trả số"
+      ],
+      "correct": 3,
+      "explanation": "Status của API và kết quả trả về của script là hai thông tin khác nhau."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Script return result",
+      "question": "Với stack ban đầu rỗng và luaL_dostring(L, \"return 6*7\") thành công, stack nhận gì?",
+      "options": [
+        "Một kết quả số 42",
+        "Chỉ chuỗi return 6*7",
+        "Không thể có kết quả vì helper luôn bỏ hết",
+        "Một state mới"
+      ],
+      "correct": 0,
+      "explanation": "Macro gọi pcall với LUA_MULTRET nên giữ các kết quả script."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Multiple results",
+      "question": "Với stack ban đầu rỗng, script return 2,3 thành công qua luaL_dostring để lại bao nhiêu kết quả?",
+      "options": [
+        "Bốn",
+        "Hai",
+        "Không",
+        "Một chuỗi gộp 2,3"
+      ],
+      "correct": 1,
+      "explanation": "LUA_MULTRET cho phép giữ nhiều giá trị trả về."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Push sequence",
+      "question": "Stack rỗng, sau hai lệnh lua_pushinteger(L,10) và lua_pushinteger(L,20), chỉ số -1 chứa gì?",
+      "options": [
+        "0",
+        "NULL",
+        "20",
+        "10"
+      ],
+      "correct": 2,
+      "explanation": "Giá trị đẩy sau nằm trên cùng."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Positive access",
+      "question": "Cũng với stack [10,20] từ đáy lên, chỉ số 1 chứa gì?",
+      "options": [
+        "20",
+        "30",
+        "Một hàm main",
+        "10"
+      ],
+      "correct": 3,
+      "explanation": "Chỉ số dương tính từ đáy của stack hiện tại."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Pop size",
+      "question": "Stack đang có ba phần tử, lua_pop(L,2) hợp lệ để lại bao nhiêu?",
+      "options": [
+        "Một",
+        "Hai",
+        "Ba",
+        "Năm"
+      ],
+      "correct": 0,
+      "explanation": "Hai phần tử trên cùng bị bỏ."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Reading versus removing",
+      "question": "lua_tonumber(L,-1) tự lấy phần tử khỏi stack không?",
+      "options": [
+        "Chỉ tự pop nếu số dương",
+        "Không, đọc/chuyển đổi không tự pop",
+        "Có, luôn bỏ cả stack",
+        "Có, nó tự đóng state"
+      ],
+      "correct": 1,
+      "explanation": "Host cần quản lý cleanup stack riêng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Conversion success",
+      "question": "Vì sao lua_tonumberx với cờ isnum hữu ích khi dữ liệu có thể sai kiểu?",
+      "options": [
+        "Tự đặt giới hạn thời gian script",
+        "Loại bỏ việc kiểm tra stack index",
+        "Phân biệt chuyển đổi thất bại với giá trị số 0 hợp lệ",
+        "Tự kiểm tra mọi quy tắc nghiệp vụ"
+      ],
+      "correct": 2,
+      "explanation": "Giá trị 0 đơn thuần không đủ để phân biệt lỗi chuyển đổi."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Conversion policy",
+      "question": "Nếu API host chỉ chấp nhận kiểu number, chỉ dùng lua_tonumberx đã đủ loại chuỗi số chưa?",
+      "options": [
+        "Đủ vì mọi chuỗi đều bị cấm tự động",
+        "Đủ vì C không có string",
+        "Không thể phân biệt kiểu trong C API",
+        "Chưa, chuyển đổi có thể nhận chuỗi số; cần kiểm tra kiểu theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Chấp nhận coercion hay chỉ kiểu chính xác là quyết định của API."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Negative index shift",
+      "question": "Stack [10,20], sau khi push thêm 30, chỉ số -2 bây giờ chỉ gì?",
+      "options": [
+        "20",
+        "10",
+        "30",
+        "Vị trí 0"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ số âm phụ thuộc đỉnh hiện tại."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Stable index",
+      "question": "Khi sắp push thêm giá trị nhưng muốn giữ vị trí một table, cách nào phù hợp?",
+      "options": [
+        "Chuyển table thành tên file",
+        "Lấy chỉ số tuyệt đối bằng lua_absindex trước khi thay đổi đỉnh",
+        "Luôn giữ -1 dù stack thay đổi",
+        "Dùng địa chỉ biến C làm Lua index"
+      ],
+      "correct": 1,
+      "explanation": "Index tuyệt đối tránh việc số âm trỏ sang giá trị khác khi push."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Global transfer",
+      "question": "Để Lua đọc biến cấu hình do host cấp, cách nào hợp lý?",
+      "options": [
+        "Chỉ đặt cùng tên file",
+        "Chỉ gọi lua_close trước script",
+        "Push giá trị rồi dùng API gán global hoặc table môi trường phù hợp",
+        "Chỉ khai báo int trong C rồi Lua tự nhìn thấy"
+      ],
+      "correct": 2,
+      "explanation": "Không có chia sẻ tự động giữa biến C và tên Lua."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Setglobal stack effect",
+      "question": "lua_setglobal(L,\"score\") sử dụng giá trị nào khi gọi hợp lệ?",
+      "options": [
+        "Một biến C tên score tự tìm thấy",
+        "Mọi giá trị thành một table mới",
+        "Giá trị luôn là nil bất kể stack",
+        "Giá trị trên đỉnh và lấy nó khỏi stack"
+      ],
+      "correct": 3,
+      "explanation": "Host phải push giá trị muốn gán trước đó."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Getglobal stack effect",
+      "question": "lua_getglobal(L,\"score\") đưa kết quả ở đâu?",
+      "options": [
+        "Đẩy giá trị global lên stack",
+        "Trả trực tiếp một struct score của C",
+        "Ghi giá trị vào stdout duy nhất",
+        "Tự pop global khỏi môi trường Lua"
+      ],
+      "correct": 0,
+      "explanation": "API trả thông tin kiểu, còn giá trị cần đọc nằm trên stack."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Missing global",
+      "question": "Nếu môi trường thông thường không có global score, lua_getglobal đẩy gì?",
+      "options": [
+        "Một con trỏ tới main",
+        "nil",
+        "Một số 0 bắt buộc",
+        "Một chuỗi rỗng bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Thiếu tên không có nghĩa là số 0."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Callback registration",
+      "question": "Host muốn cho Lua gọi hàm C phù hợp C API cần làm gì?",
+      "options": [
+        "Đặt tên hàm kết thúc bằng Lua",
+        "Mở file header trong editor",
+        "Đăng ký/push C function vào môi trường Lua",
+        "Chỉ biên dịch hàm C bất kỳ là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Hàm phải có giao diện đúng và được đưa vào nơi script truy cập được."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "C callback signature",
+      "question": "Dạng chữ ký cơ bản của một lua_CFunction là gì?",
+      "options": [
+        "void f(void)",
+        "lua_State f(int x)",
+        "char f(FILE *L)",
+        "int f(lua_State *L)"
+      ],
+      "correct": 3,
+      "explanation": "Giá trị int trả về biểu thị số kết quả Lua mà callback đã đẩy."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Callback result count",
+      "question": "Callback C push một số rồi return 1 có ý nghĩa gì?",
+      "options": [
+        "Trả một kết quả Lua ở đỉnh stack",
+        "Trả mã lỗi 1 bắt buộc",
+        "Đóng một Lua state",
+        "Xóa một tham số host"
+      ],
+      "correct": 0,
+      "explanation": "Số kết quả khác status của luaL_dostring."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Callback arguments",
+      "question": "Trong lời gọi C function từ Lua, các đối số thường được truy cập thế nào?",
+      "options": [
+        "Tự xuất hiện thành tham số C riêng lẻ",
+        "Qua stack của lời gọi, bắt đầu ở chỉ số 1",
+        "Qua biến global cùng tên trong mã C",
+        "Chỉ đọc từ file tạm"
+      ],
+      "correct": 1,
+      "explanation": "Callback nhận L rồi dùng API để đọc các argument."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Argument checks",
+      "question": "luaL_checknumber thường hữu ích ở điểm nào của callback?",
+      "options": [
+        "Bảo đảm mọi số đều hữu hạn",
+        "Tự xác nhận người dùng đã đăng nhập",
+        "Kiểm tra/lấy đối số theo quy tắc chuyển đổi của API và báo lỗi nếu không hợp lệ",
+        "Chứng minh giá trị luôn không âm"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm tra kiểu/chuyển đổi không thay thế ràng buộc miền giá trị."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Source exercise gap",
+      "question": "Để đáp ứng bài tập trao đổi stack, ví dụ hiện tại thiếu phần nào?",
+      "options": [
+        "Một lời gọi print bất kỳ khác",
+        "Một comment dài hơn về tốc độ",
+        "Việc đổi tên L thành state",
+        "Các thao tác push/read và kiểm kết quả cụ thể"
+      ],
+      "correct": 3,
+      "explanation": "Mẫu mới mô tả tạo, mở thư viện, chạy chuỗi và đóng."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Link dependency",
+      "question": "Đã có header nhưng chưa link thư viện Lua phù hợp có bảo đảm tạo được executable không?",
+      "options": [
+        "Không, còn cần định nghĩa các hàm và cấu hình liên kết phù hợp",
+        "Có, mọi header chứa sẵn toàn bộ binary",
+        "Có, comment tự tải thư viện",
+        "Có, tên lua.h thay thế linker"
+      ],
+      "correct": 0,
+      "explanation": "Khai báo và mã máy của thư viện là hai phần khác nhau."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Header ABI match",
+      "question": "Vì sao cần ghép đúng header và thư viện Lua?",
+      "options": [
+        "Để tự mở thư viện đồ họa",
+        "Khác phiên bản/cấu hình có thể gây sai API hoặc ABI",
+        "Để mọi script chạy nhanh gấp đôi",
+        "Để bỏ mọi kiểm tra NULL"
+      ],
+      "correct": 1,
+      "explanation": "Tương thích nhị phân không được bảo đảm chỉ nhờ cùng tên hàm."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "C plus plus host",
+      "question": "Khi tích hợp trong C++, điểm nào cần kiểm tra theo gói Lua đang dùng?",
+      "options": [
+        "Mọi header Lua tự chứa cú pháp template",
+        "C++ không thể gọi thư viện C",
+        "C linkage của khai báo, header tiện ích và thư viện liên kết",
+        "Chỉ đổi phần mở rộng script thành cpp"
+      ],
+      "correct": 2,
+      "explanation": "Cách include/wrapper phụ thuộc bản đóng gói và cách biên dịch."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "State independence",
+      "question": "Hai state được tạo độc lập có tự chia sẻ cùng global score không?",
+      "options": [
+        "Có, mọi global Lua nằm trong OS registry",
+        "Có, chỉ cần cùng tên biến L",
+        "Có, luaL_newstate trả cùng môi trường bắt buộc",
+        "Không, chúng có môi trường và heap Lua riêng"
+      ],
+      "correct": 3,
+      "explanation": "Muốn chia sẻ phải có cơ chế host chủ động thiết kế."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Closed state pointer",
+      "question": "Sau lua_close(L), có được gọi lua_gettop(L) trên con trỏ cũ không?",
+      "options": [
+        "Không, state đã hết vòng đời",
+        "Có, nó luôn trả 0 an toàn",
+        "Có, gettop tự tái tạo state",
+        "Chỉ được nếu script không có lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Dùng state đã đóng là sử dụng tài nguyên không còn hợp lệ."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Double close",
+      "question": "Nếu hai thành phần cùng giữ L, rủi ro ownership nào cần tránh?",
+      "options": [
+        "Lua tự biến con trỏ thành shared_ptr",
+        "Cả hai đều đóng cùng state hoặc dùng sau khi bên kia đóng",
+        "Chỉ việc tên biến khác nhau",
+        "Luôn có hai bản sao state tự động"
+      ],
+      "correct": 1,
+      "explanation": "Host phải xác định ai sở hữu quyền đóng và ai chỉ mượn."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Open all libraries risk",
+      "question": "Mở toàn bộ thư viện chuẩn có thể cho script thêm khả năng nào?",
+      "options": [
+        "Chỉ được cộng hai số",
+        "Tự chạy trong sandbox tuyệt đối",
+        "Truy cập API I/O hoặc hệ điều hành tùy môi trường",
+        "Tự được bảo đảm không thể đọc file"
+      ],
+      "correct": 2,
+      "explanation": "luaL_openlibs không phải cơ chế cách ly mã không tin cậy."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Runtime error side effect",
+      "question": "Script sửa một table rồi phát sinh lỗi trong pcall; thay đổi trước lỗi có tự rollback không?",
+      "options": [
+        "Có, toàn bộ heap quay lại ảnh chụp",
+        "Có, mọi file cũng tự hoàn tác",
+        "Chỉ rollback nếu biến tên table",
+        "Không, protected call không phải transaction"
+      ],
+      "correct": 3,
+      "explanation": "Host cần thiết kế tính nguyên tử riêng nếu yêu cầu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Repeated result cleanup",
+      "question": "Host gọi nhiều chunk có return nhưng không dùng kết quả nên làm gì?",
+      "options": [
+        "Khôi phục stack về mức đã ghi nhận sau khi xử lý từng lần",
+        "Bỏ mặc vì return không bao giờ lên stack",
+        "Đóng thư viện chuẩn sau mỗi giá trị",
+        "Đổi tên global print"
+      ],
+      "correct": 0,
+      "explanation": "Giữ cân bằng stack tránh tích lũy kết quả ngoài ý muốn."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Restore stack base",
+      "question": "Vì sao lưu int base=lua_gettop(L) trước một thao tác hữu ích?",
+      "options": [
+        "Để biến mọi index âm thành 0",
+        "Để kiểm/khôi phục mức stack theo hợp đồng của thao tác",
+        "Để đo chính xác toàn bộ RAM của Lua",
+        "Để bảo vệ mọi file khỏi script"
+      ],
+      "correct": 1,
+      "explanation": "Stack discipline là một phần của giao diện host."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Loop limit",
+      "question": "Một script while true do end có được luaL_dostring tự đặt timeout không?",
+      "options": [
+        "Có, NULL guard giới hạn số vòng",
+        "Có, print tự ngắt vòng lặp",
+        "Không, cần chính sách giới hạn thực thi riêng của host",
+        "Có, mặc định dừng sau một frame"
+      ],
+      "correct": 2,
+      "explanation": "Protected call bắt lỗi nhưng không tự tạo hạn mức CPU."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Performance wording",
+      "question": "Nhúng Lua có tự chứng minh tối ưu tài nguyên cực đại như key point gợi ý không?",
+      "options": [
+        "Có, mọi C API call luôn nhanh hơn C thuần",
+        "Có, dùng con trỏ là đủ chứng minh",
+        "Có, mọi state dùng RAM bằng 0",
+        "Không, hiệu năng còn phụ thuộc workload, giao tiếp và đo đạc"
+      ],
+      "correct": 3,
+      "explanation": "Đây là nhận định cần đo và nêu điều kiện, không phải bảo đảm của API."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Complete minimal error flow",
+      "question": "Bản host tối thiểu cần sửa gì để không coi lỗi script là thành công im lặng?",
+      "options": [
+        "Kiểm NULL, kiểm status nạp/chạy, xử lý lỗi và đóng state trên các đường phù hợp",
+        "Chỉ thêm comment success sau luaL_dostring",
+        "Chỉ đổi chuỗi in thành OK",
+        "Chỉ bỏ lua_close để giữ lỗi"
+      ],
+      "correct": 0,
+      "explanation": "Tạo state, thực thi và cleanup có các điều kiện lỗi khác nhau."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Dostring macro diagnosis",
+      "question": "luaL_dostring báo 1 sau script sai cú pháp. Muốn giữ mã lỗi nạp cụ thể nên làm gì?",
+      "options": [
+        "Chạy lại cùng chuỗi vô hạn đến khi hết lỗi",
+        "Gọi luaL_loadstring riêng, kiểm mã, chỉ pcall khi nạp thành công",
+        "So sánh 1 với mọi mã lỗi và coi tất cả đều đúng",
+        "Đọc mã lỗi từ return của print"
+      ],
+      "correct": 1,
+      "explanation": "Macro dùng || làm mất phân biệt mã lỗi chi tiết ở giá trị trả về."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Pcall argument layout",
+      "question": "Để gọi Lua f(2,3) qua lua_pcall(L,2,1,0), stack phải chuẩn bị thế nào?",
+      "options": [
+        "Đặt kết quả dự kiến 5 thay cho f",
+        "Pop f trước khi pcall",
+        "Đặt f rồi hai đối số 2 và 3 theo thứ tự ở trên nó",
+        "Chỉ push hai số, không cần callable"
+      ],
+      "correct": 2,
+      "explanation": "Callable nằm ngay dưới nargs đối số; nresults yêu cầu số kết quả."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Pcall result replacement",
+      "question": "Stack chỉ có [f,2,3], f trả 5 và pcall thành công với hai đối số, một kết quả. Stack sau đó là gì?",
+      "options": [
+        "[f,2,3,5]",
+        "[2,3]",
+        "Rỗng dù yêu cầu một kết quả",
+        "[5]"
+      ],
+      "correct": 3,
+      "explanation": "Call lấy hàm và đối số đi, thay bằng kết quả theo hợp đồng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Negative index bug",
+      "question": "Host giữ table ở -1 rồi push key và value. Vì sao dùng lại -1 như index của table có thể sai?",
+      "options": [
+        "-1 bây giờ trỏ value; nên lấy index tuyệt đối trước các push",
+        "Vì mọi index âm đều bị cấm",
+        "Vì table tự biến thành string",
+        "Vì push luôn xóa table đầu stack"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ số âm bám đỉnh, không bám danh tính đối tượng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Return stack growth",
+      "question": "Một vòng host chạy chunk return 1,2 nhiều lần trên cùng state mà không dọn stack có vấn đề gì?",
+      "options": [
+        "Lua luôn đóng state sau chunk đầu",
+        "Kết quả có thể tích lũy trên stack; cần hợp đồng cleanup",
+        "Mọi lần tự thay toàn bộ stack về rỗng",
+        "Hai kết quả tự gộp thành một global"
+      ],
+      "correct": 1,
+      "explanation": "Helper giữ nhiều kết quả; host phải quyết định tiêu thụ hoặc loại bỏ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Number boundary contract",
+      "question": "Callback nhận damage từ Lua: vì sao checknumber rồi trừ HP chưa đủ để bảo đảm HP hợp lệ?",
+      "options": [
+        "Vì mọi number Lua đều là số nguyên dương",
+        "Vì HP là chuỗi nên không bao giờ bị sửa",
+        "Còn cần chính sách hữu hạn, không âm, giới hạn và lỗi miền giá trị",
+        "Vì checknumber tự bảo đảm damage trong 0..100"
+      ],
+      "correct": 2,
+      "explanation": "Kiểu số không bảo đảm điều kiện nghiệp vụ."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "String pointer lifetime",
+      "question": "Host lấy con trỏ từ lua_tolstring rồi muốn giữ lâu sau khi bỏ giá trị khỏi stack. Cách nào an toàn hơn?",
+      "options": [
+        "Luôn giữ con trỏ mãi vì GC không thu chuỗi",
+        "Gọi lua_close rồi mới dùng con trỏ",
+        "Ép con trỏ sang số để tránh vòng đời",
+        "Sao chép dữ liệu cần giữ vào bộ nhớ host hoặc giữ tham chiếu Lua phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Con trỏ vào dữ liệu do Lua quản lý không có vòng đời độc lập."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Embedded zero string",
+      "question": "Nếu cần trao đổi chuỗi nhị phân có byte 0, host nên dùng cách nào?",
+      "options": [
+        "API có độ dài như lua_pushlstring/lua_tolstring và giữ đúng length",
+        "Chỉ strlen rồi coi byte 0 là không thể có",
+        "Chỉ dùng tên biến toàn chữ hoa",
+        "Tự xóa mọi byte sau byte đầu tiên"
+      ],
+      "correct": 0,
+      "explanation": "Lua string có thể chứa byte 0; chuỗi C kết thúc bằng 0 không biểu diễn đủ độ dài."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Type error cleanup",
+      "question": "Một protected call lỗi để lại error object. Vì sao chỉ log mà không pop/khôi phục stack có thể gây lỗi sau này?",
+      "options": [
+        "Vì pcall cấm gọi lần thứ hai",
+        "Giá trị lỗi còn đó có thể làm lệch giả định stack và tích lũy qua nhiều lần",
+        "Vì mọi error object tự mở socket",
+        "Vì log tự đóng Lua state"
+      ],
+      "correct": 1,
+      "explanation": "Lỗi cũng có stack effect cần được xử lý."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Capability restriction",
+      "question": "Muốn cho người dùng cung cấp script, chỉ bỏ io khỏi một global có đủ chứng minh sandbox an toàn không?",
+      "options": [
+        "Có, C API không thể lộ tài nguyên host",
+        "Có, script local luôn đáng tin",
+        "Không, phải xét mọi capability được cấp, thư viện, host callbacks và hạn mức",
+        "Có, mọi đường truy cập file đều chỉ qua tên io"
+      ],
+      "correct": 2,
+      "explanation": "Một thay đổi tên không thay thế thiết kế môi trường hạn chế và kiểm tra ranh giới."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Host resource ownership",
+      "question": "Callback đưa một tài nguyên C vào Lua cần xác định thêm gì ngoài con trỏ?",
+      "options": [
+        "Chỉ màu hiển thị của con trỏ",
+        "Chỉ tên global có đủ dài không",
+        "Không cần vì Lua tự biết mọi malloc của C",
+        "Ai sở hữu, khi nào giải phóng và cách ngăn dùng sau giải phóng"
+      ],
+      "correct": 3,
+      "explanation": "GC Lua không tự suy ra ownership của tài nguyên ngoài."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Callback error propagation",
+      "question": "Vì sao cần thận trọng khi gọi API có thể raise lỗi Lua trong vùng C/C++ đang giữ tài nguyên?",
+      "options": [
+        "Cơ chế truyền lỗi có thể vượt qua luồng cleanup thông thường; phải thiết kế theo runtime/build",
+        "Vì mọi lỗi Lua luôn được C++ catch bắt tự động",
+        "Vì không API Lua nào có thể báo lỗi",
+        "Vì tài nguyên C luôn do Lua thu hồi"
+      ],
+      "correct": 0,
+      "explanation": "Không mặc định đường truyền lỗi tương đương exception và destructor trong mọi cấu hình."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Parallel access policy",
+      "question": "Hai OS thread cùng gọi trên một state không đồng bộ có được bảo đảm an toàn mặc định không?",
+      "options": [
+        "Có, protected call khóa mọi thread",
+        "Không, host cần chính sách đồng bộ hoặc state tách biệt phù hợp",
+        "Có, virtual stack là lock toàn cục tự động",
+        "Có, chỉ cần hai biến con trỏ khác tên"
+      ],
+      "correct": 1,
+      "explanation": "Coroutine và bảo vệ lỗi không phải cơ chế thread safety cho host."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Lua versus LuaJIT ABI",
+      "question": "Một binary link Lua 5.4 có nên đổi thư viện sang LuaJIT 2.1 chỉ vì cả hai có Lua C API không?",
+      "options": [
+        "Có, JIT xóa yêu cầu link",
+        "Có, đổi tên DLL là đủ",
+        "Không, phải kiểm tra API/ABI và cấu hình; LuaJIT có nền tương thích 5.1",
+        "Có, mọi phiên bản Lua dùng cùng ABI"
+      ],
+      "correct": 2,
+      "explanation": "Tên API giống nhau không bảo đảm tương thích nhị phân giữa các dòng runtime."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Build versus behavior",
+      "question": "Một chương trình nhúng đã link thành công có tự chứng minh script in đúng và cleanup đúng không?",
+      "options": [
+        "Có, linker hiểu toàn bộ mã Lua trong chuỗi",
+        "Có, include lua.h kiểm mọi script",
+        "Có, không còn khả năng lỗi runtime",
+        "Không, cần kiểm tra hành vi và các đường lỗi theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra biên dịch/liên kết và kiểm tra thực thi có vai trò riêng."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Version explicitness",
+      "question": "Tại sao tài liệu host nên ghi phiên bản Lua và cấu hình số/thư viện?",
+      "options": [
+        "Để giải thích API, ABI và khả năng của script trong môi trường thực tế",
+        "Để mọi CPU cho cùng thời gian chạy",
+        "Để bỏ hợp đồng dữ liệu",
+        "Để tránh mọi kiểm tra đầu vào"
+      ],
+      "correct": 0,
+      "explanation": "Không nên áp dụng một ví dụ của một phiên bản như bảo đảm cho mọi host."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "C failure handling",
+      "question": "Nếu newstate thất bại, cách xử lý nào đúng hướng?",
+      "options": [
+        "Tạo con trỏ giả trỏ tới một int",
+        "Báo lỗi cấp phát qua đường host và dừng các thao tác dùng state đó",
+        "Vẫn gọi openlibs vì nó có thể sửa NULL",
+        "Gọi dostring với L bất kỳ chưa khởi tạo"
+      ],
+      "correct": 1,
+      "explanation": "Không được tiếp tục sử dụng handle không hợp lệ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Stack exercise design",
+      "question": "Bài thực hành nào thể hiện rõ trao đổi dữ liệu C–Lua thay vì chỉ in thông báo?",
+      "options": [
+        "Chỉ đổi tên header trong comment",
+        "Chỉ mô tả rằng Lua rất nhanh",
+        "Push hai số, gọi hàm Lua trả tổng, kiểm status/kiểu/kết quả và khôi phục stack",
+        "Chỉ thêm một print giống hệt trong chuỗi"
+      ],
+      "correct": 2,
+      "explanation": "Luồng này kiểm tra cả chiều đưa vào, lấy ra và cleanup."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Embedding acceptance",
+      "question": "Để hoàn thiện ví dụ nhúng cho một ứng dụng cụ thể cần gì?",
+      "options": [
+        "Chỉ bỏ dấu // rồi mặc định mọi máy đều chạy",
+        "Chỉ dựa vào câu mô tả tối ưu tài nguyên",
+        "Chỉ thay Lua bằng Luau trong tiêu đề",
+        "Mã C hoạt động, build đúng thư viện, hợp đồng dữ liệu/lỗi và kiểm vòng đời tài nguyên"
+      ],
+      "correct": 3,
+      "explanation": "Comment minh họa là điểm bắt đầu, không thay thế cấu hình và kiểm hành vi của host."
+    }
+  ]
+}

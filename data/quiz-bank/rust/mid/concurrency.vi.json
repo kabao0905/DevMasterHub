@@ -1,0 +1,1157 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "mid",
+  "lesson": "concurrency",
+  "language": "vi",
+  "sourceHash": "0073649ae767ba42f93b75bf5da98fb9284daeb4de0e3ad795e1f83e421fa613",
+  "status": "approved",
+  "review": "Tự soạn không API. Source/stdlib contracts review và selected finite rustc1.93.1 fixtures riêng,tối đa2threads mỗi process và join đầy đủ. Không ép source message order,không chạy deadlocks/races. Arc không tự mutex payload,Send/Sync không proof logic/deadlock/liveness. Std Mutex poison advisory,controlled child panic giữ stderr và join evidence riêng. Rayon chỉ comment/source-only;không network hoặc dependencies.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Thread spawn",
+      "question": "std::thread::spawn tạo gì?",
+      "options": [
+        "Một thread chạy closure và trả JoinHandle.",
+        "Một async task Tokio bắt buộc.",
+        "Một database transaction.",
+        "Một mutex luôn locked."
+      ],
+      "correct": 0,
+      "explanation": "OS thread khác async task scheduling."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Join purpose",
+      "question": "handle.join() dùng để làm gì?",
+      "options": [
+        "Tự cancel thread ngay.",
+        "Chờ thread kết thúc và nhận result/panic payload theo contract.",
+        "Tự retry closure.",
+        "Tự unlock mọi mutex ở process khác."
+      ],
+      "correct": 1,
+      "explanation": "Join không đồng nghĩa forced termination."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Move closure",
+      "question": "move trong source thread closure nhằm gì?",
+      "options": [
+        "Tự chuyển Rc thành Arc.",
+        "Tự bảo đảm mọi computation thành công.",
+        "Capture các values theo ownership vào closure phù hợp.",
+        "Tự deep clone toàn bộ dữ liệu."
+      ],
+      "correct": 2,
+      "explanation": "Thread bounds/lifetimes vẫn được compiler kiểm tra."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Mpsc channel",
+      "question": "std::sync::mpsc::channel() trả gì?",
+      "options": [
+        "Hai receivers độc lập.",
+        "Một mutex và guard.",
+        "Một Tokio runtime.",
+        "Sender và Receiver cho channel không giới hạn capacity cấu hình theo API đó."
+      ],
+      "correct": 3,
+      "explanation": "Unbounded asynchronous channel vẫn có memory/resource limits thực tế."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Multiple producers",
+      "question": "Clone sender trong source để làm gì?",
+      "options": [
+        "Cho nhiều threads gửi vào cùng receiver.",
+        "Deep clone mọi messages đã xếp hàng.",
+        "Tạo receiver mới cho mỗi thread.",
+        "Tự broadcast mỗi message tới mọi user."
+      ],
+      "correct": 0,
+      "explanation": "Mpsc là multiple producers,single consumer theo API này."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Send return",
+      "question": "tx.send(value) trả kết quả thể hiện gì?",
+      "options": [
+        "Một JoinHandle.",
+        "Việc gửi thành công hoặc lỗi khi receiver không còn theo contract.",
+        "Đã xử lý nghiệp vụ durable xong ở receiver chắc chắn.",
+        "Một HTTP response."
+      ],
+      "correct": 1,
+      "explanation": "Delivery vào channel khác application acknowledgement."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Receiver loop",
+      "question": "for msg in rx trong source tiếp tục nhận tới khi nào?",
+      "options": [
+        "Đúng một message.",
+        "Tới lúc thread đầu tiên được spawn.",
+        "Channel hết messages và mọi senders đã drop.",
+        "Buffer tạm rỗng dù sender còn sống."
+      ],
+      "correct": 2,
+      "explanation": "Giữ sender không dùng vẫn có thể giữ channel mở."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Drop original sender",
+      "question": "Vì sao source gọi drop(tx) sau loop spawn?",
+      "options": [
+        "Tự kill mọi workers.",
+        "Xóa mọi messages trong queue.",
+        "Tự sort messages.",
+        "Không giữ sender gốc sống làm receiver iteration chờ sau khi worker senders đã drop."
+      ],
+      "correct": 3,
+      "explanation": "Không có close method như Go trên channel này;vòng đời handles quan trọng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Arc purpose",
+      "question": "Arc<T> hỗ trợ gì?",
+      "options": [
+        "Shared ownership với atomic reference counting khi type bounds phù hợp.",
+        "Tự khóa mọi mutation bên trong T.",
+        "Một durable database replication protocol.",
+        "Một thread riêng mỗi clone."
+      ],
+      "correct": 0,
+      "explanation": "Ownership carrier khác data synchronization."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Mutex purpose",
+      "question": "Mutex<T> trong counter dùng để làm gì?",
+      "options": [
+        "Tự lưu counter xuống disk.",
+        "Bảo vệ shared counter bằng exclusive access.",
+        "Tự tạo mười threads.",
+        "Tự serialize mọi HTTP requests toàn cluster."
+      ],
+      "correct": 1,
+      "explanation": "Các truy cập phải tuân cùng lock/invariant."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Lock guard",
+      "question": "counter.lock() thành công cho gì?",
+      "options": [
+        "Một raw pointer luôn static.",
+        "Một sender channel.",
+        "MutexGuard để truy cập dữ liệu trong khi lock được giữ.",
+        "Owned clone của counter."
+      ],
+      "correct": 2,
+      "explanation": "Guard Drop thường unlock theo contract."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Mutable guard",
+      "question": "Vì sao source viết let mut num=counter.lock().unwrap()?",
+      "options": [
+        "Để tăng reference count của Arc.",
+        "Để tự bỏ mọi poisoning errors.",
+        "Để tạo một atomic integer kiểu mới.",
+        "Cần mutable access qua guard để thực hiện *num+=1."
+      ],
+      "correct": 3,
+      "explanation": "Binding guard mutable khác việc Mutex object có mut binding hay không."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Guard dereference",
+      "question": "*num trong counter update trỏ tới gì?",
+      "options": [
+        "Giá trị integer bên trong Mutex qua guard.",
+        "Số threads hiện tại.",
+        "Arc strong count.",
+        "Một message queue."
+      ],
+      "correct": 0,
+      "explanation": "Không cộng trực tiếp vào mutex metadata."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Counter thread count",
+      "question": "Source khởi bao nhiêu threads cho counter section?",
+      "options": [
+        "Một thread cho mọi request không giới hạn.",
+        "10.",
+        "5.",
+        "2."
+      ],
+      "correct": 1,
+      "explanation": "Loop0..10 tạo mười closure tasks dạng OS threads."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Counter final source",
+      "question": "Nếu mười threads đều thành công như source,counter cuối bằng gì?",
+      "options": [
+        "0.",
+        "Thứ tự scheduling làm số luôn ngẫu nhiên.",
+        "10.",
+        "5."
+      ],
+      "correct": 2,
+      "explanation": "Lock bảo vệ mỗi increment và main join trước khi đọc."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Message count source",
+      "question": "Source channel section tạo bao nhiêu message sends dự định?",
+      "options": [
+        "10.",
+        "1.",
+        "100.",
+        "5."
+      ],
+      "correct": 3,
+      "explanation": "Loop i trong0..5 tạo năm senders/threads."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Send trait",
+      "question": "Send liên quan capability nào?",
+      "options": [
+        "Chuyển ownership của type qua thread boundary theo contract.",
+        "Gửi mọi kiểu qua HTTP.",
+        "Tự gọi channel.send cho mọi value.",
+        "Tự làm type immutable."
+      ],
+      "correct": 0,
+      "explanation": "Auto traits có rules và có thể được các unsafe implementations bảo đảm khi đúng."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Sync trait",
+      "question": "Sync cơ bản liên quan điều gì?",
+      "options": [
+        "Mọi values tự Copy.",
+        "Shared reference tới type có thể được chia sẻ qua threads theo contract.",
+        "Mọi method tự trở thành async.",
+        "Mọi writes tự atomic."
+      ],
+      "correct": 1,
+      "explanation": "Không đồng nhất Sync với tùy ý mutation không khóa."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Rayon source",
+      "question": "Rayon đoạn cuối đang được dùng thực thi trong source chưa?",
+      "options": [
+        "Có;mọi iterator tự parallel.",
+        "Chỉ khi sum lớn.",
+        "Chưa;chỉ các dòng comment.",
+        "Có;std thread tự bật Rayon."
+      ],
+      "correct": 2,
+      "explanation": "Không gọi source đã có Rayon integration."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Safety scope",
+      "question": "Send/Sync và ownership checks có tự chứng minh không deadlock không?",
+      "options": [
+        "Có;compile pass là proof mọi liveness.",
+        "Chỉ nếu dùng Arc.",
+        "Chỉ nếu không có unsafe.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Memory/thread-safety boundaries khác lock ordering và logic correctness."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Join returns value",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let h=std::thread::spawn(||7);println!(\"{}\",h.join().unwrap());}\n",
+      "options": [
+        "7.",
+        "0.",
+        "Một thread id cố định.",
+        "Join luôn trả unit bất kể closure."
+      ],
+      "correct": 0,
+      "explanation": "Join lấy return value của thread khi không panic."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Move String into thread",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let s=String::from(\"hi\");let h=std::thread::spawn(move||s.len());println!(\"{}\",h.join().unwrap());}\n",
+      "options": [
+        "Một pointer tới String.",
+        "2.",
+        "0.",
+        "Compiler cấm String Send."
+      ],
+      "correct": 1,
+      "explanation": "Thread sở hữu captured String rồi trả len."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Unscoped borrow too short",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let s=String::from(\"hi\");let h=std::thread::spawn(||println!(\"{s}\"));h.join().unwrap();}\n",
+      "options": [
+        "Có;mọi String tự static.",
+        "Chỉ panic runtime.",
+        "Không;spawn thông thường đòi closure có lifetime phù hợp static,không borrow local như vậy.",
+        "Có;join phía sau tự đổi signature spawn."
+      ],
+      "correct": 2,
+      "explanation": "Có thể move ownership hoặc dùng scoped thread phù hợp."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Scoped thread borrow",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let s=String::from(\"hi\");std::thread::scope(|scope|{scope.spawn(||println!(\"{s}\"));});}\n",
+      "options": [
+        "Compiler cấm mọi local borrow vào thread.",
+        "Một String clone bắt buộc.",
+        "Scope tự không chạy closure.",
+        "hi."
+      ],
+      "correct": 3,
+      "explanation": "Scope chờ scoped thread xong trước khi local owner có thể hết lifetime."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Channel roundtrip in memory",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::channel();tx.send(42).unwrap();println!(\"{}\",rx.recv().unwrap());}\n",
+      "options": [
+        "42.",
+        "0.",
+        "Send bắt buộc block mãi vì chưa có thread receiver.",
+        "Channel tự mở socket."
+      ],
+      "correct": 0,
+      "explanation": "Unbounded channel có thể nhận message được send trước recv trong cùng thread."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Buffered messages after sender drop",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::channel();tx.send(1).unwrap();tx.send(2).unwrap();drop(tx);println!(\"{} {} {}\",rx.recv().unwrap(),rx.recv().unwrap(),rx.recv().is_err());}\n",
+      "options": [
+        "Drop sender xóa mọi queued messages.",
+        "1 2 true.",
+        "2 1 true.",
+        "0 0 false."
+      ],
+      "correct": 1,
+      "explanation": "Receiver drain messages trước khi recv báo disconnection."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Empty connected try receive",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::channel::<i32>();println!(\"{}\",matches!(rx.try_recv(),Err(std::sync::mpsc::TryRecvError::Empty)));drop(tx);}\n",
+      "options": [
+        "TryRecv luôn block.",
+        "Channel mới luôn disconnected.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Sender vẫn sống nên empty khác disconnected."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Disconnected try receive",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::channel::<i32>();drop(tx);println!(\"{}\",matches!(rx.try_recv(),Err(std::sync::mpsc::TryRecvError::Disconnected)));}\n",
+      "options": [
+        "false.",
+        "TryRecv tự tạo sender mới.",
+        "Panic vì all senders drop.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Queue rỗng và last sender đã drop."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Recover failed send payload",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::channel();drop(rx);let error=tx.send(7).unwrap_err();println!(\"{}\",error.0);}\n",
+      "options": [
+        "7.",
+        "0.",
+        "SendError không giữ payload theo API.",
+        "Panic trước khi trả SendError."
+      ],
+      "correct": 0,
+      "explanation": "SendError<T> cho phép lấy value chưa gửi khi receiver mất."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Concurrent messages sorted",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::channel();let mut hs=Vec::new();for n in [1,2]{let tx=tx.clone();hs.push(std::thread::spawn(move||tx.send(n).unwrap()));}drop(tx);for h in hs{h.join().unwrap();}let mut values:Vec<_>=rx.into_iter().collect();values.sort();println!(\"{values:?}\");}\n",
+      "options": [
+        "Compiler cấm Sender clone.",
+        "[1, 2].",
+        "Luôn [2, 1] dù sort.",
+        "Một thứ tự ngẫu nhiên sau sort."
+      ],
+      "correct": 1,
+      "explanation": "Fixture join hai producers rồi sort dữ liệu nhận,không khẳng định source message order."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Finite mutex counter",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let n=std::sync::Arc::new(std::sync::Mutex::new(0));let mut hs=Vec::new();for _ in 0..2{let n=n.clone();hs.push(std::thread::spawn(move||{*n.lock().unwrap()+=1;}));}for h in hs{h.join().unwrap();}println!(\"{}\",*n.lock().unwrap());}\n",
+      "options": [
+        "0.",
+        "Mọi increments bị race bất kể locks.",
+        "2.",
+        "1."
+      ],
+      "correct": 2,
+      "explanation": "Hai threads cùng mutex và đều được join trước read."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Try lock nonblocking conflict",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mutex=std::sync::Mutex::new(1);let guard=mutex.lock().unwrap();println!(\"{}\",matches!(mutex.try_lock(),Err(std::sync::TryLockError::WouldBlock)));drop(guard);}\n",
+      "options": [
+        "false.",
+        "TryLock tự unlock guard hiện tại.",
+        "TryLock luôn block như lock.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Mutex mới không poisoned,guard đang giữ nên try_lock báo WouldBlock."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Guard scoped release",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mutex=std::sync::Mutex::new(1);{let mut guard=mutex.lock().unwrap();*guard=2;}println!(\"{}\",*mutex.lock().unwrap());}\n",
+      "options": [
+        "2.",
+        "1.",
+        "Deadlock vì guard không bao giờ unlock.",
+        "Compiler cấm lock hai lần tuần tự."
+      ],
+      "correct": 0,
+      "explanation": "Guard trong block drop trước lock lần sau."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Rc not thread ownership carrier",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let rc=std::rc::Rc::new(String::from(\"hi\"));let h=std::thread::spawn(move||println!(\"{rc}\"));h.join().unwrap();}\n",
+      "options": [
+        "Chỉ runtime error.",
+        "Không;Rc<String> không Send cho spawn này.",
+        "Có;String Send làm mọi Rc<String> Send.",
+        "Có;Rc clone tự atomic khi cần."
+      ],
+      "correct": 1,
+      "explanation": "Chọn carrier phù hợp;không xóa type bounds."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Arc does not make RefCell Sync",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let value=std::sync::Arc::new(std::cell::RefCell::new(1));let h=std::thread::spawn(move||*value.borrow_mut()+=1);h.join().unwrap();}\n",
+      "options": [
+        "Có;move tắt Sync requirement.",
+        "Chỉ panic runtime.",
+        "Không;Arc<RefCell<i32>> không đáp ứng thread bounds ở đây.",
+        "Có;Arc tự mutex RefCell."
+      ],
+      "correct": 2,
+      "explanation": "Atomic reference count khác payload synchronization."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Atomic finite counter",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let n=std::sync::Arc::new(std::sync::atomic::AtomicI32::new(0));let mut hs=Vec::new();for _ in 0..2{let n=n.clone();hs.push(std::thread::spawn(move||{n.fetch_add(1,std::sync::atomic::Ordering::SeqCst);}));}for h in hs{h.join().unwrap();}println!(\"{}\",n.load(std::sync::atomic::Ordering::SeqCst));}\n",
+      "options": [
+        "1.",
+        "0.",
+        "Atomic integer bắt buộc cần mutex nữa cho một Add.",
+        "2."
+      ],
+      "correct": 3,
+      "explanation": "Hai atomic increments và join trước Load;không suy toàn workflow transaction."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Guard needs mutable binding",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let m=std::sync::Mutex::new(1);let guard=m.lock().unwrap();*guard+=1;}\n",
+      "options": [
+        "Không;guard binding cần mut cho mutation qua DerefMut trong code này.",
+        "Có;mọi MutexGuard tự mutable binding.",
+        "Có;Arc tự thêm mut.",
+        "Chỉ runtime poison."
+      ],
+      "correct": 0,
+      "explanation": "Lock success không xóa binding mutability rules."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Unique Arc data access",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut a=std::sync::Arc::new(1);let b=a.clone();let shared=std::sync::Arc::get_mut(&mut a).is_none();drop(b);println!(\"{shared} {}\",std::sync::Arc::get_mut(&mut a).is_some());}\n",
+      "options": [
+        "get_mut luôn clone payload.",
+        "true true.",
+        "false true.",
+        "true false."
+      ],
+      "correct": 1,
+      "explanation": "Hai owners khiến get_mut None;drop extra owner cho unique access khi không có Weak ở đây."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Arc clone identity",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a=std::sync::Arc::new(vec![1]);let b=a.clone();println!(\"{}\",std::sync::Arc::ptr_eq(&a,&b));}\n",
+      "options": [
+        "Clone luôn tạo allocation mới.",
+        "ptr_eq chỉ so integer value.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Hai handles trỏ cùng allocation."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "RwLock read write phases",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let value=std::sync::RwLock::new(0);{*value.write().unwrap()=7;}println!(\"{}\",*value.read().unwrap());}\n",
+      "options": [
+        "0.",
+        "Compiler cấm RwLock trong main.",
+        "Một thread id.",
+        "7."
+      ],
+      "correct": 3,
+      "explanation": "Write guard drop trước read guard trong fixture tuần tự."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Source message ordering",
+      "question": "Năm messages từ năm threads nguồn có thứ tự số i cố định không?",
+      "options": [
+        "Không;cross-thread scheduling có thể thay thứ tự nhận.",
+        "Có;spawn order là completion order tuyệt đối.",
+        "Có;format! tự sort messages.",
+        "Chỉ nếu IDs dưới10."
+      ],
+      "correct": 0,
+      "explanation": "Không hardcode source output như Message0..4 luôn đúng thứ tự."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Per producer order",
+      "question": "Một sender gửi A rồi B tuần tự có nên bị hiểu như cùng nghĩa với nhiều producers hoàn tất theo ID không?",
+      "options": [
+        "Chỉ cần receiver loop.",
+        "Không;per-producer send order khác ordering giữa producers độc lập.",
+        "Có;mọi producers tự round-robin theo ID.",
+        "Chỉ cần Arc."
+      ],
+      "correct": 1,
+      "explanation": "Các guarantees cần được đọc đúng ranh giới của operations."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Missing drop sender",
+      "question": "Nếu main giữ tx gốc sống rồi đợi for msg in rx kết thúc sau worker sends thì có thể gì?",
+      "options": [
+        "Tự panic vì tx unused.",
+        "Source tự join mọi producers qua tx.",
+        "Receiver chờ thêm messages vì channel còn sender,chưa biết stream đã hết.",
+        "Queue tự đóng khi tạm rỗng."
+      ],
+      "correct": 2,
+      "explanation": "Phân tích tĩnh,không chạy hang để đoán đáp án."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Drain versus joining",
+      "question": "Đọc đủ messages có tự tương đương join từng producer và quan sát thread return không?",
+      "options": [
+        "Có;send luôn là statement cuối mọi closure.",
+        "Có;receiver tự join toàn process.",
+        "Chỉ nếu message String.",
+        "Không;message receipt và thread completion là hai events khác nhau."
+      ],
+      "correct": 3,
+      "explanation": "Source first section không lưu handles;fixture xác nhận lifecycle bằng joins riêng."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Join unwrap panic",
+      "question": "Nếu thread counter panic,handle.join().unwrap trong source có thể làm gì?",
+      "options": [
+        "Panic ở main khi join Result là Err.",
+        "Tự retry increment.",
+        "Tự biến panic thành counter default.",
+        "Chỉ in warning."
+      ],
+      "correct": 0,
+      "explanation": "Task/thread panic policy cần được thiết kế nếu không muốn demo unwrap."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Poison meaning",
+      "question": "Std Mutex poisoning thường cảnh báo điều gì?",
+      "options": [
+        "Thread đã được restart.",
+        "Panic khi giữ lock có thể khiến protected invariant không còn được tin cậy.",
+        "Mutex object chắc bị memory corruption theo mọi trường hợp.",
+        "Mọi query DB đã rollback."
+      ],
+      "correct": 1,
+      "explanation": "Poison là advisory mechanism,không proof dữ liệu luôn sai hoặc luôn đúng."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Recover poisoned data",
+      "question": "PoisonError::into_inner cho phép gì?",
+      "options": [
+        "Tự retry thread.",
+        "Tự clear mọi business errors.",
+        "Lấy guard/data để caller kiểm tra/repair theo policy.",
+        "Tự chứng minh invariant đã được sửa."
+      ],
+      "correct": 2,
+      "explanation": "Không chỉ unwrap poison rồi báo mọi state safe khi chưa xét invariant."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Mutex versus atomic",
+      "question": "Atomic integer có tự làm nhiều field updates thành transaction không?",
+      "options": [
+        "Có;mọi atomic Add khóa toàn object graph.",
+        "Chỉ nếu SeqCst.",
+        "Chỉ nếu trong Arc.",
+        "Không;cần design synchronization/invariants phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Individual atomic operations không thay mọi compound business invariant."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Shared read trait bound",
+      "question": "Arc<T> có tự cho phép mutate T qua shared reference tùy ý không?",
+      "options": [
+        "Không;cần interior mutability/synchronization đúng contract.",
+        "Có;reference count atomic nghĩa mọi payload writes atomic.",
+        "Chỉ với HashMap.",
+        "Chỉ với String."
+      ],
+      "correct": 0,
+      "explanation": "Carrier ownership không là mutex."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Mutex guard scope",
+      "question": "Giữ MutexGuard qua I/O chậm có rủi ro gì?",
+      "options": [
+        "Tự tăng throughput vô hạn.",
+        "Tăng contention/latency và khó liveness,nên giới hạn critical section theo invariant.",
+        "Tự làm I/O không lỗi.",
+        "Tự unlock khi gọi mọi syscall."
+      ],
+      "correct": 1,
+      "explanation": "Không bỏ khóa tùy tiện nếu phá invariant dữ liệu."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Lock ordering",
+      "question": "Hai threads giữ khóa A/B theo thứ tự đối nhau có thể deadlock dù code safe Rust không?",
+      "options": [
+        "Chỉ nếu unsafe.",
+        "Chỉ nếu Arc count0.",
+        "Có.",
+        "Không;borrow checker tự sửa lock order."
+      ],
+      "correct": 2,
+      "explanation": "Không chạy deadlock fixtures;kiểm tra order và dependency design."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Unbounded queue scope",
+      "question": "mpsc::channel unbounded có nghĩa ứng dụng có memory vô hạn không?",
+      "options": [
+        "Có;channel tự spill durable ra disk.",
+        "Chỉ nếu ItemString.",
+        "Chỉ cần nhiều producers.",
+        "Không;backlog có thể tăng memory và latency khi consumer chậm."
+      ],
+      "correct": 3,
+      "explanation": "Bound admission/queue và overload policy khi workload cần."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Bounded channel",
+      "question": "sync_channel(capacity) có thể hỗ trợ điều gì khác unbounded channel?",
+      "options": [
+        "Giới hạn buffer và backpressure theo send/try_send contract.",
+        "Tự làm application exactly-once.",
+        "Tự sort messages.",
+        "Tự retry mọi producer errors."
+      ],
+      "correct": 0,
+      "explanation": "Capacity không tự là throughput guarantee."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Sync channel zero",
+      "question": "sync_channel(0) thường mang semantics gì?",
+      "options": [
+        "Tự cấm mọi communication.",
+        "Rendezvous giữa send và receive tương ứng.",
+        "Queue vô hạn.",
+        "Một slot default."
+      ],
+      "correct": 1,
+      "explanation": "Đừng send blocking trên cùng thread rồi chờ recv phía sau theo thiết kế gây kẹt."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Receiver dropped",
+      "question": "Nếu receiver không còn,source sender send(...).unwrap có thể gì?",
+      "options": [
+        "Tự persist message.",
+        "Compiler chắc chắn phát hiện mọi runtime drop.",
+        "Panic do SendError nếu không xử lý.",
+        "Tự tạo receiver thay thế."
+      ],
+      "correct": 2,
+      "explanation": "Return error không tự được application xử lý chỉ vì dùng Result."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Thread lifetime",
+      "question": "Drop JoinHandle của std thread có tự hủy và join thread không?",
+      "options": [
+        "Có;Drop luôn forced kill.",
+        "Chỉ nếu closure move.",
+        "Chỉ nếu thread trả Result.",
+        "Không;thread bị detach theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Giữ handles/join protocol nếu cần xác nhận completion."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Scoped automatic join",
+      "question": "std::thread::scope đảm bảo gì về spawned scoped threads trước khi scope return bình thường?",
+      "options": [
+        "Các threads trong scope được join theo contract,nên có thể borrow dữ liệu phạm vi môi trường phù hợp.",
+        "Mọi thread toàn process tự được join.",
+        "Tự bỏ mọi panic.",
+        "Tự chạy parallel nhanh gấp2."
+      ],
+      "correct": 0,
+      "explanation": "Scoped lifetime support không là global concurrency correctness proof."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Mutex thread bounds",
+      "question": "Mutex<T> có cần T:Sync trong mọi trường hợp để Mutex<T> Sync không?",
+      "options": [
+        "Chỉ nếu guard mutable.",
+        "Không;stdlib contract dùng T:Send cho case phù hợp,bởi access được mutual exclusion.",
+        "Có;mọi wrapper cần y hệt auto traits của T.",
+        "Không bao giờ cần bất kỳ Send bound nào."
+      ],
+      "correct": 1,
+      "explanation": "Không suy wrapper auto traits theo tên hoặc mẹo không chính xác."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Rayon comment evidence",
+      "question": "Có thể gọi source đã benchmark Rayon million items chưa?",
+      "options": [
+        "Chỉ cần import stdThread.",
+        "Chỉ cần Counter10.",
+        "Không;đoạn đó comment và chưa có kết quả đo.",
+        "Có;comment into_par_iter tự được compiler chạy."
+      ],
+      "correct": 2,
+      "explanation": "Semantic std thread fixtures khác external parallel framework performance."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Concurrent cache exercise",
+      "question": "Arc<RwLock<HashMap>> trong bài tập có tự là cache đầy đủ TTL/eviction/bounds chưa?",
+      "options": [
+        "Có;RwLock tự tạo TTL.",
+        "Có;HashMap tự durable LRU.",
+        "Chỉ cần Arc clone.",
+        "Không;cần thêm policy và implementation theo yêu cầu."
+      ],
+      "correct": 3,
+      "explanation": "Shared storage primitive khác feature cache hoàn chỉnh."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Controlled panic and poison",
+      "question": "Với panic=unwind,chương trình in gì ở stdout?",
+      "code": "\nfn main(){let m=std::sync::Arc::new(std::sync::Mutex::new(1));let c=m.clone();let h=std::thread::spawn(move||{let _guard=c.lock().unwrap();panic!(\"quiz poison\");});let joined=h.join().is_err();let poisoned=m.is_poisoned();let recovered=match m.lock(){Ok(g)=>*g,Err(e)=>*e.into_inner()};println!(\"{joined} {poisoned} {recovered}\");}\n",
+      "options": [
+        "true true 1.",
+        "false false 1.",
+        "true false 0.",
+        "Main luôn abort trước khi print."
+      ],
+      "correct": 0,
+      "explanation": "Thread panic được join,stderr giữ diagnostic;poisoned guard có thể được lấy để caller xét policy,chưa tự repair invariant."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Bounded try send full",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(tx,rx)=std::sync::mpsc::sync_channel(1);tx.send(1).unwrap();println!(\"{}\",matches!(tx.try_send(2),Err(std::sync::mpsc::TrySendError::Full(2))));drop(rx);}\n",
+      "options": [
+        "Buffer tự tăng2.",
+        "true.",
+        "false.",
+        "TrySend tự block tới khi receiver đọc."
+      ],
+      "correct": 1,
+      "explanation": "Capacity1 đã có value1,try_send2 báo Full mà không chạy deadlock."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Scoped disjoint mutation",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let(mut a,mut b)=(0,0);std::thread::scope(|s|{s.spawn(||a+=1);s.spawn(||b+=2);});println!(\"{a} {b}\");}\n",
+      "options": [
+        "Compiler cấm mọi references local vào threads.",
+        "Hai số ngẫu nhiên vì mọi mutation đều race.",
+        "1 2.",
+        "0 0."
+      ],
+      "correct": 2,
+      "explanation": "Hai scoped threads có exclusive borrows tới hai variables disjoint,scope join trước read."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Thread return dangling reference",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "\nfn main(){let h=std::thread::spawn(||{let s=String::from(\"hi\");&s});let _=h.join();}\n",
+      "options": [
+        "Có;join tự nâng reference thành static.",
+        "Có;mọi thread local được leak tự động.",
+        "Chỉ runtime panic.",
+        "Không;thread closure trả reference tới local String bị drop."
+      ],
+      "correct": 3,
+      "explanation": "Thread lifetime API không cho phép reference tới owner đã chết."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Reclaim unique Arc ownership",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let a=std::sync::Arc::new(std::sync::Mutex::new(1));let b=a.clone();let a=std::sync::Arc::try_unwrap(a).unwrap_err();drop(b);let m=std::sync::Arc::try_unwrap(a).unwrap();println!(\"{}\",m.into_inner().unwrap());}\n",
+      "options": [
+        "1.",
+        "0.",
+        "try_unwrap tự clone data ngay cả khi còn owner.",
+        "Compiler cấm recovery Err từ try_unwrap."
+      ],
+      "correct": 0,
+      "explanation": "Lần đầu còn b nên lấy lại Arc từ Err;drop b rồi reclaim Mutex owned ở lần sau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Poison is not proof complete",
+      "question": "is_poisoned()==false có chứng minh dữ liệu nghiệp vụ luôn nhất quán không?",
+      "options": [
+        "Chỉ cần unwrap lock.",
+        "Không;poison advisory không thay invariant validation và synchronization design.",
+        "Có;mọi bug đều poison mutex.",
+        "Chỉ nếu payload int."
+      ],
+      "correct": 1,
+      "explanation": "Có failure paths không được poison phát hiện và logic bugs không gây panic."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Clear poison policy",
+      "question": "clear_poison có tự repair dữ liệu mà thread trước sửa dở không?",
+      "options": [
+        "Có;nó gọi lại closure đã panic.",
+        "Chỉ cần log error.",
+        "Không;caller cần kiểm tra hoặc sửa state theo invariant trước khi coi nó đáng tin.",
+        "Có;stdlib tự rollback mọi writes."
+      ],
+      "correct": 2,
+      "explanation": "Đổi poison flag khác khôi phục business correctness."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Acquire across channel and locks",
+      "question": "Giữ mutex trong lúc send vào bounded channel mà receiver cần cùng mutex có rủi ro gì?",
+      "options": [
+        "Compiler luôn phát hiện mọi runtime lock graph.",
+        "Channel tự unlock mutex.",
+        "Chỉ tăng producer count là luôn sửa.",
+        "Deadlock do dependency cycle có thể xuất hiện."
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế lock scope và backpressure cùng nhau;không thực thi hang để đoán."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Copy Arc versus data",
+      "question": "Arc::clone có tự tạo snapshot độc lập của HashMap/Vec bên trong không?",
+      "options": [
+        "Không;clone handle tiếp tục shared ownership cùng allocation.",
+        "Có;atomic refcount nghĩa deep copy.",
+        "Chỉ nếu map rỗng.",
+        "Chỉ khi nhiều threads."
+      ],
+      "correct": 0,
+      "explanation": "Snapshot/copy-on-write cần API/ownership phù hợp riêng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Compound check then act",
+      "question": "Lock riêng để check rồi unlock,sau đó lock lại để mutate có bảo đảm invariant không đổi giữa hai bước không?",
+      "options": [
+        "Chỉ cần SeqCst ở một field.",
+        "Không;nếu invariant cần atomic workflow phải thiết kế cùng critical section hoặc protocol khác.",
+        "Có;mutex nhớ mọi checks đã thực hiện.",
+        "Chỉ nếu Arc cùng process."
+      ],
+      "correct": 1,
+      "explanation": "Individual protected accesses khác transactional logic."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Message delivery acknowledgement",
+      "question": "Send thành công có chứng minh receiver đã xử lý và persist operation chưa?",
+      "options": [
+        "Có;Sender clone tự retry tới durable commit.",
+        "Chỉ nếu ItemString.",
+        "Không;cần acknowledgement/durability protocol nếu yêu cầu.",
+        "Có;stdlib channel là distributed transaction."
+      ],
+      "correct": 2,
+      "explanation": "Communication primitive không tự bảo đảm business outcome."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Join error handling scope",
+      "question": "Join Err có tự chứa một typed business error Result do closure trả không?",
+      "options": [
+        "Có;mọi Err trong closure tự thành panic payload.",
+        "Chỉ nếu closure dùng move.",
+        "Chỉ cần Mutex.",
+        "Không;closure return Result là output riêng,còn Join Err phản ánh thread panic."
+      ],
+      "correct": 3,
+      "explanation": "Phân biệt outer thread completion với operation output."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Thread resource budgets",
+      "question": "Tạo một OS thread cho mỗi request có tự scale tới triệu concurrent users không?",
+      "options": [
+        "Không;cần workload,resource budget,scheduling/admission và kiến trúc phù hợp.",
+        "Có;Rust memory safety bảo đảm thread vô hạn.",
+        "Chỉ cần Arc clone.",
+        "Chỉ cần không có GC."
+      ],
+      "correct": 0,
+      "explanation": "Không suy capacity từ source demo10threads."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Scoped thread panic policy",
+      "question": "Nếu scoped thread không được join xử lý riêng và panic,scope có luôn nuốt panic không?",
+      "options": [
+        "Chỉ khi return unit.",
+        "Không;scope có thể panic theo contract automatic joins.",
+        "Có;scope giống catch mọi failures thành Ok.",
+        "Chỉ nếu dữ liệu borrowed."
+      ],
+      "correct": 1,
+      "explanation": "Lifetimes hợp lệ không đồng nghĩa failure policy đã được xử lý."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Mutex contention evidence",
+      "question": "Counter2 fixture pass có chứng minh lock throughput/p99 latency dưới production load không?",
+      "options": [
+        "Chỉ cần compile release.",
+        "Chỉ cần AtomicI32.",
+        "Không;đây là semantic correctness check hữu hạn,chưa benchmark.",
+        "Có;hai increments đủ đại diện mọi tải."
+      ],
+      "correct": 2,
+      "explanation": "Cần measurements đúng workload nếu muốn kết luận performance."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Send Sync proof limits",
+      "question": "Code thỏa Send/Sync có đủ để bỏ rate limits,queue bounds và cancellation không?",
+      "options": [
+        "Có;auto traits xử lý mọi overload.",
+        "Chỉ cần Arc<Mutex>.",
+        "Chỉ nếu messageint.",
+        "Không;resource/liveness requirements vẫn cần thiết kế riêng."
+      ],
+      "correct": 3,
+      "explanation": "Type safety boundary khác operational readiness."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Async lock comparison",
+      "question": "Có nên áp poisoning semantics của std::sync::Mutex cho mọi mutex thư viện khác không?",
+      "options": [
+        "Không;đọc contract đúng type/version,ví dụ async mutex có thể khác.",
+        "Có;mọi mutex implementation hoàn toàn giống nhau.",
+        "Chỉ cần method tên lock.",
+        "Chỉ cần unwrap."
+      ],
+      "correct": 0,
+      "explanation": "Không dạy behavior của một primitive thành universal rule."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Receiver ownership",
+      "question": "Muốn nhiều workers cùng recv,mpsc Receiver chuẩn có tự clone như Sender không?",
+      "options": [
+        "Chỉ cần move keyword.",
+        "Không;thiết kế worker sharing/channel loại khác theo API và mục tiêu.",
+        "Có;mọi receivers tự clone.",
+        "Chỉ nếu Sendercount2."
+      ],
+      "correct": 1,
+      "explanation": "Mpsc single-consumer abstraction khác MPMC API riêng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Cancellation and join distinction",
+      "question": "Đã yêu cầu thread dừng bằng flag có đủ để nói nó đã kết thúc và cleanup xong chưa?",
+      "options": [
+        "Chỉ cần Sleep1ms.",
+        "Chỉ cần handle drop.",
+        "Chưa;cần join hoặc completion acknowledgement đúng protocol.",
+        "Có;flag tự preempt OS thread."
+      ],
+      "correct": 2,
+      "explanation": "Stop request khác completion event."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Cache completion claim",
+      "question": "Source counter/channel demo có hoàn thành thread-safe cache bài tập chưa?",
+      "options": [
+        "Có;counterint tự là mọi cache.",
+        "Có;Arc<RwLock> tự sinh đầy đủ features.",
+        "Chỉ cần80 câu.",
+        "Chưa;cache key/value API,policy,eviction,bounds và tests còn cần triển khai."
+      ],
+      "correct": 3,
+      "explanation": "Giữ đúng phạm vi đã có source và đã kiểm chứng."
+    }
+  ]
+}

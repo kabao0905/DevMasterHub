@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "mongodb",
+  "level": "junior",
+  "lesson": "crud-api",
+  "language": "vi",
+  "sourceHash": "4482bf272b4111d0d813c4098e299128a75ff6be2cadb650b06c1c8a87c29eec",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Express Router GET/POST/PUT và Mongoose query trong bài. Nêu thiếu DELETE/auth wiring, input bounds, ownership, allowlist, error handling; update validators không là save hooks hay authorization. Phân biệt Express4/5 và ý định new:true với returnDocument:after trong tài liệu mới; không chạy HTTP/DB.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Router",
+      "question": "express.Router() trong source chủ yếu dùng để làm gì?",
+      "options": [
+        "Nhóm các route HTTP",
+        "Kết nối trực tiếp một replica set",
+        "Tạo unique index",
+        "Hash password cho mọi request"
+      ],
+      "correct": 0,
+      "explanation": "Router cần được mount vào ứng dụng để có đường truy cập thực tế."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "GET",
+      "question": "GET / trong router minh họa thực hiện việc gì?",
+      "options": [
+        "Rollback database",
+        "Đọc danh sách bài viết có phân trang",
+        "Xóa toàn bộ bài viết",
+        "Tạo tài khoản admin"
+      ],
+      "correct": 1,
+      "explanation": "Ý nghĩa URL đầy đủ phụ thuộc đường mount router bên ngoài snippet."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "POST",
+      "question": "POST / trong router dùng để làm gì?",
+      "options": [
+        "Xóa một bài theo id",
+        "Tạo collection index tự động",
+        "Tạo bài viết",
+        "Chỉ đọc tổng số bài"
+      ],
+      "correct": 2,
+      "explanation": "Source dùng Post.create trong handler này."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "PUT",
+      "question": "PUT /:id trong source nhắm thao tác nào?",
+      "options": [
+        "Tạo mọi bài còn thiếu bằng upsert mặc định",
+        "Chỉ đọc page query",
+        "Đổi tên collection",
+        "Cập nhật bài theo định danh đường dẫn"
+      ],
+      "correct": 3,
+      "explanation": "Tên method HTTP không tự triển khai mọi semantics replacement hay quyền truy cập."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Model Post",
+      "question": "Post được import từ đâu theo source?",
+      "options": [
+        "../models/Post",
+        "express.Router",
+        "req.query.Post",
+        "MongoDB shell toàn cục"
+      ],
+      "correct": 0,
+      "explanation": "Nội dung schema model không được trình bày trong bài này."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Page default",
+      "question": "Nếu page không được truyền và destructuring default áp dụng, page mặc định là gì?",
+      "options": [
+        "100",
+        "1",
+        "0",
+        "10"
+      ],
+      "correct": 1,
+      "explanation": "Trang trong pattern này đánh số từ 1."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Limit default",
+      "question": "Giá trị limit mặc định trong GET là gì?",
+      "options": [
+        "20",
+        "1000",
+        "10",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Source chưa đưa giới hạn trên hoặc validation đầu vào."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Sort default",
+      "question": "sort mặc định trong source là gì?",
+      "options": [
+        "createdAt",
+        "-price",
+        "name",
+        "-createdAt"
+      ],
+      "correct": 3,
+      "explanation": "Trong cú pháp Mongoose dạng string, dấu trừ có ý định sort giảm dần."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Skip công thức",
+      "question": "Offset GET được tính từ biểu thức nào?",
+      "options": [
+        "(page - 1) * limit",
+        "page * limit",
+        "page + limit",
+        "limit - page"
+      ],
+      "correct": 0,
+      "explanation": "Công thức cần page/limit là các giá trị hợp lệ theo hợp đồng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Count",
+      "question": "countDocuments() trong GET dùng để làm gì?",
+      "options": [
+        "Tạo trang tiếp theo",
+        "Đếm document theo filter tương ứng của lời gọi",
+        "Trả số field trong từng Post",
+        "Xóa document sau khi đếm"
+      ],
+      "correct": 1,
+      "explanation": "Lời gọi source không có filter nên đếm tập Post không thêm điều kiện."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Pages",
+      "question": "Số pages trong response được tính bằng gì?",
+      "options": [
+        "page + total",
+        "Math.floor(page / total)",
+        "Math.ceil(total / limit)",
+        "total * limit"
+      ],
+      "correct": 2,
+      "explanation": "Làm tròn lên cho số trang cuối chưa đầy; limit cần dương hợp lệ."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Populate author",
+      "question": "populate(\"author\",\"name email\") có ý định gì?",
+      "options": [
+        "Tạo author mới cho mỗi Post",
+        "Thay title bằng email",
+        "Kiểm tra caller có quyền sửa Post",
+        "Nạp author với lựa chọn trường name/email"
+      ],
+      "correct": 3,
+      "explanation": "Population không thay authentication/authorization."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Created status",
+      "question": "POST thành công trả HTTP status nào trong code?",
+      "options": [
+        "201",
+        "200",
+        "204",
+        "404"
+      ],
+      "correct": 0,
+      "explanation": "201 thể hiện tạo resource theo hợp đồng route minh họa."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Not found",
+      "question": "PUT không tìm thấy Post thì source trả status nào?",
+      "options": [
+        "503",
+        "404",
+        "201",
+        "301"
+      ],
+      "correct": 1,
+      "explanation": "Nhánh kiểm tra !post trả Not found."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Auth vị trí",
+      "question": "Những route nào trong source có auth middleware được gắn trực tiếp?",
+      "options": [
+        "Cả ba đều có auth tường minh",
+        "Không route nào",
+        "POST và PUT",
+        "Chỉ GET"
+      ],
+      "correct": 2,
+      "explanation": "GET không gắn auth ở đoạn trình bày; middleware cấp app chưa được thiết lập ở đây."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Owner source",
+      "question": "POST lấy author ưu tiên từ đâu?",
+      "options": [
+        "req.body.author ở cuối cùng",
+        "req.query.author",
+        "Tên model Post",
+        "req.user.id"
+      ],
+      "correct": 3,
+      "explanation": "Trong object spread, author:req.user.id được đặt sau req.body."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Params",
+      "question": "PUT lấy id từ vị trí nào của request?",
+      "options": [
+        "req.params.id",
+        "req.query.page",
+        "req.body.limit",
+        "req.user.email"
+      ],
+      "correct": 0,
+      "explanation": "Tên tham số đường dẫn là id."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "New option",
+      "question": "Ý định của new:true trong findByIdAndUpdate source là gì?",
+      "options": [
+        "Tự mở transaction",
+        "Trả document sau cập nhật theo API hỗ trợ option đó",
+        "Tự bật upsert mọi trường hợp",
+        "Luôn tạo Post mới"
+      ],
+      "correct": 1,
+      "explanation": "Tài liệu Mongoose mới ưu tiên returnDocument:after; không đánh đồng new với upsert."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Validators option",
+      "question": "runValidators:true có ý định gì?",
+      "options": [
+        "Gọi mọi save hook bất kể operation",
+        "Tạo index unique tức thời",
+        "Bật update validators theo phạm vi hỗ trợ",
+        "Bật quyền admin cho caller"
+      ],
+      "correct": 2,
+      "explanation": "Update validation có giới hạn và không thay quyền nghiệp vụ."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Thiếu DELETE",
+      "question": "Source đã cung cấp route xóa bài chưa?",
+      "options": [
+        "Rồi; PUT tự là DELETE nếu body rỗng",
+        "Rồi; GET countDocuments xóa sau đếm",
+        "Chưa; Express không hỗ trợ DELETE",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Tiêu đề full CRUD rộng hơn số route thực tế được hiển thị."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Trang3",
+      "question": "Với page 3, limit 10 hợp lệ, offset theo công thức source bằng bao nhiêu?",
+      "options": [
+        "20",
+        "30",
+        "3",
+        "10"
+      ],
+      "correct": 0,
+      "explanation": "(3-1)×10 bằng20."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Trang cuối",
+      "question": "total 23, limit 10 hợp lệ thì pages bằng bao nhiêu?",
+      "options": [
+        "10",
+        "3",
+        "2",
+        "23"
+      ],
+      "correct": 1,
+      "explanation": "ceil(23/10)=3."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Rỗng",
+      "question": "total 0 và limit 10 hợp lệ thì công thức pages trả gì?",
+      "options": [
+        "10",
+        "Infinity",
+        "0",
+        "1"
+      ],
+      "correct": 2,
+      "explanation": "Đó là kết quả công thức; UI/API cần quy định cách biểu diễn danh sách rỗng."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Page0",
+      "question": "Client truyền page 0. Điều gì cần làm trước khi tin offset?",
+      "options": [
+        "Coi default1 tự thay mọi giá trị0",
+        "Cho phép skip âm rồi xem là trang cuối",
+        "Chỉ đổi sort để sửa offset",
+        "Validate và xử lý page theo quy tắc số nguyên dương"
+      ],
+      "correct": 3,
+      "explanation": "Default destructuring chỉ áp với undefined, không là validator cho giá trị đã truyền."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Limit không số",
+      "question": "Client truyền limit=\"abc\". parseInt có đủ bảo đảm giá trị phân trang hợp lệ không?",
+      "options": [
+        "Không; cần kiểm finite/integer/range và xử lý sai đầu vào",
+        "Có; parseInt luôn trả10 khi không hiểu chuỗi",
+        "Có; default tự thay chuỗi sai",
+        "Không; vì limit chỉ được là Boolean"
+      ],
+      "correct": 0,
+      "explanation": "Kết quả NaN không phải limit hợp lệ để dùng mù quáng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "ParseInt hậu tố",
+      "question": "parseInt(\"10abc\") có thể cho10. Vì sao vẫn cần validation toàn chuỗi theo hợp đồng?",
+      "options": [
+        "Vì limit 10 không bao giờ được phép",
+        "Không nên vô tình chấp nhận đầu vào sai định dạng như một giá trị hợp lệ",
+        "Vì parseInt luôn trả100 trong MongoDB",
+        "Vì hậu tố abc tự chọn collection"
+      ],
+      "correct": 1,
+      "explanation": "Parse thành số và xác nhận đầu vào hợp lệ là hai bước khác nhau."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Limit quá lớn",
+      "question": "Client yêu cầu limit rất lớn. Cần bổ sung chính sách gì?",
+      "options": [
+        "Coi parseInt tự giới hạn theo RAM",
+        "Chỉ tăng pages trong JSON",
+        "Giới hạn trên và ngân sách truy vấn/response phù hợp",
+        "Luôn bỏ limit để trả thêm dữ liệu"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn nguồn lực cần được thiết kế ở biên API."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Limit0",
+      "question": "Client truyền limit 0. Vì sao không nên dựa vào default 10 hoặc phép chia pages một cách máy móc?",
+      "options": [
+        "Default luôn biến 0 thành 10 trước khi tính",
+        "Math.ceil tự sửa mọi chia 0 thành 1",
+        "limit 0 luôn an toàn vì không dùng tài nguyên",
+        "Giá trị0 không bị default thay, chia 0 và semantics DB cần được chặn theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Validation dương và giới hạn giúp tránh hành vi ngoài ý định."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Page response",
+      "question": "page:+page trong JSON dùng để làm gì?",
+      "options": [
+        "Ép page sang số theo JavaScript",
+        "Tự xác minh page nằm trong range",
+        "Tự bảo đảm page là số nguyên dương",
+        "Tự áp quyền đọc Post"
+      ],
+      "correct": 0,
+      "explanation": "Coercion không thay validation."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Sort input",
+      "question": "sort được lấy trực tiếp từ req.query. Cải thiện nào hợp lý?",
+      "options": [
+        "Luôn xóa filter quyền khi sort lỗi",
+        "Allowlist trường/hướng sort và validation theo API",
+        "Chấp nhận mọi sort để không phải thiết kế index",
+        "Chỉ kiểm sort có chứa dấu gạch ngang"
+      ],
+      "correct": 1,
+      "explanation": "Hợp đồng sort ảnh hưởng cả tính đúng và chi phí truy vấn."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Tie createdAt",
+      "question": "Nhiều Post cùng createdAt. Muốn thứ tự ổn định trên dữ liệu không đổi nên thêm gì?",
+      "options": [
+        "Chỉ đổi page sang String",
+        "Chỉ dùng countDocuments hai lần",
+        "Khóa phụ duy nhất phù hợp như _id",
+        "Chỉ thêm populate author"
+      ],
+      "correct": 2,
+      "explanation": "Một sort key không duy nhất chưa xác định thứ tự giữa các bản ghi bằng nhau."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Author override",
+      "question": "Body POST có author khác req.user.id. Với thứ tự spread trong source, author cuối là gì?",
+      "options": [
+        "Giá trị author từ body luôn thắng",
+        "Mảng chứa cả hai author",
+        "Không thể có trường author",
+        "req.user.id"
+      ],
+      "correct": 3,
+      "explanation": "Thuộc tính khai báo sau ghi đè cùng key trước trong object này."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Body còn nhiều field",
+      "question": "POST ghi đè author có tự ngăn client đặt mọi field nhạy cảm khác trong schema không?",
+      "options": [
+        "Không; cần allowlist và policy cho từng field được phép",
+        "Có; một override làm mọi body field thành trusted",
+        "Có; Post.create luôn bỏ mọi field hợp lệ ngoài title",
+        "Không; vì object spread không hoạt động trong Node"
+      ],
+      "correct": 0,
+      "explanation": "Bảo vệ một key không là bảo vệ toàn bộ input."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "PUT owner",
+      "question": "PUT có auth nhưng query chỉ dùng id. Đã có kiểm tra ownership rõ trong đoạn code chưa?",
+      "options": [
+        "Chưa; vì Mongoose không lọc theo author được",
+        "Chưa",
+        "Rồi; biết id đồng nghĩa là owner",
+        "Rồi; auth luôn tự thêm author vào mọi query"
+      ],
+      "correct": 1,
+      "explanation": "Xác thực caller và quyền thao tác lên Post cụ thể là hai điều khác nhau."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "PUT author body",
+      "question": "PUT truyền nguyên req.body. Nếu schema cho sửa author, cần kiểm tra gì?",
+      "options": [
+        "Chỉ runValidators vì ObjectId hợp lệ là đủ quyền",
+        "Chỉ sort default của GET",
+        "Nguy cơ thay owner trái policy và allowlist update",
+        "Chỉ new:true vì nó chặn author change"
+      ],
+      "correct": 2,
+      "explanation": "Đúng kiểu author không đồng nghĩa caller được chuyển quyền sở hữu."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Id sai định dạng",
+      "question": "req.params.id không cast được sang kiểu _id của Post. Cần gì ở API?",
+      "options": [
+        "Bỏ filter id để update document đầu tiên",
+        "Tự tạo Post mới cho chuỗi bất kỳ",
+        "Chỉ đổi status201 thành200",
+        "Validation/phân loại lỗi và phản hồi phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Không chữa lỗi đầu vào bằng cách nới phạm vi thao tác dữ liệu."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Không tìm thấy",
+      "question": "findByIdAndUpdate trả null trong luồng source. Handler làm gì?",
+      "options": [
+        "Trả404 và kết thúc nhánh bằng return",
+        "Tự gọi create với body",
+        "Trả201 với Post mới",
+        "Tự retry bằng filter rỗng"
+      ],
+      "correct": 0,
+      "explanation": "Không có upsert hoặc cơ chế tạo fallback trong snippet."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "New không upsert",
+      "question": "new:true có bảo đảm tạo Post nếu id chưa có không?",
+      "options": [
+        "Không; vì option này chỉ dùng cho GET",
+        "Không; đó là option biểu diễn document được trả, khác upsert",
+        "Có; new luôn đồng nghĩa insert",
+        "Có; khi runValidators true"
+      ],
+      "correct": 1,
+      "explanation": "Cần tách lựa chọn before/after với lựa chọn có tạo mới hay không."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "New docs hiện hành",
+      "question": "Theo tài liệu Mongoose hiện hành ưu tiên returnDocument, cách thể hiện ý định trả bản sau update là gì?",
+      "options": [
+        "upsert:false là đủ",
+        "timestamps:true là đủ",
+        "returnDocument:\"after\"",
+        "returnDocument:\"before\""
+      ],
+      "correct": 2,
+      "explanation": "Câu hỏi nêu scope tài liệu mới; source dùng new:true theo cách viết cũ được hỗ trợ tương ứng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Save hooks",
+      "question": "findByIdAndUpdate có tự chạy mọi pre-save hook của Post không?",
+      "options": [
+        "Có; mọi query update gọi save hook đầy đủ",
+        "Có; new:true tự gọi save",
+        "Chỉ khi GET đã populate author",
+        "Không; cần middleware phù hợp operation"
+      ],
+      "correct": 3,
+      "explanation": "Không suy phạm vi hook từ việc cả hai thao tác đều ghi dữ liệu."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Validation scope",
+      "question": "runValidators:true trong PUT có tương đương validate toàn document rồi save trong mọi trường hợp không?",
+      "options": [
+        "Không; update validators có path/operator/context giới hạn",
+        "Có; luôn hydrate đầy đủ và save lại",
+        "Có; chỉ cần body là object",
+        "Không; vì validators không chạy được với update"
+      ],
+      "correct": 0,
+      "explanation": "Logic invariant nhiều field cần được thiết kế phù hợp loại operation."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Auth thiếu definition",
+      "question": "Đoạn code dùng auth nhưng không định nghĩa/import. Cần bổ sung gì cho ví dụ chạy?",
+      "options": [
+        "Chỉ thêm status404 vào GET",
+        "Middleware auth và hợp đồng req.user phù hợp",
+        "Chỉ model Post có field auth",
+        "Chỉ query sort"
+      ],
+      "correct": 1,
+      "explanation": "Tên middleware chưa là implementation xác thực."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Router mount thiếu",
+      "question": "Muốn biết GET / tương ứng /posts hay /api/posts ở server thật cần gì?",
+      "options": [
+        "Chỉ createdAt sort",
+        "Chỉ folder models",
+        "Đường mount router ở ứng dụng",
+        "Chỉ tên model Post"
+      ],
+      "correct": 2,
+      "explanation": "Router path tương đối cần ngữ cảnh mount để thành URL đầy đủ."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Body parsing",
+      "question": "Muốn req.body nhận JSON trong ứng dụng Express cần kiểm tra gì ngoài snippet?",
+      "options": [
+        "Chỉ mongoose.model được gọi",
+        "Chỉ res.json ở response",
+        "Chỉ có auth function name",
+        "JSON parser và cấu hình nhận body phù hợp trước route"
+      ],
+      "correct": 3,
+      "explanation": "Parser và giới hạn body là một phần wiring server chưa hiển thị."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Export/router thiếu",
+      "question": "Source tạo router nhưng chưa export/mount. Có thể tuyên bố endpoint đã phục vụ HTTP chưa?",
+      "options": [
+        "Chưa",
+        "Rồi; express.Router tự listen cổng mặc định",
+        "Rồi; Post.create tự mở HTTP listener",
+        "Chưa; Express không thể mount Router"
+      ],
+      "correct": 0,
+      "explanation": "Định nghĩa handler khác với ứng dụng được nối và chạy."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "GET catch",
+      "question": "GET catch trong source trả status nào khi rơi vào nhánh lỗi?",
+      "options": [
+        "404",
+        "500",
+        "400",
+        "201"
+      ],
+      "correct": 1,
+      "explanation": "Mã source gom các lỗi vào500; thiết kế thật nên phân loại phù hợp."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "POST catch",
+      "question": "POST catch trong source trả status nào?",
+      "options": [
+        "204",
+        "302",
+        "400",
+        "500"
+      ],
+      "correct": 2,
+      "explanation": "Đây là hành vi minh họa; không phải mọi lỗi database đều là lỗi client400."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Message leak",
+      "question": "Trả err.message nguyên văn ra client có rủi ro gì?",
+      "options": [
+        "Tự mã hóa mọi thông tin nhạy cảm",
+        "Tự phân loại lỗi theo quyền caller",
+        "Tự tạo correlation ID",
+        "Lộ chi tiết nội bộ hoặc dữ liệu tùy lỗi"
+      ],
+      "correct": 3,
+      "explanation": "Nên tách thông điệp công khai và log nội bộ phù hợp."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "PUT thiếu catch",
+      "question": "PUT async source không có try/catch. Vì sao cần xét Express version/wrapper?",
+      "options": [
+        "Cơ chế chuyển Promise rejection vào error handler khác giữa Express4 và5",
+        "Vì async luôn không thể throw",
+        "Vì Mongoose lỗi luôn biến thành null",
+        "Vì runValidators tự gửi HTTP response"
+      ],
+      "correct": 0,
+      "explanation": "Cần wiring error handling phù hợp runtime thật; không giả default mọi phiên bản giống nhau."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Express4 scope",
+      "question": "Với Express4 không có wrapper bổ sung, async handler reject cần được xử lý thế nào để đi vào error middleware?",
+      "options": [
+        "Bỏ await để Promise không còn lỗi",
+        "Catch/forward qua next hoặc wrapper phù hợp",
+        "Chỉ dựa vào mọi async Promise tự được route bắt giống Express5",
+        "Đổi res.json thành console.log"
+      ],
+      "correct": 1,
+      "explanation": "Tài liệu Express nêu sự thay đổi tự forward Promise rejection từ phiên bản5."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Express5 scope",
+      "question": "Với Express5, handler trả Promise bị reject có thể được framework làm gì?",
+      "options": [
+        "Tự chuyển mọi lỗi thành404",
+        "Tự thêm ownership check",
+        "Tự chuyển lỗi tới next/error flow theo semantics của phiên bản",
+        "Tự rollback mọi DB operation trước đó"
+      ],
+      "correct": 2,
+      "explanation": "Error forwarding không thay phân loại lỗi hoặc kiểm soát dữ liệu."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "GET auth scope",
+      "question": "GET không có auth trực tiếp trong đoạn source. Có thể khẳng định mọi ứng dụng mount router đều công khai không?",
+      "options": [
+        "Có; middleware app không thể áp Router",
+        "Có; populate bắt buộc công khai",
+        "Không; vì mọi GET tự được auth",
+        "Không; còn có thể có middleware cấp app, nhưng source chưa thiết lập điều đó"
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt thiếu bằng chứng trong snippet với kết luận về môi trường chưa đọc."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Populate fields",
+      "question": "populate author name/email có tự quyết định caller được thấy email hay không?",
+      "options": [
+        "Không; lựa chọn trường cần phù hợp policy dữ liệu",
+        "Có; populate tự biết consent mọi user",
+        "Có; name/email luôn public theo MongoDB",
+        "Không; vì populate không hỗ trợ field selection"
+      ],
+      "correct": 0,
+      "explanation": "Schema response phải theo quyền và mục đích của ứng dụng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Count khác thời điểm",
+      "question": "Query posts và countDocuments là hai lần đọc riêng không có snapshot chung. Điều gì có thể xảy ra dưới ghi đồng thời?",
+      "options": [
+        "Pages tự sửa mọi thay đổi bằng Math.ceil",
+        "Total và trang có thể phản ánh thời điểm khác nhau",
+        "Mọi lời gọi trên model luôn cùng snapshot tự động",
+        "Count tự khóa toàn collection tới response"
+      ],
+      "correct": 1,
+      "explanation": "Hợp đồng consistency cần được định nghĩa theo yêu cầu."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Filter tương lai",
+      "question": "Nếu GET bổ sung filter published nhưng count vẫn rỗng, cần sửa gì để total đúng cùng tập?",
+      "options": [
+        "Bỏ filter published để count dễ đúng",
+        "Chỉ thêm projection _id0",
+        "Áp điều kiện quyền/filter tương ứng cho count",
+        "Chỉ đổi pages thành page"
+      ],
+      "correct": 2,
+      "explanation": "Phân trang cần thống nhất tập dữ liệu giữa items và total."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Không DELETE từ PUT",
+      "question": "Request DELETE /:id có được handler PUT tự xử lý chỉ vì cùng path không?",
+      "options": [
+        "Có; Express tự gộp mọi method ghi",
+        "Có; body rỗng khiến PUT biến thành DELETE",
+        "Không; vì :id không được dùng với DELETE",
+        "Không; method và route matching là riêng"
+      ],
+      "correct": 3,
+      "explanation": "Cần định nghĩa route xóa rõ nếu tính năng yêu cầu."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "PUT semantics",
+      "question": "Source dùng query update với req.body. Có thể coi method PUT tự buộc thay thế hoàn toàn mọi field còn thiếu không?",
+      "options": [
+        "Không; hành vi dữ liệu do implementation/API update quyết định",
+        "Có; Express tự xóa mọi field thiếu",
+        "Có; new:true tự thay document toàn bộ",
+        "Không; PUT không được phép trả JSON"
+      ],
+      "correct": 0,
+      "explanation": "Semantics công khai nên nhất quán với hành vi triển khai được thiết kế."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Idempotency create",
+      "question": "Client retry POST sau timeout có tự được source deduplicate theo một khóa nghiệp vụ không?",
+      "options": [
+        "Không; vì timeout luôn nghĩa create chưa chạy",
+        "Không; snippet chưa triển khai cơ chế đó",
+        "Có; HTTP POST mặc nhiên không bao giờ tạo trùng",
+        "Có; author tự là unique index trên Post"
+      ],
+      "correct": 1,
+      "explanation": "Tính an toàn retry nghiệp vụ cần thiết kế riêng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Returned fields",
+      "question": "res.json(post) sau create/update có tự loại mọi field nội bộ của model không?",
+      "options": [
+        "Có; runValidators tự xóa field nhạy cảm khỏi output",
+        "Không; res.json không serialize object",
+        "Không; cần response schema/selection/transform thích hợp",
+        "Có; Express tự biết field bí mật của mọi schema"
+      ],
+      "correct": 2,
+      "explanation": "Cần quản lý ranh giới dữ liệu đầu ra."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source API đầy đủ",
+      "question": "Nhóm phụ thuộc nào còn thiếu để gọi ví dụ là API hoàn chỉnh?",
+      "options": [
+        "Chỉ số lệnh sort nhiều hơn",
+        "Chỉ đổi Router thành collection",
+        "Chỉ thêm comment complete CRUD",
+        "Model/connection, auth, parser, mount/export, validation, quyền và error flow"
+      ],
+      "correct": 3,
+      "explanation": "Các route là phần minh họa, không phải toàn hệ thống đã nối đủ."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Owner trong query",
+      "question": "Authenticated user có id của bài người khác. Cách sửa nguyên nhân quyền PUT phù hợp là gì?",
+      "options": [
+        "Enforce ownership/permission trong điều kiện hoặc luồng cập nhật đáng tin và allowlist field",
+        "Chỉ runValidators true vì id đúng kiểu",
+        "Chỉ new:true vì trả bản mới là có quyền",
+        "Chỉ ẩn nút sửa ở giao diện"
+      ],
+      "correct": 0,
+      "explanation": "Ranh giới quyền phải nằm ở server, gắn đúng entity và không chỉ phụ thuộc UI."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Check rồi update race",
+      "question": "Luồng kiểm owner rồi cập nhật bằng id riêng trong khi owner có thể đổi. Cần đánh giá gì?",
+      "options": [
+        "Tăng limit GET để tránh race",
+        "Điều kiện cập nhật nguyên tử hoặc ranh giới nhất quán giữ permission/invariant",
+        "Chỉ cần check từng đúng ở một thời điểm bất kỳ",
+        "Populate author tự khóa owner mãi"
+      ],
+      "correct": 1,
+      "explanation": "Kiểm tra và hành động tách rời có thể dùng trạng thái đã thay đổi."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Mass assignment PUT",
+      "question": "req.body chứa author, trạng thái kiểm duyệt và title, tất cả đúng kiểu. Validation schema có đủ bảo vệ field đặc quyền không?",
+      "options": [
+        "Có; auth luôn xóa các key nhạy cảm không cần implementation",
+        "Không; vì Mongoose không validate String",
+        "Không; cần policy/allowlist theo vai trò và luồng thao tác",
+        "Có; đúng kiểu đồng nghĩa caller được phép đổi"
+      ],
+      "correct": 2,
+      "explanation": "Tính hợp lệ giá trị và quyền sửa field là các tiêu chí khác nhau."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Error taxonomy",
+      "question": "POST gom lỗi validation, duplicate-key và database mất kết nối thành400. Hạn chế là gì?",
+      "options": [
+        "400 luôn chính xác cho mọi lỗi create",
+        "Mọi lỗi DB đều do body sai",
+        "Chỉ cần trả nguyên stack để client tự quyết định",
+        "Trộn lỗi client/xung đột/hạ tầng làm sai hợp đồng và khả năng xử lý retry"
+      ],
+      "correct": 3,
+      "explanation": "Phân loại lỗi và thông điệp công khai cần phù hợp nguyên nhân, không lộ nội bộ."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "PUT rejection Express4",
+      "question": "PUT await bị reject trên Express4 không có wrapper/error forwarding. Cần sửa lớp nào?",
+      "options": [
+        "Đường truyền lỗi async tới error middleware và phân loại response",
+        "Chỉ schema author enum",
+        "Chỉ trả404 khi post null vì mọi reject đều là null",
+        "Chỉ tăng serverSelectionTimeoutMS"
+      ],
+      "correct": 0,
+      "explanation": "Nhánh không tìm thấy không thay thế nhánh Promise rejection."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "New option migration",
+      "question": "Muốn cập nhật code theo tài liệu Mongoose ưu tiên returnDocument. Thay new:true bằng gì mà giữ ý định output?",
+      "options": [
+        "runValidators:false",
+        "returnDocument:\"after\" với phiên bản hỗ trợ và kiểm tra API tương ứng",
+        "returnDocument:\"before\"",
+        "upsert:true"
+      ],
+      "correct": 1,
+      "explanation": "Không nên thay một lựa chọn output bằng thay đổi semantics tạo mới hoặc validation."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Count consistency",
+      "question": "Có ghi liên tục giữa query trang và count. Muốn kết quả thống nhất hơn phải quyết định gì?",
+      "options": [
+        "Chỉ await nối tiếp tự tạo snapshot chung",
+        "Chỉ sort theo _id tự khóa toàn bộ dataset",
+        "Mức consistency yêu cầu và cơ chế đọc phù hợp, hoặc mô tả total có thể thay đổi",
+        "Chỉ Math.ceil là đủ làm hai query nguyên tử"
+      ],
+      "correct": 2,
+      "explanation": "Không hứa snapshot chỉ vì code chạy tuần tự trong một request."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Phân trang ổn định",
+      "question": "Thêm _id vào sort giải quyết tie nhưng client dùng offset dưới chèn/xóa liên tục. Còn điều gì cần xem?",
+      "options": [
+        "Mọi vấn đề pagination đã biến mất tuyệt đối",
+        "Limit nhỏ tự ngăn write đồng thời",
+        "CountDocuments tự cố định mọi trang cho mọi client",
+        "Chiến lược cursor/snapshot phù hợp và semantics thay đổi tập dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Tie-breaker là một phần của hợp đồng, không là snapshot xuyên request."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Body operator",
+      "question": "Chuyển nguyên body vào query update có thể cho cấu trúc update ngoài ý định. Hướng phòng vệ đúng là gì?",
+      "options": [
+        "Xây update từ field được phép và validate cấu trúc/giá trị theo hợp đồng",
+        "Chỉ tin body vì JSON parser đã parse",
+        "Chỉ parseInt title để mọi dữ liệu thành số",
+        "Chỉ đặt new:true để loại operator"
+      ],
+      "correct": 0,
+      "explanation": "Parser xác nhận cú pháp JSON, không xác nhận quyền hoặc ý nghĩa từng key."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Response tenant",
+      "question": "GET Post.find() không có tenant filter, ứng dụng thật phục vụ nhiều tổ chức. Điều gì phải thiết kế?",
+      "options": [
+        "Chỉ dựa vào auth của POST",
+        "Tenant/entity scope cho cả danh sách, count và population theo quyền",
+        "Chỉ gửi organizationId ở localStorage",
+        "Chỉ ẩn tenant trong projection"
+      ],
+      "correct": 1,
+      "explanation": "Multitenancy cần áp ở các đường đọc/ghi, không chỉ nơi tạo resource."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Populate email leak",
+      "question": "Caller được xem bài public nhưng không được xem email tác giả. Cần sửa gì?",
+      "options": [
+        "Chỉ tăng page để giấu email ở trang sau",
+        "Coi mọi field populated mặc nhiên public",
+        "Response/populate selection và policy dữ liệu cho context đó",
+        "Chỉ loại _id khỏi mọi Post"
+      ],
+      "correct": 2,
+      "explanation": "Quyền của resource chính không tự cho mọi trường của entity liên quan."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Password hooks analog",
+      "question": "Post có pre-save logic chuẩn hóa nội dung nhưng PUT dùng findByIdAndUpdate. Cần kiểm gì?",
+      "options": [
+        "runValidators luôn chạy mọi pre-save nên không cần xem",
+        "new:true tự gọi lại create",
+        "populate tự làm mọi normalization",
+        "Logic đó có bao phủ đường query update và invariant cần thiết không"
+      ],
+      "correct": 3,
+      "explanation": "Middleware coverage phải theo operation thực tế."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Không dữ liệu giả",
+      "question": "Id không hợp lệ khiến query lỗi. Vì sao bỏ id filter để tránh lỗi là sai?",
+      "options": [
+        "Làm mở phạm vi ghi sang entity không được chọn hoặc không được phép",
+        "Vì update rỗng filter luôn là read-only",
+        "Vì Express tự chặn mọi filter rỗng",
+        "Vì id chỉ là tên hiển thị không có nghĩa"
+      ],
+      "correct": 0,
+      "explanation": "Giữ đúng ranh giới lựa chọn dữ liệu quan trọng hơn việc ép lệnh luôn thành công."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Validation total",
+      "question": "page là số thập phân, limit âm, sort không allowlist. Biện pháp đầy đủ hơn chỉ parseInt(limit) là gì?",
+      "options": [
+        "Chỉ đổi status response thành200",
+        "Kiểm kiểu/định dạng/số nguyên/range và sort allowlist với phản hồi rõ",
+        "Chỉ unary+page vì coercion là validation đầy đủ",
+        "Chỉ trả mọi Post khi đầu vào sai"
+      ],
+      "correct": 1,
+      "explanation": "Các đầu vào liên kết phải cùng có hợp đồng để offset/response có nghĩa."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Không full CRUD",
+      "question": "Người học triển khai nguyên source rồi gọi DELETE nhưng404. Nguyên nhân trực tiếp nên nêu là gì?",
+      "options": [
+        "PUT tự là DELETE nhưng cần body bí mật",
+        "runValidators ngăn mọi thao tác xóa",
+        "Route DELETE chưa được định nghĩa/mount trong đoạn bài",
+        "MongoDB không hỗ trợ xóa document"
+      ],
+      "correct": 2,
+      "explanation": "Không đổ lỗi DB khi tính năng route chưa được triển khai."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Post timeout retry",
+      "question": "POST có thể đã ghi rồi client timeout. Muốn retry tránh tạo hai bài cần gì?",
+      "options": [
+        "Chỉ retry vô hạn mọi lỗi bất kể body",
+        "Coi timeout chứng minh chưa ghi",
+        "Chỉ dùng201 thay200",
+        "Thiết kế idempotency/định danh nghiệp vụ và xử lý kết quả chưa rõ"
+      ],
+      "correct": 3,
+      "explanation": "Tính an toàn retry phải bao phủ tình huống kết quả ghi chưa xác định ở client."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "PUT semantics public",
+      "question": "API quảng bá PUT là replacement đầy đủ nhưng implementation chỉ query update field gửi lên. Cần làm gì?",
+      "options": [
+        "Thống nhất contract method và hành vi triển khai, validation và tài liệu",
+        "Coi tên HTTP tự sửa mọi hành vi Mongoose",
+        "Chỉ đổi tên model Post",
+        "Chỉ thêm countDocuments sau update"
+      ],
+      "correct": 0,
+      "explanation": "API cần nghĩa rõ cho field thiếu, field cấm và trạng thái resource sau thao tác."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "No production proof",
+      "question": "Chỉ source/docs và quiz validation, không chạy Express/Mongoose. Tuyên bố nào đúng?",
+      "options": [
+        "Đã xác nhận latency GET dưới tải",
+        "Đã phân tích route và rủi ro/phụ thuộc, chưa xác nhận API thực hoạt động",
+        "Đã gọi API tạo bài thành công",
+        "Đã kiểm thử quyền tenant trong DB thật"
+      ],
+      "correct": 1,
+      "explanation": "Không biến kiểm chứng ngân hàng câu hỏi thành bằng chứng runtime của lesson."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Không lộ lỗi",
+      "question": "Muốn client hiểu validation field nhưng không thấy thông tin nội bộ DB. Thiết kế nào phù hợp?",
+      "options": [
+        "Đổi mọi lỗi thành cùng chuỗi success",
+        "Chỉ dùng res.json(err) với mọi object lỗi",
+        "Map lỗi sang response công khai có cấu trúc, log chi tiết có kiểm soát",
+        "Trả nguyên stack/URI để client tự chẩn đoán"
+      ],
+      "correct": 2,
+      "explanation": "Error contract cần vừa hữu ích vừa giữ ranh giới dữ liệu."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Ownership và mass assignment",
+      "question": "PUT hiện nhận body bất kỳ và cập nhật theo ID. Yêu cầu mới: chỉ tác giả sửa title/content, không được đổi author. Cách sửa nào bảo vệ cả hai ranh giới?",
+      "options": [
+        "Giữ body nguyên vẹn và chỉ bật runValidators vì schema hợp lệ đồng nghĩa có quyền",
+        "Chỉ đặt author từ req.user vào update nhưng filter vẫn chỉ có _id của bài bất kỳ",
+        "Chỉ ẩn author trong response, tiếp tục ghi toàn bộ body theo ID",
+        "Allowlist title/content và cập nhật với filter gồm _id cùng author lấy từ identity đã xác thực"
+      ],
+      "correct": 3,
+      "explanation": "Allowlist hạn chế field được ghi; filter ownership gắn quyền vào entity cần cập nhật. Không tìm thấy theo filter phải xử lý theo policy của API, không tự suy user có quyền."
+    }
+  ]
+}

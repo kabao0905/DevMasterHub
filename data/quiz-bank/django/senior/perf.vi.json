@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "django",
+  "level": "senior",
+  "lesson": "perf",
+  "language": "vi",
+  "sourceHash": "93d957312210a0a5a83486d3c674e67fb77ed0f57758705502447bbcffff7058",
+  "status": "approved",
+  "review": "Tự soạn theo queryset/prefetch/cache_page/low-level cache/async_api và Django5.2 docs. Source thiếu Post/Comment/comments relation/views field/imports/sync_to_async/get_data. Hai TTL900/300khác tầng; if not posts nhầm empty cache. Async views có từ3.1,không mới ở4.1. Không chạy Django/DB/cache/server/benchmark.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "N plus one concept",
+      "question": "N+1 trong truy vấn thường nói tới tình huống nào?",
+      "options": [
+        "Một query chính rồi nhiều query relation lặp theo từng object",
+        "Một server luôn có N+1 CPU",
+        "Một migration tạo N+1 bảng",
+        "Một page có N+1 template"
+      ],
+      "correct": 0,
+      "explanation": "Cần quan sát query để xác định nguồn và cách xử lý."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Single relations",
+      "question": "select_related trong source chọn relation nào?",
+      "options": [
+        "views và title",
+        "author và category",
+        "comments và tags",
+        "user và sessions"
+      ],
+      "correct": 1,
+      "explanation": "Hai relation đơn có trong Post model trước đó."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Many relation prefetch",
+      "question": "prefetch_related trong source nhắm tên relation nào?",
+      "options": [
+        "category",
+        "published",
+        "comments",
+        "author"
+      ],
+      "correct": 2,
+      "explanation": "Model/reverse related_name này chưa được định nghĩa trong snippet model trước."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Prefetch class role",
+      "question": "Prefetch cho phép cấu hình gì?",
+      "options": [
+        "Một CSS animation",
+        "Một auth session",
+        "Một router endpoint",
+        "Queryset và hành vi nạp relation cần prefetch"
+      ],
+      "correct": 3,
+      "explanation": "Source dùng queryset Comment đã select_related user."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Comment user loading",
+      "question": "Comment.objects.select_related(\"user\") nhằm nạp gì?",
+      "options": [
+        "User liên quan của Comment theo relation hợp lệ",
+        "Mọi session của viewer",
+        "Category của Post",
+        "Một User mới"
+      ],
+      "correct": 0,
+      "explanation": "Comment model và relation user phải tồn tại phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Annotation field",
+      "question": "annotate trong source thêm tên kết quả nào lên Post?",
+      "options": [
+        "category_slug",
+        "comment_count",
+        "views_count",
+        "author_name"
+      ],
+      "correct": 1,
+      "explanation": "Nó dùng Count(\"comments\")."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Count intent",
+      "question": "Count(\"comments\") theo ý định tính gì?",
+      "options": [
+        "Số page HTTP",
+        "Số thread Python",
+        "Số Comment liên quan từng Post",
+        "Số từ trong content"
+      ],
+      "correct": 2,
+      "explanation": "Cardinality của query thực tế cần được kiểm khi thêm joins."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Cache API",
+      "question": "Đối tượng cache được import từ đâu?",
+      "options": [
+        "django.forms",
+        "django.urls",
+        "asyncio.cache",
+        "django.core.cache"
+      ],
+      "correct": 3,
+      "explanation": "Backend cache do project configuration quyết định."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Per view decorator",
+      "question": "Decorator nào cache response của popular_posts?",
+      "options": [
+        "cache_page",
+        "login_required",
+        "transaction.atomic trong source",
+        "select_related"
+      ],
+      "correct": 0,
+      "explanation": "Source truyền thời hạn 60*15."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Response TTL",
+      "question": "60*15 tương đương bao nhiêu giây?",
+      "options": [
+        "15",
+        "900",
+        "300",
+        "60"
+      ],
+      "correct": 1,
+      "explanation": "Đây là thời hạn cấu hình cho per-view cache."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Low level key",
+      "question": "cache.get dùng key nào?",
+      "options": [
+        "published_posts_v2",
+        "comments_count",
+        "popular_posts",
+        "request.user"
+      ],
+      "correct": 2,
+      "explanation": "Key hiện không chứa tenant hay query-specific scope."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Low level timeout",
+      "question": "cache.set trong source đặt timeout bao nhiêu giây?",
+      "options": [
+        "900",
+        "15",
+        "10",
+        "300"
+      ],
+      "correct": 3,
+      "explanation": "Nó khác timeout của cache_page bên ngoài."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Popular filter",
+      "question": "Truy vấn popular_posts lọc điều kiện nào?",
+      "options": [
+        "published=True",
+        "published=False",
+        "author=request.user",
+        "category=None"
+      ],
+      "correct": 0,
+      "explanation": "Chưa có tenant filter hay quyền khác trong đoạn này."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Popularity ordering",
+      "question": "popular_posts sắp theo field nào?",
+      "options": [
+        "comment_count",
+        "-views",
+        "-created_at",
+        "title"
+      ],
+      "correct": 1,
+      "explanation": "Post model trước đó chưa có field views."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Popular limit",
+      "question": "Query popular lấy tối đa bao nhiêu Post?",
+      "options": [
+        "100",
+        "Tất cả",
+        "10",
+        "3"
+      ],
+      "correct": 2,
+      "explanation": "Slice chỉ giới hạn tập popular này."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Popular template",
+      "question": "View render template nào?",
+      "options": [
+        "profile.html",
+        "blog/create.html",
+        "base.py",
+        "popular.html"
+      ],
+      "correct": 3,
+      "explanation": "Context truyền key posts."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Async declaration",
+      "question": "async_api được khai báo bằng cú pháp nào?",
+      "options": [
+        "async def",
+        "def async",
+        "await class",
+        "thread def"
+      ],
+      "correct": 0,
+      "explanation": "Đây là coroutine function trong Python."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Sync adapter",
+      "question": "Source dùng công cụ nào để gọi get_data đồng bộ từ async view?",
+      "options": [
+        "cache_page",
+        "sync_to_async",
+        "async_to_sync trong expression đã cho",
+        "select_related"
+      ],
+      "correct": 1,
+      "explanation": "Symbol này còn cần import từ asgiref.sync."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Await result",
+      "question": "await sync_to_async(get_data)() nhận kết quả vào biến nào?",
+      "options": [
+        "context",
+        "request",
+        "data",
+        "posts"
+      ],
+      "correct": 2,
+      "explanation": "Hàm get_data chưa được định nghĩa trong snippet."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Async response",
+      "question": "async_api trả response loại nào?",
+      "options": [
+        "TemplateView",
+        "StreamingHttpResponse được viết sẵn",
+        "Một queryset trực tiếp",
+        "JsonResponse"
+      ],
+      "correct": 3,
+      "explanation": "Cần shape data phù hợp JsonResponse contract."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Foreign key optimization",
+      "question": "Template đọc author và category của mỗi Post; source tối ưu phần nào?",
+      "options": [
+        "Nạp hai relation đơn bằng join phù hợp",
+        "Loại mọi SQL query",
+        "Tự phân trang mọi Post",
+        "Tự kiểm owner"
+      ],
+      "correct": 0,
+      "explanation": "Tối ưu dữ liệu cần đi cùng đúng phạm vi và representation."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Prefetch separation",
+      "question": "prefetch_related thường khác select_related ở cách nào?",
+      "options": [
+        "Tự bỏ permission",
+        "Thực hiện query riêng rồi ghép relation thay vì join mọi quan hệ vào query chính",
+        "Luôn chỉ dùng một SQL join",
+        "Tự lưu dữ liệu vào Redis"
+      ],
+      "correct": 1,
+      "explanation": "Chi tiết query tùy relation và queryset."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Nested loading intent",
+      "question": "Vì sao Comment queryset trong Prefetch còn select_related user?",
+      "options": [
+        "Để tự lọc tenant",
+        "Để khóa toàn bộ comments",
+        "Tránh query riêng lặp khi đọc user của từng Comment",
+        "Để tạo user mới"
+      ],
+      "correct": 2,
+      "explanation": "Nạp relation lồng cần theo nhu cầu template/API."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Missing relation gap",
+      "question": "Nếu Post chưa có reverse relation comments, query hiện tại có vấn đề gì?",
+      "options": [
+        "Django tự tạo Comment table",
+        "Count tự khai báo relation",
+        "Prefetch luôn bỏ qua tên không tồn tại",
+        "Lookup không khớp model contract"
+      ],
+      "correct": 3,
+      "explanation": "Cần bổ sung model/related_name và schema phù hợp."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Missing popularity field",
+      "question": "Post model không có views nhưng order_by(\"-views\") thì cần sửa gì?",
+      "options": [
+        "Thống nhất model/schema và định nghĩa chỉ số popularity theo yêu cầu",
+        "Đổi template title là đủ",
+        "Django tự thêm integer field",
+        "Cache tự đếm lượt xem"
+      ],
+      "correct": 0,
+      "explanation": "Tên field trong query phải tồn tại và có ý nghĩa nghiệp vụ."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Annotation versus stored data",
+      "question": "comment_count do annotate có tự trở thành cột lưu bền vững trên Post không?",
+      "options": [
+        "Có, Prefetch gọi save",
+        "Không",
+        "Có, annotate tự migrate DB",
+        "Có, Count tạo column"
+      ],
+      "correct": 1,
+      "explanation": "Đó là dữ liệu kết quả truy vấn, không tự thay schema."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Cache miss sentinel",
+      "question": "cache.get không có key thường trả gì nếu không chỉ định default khác?",
+      "options": [
+        "Số 0 bắt buộc",
+        "HTTP 404",
+        "None",
+        "QuerySet rỗng tự sinh"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt miss với một giá trị hợp lệ đã được cache."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Empty cached list",
+      "question": "Cache chứa [] nhưng code if not posts; nhánh miss có thể chạy không?",
+      "options": [
+        "Không, cache luôn trả truthy",
+        "Chỉ nếu có user",
+        "Chỉ nếu DEBUGFalse",
+        "Có, [] là falsy"
+      ],
+      "correct": 3,
+      "explanation": "Điều kiện truthiness nhầm dữ liệu rỗng với không có cache."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Empty cache correction",
+      "question": "Muốn cache list rỗng hợp lệ và phân biệt miss, điều kiện nào rõ hơn?",
+      "options": [
+        "Kiểm posts is None hoặc sentinel riêng theo hợp đồng",
+        "Luôn dùng if not posts",
+        "Kiểm len(title)",
+        "Đổi key thành empty_posts"
+      ],
+      "correct": 0,
+      "explanation": "Chọn sentinel không trùng giá trị dữ liệu hợp lệ."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Two cache layers",
+      "question": "Vì sao 300 giây low-level cache hết hạn chưa chắc response lập tức thay đổi?",
+      "options": [
+        "300 giây luôn bằng 15 phút",
+        "Per-view response cache có thời hạn 900 giây và có thể còn hit",
+        "Cache luôn bỏ TTL nhỏ hơn",
+        "Template tự là database snapshot vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "Mỗi tầng có lifecycle/key riêng."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Response hit skips body",
+      "question": "Khi per-view cache trả hit hợp lệ, body popular_posts có nhất thiết chạy để đọc low-level cache không?",
+      "options": [
+        "Có, cache_page chỉ đổi header",
+        "Có, body luôn query đủ",
+        "Không",
+        "Có, mọi request luôn gọi get_data"
+      ],
+      "correct": 2,
+      "explanation": "Không coi TTL của lớp trong là thời hạn freshness tổng tuyệt đối."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Cache backend uncertainty",
+      "question": "Import cache có chứng minh app dùng Redis phân tán chưa?",
+      "options": [
+        "Có, Django core cache luôn Redis",
+        "Có, key popular_posts là Redis URL",
+        "Có, cache_page tự cài Redis",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần xem CACHES/backend và môi trường triển khai thực."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Process local cache",
+      "question": "Nếu backend cache nằm trong bộ nhớ từng process, nhiều worker có thể thấy gì?",
+      "options": [
+        "Các cache riêng và hit/freshness khác nhau",
+        "Một cache phân tán tự động",
+        "Database tự đồng bộ mọi key",
+        "Mọi worker cùng một Pythonobject"
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi backend quyết định chia sẻ và tính nhất quán."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Cache key scope",
+      "question": "Key popular_posts hiện có chứa category/tenant/query variant không?",
+      "options": [
+        "Có, Prefetch gắn scope",
+        "Không",
+        "Có, cache tự thêm mọi biến local",
+        "Có, string tự biết user"
+      ],
+      "correct": 1,
+      "explanation": "Cần thiết kế key/invalidation theo dữ liệu thực sự ảnh hưởng kết quả."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Cache invalidation gap",
+      "question": "Khi Post mới published, source có explicit invalidation cache không?",
+      "options": [
+        "Có, auto_now xóa mọi pagecache",
+        "Có, render tự refresh",
+        "Không",
+        "Có, BooleanField tự xóa Redis"
+      ],
+      "correct": 2,
+      "explanation": "TTL và event-driven invalidation là các chính sách khác nhau."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Queryset serialization cache",
+      "question": "Đưa QuerySet vào cache có nên mặc định coi là live query luôn mới không?",
+      "options": [
+        "Có, QuerySet luôn poll DB",
+        "Có, pickle giữ live database cursor",
+        "Có, TTL không ảnh hưởng QuerySet",
+        "Không, cách serialize/evaluate và dữ liệu cache có lifecycle riêng"
+      ],
+      "correct": 3,
+      "explanation": "Representation/cache backend cần phù hợp compatibility và freshness contract."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Not automatic CPU speedup",
+      "question": "Gọi hàm CPU nặng qua sync_to_async có bảo đảm tính nhanh hơn không?",
+      "options": [
+        "Không",
+        "Có, tự tạo vô hạn lõi CPU",
+        "Có, await là vectorization",
+        "Có, cache_page biên dịch native"
+      ],
+      "correct": 0,
+      "explanation": "Adapter hỗ trợ ranh giới sync/async, không tự tối ưu thuật toán."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Missing adapter import",
+      "question": "sync_to_async trong source được import đầy đủ chưa?",
+      "options": [
+        "Rồi, JsonResponse tự import",
+        "Chưa",
+        "Rồi, cache_page cung cấp tên đó",
+        "Rồi, Python built-in luôn có"
+      ],
+      "correct": 1,
+      "explanation": "Cần từ asgiref.sync và dependency phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Missing function",
+      "question": "get_data được định nghĩa ở đoạn nguồn này chưa?",
+      "options": [
+        "Rồi, cache chứa function",
+        "Rồi, Count tự tạo",
+        "Chưa",
+        "Rồi, Django tự sinh từ tên view"
+      ],
+      "correct": 2,
+      "explanation": "Không suy công việc, return type hay query cost của hàm chưa được đưa ra."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Async introduction version",
+      "question": "Comment gắn async views với 4.1 có nên hiểu là Django chỉ bắt đầu có async views từ 4.1 không?",
+      "options": [
+        "Có, trước 4.1 không có async def",
+        "Có, ORM và view async là cùng một lần ra mắt",
+        "Có, cache chỉ chạy từ 4.1",
+        "Không, hỗ trợ async views được giới thiệu từ 3.1"
+      ],
+      "correct": 3,
+      "explanation": "Các mốc async view và các API ORM async cần được phân biệt."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Sync only ORM boundary",
+      "question": "Gọi phần ORM đồng bộ không an toàn trực tiếp trong async context có thể gây gì?",
+      "options": [
+        "Cơ chế async safety báo lỗi như SynchronousOnlyOperation",
+        "Tự đổi toàn bộ ORM thành nonblocking",
+        "Tự tạo transaction phân tán",
+        "Chỉ thay content type"
+      ],
+      "correct": 0,
+      "explanation": "Dùng API async phù hợp hoặc đóng gói sync helper đúng phạm vi."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Thread sensitive default",
+      "question": "Theo asgiref hiện đại được Django 5.2 docs mô tả, sync_to_async có chế độ mặc định nào?",
+      "options": [
+        "Luôn chạy mọi call song song trên vô hạn thread",
+        "thread_sensitive=True",
+        "Luôn tạo process mới",
+        "Luôn tắt thread safety"
+      ],
+      "correct": 1,
+      "explanation": "Cần xét version/config và đặc tính dependency đồng bộ."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Thread sensitive meaning",
+      "question": "thread_sensitive=True có bảo đảm luôn chạy trên main thread trong mọi stack không?",
+      "options": [
+        "Có, vì Python chỉ có một thread",
+        "Không, luôn tạo process mới",
+        "Không, phụ thuộc stack; có thể dùng shared thread phù hợp",
+        "Có, không có ngoại lệ"
+      ],
+      "correct": 2,
+      "explanation": "Không đơn giản hóa adapter thành lời hứa main-thread tuyệt đối."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Raw connection transfer",
+      "question": "Vì sao tránh truyền raw DB connection tùy ý qua ranh giới sync_to_async?",
+      "options": [
+        "Vì mọi connection là JSON",
+        "Vì Python không cho tham số hàm",
+        "Vì cache key quá ngắn",
+        "Connection có thể ràng buộc thread/lifecycle"
+      ],
+      "correct": 3,
+      "explanation": "Nên đóng gói thao tác DB trong helper phù hợp thay vì truyền handle sai scope."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Async transactions baseline",
+      "question": "Trong Django 5.2, phần cần transaction nên tổ chức thế nào theo docs async?",
+      "options": [
+        "Gói phần DB transaction trong hàm sync và gọi adapter phù hợp",
+        "Mặc định mọi async ORM transaction đã hỗ trợ đầy đủ",
+        "Đặt await trước transaction bất kỳ là đủ",
+        "Đổi view thành lambda"
+      ],
+      "correct": 0,
+      "explanation": "Không suy hỗ trợ async queries đồng nghĩa hỗ trợ mọi transaction async."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Async response shape",
+      "question": "Nếu get_data trả list và dùng JsonResponse(data) với safe mặc định, có thể cần gì?",
+      "options": [
+        "Chỉ gọi select_related",
+        "Envelope dict hoặc safe=False theo API contract",
+        "Chỉ thêm await lần nữa",
+        "Chỉ đổi cache TTL"
+      ],
+      "correct": 1,
+      "explanation": "Source chưa xác định return type nên câu hỏi phải nêu giả định."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Q import status",
+      "question": "Q được import có nghĩa query hiện tại đã dùng điều kiện OR phức tạp chưa?",
+      "options": [
+        "Có, Count gọi Q ngầm theo source",
+        "Có, cache_page luôn OR",
+        "Không, source chưa dùng Q trong expression",
+        "Có, import tự thêm OR"
+      ],
+      "correct": 2,
+      "explanation": "Import symbol không là implementation điều kiện."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "SQL explain intent",
+      "question": "Muốn đánh giá index/query plan nên xem công cụ nào theo backend?",
+      "options": [
+        "Chỉ tên view có chữpopular",
+        "Chỉ thời hạn cache",
+        "Chỉ số dòng template",
+        "Query plan/EXPLAIN và đo workload phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Plan cần được diễn giải với dữ liệu và môi trường thực."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Index write tradeoff",
+      "question": "Thêm nhiều index có thể ảnh hưởng phần nào ngoài tốc độ đọc?",
+      "options": [
+        "Chi phí ghi và dung lượng",
+        "Chỉ màu UI",
+        "Chỉ tên template",
+        "Không có đánh đổi nào"
+      ],
+      "correct": 0,
+      "explanation": "Không mặc định mọi index đều cải thiện toàn workload."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Join multiplication",
+      "question": "Annotate count trên query có thêm nhiều quan hệ nhiều có thể gặp gì?",
+      "options": [
+        "Chỉ đổi kiểu result thành string",
+        "Count bị nhân do cardinality join nếu không thiết kế đúng",
+        "Count luôn tự đúng mọi cấu hình",
+        "Django tự bỏ mọi join"
+      ],
+      "correct": 1,
+      "explanation": "Cần distinct/subquery hoặc thiết kế query phù hợp trường hợp."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Prefetch cache filtering",
+      "question": "Prefetch comments.all rồi consumer gọi comments.filter(...), có nên mặc định dùng lại toàn bộ cache đó không?",
+      "options": [
+        "Có, Prefetch cache mọi tổ hợp predicate",
+        "Có, Count tự lọc trong Python",
+        "Không, query mới có thể khác và cần đánh giá lại",
+        "Có, mọi filter đều zero-query"
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu phải khớp cách consumer thực sự truy cập relation."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Prefetch memory tradeoff",
+      "question": "Prefetch lượng related objects rất lớn có thể tăng gì?",
+      "options": [
+        "Chỉ thời hạn session",
+        "Chỉ độ dài route",
+        "Không bao giờ tăng tài nguyên",
+        "Bộ nhớ và khối lượng dữ liệu nạp"
+      ],
+      "correct": 3,
+      "explanation": "Giảm số query không đồng nghĩa giảm mọi chi phí."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Only deferred fields",
+      "question": "Nếu dùng only/defer rồi template đọc field bị defer, điều gì có thể xảy ra?",
+      "options": [
+        "Query bổ sung khi cần field theo cơ chế phù hợp",
+        "Tự thành None vĩnh viễn",
+        "Tự mất row",
+        "Luôn được cache_page giải quyết"
+      ],
+      "correct": 0,
+      "explanation": "Projection cần theo fields consumer dùng, đặc biệt xét context sync/async."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Queryset result cache",
+      "question": "Cùng QuerySet đã evaluate được đọc lại thường có thể dùng gì?",
+      "options": [
+        "HTTP response của user khác",
+        "Result cache của chính instance đó",
+        "Mọi cache của tất cả query tương lai",
+        "Database lock vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "QuerySet cache khác cache backend và per-view cache."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Fresh queryset cost",
+      "question": "Hai lần tạo Post.objects.filter(...) riêng dù cùng expression có tự dùng chung result cache không?",
+      "options": [
+        "Có, ORM tự global memoize",
+        "Có, model class chứa kết quả mọi query",
+        "Không nên mặc định như vậy",
+        "Có, mọi SQL string giống nhau luôn một cache Python"
+      ],
+      "correct": 2,
+      "explanation": "Cần xem instance/evaluation và cache được thiết kế thực tế."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Cache privacy scope",
+      "question": "Popular page có dữ liệu riêng theo user thì key/response cache cần xem gì?",
+      "options": [
+        "Chỉ tăng TTL",
+        "Chỉ đổi template path",
+        "Chỉ thêm select_related",
+        "Phạm vi user/tenant và Vary/private policy phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Caching sai scope có thể phục vụ dữ liệu chéo người dùng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Cache deletion alone",
+      "question": "Xóa low-level key có nhất thiết xóa per-view response đã cache không?",
+      "options": [
+        "Không, hai lớp có key/lifecycle riêng",
+        "Có, tên function tự liên kết mọi key",
+        "Có, cache_page không lưu response",
+        "Có, TTL 300 xóa mọi cache"
+      ],
+      "correct": 0,
+      "explanation": "Invalidation phải bao phủ các tầng thực có thể trả dữ liệu."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Async deployment context",
+      "question": "Async view dưới WSGI có tự cung cấp toàn lợi ích long-lived async request stack như ASGI không?",
+      "options": [
+        "Có, Django tự thay protocol",
+        "Không, cần xét server/middleware và cơ chế adaptation",
+        "Có, async def đổi mọi hạ tầng thành ASGI",
+        "Có, await tự mở server"
+      ],
+      "correct": 1,
+      "explanation": "Lợi ích phụ thuộc cả request stack và workload."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Celery source gap",
+      "question": "Level description nhắc Celery; source đã có task/broker/worker configuration chưa?",
+      "options": [
+        "Rồi, cache.set tự tạo job",
+        "Rồi, Prefetch là worker",
+        "Chưa",
+        "Rồi, async def là Celery task"
+      ],
+      "correct": 2,
+      "explanation": "Không đồng nhất async view với background task queue."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Measurement scope",
+      "question": "Một query ít hơn có đủ kết luận latency/throughput production tốt hơn không?",
+      "options": [
+        "Có, query count là mọi bằng chứng",
+        "Có, Django 5.2 luôn nhanh hơn",
+        "Có, cache có TTL",
+        "Chưa, cần đo tổng chi phí với workload phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Query count là một chỉ báo, không thay đo thời gian/tài nguyên thực."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Empty negative cache bug",
+      "question": "Không có Post published, cache đã lưu []; request sau qua body vẫn query DB. Sửa điều kiện thế nào?",
+      "options": [
+        "Phân biệt miss bằng None/sentinel thay vì truthiness và giữ chính sách invalidation",
+        "Tăng TTL để [] thành truthy",
+        "Đổi template_name",
+        "Chỉ thêm select_related"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu rỗng hợp lệ cần được phân biệt với key không tồn tại."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Layered stale response",
+      "question": "Low-level data đã refresh sau 300 giây nhưng user vẫn thấy nội dung cũ trong 900 giây. Cần xem gì?",
+      "options": [
+        "Chỉ Python version",
+        "Response cache bên ngoài và chính sách freshness/invalidation của cả hai tầng",
+        "Chỉ thứ tự Post Meta",
+        "Chỉ tên field views"
+      ],
+      "correct": 1,
+      "explanation": "Cache hit ở tầng ngoài có thể bỏ qua toàn body view."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Tenant cache leak",
+      "question": "Tenant A làm nóng key popular_posts, tenant B nhận cùng list dù queryset dự kiến khác; sửa nguyên nhân gì?",
+      "options": [
+        "Chỉ đổi CSS",
+        "Chỉ gắn LoginRequiredMixin ở một view khác",
+        "Thiết kế data/response cache keys và scope theo tenant cùng policy truy vấn",
+        "Chỉ giảm TTL xuống một giây"
+      ],
+      "correct": 2,
+      "explanation": "TTL ngắn không thay tính đúng của partition dữ liệu."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Cache stampede",
+      "question": "Key hết hạn và nhiều request cùng query/render nặng; cần cân nhắc gì?",
+      "options": [
+        "Bỏ mọi cache vĩnh viễn",
+        "Chỉ đổi key name",
+        "Chỉ thêm Count",
+        "Cơ chế chống stampede/single-flight/TTL policy phù hợp backend và consistency yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Phải hiểu khả năng atomicity/lock của backend, không mặc định cache.get/set là transaction."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Publish invalidation",
+      "question": "Post bị unpublish nhưng còn trong cache page và data; muốn không lộ theo policy phải làm gì?",
+      "options": [
+        "Phối hợp visibility/invalidation của mọi tầng có thể trả dữ liệu theo yêu cầu freshness",
+        "Chỉ sửa published trong DB và coi mọi cache tự mới",
+        "Chỉ ẩn link ở UI",
+        "Chỉ refresh một key không xem tầng ngoài"
+      ],
+      "correct": 0,
+      "explanation": "Dữ liệu đã cache có thể vượt thời điểm thay đổi quyền/nội dung."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Annotation count correctness",
+      "question": "Thêm tags join vào query đếm comments khiến số comment tăng sai; hướng chẩn đoán là gì?",
+      "options": [
+        "Chỉ cache kết quả sai lâu hơn",
+        "Xem cardinality SQL và chọn distinct/subquery/query tách phù hợp ý nghĩa count",
+        "Chỉ ép count thành int",
+        "Chỉ tăng page size"
+      ],
+      "correct": 1,
+      "explanation": "Cần giữ semantics phép đếm khi tối ưu query."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Prefetch unused cost",
+      "question": "Prefetch toàn comments nhưng template chỉ dùng comment_count; tối ưu phù hợp là gì?",
+      "options": [
+        "Chỉ đổi TTL",
+        "Chỉ đổi template key",
+        "Bỏ nạp object không dùng nếu hợp đồng cho phép, giữ aggregate đúng và đo lại",
+        "Nạp thêm mọi User để chắc chắn nhanh hơn"
+      ],
+      "correct": 2,
+      "explanation": "Số query thấp có thể đi kèm payload/bộ nhớ lớn không cần thiết."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Filtered relation N plus one",
+      "question": "Đã prefetch comments nhưng loop gọi comments.filter(visible=True) mỗi Post; vì sao vẫn N+1?",
+      "options": [
+        "Prefetch không bao giờ hoạt động",
+        "Count luôn xóa cache",
+        "cache_page chặn mọi query",
+        "Consumer tạo truy vấn khác cache đã nạp; cần Prefetch/queryset/to_attr theo cách dùng phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Data loading phải theo predicate/access pattern thực."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Schema mismatch before tuning",
+      "question": "Query source lỗi vì Post.views và comments relation chưa tồn tại; bước đúng trước đo performance là gì?",
+      "options": [
+        "Hoàn thiện model/relation/schema và query contract rồi mới đo tối ưu",
+        "Chỉ tăng số worker",
+        "Chỉ thêm cache",
+        "Chỉ đổi async def"
+      ],
+      "correct": 0,
+      "explanation": "Đo một mô hình chưa chạy đúng không thay sửa correctness."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Async unsafe transaction",
+      "question": "Async view cần nhiều ORM writes atomic nhưng gọi sync-only ORM trực tiếp; thiết kế phù hợp baseline 5.2?",
+      "options": [
+        "Chỉ đổi JsonResponse thành dict",
+        "Đóng gói transaction sync thành helper và gọi qua adapter đúng lifecycle",
+        "Tắt mọi async safety checks",
+        "Chỉ thêm await trước mọi tên sync"
+      ],
+      "correct": 1,
+      "explanation": "Phải giữ cả ranh giới async safety và invariant transaction."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Connection thread affinity",
+      "question": "Truyền raw connection tạo ở thread ngoài vào helper thread rồi lỗi; hướng sửa là gì?",
+      "options": [
+        "Chỉ tăng TTL",
+        "Chỉ đổi query limit",
+        "Gói thao tác truy cập DB trong helper quản lý connection/thread phù hợp",
+        "Đổi thread_sensitive=False mù quáng"
+      ],
+      "correct": 2,
+      "explanation": "Không phá thread affinity để che lỗi context."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "CPU bottleneck adaptation",
+      "question": "get_data CPU-bound nặng, chỉ thêm sync_to_async rồi báo nhanh hơn; cần đánh giá gì?",
+      "options": [
+        "Coi await là bằng chứng parallel CPU",
+        "Chỉ tăng response TTL",
+        "Chỉ đổi tên hàm",
+        "Đo workload và chọn thuật toán/execution model phù hợp, không suy adapter là tăng tốc"
+      ],
+      "correct": 3,
+      "explanation": "Concurrency I/O và chi phí tính toán cần được phân biệt."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Cache backend availability",
+      "question": "Cache backend lỗi trong request phổ biến; policy hệ thống cần xác định gì?",
+      "options": [
+        "Fallback/fail behavior, limits và quan sát để không làm DB quá tải hay phục vụ sai dữ liệu",
+        "Luôn nuốt mọi lỗi không log",
+        "Luôn bỏ auth để giảm tải",
+        "Chỉ đổi key prefix"
+      ],
+      "correct": 0,
+      "explanation": "Cache failure có thể đổi tải và semantics, cần thiết kế theo yêu cầu."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Counter concurrency",
+      "question": "Nếu tăng views bằng đọc giá trị rồi save ở nhiều request, có thể gây gì và cần sửa gì?",
+      "options": [
+        "auto_now chống mọi race",
+        "Lost update; dùng thao tác atomic/chính sách counter phù hợp khi thiết kế field",
+        "select_related tự khóa counter",
+        "Cache TTL tự cộng đúng"
+      ],
+      "correct": 1,
+      "explanation": "Field count cần hợp đồng cạnh tranh, không chỉ order_by."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Ordering index tradeoff",
+      "question": "Muốn published=True và order_by(\"-views\") nhanh trên bảng lớn; nên chọn index theo gì?",
+      "options": [
+        "Chỉ tên view popular",
+        "Chỉ kích thước HTML",
+        "Query plan, phân bố dữ liệu, ordering và chi phí ghi theo backend",
+        "Luôn thêm index cho mọi field"
+      ],
+      "correct": 2,
+      "explanation": "Không có cấu hình index tối ưu duy nhất cho mọi workload."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Cache representation migration",
+      "question": "Deploy model/schema mới nhưng cache giữ object cũ; cần gì?",
+      "options": [
+        "Tin Python pickle tự migrate mọi schema",
+        "Chỉ đổi label",
+        "Chỉ tăng TTL",
+        "Version/serialization/compatibility và invalidation policy phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Cache cũng là dữ liệu ngoài runtime hiện tại cần lifecycle."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Async body shape failure",
+      "question": "get_data trả list, JsonResponse safe mặc định lỗi sau await; sửa đúng hợp đồng là gì?",
+      "options": [
+        "Định nghĩa envelope/representation hoặc safe=False có chủ đích, không quy lỗi cho async",
+        "Gọi await hai lần",
+        "Tắt mọi validation",
+        "Chỉ chạy WSGI"
+      ],
+      "correct": 0,
+      "explanation": "Kết quả async thành công chưa bảo đảm response serialization hợp lệ."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Per view personalized output",
+      "question": "Template có username mà response cache không partition đúng; rủi ro cần giải quyết là gì?",
+      "options": [
+        "Django ORM tự sửa HTTP cache",
+        "Rò dữ liệu giữa viewer; cần cache key/Vary/private policy đúng ngữ cảnh",
+        "Chỉ font khác nhau",
+        "Không có vì template autoescape"
+      ],
+      "correct": 1,
+      "explanation": "Escaping output không thay cache isolation."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Measurement design",
+      "question": "Sau giảm query count nhưng latency tăng, nên điều tra gì?",
+      "options": [
+        "Chỉ đổi tên operator",
+        "Chỉ thêm cache không giới hạn",
+        "Query complexity, payload, memory, cache/scheduler và workload đo thay vì chỉ số query",
+        "Kết luận đo lường sai vì ít query luôn nhanh"
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu cần bằng chứng tổng thể và correctness giữ nguyên."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Production evidence boundary",
+      "question": "Trước công bố tối ưu hiệu quả, bộ bằng chứng nào phù hợp?",
+      "options": [
+        "Chỉ source có select_related",
+        "Chỉ dùng async def",
+        "Chỉ một response mock",
+        "Correctness/query results và đo so sánh workload/môi trường được mô tả, phân biệt cache warm/cold"
+      ],
+      "correct": 3,
+      "explanation": "Framework API hay giả lập output không tự chứng minh hiệu năng hệ thống."
+    }
+  ]
+}

@@ -1,0 +1,1136 @@
+{
+  "version": 1,
+  "tech": "python",
+  "level": "master",
+  "lesson": "metaclasses",
+  "language": "vi",
+  "sourceHash": "19a5e3d333fd4361d7d82ac8094c662591359d7cf14ef63deb080e9d537c1728",
+  "status": "approved",
+  "review": "Tự biên soạn, không API sinh nội dung; đối chiếu Python 3.12 tại máy. Rà type/metaclass, descriptor precedence, set_name, slots và AutoRegister. Đính chính ví dụ min_val=0 bị bỏ qua do kiểm tra truthiness; không cam kết phần trăm tiết kiệm RAM cố định.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Metaclass",
+      "question": "Metaclass được mô tả chính xác nhất là gì?",
+      "options": [
+        "Lớp của một đối tượng lớp, tham gia tạo/hành vi của lớp đó.",
+        "Một instance bất kỳ của lớp nghiệp vụ.",
+        "Một module chỉ chứa chuỗi.",
+        "Một thread quản lý mọi class."
+      ],
+      "correct": 0,
+      "explanation": "Class cũng là object và có kiểu; metaclass là kiểu của class object."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Metaclass thông thường",
+      "question": "Đối với class A: pass thông thường, type(A) là gì?",
+      "options": [
+        "str",
+        "type",
+        "A",
+        "object() instance"
+      ],
+      "correct": 1,
+      "explanation": "Metaclass mặc định thông thường là type."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Tạo metaclass tùy chỉnh",
+      "question": "Cú pháp cơ bản nào tạo metaclass dựa trên type?",
+      "options": [
+        "metaclass Meta extends type:",
+        "def Meta: type",
+        "class Meta(type):",
+        "class Meta(metaclass): luôn có tên đó sẵn"
+      ],
+      "correct": 2,
+      "explanation": "Kế thừa type cho phép can thiệp quá trình tạo class theo cơ chế chuẩn."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Chọn metaclass",
+      "question": "Cách nào chỉ định Meta làm metaclass của A?",
+      "options": [
+        "class A(Meta()) bắt buộc",
+        "class A: metaclass Meta",
+        "@metaclass(Meta) là cú pháp built-in bắt buộc",
+        "class A(metaclass=Meta):"
+      ],
+      "correct": 3,
+      "explanation": "Keyword metaclass trong đầu class là cách chỉ định trực tiếp."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Type một đối số",
+      "question": "type(obj) chủ yếu trả gì?",
+      "options": [
+        "Kiểu của obj",
+        "Một bản sao sâu của obj",
+        "Chuỗi JSON của obj",
+        "Tên file chứa obj"
+      ],
+      "correct": 0,
+      "explanation": "Đây là dạng một đối số của type."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Type ba đối số",
+      "question": "type(name,bases,namespace) chủ yếu làm gì?",
+      "options": [
+        "Chạy một test tự động.",
+        "Tạo class mới từ tên, tuple lớp cha và namespace.",
+        "Chỉ in tên của class có sẵn.",
+        "Tạo ba instance giống nhau."
+      ],
+      "correct": 1,
+      "explanation": "Dạng ba đối số là cơ chế tạo class động."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Descriptor",
+      "question": "Descriptor protocol cho phép một object làm gì khi đặt trên class?",
+      "options": [
+        "Tự nén mọi dữ liệu.",
+        "Chỉ được lưu số nguyên.",
+        "Tham gia điều khiển truy cập/gán/xóa thuộc tính theo các hook được hỗ trợ.",
+        "Tự thay mọi method bằng thread."
+      ],
+      "correct": 2,
+      "explanation": "Descriptor là nền tảng cho nhiều hành vi thuộc tính, gồm property."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Hook đọc",
+      "question": "Hook nào xử lý truy cập giá trị của descriptor?",
+      "options": [
+        "__read_all__",
+        "__open__",
+        "__next__",
+        "__get__"
+      ],
+      "correct": 3,
+      "explanation": "__get__ tham gia attribute lookup khi descriptor được truy cập phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Hook ghi",
+      "question": "Hook nào xử lý gán giá trị qua descriptor?",
+      "options": [
+        "__set__",
+        "__append__",
+        "__write_file__",
+        "__call_next__"
+      ],
+      "correct": 0,
+      "explanation": "__set__ có thể validate và lưu dữ liệu theo chính sách."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Hook xóa",
+      "question": "Hook descriptor nào tương ứng thao tác xóa thuộc tính?",
+      "options": [
+        "__clear__",
+        "__delete__",
+        "__del__ luôn là cùng hook",
+        "__remove_all__"
+      ],
+      "correct": 1,
+      "explanation": "__delete__ của descriptor khác finalizer __del__ của object."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Set name",
+      "question": "__set_name__(self,owner,name) thường giúp descriptor biết gì?",
+      "options": [
+        "Mọi giá trị của mọi instance.",
+        "Tên file log bắt buộc.",
+        "Lớp sở hữu và tên thuộc tính khi được gắn trong quá trình tạo lớp.",
+        "Tên người dùng hệ điều hành."
+      ],
+      "correct": 2,
+      "explanation": "Thông tin tên giúp descriptor chọn storage name hoặc cấu hình liên quan."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Data descriptor",
+      "question": "Một descriptor có __set__ hoặc __delete__ thường được phân loại thế nào?",
+      "options": [
+        "Chỉ một list",
+        "Module descriptor bắt buộc",
+        "Non-data descriptor theo định nghĩa đó",
+        "Data descriptor"
+      ],
+      "correct": 3,
+      "explanation": "Sự có mặt hook ghi/xóa quyết định phân loại data descriptor."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Non-data descriptor",
+      "question": "Descriptor chỉ có __get__, không có __set__/__delete__, là gì?",
+      "options": [
+        "Non-data descriptor",
+        "Data descriptor luôn",
+        "Một thuộc tính không thể đọc",
+        "Một metaclass bắt buộc"
+      ],
+      "correct": 0,
+      "explanation": "Phân loại ảnh hưởng ưu tiên so với instance dictionary trong lookup chuẩn."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Property",
+      "question": "property là ví dụ của cơ chế nào?",
+      "options": [
+        "JSON encoder",
+        "Descriptor",
+        "Process pool",
+        "Module loader bắt buộc"
+      ],
+      "correct": 1,
+      "explanation": "Property dùng giao thức truy cập thuộc tính có quản lý."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Slots",
+      "question": "__slots__ trong một class phù hợp chủ yếu dùng để làm gì?",
+      "options": [
+        "Tự biến object thành database record.",
+        "Tự tăng tốc mọi thuật toán 40%.",
+        "Khai báo các vị trí thuộc tính và có thể tránh __dict__ riêng theo điều kiện kế thừa.",
+        "Mã hóa object."
+      ],
+      "correct": 2,
+      "explanation": "Slots liên quan bố trí thuộc tính/bộ nhớ, không phải cam kết hiệu năng cố định."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Instance dictionary",
+      "question": "__dict__ của instance thông thường lưu gì?",
+      "options": [
+        "Mọi biến global của mọi module.",
+        "Chỉ method của metaclass.",
+        "Một bảng SQL bền vững.",
+        "Ánh xạ các thuộc tính instance được hỗ trợ theo cơ chế đó."
+      ],
+      "correct": 3,
+      "explanation": "Không phải mọi object đều có __dict__, đặc biệt theo cấu hình slots."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Storage descriptor",
+      "question": "Descriptor dùng setattr(obj,\"_age\",value) trong __set__ thường nhằm gì?",
+      "options": [
+        "Lưu giá trị ở thuộc tính nền khác với tên public age.",
+        "Tự lưu toàn bộ object ra đĩa.",
+        "Gán mọi instance cùng giá trị.",
+        "Đổi class của obj thành int."
+      ],
+      "correct": 0,
+      "explanation": "Dùng tên storage khác giúp tránh gọi lại cùng descriptor vô hạn."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Class-level access",
+      "question": "Khi descriptor được truy cập qua class theo lookup thông thường, đối số obj trong __get__ thường là gì?",
+      "options": [
+        "Luôn descriptor owner instance",
+        "None",
+        "Một instance mới tự tạo",
+        "Tên class dạng str"
+      ],
+      "correct": 1,
+      "explanation": "Descriptor có thể xử lý riêng class access bằng cách trả chính nó hoặc giá trị phù hợp."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Auto registration",
+      "question": "Metaclass AutoRegister thường phục vụ mục tiêu gì?",
+      "options": [
+        "Tự cấp quyền admin cho mọi instance.",
+        "Tự ghi mọi field thành JSON.",
+        "Đăng ký class được tạo theo quy tắc đã định.",
+        "Đăng ký mọi user lên dịch vụ ngoài bắt buộc."
+      ],
+      "correct": 2,
+      "explanation": "Registry class giúp tra cứu plugin/kiểu theo định danh trong phạm vi thiết kế."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Validation ranh giới",
+      "question": "Nếu min_val=0 là ràng buộc hợp lệ, nên kiểm tra nó có được cấu hình bằng gì?",
+      "options": [
+        "if min_val: luôn đủ",
+        "min_val > 0: luôn đủ",
+        "not min_val: nghĩa không có ràng buộc",
+        "min_val is not None"
+      ],
+      "correct": 3,
+      "explanation": "0 là falsy nhưng có thể là cận hợp lệ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Class là object có kiểu",
+      "question": "Đoạn code in gì?",
+      "code": "class A: pass\nprint(type(A) is type)",
+      "options": [
+        "True",
+        "False",
+        "A",
+        "TypeError"
+      ],
+      "correct": 0,
+      "explanation": "A được tạo bởi metaclass mặc định type."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Metaclass tùy chỉnh",
+      "question": "Dòng cuối in gì?",
+      "code": "class Meta(type): pass\nclass A(metaclass=Meta): pass\nprint(type(A) is Meta)",
+      "options": [
+        "AttributeError",
+        "True",
+        "False",
+        "Meta"
+      ],
+      "correct": 1,
+      "explanation": "Class A được tạo bằng Meta nên type(A) là Meta."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Tạo class động",
+      "question": "Đoạn code in gì?",
+      "code": "A = type(\"A\", (), {\"x\": 3})\nprint(A().x)",
+      "options": [
+        "A",
+        "TypeError",
+        "3",
+        "None"
+      ],
+      "correct": 2,
+      "explanation": "Namespace tạo class có thuộc tính x=3."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Hook new của metaclass",
+      "question": "Trong Meta.__new__(mcls,name,bases,namespace), name thường là gì?",
+      "options": [
+        "Tên instance đang gọi method nghiệp vụ",
+        "Tên mọi module",
+        "Tên user hiện tại",
+        "Tên class đang được tạo"
+      ],
+      "correct": 3,
+      "explanation": "Metaclass nhận dữ liệu định nghĩa class, không phải dữ liệu khởi tạo instance thông thường."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Trả class từ metaclass",
+      "question": "Một Meta.__new__ muốn giữ hành vi tạo class chuẩn thường gọi gì?",
+      "options": [
+        "super().__new__(mcls, name, bases, namespace)",
+        "object.__init__(namespace) rồi return None",
+        "return name luôn",
+        "return namespace luôn"
+      ],
+      "correct": 0,
+      "explanation": "Gọi triển khai cha tạo class object từ cấu trúc đã xử lý."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Bổ sung thuộc tính class",
+      "question": "Đoạn code in gì?",
+      "code": "class Meta(type):\n    def __new__(mcls, name, bases, ns):\n        ns[\"flag\"] = \"yes\"\n        return super().__new__(mcls, name, bases, ns)\nclass A(metaclass=Meta): pass\nprint(A.flag)",
+      "options": [
+        "TypeError",
+        "yes",
+        "None",
+        "flag"
+      ],
+      "correct": 1,
+      "explanation": "Metaclass thêm flag vào namespace trước khi tạo class."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Descriptor lưu theo instance",
+      "question": "Hai instance có age khác nhau. Descriptor muốn giữ chúng riêng nên lưu giá trị ở đâu theo ví dụ?",
+      "options": [
+        "Một global age duy nhất.",
+        "Tên lớp owner chỉ có một giá trị.",
+        "Storage attribute trên từng obj.",
+        "Một self.value duy nhất trên descriptor dùng chung cho mọi obj."
+      ],
+      "correct": 2,
+      "explanation": "Descriptor object thường nằm trên class; dữ liệu từng instance cần được phân biệt rõ."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Gán lại cùng public name gây đệ quy",
+      "question": "Trong __set__(self,obj,value), vì sao setattr(obj,\"age\",value) có thể lặp vô hạn nếu descriptor đang quản lý age?",
+      "options": [
+        "setattr không bao giờ dùng được với int.",
+        "Python tự xóa age.",
+        "Descriptor không thể có __set__.",
+        "Nó gọi lại chính __set__ qua cùng tên public."
+      ],
+      "correct": 3,
+      "explanation": "Dùng storage khác hoặc cơ chế lưu phù hợp để tránh gọi vòng."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Get storage khác public",
+      "question": "Nếu descriptor age lưu ở _age, __get__ muốn đọc giá trị nền thường dùng gì?",
+      "options": [
+        "getattr(obj, \"_age\", default phù hợp)",
+        "getattr(obj, \"age\") luôn an toàn",
+        "return self.age luôn",
+        "return owner toàn bộ"
+      ],
+      "correct": 0,
+      "explanation": "Đọc lại tên public có thể gây đệ quy tương tự setter."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Bug min zero",
+      "question": "Với min_val=0, điều kiện if self.min_val and value<self.min_val có chặn value=-1 không?",
+      "options": [
+        "Không vì -1 không nhỏ hơn 0.",
+        "Không; vế self.min_val là 0 falsy nên bỏ kiểm tra.",
+        "Có, luôn ném ValueError.",
+        "Có, 0 là truthy."
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm tra min_val is not None để bảo toàn cận 0."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Bug max zero",
+      "question": "Nếu max_val=0 hợp lệ, điều kiện if self.max_val and value>self.max_val có vấn đề gì?",
+      "options": [
+        "Nó biến value thành bool.",
+        "Nó tự xử lý None đúng cho mọi giá trị.",
+        "Nó bỏ qua cận 0 do truthiness.",
+        "Nó luôn từ chối mọi số âm."
+      ],
+      "correct": 2,
+      "explanation": "Cận có giá trị 0 không đồng nghĩa không có cận."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Ranh giới inclusive",
+      "question": "Nếu miền cho phép là 0..150 gồm hai đầu, nên từ chối theo điều kiện nào?",
+      "options": [
+        "value <= 0 hoặc value >= 150",
+        "value == 0 hoặc value == 150",
+        "value < 150 luôn",
+        "value < 0 hoặc value > 150"
+      ],
+      "correct": 3,
+      "explanation": "Inclusive giữ đúng các giá trị ở hai đầu."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Set name storage",
+      "question": "Nếu __set_name__ nhận name=\"age\" và đặt self.name=f\"_{name}\", storage name là gì?",
+      "options": [
+        "_age",
+        "age_",
+        "__name__",
+        "Student.age"
+      ],
+      "correct": 0,
+      "explanation": "Tiền tố _ tạo tên nền khác age public."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Slots không cho thuộc tính chưa khai báo",
+      "question": "Với class chỉ kế thừa object và __slots__=(\"x\",), gán a.y=2 thường gây gì?",
+      "options": [
+        "ValueError bắt buộc",
+        "AttributeError",
+        "Tự thêm y vào __dict__ luôn",
+        "Tự mở rộng tuple slots"
+      ],
+      "correct": 1,
+      "explanation": "Nếu không có instance dictionary từ lớp/cha, tên chưa có slot không gán được theo cách đó."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Slots có tên dict",
+      "question": "Muốn class slots vẫn cho thuộc tính động theo cơ chế dict, có thể khai báo thêm tên nào?",
+      "options": [
+        "__dynamic__",
+        "__fields_json__",
+        "__dict__",
+        "__all_attributes__"
+      ],
+      "correct": 2,
+      "explanation": "Thêm __dict__ cho phép instance dictionary trong cấu trúc được hỗ trợ."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Subclass không khai báo slots",
+      "question": "Một lớp con thông thường không khai báo __slots__ của lớp cha có slots có thể lại có __dict__ không?",
+      "options": [
+        "Không bao giờ",
+        "Chỉ nếu lớp cha có tên A",
+        "Chỉ khi chạy trên mạng",
+        "Có"
+      ],
+      "correct": 3,
+      "explanation": "Slots không tự buộc mọi lớp con tiếp tục không có dictionary."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Weak reference và slots",
+      "question": "Trong cấu trúc chỉ dùng slots phù hợp, muốn hỗ trợ weak reference có thể cần slot đặc biệt nào?",
+      "options": [
+        "__weakref__",
+        "__weak_cache__",
+        "__gc_off__",
+        "__memory_limit__"
+      ],
+      "correct": 0,
+      "explanation": "Weakref support phụ thuộc bố trí class/kế thừa; __weakref__ là tên slot liên quan."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Non-data bị shadow",
+      "question": "Với lookup instance chuẩn, một non-data descriptor cùng tên có thể bị thuộc tính trong instance __dict__ shadow không?",
+      "options": [
+        "Chỉ khi xóa class",
+        "Có",
+        "Không, mọi descriptor đều ưu tiên tuyệt đối",
+        "Chỉ nếu giá trị là None"
+      ],
+      "correct": 1,
+      "explanation": "Instance dictionary được ưu tiên trước non-data descriptor trong lookup thông thường."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Data descriptor precedence",
+      "question": "Với lookup instance chuẩn, data descriptor có ưu tiên so với cùng tên trong instance __dict__ không?",
+      "options": [
+        "Chỉ nếu field là int",
+        "Chỉ nếu class là dataclass",
+        "Có",
+        "Không bao giờ"
+      ],
+      "correct": 2,
+      "explanation": "Đây là khác biệt quan trọng giữa data và non-data descriptor."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Property read only",
+      "question": "Property chỉ có getter vẫn ngăn gán thông thường bằng setter không được cung cấp vì sao?",
+      "options": [
+        "Property chỉ là chuỗi tên.",
+        "Getter tự tạo setter hợp lệ.",
+        "Python không bao giờ gọi protocol trên property.",
+        "Property là data descriptor và xử lý gán không được phép bằng lỗi."
+      ],
+      "correct": 3,
+      "explanation": "Read-only property khác non-data descriptor có thể bị shadow đơn giản qua dict."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Class access trả descriptor",
+      "question": "Trong __get__, mẫu if obj is None: return self thường nhằm gì?",
+      "options": [
+        "Cho phép truy cập descriptor/configuration qua class.",
+        "Luôn tạo instance mới.",
+        "Bỏ mọi validation khi ghi.",
+        "Đổi descriptor thành global."
+      ],
+      "correct": 0,
+      "explanation": "Class-level access và instance-level access có thể cần hành vi khác nhau."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Ví dụ get với obj None",
+      "question": "Nếu __get__ chỉ return getattr(obj,self.name,None), khi obj=None kết quả thường là gì với tên storage _age?",
+      "options": [
+        "150",
+        "None",
+        "Chính descriptor tự động",
+        "Một Student mới"
+      ],
+      "correct": 1,
+      "explanation": "getattr(None,\"_age\",None) dùng mặc định; nếu muốn class access trả descriptor phải tự xử lý."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Set name không phải từng instance",
+      "question": "__set_name__ của descriptor trong thân lớp thông thường được gọi ở giai đoạn nào?",
+      "options": [
+        "Mỗi lần gán field.",
+        "Mỗi lần tạo instance luôn.",
+        "Khi class được tạo qua cơ chế chuẩn.",
+        "Mỗi lần đọc field."
+      ],
+      "correct": 2,
+      "explanation": "Tên field là thông tin gắn với class definition, không phải mỗi lượt đọc."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Gắn descriptor sau tạo lớp",
+      "question": "Nếu dùng setattr(A,\"x\",descriptor) sau khi A đã được tạo, __set_name__ có mặc định được gọi như lúc tạo class không?",
+      "options": [
+        "Có, mọi setattr luôn gọi __set_name__.",
+        "Chỉ khi x là int.",
+        "Chỉ nếu đã có một instance.",
+        "Không; cần quản lý khởi tạo tên phù hợp nếu descriptor cần nó."
+      ],
+      "correct": 3,
+      "explanation": "Thông báo set_name tự động thuộc quy trình tạo class, không mọi lần gán động."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Registry key",
+      "question": "Để lấy subclass theo tên trong registry, cấu trúc nào phù hợp?",
+      "options": [
+        "Dict từ định danh tới class object.",
+        "Một int duy nhất.",
+        "Một chuỗi mọi tên dính liền không có quy tắc.",
+        "Một file đang mở luôn."
+      ],
+      "correct": 0,
+      "explanation": "Class object có thể được lưu như giá trị cho tra cứu/tạo instance sau đó."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Tạo instance từ registry",
+      "question": "registry[\"circle\"] đã là class Circle. Cách thông thường tạo instance bán kính 2 là gì?",
+      "options": [
+        "registry[\"circle\"][2]",
+        "registry[\"circle\"](2)",
+        "registry(\"circle\", 2) với mọi dict",
+        "new registry.circle(2)"
+      ],
+      "correct": 1,
+      "explanation": "Lấy class object rồi gọi nó với đối số constructor."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Metaclass new và instance new",
+      "question": "Meta.__new__ khi dùng để tạo lớp A khác A.__new__ khi tạo instance ở điểm nào?",
+      "options": [
+        "Meta.__new__ chỉ chạy sau mọi method A.",
+        "A.__new__ là module import.",
+        "Chúng tạo object ở hai cấp khác nhau: class object và instance của A.",
+        "Cả hai luôn tạo cùng một instance A."
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt quá trình tạo class với quá trình tạo instance."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Metaclass call",
+      "question": "Hook __call__ của metaclass thường liên quan thao tác nào?",
+      "options": [
+        "Chỉ đọc file source.",
+        "Chỉ xử lý yield.",
+        "Tự chạy mọi decorator trong thư viện.",
+        "Gọi class để tạo/điều khiển việc khởi tạo instance."
+      ],
+      "correct": 3,
+      "explanation": "Lớp là callable theo cơ chế metaclass; tùy chỉnh hook này cần giữ hợp đồng mong muốn."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Kiểm tra namespace trước tạo class",
+      "question": "Metaclass muốn yêu cầu mọi plugin có field kind nên kiểm tra gì trước khi tạo/đăng ký theo chính sách?",
+      "options": [
+        "Namespace hoặc class đã tạo theo quy tắc yêu cầu về field kind.",
+        "Chỉ tên file Python.",
+        "Chỉ số lượng CPU.",
+        "Chỉ chiều dài registry."
+      ],
+      "correct": 0,
+      "explanation": "Validation phải căn cứ thuộc tính thực sự cần cho plugin."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Không so sánh kiểu sai",
+      "question": "Descriptor giới hạn tuổi số nguyên nhận chuỗi \"abc\". Nếu chỉ so value<0 thì có thể xảy ra gì?",
+      "options": [
+        "Không bao giờ có lỗi.",
+        "TypeError thay vì lỗi validation được thiết kế rõ.",
+        "Tự đổi abc thành 0.",
+        "Tự chuyển mọi chuỗi sang int hợp lệ."
+      ],
+      "correct": 1,
+      "explanation": "Nếu hợp đồng yêu cầu loại lỗi rõ, cần kiểm tra/parse kiểu đầu vào trước phép so sánh."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Không gán trước khi kiểm tra",
+      "question": "Descriptor muốn giữ giá trị cũ nếu dữ liệu mới sai nên làm gì?",
+      "options": [
+        "Luôn xóa giá trị cũ.",
+        "Đổi tất cả dữ liệu sai thành None mà không báo.",
+        "Validate trước khi ghi storage.",
+        "Ghi storage trước rồi raise mà không khôi phục."
+      ],
+      "correct": 2,
+      "explanation": "Exception không tự rollback một phép gán đã xảy ra."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Phương thức thường là descriptor",
+      "question": "Vì sao obj.method thường có thể nhận self ngầm?",
+      "options": [
+        "Python chèn biến global self vào mọi hàm.",
+        "Mọi hàm chỉ được gọi qua list.",
+        "Tên method tự được đổi thành instance.",
+        "Đối tượng hàm trên class tham gia descriptor binding để tạo bound method."
+      ],
+      "correct": 3,
+      "explanation": "Function descriptor là phần của cơ chế method binding thông thường."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Owner của set name",
+      "question": "Trong __set_name__(descriptor, owner, name), owner là gì?",
+      "options": [
+        "Class đang chứa thuộc tính descriptor đó.",
+        "Instance cuối vừa đọc field.",
+        "Module pathlib.",
+        "Tên field dạng str."
+      ],
+      "correct": 0,
+      "explanation": "name là tên field; owner là lớp chứa field tại thời điểm thông báo."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Slots không phải tuple dữ liệu instance",
+      "question": "__slots__=(\"x\",\"y\") tự tạo tuple (x,y) chứa mọi giá trị instance không?",
+      "options": [
+        "Chỉ khi dùng dataclass",
+        "Không",
+        "Có, luôn thay instance bằng tuple",
+        "Chỉ khi x/y là int"
+      ],
+      "correct": 1,
+      "explanation": "Nó khai báo bố trí/descriptor cho tên thuộc tính, không biến instance thành tuple."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Kế thừa từ lớp có dict",
+      "question": "Một class khai báo slots nhưng kế thừa lớp cha có instance __dict__ có chắc loại bỏ dict đã được cha cung cấp không?",
+      "options": [
+        "Chỉ cần slots rỗng là xóa mọi dữ liệu",
+        "Chỉ nếu class tên Student",
+        "Không",
+        "Có, slots luôn xóa dict ở mọi lớp cha"
+      ],
+      "correct": 2,
+      "explanation": "Hiệu quả slots phụ thuộc toàn bộ cấu trúc kế thừa."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Đo bộ nhớ nông",
+      "question": "sys.getsizeof(obj) có mặc định cộng toàn bộ đồ thị object con mà obj tham chiếu không?",
+      "options": [
+        "Có, luôn deepcopy và đếm mọi object",
+        "Chỉ khi obj có slots",
+        "Chỉ khi obj là class",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Cần chọn phương pháp đo phù hợp nếu muốn tổng footprint dữ liệu lồng."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Cấu hình descriptor dùng lại",
+      "question": "Descriptor object đặt trên class có thể được nhiều instance cùng dùng protocol không?",
+      "options": [
+        "Có",
+        "Không, bắt buộc copy descriptor cho mỗi instance",
+        "Chỉ nếu descriptor không có method",
+        "Chỉ với số thực"
+      ],
+      "correct": 0,
+      "explanation": "Vì vậy dữ liệu/configuration nằm trên descriptor cần phân biệt với trạng thái riêng của instance."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Thông tin lỗi ràng buộc",
+      "question": "Descriptor từ chối grade=12 khi tối đa 10 nên cung cấp thông điệp nào hữu ích hơn?",
+      "options": [
+        "Done",
+        "grade phải không lớn hơn 10",
+        "Error",
+        "False"
+      ],
+      "correct": 1,
+      "explanation": "Thông tin field và ranh giới giúp hiểu nguyên nhân, theo chính sách không lộ dữ liệu nhạy cảm."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Không giả định mọi class dùng cùng meta",
+      "question": "Hai lớp có metaclass không tương thích có thể gây gì khi cố kế thừa nhiều?",
+      "options": [
+        "Mọi method tự bị xóa.",
+        "Luôn tạo được class với type mặc định.",
+        "Metaclass conflict nếu không giải quyết quan hệ metaclass phù hợp.",
+        "Python luôn tự chọn ngẫu nhiên."
+      ],
+      "correct": 2,
+      "explanation": "Việc chọn metaclass phải thỏa quan hệ với các metaclass của lớp cha."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Lựa chọn đơn giản hơn metaclass",
+      "question": "Nếu chỉ cần một hook khi có subclass mới, cơ chế Python nào có thể phù hợp?",
+      "options": [
+        "Luôn cần viết C extension",
+        "Chỉ dùng print ở main",
+        "Chỉ có global while True",
+        "__init_subclass__"
+      ],
+      "correct": 3,
+      "explanation": "Metaclass không phải lựa chọn bắt buộc cho mọi hành vi liên quan subclass."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Tái hiện bug min zero của bài",
+      "question": "Ví dụ Validated dùng if self.min_val và min_val=0. Kết luận nào đúng về Student có age=-1 nếu không có kiểm tra khác?",
+      "options": [
+        "Giá trị âm có thể được nhận vì cận 0 bị bỏ qua, trái chú thích kỳ vọng.",
+        "Chắc chắn ValueError vì chú thích nói vậy.",
+        "Python tự đưa -1 về 0.",
+        "Name mangling tự chặn số âm."
+      ],
+      "correct": 0,
+      "explanation": "Phải đánh giá code thực thi; chú thích và ý định không thay được điều kiện sai."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Sửa cả hai cận tùy chọn",
+      "question": "Descriptor cho cận min/max có thể None hoặc 0. Cặp điều kiện nào đúng?",
+      "options": [
+        "Đổi 0 thành None cho mọi ứng dụng.",
+        "min is not None và max is not None trước từng phép so sánh.",
+        "if min và if max là đủ cho mọi giá trị.",
+        "Chỉ kiểm tra min>0 và max>0."
+      ],
+      "correct": 1,
+      "explanation": "Phải tách không cấu hình khỏi giá trị cận falsy hợp lệ."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Validate trước store để giữ invariant",
+      "question": "Setter gán _age=-1 rồi phát hiện lỗi và raise. Test raises pass có đủ chứng minh object vẫn hợp lệ không?",
+      "options": [
+        "Có, descriptor tự khôi phục mọi giá trị.",
+        "Chỉ cần __slots__.",
+        "Không; cần kiểm tra storage chưa bị thay đổi sai hoặc thiết kế validate trước ghi.",
+        "Có, raise tự rollback object."
+      ],
+      "correct": 2,
+      "explanation": "Tính đúng cần gồm trạng thái sau lỗi, không chỉ có exception."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Reusing cùng descriptor cho hai tên",
+      "question": "Một instance descriptor duy nhất lưu self.name, được gán cho cả a và b trên cùng class. __set_name__ chạy cho cả hai. Rủi ro gì?",
+      "options": [
+        "Python tự deepcopy descriptor cho mỗi tên.",
+        "Mọi descriptor đều bất biến nên không có rủi ro.",
+        "Cả hai field tự biến thành list.",
+        "Tên storage cuối có thể ghi đè cấu hình trước, làm hai field dùng chung storage ngoài ý muốn."
+      ],
+      "correct": 3,
+      "explanation": "Cần descriptor riêng mỗi field hoặc thiết kế quản lý tên/owner đúng cách."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Class access có hợp đồng",
+      "question": "Nếu muốn Student.age.min_val dùng để xem cấu hình, __get__ trả None khi obj=None gây vấn đề gì?",
+      "options": [
+        "Student.age không còn trả descriptor nên không đọc được cấu hình theo giao diện đó.",
+        "None tự chứa min_val.",
+        "Class access luôn tạo một Student.",
+        "Không thể truy cập descriptor qua class trong Python."
+      ],
+      "correct": 0,
+      "explanation": "Nên xử lý class access riêng nếu giao diện cần hỗ trợ introspection descriptor."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Data descriptor bảo vệ không tuyệt đối",
+      "question": "Data descriptor validation có phải ranh giới an toàn tuyệt đối trước code không tin cậy chạy cùng interpreter không?",
+      "options": [
+        "Có, descriptor tự mã hóa RAM.",
+        "Không, code có thể can thiệp đường lưu/thuộc tính theo khả năng của mô hình đối tượng.",
+        "Có, mọi bypass đều bị interpreter cấm.",
+        "Có, chỉ cần một dấu _ cho storage."
+      ],
+      "correct": 1,
+      "explanation": "Validation nội bộ và cô lập code không tin cậy là các yêu cầu khác nhau."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Registry key trùng",
+      "question": "Hai subclass cùng plugin key. AutoRegister nên làm gì nếu hợp đồng yêu cầu duy nhất?",
+      "options": [
+        "Chọn ngẫu nhiên một class.",
+        "Tự sửa payload của người gọi.",
+        "Phát hiện xung đột và báo lỗi rõ thay vì ghi đè im lặng.",
+        "Luôn để class sau ghi đè mà không ghi nhận."
+      ],
+      "correct": 2,
+      "explanation": "Registry cần chính sách xung đột để tra cứu có ý nghĩa và dễ chẩn đoán."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Không đăng ký base vô ý",
+      "question": "AutoRegister phải bỏ qua lớp nền/abstract class nhưng nhận subclass cụ thể. Cần gì?",
+      "options": [
+        "Chỉ kiểm tra tên class dài hơn 1.",
+        "Đăng ký mọi class rồi giả định nơi gọi tự biết.",
+        "Chỉ dùng tên module.",
+        "Quy tắc phân loại/đánh dấu rõ và test cả base, subclass trực tiếp, gián tiếp."
+      ],
+      "correct": 3,
+      "explanation": "Cơ chế tự động vẫn cần hợp đồng xác định đối tượng nào hợp lệ để đăng ký."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Kế thừa metaclass và hook",
+      "question": "Một subclass dùng lại metaclass của base. Có nên giả định hook metaclass chỉ chạy cho base lần đầu không?",
+      "options": [
+        "Không, việc tạo subclass cũng có thể đi qua hook metaclass thích hợp.",
+        "Có, metaclass bị tiêu thụ một lần.",
+        "Có, mọi subclass được tạo từ list.",
+        "Chỉ nếu subclass có __init__."
+      ],
+      "correct": 0,
+      "explanation": "Registry hoặc validation theo class cần xử lý các lần tạo class tiếp theo."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Slots và memory claim",
+      "question": "Giáo trình nêu slots giảm RAM khoảng 40%. Có thể áp con số đó cho mọi class/workload mà không đo không?",
+      "options": [
+        "Chỉ cần có tuple __slots__ là đo xong.",
+        "Không; phụ thuộc bố trí class, số object, dữ liệu con, interpreter và cách đo.",
+        "Có, Python bảo đảm tỷ lệ cố định.",
+        "Có, miễn field tên x."
+      ],
+      "correct": 1,
+      "explanation": "Nên diễn đạt lợi ích có điều kiện và đưa số đo đúng môi trường thay vì cam kết phổ quát."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Gọi super trong metaclass",
+      "question": "Meta.__new__ sửa namespace rồi không gọi cơ chế tạo class thích hợp và trả dict. Hậu quả có thể là gì?",
+      "options": [
+        "Python tự bổ sung mọi method rồi sửa lại.",
+        "Không ảnh hưởng vì metaclass chỉ là comment.",
+        "Tên class sau định nghĩa không còn là class object như nơi dùng kỳ vọng.",
+        "Dict tự biến thành type trong mọi trường hợp."
+      ],
+      "correct": 2,
+      "explanation": "Metaclass có thể thay object được tạo; muốn giữ hợp đồng class cần trả kết quả phù hợp."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "MRO và descriptor owner",
+      "question": "Descriptor được kế thừa từ Base nhưng truy cập qua instance Child. Vì sao không nên thiết kế storage dựa trên giả định owner luôn là Base theo mọi lời gọi?",
+      "options": [
+        "Descriptor bị xóa khi kế thừa.",
+        "Owner luôn là chuỗi tên file.",
+        "Child không thể truy cập descriptor của Base.",
+        "Giao thức truy cập có thể đưa class theo ngữ cảnh lookup; cần hiểu hợp đồng và quản lý owner/name đúng."
+      ],
+      "correct": 3,
+      "explanation": "Một descriptor có thể được tái sử dụng/kế thừa, nên trạng thái phân biệt owner cần thiết kế có chủ đích."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "__getattribute__ tùy chỉnh",
+      "question": "Khi class tự override __getattribute__, có được giả định mọi quy tắc lookup mặc định vẫn diễn ra dù code override không chuyển tiếp không?",
+      "options": [
+        "Không, override có thể thay hoặc bỏ qua cơ chế mặc định.",
+        "Có, Python luôn bỏ qua override.",
+        "Có, descriptor tự bắt mọi truy cập bằng thread riêng.",
+        "Chỉ nếu thuộc tính là str."
+      ],
+      "correct": 0,
+      "explanation": "Các khẳng định precedence thông thường giả định cơ chế lookup chuẩn còn được sử dụng."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Tránh descriptor tự giữ mọi instance",
+      "question": "Descriptor lưu dict mạnh từ instance tới value có thể gây vấn đề vòng đời gì?",
+      "options": [
+        "Slots tự xóa cache đó.",
+        "Giữ tham chiếu khiến instance không được thu hồi khi bên ngoài không còn dùng.",
+        "Mọi instance tự được xóa sau mỗi get.",
+        "Dict không thể giữ instance."
+      ],
+      "correct": 1,
+      "explanation": "Cần chọn cơ chế lưu và ownership phù hợp, có thể cân nhắc weak reference theo điều kiện hỗ trợ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Weak reference không tự sửa mọi leak",
+      "question": "Đổi storage sang WeakKeyDictionary có tự làm mọi object đều dùng được ngay không?",
+      "options": [
+        "Có, không cần xét slots.",
+        "Chỉ cần đổi tên dict.",
+        "Không; còn phụ thuộc weak-reference support, hashability và ngữ nghĩa key.",
+        "Có, mọi object đều hỗ trợ weakref và hash ổn định."
+      ],
+      "correct": 2,
+      "explanation": "Tối ưu vòng đời cần xét hợp đồng kiểu object và cơ chế lưu cụ thể."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Class decorator hay metaclass",
+      "question": "Chỉ cần biến đổi một class sau khi nó đã tạo, không cần can thiệp namespace preparation. Lựa chọn nào có thể đơn giản hơn metaclass?",
+      "options": [
+        "Luôn bắt buộc tự viết parser Python.",
+        "Chỉ có asyncio.TaskGroup.",
+        "Chỉ có multiprocessing.",
+        "Class decorator phù hợp mục tiêu."
+      ],
+      "correct": 3,
+      "explanation": "Chọn cơ chế nhỏ nhất đáp ứng yêu cầu giúp giảm xung đột và độ phức tạp."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Không đăng ký class lỗi",
+      "question": "Metaclass validate plugin rồi đăng ký. Thứ tự nào giúp tránh registry chứa class không hợp lệ?",
+      "options": [
+        "Hoàn tất kiểm tra cần thiết trước khi công bố vào registry.",
+        "Đăng ký trước rồi nuốt mọi lỗi validate.",
+        "Luôn báo thành công dù thiếu field.",
+        "Ghi vào global registry trước mọi logic và không cleanup."
+      ],
+      "correct": 0,
+      "explanation": "Việc công bố trạng thái dùng chung nên theo điều kiện thành công đã xác minh."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Test descriptor cần nhiều instance",
+      "question": "Test nào phát hiện lỗi descriptor dùng một self.value chung cho mọi instance?",
+      "options": [
+        "Chỉ kiểm tra class có age.",
+        "Gán hai giá trị khác nhau trên hai instance rồi đọc lại cả hai.",
+        "Chỉ gán và đọc một instance một lần.",
+        "Chỉ kiểm tra tên __get__."
+      ],
+      "correct": 1,
+      "explanation": "Lỗi chia sẻ trạng thái thường không lộ khi chỉ có một object."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Test zero không thể bỏ",
+      "question": "Bộ dữ liệu nào hữu ích cho descriptor có cận 0 và 10 gồm hai đầu?",
+      "options": [
+        "Chỉ None dù None không được hỗ trợ.",
+        "Chỉ tên descriptor.",
+        "-1, 0, 10, 11 và trạng thái sau lần gán bị từ chối.",
+        "Chỉ 5."
+      ],
+      "correct": 2,
+      "explanation": "Các biên 0 dễ bị bỏ qua bởi truthiness; cần kiểm tra cả chấp nhận lẫn từ chối."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Đừng dùng metaclass để giấu hợp đồng",
+      "question": "Nếu metaclass tự thêm field/method ngầm, điều gì giúp người dùng lớp hiểu và kiểm thử đúng?",
+      "options": [
+        "Chỉ đổi tên metaclass thành Magic.",
+        "Ẩn toàn bộ lỗi bằng pass.",
+        "Giả định IDE/type checker tự biết mọi biến đổi tùy ý.",
+        "Tài liệu/giao diện rõ cùng test hành vi được thêm và các trường hợp xung đột."
+      ],
+      "correct": 3,
+      "explanation": "Tự động hóa không thay trách nhiệm làm rõ hành vi và giới hạn của class được tạo."
+    }
+  ]
+}

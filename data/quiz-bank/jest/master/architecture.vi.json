@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "jest",
+  "level": "master",
+  "lesson": "architecture",
+  "language": "vi",
+  "sourceHash": "3d0b4de6146a3dd3f5a8537c06fddc6512b1dd8acd7e51dddd98f19ca3a8568d",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo ShoppingCart/public behavior và register-login-profile flow. Đối chiếu Testing Trophy/implementation details của Kent C. Dodds, Jest và SuperTest. App/cart/imports/auth/persistence chưa được cung cấp; ROI là heuristic theo bối cảnh. Không HTTP/DB/Jest/browser/login/deploy thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Trophy layers",
+      "question": "Testing Trophy trong bài phân biệt những nhóm nào?",
+      "options": [
+        "Static, unit, integration, E2E",
+        "Dev, staging, production",
+        "Input, output, cache",
+        "Git, npm, Docker"
+      ],
+      "correct": 0,
+      "explanation": "Đây là cách suy nghĩ về portfolio kiểm tra."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Static",
+      "question": "Static checks thường nhắm gì?",
+      "options": [
+        "Mọi load target",
+        "Vấn đề phát hiện qua mã/kiểu/quy tắc mà không cần chạy luồng app đầy đủ",
+        "Mọi transaction production",
+        "Mọi UI click thực"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi khác functional runtime tests."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Public behavior",
+      "question": "Test public behavior tập trung vào gì?",
+      "options": [
+        "Số dòng file",
+        "Thứ tự mọi helper private",
+        "Hành vi quan sát được theo contract người dùng code",
+        "Tên mọi biến local"
+      ],
+      "correct": 2,
+      "explanation": "Contract quyết định điều cần bảo vệ."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Implementation detail",
+      "question": "Chi tiết triển khai thường là gì trong lập luận bài?",
+      "options": [
+        "Mọi output public",
+        "Mọi mã lỗi API đã cam kết",
+        "Mọi rule nghiệp vụ",
+        "Cấu trúc nội bộ được phép đổi khi contract giữ"
+      ],
+      "correct": 3,
+      "explanation": "Không tự đồng nhất mọi property JS với API ổn định."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Bad cart assertion",
+      "question": "Ví dụ BAD đọc trực tiếp gì?",
+      "options": [
+        "cart.items",
+        "cart.getTotal()",
+        "cart.getItemCount()",
+        "cart.hasItem()"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn coi storage items là nội bộ trong kịch bản này."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Behavior total",
+      "question": "Ví dụ GOOD kiểm tổng qua method nào?",
+      "options": [
+        "constructor",
+        "getTotal",
+        "items.length",
+        "toString"
+      ],
+      "correct": 1,
+      "explanation": "Method public giúp giữ ranh giới ý nghĩa."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Behavior count",
+      "question": "Method nào được dùng kiểm số item?",
+      "options": [
+        "hasItem",
+        "items.push",
+        "getItemCount",
+        "getTotal"
+      ],
+      "correct": 2,
+      "explanation": "Ý nghĩa count cần contract rõ nếu có quantity/duplicates."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Membership",
+      "question": "hasItem(1) dự kiến kiểm gì?",
+      "options": [
+        "Tổng tiền bằng1",
+        "Có đúng một item",
+        "App đang login",
+        "Giỏ có item id1 theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Tồn tại, số lượng và tổng là các đặc tính khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Items source",
+      "question": "Ví dụ GOOD thêm những price nào?",
+      "options": [
+        "10 và20",
+        "1 và2",
+        "0 và100",
+        "Không có price"
+      ],
+      "correct": 0,
+      "explanation": "Hai id là1 và2."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Expected total",
+      "question": "Ví dụ GOOD kỳ vọng getTotal bằng gì?",
+      "options": [
+        "20",
+        "30",
+        "2",
+        "10"
+      ],
+      "correct": 1,
+      "explanation": "Đó là kỳ vọng trong fixture nguồn."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Expected count",
+      "question": "Ví dụ GOOD kỳ vọng count bằng gì?",
+      "options": [
+        "0",
+        "1",
+        "2",
+        "30"
+      ],
+      "correct": 2,
+      "explanation": "Không suy toàn bộ semantics duplicate từ hai item khác id."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Integration flow",
+      "question": "Flow người dùng nguồn đi theo thứ tự nào?",
+      "options": [
+        "Profile → delete DB → register",
+        "Login → checkout code → build",
+        "Chỉ register",
+        "Register → login → protected profile"
+      ],
+      "correct": 3,
+      "explanation": "Luồng test chứa nhiều HTTP interactions theo contract."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Register route",
+      "question": "Bước đăng ký gọi route nào?",
+      "options": [
+        "POST /api/auth/register",
+        "GET /api/profile",
+        "POST /api/todos",
+        "DELETE /api/auth/login"
+      ],
+      "correct": 0,
+      "explanation": "Source dùng request(app), chưa có implementation app."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Register success",
+      "question": "Nguồn kỳ vọng register status nào?",
+      "options": [
+        "401",
+        "201",
+        "200",
+        "400"
+      ],
+      "correct": 1,
+      "explanation": "Status là một phần kỳ vọng, không bằng chứng đã thực thi."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Login route",
+      "question": "Bước login dùng route nào?",
+      "options": [
+        "GET /api/todos",
+        "PATCH /api/profile",
+        "POST /api/auth/login",
+        "GET /api/auth/register"
+      ],
+      "correct": 2,
+      "explanation": "Login nhận email/password fixture."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Login status",
+      "question": "Nguồn kỳ vọng login thành công status nào?",
+      "options": [
+        "201",
+        "403",
+        "500",
+        "200"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn chưa kiểm chi tiết token ngoài sử dụng nó."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Protected route",
+      "question": "Route được gọi sau login là gì?",
+      "options": [
+        "GET /api/profile",
+        "POST /api/pay",
+        "DELETE /users",
+        "GET /coverage"
+      ],
+      "correct": 0,
+      "explanation": "Đây là API-level journey trong source."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Auth header",
+      "question": "Nguồn truyền credential vào profile qua header nào?",
+      "options": [
+        "User-Agent chứa email",
+        "Authorization với Bearer token",
+        "Content-Type chứa password",
+        "Cookie được tạo tường minh"
+      ],
+      "correct": 1,
+      "explanation": "Cách truyền phải phù hợp auth contract thật."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Token location",
+      "question": "Token được lấy từ đâu trong source?",
+      "options": [
+        "cart.items[0]",
+        "process.env.NODE_VERSION",
+        "login.body.token",
+        "register.name"
+      ],
+      "correct": 2,
+      "explanation": "Body shape vẫn cần kiểm và implementation phù hợp."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Missing implementations",
+      "question": "Source có định nghĩa ShoppingCart và app đầy đủ chưa?",
+      "options": [
+        "Có, tên class tự tạo methods",
+        "Có, expect tự viết routes",
+        "Có, comments tự thành code",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Bài là các ví dụ kiểm tra với dependencies chưa cho đầy đủ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Storage refactor",
+      "question": "Storage đổi Array thành Map nhưng getTotal/count/hasItem giữ contract. Test đọc items.length có thể ra sao?",
+      "options": [
+        "Fail vì chi tiết nội bộ đổi dù hành vi public đúng",
+        "Luôn pass vì Map có length2",
+        "Tự cập nhật source test",
+        "Tự chứng minh app sai nghiệp vụ"
+      ],
+      "correct": 0,
+      "explanation": "Brittleness phụ thuộc điều test đã khóa."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Public field exception",
+      "question": "Nếu items là property được công khai cam kết trong API, có luôn sai khi kiểm nó không?",
+      "options": [
+        "Không vì mọi internals luôn public",
+        "Không, cần xét contract thay vì cấm field mechanically",
+        "Có, mọi field đều cấm",
+        "Có, chỉ methods mới có thể là API"
+      ],
+      "correct": 1,
+      "explanation": "Ranh giới contract mới là căn cứ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Total only gap",
+      "question": "Chỉ kiểm total30 có chứng minh đúng count và membership chưa?",
+      "options": [
+        "Rồi, Jest tự kiểm id",
+        "Chỉ khi dùng toBe",
+        "Chưa",
+        "Rồi, total quyết định mọi item"
+      ],
+      "correct": 2,
+      "explanation": "Các outputs riêng cần assertions phù hợp mục tiêu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Count only gap",
+      "question": "Cart bỏ sai item nhưng count vẫn2. Chỉ kiểm count có bắt lỗi nội dung không?",
+      "options": [
+        "Có, count tự hiểu ids",
+        "Có, mọi item tương đương",
+        "Chỉ khi dùng mock",
+        "Chưa chắc"
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm đúng hành vi dữ liệu."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "ID behavior",
+      "question": "hasItem(1)=true có chứng minh item2 không bị mất không?",
+      "options": [
+        "Không",
+        "Có, một item đại diện mọi item",
+        "Có, total tự được kiểm",
+        "Chỉ nếu title GOOD"
+      ],
+      "correct": 0,
+      "explanation": "Cần expected cho từng ràng buộc quan trọng."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "No negative cart case",
+      "question": "Nguồn GOOD có kiểm hasItem(999)=false chưa?",
+      "options": [
+        "Có, comments thêm case đó",
+        "Chưa",
+        "Có, true cho1 suy ra false mọi id khác",
+        "Có, getItemCount tự kiểm"
+      ],
+      "correct": 1,
+      "explanation": "Ví dụ dương không tự kiểm trường hợp thiếu."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Duplicate contract",
+      "question": "Nguồn thêm hai id khác nhau. Có xác định được add cùng id phải gộp hay tạo thêm không?",
+      "options": [
+        "Luôn bắt buộc throw",
+        "Jest tự chọn theo price",
+        "Chưa, cần contract rõ",
+        "Luôn bắt buộc gộp"
+      ],
+      "correct": 2,
+      "explanation": "Không suy ngữ nghĩa chưa được chỉ định."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Price validation gap",
+      "question": "Source test có kiểm giá âm/non-number chưa?",
+      "options": [
+        "Có, tổng30 xác minh mọi price",
+        "Có, addItem tự bị Jest validate",
+        "Có, class name Cart là validator",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Thêm domain cases nếu là yêu cầu."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Cart definition gap",
+      "question": "Từ expected30 có thể claim implementation hiện có đã trả30 không?",
+      "options": [
+        "Chưa, chưa có code/runtime evidence tương ứng",
+        "Có, expectation tự là implementation",
+        "Có, toBe tạo output",
+        "Chỉ khi test name GOOD"
+      ],
+      "correct": 0,
+      "explanation": "Kỳ vọng và kết quả thực là hai điều khác nhau."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Behavior meaning",
+      "question": "Kiểm public method có bảo đảm test đủ mạnh dù expected sai không?",
+      "options": [
+        "Chỉ khi integration",
+        "Không, oracle vẫn phải đúng contract",
+        "Có, public API luôn đúng expected",
+        "Có, method tự review requirements"
+      ],
+      "correct": 1,
+      "explanation": "Đúng ranh giới chưa đủ nếu kỳ vọng sai."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Register payload",
+      "question": "Registration fixture có những field nào?",
+      "options": [
+        "token,role,ownerId",
+        "Chỉ email",
+        "name,email,password",
+        "id,price,done"
+      ],
+      "correct": 2,
+      "explanation": "Dùng dữ liệu giả, không credential thật."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Identity gap",
+      "question": "Profile chỉ assert200 có chứng minh response là đúng user vừa login không?",
+      "options": [
+        "Rồi,200 luôn chứa đúng identity",
+        "Rồi, Bearer header tự kiểm body",
+        "Chỉ khi register201",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Cần assertions identity/data theo contract."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Missing token gap",
+      "question": "Login trả200 nhưng body.token thiếu. Template literal Bearer nhận giá trị gì đáng chú ý?",
+      "options": [
+        "Có thể thành Bearer undefined",
+        "Tự tạo JWT hợp lệ",
+        "Tự lấy token từ register",
+        "Tự bỏ request profile"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm token/luồng auth phù hợp thay vì tin status."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Protected no auth",
+      "question": "Nguồn có test request profile không credential bị từ chối chưa?",
+      "options": [
+        "Chỉ nếu request app thật",
+        "Chưa",
+        "Có, một request authorized thay mọi negative",
+        "Có, route tên profile luôn protected"
+      ],
+      "correct": 1,
+      "explanation": "Cần case âm cho ranh giới auth."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Invalid login",
+      "question": "Nguồn có thử password sai chưa?",
+      "options": [
+        "Có, register đã pass",
+        "Có, status200 chứng minh policy lỗi",
+        "Chưa",
+        "Có, password fixture chứa dấu!"
+      ],
+      "correct": 2,
+      "explanation": "Happy path không xác minh mọi trường hợp bị cấm."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Registration side effect",
+      "question": "Register201 có chứng minh email xác minh thật đã được gửi không?",
+      "options": [
+        "Có, mọi register tự gửi email",
+        "Có, request tự kiểm SMTP",
+        "Chỉ nếu name An",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Không có quan sát/assertion hoặc dependency đó trong source."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Unused register value",
+      "question": "Biến register hiện được dùng để kiểm user id liên kết với profile chưa?",
+      "options": [
+        "Chưa",
+        "Có, JS tự so mọi biến response",
+        "Có, tên register là identity assertion",
+        "Chỉ nếu request await"
+      ],
+      "correct": 0,
+      "explanation": "Biến giữ response không đồng nghĩa nội dung đã assert."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Repeated fixture",
+      "question": "Dùng cùng email an@t.com qua nhiều run có thể cần gì?",
+      "options": [
+        "Jest tự xóa mọi tài khoản",
+        "Isolation/lifecycle dữ liệu phù hợp để tránh trùng/stale state",
+        "Chỉ đổi test title",
+        "Chỉ tăng timeout"
+      ],
+      "correct": 1,
+      "explanation": "App/persistence thật mới quyết định yêu cầu cleanup."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Journey transport",
+      "question": "API journey request(app) có tự kiểm UI form field wiring không?",
+      "options": [
+        "Có, token là screenshot",
+        "Chỉ khi có three requests",
+        "Không",
+        "Có, mọi API call tự click form"
+      ],
+      "correct": 2,
+      "explanation": "HTTP integration và browser journey có scope khác."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "App boundary",
+      "question": "Nếu DB được fake nhưng routes thật, báo scope thế nào?",
+      "options": [
+        "Toàn bộ production stack đã kiểm",
+        "DB thật chắc chắn đúng schema",
+        "Mọi migrations đã pass",
+        "HTTP/routes với DB double, chưa là DB adapter runtime proof"
+      ],
+      "correct": 3,
+      "explanation": "Cần ghi các ranh giới thật/giả."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "No imports",
+      "question": "request/app chưa được import/định nghĩa trong snippet đầy đủ. Điều gì cần hoàn thiện?",
+      "options": [
+        "Module/runtime wiring trước khi kiểm hành vi",
+        "Chỉ thêm name Integration",
+        "Chỉ đổi status201",
+        "Chỉ snapshot source"
+      ],
+      "correct": 0,
+      "explanation": "Lỗi setup không tự chứng minh logic nghiệp vụ sai."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "No cleanup",
+      "question": "Nguồn có lifecycle cleanup DB/token/session tường minh chưa?",
+      "options": [
+        "Có, status200 tự xóa data",
+        "Chưa",
+        "Có, describe tự quản mọi resource",
+        "Có, await tự rollback"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế tests phải xét state thực sự được dùng."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Contract failure triage",
+      "question": "Refactor làm test nội bộ fail nhưng public cases đúng. Nên xét gì?",
+      "options": [
+        "Sửa app để giữ mọi internals vĩnh viễn",
+        "Coi mọi fail là bug sản phẩm",
+        "Field/assertion đó có thuộc contract cần giữ không",
+        "Xóa mọi tests ngay"
+      ],
+      "correct": 2,
+      "explanation": "Quyết định theo yêu cầu, không khẩu hiệu."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Integration heuristic",
+      "question": "Integration thường hữu ích vì điều gì?",
+      "options": [
+        "Luôn nhanh nhất mọi loại test",
+        "Luôn cần ít setup nhất",
+        "Luôn chứng minh mọi input",
+        "Kiểm lỗi phối hợp thành phần mà isolated doubles có thể bỏ sót"
+      ],
+      "correct": 3,
+      "explanation": "Lợi ích/chi phí phụ thuộc hệ thống."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Unit value",
+      "question": "Một thuật toán thuần có nhiều biên nên kiểm unit để làm gì?",
+      "options": [
+        "Phản hồi tập trung về logic theo miền input",
+        "Thay mọi integration của app",
+        "Tự xác minh auth DB",
+        "Tự đo production load"
+      ],
+      "correct": 0,
+      "explanation": "Không xem trophy là lý do bỏ unit phù hợp."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "E2E value",
+      "question": "E2E phù hợp với mục tiêu nào?",
+      "options": [
+        "Chỉ một regex",
+        "Luồng qua các ranh giới cần bảo vệ gần trải nghiệm thực theo scope",
+        "Chỉ private variable naming",
+        "Chỉ package syntax"
+      ],
+      "correct": 1,
+      "explanation": "Scope thật cần được xác định."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Static limit",
+      "question": "Type/lint pass có chứng minh registration/login business rules đúng không?",
+      "options": [
+        "Có, tên routes đủ",
+        "Chỉ nếu TypeScript",
+        "Không",
+        "Có, compiler biết mọi policy"
+      ],
+      "correct": 2,
+      "explanation": "Static checks và functional behavior bổ sung nhau."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Avoid everything mocked",
+      "question": "Mock cả route/service/DB trong flow có thể bỏ mất điều gì?",
+      "options": [
+        "Tính đúng của mock calls",
+        "Tên test được ghi",
+        "Số fixture tạo",
+        "Lỗi phối hợp thật giữa các tầng đã thay"
+      ],
+      "correct": 3,
+      "explanation": "Đừng gọi mọi mock chain là production integration."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Do not delete blindly",
+      "question": "Exercise nói xóa implementation tests. Cần làm gì trước xóa?",
+      "options": [
+        "Xem hành vi/rủi ro chúng bảo vệ và thay bằng kiểm phù hợp nếu cần",
+        "Xóa mọi field assertions bất kể contract",
+        "Xóa mọi unit tests",
+        "Giữ chỉ badge xanh"
+      ],
+      "correct": 0,
+      "explanation": "Refactor suite phải bảo toàn mục tiêu kiểm quan trọng."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Assertions specificity",
+      "question": "Profile200 có thể pass khi server luôn200. Cần thêm gì theo contract?",
+      "options": [
+        "Chỉ timeout ngắn hơn",
+        "Case âm và nội dung/identity phù hợp, không chỉ status dương",
+        "Chỉ lặp cùng request",
+        "Chỉ thay token name"
+      ],
+      "correct": 1,
+      "explanation": "Oracle cần phân biệt implementation sai."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Auth versus authorization",
+      "question": "Login thành công có tự chứng minh user không đọc được profile người khác không?",
+      "options": [
+        "Có, status200 đủ mọi role",
+        "Chỉ khi có name An",
+        "Không",
+        "Có, JWT luôn giải mọi ownership"
+      ],
+      "correct": 2,
+      "explanation": "Identity và quyền tài nguyên là các lớp khác nhau."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Error scope",
+      "question": "Register fail vì app module thiếu khác logic register trả400 sai ở điểm nào?",
+      "options": [
+        "Hai lỗi luôn cùng nguyên nhân",
+        "Một tự được coi pass",
+        "Jest không phân biệt exceptions",
+        "Một là setup/wiring, một là hành vi runtime đã quan sát"
+      ],
+      "correct": 3,
+      "explanation": "Báo cáo đúng giai đoạn thất bại."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Time dependence",
+      "question": "Token expiry test dùng clock thật có thể gặp gì?",
+      "options": [
+        "Race/flaky theo thời gian nếu thiết kế không kiểm soát",
+        "Tự tăng bảo mật",
+        "Tự chứng minh mọi expiry",
+        "Không bao giờ ảnh hưởng test"
+      ],
+      "correct": 0,
+      "explanation": "Chọn clock/fixture phù hợp contract trong phạm vi kiểm."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Integration not benchmark",
+      "question": "Một journey pass có cho phép kết luận triệu user không?",
+      "options": [
+        "Chỉ khi có token",
+        "Không",
+        "Có, integration nghĩa full scale",
+        "Có, await làm song song triệu calls"
+      ],
+      "correct": 1,
+      "explanation": "Năng lực tải cần bằng chứng riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Expected identity",
+      "question": "Nếu profile contract trả id/email, để gắn đúng user cần làm gì?",
+      "options": [
+        "Chỉ status200",
+        "Chỉ token có ký tự",
+        "So với identity fixture/registration phù hợp và chính sách truy cập",
+        "Chỉ body truthy"
+      ],
+      "correct": 2,
+      "explanation": "Đúng nội dung cần oracle cụ thể."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Contract changes",
+      "question": "getItemCount đổi nghĩa từ dòng item sang tổng quantity theo yêu cầu mới. Cần gì?",
+      "options": [
+        "Gọi mọi thay đổi là refactor thuần",
+        "Chỉ đổi expected theo output bất kỳ",
+        "Bỏ count khỏi API",
+        "Định nghĩa semantics và cập nhật cases phân biệt có chủ đích"
+      ],
+      "correct": 3,
+      "explanation": "Output public là contract cần quản lý."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Public API evolution",
+      "question": "Thêm method mới có tự chứng minh method cũ giữ hành vi không?",
+      "options": [
+        "Không, cần checks thích hợp cho contract cũ",
+        "Có, class name không đổi",
+        "Có, static check luôn đủ",
+        "Chỉ nếu không đổi items"
+      ],
+      "correct": 0,
+      "explanation": "Giữ compatibility cần bằng chứng."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Test maintenance cost",
+      "question": "Assertions khóa mọi tên helper có thể tăng chi phí gì?",
+      "options": [
+        "Không ảnh hưởng gì",
+        "Sửa tests khi refactor không đổi behavior",
+        "Tự tạo nhiều lỗi production hơn chắc chắn",
+        "Tự giảm thời gian debug về0"
+      ],
+      "correct": 1,
+      "explanation": "Test giòn có thể tạo tín hiệu nhiễu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "False green",
+      "question": "Test đọc items.length đúng nhưng getTotal sai. Ví dụ minh họa vấn đề nào?",
+      "options": [
+        "Unit tests không thể kiểm số",
+        "Jest tự sửa getTotal",
+        "Kiểm chi tiết không đủ bảo vệ hành vi tổng cần thiết",
+        "Mọi field test đều tự kiểm total"
+      ],
+      "correct": 2,
+      "explanation": "Assert đúng đối tượng mục tiêu."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Kiểm không chỉ implementation text",
+      "question": "Một test so nguyên source class với string lưu sẵn; đổi tên helper làm fail dù API đúng. Điều gì cần đánh giá?",
+      "options": [
+        "String equality luôn hiểu semantics đầy đủ",
+        "Mọi refactor thay tên là regression sản phẩm",
+        "Thêm nhiều snapshot source tự làm test ít giòn",
+        "Nó đang khóa representation code thay vì contract hành vi cần bảo vệ"
+      ],
+      "correct": 3,
+      "explanation": "Chọn đúng đối tượng kiểm giúp giảm tín hiệu nhiễu."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Map refactor",
+      "question": "Cart đổi storage items Array sang Map, public totals/count/membership giữ đúng. Suite fail chỉ vì items.length. Cách sửa có căn cứ?",
+      "options": [
+        "Xem items có thuộc contract không; nếu nội bộ, thay assertion bằng hành vi cần bảo vệ và giữ case phân biệt",
+        "Buộc app quay lại Array mọi trường hợp",
+        "Xóa toàn suite mà không thay coverage hành vi",
+        "Đổi expected thành undefined rồi gọi behavior đã kiểm"
+      ],
+      "correct": 0,
+      "explanation": "Tái cấu trúc không nên bị khóa bởi chi tiết không cần thiết."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Unprotected route false pass",
+      "question": "Profile luôn200 kể cả không token, happy journey nguồn vẫn pass. Cần bổ sung gì?",
+      "options": [
+        "Chỉ tăng token string length",
+        "Case không/sai/expired credential theo contract và kiểm identity của request hợp lệ",
+        "Chỉ gọi happy request thêm lần nữa",
+        "Chỉ kiểm login status200"
+      ],
+      "correct": 1,
+      "explanation": "Luồng dương chưa bảo vệ ranh giới auth."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Wrong user response",
+      "question": "Server trả profile userB cho token userA nhưng status200. Bộ kiểm mạnh hơn cần gì?",
+      "options": [
+        "Chỉ name field tồn tại",
+        "Chỉ token đã được tạo",
+        "So identity/data theo fixture và quyền A/B, không chỉ status",
+        "Chỉ body truthy"
+      ],
+      "correct": 2,
+      "explanation": "Cần dữ liệu và case phân biệt truy cập chéo."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Registration hidden stale state",
+      "question": "Register request không tạo user mới nhưng login dùng tài khoản cũ cùng email. Vì sao journey có thể xanh giả?",
+      "options": [
+        "Login200 tự chứng minh register đã tạo mới",
+        "Ba await tự là transaction",
+        "Tên complete journey kiểm mọi DB side effect",
+        "Thiếu isolation và liên kết identity/persistence giữa các bước; cần kiểm tiền đề và kết quả đúng tài nguyên"
+      ],
+      "correct": 3,
+      "explanation": "Phối hợp nhiều calls chưa tự là oracle đủ mạnh."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Token missing",
+      "question": "Login200 trả body thiếu token; profile lại không kiểm auth nên Bearer undefined vẫn200. Kịch bản nào bắt cả hai khoảng trống?",
+      "options": [
+        "Kiểm login contract/token sử dụng được và negative authorization cùng profile đúng identity",
+        "Chỉ tăng timeout",
+        "Chỉ regex status200",
+        "Mock token thành bất kỳ string rồi bỏ route checks"
+      ],
+      "correct": 0,
+      "explanation": "Hai status dương có thể che hai lỗi phối hợp."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Overmocked flow",
+      "question": "Một flow mock register/login/profile handlers trả fixtures đúng. Có thể claim server integration thật không?",
+      "options": [
+        "Chỉ khi mọi response có JSON",
+        "Không; cần nêu scope doubles và kiểm biên thật phù hợp nếu đó là mục tiêu",
+        "Có, ba endpoint names là đủ",
+        "Có, fixtures đúng chứng minh handler thật"
+      ],
+      "correct": 1,
+      "explanation": "Tên bài hoặc test không mở rộng phạm vi thực thi."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Cart duplicate contract",
+      "question": "Nguồn chỉ hai id khác nhau nhưng yêu cầu mới cùng id tăng quantity. Nên thiết kế case nào?",
+      "options": [
+        "Chỉ kiểm items là Array",
+        "Chỉ đổi tên test thành quantities",
+        "Thêm cùng id nhiều lần và kiểm total/count/membership theo semantics quantity đã chốt",
+        "Chỉ giữ hai id khác nhau"
+      ],
+      "correct": 2,
+      "explanation": "Case phải làm lộ khác biệt giữa các contract có thể có."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Total correct by accident",
+      "question": "Cart trả total30 hằng số nên nguồn GOOD pass tổng với fixture30. Cách tăng sức phân biệt?",
+      "options": [
+        "Lặp cùng total30 nhiều lần",
+        "Chỉ kiểm total truthy",
+        "Đổi price fixture nhưng không đổi expected",
+        "Các kịch bản tổng khác/empty/update theo contract cùng count/membership liên quan"
+      ],
+      "correct": 3,
+      "explanation": "Một expected cố định không bao phủ các quan hệ nghiệp vụ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Internal field is public",
+      "question": "API đã cam kết expose items readonly với shape cụ thể. Reviewer muốn xóa mọi test items vì luôn là internals. Đánh giá đúng?",
+      "options": [
+        "Cần kiểm contract công khai đó; lời khuyên tránh internals không cấm mọi field assertion",
+        "Mọi field đều phải bỏ",
+        "Chỉ methods mới có contract",
+        "Readonly nghĩa không cần kiểm dữ liệu"
+      ],
+      "correct": 0,
+      "explanation": "Ranh giới phụ thuộc thiết kế được công bố."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Refactor suite responsibly",
+      "question": "Xóa test nội bộ duy nhất đang bắt sai default done nhưng chưa có behavior replacement. Cần gì?",
+      "options": [
+        "Chỉ giữ số lượng test tương đương",
+        "Giữ/migrate kịch bản bảo vệ default qua API thích hợp trước khi mất bằng chứng",
+        "Xóa vì tên implementation test",
+        "Coi trophy tự bao phủ default"
+      ],
+      "correct": 1,
+      "explanation": "Tối ưu suite không làm mất hành vi quan trọng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Auth ownership",
+      "question": "Login A/B đều hợp lệ, API profile by-id có policy chỉ tự xem. Bổ sung kiểm gì?",
+      "options": [
+        "Chỉ status token tồn tại",
+        "Chỉ typecheck route",
+        "Allowed A→A/B→B và denied cross-user theo contract, cùng dữ liệu identity",
+        "Chỉ login admin happy path"
+      ],
+      "correct": 2,
+      "explanation": "Authentication không tự chứng minh authorization."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Data isolation",
+      "question": "Nhiều workers dùng cùng email fixture và DB, lúc register201 lúc409. Sửa nguyên nhân nào?",
+      "options": [
+        "Chỉ đổi expected409 thành201",
+        "Dùng credential production để tránh collision",
+        "Chỉ chạy sleep ngẫu nhiên",
+        "Thiết kế dữ liệu/lifecycle hoặc namespace cô lập, kiểm uniqueness contract thay vì retry che lỗi"
+      ],
+      "correct": 3,
+      "explanation": "State bên ngoài cần kiểm soát theo concurrency."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Expiry race",
+      "question": "Token hết hạn ngay sát request do clock thật khiến flaky. Kiểm đáng tin hơn cần gì?",
+      "options": [
+        "Thời gian/token fixture kiểm soát theo contract, cases trước/sau biên và vòng đời rõ",
+        "Bỏ expiry tests",
+        "Tăng mọi expiry vô hạn trong app thật",
+        "Retry đến khi pass rồi coi hết race"
+      ],
+      "correct": 0,
+      "explanation": "Kiểm biên cần tiền đề xác định."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "ROI universal claim",
+      "question": "Không có số đo dự án nhưng nhóm nói integration luôn ROI cao nhất và bỏ unit thuật toán. Nhận xét phù hợp?",
+      "options": [
+        "Chỉ cần đủ tỷ lệ70/20/10",
+        "Trophy là hướng dẫn theo bối cảnh; chọn portfolio theo rủi ro và bằng chứng thực",
+        "Đúng vì một blog là benchmark mọi hệ thống",
+        "Đúng vì integration tên dài hơn"
+      ],
+      "correct": 1,
+      "explanation": "Không biến heuristic thành kết luận đo được toàn cục."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Setup versus behavior",
+      "question": "Journey fail vì request/app undefined. Có nên báo route auth đã fail runtime theo test không?",
+      "options": [
+        "Có, status401 đã nhận",
+        "Không cần phân biệt giai đoạn",
+        "Chưa; lỗi wiring ngăn hành vi dự kiến được kiểm, cần sửa setup đúng trước",
+        "Có, mọi assertion đã thực thi"
+      ],
+      "correct": 2,
+      "explanation": "Báo cáo phải theo điều đã quan sát."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "External side effects",
+      "question": "Integration register dùng email/payment thật dù chỉ cần kiểm flow trong lab. Thiết kế cần xét gì?",
+      "options": [
+        "Cứ tên test là không thể phát sinh tác động",
+        "Chỉ xóa log sau",
+        "Chỉ tăng timeout",
+        "Ranh giới thật/giả, credential/target/data và side effects theo mục tiêu/quyền"
+      ],
+      "correct": 3,
+      "explanation": "Không gán quyền thực thi dịch vụ từ một snippet học liệu."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Contract oracle",
+      "question": "Test public getTotal so với chính getTotal gọi lần nữa. Vì sao vẫn có thể xanh khi sai?",
+      "options": [
+        "Oracle tự tham chiếu; cần kỳ vọng độc lập theo input/contract",
+        "Public method luôn tự là oracle đúng",
+        "Hai calls chứng minh toán học",
+        "Trophy thay mọi expected"
+      ],
+      "correct": 0,
+      "explanation": "Đúng boundary không cứu expected yếu."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "UI gap",
+      "question": "API registration/login/profile pass nhưng UI gửi sai password key. Kết luận phạm vi nào đúng?",
+      "options": [
+        "Static checks luôn chứng minh toàn journey browser",
+        "API scope chưa kiểm UI tạo request; thêm kiểm ở biên UI phù hợp nếu mục tiêu yêu cầu",
+        "API pass nghĩa mọi form đúng",
+        "JSON response là screenshot"
+      ],
+      "correct": 1,
+      "explanation": "Các tầng bằng chứng có thể bổ sung nhau."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Compatibility change",
+      "question": "getItemCount semantics đổi theo yêu cầu, nhiều consumers còn dựa nghĩa cũ. Quy trình phù hợp?",
+      "options": [
+        "Giữ tên method rồi coi không breaking",
+        "Bỏ count tests",
+        "Quản lý interface/compatibility và cập nhật tests/consumers có chủ đích theo contract",
+        "Chỉ đổi expected của một test để xanh"
+      ],
+      "correct": 2,
+      "explanation": "Hành vi public đổi cần xét người tiêu dùng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Bảo toàn flow khi đổi storage",
+      "question": "Refactor cart storage sang Map và auth repository sang adapter mới; unit mocks đều pass nhưng API profile trả nhầm user. Portfolio kiểm phù hợp cần gì?",
+      "options": [
+        "Chỉ khôi phục tên items nội bộ để mọi lỗi biến mất",
+        "Chỉ giữ unit mocks vì đã xanh",
+        "Chỉ assert profile200 thêm nhiều lần",
+        "Giữ cart public behavior cases và kiểm auth integration đúng identity/quyền qua biên adapter phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm behavior và các ranh giới phối hợp thực bổ sung nhau khi implementation thay đổi."
+    }
+  ]
+}

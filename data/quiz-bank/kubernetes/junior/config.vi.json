@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "kubernetes",
+  "level": "junior",
+  "lesson": "config",
+  "language": "vi",
+  "sourceHash": "fb9360f1311b7532f3ce4662916207b7e3e78dcc46b898ea17bb5c96a5d235c4",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo ConfigMap/Secret/envFrom/volume fragment và official docs. Base64 là encoding không phải encryption; phân biệt env snapshot, projected volume, subPath và app reload. Không mặc định quy tắc tên env đồng nhất mọi phiên bản. Usage fragment thiếu Pod header/image; không đọc secret thật hoặc chạy cluster.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "ConfigMap",
+      "question": "ConfigMap phù hợp lưu loại dữ liệu nào?",
+      "options": [
+        "Cấu hình không bí mật của ứng dụng",
+        "Mọi mật khẩu dưới dạng bảo mật tuyệt đối",
+        "Container image đầy đủ",
+        "Database engine"
+      ],
+      "correct": 0,
+      "explanation": "ConfigMap tách dữ liệu cấu hình khỏi image."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Secret",
+      "question": "Đối tượng nào dành cho dữ liệu nhạy cảm như credential?",
+      "options": [
+        "Ingress path",
+        "Secret",
+        "Deployment selector",
+        "Service port"
+      ],
+      "correct": 1,
+      "explanation": "Secret cung cấp đối tượng và cơ chế phân phối dữ liệu nhạy cảm."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Tên ConfigMap",
+      "question": "ConfigMap trong ví dụ có tên gì?",
+      "options": [
+        "config-vol",
+        "app",
+        "app-config",
+        "db-secret"
+      ],
+      "correct": 2,
+      "explanation": "metadata.name định danh ConfigMap là app-config."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "APP_ENV",
+      "question": "APP_ENV trong ConfigMap có giá trị nào?",
+      "options": [
+        "staging",
+        "development",
+        "debug",
+        "production"
+      ],
+      "correct": 3,
+      "explanation": "Source gán chuỗi production."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "LOG_LEVEL",
+      "question": "LOG_LEVEL được cấu hình là gì?",
+      "options": [
+        "info",
+        "trace",
+        "off",
+        "fatal"
+      ],
+      "correct": 0,
+      "explanation": "Đây là một cặp key-value của ConfigMap."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Khóa file",
+      "question": "Khóa chứa JSON nhiều dòng có tên gì?",
+      "options": [
+        "values.yaml",
+        "config.json",
+        "package.json",
+        "db.url"
+      ],
+      "correct": 1,
+      "explanation": "Key config.json chứa chuỗi JSON."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Literal YAML",
+      "question": "Dấu | sau config.json dùng để làm gì?",
+      "options": [
+        "Tạo Pod mới",
+        "Thực thi JSON",
+        "Bắt đầu một chuỗi nhiều dòng dạng literal",
+        "Mã hóa AES"
+      ],
+      "correct": 2,
+      "explanation": "YAML lưu nội dung nhiều dòng thành một giá trị chuỗi."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Feature",
+      "question": "darkMode trong JSON minh họa được đặt thế nào?",
+      "options": [
+        "false",
+        "null",
+        "production",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung JSON ghi darkMode: true."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "TTL",
+      "question": "cache.ttl trong JSON có giá trị nào?",
+      "options": [
+        "3600",
+        "300",
+        "900",
+        "80"
+      ],
+      "correct": 0,
+      "explanation": "TTL chỉ là cấu hình dữ liệu; ứng dụng phải diễn giải đơn vị và hành vi."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Tên Secret",
+      "question": "Tên Secret minh họa là gì?",
+      "options": [
+        "web-service",
+        "db-secret",
+        "app-config",
+        "config-vol"
+      ],
+      "correct": 1,
+      "explanation": "metadata.name của Secret là db-secret."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Loại Secret",
+      "question": "Secret dùng type nào?",
+      "options": [
+        "ClusterIP",
+        "RollingUpdate",
+        "Opaque",
+        "LoadBalancer"
+      ],
+      "correct": 2,
+      "explanation": "Opaque dùng cho dữ liệu tùy ý do người dùng định nghĩa."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Đầu vào chuỗi",
+      "question": "Trường nào nhận chuỗi chưa cần Base64 khi khai báo Secret?",
+      "options": [
+        "selector",
+        "targetPort",
+        "replicas",
+        "stringData"
+      ],
+      "correct": 3,
+      "explanation": "stringData cho phép cung cấp giá trị dạng chuỗi."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Khóa nhạy cảm",
+      "question": "Nhóm key nào có trong Secret bài?",
+      "options": [
+        "DB_PASSWORD và API_KEY",
+        "APP_ENV và LOG_LEVEL",
+        "cpu và memory",
+        "port và targetPort"
+      ],
+      "correct": 0,
+      "explanation": "Hai key này nằm dưới stringData của Secret."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "envFrom",
+      "question": "envFrom dùng để làm gì?",
+      "options": [
+        "Tự phân tích mọi JSON thành nhiều field",
+        "Nạp các cặp key-value từ nguồn thành biến môi trường theo quy tắc áp dụng",
+        "Mã hóa toàn bộ disk",
+        "Build image mới"
+      ],
+      "correct": 1,
+      "explanation": "Env injection không tự flatten JSON."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Nguồn ConfigMap",
+      "question": "Trong envFrom, ConfigMap được tham chiếu qua trường nào?",
+      "options": [
+        "volumeMounts",
+        "imagePullPolicy",
+        "configMapRef",
+        "secretKeyRef duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "configMapRef chọn ConfigMap để đưa dữ liệu vào môi trường."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Nguồn Secret",
+      "question": "Trong envFrom, Secret được tham chiếu qua trường nào?",
+      "options": [
+        "configMapRef",
+        "nodeSelector",
+        "pathType",
+        "secretRef"
+      ],
+      "correct": 3,
+      "explanation": "secretRef nêu tên Secret là nguồn môi trường."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Volume",
+      "question": "Tên volume cấu hình trong bài là gì?",
+      "options": [
+        "config-vol",
+        "app",
+        "db-secret",
+        "cache"
+      ],
+      "correct": 0,
+      "explanation": "volumeMount và volumes cùng dùng name config-vol."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Mount path",
+      "question": "Volume được gắn tại đường dẫn nào?",
+      "options": [
+        "/run/docker.sock",
+        "/etc/config",
+        "/var/lib/postgresql",
+        "/app/src"
+      ],
+      "correct": 1,
+      "explanation": "mountPath ghi /etc/config."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Nguồn volume",
+      "question": "config-vol lấy nội dung từ đâu?",
+      "options": [
+        "Image registry",
+        "Một PersistentVolumeClaim đã khai báo",
+        "ConfigMap app-config",
+        "Secret db-secret trong source hiện tại"
+      ],
+      "correct": 2,
+      "explanation": "volumes.configMap.name tham chiếu app-config."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Bài tập",
+      "question": "Mục tiêu chính của bài tập là gì?",
+      "options": [
+        "Tạo compiler mới",
+        "Viết UI chart animation",
+        "Tự thay mọi Node",
+        "Tách cấu hình bằng ConfigMap và Secret"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình được externalize thay vì đóng cứng trong image."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Base64",
+      "question": "Base64 có phải cơ chế mã hóa bảo mật có khóa không?",
+      "options": [
+        "Không, đó là encoding có thể giải mã dễ dàng",
+        "Có, tương đương AES-256",
+        "Có, chỉ API server mới hiểu",
+        "Có, không thể đảo ngược"
+      ],
+      "correct": 0,
+      "explanation": "Không coi Base64 là encryption hay cơ chế kiểm quyền."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "data và stringData",
+      "question": "Giá trị Secret.data thường cần representation nào trong manifest JSON/YAML?",
+      "options": [
+        "Một regex route",
+        "Chuỗi Base64",
+        "HTTP response",
+        "Một Pod object"
+      ],
+      "correct": 1,
+      "explanation": "data dùng Base64, còn stringData nhận chuỗi đầu vào trực tiếp."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Plaintext đầu vào",
+      "question": "Secret manifest chứa stringData có cần được bảo vệ như dữ liệu bí mật không?",
+      "options": [
+        "Không, Opaque là cipher",
+        "Chỉ khi có hơn hai key",
+        "Có, giá trị trong file vẫn là plaintext",
+        "Không, tên kind tự che file"
+      ],
+      "correct": 2,
+      "explanation": "Secret object không làm file nguồn tự mất tính nhạy cảm."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Lưu trữ mặc định",
+      "question": "Có thể mặc định Secret luôn được mã hóa at-rest chỉ vì kind=Secret không?",
+      "options": [
+        "Có, Base64 đủ cho mọi threat model",
+        "Có, etcd luôn không thể đọc được",
+        "Có, stringData mã hóa mọi backup",
+        "Không, cần cấu hình encryption at rest và kiểm soát truy cập"
+      ],
+      "correct": 3,
+      "explanation": "Cần phân biệt representation với bảo vệ storage."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Quyền API",
+      "question": "Khả năng get Secret qua API cần được quản lý bằng gì?",
+      "options": [
+        "RBAC và các boundary truy cập phù hợp",
+        "Chỉ tên key khó đoán",
+        "Chỉ đặt LOG_LEVEL=info",
+        "Chỉ đổi mountPath"
+      ],
+      "correct": 0,
+      "explanation": "Tên object không thay authorization."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Tách khỏi image",
+      "question": "Tại sao ConfigMap hữu ích khi cùng image chạy nhiều môi trường?",
+      "options": [
+        "Nó tự bảo đảm không downtime",
+        "Mỗi môi trường có thể cấp config riêng mà không build lại chỉ vì đổi config",
+        "Nó tự sửa code không tương thích",
+        "Nó tự tạo mọi database"
+      ],
+      "correct": 1,
+      "explanation": "Artifact và configuration được quản lý với lifecycle riêng."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Không tự đọc file",
+      "question": "Gắn config.json vào container có tự buộc ứng dụng đọc nó không?",
+      "options": [
+        "Có, volumeMount thay code",
+        "Có, filename luôn là chuẩn chung",
+        "Không, ứng dụng cần đọc đúng file và schema",
+        "Có, kubelet tự gọi mọi parser app"
+      ],
+      "correct": 2,
+      "explanation": "Phân phối dữ liệu và tiêu thụ dữ liệu là hai phần khác nhau."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Đường dẫn file",
+      "question": "Theo mount hiện tại, config.json thường xuất hiện ở đâu?",
+      "options": [
+        "/etc/config.json/app-config",
+        "/app-config/etc/config",
+        "/config-vol.json",
+        "/etc/config/config.json"
+      ],
+      "correct": 3,
+      "explanation": "Các key của ConfigMap được chiếu thành file trong thư mục mount."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Các key khác",
+      "question": "APP_ENV có thể có file riêng trong volume ConfigMap này không?",
+      "options": [
+        "Có, nếu không dùng items để giới hạn projection",
+        "Không, chỉ key kết thúc .json được mount",
+        "Không, APP_ENV chỉ được dùng qua env",
+        "Chỉ khi key là Secret"
+      ],
+      "correct": 0,
+      "explanation": "Projection mặc định đưa các key dữ liệu phù hợp thành file."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Không flatten JSON",
+      "question": "config.json chứa features.darkMode. envFrom có tự tạo biến DARK_MODE không?",
+      "options": [
+        "Có, Opaque sinh field đó",
+        "Không",
+        "Có, mọi JSON được flatten và đổi tên",
+        "Có, chỉ vì dùng production"
+      ],
+      "correct": 1,
+      "explanation": "envFrom làm việc với key/value nguồn, không tự thiết kế mapping JSON nội bộ."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Tên biến và phiên bản",
+      "question": "Khi lấy toàn bộ key bằng envFrom, cần chú ý gì về tên key và consumer?",
+      "options": [
+        "Mọi phiên bản đều cấm chính xác cùng một tập ký tự",
+        "ConfigMap tự đổi mọi key sang chữ hoa",
+        "Quy tắc tên env của phiên bản cluster và cách ứng dụng/shell truy cập",
+        "Mọi key luôn bị xóa nếu có chữ số"
+      ],
+      "correct": 2,
+      "explanation": "Validation đã thay đổi theo phiên bản; portability của ứng dụng vẫn cần được xét."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Env snapshot",
+      "question": "Sửa APP_ENV trong ConfigMap có tự đổi env của process đang chạy ngay không?",
+      "options": [
+        "Có, env luôn là con trỏ live tới API",
+        "Có, kubelet sửa memory của process",
+        "Chỉ cần TTL=3600",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Biến môi trường được cấp khi container bắt đầu, không tự cập nhật process cũ."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Volume cập nhật",
+      "question": "ConfigMap volume thông thường được cập nhật theo cơ chế nào khi nguồn đổi?",
+      "options": [
+        "Có thể được cập nhật sau thời gian propagation, không bảo đảm tức thì",
+        "Không bao giờ có thể đổi",
+        "Luôn cập nhật ngay cùng nanosecond",
+        "Chỉ khi app đổi image"
+      ],
+      "correct": 0,
+      "explanation": "Kubelet và cơ chế đồng bộ quyết định độ trễ projection."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "App reload",
+      "question": "File projected đã đổi có bảo đảm app đang giữ config cũ trong RAM tự đọc lại không?",
+      "options": [
+        "Có, API_KEY tự restart process",
+        "Không, app cần cơ chế reload phù hợp",
+        "Có, volume luôn sửa mọi object RAM",
+        "Có, JSON bắt buộc live binding"
+      ],
+      "correct": 1,
+      "explanation": "Cần thiết kế cả phân phối config lẫn phản ứng của ứng dụng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "subPath",
+      "question": "Nếu chuyển sang mount config.json bằng subPath, cập nhật ConfigMap có đặc điểm gì cần lưu ý?",
+      "options": [
+        "Tự ghi Secret lên Git",
+        "Tự tạo file mới ở mọi Node",
+        "Mount subPath không nhận cập nhật ConfigMap theo cơ chế volume projection thông thường",
+        "Luôn cập nhật nhanh hơn env"
+      ],
+      "correct": 2,
+      "explanation": "SubPath có giới hạn cập nhật riêng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Read only",
+      "question": "ConfigMap volume có nên được xem như nơi app ghi cấu hình bền vững không?",
+      "options": [
+        "Có, mọi write tự cập nhật API",
+        "Có, JSON trong volume luôn writable",
+        "Có, app có thể dùng nó thay database",
+        "Không, projection là read-only và không thay storage ghi riêng"
+      ],
+      "correct": 3,
+      "explanation": "Muốn app ghi dữ liệu cần thiết kế storage và quyền khác."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Namespace",
+      "question": "ConfigMap/Secret tham chiếu trực tiếp bởi Pod thường phải ở đâu?",
+      "options": [
+        "Cùng namespace với Pod",
+        "Bất kỳ namespace không cần quyền",
+        "Chỉ namespace kube-system",
+        "Chỉ trên máy local người soạn"
+      ],
+      "correct": 0,
+      "explanation": "Namespaced references không tự tìm nguồn xuyên namespace."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Thiếu nguồn",
+      "question": "Thiếu ConfigMap được tham chiếu bắt buộc có thể gây gì?",
+      "options": [
+        "Tự đổi thành Secret",
+        "Pod/container không có cấu hình cần để khởi động như mong muốn",
+        "Tự tạo đầy đủ dữ liệu mặc định",
+        "Tự dùng ConfigMap cùng tên từ cluster khác"
+      ],
+      "correct": 1,
+      "explanation": "Optional và fallback phải được khai báo/thực hiện có chủ đích."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Tên volume khớp",
+      "question": "volumeMounts.name phải liên hệ thế nào với volumes?",
+      "options": [
+        "Luôn bằng namespace",
+        "Chỉ là comment không cần khớp",
+        "Khớp một volume đã khai báo trong Pod",
+        "Luôn bằng tên container"
+      ],
+      "correct": 2,
+      "explanation": "Tên volume nối chỗ mount với nguồn dữ liệu."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Fragment thiếu",
+      "question": "Phần Using in Pod đã là Pod manifest đầy đủ chưa?",
+      "options": [
+        "Rồi, spec tự suy kind và image",
+        "Rồi, envFrom tạo app image",
+        "Rồi, volume name là Pod name",
+        "Chưa, chỉ có spec fragment và thiếu header/image"
+      ],
+      "correct": 3,
+      "explanation": "Cần bổ sung apiVersion, kind, metadata và spec container phù hợp."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Image thiếu",
+      "question": "Container app trong fragment chưa có thuộc tính quan trọng nào để chạy image?",
+      "options": [
+        "image",
+        "name",
+        "envFrom",
+        "volumeMounts"
+      ],
+      "correct": 0,
+      "explanation": "Source có tên và cấu hình nhưng chưa nêu image ứng dụng."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "JSON schema",
+      "question": "ConfigMap chứa JSON hợp lệ đã chứng minh ứng dụng hiểu schema đó chưa?",
+      "options": [
+        "Rồi, features tự bật UI",
+        "Chưa",
+        "Rồi, Kubernetes biết mọi schema app",
+        "Rồi, TTL tự là chuẩn mọi cache"
+      ],
+      "correct": 1,
+      "explanation": "Kubernetes lưu chuỗi; ứng dụng phải kiểm hợp đồng dữ liệu."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Kiểu env",
+      "question": "APP_ENV và LOG_LEVEL đưa qua env được consumer nhận dưới dạng gì thông thường?",
+      "options": [
+        "Một integer bắt buộc",
+        "Một database transaction",
+        "Chuỗi",
+        "Một object ConfigMap Swift"
+      ],
+      "correct": 2,
+      "explanation": "Process environment truyền dữ liệu dạng chuỗi; app diễn giải giá trị."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "TTL unit",
+      "question": "cache.ttl=3600 tự cho biết đơn vị thời gian trong mọi ứng dụng không?",
+      "options": [
+        "Có, Kubernetes luôn coi TTL này là mili giây",
+        "Có, mọi JSON ttl là phút",
+        "Có, đây là HPA target",
+        "Không, cần contract của app"
+      ],
+      "correct": 3,
+      "explanation": "Trường trong JSON riêng không phải thuộc tính chuẩn Kubernetes định nghĩa đơn vị."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Cùng key hai trường",
+      "question": "Nếu cùng một key xuất hiện ở Secret.data và Secret.stringData, nguồn nào ưu tiên theo API?",
+      "options": [
+        "stringData",
+        "data luôn thắng",
+        "Chọn ngẫu nhiên",
+        "Mọi trường hợp đều tự merge chuỗi"
+      ],
+      "correct": 0,
+      "explanation": "stringData được merge vào data và ghi đè key trùng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Opaque",
+      "question": "type:Opaque có tự chứng minh dữ liệu đã được xác thực là mật khẩu DB đúng không?",
+      "options": [
+        "Có, Secret tự sửa username",
+        "Không",
+        "Có, API thử đăng nhập DB",
+        "Có, Opaque kiểm credential qua mạng"
+      ],
+      "correct": 1,
+      "explanation": "Opaque nói về loại dữ liệu tùy ý, không kiểm dependency nghiệp vụ."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Secret không authorization",
+      "question": "App biết API_KEY có tự được phép làm mọi thao tác trên mọi user không?",
+      "options": [
+        "Có, Secret cho toàn quyền cluster",
+        "Có, envFrom là permission bypass",
+        "Không, phía dịch vụ nhận cần policy quyền tương ứng",
+        "Có, key nào cũng là admin"
+      ],
+      "correct": 2,
+      "explanation": "Credential vẫn có scope và lifecycle cần được quản lý."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Log",
+      "question": "Debug config có nên in toàn bộ env chứa Secret vào log không?",
+      "options": [
+        "Có, mọi log tự Base64 mã hóa",
+        "Có, LOG_LEVEL info bảo vệ bí mật",
+        "Có, trong container thì không thể lộ",
+        "Không, cần redaction và giới hạn dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Log là một bề mặt lưu và truy cập dữ liệu nhạy cảm."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Git",
+      "question": "Đưa manifest stringData lên repository public có làm giá trị bí mật an toàn nhờ Kubernetes không?",
+      "options": [
+        "Không",
+        "Có, kind Secret tự ẩn Git diff",
+        "Có, Opaque khiến Git không đọc được",
+        "Có, tên db-secret không bị đoán"
+      ],
+      "correct": 0,
+      "explanation": "Cần quy trình quản lý secrets phù hợp; file nguồn vẫn có thể lộ."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Least privilege",
+      "question": "Nếu app chỉ cần một key Secret, cách injection nào giảm dữ liệu không cần thiết?",
+      "options": [
+        "Đưa cả etcd snapshot vào container",
+        "Chọn key qua secretKeyRef khi phù hợp thay envFrom toàn bộ",
+        "Luôn đưa mọi Secret của namespace",
+        "Chỉ đổi label app"
+      ],
+      "correct": 1,
+      "explanation": "Giảm phạm vi dữ liệu cấp cho workload hỗ trợ least privilege."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Key conflict",
+      "question": "Nếu hai nguồn envFrom có key trùng, nên làm gì khi thiết kế?",
+      "options": [
+        "Coi key trùng luôn tạo hai env cùng tên có nghĩa độc lập",
+        "Chỉ đổi mountPath",
+        "Hiểu thứ tự/precedence và tránh xung đột ngoài ý muốn",
+        "Coi cả hai cùng hiện thành một object JSON"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn cấu hình trùng tên cần hợp đồng rõ ràng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "ConfigMap không secret",
+      "question": "Đặt DB_PASSWORD vào ConfigMap chỉ vì dễ đọc có đánh đổi gì?",
+      "options": [
+        "Không có vì ConfigMap là encryption mạnh",
+        "Tự tăng bảo mật hơn Secret",
+        "Tự đổi type thành Opaque",
+        "Dùng sai boundary dữ liệu nhạy cảm và quyền/phân phối cần xem lại"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình nhạy cảm cần cơ chế quản lý và bảo vệ phù hợp."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Secret file",
+      "question": "Có thể mount Secret thành file thay vì env không?",
+      "options": [
+        "Có, qua volume Secret phù hợp",
+        "Không, Secret chỉ dùng được cho Docker registry",
+        "Không, API_KEY bắt buộc là env",
+        "Chỉ khi Secret đổi thành Service"
+      ],
+      "correct": 0,
+      "explanation": "Kubernetes hỗ trợ nhiều cách tiêu thụ Secret theo yêu cầu ứng dụng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Volume không backup",
+      "question": "Mount ConfigMap có tự là cơ chế backup dữ liệu ứng dụng không?",
+      "options": [
+        "Có, envFrom giữ bản sao upload",
+        "Không",
+        "Có, mọi file container đều được snapshot vào ConfigMap",
+        "Có, cache.ttl sao lưu toàn bộ DB"
+      ],
+      "correct": 1,
+      "explanation": "Cấu hình projection khác persistence và backup dữ liệu nghiệp vụ."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Immutable",
+      "question": "ConfigMap immutable được thiết kế để có đặc điểm nào?",
+      "options": [
+        "Luôn tự đổi dữ liệu mỗi phút",
+        "Tự có quyền admin",
+        "Không sửa dữ liệu của object đó tại chỗ sau khi đặt immutable",
+        "Không thể được Pod đọc"
+      ],
+      "correct": 2,
+      "explanation": "Muốn đổi cấu hình cần lifecycle object/reference thích hợp."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Rolling config",
+      "question": "Dùng tên ConfigMap có version giúp điều gì khi rollout?",
+      "options": [
+        "Tự hoàn nguyên mọi database write",
+        "Tự bỏ mọi Secret hết hạn",
+        "Tự làm image bất biến",
+        "Gắn Pod template với một phiên bản config rõ ràng"
+      ],
+      "correct": 3,
+      "explanation": "Versioned config hỗ trợ quản lý desired state và rollback có chủ đích."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Độ trễ",
+      "question": "Volume projection và app poll file có thể cùng góp phần vào điều gì?",
+      "options": [
+        "Độ trễ trước khi hành vi ứng dụng phản ánh config mới",
+        "Số CPU vật lý của Node",
+        "Tên cluster",
+        "Kiểu Service"
+      ],
+      "correct": 0,
+      "explanation": "Freshness phụ thuộc nhiều bước chứ không chỉ API write."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Xem Secret",
+      "question": "Người có quyền đọc Secret có thể lấy lại giá trị Base64 không?",
+      "options": [
+        "Chỉ nếu app đã tắt",
+        "Có thể decode để thu được dữ liệu gốc",
+        "Không, Base64 là hash một chiều",
+        "Chỉ nếu có private key AES"
+      ],
+      "correct": 1,
+      "explanation": "Không dùng encoding để thay access control."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Giới hạn dữ liệu",
+      "question": "ConfigMap có phù hợp làm kho nhiều gigabyte dữ liệu ứng dụng không?",
+      "options": [
+        "Có, JSON tự nén mọi file",
+        "Có, mỗi key không giới hạn",
+        "Không, nó dành cho cấu hình nhỏ và có giới hạn kích thước",
+        "Có, etcd là object storage vô hạn"
+      ],
+      "correct": 2,
+      "explanation": "Cần chọn dịch vụ lưu trữ theo khối lượng và access pattern."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Mục đích tách config",
+      "question": "External config có tự loại mọi yêu cầu build image khi code đổi không?",
+      "options": [
+        "Có, ConfigMap luôn là mã máy mới",
+        "Có, Secret tự build source",
+        "Có, JSON thay mọi binary",
+        "Không, code thay đổi vẫn cần artifact thích hợp"
+      ],
+      "correct": 3,
+      "explanation": "Tách config giảm coupling nhưng không thay pipeline build code."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Env và volume khác nhau",
+      "question": "Cùng ConfigMap cấp env và volume; file đã đổi nhưng process env vẫn cũ. Giải thích nào đúng?",
+      "options": [
+        "Hai cách injection có lifecycle khác; env không tự đổi trong process đang chạy",
+        "ConfigMap chắc chắn không tồn tại",
+        "Volume đã sai namespace nên env mới đúng",
+        "Kubernetes bảo đảm env đổi trước file"
+      ],
+      "correct": 0,
+      "explanation": "Cần chọn reload/rollout phù hợp cả cách cung cấp và cách app đọc dữ liệu."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Đổi credential",
+      "question": "Secret đổi password mới nhưng DB còn chỉ nhận password cũ. Cần điều phối gì?",
+      "options": [
+        "Chỉ tăng TTL cache",
+        "Rotation giữa nơi phát credential, dịch vụ nhận và workload sử dụng",
+        "Chỉ Base64 lại chuỗi",
+        "Chỉ đổi label Secret"
+      ],
+      "correct": 1,
+      "explanation": "Việc sửa Secret không tự thay mật khẩu ở hệ thống ngoài."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Base64 lộ",
+      "question": "Một Secret.data bị đưa ra public. Chỉ Base64 có bảo vệ plaintext không?",
+      "options": [
+        "Có, vì data không phải stringData",
+        "Có, vì Secret nằm trong namespace",
+        "Không, cần đánh giá lộ và thu hồi/rotation theo scope",
+        "Có, vì không có khóa giải mã"
+      ],
+      "correct": 2,
+      "explanation": "Encoding không có thuộc tính bí mật của encryption."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Pod creator quyền gián tiếp",
+      "question": "Vì sao chỉ chặn get Secret nhưng cho tạo Pod tùy ý cùng namespace có thể chưa đủ bảo vệ?",
+      "options": [
+        "Pod không bao giờ đọc được Secret",
+        "Tạo Pod luôn là quyền chỉ đọc",
+        "Namespace tự chặn mọi Secret reference",
+        "Pod mới có thể mount hoặc dùng Secret nếu chính sách admission/quyền cho phép"
+      ],
+      "correct": 3,
+      "explanation": "Cần xem quyền gián tiếp qua khả năng tạo workload và admission policy."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Chọn key tối thiểu",
+      "question": "Workload chỉ cần DB_PASSWORD nhưng envFrom đưa thêm API_KEY không dùng. Cải thiện nào đúng?",
+      "options": [
+        "Giới hạn injection và quyền vào dữ liệu thật sự cần",
+        "Đổi tên API_KEY thành PUBLIC",
+        "Chỉ tắt logging rồi cấp mọi key",
+        "Chỉ tăng memory limit"
+      ],
+      "correct": 0,
+      "explanation": "Least privilege còn áp dụng vào dữ liệu được phân phối cho process."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "subPath stale",
+      "question": "App dùng subPath để mount một file, chờ tự cập nhật sau ConfigMap edit nhưng không đổi. Cần sửa thiết kế nào?",
+      "options": [
+        "Thêm SecretRef không liên quan",
+        "Chọn mount/reload/rollout phù hợp với giới hạn subPath",
+        "Chỉ chờ cache.ttl hết hạn",
+        "Đổi key thành uppercase để file tự mới"
+      ],
+      "correct": 1,
+      "explanation": "SubPath không nhận live projection updates như mount ConfigMap thông thường."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "App giữ config",
+      "question": "Projected file đã mới nhưng app parse một lần lúc start. Cần xem gì?",
+      "options": [
+        "Chỉ tên volume",
+        "Chỉ đổi apiVersion từ v1 sang apps/v1",
+        "Reload logic hoặc khởi động lại có điều phối theo contract",
+        "Chỉ quyền get ConfigMap"
+      ],
+      "correct": 2,
+      "explanation": "Data distribution thành công không tự thay state đã nạp của chương trình."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Config sai schema",
+      "question": "JSON hợp lệ nhưng ttl là kiểu app không chấp nhận; validation ở API ConfigMap có đủ chưa?",
+      "options": [
+        "Rồi, Kubernetes biết schema của mọi app",
+        "Rồi, darkMode=true tự sửa ttl",
+        "Rồi, JSON hợp lệ luôn đúng nghiệp vụ",
+        "Chưa, cần schema/validation ở pipeline hoặc app boundary"
+      ],
+      "correct": 3,
+      "explanation": "Lưu trữ chuỗi JSON không xác nhận mọi ràng buộc ứng dụng."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Chuyển môi trường",
+      "question": "Cùng image dùng APP_ENV khác nhau nhưng code không đọc env mà hard-code URL. Cần sửa gì?",
+      "options": [
+        "Thống nhất consumer config và cách phân phối thay vì chỉ tạo ConfigMap",
+        "Chỉ đổi tên ConfigMap",
+        "Chỉ thêm nhiều envFrom",
+        "Chỉ mã hóa URL Base64"
+      ],
+      "correct": 0,
+      "explanation": "Externalization cần cả nguồn cấu hình lẫn code tiêu thụ đúng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Config immutable version",
+      "question": "Muốn rollout config mới mà vẫn truy vết phiên bản cũ, phương án nào rõ?",
+      "options": [
+        "Dùng một global env không có history",
+        "Tạo versioned config và cập nhật Pod-template reference có kiểm soát",
+        "Sửa immutable data bằng mọi giá",
+        "Xóa mọi config cũ trước khi Pod mới sẵn"
+      ],
+      "correct": 1,
+      "explanation": "Cần quản lý references và retention để rollout/rollback tương thích."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Namespace mismatch",
+      "question": "Pod namespace A tham chiếu app-config chỉ có ở B. Cần giải quyết gì?",
+      "options": [
+        "Đổi label app là đủ",
+        "Tăng replicas để tìm thấy config",
+        "Đặt/cấp config đúng namespace bằng quy trình và quyền phù hợp",
+        "Đổi mountPath là tự xuyên namespace"
+      ],
+      "correct": 2,
+      "explanation": "Pod reference thông thường không tự tìm đối tượng ở namespace khác."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Xung đột nguồn",
+      "question": "APP_ENV được khai báo ở nhiều nguồn envFrom và env riêng. Cần kiểm điều gì?",
+      "options": [
+        "Chỉ nội dung ConfigMap đầu tiên",
+        "Chỉ số lượng key",
+        "Chỉ mountPath",
+        "Precedence, tên biến và giá trị process thật sự nhận theo hợp đồng"
+      ],
+      "correct": 3,
+      "explanation": "Nhiều nguồn cấu hình cần tránh override ngầm khó chẩn đoán."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Portability env",
+      "question": "Key config.json có thể được chấp nhận làm tên env ở một cluster nhưng khó dùng bằng shell thông thường. Kết luận nào phù hợp?",
+      "options": [
+        "Xét version validation và consumer; có thể chọn env key rõ hoặc đọc file",
+        "Mọi cluster hiện tại chắc chắn từ chối dấu chấm",
+        "Mọi shell truy cập mọi tên env bằng cùng cú pháp",
+        "ConfigMap tự đổi key thành CONFIG_JSON"
+      ],
+      "correct": 0,
+      "explanation": "API acceptance và tính thuận tiện của consumer không phải cùng một vấn đề."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "At-rest boundary",
+      "question": "Đã bật encryption at rest cho etcd, user có quyền get Secret còn đọc được plaintext qua API không?",
+      "options": [
+        "Chỉ nếu tắt TLS",
+        "Có thể, encryption at rest không thay RBAC API",
+        "Không, chỉ Node mới giải mã",
+        "Không, API luôn trả ciphertext không dùng được"
+      ],
+      "correct": 1,
+      "explanation": "Bảo vệ lưu trữ và authorization khi truy cập là các lớp riêng."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Exposure qua logs",
+      "question": "Secret được bảo vệ trong etcd nhưng app log toàn bộ env. Cần sửa boundary nào?",
+      "options": [
+        "Chỉ đổi storage class",
+        "Chỉ thêm nhãn confidential",
+        "Dữ liệu log, quyền truy cập, retention và khả năng credential đã lộ",
+        "Chỉ đổi Base64 sang stringData"
+      ],
+      "correct": 2,
+      "explanation": "Một lớp bảo vệ storage không ngăn ứng dụng tự xuất dữ liệu nhạy cảm."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Git không tự xóa lịch sử",
+      "question": "Manifest có credential bị commit rồi xóa khỏi file mới. Cần xem gì?",
+      "options": [
+        "Coi xóa dòng hiện tại là credential chưa từng lộ",
+        "Chỉ đổi filename",
+        "Chỉ đặt Opaque",
+        "Lịch sử/khả năng lộ và rotation/revocation theo scope"
+      ],
+      "correct": 3,
+      "explanation": "Lifecycle credential không kết thúc chỉ vì thay bản hiện tại của file."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Đồng bộ nhiều key",
+      "question": "App cần cặp endpoint/token tương thích nhưng đọc từng file trong lúc config thay. Cần cân nhắc gì?",
+      "options": [
+        "Cách nạp một phiên bản config nhất quán và validate trước kích hoạt",
+        "Mọi lần đọc file tự là transaction nghiệp vụ",
+        "Chỉ số lượng volume",
+        "Chỉ TTL trong JSON"
+      ],
+      "correct": 0,
+      "explanation": "Ứng dụng cần định nghĩa tính nhất quán khi chuyển giữa các bộ cấu hình."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Khởi động với config thiếu",
+      "question": "App tiếp tục chạy với default nguy hiểm khi Secret thiếu. Hợp đồng nên xác định gì?",
+      "options": [
+        "Chỉ đổi LOG_LEVEL",
+        "Fail/retry/readiness và default an toàn theo mức bắt buộc của credential",
+        "Luôn bỏ mọi auth để app chạy",
+        "Luôn tạo admin password cố định"
+      ],
+      "correct": 1,
+      "explanation": "Fallback cho dữ liệu nhạy cảm phải có chủ đích, không che thiếu cấu hình."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Fragment hoàn chỉnh",
+      "question": "Để fragment Using in Pod thành workload có thể gửi API, cần bổ sung gì?",
+      "options": [
+        "Chỉ Base64 toàn bộ YAML",
+        "Chỉ đổi DB_PASSWORD thành CPU",
+        "Pod header/metadata, image và spec hợp lệ cùng nguồn config đúng scope",
+        "Chỉ thêm một comment"
+      ],
+      "correct": 2,
+      "explanation": "Snippet hiện là ví dụ cấu hình chưa phải Pod hoàn chỉnh."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Tách trách nhiệm",
+      "question": "Bộ thiết kế nào bao quát đúng externalized config?",
+      "options": [
+        "Chỉ kind Secret cho mọi dữ liệu",
+        "Chỉ một envFrom rồi coi mọi hành vi tự đúng",
+        "Chỉ mountPath có chữ config",
+        "Nguồn dữ liệu, quyền, schema, injection, reload/rollout và rotation theo lifecycle"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình external cần hợp đồng xuyên suốt từ lưu trữ tới consumer."
+    }
+  ]
+}

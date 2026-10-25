@@ -1,0 +1,1163 @@
+{
+  "version": 1,
+  "tech": "rust",
+  "level": "newbie",
+  "lesson": "error-handling",
+  "language": "vi",
+  "sourceHash": "1232c862bf44db3326a6e9f478b71062dff77828fb205e94a195b00e57e874bf",
+  "status": "approved",
+  "review": "Tự soạn không API. Review source AppError/read_age_from_file và Rust Reference/std docs. Selected offline rustc fixtures với age.txt nhỏ trong scratch riêng,không đọc file user/network. Phân biệt IO/parse/domain,From và ?,Result combinators,panic policy. Source dùng NotFound cho invalid age>150 chưa hợp semantic,không implement std::error::Error hay source chain chỉ nhờ Display/Debug. Không khẳng định every panic unrecoverable hoặc mọi exit chạy Drop.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Result cases",
+      "question": "Result<T,E> có những variants nào?",
+      "options": [
+        "Ok(T) và Err(E).",
+        "Some(T) và None.",
+        "True và False.",
+        "Null và Undefined."
+      ],
+      "correct": 0,
+      "explanation": "Success payload và error payload được biểu diễn trong cùng result type."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Recoverable contract",
+      "question": "Result thường phù hợp cho điều gì?",
+      "options": [
+        "Mọi failure đều phải abort process.",
+        "Lỗi mà caller cần xử lý/propagate theo contract.",
+        "Chỉ lỗi syntax của compiler.",
+        "Chỉ network timeout."
+      ],
+      "correct": 1,
+      "explanation": "Không coi mỗi Err là panic."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Success payload",
+      "question": "Ok(age) trong source có nghĩa gì?",
+      "options": [
+        "Tự validate mọi domain rule ngoài code.",
+        "Tự tạo một exception.",
+        "Trả tuổi đã qua các bước đọc/parse/check hiện có.",
+        "Ghi age xuống file tự động."
+      ],
+      "correct": 2,
+      "explanation": "Success phản ánh logic thực thi,không các invariant chưa viết."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Error payload",
+      "question": "Err(AppError::NotFound(...)) trong source biểu diễn gì?",
+      "options": [
+        "Một panic được ném tự động.",
+        "Một HTTP404 đã gửi tự động.",
+        "Một file tự bị xóa.",
+        "Một error value được trả cho caller."
+      ],
+      "correct": 3,
+      "explanation": "Domain/transport mapping không tự xuất hiện từ enum name."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Question mark success",
+      "question": "Với Result, expr? khi expr là Ok(v) thường làm gì?",
+      "options": [
+        "Cho expression tiếp tục với payload v.",
+        "Return Err(v) ngay.",
+        "Panic vô điều kiện.",
+        "Tự clone mọi dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "? không luôn kết thúc hàm;nhánh success tiếp tục."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Question mark error",
+      "question": "Với Result trong ngữ cảnh phù hợp, expr? khi Err(e) làm gì?",
+      "options": [
+        "Tự retry operation.",
+        "Return sớm error được chuyển kiểu theo contract.",
+        "Luôn panic giống unwrap.",
+        "Bỏ error rồi trả0."
+      ],
+      "correct": 1,
+      "explanation": "Conversion cần implementation phù hợp như From,không tự có cho mọi error types."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "IO source",
+      "question": "fs::read_to_string(path) nguồn trả loại kết quả nào?",
+      "options": [
+        "Option<u32>.",
+        "Một database connection.",
+        "Result<String,io::Error>.",
+        "String luôn thành công."
+      ],
+      "correct": 2,
+      "explanation": "Nó đọc file và yêu cầu nội dung UTF-8 hợp lệ."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Parse source",
+      "question": "content.trim().parse() được suy sang kiểu số nào?",
+      "options": [
+        "i64 bất kỳ.",
+        "f64.",
+        "usize bắt buộc.",
+        "u32."
+      ],
+      "correct": 3,
+      "explanation": "Annotation age:u32 cung cấp type context."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Trim source",
+      "question": "trim() trước parse nhằm gì?",
+      "options": [
+        "Bỏ whitespace ở hai đầu string slice trước parse.",
+        "Bỏ mọi ký tự không phải số ở giữa.",
+        "Tự validate tuổi<=150.",
+        "Tự đổi dấu âm thành dương."
+      ],
+      "correct": 0,
+      "explanation": "Whitespace nội bộ hoặc text dư không tự được xóa."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Range check",
+      "question": "Source dùng điều kiện nào cho age không hợp lệ theo check hiện tại?",
+      "options": [
+        "age<0 trên u32 như check duy nhất.",
+        "age>150.",
+        "age>=150.",
+        "age==20."
+      ],
+      "correct": 1,
+      "explanation": "150 vẫn được chấp nhận;negative string thất bại ở parse u32."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Custom IO conversion",
+      "question": "From<io::Error> cho AppError tạo variant nào?",
+      "options": [
+        "AppError::NotFound cho mọi lỗi.",
+        "Ok(0).",
+        "AppError::Io.",
+        "AppError::Parse."
+      ],
+      "correct": 2,
+      "explanation": "Conversion giữ error gốc trong payload Io."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Custom parse conversion",
+      "question": "From<ParseIntError> cho AppError làm gì?",
+      "options": [
+        "Tự đổi mọi parse lỗi thành tuổi0.",
+        "Tự retry file read.",
+        "Panic ngay trong compiler.",
+        "Bọc parse error vào AppError::Parse."
+      ],
+      "correct": 3,
+      "explanation": "From chuyển representation,không tự xử lý nguyên nhân."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Debug derive",
+      "question": "AppError derive Debug để làm gì?",
+      "options": [
+        "Có thể format/debug error theo trait đó.",
+        "Tự implement mọi std Error source chain.",
+        "Tự retry operation.",
+        "Tự redact paths/secrets."
+      ],
+      "correct": 0,
+      "explanation": "Debug không đồng nghĩa Display hoặc std::error::Error."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Display implementation",
+      "question": "Display cho AppError dùng để làm gì?",
+      "options": [
+        "Tự dừng process.",
+        "Định dạng thông điệp hiển thị theo các match arms.",
+        "Tự quyết định HTTP status.",
+        "Tự lưu error vào DB."
+      ],
+      "correct": 1,
+      "explanation": "format error khác error propagation và policy."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Write macro formatter",
+      "question": "write!(f,...) trong Display ghi vào đâu?",
+      "options": [
+        "Luôn age.txt.",
+        "Một server socket bắt buộc.",
+        "Formatter được cung cấp.",
+        "Luôn stdout."
+      ],
+      "correct": 2,
+      "explanation": "Return std::fmt::Result thể hiện kết quả formatting."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Source main match",
+      "question": "main xử lý read_age_from_file bằng gì?",
+      "options": [
+        "catch mọi exceptions bắt buộc.",
+        "Bỏ qua result hoàn toàn.",
+        "Một goroutine Go.",
+        "match Ok/Err."
+      ],
+      "correct": 3,
+      "explanation": "Ok in tuổi,Err in thông điệp bằng eprintln!."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Stderr macro",
+      "question": "eprintln! thường ghi ra đâu?",
+      "options": [
+        "Standard error.",
+        "Luôn stdout.",
+        "Một log file tự tạo.",
+        "Database table errors."
+      ],
+      "correct": 0,
+      "explanation": "Kênh output khác nhau cần được lưu đúng trong verification."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Unwrap distinction",
+      "question": "unwrap trên Err thường gây gì?",
+      "options": [
+        "Tự retry vô hạn.",
+        "Panic.",
+        "Tự return Err lên caller như ?.",
+        "Tự cho default0."
+      ],
+      "correct": 1,
+      "explanation": "Unwrap phù hợp khi invariant đã rõ,không thay error handling đầu vào tùy ý."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Panic scope",
+      "question": "panic! có giống một Err value được caller match bình thường không?",
+      "options": [
+        "Có,Result tự catch mọi panic.",
+        "Chỉ khác tên macro.",
+        "Không;panic theo unwind/abort policy là cơ chế khác.",
+        "Có,mọi Err luôn là panic."
+      ],
+      "correct": 2,
+      "explanation": "Không biến recoverable errors thành process panic vô ý."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Source error type gap",
+      "question": "AppError nguồn đã implement std::error::Error chưa?",
+      "options": [
+        "Có,vì có Debug/Display thì tự implement mọi trait.",
+        "Có,vì tên chứa Error.",
+        "Chỉ khi Io variant được dùng.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Traits cần implementation/derive phù hợp,không chỉ tên type."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "File valid age",
+      "question": "Với age.txt chứa20, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",read_age_from_file(\"age.txt\").unwrap());}\n",
+      "options": [
+        "20.",
+        "0.",
+        "Err Parse.",
+        "NotFound Invalid age."
+      ],
+      "correct": 0,
+      "explanation": "Đọc/trim/parse/check hiện tại đều thành công."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Whitespace file",
+      "question": "Với age.txt chứa whitespace quanh20, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",read_age_from_file(\"age.txt\").unwrap());}\n",
+      "options": [
+        "150.",
+        "20.",
+        "Parse error bắt buộc vì trim không có tác dụng.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "trim bỏ leading/trailing whitespace trước u32 parse."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Upper allowed boundary",
+      "question": "Với age.txt chứa150, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",read_age_from_file(\"age.txt\").unwrap());}\n",
+      "options": [
+        "0.",
+        "151.",
+        "150.",
+        "Invalid age."
+      ],
+      "correct": 2,
+      "explanation": "Source reject >150,chưa reject =150."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Age domain error",
+      "question": "Với age.txt chứa151, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"age.txt\"),Err(AppError::NotFound(s)) if s==\"Invalid age\"));}\n",
+      "options": [
+        "false.",
+        "Panic vì u32 không chứa151.",
+        "File tự bị xóa.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "Source trả NotFound với text Invalid age cho miền này;semantic name có thể nên thiết kế lại."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Negative age parse",
+      "question": "Với age.txt chứa-1, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"age.txt\"),Err(AppError::Parse(_))));}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Ok(4294967295) mặc định wrapping parse.",
+        "NotFound vì source tự nhận số âm u32."
+      ],
+      "correct": 0,
+      "explanation": "Negative text không parse thành u32 hợp lệ,trả Parse variant qua From."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "U32 text overflow",
+      "question": "Với age.txt chứa4294967296, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"age.txt\"),Err(AppError::Parse(_))));}\n",
+      "options": [
+        "Ok(150) tự clamp.",
+        "true.",
+        "false.",
+        "Ok(0) tự wrapping."
+      ],
+      "correct": 1,
+      "explanation": "Số vượt u32 thất bại ở parse trước check age>150."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Trailing nonnumeric text",
+      "question": "Với age.txt chứa20years, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"age.txt\"),Err(AppError::Parse(_))));}\n",
+      "options": [
+        "Ok(20) vì parse tự lấy numeric prefix.",
+        "NotFound vì file luôn mất.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "parse u32 không tự bỏ trailing text sau trim."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Invalid UTF8 file",
+      "question": "Với age.txt chứa byteFF không hợp lệ UTF-8, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"age.txt\"),Err(AppError::Io(e)) if e.kind()==io::ErrorKind::InvalidData));}\n",
+      "options": [
+        "false.",
+        "Parse error là bước đầu tiên đã chạy.",
+        "Tự chuyển mọi byte sang20.",
+        "true."
+      ],
+      "correct": 3,
+      "explanation": "read_to_string báo IO InvalidData trước parse."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Missing scratch file",
+      "question": "Khi absent-age.txt không tồn tại trong fixture, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"absent-age.txt\"),Err(AppError::Io(e)) if e.kind()==io::ErrorKind::NotFound));}\n",
+      "options": [
+        "true.",
+        "false.",
+        "Ok(0) do path thiếu.",
+        "Tự tạo file trước read."
+      ],
+      "correct": 0,
+      "explanation": "IO missing-file khác custom variant NotFound mà source dùng cho tuổi>150."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Empty file parse",
+      "question": "Với age.txt rỗng, chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",matches!(read_age_from_file(\"age.txt\"),Err(AppError::Parse(_))));}\n",
+      "options": [
+        "Ok(150).",
+        "true.",
+        "false.",
+        "Ok(0) mặc định."
+      ],
+      "correct": 1,
+      "explanation": "String rỗng không parse thành u32,trả Parse variant."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Result map success",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let r=\"42\".parse::<u32>().map(|n|n+1);println!(\"{r:?}\");}\n",
+      "options": [
+        "Err(43).",
+        "Map luôn panic trên parse.",
+        "Ok(43).",
+        "Ok(42)."
+      ],
+      "correct": 2,
+      "explanation": "map chỉ biến success payload."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Map error representation",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let r=\"bad\".parse::<u32>().map_err(|_|\"parse\");println!(\"{r:?}\");}\n",
+      "options": [
+        "Ok(\"parse\").",
+        "Err(0).",
+        "map_err tự retry parse.",
+        "Err(\"parse\")."
+      ],
+      "correct": 3,
+      "explanation": "map_err chuyển error payload,kết quả vẫn Err."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "And then short circuit",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut called=false;let r:Result<i32,&str>=Err(\"bad\");let out=r.and_then(|n|{called=true;Ok(n+1)});println!(\"{} {called}\",out.is_err());}\n",
+      "options": [
+        "true false.",
+        "true true.",
+        "false true.",
+        "Closure luôn chạy."
+      ],
+      "correct": 0,
+      "explanation": "and_then trên Err không gọi success closure."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Eager default evaluation",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut calls=0;let v=Ok::<i32,&str>(7).unwrap_or({calls+=1;0});println!(\"{v} {calls}\");}\n",
+      "options": [
+        "Compiler cấm block làm argument.",
+        "7 1.",
+        "7 0.",
+        "0 1."
+      ],
+      "correct": 1,
+      "explanation": "Argument unwrap_or được đánh giá trước call dù Result là Ok."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Question mark unit function",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn bad(){let _:u32=\"x\".parse()?;}\nfn main(){}\n",
+      "options": [
+        "Có,main tự catch Result của mọi function.",
+        "Chỉ runtime panic.",
+        "Không;hàm trả unit không hỗ trợ Result propagation như viết ở đây.",
+        "Có,? luôn tự đổi return type."
+      ],
+      "correct": 2,
+      "explanation": "? cần return context/residual conversion phù hợp."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Missing From conversion",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "#[derive(Debug)]struct MyError;fn f()->Result<(),MyError>{let _=std::fs::read_to_string(\"age.txt\")?;Ok(())}\nfn main(){}\n",
+      "options": [
+        "Có,? tự biết mọi enum errors.",
+        "Có,derive Debug tạo From tự động.",
+        "Chỉ runtime error.",
+        "Không;MyError chưa có conversion từ io::Error cho ?."
+      ],
+      "correct": 3,
+      "explanation": "Không tự implement From chỉ vì source có một error type."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Display not Error trait",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){fn accept(_: &dyn std::error::Error){}accept(&AppError::NotFound(String::from(\"x\")));}\n",
+      "options": [
+        "Không;AppError nguồn chưa implement std::error::Error.",
+        "Có,Display tự sinh Error.",
+        "Có,tên AppError là đủ.",
+        "Chỉ nếu variant Parse."
+      ],
+      "correct": 0,
+      "explanation": "Trait object cần type thực sự implement Error."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Option question mark in Result",
+      "question": "Đoạn code biên dịch được không?",
+      "code": "fn f()->Result<i32,&'static str>{let n:Option<i32>=None;Ok(n?)}\nfn main(){}\n",
+      "options": [
+        "Chỉ runtime panic.",
+        "Không;Option ? không tự tạo error &str cho Result return ở đây.",
+        "Có,None tự thành Err(\"missing\") trong mọi hàm.",
+        "Có,? dùng mọi container giống nhau."
+      ],
+      "correct": 1,
+      "explanation": "Cần chuyển Option sang Result bằng contract error phù hợp."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Explicit option conversion",
+      "question": "Chương trình in gì?",
+      "code": "fn f(n:Option<i32>)->Result<i32,&'static str>{let v=n.ok_or(\"missing\")?;Ok(v)}\nfn main(){println!(\"{:?}\",f(Some(42)));}\n",
+      "options": [
+        "Some(42).",
+        "Compiler cấm ok_or.",
+        "Ok(42).",
+        "Err(\"missing\")."
+      ],
+      "correct": 2,
+      "explanation": "ok_or tạo Result để ? propagate đúng return type."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Main result",
+      "question": "Chương trình in gì và kết thúc theo success path?",
+      "code": "fn main()->Result<(),std::num::ParseIntError>{let n:u32=\"42\".parse()?;println!(\"{n}\");Ok(())}\n",
+      "options": [
+        "Không compile vì main bắt buộc chỉ unit.",
+        "Err(42).",
+        "Panic khi return Ok.",
+        "42 với main trả Ok(())."
+      ],
+      "correct": 3,
+      "explanation": "Rust cho phép main return type có Termination phù hợp,ví dụ Result này."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "From not retry",
+      "question": "From<io::Error> cho AppError có tự đọc file lại khi lỗi không?",
+      "options": [
+        "Không;chỉ chuyển/bọc error theo body implementation.",
+        "Có,From luôn retry3 lần.",
+        "Có,? tự tạo file thiếu.",
+        "Chỉ với InvalidData."
+      ],
+      "correct": 0,
+      "explanation": "Error representation khác recovery policy."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "IO vs domain naming",
+      "question": "Source dùng AppError::NotFound(\"Invalid age\") cho age>150 có điểm thiết kế nào cần xem lại?",
+      "options": [
+        "Mọi invalid age đúng là missing file.",
+        "Tên variant gợi absence nhưng thực tế là domain validation failure.",
+        "Compiler luôn biết và reject semantic name.",
+        "Không thể có enum chứa String."
+      ],
+      "correct": 1,
+      "explanation": "Có thể dùng variant InvalidAge rõ hơn theo domain,không báo sai source hiện tại."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Main error exit policy",
+      "question": "Main chỉ eprintln khi Err như source có tự trả exit status thất bại không?",
+      "options": [
+        "Có,mọi stderr bytes là process failure.",
+        "Chỉ nếu message có chữ Error.",
+        "Không;main unit vẫn return bình thường nếu không có exit/panic/Termination error policy khác.",
+        "Có,eprintln luôn exit1."
+      ],
+      "correct": 2,
+      "explanation": "Error output và process exit status là hai phần cần thiết kế."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Parse trim boundaries",
+      "question": "trim có xóa dấu cách giữa2 và0 trong \"2 0\" không?",
+      "options": [
+        "Có,trim xóa mọi whitespace ở mọi vị trí.",
+        "Có,parse tự nối digits qua spaces.",
+        "Chỉ trên Windows.",
+        "Không;parse vẫn có thể lỗi."
+      ],
+      "correct": 3,
+      "explanation": "Leading/trailing trimming khác normalization nội dung tùy ý."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Different numeric checks",
+      "question": "u32 parse thành công có tự bảo đảm mọi age<=150 không?",
+      "options": [
+        "Không;check miền tuổi riêng vẫn cần.",
+        "Có,u32 chỉ chứa0..150.",
+        "Có,From parseerror kiểm age.",
+        "Chỉ cần String không rỗng."
+      ],
+      "correct": 0,
+      "explanation": "Representable integer và valid business age là hai invariant."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Zero accepted source",
+      "question": "File chứa0 có bị check age>150 từ chối không?",
+      "options": [
+        "Chỉ nếu trim được gọi.",
+        "Không;source hiện chấp nhận0.",
+        "Có,NotFound luôn cho mọi age nhỏ hơn1.",
+        "Có,u32 cấm0."
+      ],
+      "correct": 1,
+      "explanation": "Có chấp nhận tuổi0 theo nghiệp vụ hay không là yêu cầu khác chưa thêm vào code."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Read encoding",
+      "question": "File tồn tại nhưng không UTF-8 có chắc tới bước parse u32 không?",
+      "options": [
+        "Có,parse tự decode UTF-8 tùy ý.",
+        "Chỉ nếu file thiếu extension.",
+        "Không;read_to_string có thể trả IO InvalidData trước đó.",
+        "Có,mọi bytes đều là String hợp lệ."
+      ],
+      "correct": 2,
+      "explanation": "Lỗi đọc/encoding và parse numeric cần được phân biệt."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "IO message portability",
+      "question": "Có nên hardcode toàn bộ OS missing-file error text giống nhau cho mọi máy không?",
+      "options": [
+        "Có,mọi OS/localization dùng cùng text.",
+        "Chỉ cần Debug derive để cố định.",
+        "Chỉ trên Rust edition2024.",
+        "Không;ưu tiên kind/variant và nêu scope khi so message."
+      ],
+      "correct": 3,
+      "explanation": "Fixture lưu raw logs nhưng assertions dùng error kind phù hợp cho IO."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Source chain trait",
+      "question": "Lưu io::Error trong enum có tự expose qua std Error source() nếu chưa implement contract không?",
+      "options": [
+        "Không.",
+        "Có,field có tên Io là reflection rule.",
+        "Có,Display tự unwrap sâu.",
+        "Chỉ nếu log bằng eprintln."
+      ],
+      "correct": 0,
+      "explanation": "Data representation và trait method traversal là hai điều khác nhau."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Unwrap or default",
+      "question": "unwrap_or(default) có propagate error như ? không?",
+      "options": [
+        "Chỉ nếu T int.",
+        "Không;nó chọn default khi Err theo contract.",
+        "Có,mọi Result method tự return Err.",
+        "Có,default là error mới bắt buộc."
+      ],
+      "correct": 1,
+      "explanation": "Dùng fallback có thể che lỗi nếu không phù hợp domain."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Lazy fallback",
+      "question": "unwrap_or_else giúp khác unwrap_or ở điểm nào?",
+      "options": [
+        "Tự retry operation.",
+        "Tự convert mọi error thành panic.",
+        "Closure fallback chỉ được gọi khi cần cho Err.",
+        "Luôn gọi closure dù Ok."
+      ],
+      "correct": 2,
+      "explanation": "Có ích khi tính default tốn chi phí hoặc có side effects cần kiểm soát."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "And then signature",
+      "question": "and_then thường nhận callback trả gì?",
+      "options": [
+        "Chỉ bool bắt buộc.",
+        "Chỉ () bắt buộc.",
+        "Một macro AST token.",
+        "Một Result mới phù hợp để nối computation có thể lỗi."
+      ],
+      "correct": 3,
+      "explanation": "map tạo transformed payload,còn and_then nối Result-returning operation."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Inspect behavior",
+      "question": "inspect_err thường phù hợp mục đích nào?",
+      "options": [
+        "Quan sát error cho side effect như logging mà giữ Result theo contract.",
+        "Tự sửa mọi error thành Ok.",
+        "Tự retry network.",
+        "Tự đổi typeerror compile thành warning."
+      ],
+      "correct": 0,
+      "explanation": "Không đưa secrets vào log hoặc coi observer là recovery."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Expect message",
+      "question": "expect(\"...\") trên Err thường làm gì?",
+      "options": [
+        "Tự clamp age.",
+        "Panic có ngữ cảnh thông điệp thay vì propagate Result.",
+        "Return Err với String message không panic.",
+        "Tự retry file."
+      ],
+      "correct": 1,
+      "explanation": "Expect không là cách xử lý mọi user input lỗi an toàn."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Question mark boundaries",
+      "question": "? có tự bắt panic xảy ra trong function được gọi không?",
+      "options": [
+        "Có,nếu function return Result.",
+        "Chỉ cần AppError Debug.",
+        "Không.",
+        "Có,mọi panic tự thành Err."
+      ],
+      "correct": 2,
+      "explanation": "Result propagation và panic unwinding là hai cơ chế riêng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Error representation",
+      "question": "Nên dùng một String duy nhất hay enum có variants tùy mục tiêu nào?",
+      "options": [
+        "Luôn String là đủ mọi hệ thống.",
+        "Luôn enum cho phép tự đo RPS.",
+        "Tên type tự quyết định mọi policy.",
+        "Theo contract cần machine-readable classification,context và abstraction boundary."
+      ],
+      "correct": 3,
+      "explanation": "Giữ cấu trúc khi caller cần phân loại thay vì parse text không ổn định."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Filesystem scope",
+      "question": "Path tương đối age.txt được resolve theo gì ở process thường?",
+      "options": [
+        "Working directory của process theo filesystem API.",
+        "Luôn thư mục source Rust.",
+        "Luôn home của user.",
+        "Luôn root ổC."
+      ],
+      "correct": 0,
+      "explanation": "Fixture đặt cwd riêng và seed file đúng đó,không đọc age.txt trong dự án/user."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Source external crates",
+      "question": "Source error handling có cần anyhow/thiserror mới compile theo code đã cho không?",
+      "options": [
+        "Chỉ nếu file tồn tại.",
+        "Không;source dùng std types/traits tường minh.",
+        "Có,mọi custom enum cần external crate.",
+        "Có,? luôn gọi một API ngoài."
+      ],
+      "correct": 1,
+      "explanation": "Không tải dependencies để thay thế ví dụ stdlib đang có."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Panic strategy",
+      "question": "Destructor behavior khi panic có phụ thuộc unwind/abort và ngữ cảnh không?",
+      "options": [
+        "Không,mọi panic luôn chỉ trả Err.",
+        "Chỉ nếu error message rỗng.",
+        "Có;không hứa mọi panic đều chạy cleanup.",
+        "Không,mọi panic luôn unwind đầy đủ ở mọi build."
+      ],
+      "correct": 2,
+      "explanation": "Verification ghi panic=unwind nhưng không áp lên mọi production build."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Typed errors and auth",
+      "question": "AppError có Code/variant có tự thực hiện access control đọc file không?",
+      "options": [
+        "Có,enum tự sandbox mọi paths.",
+        "Có,From tự validate user identity.",
+        "Chỉ cần parse u32.",
+        "Không;quyền/path policy và OS permissions là vấn đề riêng."
+      ],
+      "correct": 3,
+      "explanation": "Fixture chỉ dùng file names cố định trong scratch riêng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Early return through question mark",
+      "question": "Chương trình in gì?",
+      "code": "fn f(called:&mut bool)->Result<u32,std::num::ParseIntError>{let n:u32=\"bad\".parse()?;*called=true;Ok(n)}\nfn main(){let mut called=false;let r=f(&mut called);println!(\"{} {called}\",r.is_err());}\n",
+      "options": [
+        "true false.",
+        "true true.",
+        "false true.",
+        "Panic vì parse Err luôn panic."
+      ],
+      "correct": 0,
+      "explanation": "? trả sớm Err nên assignment called=true phía sau không chạy."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Inspect error retains result",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut seen=false;let r:Result<i32,&str>=Err(\"bad\");let out=r.inspect_err(|_|seen=true);println!(\"{} {seen}\",out.is_err());}\n",
+      "options": [
+        "inspect_err tự unwrap panic.",
+        "true true.",
+        "false true.",
+        "true false."
+      ],
+      "correct": 1,
+      "explanation": "Observer chạy trên Err và Result vẫn Err."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Transpose error",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let v:Option<Result<i32,&str>>=Some(Err(\"bad\"));println!(\"{}\",v.transpose().is_err());}\n",
+      "options": [
+        "Transpose tự xóa error thành None.",
+        "Compiler cấm Option<Result>.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Some(Err) transpose thành Err trong Result<Option<_>,_>."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Source domain display",
+      "question": "Chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\n\nfn main(){println!(\"{}\",AppError::NotFound(\"Invalid age\".to_string()));}\n",
+      "options": [
+        "IO error: Invalid age.",
+        "Parse error: Invalid age.",
+        "HTTP404 được gửi ra mạng.",
+        "Not found: Invalid age."
+      ],
+      "correct": 3,
+      "explanation": "Display chỉ định dạng text của variant nguồn,không transport mapping."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Unwrap Err panic",
+      "question": "Chương trình gặp gì?",
+      "code": "\nfn main(){let r:Result<i32,&str>=std::hint::black_box(Err(\"boom\"));println!(\"{}\",r.unwrap());}\n",
+      "options": [
+        "Panic do unwrap Err.",
+        "Tự return Err từ main unit.",
+        "In0.",
+        "Compile error với mọi unwrap Err value."
+      ],
+      "correct": 0,
+      "explanation": "Đây là expected finite panic fixture,không dùng cho input error path của API."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Drop on propagated error",
+      "question": "Với panic=unwind và code return Err này,chương trình in gì?",
+      "code": "struct Guard;impl Drop for Guard{fn drop(&mut self){println!(\"cleanup\");}}fn f()->Result<(),&'static str>{let _guard=Guard;Err(\"bad\")?;Ok(())}\nfn main(){println!(\"{}\",f().is_err());}\n",
+      "options": [
+        "Panic bắt buộc.",
+        "cleanup rồi true trên hai dòng.",
+        "true rồi cleanup.",
+        "Chỉ true vì ? bỏ mọi Drop."
+      ],
+      "correct": 1,
+      "explanation": "? return sớm vẫn drop local guard thông thường;không phải process abort."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Default source method",
+      "question": "Nếu fixture thêm impl std::error::Error for AppError {} nhưng không override source(),chương trình in gì?",
+      "code": "use std::fs;use std::io;use std::num::ParseIntError;\n#[derive(Debug)]enum AppError{Io(io::Error),Parse(ParseIntError),NotFound(String)}\nimpl From<io::Error> for AppError{fn from(e:io::Error)->Self{AppError::Io(e)}}\nimpl From<ParseIntError> for AppError{fn from(e:ParseIntError)->Self{AppError::Parse(e)}}\nimpl std::fmt::Display for AppError{fn fmt(&self,f:&mut std::fmt::Formatter)->std::fmt::Result{match self{Self::Io(e)=>write!(f,\"IO error: {e}\"),Self::Parse(e)=>write!(f,\"Parse error: {e}\"),Self::NotFound(s)=>write!(f,\"Not found: {s}\")}}}\nfn read_age_from_file(path:&str)->Result<u32,AppError>{let content=fs::read_to_string(path)?;let age:u32=content.trim().parse()?;if age>150{return Err(AppError::NotFound(\"Invalid age\".to_string()))};Ok(age)}\nimpl std::error::Error for AppError{}\nfn main(){let e=AppError::Io(io::Error::new(io::ErrorKind::Other,\"demo\"));println!(\"{}\",std::error::Error::source(&e).is_none());}\n",
+      "options": [
+        "Trait tự khám phá field Io và trả Some chắc chắn.",
+        "Compiler bắt buộc custom source method.",
+        "true.",
+        "false."
+      ],
+      "correct": 2,
+      "explanation": "Default Error::source trả None;thêm trait không tự expose inner error fields."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Borrow result error",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let r:Result<i32,String>=Err(String::from(\"bad\"));let n=r.as_ref().unwrap_err().len();println!(\"{n} {}\",r.as_ref().unwrap_err().len());}\n",
+      "options": [
+        "Compiler cấm giữ Result sau as_ref.",
+        "0 3.",
+        "as_ref tự clone String payload.",
+        "3 3."
+      ],
+      "correct": 3,
+      "explanation": "Borrow qua as_ref không consume Err(String) gốc."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Collect short circuit",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut calls=0;let result:Result<Vec<i32>,&str>=[Ok(1),Err(\"bad\"),Ok(3)].into_iter().map(|r|{calls+=1;r}).collect();println!(\"{calls} {}\",result.is_err());}\n",
+      "options": [
+        "2 true.",
+        "3 true.",
+        "1 false.",
+        "collect bỏ mọi errors rồi trả Vec."
+      ],
+      "correct": 0,
+      "explanation": "Result collection dừng ở Err thứ hai;callback cho phần tử thứ ba chưa chạy."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Parse without trim",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){println!(\"{}\",\" 20 \".parse::<u32>().is_err());}\n",
+      "options": [
+        "Compiler cấm parse literals.",
+        "true.",
+        "false.",
+        "u32 parse luôn bỏ mọi whitespace."
+      ],
+      "correct": 1,
+      "explanation": "String có whitespace không được tự trim bởi integer parse;source chủ động trim trước."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Lazy fallback success",
+      "question": "Chương trình in gì?",
+      "code": "\nfn main(){let mut calls=0;let n=Ok::<i32,&str>(7).unwrap_or_else(|_|{calls+=1;0});println!(\"{n} {calls}\");}\n",
+      "options": [
+        "0 1.",
+        "unwrap_or_else luôn gọi fallback.",
+        "7 0.",
+        "7 1."
+      ],
+      "correct": 2,
+      "explanation": "Ok7 không cần gọi closure fallback."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Error source forwarding",
+      "question": "Muốn AppError::Io expose cause qua Error::source cần gì?",
+      "options": [
+        "Chỉ đổi field tên thành cause.",
+        "Chỉ derive Debug.",
+        "Chỉ println bằng{:?}.",
+        "Implement source trả borrowed inner error phù hợp với trait lifetime/contract."
+      ],
+      "correct": 3,
+      "explanation": "Không suy automatic chaining từ dữ liệu nested hay From."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Application exit status",
+      "question": "Muốn CLI báo thất bại đúng cho automation khi read_age lỗi nên làm rõ gì?",
+      "options": [
+        "Main return/Termination hoặc explicit exit policy cùng stderr output và cleanup requirements.",
+        "Chỉ eprintln là exit1 tuyệt đối.",
+        "Chỉ dùng String message có chữfail.",
+        "Đổi age.txt thànherror.txt."
+      ],
+      "correct": 0,
+      "explanation": "Process status là contract máy đọc,khác human diagnostic text."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Panic recovery scope",
+      "question": "catch_unwind có chứng minh mọi panics/aborts/foreign failures đều recoverable an toàn không?",
+      "options": [
+        "Chỉ cần panic=abort.",
+        "Không;strategy/ABI/unwind-safety và trạng thái sau failure cần xem xét.",
+        "Có,nó là catch mọi failure toàn hệ thống.",
+        "Có,nếu AppError Display."
+      ],
+      "correct": 1,
+      "explanation": "Không biến panic catching thành error policy mặc định cho mọi ranh giới."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Path input safety",
+      "question": "Nếu path đến từ user API,source read_to_string có tự enforce root directory allowlist không?",
+      "options": [
+        "Có,From io Error ngăn traversal.",
+        "Chỉ cần trim path.",
+        "Không;cần path/authorization/resource policy theo use case.",
+        "Có,std fs tự giới hạn mọi file trong source directory."
+      ],
+      "correct": 2,
+      "explanation": "Task fixtures chỉ dùng fixed paths trong scratch;không phải endpoint đọc file tùy ý."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Partial work and retry",
+      "question": "? return Err sau một side effect có tự rollback side effect đã thành công trước đó không?",
+      "options": [
+        "Có,mọi Rust function là transaction.",
+        "Có,Drop tự rollback mọi network write.",
+        "Chỉ nếu error enum có Io.",
+        "Không;transaction/compensation/idempotency phải thiết kế riêng."
+      ],
+      "correct": 3,
+      "explanation": "Error propagation không làm workflow atomic tự động."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "From conversion loss",
+      "question": "Bọc mọi lỗi thành String đơn giản có thể mất gì?",
+      "options": [
+        "Khả năng phân loại/cause structure theo type nếu không giữ contract riêng.",
+        "Mọi String đều không thể log.",
+        "Compiler không cho From trảString.",
+        "Tự gây panic mọi lúc."
+      ],
+      "correct": 0,
+      "explanation": "Chọn representation theo nhu cầu caller và boundary,không dựa tên type."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Age rule semantics",
+      "question": "Trả NotFound cho invalid age>150 có tự bắt buộc HTTP404 đúng nghiệp vụ không?",
+      "options": [
+        "Chỉ nếu From parse impl.",
+        "Không;phân loại domain và mapping transport cần sửa/thiết kế rõ.",
+        "Có,variant name tự là chuẩn HTTP status.",
+        "Có,Result luôn404."
+      ],
+      "correct": 1,
+      "explanation": "Source behavior được mô tả đúng nhưng có thể chưa là thiết kế error tốt."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Fixture isolation",
+      "question": "Tại sao lưu age.txt trong từng scratch case và ghi input hash?",
+      "options": [
+        "Để thay đổi sourceHash giáo trình âm thầm.",
+        "Để tự gọi API tạo dữ liệu.",
+        "Gắn kết expected result với input thật,giữ user files ngoài phạm vi và hỗ trợ tái lập.",
+        "Để giả DB integration."
+      ],
+      "correct": 2,
+      "explanation": "Bằng chứng gồm source/flags/input/output,không chỉ một nhãnpassed."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Scope completion",
+      "question": "Bài tập CLI đọc CSV đã được source age.txt này thực hiện đầy đủ chưa?",
+      "options": [
+        "Có,read_to_string tự parse mọi CSV.",
+        "Có,u32.parse hiểu mọi tables.",
+        "Chỉ cần80 câu.",
+        "Chưa;CSV parser/schema/CLI/error contract vẫn là bài tập khác."
+      ],
+      "correct": 3,
+      "explanation": "Không tuyên bố feature bài tập đã xong từ ví dụ nền tảng về Result."
+    }
+  ]
+}

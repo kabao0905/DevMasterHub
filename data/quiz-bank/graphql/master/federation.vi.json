@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "graphql",
+  "level": "master",
+  "lesson": "federation",
+  "language": "vi",
+  "sourceHash": "6b1193e48f678b27141f0b97edf6f0fcf12b8acfcab7a3151251e5ab45120cea",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo hai subgraphSDL và YAML minh họa; đối chiếu Apollo Federation entities/directives/composition và Router config. Source kiểuFed1 chưa @linkFed2,resolvers/build/schemaartifact thiếu,YAML không là Router config hoàn chỉnh. Không compose/start/service/network.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Federation",
+      "question": "Federation nhằm gì?",
+      "options": [
+        "Compose nhiều subgraph thành API thống nhất",
+        "Tự tạo mọi database",
+        "Tự CSS scope",
+        "Tự chuyển HTTP thành SQL"
+      ],
+      "correct": 0,
+      "explanation": "Client thấy unified graph theo composition."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Subgraph",
+      "question": "Users subgraph khai báo entity nào?",
+      "options": [
+        "Product",
+        "User",
+        "Message",
+        "Order"
+      ],
+      "correct": 1,
+      "explanation": "User có id,name,email."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Key",
+      "question": "User @key dùng field nào?",
+      "options": [
+        "email",
+        "posts",
+        "id",
+        "name"
+      ],
+      "correct": 2,
+      "explanation": "Key liên kết identity entity."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "ID type",
+      "question": "User.id có type gì?",
+      "options": [
+        "Int",
+        "String",
+        "Boolean!",
+        "ID!"
+      ],
+      "correct": 3,
+      "explanation": "Source khai ID non-null."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "User data",
+      "question": "Users subgraph cung cấp field nào ngoài id?",
+      "options": [
+        "name và email",
+        "title và content",
+        "price và quantity",
+        "channelId và body"
+      ],
+      "correct": 0,
+      "explanation": "Đây là phần dữ liệu user."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Root lookup",
+      "question": "Users Query cung cấp field gì?",
+      "options": [
+        "createUser",
+        "user(id:ID!):User",
+        "posts(limit:Int)",
+        "sendMessage"
+      ],
+      "correct": 1,
+      "explanation": "Root lookup có nullable User."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Posts entity",
+      "question": "Posts subgraph khai báo entity nào khác User?",
+      "options": [
+        "Role",
+        "Task",
+        "Post",
+        "Comment"
+      ],
+      "correct": 2,
+      "explanation": "Post cũng có @key id."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Post fields",
+      "question": "Post có field object nào?",
+      "options": [
+        "tags:Tag!",
+        "owner:Role",
+        "channel:Message",
+        "author:User!"
+      ],
+      "correct": 3,
+      "explanation": "author nối sang User entity."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Extension",
+      "question": "Posts subgraph dùng cú pháp gì cho User?",
+      "options": [
+        "extend type User",
+        "input User",
+        "enum User",
+        "scalar User"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn dùng kiểu extension Federation cũ."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "External",
+      "question": "Field User nào gắn @external trong posts?",
+      "options": [
+        "name",
+        "id",
+        "posts",
+        "title"
+      ],
+      "correct": 1,
+      "explanation": "id được tham chiếu làm key."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Posts field",
+      "question": "User.posts trong posts subgraph có type gì?",
+      "options": [
+        "[User]",
+        "Boolean",
+        "[Post!]!",
+        "Post"
+      ],
+      "correct": 2,
+      "explanation": "List và item đều non-null."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Unified query",
+      "question": "Client mẫu lấy name từ service nào theo chú thích?",
+      "options": [
+        "posts",
+        "router cache bắt buộc",
+        "database gateway",
+        "users"
+      ],
+      "correct": 3,
+      "explanation": "Field ownership theo nguồn minh họa."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Posts routing",
+      "question": "Client mẫu lấy posts/title qua service nào?",
+      "options": [
+        "posts",
+        "users luôn",
+        "browser",
+        "PubSub"
+      ],
+      "correct": 0,
+      "explanation": "Router có thể lập query plan qua subgraphs."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Router",
+      "question": "Router đóng vai trò gì?",
+      "options": [
+        "CSS compiler",
+        "Entry point định tuyến operation theo supergraph",
+        "Database engine",
+        "React renderer"
+      ],
+      "correct": 1,
+      "explanation": "Nó cần schema metadata và subgraphs thực."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "URLs",
+      "question": "Users routing_url mẫu dùng port nào?",
+      "options": [
+        "4002",
+        "5173",
+        "4001",
+        "4000"
+      ],
+      "correct": 2,
+      "explanation": "Đường dẫn là users-service:4001/graphql."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Posts port",
+      "question": "Posts routing_url dùng port nào?",
+      "options": [
+        "4001",
+        "4000",
+        "3000",
+        "4002"
+      ],
+      "correct": 3,
+      "explanation": "Nguồn ghi posts-service:4002/graphql."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Artifact",
+      "question": "Composition tạo loại schema nào để router hiểu graph?",
+      "options": [
+        "Supergraph schema",
+        "CSS stylesheet",
+        "Database dump",
+        "React tree"
+      ],
+      "correct": 0,
+      "explanation": "Có metadata điều phối subgraph."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "API schema",
+      "question": "Schema client thấy thường bỏ gì?",
+      "options": [
+        "Mọi scalars",
+        "Machinery federation nội bộ",
+        "Mọi field user",
+        "Mọi query"
+      ],
+      "correct": 1,
+      "explanation": "API schema khác supergraph metadata."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Reference",
+      "question": "Entity reference cần chủ yếu gì?",
+      "options": [
+        "Một CSS ID",
+        "Mật khẩu user",
+        "Type identity và key fields phù hợp",
+        "Mọi field đầy đủ luôn"
+      ],
+      "correct": 2,
+      "explanation": "Representation giúp hydrate entity."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Entity được nối",
+      "question": "Trong ví dụ, kiểu nào được Users subgraph định nghĩa rồi Posts subgraph mở rộng?",
+      "options": [
+        "Role",
+        "CreatePostInput",
+        "Subscription",
+        "User"
+      ],
+      "correct": 3,
+      "explanation": "Users cung cấp User; Posts dùng entity reference và mở rộng quan hệ posts của User."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Not database FK",
+      "question": "@key có tự tạo unique index/foreign key DB không?",
+      "options": [
+        "Không",
+        "Có mọi backend",
+        "Có do ID!",
+        "Có vì schema"
+      ],
+      "correct": 0,
+      "explanation": "Entity contract khác datastore constraints."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Key stability",
+      "question": "Key entity nên có tính gì?",
+      "options": [
+        "Luôn là sốtăng",
+        "Ổn định và duy nhất trong identity contract",
+        "Đổi mỗi render",
+        "Luôn là tên hiển thị"
+      ],
+      "correct": 1,
+      "explanation": "Routing reference cần identity rõ."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Type namespace",
+      "question": "User.id và Post.id cùng chuỗi có nhất thiết cùng entity không?",
+      "options": [
+        "Có vì @key",
+        "Chỉ nếu cùng service",
+        "Không, còn type identity",
+        "Có vì ID"
+      ],
+      "correct": 2,
+      "explanation": "Entity identity có namespace type."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Reference resolver",
+      "question": "Apollo subgraph hydrate reference thường dùng resolver nào?",
+      "options": [
+        "useQuery",
+        "onMessage",
+        "getDerivedState",
+        "__resolveReference"
+      ],
+      "correct": 3,
+      "explanation": "Cần implementation lấy entity theo key."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Resolvers missing",
+      "question": "Source đã có __resolveReference/user/posts resolvers đầy đủ chưa?",
+      "options": [
+        "Chưa",
+        "Có vì @key",
+        "Có do @external",
+        "Có do routing_url"
+      ],
+      "correct": 0,
+      "explanation": "SDL không tự lấy dữ liệu."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Post author",
+      "question": "Post.author muốn trả reference User thường cần shape gì?",
+      "options": [
+        "Một Boolean",
+        "__typename và key phù hợp",
+        "Chỉ email bất kỳ",
+        "Chỉ Post.title"
+      ],
+      "correct": 1,
+      "explanation": "Resolver có thể trả representation để router nối graph."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Key not data",
+      "question": "@key(fields:\"id\") có tự lấy name/email không?",
+      "options": [
+        "Có do ID!",
+        "Có do tên query",
+        "Không",
+        "Có vì key"
+      ],
+      "correct": 2,
+      "explanation": "Entity resolution cần data implementation."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "External meaning",
+      "question": "@external có tự gọi HTTP service khác không?",
+      "options": [
+        "Có mọi field",
+        "Có vì ID",
+        "Có vì YAML",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Directive cung cấp metadata, không tự resolver code."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Fed versions",
+      "question": "extend User/id @external trong source nên được đọc thế nào?",
+      "options": [
+        "Kiểu Federation 1 cần xét version/compatibility",
+        "Mọi Federation 2 mới bắt buộc giống hệt",
+        "GraphQL chuẩn không cần extension",
+        "Không bao giờ hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Không ép quy tắc major này sang major khác."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Federation 2 link",
+      "question": "Schema Federation 2 hiện đại cần khai báo import directives qua gì?",
+      "options": [
+        "Chỉ tên file",
+        "@link hoặc namespace phù hợp theo spec/version",
+        "Chỉ require gql",
+        "Chỉ routing_url"
+      ],
+      "correct": 1,
+      "explanation": "Directive imports có version scope."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Missing link",
+      "question": "Source có @link Federation 2 rõ ràng chưa?",
+      "options": [
+        "Có do @external",
+        "Có do type Query",
+        "Chưa",
+        "Có do @key"
+      ],
+      "correct": 2,
+      "explanation": "Không tự gọi source là configFederation 2 hoàn chỉnh."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Split const",
+      "question": "Hai const typeDefs trong một JS scope có hợp nguyên trạng không?",
+      "options": [
+        "Có vì comment subgraph",
+        "Có vì gql",
+        "Có do @key",
+        "Không, cần hai module/service hoặc tên khác"
+      ],
+      "correct": 3,
+      "explanation": "Comment không tạo scope JS."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "gql dependency",
+      "question": "gql đã import trong source chưa?",
+      "options": [
+        "Chưa",
+        "Có trong JS global",
+        "Có do @key",
+        "Có do YAML"
+      ],
+      "correct": 0,
+      "explanation": "Cần parser/tag implementation."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Mixed YAML",
+      "question": "YAML trần ghép cùng JS có chạy nguyên một file JS không?",
+      "options": [
+        "Có do GraphQL",
+        "Không",
+        "Có vì comment router",
+        "Có vì key supergraph"
+      ],
+      "correct": 1,
+      "explanation": "Phải phân file/config đúng công cụ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Router config",
+      "question": "Chỉ supergraph.subgraphs.routing_url như nguồn có là Router runtime config hoàn chỉnh không?",
+      "options": [
+        "Có tự start subgraphs",
+        "Có do tênrouter.yaml",
+        "Không",
+        "Có tự compose mọi schema"
+      ],
+      "correct": 2,
+      "explanation": "Router cần supergraph artifact và feature config đúng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Rover config",
+      "question": "Rover composition config thường cần gì ngoài routing_url?",
+      "options": [
+        "Chỉ logo",
+        "Chỉ query client",
+        "Chỉ CSS entry",
+        "Nguồn schema của từng subgraph và configversion phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Ví dụ file schema/SDL hoặc nguồn được hỗ trợ."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Rover structure",
+      "question": "Có nên coi YAML source là Rover config đầy đủ chỉ cần đổi filename không?",
+      "options": [
+        "Không, phải sửa structure/schema inputs theo docs",
+        "Có luôn",
+        "Có nếu cùng port",
+        "Có vì GraphQL"
+      ],
+      "correct": 0,
+      "explanation": "Nguồn còn thiếu composition inputs."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Supergraph source",
+      "question": "Router có thể lấy local supergraph qua cơ chế nào theo docs?",
+      "options": [
+        "Từ Post.title",
+        "--supergraph hoặc env/path integration tương ứng",
+        "Tự suy từ query client",
+        "Từ CSS"
+      ],
+      "correct": 1,
+      "explanation": "Đây là cấu hình artifact, không thực hiện ở bài này."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Service DNS",
+      "question": "users-service hostname có tự tồn tại trên mọi máy không?",
+      "options": [
+        "Có vì Dockername",
+        "Có vì GraphQL",
+        "Không",
+        "Có vì routing_url"
+      ],
+      "correct": 2,
+      "explanation": "Cần deployment/network DNS phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "No running",
+      "question": "SDL và URLs có chứng minh hai subgraphs đang chạy không?",
+      "options": [
+        "Có vì ports",
+        "Có vì YAML",
+        "Có vì gql",
+        "Chưa"
+      ],
+      "correct": 3,
+      "explanation": "Cần runtime integration thực."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Composition vs runtime",
+      "question": "Composition pass có chứng minh resolvers trả đúng data không?",
+      "options": [
+        "Không",
+        "Có mọi field",
+        "Có vì @key",
+        "Có vì schema"
+      ],
+      "correct": 0,
+      "explanation": "Schema compatibility khác runtime correctness."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Null users",
+      "question": "Query.user:User có cho phép không tìm thấy trả null không?",
+      "options": [
+        "Chỉ khi emailrỗng",
+        "Có",
+        "Không",
+        "Chỉ ADMIN"
+      ],
+      "correct": 1,
+      "explanation": "Field không bọc non-null."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Empty posts",
+      "question": "User.posts:[Post!]! có cho phép [] không?",
+      "options": [
+        "Chỉ mộtitem",
+        "Chỉ service users",
+        "Có",
+        "Không"
+      ],
+      "correct": 2,
+      "explanation": "Non-null list không là minimum length."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Entity not auth",
+      "question": "Biết User key có chứng minh quyền đọc email không?",
+      "options": [
+        "Có vì entity",
+        "Có vì router",
+        "Có vì ID!",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Authorization cần boundary server."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Headers",
+      "question": "Router có tự forward mọi auth/header đúng policy mà không config không?",
+      "options": [
+        "Không nên giả định",
+        "Có mọi trường hợp",
+        "Chỉ cần @external",
+        "Có do sameGraph"
+      ],
+      "correct": 0,
+      "explanation": "Propagation/trust phải được cấu hình."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Subgraph auth",
+      "question": "Bảo vệ router có đủ nếu subgraph public không kiểm đường truy cập khác không?",
+      "options": [
+        "Có do một endpoint",
+        "Không",
+        "Có mọi topology",
+        "Có do @key"
+      ],
+      "correct": 1,
+      "explanation": "Cần boundary/trust của subgraph."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "N+1 local",
+      "question": "Federation có tự loại N+1 bên trong resolver từng subgraph không?",
+      "options": [
+        "Có vì key",
+        "Có vì Router",
+        "Không",
+        "Có query planner lo mọi DB"
+      ],
+      "correct": 2,
+      "explanation": "DataLoader/query optimization vẫn có thể cần."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Network count",
+      "question": "Một client request có chắc chỉ một subgraph call không?",
+      "options": [
+        "Có vì unified",
+        "Có vì Query.user",
+        "Có vì routingURL",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Plan có thể đi nhiều subgraphs."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Latency",
+      "question": "Query qua serviceA rồiB có thể chịu gì?",
+      "options": [
+        "Latency phụ thuộc và network hops",
+        "Luôn nhanh hơn mộtservice",
+        "Không có network",
+        "Chỉ CPUbrowser"
+      ],
+      "correct": 0,
+      "explanation": "Federation có vận hành/tradeoff."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Ownership",
+      "question": "Boundary subgraphs nên dựa chủ yếu gì?",
+      "options": [
+        "Mỗi scalar",
+        "Domain ownership và contract dữ liệu",
+        "Mỗi field một service bắt buộc",
+        "Mỗi CSS component"
+      ],
+      "correct": 1,
+      "explanation": "Tách service cần giá trị thực, không chỉ số lượng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Schema conflict",
+      "question": "Hai subgraphs khai cùng field khác type có thể gì?",
+      "options": [
+        "Tự đổi thànhString",
+        "Tự auth",
+        "Composition conflict/error theo quy tắc",
+        "Tự chọn random"
+      ],
+      "correct": 2,
+      "explanation": "Cần compatibility giữa contributors."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Shareable",
+      "question": "Federation 2 @shareable chủ yếu diễn đạt gì?",
+      "options": [
+        "Field publickhông auth",
+        "Field tự cache",
+        "Field database unique",
+        "Field có thể được resolve bởi nhiều subgraphs theo rules"
+      ],
+      "correct": 3,
+      "explanation": "Có requirements theo version/composition."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Requires",
+      "question": "@requires trong Federation diễn đạt gì?",
+      "options": [
+        "Resolver cần field data khác trước khi tính",
+        "Client phải login tự động",
+        "Cấm mọi query",
+        "Tạo DB foreign key"
+      ],
+      "correct": 0,
+      "explanation": "Router có thể fetch dependency fields."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Provides",
+      "question": "@provides thường dùng để gì?",
+      "options": [
+        "Tự validate email",
+        "Cho biết field có thể được cung cấp ở một path cụ thể",
+        "Luôn sở hữu mọi field toàn cục",
+        "Tự tạo service"
+      ],
+      "correct": 1,
+      "explanation": "Đây là optional optimization theo contract."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "No directives body",
+      "question": "Source có @requires/@provides implementation chưa?",
+      "options": [
+        "Có do author",
+        "Có do YAML",
+        "Chưa",
+        "Có vì @key"
+      ],
+      "correct": 2,
+      "explanation": "Đây là kiến thức mở rộng, không feature đã có."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Plan observation",
+      "question": "Muốn biết query đi qua đâu cần xem gì?",
+      "options": [
+        "Chỉ typename",
+        "Chỉ số port",
+        "Chỉ số const",
+        "Query plan/traces theo operation"
+      ],
+      "correct": 3,
+      "explanation": "Operation shape ảnh hưởng routing."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "API vs supergraph",
+      "question": "Client có cần tự gửi subgraph routing metadata như router không?",
+      "options": [
+        "Không theo unified API thông thường",
+        "Có toàn bộ YAML",
+        "Có mọi URL",
+        "Có mọi __resolveReference"
+      ],
+      "correct": 0,
+      "explanation": "Router điều phối phía server."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Deprecation",
+      "question": "Bỏ User.email cần xét ai?",
+      "options": [
+        "Chỉ CSS",
+        "Client và các subgraph/operation phụ thuộc",
+        "Chỉ một fileSDL",
+        "Chỉ Router binary"
+      ],
+      "correct": 1,
+      "explanation": "Schema contract có nhiều consumers."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Monitoring",
+      "question": "Federation cần đo gì ngoài HTTP status?",
+      "options": [
+        "Chỉ số service",
+        "Chỉ tên file schema",
+        "Subgraph errors/latency/entity resolution/cost",
+        "Chỉ response bytes"
+      ],
+      "correct": 2,
+      "explanation": "Partial failures có thể nằm trong GraphQL errors."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Testing",
+      "question": "Test unified query nên kiểm gì?",
+      "options": [
+        "Chỉ parseSDL",
+        "Chỉ chuỗi URL",
+        "Chỉ import gql",
+        "Composition và runtime dữ liệu/headers/null/error đúng contract"
+      ],
+      "correct": 3,
+      "explanation": "Hai lớp kiểm chứng khác nhau."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Version rollout",
+      "question": "Deploy schema mới trước resolver hỗ trợ có thể gì?",
+      "options": [
+        "Router gửi operation mà subgraph chưa xử lý được",
+        "Tự an toàn vì composition",
+        "Tự sinh resolver",
+        "Không ảnh hưởng"
+      ],
+      "correct": 0,
+      "explanation": "Artifact/runtime rollout phải tương thích."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Key migration",
+      "question": "Đổi entity key dùng bởi subgraphs cần gì?",
+      "options": [
+        "Chỉ đổi CSS",
+        "Kế hoạch tương thích/migration và kiểm reference consumers",
+        "Chỉ renameID",
+        "Tự remap mọi cache"
+      ],
+      "correct": 1,
+      "explanation": "Identity là contract xuyên service."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Partial failure",
+      "question": "Posts service lỗi khi user data có thể lấy được cần policy gì?",
+      "options": [
+        "Tự retry vô hạn",
+        "Bỏ errors",
+        "Nullability/error/timeouts và UX theo contract",
+        "Luôn báo mọi data đầy đủ"
+      ],
+      "correct": 2,
+      "explanation": "Failure boundary ảnh hưởng response."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Timeout budget",
+      "question": "Nhiều hop cần timeout/retry thế nào?",
+      "options": [
+        "Mọi service retry vô hạn",
+        "Chỉ một timeoutUI",
+        "Không cần vì GraphQL",
+        "Budget end-to-end và giới hạn retry phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Tránh khuếch đại tải và latency."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Auth trust",
+      "question": "Subgraph tin user header do client tự gửi trực tiếp có nguy cơ gì?",
+      "options": [
+        "Giả identity nếu trust boundary sai",
+        "Tự safe vì router",
+        "Tự auth bởi @key",
+        "Chỉ lộ schema"
+      ],
+      "correct": 0,
+      "explanation": "Cần nguồn identity được xác thực."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Cache scope",
+      "question": "Router/subgraph cache entity theo ID bỏ tenant có rủi ro gì?",
+      "options": [
+        "Tự reset",
+        "Cross-tenant leakage/stale policy",
+        "Tự safe vì typename",
+        "Không ảnh hưởng"
+      ],
+      "correct": 1,
+      "explanation": "Identity/security scope phải phản ánh value."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Transactional claim",
+      "question": "Mutation qua nhiều subgraphs có tự distributedtransaction không?",
+      "options": [
+        "Có vì serialroot",
+        "Có vì @key",
+        "Không",
+        "Có federationbảo đảm"
+      ],
+      "correct": 2,
+      "explanation": "Cần consistency/compensation design riêng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Cost amplification",
+      "question": "Một field lồng qua nhiều service có thể làm gì?",
+      "options": [
+        "Tự tối ưu O(1)",
+        "Không có DB work",
+        "Chỉ đổi response indent",
+        "Tăng fanout/cardinality/network work"
+      ],
+      "correct": 3,
+      "explanation": "Demand control và backend limits cần scope."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Reference bugs",
+      "question": "Hai service dùng khác chuẩn biểu diễn ID có thể gì?",
+      "options": [
+        "Không hydrate cùng entity hoặc map sai",
+        "Tự convert mọi trường hợp",
+        "Không ảnh hưởng",
+        "Tự thống nhất bằng name"
+      ],
+      "correct": 0,
+      "explanation": "Key normalization/semantics cần thống nhất."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Shareable consistency",
+      "question": "Nhiều subgraphs resolve field shareable cần giữ gì?",
+      "options": [
+        "Chỉ tên field",
+        "Semantics/data consistency theo contract",
+        "Mỗi nơi giá trị random",
+        "Chỉ type String"
+      ],
+      "correct": 1,
+      "explanation": "Composition hợp lệ không đảm bảo giá trị tương đương."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Source fix priority",
+      "question": "Muốn chạy mẫu cần gì trước tiên?",
+      "options": [
+        "Chỉ @key",
+        "Chỉ mở port",
+        "Tách module/config,build subgraphs,resolvers và compositionartifact đúng",
+        "Chỉ đổi router.yamlfilename"
+      ],
+      "correct": 2,
+      "explanation": "Source chưa là project hoàn chỉnh."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Federation 1→2",
+      "question": "Migration Federation 1→2 cần xét gì?",
+      "options": [
+        "Chỉ đổi labelcomment",
+        "Giữ mọi rulecũ mặc định",
+        "Bỏ mọi external bất kể context",
+        "@link/directive semantics/composition/version compatibility"
+      ],
+      "correct": 3,
+      "explanation": "Rules thay đổi theo major/version."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Breaking hidden",
+      "question": "Composition pass có đủ bảo vệ mọi client cũ trước xóa field không?",
+      "options": [
+        "Không, cần operation compatibility/usage checks",
+        "Có mọi client",
+        "Có vì supergraph",
+        "Có vì federation"
+      ],
+      "correct": 0,
+      "explanation": "Composition compatibility khác client contract."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Schema rollback",
+      "question": "Rollback router artifact cần xét gì?",
+      "options": [
+        "Không cần runtime",
+        "Tương thích với versions subgraphs đang chạy",
+        "Chỉ filename",
+        "Chỉ Queryname"
+      ],
+      "correct": 1,
+      "explanation": "Artifact rollback không tự rollback services/data."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Observability privacy",
+      "question": "Traces chứa variables/headers cần gì?",
+      "options": [
+        "Public mọi payload",
+        "Bỏ mọi metric",
+        "Redaction và quyền truy cập logs phù hợp",
+        "Log mọi token"
+      ],
+      "correct": 2,
+      "explanation": "Quan sát phải bảo vệ dữ liệu."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Failure isolation",
+      "question": "Tách microservices có tự tránh mọi cascadingfailure không?",
+      "options": [
+        "Có mọi topology",
+        "Có @key",
+        "Có router",
+        "Không, cần timeouts/limits/isolation policy"
+      ],
+      "correct": 3,
+      "explanation": "Service boundaries không tự reliability."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Load test",
+      "question": "Test một unifiedquery thành công có chứng minh triệuusers chưa?",
+      "options": [
+        "Chưa",
+        "Có vì hai service",
+        "Có vì Router",
+        "Có vì ID"
+      ],
+      "correct": 0,
+      "explanation": "Capacity cần workload và hạ tầng thực."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Federation fit",
+      "question": "Có nên chia app nhỏ thành nhiều subgraphs chỉ vì Federation có sẵn không?",
+      "options": [
+        "Có vì GraphQL",
+        "Không, cân nhắc domain/team/complexity/vận hành",
+        "Có mọi trường hợp",
+        "Chỉ cần nhiềuport"
+      ],
+      "correct": 1,
+      "explanation": "Architecture cần mục tiêu và tradeoff."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Composition inputs",
+      "question": "Routing URL mà không schema source có đủ để compose offline config theo ý muốn không?",
+      "options": [
+        "Chỉ cần query client",
+        "Chỉ cần typename",
+        "Không, cần nguồn schema được công cụ hỗ trợ và version rõ",
+        "Có URL luôn tự đủ"
+      ],
+      "correct": 2,
+      "explanation": "Không suy routing metadata thay SDL."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Composition và vận hành router",
+      "question": "Nhóm có hai SDL mẫu và YAML routing_url rồi định bật Router production ngay. Điều gì cần hoàn thiện và kiểm tra trước?",
+      "options": [
+        "Chỉ đổi tên YAML thành router.yaml vì tên file tự compose SDL và tạo resolver",
+        "Chỉ thêm @key cho mọi field vì directive tự khởi chạy hai service",
+        "Bỏ entity resolver vì routing_url tự đọc trực tiếp database của subgraph",
+        "Tách subgraph modules, triển khai schema/entity resolvers đúng version, tạo supergraph composition hợp lệ và cấu hình Router/khả năng truy cập/auth tương ứng"
+      ],
+      "correct": 3,
+      "explanation": "SDL, entity resolution, composition artifact, runtime routing và security là các hợp đồng riêng; hai URL trong một fragment chưa chứng minh hệ thống hoạt động."
+    }
+  ]
+}

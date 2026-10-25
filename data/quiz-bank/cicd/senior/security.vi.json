@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "cicd",
+  "level": "senior",
+  "lesson": "security",
+  "language": "vi",
+  "sourceHash": "7e8a1adf481b0315d7febd79ec04bf95943d0fa80a47ebaf1ffb7982732024a1",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo audit/CodeQL/Trivy/TruffleHog/coverage gate. Docs npm11, CodeQLv3 metadata, Trivy và TruffleHog current scope. Source thiếu checkout/init/input đúng của CodeQL, test job/artifact/scan target wiring; không scan/audit/verify secret/network thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "SAST",
+      "question": "SAST trong bài tập trung vào việc gì?",
+      "options": [
+        "Phân tích mã theo quy tắc để tìm vấn đề tiềm năng",
+        "Thay toàn bộ kiểm tra runtime bằng ảnh chụp UI",
+        "Tự sửa mọi lỗ hổng DB đang chạy",
+        "Tạo backup dữ liệu production"
+      ],
+      "correct": 0,
+      "explanation": "Phân tích tĩnh có phạm vi và giới hạn, không bảo đảm phát hiện mọi lỗi."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Dependency audit",
+      "question": "npm audit chủ yếu đối chiếu đối tượng nào?",
+      "options": [
+        "Mọi firewall trên Internet",
+        "Dependency với thông tin advisory được cơ chế audit cung cấp",
+        "Mọi luồng nghiệp vụ của website",
+        "Tất cả người dùng đã đăng nhập"
+      ],
+      "correct": 1,
+      "explanation": "Audit dependency không thay kiểm tra code/policy ứng dụng."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Ngưỡng audit",
+      "question": "--audit-level=high có ý nghĩa nào theo npm docs được đối chiếu?",
+      "options": [
+        "Tự sửa mọi package mức high",
+        "Tự tăng version Node",
+        "Đặt ngưỡng mức độ để advisory làm lệnh fail, không chỉ lọc output report",
+        "Chỉ in chữ HIGH rồi luôn exit0"
+      ],
+      "correct": 2,
+      "explanation": "Mức độ trong báo cáo và threshold mã thoát là hai khái niệm khác nhau."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Phạm vi production",
+      "question": "Ý định của --production trong lệnh audit nguồn là gì?",
+      "options": [
+        "Tự chạy audit trên server production thật",
+        "Tự deploy sau audit",
+        "Tự cấp quyền production cho npm",
+        "Tập trung dependency production theo npm version/config, không bao phủ mọi devDependency"
+      ],
+      "correct": 3,
+      "explanation": "Cần đối chiếu flags/omit semantics của npm version, không suy chạy trên máy đích."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "CodeQL",
+      "question": "CodeQL action trong bài thuộc nhóm kiểm tra nào?",
+      "options": [
+        "Phân tích code tĩnh theo queries và database phân tích",
+        "Load test trực tiếp hàng triệu người dùng",
+        "Dịch vụ tự quản lý mọi token",
+        "Một bước sao chép coverage giữa jobs"
+      ],
+      "correct": 0,
+      "explanation": "Cần chuẩn bị database/language và workflow phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Analyze và init",
+      "question": "Ở CodeQL action v3, input languages thuộc action nào trong metadata đã đọc?",
+      "options": [
+        "upload-artifact",
+        "init",
+        "analyze như source đang đặt",
+        "checkout"
+      ],
+      "correct": 1,
+      "explanation": "Source đặt languages vào analyze không thể thay cấu hình init đúng."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "CodeQL prerequisite",
+      "question": "Source chỉ gọi analyze mà chưa có init. Cần lưu ý gì?",
+      "options": [
+        "Languages tự tạo toàn bộ source code",
+        "Tên step đủ để xác nhận phân tích đã chạy",
+        "Chưa thể hiện quá trình chuẩn bị CodeQL database/analysis đầy đủ",
+        "Analyze tự viết mọi test app"
+      ],
+      "correct": 2,
+      "explanation": "Phải theo hợp đồng setup/analyze đúng phiên bản."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Container scan",
+      "question": "Trivy step của nguồn định kiểm đối tượng nào?",
+      "options": [
+        "Chỉ package frontend trong working tree",
+        "Mọi image trong mọi registry",
+        "Database production",
+        "Image myapp:latest"
+      ],
+      "correct": 3,
+      "explanation": "image-ref chỉ định mục tiêu scan, chưa chứng minh image tồn tại/đúng release."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Severity Trivy",
+      "question": "Source chọn các severity nào cho Trivy?",
+      "options": [
+        "CRITICAL và HIGH",
+        "LOW và INFO duy nhất",
+        "Mọi severity trừ HIGH",
+        "Không có severity filter"
+      ],
+      "correct": 0,
+      "explanation": "Đây là phạm vi cấu hình của mẫu, không phải tuyên bố mọi mức khác vô hại."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Exit code scan",
+      "question": "exit-code: 1 trong Trivy action thể hiện ý định gì?",
+      "options": [
+        "Tắt mọi scan vì1 là false",
+        "Làm scan trả mã lỗi theo các finding/điều kiện phù hợp cấu hình tool",
+        "Luôn trả0 khi có lỗ hổng",
+        "Tự sửa image rồi deploy"
+      ],
+      "correct": 1,
+      "explanation": "Cần phân biệt finding theo policy với lỗi thực thi công cụ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Secret detection",
+      "question": "TruffleHog trong bài phục vụ mục tiêu nào?",
+      "options": [
+        "Mã hóa mọi file Git tự động",
+        "Chỉ đo coverage dòng code",
+        "Phát hiện credential có khả năng bị lộ trong nguồn/phạm vi scan",
+        "Tự cấp credential production cho mọi job"
+      ],
+      "correct": 2,
+      "explanation": "Phát hiện và xử lý/thu hồi credential là các bước khác nhau."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Chỉ verified",
+      "question": "Ý định của cờ chỉ kết quả verified trong source là gì?",
+      "options": [
+        "Chứng minh mọi secret ngoài kết quả đều an toàn",
+        "Tự thu hồi mọi token được tìm thấy",
+        "Tự xóa bí mật khỏi toàn lịch sử Git",
+        "Giới hạn kết quả theo trạng thái xác minh mà tool/version hỗ trợ"
+      ],
+      "correct": 3,
+      "explanation": "Cú pháp/current flags cần đối chiếu version; trạng thái không xác minh không đồng nghĩa vô hại."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Quality gate",
+      "question": "Quality gate trong bài dùng để làm gì?",
+      "options": [
+        "Chặn hoặc cho phép bước tiếp theo theo tiêu chí đã chọn",
+        "Tự tạo mọi assertions còn thiếu",
+        "Tự đồng ý mọi deployment",
+        "Đổi tên branch khi coverage thấp"
+      ],
+      "correct": 0,
+      "explanation": "Tiêu chí cần phù hợp thay đổi, không dùng một tỷ lệ làm chứng minh toàn chất lượng."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Dependency gate",
+      "question": "Job quality-gate khai báo needs những job nào?",
+      "options": [
+        "Không job nào",
+        "test và security",
+        "deploy và production",
+        "frontend và backend"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn fragment lại chưa định nghĩa job test, cần hoàn thiện workflow."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "File coverage",
+      "question": "Gate đọc dữ liệu từ đường dẫn nào?",
+      "options": [
+        "package-lock.json như report coverage",
+        "Dockerfile",
+        "coverage/coverage-summary.json",
+        "coverage/lcov.info duy nhất"
+      ],
+      "correct": 2,
+      "explanation": "Report JSON cần được tạo/chuyển đúng chỗ trước khi đọc."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Chỉ số coverage",
+      "question": "Biểu thức jq trong nguồn lấy chỉ số nào?",
+      "options": [
+        ".total.branches.pct",
+        ".secrets.token",
+        ".jobs.security.status",
+        ".total.lines.pct"
+      ],
+      "correct": 3,
+      "explanation": "Gate mẫu dùng phần trăm coverage dòng, không mọi loại coverage."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Ngưỡng mẫu",
+      "question": "Theo logic số học dự kiến của nguồn, coverage thấp hơn bao nhiêu sẽ bị chặn?",
+      "options": [
+        "80",
+        "100",
+        "20",
+        "0"
+      ],
+      "correct": 0,
+      "explanation": "80 là policy minh họa, không chuẩn chung cho mọi thay đổi/dự án."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Công cụ shell",
+      "question": "Nguồn dùng jq và bc để làm gì?",
+      "options": [
+        "Tự chạy browser test",
+        "Đọc giá trị JSON và so sánh số thập phân trong shell",
+        "Tự scan image và tạo cloud token",
+        "Tự tải source của mọi dependency"
+      ],
+      "correct": 1,
+      "explanation": "Sự hiện diện/phản hồi lỗi của các công cụ vẫn cần được kiểm."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Mutable refs",
+      "question": "@master và @main ở hai scan action là loại tham chiếu nào?",
+      "options": [
+        "Image digests đã ký",
+        "Tên severity",
+        "Branch refs có thể thay đổi nội dung theo thời gian",
+        "Full commit SHA bất biến"
+      ],
+      "correct": 2,
+      "explanation": "Cần quản lý pin/update và tin cậy supply chain theo policy."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Coverage không là đáp án",
+      "question": "Coverage dòng cao có tự chứng minh assertions đúng không?",
+      "options": [
+        "Có, vì chạm dòng là chứng minh mọi logic",
+        "Có, nếu trên80%",
+        "Có, nếu report có JSON hợp lệ",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Coverage đo sự chạm tới code theo công cụ, không thay chất lượng assertion."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Audit report và threshold",
+      "question": "Audit report vẫn có mức moderate dù --audit-level=high. Điều đó có phù hợp semantics không?",
+      "options": [
+        "Có, threshold fail không phải bộ lọc chỉ hiển thị high",
+        "Không, mọi dòng moderate chứng minh npm hỏng",
+        "Không, high tự xóa advisory moderate khỏi report",
+        "Chỉ khi CodeQL đã chạy trước"
+      ],
+      "correct": 0,
+      "explanation": "Npm docs phân biệt output report và ngưỡng mã thoát."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Dev dependency",
+      "question": "Chỉ audit production deps có đủ đánh giá rủi ro từ build/test tooling không?",
+      "options": [
+        "Có, tên production nghĩa toàn hệ thống",
+        "Không, dev tooling cũng có thể có rủi ro trong build/CI tùy phạm vi",
+        "Có, devDependency không bao giờ thực thi",
+        "Có, npm tự scan mọi phần bị omit như production"
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi đánh giá cần bao gồm các tác nhân/đầu vào phù hợp."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Không phải fix",
+      "question": "Lệnh npm audit không có fix có mặc định áp bản sửa dependency không?",
+      "options": [
+        "Có, --audit-level tự tăng major version",
+        "Có, nếu runner Ubuntu",
+        "Không, audit báo cáo; sửa dependency là thao tác cần kiểm soát riêng",
+        "Có, mọi advisory tự cập nhật package.json"
+      ],
+      "correct": 2,
+      "explanation": "Không nhầm phát hiện với remediation."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Lockfile đầu vào",
+      "question": "Audit không thấy package-lock/shrinkwrap theo cấu hình mặc định. Cần kiểm gì?",
+      "options": [
+        "Đổi tên job thành audit-pass",
+        "Chỉ tăng coverage threshold",
+        "Bỏ mọi dependency khỏi report",
+        "Source/working-directory/lockfile phù hợp, không tạo kết luận scan sạch khi tool thiếu đầu vào"
+      ],
+      "correct": 3,
+      "explanation": "Tập dependency được audit cần rõ và gắn đúng revision."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "CodeQL input sai",
+      "question": "Source đặt languages: javascript dưới analyze@v3. Sửa theo metadata cần làm gì?",
+      "options": [
+        "Chuẩn bị init với languages và các bước phân tích phù hợp, không chỉ giữ input sai ở analyze",
+        "Chỉ đổi name step thành Init",
+        "Chỉ thêm more languages vào analyze",
+        "Chỉ thêm cache npm"
+      ],
+      "correct": 0,
+      "explanation": "Metadata action là hợp đồng input cụ thể theo phiên bản."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Thiếu source",
+      "question": "Job security GitHub-hosted mới không checkout nhưng cần scan source/Git history. Cần gì?",
+      "options": [
+        "Thêm URL production để tool tự tải source đúng",
+        "Cung cấp source/history đúng phạm vi và cấu hình tools trước scan",
+        "Tin rằng mọi job tự có toàn repository",
+        "Đổi runner label thành source-ready"
+      ],
+      "correct": 1,
+      "explanation": "Đầu vào scan không tự có từ tên job."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Target image",
+      "question": "Trivy được cấu hình myapp:latest nhưng job chưa build/pull hay chỉ ra registry đúng. Kết luận nào phù hợp?",
+      "options": [
+        "Trivy tự build mọi Dockerfile bất kể cấu hình",
+        "Source đã chứng minh scan image release thành công",
+        "Cần bảo đảm image mục tiêu có thể truy cập và đúng artifact cần scan",
+        "Tên latest tự tạo image mới nhất"
+      ],
+      "correct": 2,
+      "explanation": "Cấu hình target không chứng minh target tồn tại hoặc đúng nguồn."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Đúng image release",
+      "question": "Muốn scan bao phủ image sẽ deploy, nên ràng buộc theo gì?",
+      "options": [
+        "Bất kỳ image cùng tên myapp",
+        "Mọi image tag latest của tháng trước",
+        "Chỉ tên service runtime",
+        "Digest/artifact cụ thể và provenance phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Tag có thể đổi; kết quả phải gắn với đúng nội dung."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Gate dependency thiếu",
+      "question": "quality-gate có needs:test nhưng fragment chưa có test job. Cần xử lý gì?",
+      "options": [
+        "Bổ sung/tham chiếu đúng job thực trong workflow hợp lệ",
+        "GitHub tự tạo job test từ tên needs",
+        "Đổi name gate sẽ tự thêm test",
+        "Coi test luôn pass khi không định nghĩa"
+      ],
+      "correct": 0,
+      "explanation": "Dependency phải trỏ tới job được định nghĩa phù hợp."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Report giữa jobs",
+      "question": "Test job tạo coverage-summary.json, quality-gate là job khác. Needs có tự chuyển file không?",
+      "options": [
+        "Có, jq tự tải file job trước",
+        "Không, cần upload/download artifact hoặc cơ chế đúng khác",
+        "Có, mọi job chia sẻ filesystem",
+        "Có, output status chứa toàn report"
+      ],
+      "correct": 1,
+      "explanation": "Ranh giới job không được giải quyết chỉ bằng dependency."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Thiếu report",
+      "question": "Gate không có report coverage. Cách xử lý đáng tin là gì?",
+      "options": [
+        "Đổi tên file trong log mà không tạo file",
+        "Coi thiếu report nghĩa không có code cần test",
+        "Báo lỗi đầu vào/thu thập và chặn theo policy, không mặc định coverage đạt",
+        "Gán coverage100 để không block"
+      ],
+      "correct": 2,
+      "explanation": "Không biến thiếu bằng chứng thành thành công."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Ngưỡng bằng nhau",
+      "question": "Giả sử report hợp lệ và phép so sánh số đúng, lines.pct bằng80 có bị điều kiện <80 của nguồn chặn không?",
+      "options": [
+        "Có, nguồn dùng <=80",
+        "Luôn fail vì là số nguyên",
+        "Tự được đổi thành100",
+        "Không chỉ vì điều kiện đó"
+      ],
+      "correct": 3,
+      "explanation": "Đọc đúng toán tử; điều này không đánh giá chất lượng tests."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Coverage79.5",
+      "question": "Giả sử đầu vào và công cụ hợp lệ, lines.pct=79.5 so với điều kiện <80 dẫn tới gì?",
+      "options": [
+        "Nhánh exit1 của gate",
+        "Tự làm tròn lên80 rồi pass",
+        "Tự sửa tests cho đủ80",
+        "Bỏ qua security job"
+      ],
+      "correct": 0,
+      "explanation": "Gate dùng so sánh số học dự kiến, không mặc định làm tròn theo ý người đọc."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Coverage null",
+      "question": "jq trả null thay vì số. Điều gì cần bổ sung?",
+      "options": [
+        "Chỉ thêm echo trước bc",
+        "Validate schema/kiểu/phạm vi và xử lý lỗi công cụ trước so sánh",
+        "Coi null bằng100 mặc định",
+        "Coi JSON parse được thì mọi field đúng kiểu"
+      ],
+      "correct": 1,
+      "explanation": "Đầu vào sai không nên được coi là một tỷ lệ hợp lệ."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Công cụ thiếu",
+      "question": "Runner không có bc nhưng script không kiểm lỗi rõ. Hướng sửa là gì?",
+      "options": [
+        "Chỉ đổi name job",
+        "Bỏ mọi so sánh thập phân mà không thay gate",
+        "Bảo đảm toolchain hoặc dùng cơ chế so sánh đáng tin, xử lý lỗi fail-closed theo policy",
+        "Coi bc không tồn tại nghĩa coverage đạt"
+      ],
+      "correct": 2,
+      "explanation": "Một command không chạy được khác một phép kiểm đã pass."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Verified-only giới hạn",
+      "question": "Tool không xác minh được một chuỗi giống credential do mạng/phạm vi dịch vụ. Có thể kết luận nó an toàn không?",
+      "options": [
+        "Có, mọi unverified là false positive chắc chắn",
+        "Có, nếu coverage trên80",
+        "Có, vì Trivy không báo cùng chuỗi",
+        "Không, trạng thái chưa verified cần được phân loại theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Trạng thái xác minh không thay đánh giá credential exposure."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Lộ token đã phát hiện",
+      "question": "Scanner tìm credential thật đã bị lộ. Hành động xử lý phù hợp là gì?",
+      "options": [
+        "Thu hồi/rotate theo quyền và điều tra phạm vi, rồi dọn nguồn/lịch sử theo quy trình phù hợp",
+        "Chỉ xóa dòng hiện tại rồi coi credential chưa từng lộ",
+        "Chỉ đổi tên file",
+        "Chỉ tăng audit threshold"
+      ],
+      "correct": 0,
+      "explanation": "Xóa dấu vết source không tự vô hiệu hóa credential đã được sao chép."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Mã scan thay đổi",
+      "question": "Action dùng @main đổi mã sau khi workflow đã được review. Cần cân nhắc gì?",
+      "options": [
+        "Chỉ tăng số reviewers của report coverage",
+        "Pin/update refs có review và provenance theo policy",
+        "Coi tên main là snapshot vĩnh viễn",
+        "Chỉ đổi severity Trivy"
+      ],
+      "correct": 1,
+      "explanation": "Chuỗi cung ứng tool cần được quản lý cùng đầu vào scan."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Source branch và quyền",
+      "question": "Scan mã PR không đáng tin có cần mọi credential production không?",
+      "options": [
+        "Có, mọi scanner tự bảo vệ secrets tuyệt đối",
+        "Chỉ cần che tên biến token",
+        "Không, chỉ cấp quyền cần thiết theo luồng kiểm tra và policy",
+        "Có, vì scan bảo mật luôn cần admin"
+      ],
+      "correct": 2,
+      "explanation": "Mục tiêu security scan không tự cho phép mở rộng quyền không cần thiết."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Audit fail sớm",
+      "question": "Audit step fail và các scan steps sau dùng điều kiện mặc định. Có thể xảy ra gì?",
+      "options": [
+        "Mọi scanner vẫn luôn chạy độc lập trong cùng job",
+        "CodeQL tự biến audit fail thành pass",
+        "TruffleHog tự chạy từ comment",
+        "Các scan sau bị skip nên chưa có kết quả của chúng trong run đó"
+      ],
+      "correct": 3,
+      "explanation": "Cần thiết kế điều kiện thu đủ kết quả nếu đó là mục tiêu."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Thu đủ findings",
+      "question": "Muốn các công cụ đều chạy để thu report dù một scanner báo lỗi, cần gì?",
+      "options": [
+        "Status conditions và bước tổng hợp giữ lỗi theo policy, không chỉ nuốt mọi mã thoát",
+        "Bọc cả job bằng true rồi gọi mọi scan pass",
+        "Đổi tên step thành always nhưng không có if",
+        "Bỏ artifact reports"
+      ],
+      "correct": 0,
+      "explanation": "Thu đủ bằng chứng và phản ánh đúng kết quả đều cần được giữ."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Scan lỗi và scan sạch",
+      "question": "Vì sao phải phân biệt tool không truy cập được DB/advisory với không có finding?",
+      "options": [
+        "Cả hai chỉ ảnh hưởng tên step",
+        "Một bên thiếu kết quả kiểm tra, một bên là kết quả trong phạm vi dữ liệu/quy tắc đã dùng",
+        "Cả hai luôn là pass",
+        "Cả hai chứng minh không có lỗ hổng"
+      ],
+      "correct": 1,
+      "explanation": "Tính sẵn có và độ mới dữ liệu ảnh hưởng phạm vi scan."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Dữ liệu advisory cập nhật",
+      "question": "Cùng artifact được scan hai ngày khác nhau có thể ra finding khác không?",
+      "options": [
+        "Chỉ khi đổi tên image",
+        "Chỉ khi coverage thấp",
+        "Có, dữ liệu advisory/quy tắc và cấu hình có thể cập nhật",
+        "Không, image không đổi nên kiến thức về nó bất biến"
+      ],
+      "correct": 2,
+      "explanation": "Scan là đánh giá theo thông tin tại thời điểm và phiên bản tools cụ thể."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Coverage loại khác",
+      "question": "Gate chỉ lines.pct có trực tiếp áp threshold branch coverage không?",
+      "options": [
+        "Có, lines luôn bằng branches",
+        "Có, jq tự kiểm mọi field còn lại",
+        "Không, vì coverage không thể đo branch",
+        "Không, cần chỉ số/chính sách riêng nếu muốn kiểm branch coverage"
+      ],
+      "correct": 3,
+      "explanation": "Phải phân biệt các chỉ số được tool báo."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Tỷ lệ và code thay đổi",
+      "question": "Một module mới nguy cơ cao chưa có tests nhưng toàn repo vẫn trên80lines. Nhận định nào đúng?",
+      "options": [
+        "Threshold toàn cục chưa chứng minh module mới được kiểm đủ; cần tests theo rủi ro/thay đổi",
+        "Module mới chắc chắn được bao phủ vì tỷ lệ chung cao",
+        "Không cần review vì source có gate",
+        "Chỉ cần tăng tên test file"
+      ],
+      "correct": 0,
+      "explanation": "Metric tổng hợp có thể che khoảng trống cục bộ."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Không chỉ severity",
+      "question": "Một finding mức high có thể cần quyết định xử lý dựa thêm vào gì?",
+      "options": [
+        "Chỉ tên reviewer",
+        "Khả năng khai thác/phơi lộ, phạm vi, bản sửa và policy/ngoại lệ có kiểm soát",
+        "Chỉ màu badge",
+        "Chỉ số dòng Dockerfile"
+      ],
+      "correct": 1,
+      "explanation": "Severity là tín hiệu quan trọng nhưng không toàn bộ ngữ cảnh rủi ro."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Ngoại lệ scan",
+      "question": "Một advisory được miễn tạm vì có biện pháp giảm thiểu. Cần ghi gì?",
+      "options": [
+        "Chỉ xóa report khỏi artifact",
+        "Chỉ đổi audit-level thành none cho mọi dependency",
+        "Lý do/phạm vi/chủ sở hữu/thời hạn và kế hoạch xử lý phù hợp",
+        "Chỉ một ignore vĩnh viễn không lý do"
+      ],
+      "correct": 2,
+      "explanation": "Ngoại lệ cần truy vết, không biến thành lỗ hổng quản lý không thời hạn."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "SAST không load",
+      "question": "CodeQL không báo lỗi có chứng minh hệ thống chịu tải mục tiêu không?",
+      "options": [
+        "Có, nếu queries chạy đủ lâu",
+        "Có, nếu CPU runner mạnh",
+        "Có, vì tên job security",
+        "Không, phân tích tĩnh không phải đo capacity/load"
+      ],
+      "correct": 3,
+      "explanation": "Các loại bằng chứng có phạm vi khác nhau."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Kiểm quyền ứng dụng",
+      "question": "Không có dependency CVE trong audit có chứng minh API kiểm ownership đúng không?",
+      "options": [
+        "Không, đó là hành vi/policy code cần kiểm riêng",
+        "Có, mọi auth bug là dependency CVE",
+        "Có, npm audit hiểu mọi role nghiệp vụ",
+        "Có, nếu production deps sạch"
+      ],
+      "correct": 0,
+      "explanation": "Scan dependency không thay tests/review authorization."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Image latest race",
+      "question": "Trivy scan latest rồi latest bị đẩy nội dung khác trước deploy. Cần gì?",
+      "options": [
+        "Chỉ đổi name step sang Secure",
+        "Ràng buộc scan/deploy cùng digest và policy provenance/quyền phù hợp",
+        "Chỉ scan nhanh hơn một chút rồi bỏ kiểm tra",
+        "Coi tên latest luôn bất biến trong run"
+      ],
+      "correct": 1,
+      "explanation": "Khoảng trống tham chiếu mutable cần được giải quyết bằng đúng đối tượng nội dung."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Report có secret",
+      "question": "Report scanner có thể chứa thông tin nhạy cảm. Cần quản lý gì?",
+      "options": [
+        "Đưa token nguyên vào tên artifact",
+        "Bỏ mọi findings thay vì xử lý quyền truy cập",
+        "Redaction, quyền truy cập/lưu giữ artifact và log theo nội dung thực",
+        "Luôn công khai mọi report vì tên security"
+      ],
+      "correct": 2,
+      "explanation": "Bằng chứng cũng có thể là dữ liệu cần bảo vệ."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Exit code bị nuốt",
+      "question": "Thêm || true vào mọi scanner rồi chỉ xem job xanh có vấn đề gì?",
+      "options": [
+        "Tự tăng chất lượng scan",
+        "Tự áp bản sửa mọi finding",
+        "Tự lưu mọi report đúng định dạng",
+        "Che trạng thái thất bại nếu không có tổng hợp đúng, làm gate mất ý nghĩa"
+      ],
+      "correct": 3,
+      "explanation": "Nếu cần tiếp tục chạy phải giữ và tổng hợp kết quả, không bỏ mất chúng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Report đúng revision",
+      "question": "Quality-gate tải report coverage của commit cũ cùng tên. Mức kết luận nào đúng?",
+      "options": [
+        "Chưa chứng minh coverage cho revision hiện tại; cần ràng buộc run/source artifact",
+        "Cùng tên report luôn có cùng dữ liệu",
+        "Coverage tự cập nhật theo branch dù file cũ",
+        "Không cần source hash vì JSON có total"
+      ],
+      "correct": 0,
+      "explanation": "Cần provenance của dữ liệu kiểm tra."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Scanner rule scope",
+      "question": "Một scan không có finding theo quy tắc đang bật. Mô tả nào đúng?",
+      "options": [
+        "Không cần quản lý credential nữa",
+        "Không thấy finding trong phạm vi/quy tắc/dữ liệu scan đó, không bảo đảm tuyệt đối an toàn",
+        "Không còn mọi lỗi bảo mật trong hệ thống",
+        "Không cần review code nữa"
+      ],
+      "correct": 1,
+      "explanation": "Kết luận phải tương xứng với khả năng và đầu vào kiểm tra."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Verified có side effect ngoài",
+      "question": "Vì sao không nên tự chạy xác minh credential mẫu chỉ để thử bài quiz?",
+      "options": [
+        "Vì verified không bao giờ cần công cụ",
+        "Vì coverage thay mọi kiểm tra credential",
+        "Có thể liên hệ dịch vụ thật hoặc tác động ranh giới credential; chỉ đọc source/docs khi chưa có phạm vi thực thi phù hợp",
+        "Vì mọi cờ verified là lệnh xóa file"
+      ],
+      "correct": 2,
+      "explanation": "Phiên biên soạn này không thực hiện scan hay xác minh bí mật thật."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "CodeQL upload permission",
+      "question": "Khi cấu hình upload CodeQL vào code scanning, điều gì cần đối chiếu?",
+      "options": [
+        "Quyền admin mọi Docker registry",
+        "Chỉ token có độ dài20",
+        "Chỉ file coverage-summary tồn tại",
+        "Quyền như security-events:write và chính sách event/repository theo action/version"
+      ],
+      "correct": 3,
+      "explanation": "Quyền upload và môi trường scan phải phù hợp, không mặc định có ở mọi ngữ cảnh."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Khả năng tools",
+      "question": "Chỉ nhắc jq/bc/CodeQL/Trivy trong YAML có chứng minh chúng sẵn sàng hoạt động không?",
+      "options": [
+        "Không, cần đầu vào/runtime/quyền/toolchain phù hợp và kết quả thực thi",
+        "Có, tên command tự cài mọi thứ đúng version",
+        "Có, runner name là Ubuntu",
+        "Có, job name là security"
+      ],
+      "correct": 0,
+      "explanation": "Cấu hình chưa là bằng chứng setup hoặc runtime thành công."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Ngưỡng không là chuẩn cứng",
+      "question": "Vì sao không nên gọi80%line coverage là chuẩn bắt buộc cho mọi dự án?",
+      "options": [
+        "Vì chỉ branch main có thể có coverage",
+        "Đó là policy mẫu; kiểm thử nên theo hành vi/rủi ro và yêu cầu dự án",
+        "Vì mọi dự án phải dùng20%",
+        "Vì line coverage không bao giờ có ích"
+      ],
+      "correct": 1,
+      "explanation": "Metric có thể hỗ trợ mục tiêu, không thay đánh giá chất lượng cụ thể."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Giới hạn source",
+      "question": "Source bắt đầu jobs và quality-gate needs:test chưa có test. Bước đầu để dùng thật là gì?",
+      "options": [
+        "Chỉ thêm nhiều comments security",
+        "Chỉ đổi @main thành một tên job",
+        "Hoàn thiện workflow hợp lệ và các prerequisites/luồng artifact theo mục tiêu",
+        "Chỉ copy nguyên fragment và công bố scan pass"
+      ],
+      "correct": 2,
+      "explanation": "Phải xử lý thiếu sót cấu hình trước khi đo kết quả."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Fix dependency cần test",
+      "question": "Sau khi xử lý advisory bằng nâng dependency, cần làm gì?",
+      "options": [
+        "Bỏ test vì scanner đã sạch",
+        "Xóa mọi lockfile để scan không thấy package",
+        "Chỉ đổi severity threshold",
+        "Review thay đổi/lockfile và kiểm hành vi phù hợp, không coi hết advisory là tương thích tự động"
+      ],
+      "correct": 3,
+      "explanation": "Remediation có thể thay behavior và cần kiểm chứng."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Gate có thể bỏ lọt đầu vào",
+      "question": "Gate dùng cat|jq rồi bc, report thiếu hoặc sai kiểu nhưng không xử lý lỗi rõ. Cách sửa đúng mục tiêu là gì?",
+      "options": [
+        "Kiểm report/schema/số và lỗi công cụ, fail-closed theo policy, rồi so threshold trên dữ liệu gắn đúng run",
+        "Gán mọi đầu vào lỗi thành100 để không block",
+        "Chỉ thêm echo Coverage OK ở cuối",
+        "Chỉ tăng threshold lên90 mà giữ xử lý lỗi cũ"
+      ],
+      "correct": 0,
+      "explanation": "Gate phải kiểm cả chất lượng đầu vào và điều kiện số, không chỉ có một phép so sánh."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "CodeQL chưa cấu hình",
+      "question": "Source chỉ analyze@v3 với languages, không checkout/init. Đội báo SAST đã chạy vì YAML parse được. Đánh giá nào đúng?",
+      "options": [
+        "Tên step CodeQL Analysis là chứng cứ runtime",
+        "Chưa có bằng chứng phân tích; phải hoàn thiện source/init/language/database/quyền và xem kết quả action",
+        "YAML parse được chứng minh database CodeQL đã có",
+        "Languages ở analyze tự thay mọi bước init"
+      ],
+      "correct": 1,
+      "explanation": "Hợp lệ YAML và hoạt động framework là các mức chứng minh khác nhau."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Gate qua job",
+      "question": "Test job tạo coverage nhưng gate job khác chỉ needs:test rồi cat đường dẫn. Thiết kế hoàn thiện là gì?",
+      "options": [
+        "Chỉ đổi name gate thành Coverage",
+        "Cho jq tải report bất kỳ từ cache cùng tên",
+        "Chuyển report qua artifact đúng run/revision, kiểm tính hợp lệ và trạng thái test/security trước áp policy",
+        "Tin needs tự chuyển toàn bộ thư mục coverage"
+      ],
+      "correct": 2,
+      "explanation": "Cần ràng buộc dữ liệu và điều kiện kiểm tra qua ranh giới job."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Tách lỗi và findings",
+      "question": "Audit endpoint không truy cập được, Trivy không tìm thấy image, coverage report cũ đủ80. Có thể báo release gate đạt không?",
+      "options": [
+        "Có, coverage đủ80 thay mọi scan khác",
+        "Có, scanner lỗi nghĩa không finding",
+        "Có, nếu đặt continue-on-error",
+        "Không, có thiếu/lỗi bằng chứng; cần phân loại nguyên nhân, đúng artifact và kết quả hợp lệ theo policy"
+      ],
+      "correct": 3,
+      "explanation": "Không gộp không có kết quả vào không có vấn đề."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Báo đủ scanner",
+      "question": "Audit phát hiện high rồi fail khiến các scanner khác skip. Nhóm muốn đủ report nhưng vẫn chặn release khi có lỗi nghiêm trọng. Cần gì?",
+      "options": [
+        "Thiết kế tiếp tục thu kết quả có kiểm soát và cổng tổng hợp giữ failures/missing reports theo policy",
+        "Nuốt mọi exit code rồi coi job xanh là scan sạch",
+        "Bỏ audit để Trivy luôn chạy",
+        "Chỉ đổi tên step thành Always scan"
+      ],
+      "correct": 0,
+      "explanation": "Thu đủ kết quả và giữ hiệu lực gate phải được giải quyết cùng nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Credential đã bị sao chép",
+      "question": "Token thật có trong Git history, scanner verified được; xóa dòng hiện tại rồi scan scope hẹp không thấy nữa. Vì sao chưa xử lý xong?",
+      "options": [
+        "Chỉ cần đổi tên branch",
+        "Token vẫn có thể bị sử dụng từ bản sao/lịch sử; cần revoke/rotate và xử lý phạm vi exposure phù hợp",
+        "Scanner không thấy thì token tự hết hạn",
+        "Commit mới tự hủy mọi credential ở commit cũ"
+      ],
+      "correct": 1,
+      "explanation": "Loại bỏ nội dung hiện tại không tự thu hồi quyền đã bị lộ."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Coverage che module rủi ro",
+      "question": "Toàn repo90%lines nhưng module phân quyền mới gần như không có assertion. Thiết kế kiểm tra phù hợp là gì?",
+      "options": [
+        "Chỉ tăng threshold lên91 để tự tạo tests",
+        "Bỏ tests cũ để tỷ lệ tập trung vào module mới",
+        "Bổ sung kiểm hành vi/authorization theo rủi ro và thay đổi, dùng coverage làm tín hiệu hỗ trợ",
+        "Coi90%chứng minh mọi role đã kiểm"
+      ],
+      "correct": 2,
+      "explanation": "Coverage tổng không đủ xác định các hành vi rủi ro đã được kiểm đúng."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Scan đúng digest",
+      "question": "Image A scan sạch, tag latest sau đó trỏ B và được deploy. Cần gì để claim release đã được scan?",
+      "options": [
+        "Chỉ tag có cùng tên latest",
+        "Chỉ A và B ở cùng registry",
+        "Chỉ deploy job có needs:security",
+        "Ràng buộc release với digest được đánh giá và provenance/policy cập nhật, không suy theo tag mutable"
+      ],
+      "correct": 3,
+      "explanation": "Dependency job không tự bảo đảm tham chiếu artifact không thay đổi."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Dev tooling supply chain",
+      "question": "Production dependency audit sạch nhưng build dùng devDependency có vấn đề. Đánh giá đầy đủ cần gì?",
+      "options": [
+        "Xét cả chuỗi build/CI và artifact runtime theo rủi ro, không chỉ phạm vi production audit",
+        "Coi devDependency không bao giờ thực thi nên bỏ qua",
+        "Chỉ tăng severity threshold",
+        "Chỉ scan URL production"
+      ],
+      "correct": 0,
+      "explanation": "Ranh giới runtime app và môi trường tạo artifact đều có thể liên quan an toàn hệ thống."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Exceptions có thời hạn",
+      "question": "Một advisory chưa có fix được ignore tạm; sau vài tháng context phơi lộ thay đổi. Cơ chế quản lý phù hợp là gì?",
+      "options": [
+        "Đổi tên package trong report",
+        "Ngoại lệ có owner/thời hạn/review và biện pháp giảm thiểu, đánh giá lại khi đầu vào thay đổi",
+        "Ignore một lần rồi coi an toàn vĩnh viễn",
+        "Xóa scanner khỏi workflow"
+      ],
+      "correct": 1,
+      "explanation": "Ngoại lệ không phải kết luận bất biến về rủi ro."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Tool refs đổi",
+      "question": "Scanner dùng branch main/master, rule DB cũng cập nhật. Khi so report hôm nay với tháng trước, cần giữ thông tin gì?",
+      "options": [
+        "Chỉ màu nhãn gate",
+        "Chỉ tỷ lệ coverage",
+        "Revision/tool/rule/config/data timestamp và artifact/source để hiểu khác biệt kết quả",
+        "Chỉ tên scanner"
+      ],
+      "correct": 2,
+      "explanation": "Provenance giúp phân biệt thay đổi artifact, kiến thức advisory và công cụ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Unverified không vô hại",
+      "question": "Chỉ kết quả verified được cho vào report; detector gặp chuỗi giống secret nhưng bị rate limit xác minh. Cách diễn giải đúng?",
+      "options": [
+        "Không verified đồng nghĩa credential chắc chắn giả",
+        "Coverage cao chứng minh secret không dùng",
+        "Trivy không báo nghĩa token không thể dùng",
+        "Chưa có đủ căn cứ coi chuỗi đó an toàn; cần policy cho trạng thái chưa xác minh và giới hạn scan"
+      ],
+      "correct": 3,
+      "explanation": "Kết quả phụ thuộc khả năng xác minh, không chỉ sự tồn tại chuỗi."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Quyền scanner",
+      "question": "Team cấp production secrets cho mọi PR để security tools chạy thuận tiện. Cách thiết kế tốt hơn là gì?",
+      "options": [
+        "Tách luồng mã tin cậy/quyền và dùng credential tối thiểu cần thiết, giữ gate/report phù hợp",
+        "Cấp quyền rộng hơn vì tools tên security",
+        "Chỉ che log token rồi mọi thực thi đều an toàn",
+        "Chỉ dùng repository private"
+      ],
+      "correct": 0,
+      "explanation": "Scanner không loại bỏ rủi ro từ mã PR hoặc scripts được thực thi với quyền."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Bằng chứng bảo mật quá rộng",
+      "question": "Audit/CodeQL/Trivy đều không có finding trong scope hiện tại. Nhóm muốn công bố hệ thống không thể bị tấn công. Nhận xét nào đúng?",
+      "options": [
+        "Thêm một tên scanner vào comment là đủ",
+        "Kết quả chỉ phản ánh phạm vi/tools/dữ liệu đã kiểm, vẫn cần thiết kế và kiểm các rủi ro khác",
+        "Công bố đó đúng vì có ba tools độc lập",
+        "Chỉ thiếu coverage100%để tuyệt đối an toàn"
+      ],
+      "correct": 1,
+      "explanation": "Không biến kết quả hữu hạn thành bảo đảm tuyệt đối."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Đúng report đúng commit",
+      "question": "Gate dùng coverage của A, scan image B, deploy image C. Mọi report riêng đều xanh. Vấn đề là gì?",
+      "options": [
+        "Chỉ cần tên job giống nhau",
+        "Chỉ thêm một threshold chung",
+        "Chưa có liên kết bằng chứng với cùng release; cần provenance/artifact/source binding và policy phù hợp",
+        "Không vấn đề vì mọi report xanh"
+      ],
+      "correct": 2,
+      "explanation": "Kiểm tra phải gắn với đối tượng định phát hành."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Fix audit không kiểm behavior",
+      "question": "Npm audit fix --force làm advisory biến mất nhưng nâng major dependency. Cần làm gì trước claim bản sửa đúng?",
+      "options": [
+        "Bỏ tests vì fix tự chứng minh tương thích",
+        "Giữ artifact build cũ nhưng gọi là bản mới",
+        "Chỉ đổi version trong README",
+        "Review thay đổi/API/lockfile và chạy kiểm hành vi theo tác động, không chỉ nhìn audit sạch"
+      ],
+      "correct": 3,
+      "explanation": "Remediation có thể gây regression; lệnh sửa không tự là bằng chứng sản phẩm hoạt động."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Lưu report nhạy cảm",
+      "question": "Security report chứa chi tiết credential/internal paths, được upload công khai để dễ xem. Điều gì cần cân bằng?",
+      "options": [
+        "Khả năng truy vết với redaction/quyền/lưu giữ phù hợp, không công khai bí mật để có bằng chứng",
+        "Mọi security report bắt buộc public",
+        "Chỉ xóa findings thì không cần xử lý credential",
+        "Đổi artifact name thành private là tự đủ quyền"
+      ],
+      "correct": 0,
+      "explanation": "Nhãn tên không thay access control thực."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Ngưỡng mẫu và yêu cầu thật",
+      "question": "Team áp80%lines cho mọi thay đổi, bỏ kiểm logic mua hàng vì gate vẫn xanh. Cách sửa chính sách phù hợp là gì?",
+      "options": [
+        "Chỉ tăng số scanner dependency",
+        "Ưu tiên assertions/hành vi theo rủi ro và yêu cầu, chọn metric/gate hỗ trợ; không thay kiểm nghiệp vụ bằng con số",
+        "Chỉ đổi80thành100 thì tự đủ tests nghiệp vụ",
+        "Bỏ coverage vì mọi metric đều vô dụng"
+      ],
+      "correct": 1,
+      "explanation": "Chất lượng gắn với hành vi cần bảo đảm, không phải một quota chung tự động."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Phụ thuộc test thiếu",
+      "question": "Trong workflow chỉ có security và quality-gate needs:[test,security]. Đội thêm continue-on-error để sửa lỗi thiếu job test. Vì sao sai?",
+      "options": [
+        "Đổi threshold coverage là đủ tạo test",
+        "Tên job security tự bao gồm test",
+        "Thiếu dependency là vấn đề cấu trúc workflow, cần định nghĩa/tham chiếu job test đúng và luồng dữ liệu",
+        "Continue-on-error tự sinh mọi job thiếu"
+      ],
+      "correct": 2,
+      "explanation": "Cần sửa nguyên nhân hợp đồng cấu hình, không che bằng policy lỗi runtime."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Hoàn thiện gate",
+      "question": "Nhóm muốn quy trình scan+quality gate có thể tin dùng. Bộ yêu cầu nào phù hợp nhất?",
+      "options": [
+        "Chỉ liệt kê nhiều tool hơn",
+        "Chỉ đạt80%lines với bất kỳ report nào",
+        "Chỉ dùng mọi action ở main mới nhất",
+        "Workflow/source/tools đúng version, mục tiêu/credential phù hợp, report hợp lệ đúng release, lỗi/ngoại lệ có policy và tests theo hành vi"
+      ],
+      "correct": 3,
+      "explanation": "Một gate đáng tin cần liên kết đầu vào, bằng chứng và quyết định, không chỉ tên công cụ."
+    }
+  ]
+}

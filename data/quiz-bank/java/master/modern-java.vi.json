@@ -1,0 +1,1162 @@
+{
+  "version": 1,
+  "tech": "java",
+  "level": "master",
+  "lesson": "modern-java",
+  "language": "vi",
+  "sourceHash": "a3150a540a4ca239ee43ba99853c80ad6d13468c5b9272fbc4b8cf3f95331e31",
+  "status": "approved",
+  "review": "Tự viết không API sinh nội dung. Phạm vi Java21 không preview cho các snippet, javac --release21. Records shallow immutable, sealed/pattern switch/record patterns theo docs JDK21; virtual threads không có cam kết10M hay1000x. Chuyển area vào class cho ví dụ standalone truyền thống thay vì method top-level thiếu ngữ cảnh trong nguồn. Chỉ chạy vài thread hữu hạn, không benchmark10k/triệu thread.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Record purpose",
+      "question": "Record chủ yếu diễn đạt loại dữ liệu nào?",
+      "options": [
+        "Aggregate dữ liệu với components và API được sinh theo contract.",
+        "Một thread pool.",
+        "Một ORM database tự động.",
+        "Một HTTP filter."
+      ],
+      "correct": 0,
+      "explanation": "Record giảm boilerplate cho mô hình dữ liệu phù hợp, không thay mọi class."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Record accessor",
+      "question": "record Point(double x,double y) sinh accessor nào?",
+      "options": [
+        "readAll().",
+        "x() và y().",
+        "getX() và getY() bắt buộc.",
+        "setX() và setY()."
+      ],
+      "correct": 1,
+      "explanation": "Accessor mặc định mang tên component."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Record equality",
+      "question": "Record mặc định sinh phương thức nào để equality theo components?",
+      "options": [
+        "clone sâu mọi component.",
+        "save vào database.",
+        "equals và hashCode.",
+        "compareTo cho mọi record."
+      ],
+      "correct": 2,
+      "explanation": "Record có thể customize theo contract, không tự là Comparable."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Record finality",
+      "question": "Record class có được subclass trực tiếp như class thường không?",
+      "options": [
+        "Có không hạn chế.",
+        "Chỉ khi component int.",
+        "Chỉ khi có accessor.",
+        "Không vì record class là final."
+      ],
+      "correct": 3,
+      "explanation": "Record vẫn có thể implement interfaces."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Shallow immutability",
+      "question": "Component List trong record có được deep immutable tự động không?",
+      "options": [
+        "Không.",
+        "Có mọi List.",
+        "Có nếu tên field items.",
+        "Chỉ khi record public."
+      ],
+      "correct": 0,
+      "explanation": "Final field không tự đóng băng object được tham chiếu."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Canonical constructor",
+      "question": "Canonical constructor của record gắn với gì?",
+      "options": [
+        "Mọi SQL row tự động.",
+        "Các record components theo khai báo.",
+        "Mỗi HTTP request.",
+        "Mọi superclass tùy chọn."
+      ],
+      "correct": 1,
+      "explanation": "Constructor có thể validate hoặc normalize dữ liệu đúng quy tắc record."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Compact constructor",
+      "question": "Compact constructor thường hữu ích để làm gì?",
+      "options": [
+        "Tạo subclass record.",
+        "Biến record thành mutable entity tự động.",
+        "Validate/normalize tham số components mà giảm lặp chữ ký.",
+        "Bỏ mọi field."
+      ],
+      "correct": 2,
+      "explanation": "Sau body, các component được gán theo semantics compact constructor."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Sealed purpose",
+      "question": "sealed giới hạn gì?",
+      "options": [
+        "Mọi giá trị field thành immutable.",
+        "Mọi constructor thành private.",
+        "Mọi thread thành daemon.",
+        "Các direct subclasses/subinterfaces được phép."
+      ],
+      "correct": 3,
+      "explanation": "Sealing kiểm soát hierarchy, không tự kiểm tra dữ liệu."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Permits",
+      "question": "permits liệt kê gì?",
+      "options": [
+        "Các kiểu trực tiếp được phép mở rộng/implement theo sealed hierarchy.",
+        "Mọi object instance.",
+        "Mọi method public.",
+        "Mọi module Java trong máy."
+      ],
+      "correct": 0,
+      "explanation": "Có thể được suy ra trong một số trường hợp cùng compilation unit."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Non sealed",
+      "question": "non-sealed trên subtype phù hợp có tác dụng gì?",
+      "options": [
+        "Biến interface thành record.",
+        "Mở nhánh đó cho các subclass không liệt kê trước.",
+        "Làm class final.",
+        "Xóa superclass."
+      ],
+      "correct": 1,
+      "explanation": "Sealed root không cấm nhánh được phép mở lại bằng non-sealed."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Record subtype",
+      "question": "Record implement sealed interface thường thỏa modifier tiếp tục hierarchy bằng tính chất nào?",
+      "options": [
+        "Implicitly abstract.",
+        "Implicitly synchronized.",
+        "Implicitly final.",
+        "Implicitly non-sealed."
+      ],
+      "correct": 2,
+      "explanation": "Record không cần thêm final một cách tường minh."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Type pattern",
+      "question": "obj instanceof String s làm gì khi match?",
+      "options": [
+        "Parse mọi object thành String.",
+        "Ép kiểu kể cả null.",
+        "Tạo String mới bắt buộc.",
+        "Kiểm tra kiểu và bind biến pattern s trong scope hợp lệ."
+      ],
+      "correct": 3,
+      "explanation": "Pattern binding dựa điều kiện match chứ không thay conversion tùy ý."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Null instanceof",
+      "question": "null instanceof String cho kết quả nào?",
+      "options": [
+        "false.",
+        "true.",
+        "NullPointerException luôn.",
+        "Compile error trong mọi ngữ cảnh."
+      ],
+      "correct": 0,
+      "explanation": "Type pattern không match null."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Switch expression",
+      "question": "Switch expression phải có tính chất nào về kết quả trên các nhánh hợp lệ?",
+      "options": [
+        "Luôn là statement không giá trị.",
+        "Bao phủ trường hợp cần thiết và yield/return giá trị hoặc ném theo quy tắc.",
+        "Luôn rơi qua mọi case.",
+        "Luôn trả null."
+      ],
+      "correct": 1,
+      "explanation": "Compiler kiểm tra exhaustiveness và kiểu kết quả."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Arrow rule",
+      "question": "Case dùng -> có mặc định fall-through sang case kế không?",
+      "options": [
+        "Chỉ với String.",
+        "Chỉ với record.",
+        "Không.",
+        "Có như mọi colon case."
+      ],
+      "correct": 2,
+      "explanation": "Arrow rule không cần break để tránh fall-through."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Guard",
+      "question": "Trong pattern switch Java21, when dùng để gì?",
+      "options": [
+        "Tạo vòng lặp.",
+        "Bắt mọi exception.",
+        "Khai báo module.",
+        "Thêm điều kiện boolean cho pattern đã match."
+      ],
+      "correct": 3,
+      "explanation": "Guard chỉ được xét khi pattern tương ứng match."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Record pattern",
+      "question": "Record pattern giúp thao tác nào?",
+      "options": [
+        "Phân rã components khi pattern match.",
+        "Tự JSON deserialize.",
+        "Tự clone sâu.",
+        "Tự persist."
+      ],
+      "correct": 0,
+      "explanation": "Có thể lồng record patterns theo cấu trúc dữ liệu."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Virtual thread",
+      "question": "Virtual threads được finalized trong Java nào theo phạm vi bài17–21?",
+      "options": [
+        "17.",
+        "21.",
+        "8.",
+        "11."
+      ],
+      "correct": 1,
+      "explanation": "Các preview ở bản trước không tương đương API finalized không preview."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Virtual start",
+      "question": "Thread.startVirtualThread(task) làm gì?",
+      "options": [
+        "Chỉ tạo thread chưa start.",
+        "Chạy mọi task trên caller chắc chắn.",
+        "Tạo và khởi chạy virtual thread cho task.",
+        "Tạo SQL transaction."
+      ],
+      "correct": 2,
+      "explanation": "Thread.ofVirtual().unstarted(task) là cách tạo chưa khởi chạy."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Join",
+      "question": "t.join() hữu ích để làm gì?",
+      "options": [
+        "Bắt buộc hủy t.",
+        "Tự trả kết quả mọi Callable.",
+        "Tự tăng priority t.",
+        "Chờ thread t kết thúc theo API."
+      ],
+      "correct": 3,
+      "explanation": "Join không tự chuyển ngoại lệ task thành exception trên caller."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Accessor output",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord P(int x,int y){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{P p=new P(2,3);System.out.print(p.x()+p.y());}}\n",
+      "options": [
+        "5",
+        "P[x=2, y=3]",
+        "23",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Record sinh accessor x và y."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Structural equals",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord P(int x){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{P a=new P(2),b=new P(2);System.out.print(a.equals(b)+\" \"+(a==b));}}\n",
+      "options": [
+        "Không compile.",
+        "true false",
+        "false false",
+        "true true"
+      ],
+      "correct": 1,
+      "explanation": "Hai record cùng components bằng nhau nhưng khác identity."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Component tostring",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord P(int x,int y){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(new P(2,3));}}\n",
+      "options": [
+        "P@2",
+        "Không compile.",
+        "P[x=2, y=3]",
+        "2 3"
+      ],
+      "correct": 2,
+      "explanation": "Record toString mặc định hiển thị tên record và components."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Mutable component",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(List<String> items){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{var xs=new ArrayList<String>();xs.add(\"a\");R r=new R(xs);xs.add(\"b\");System.out.print(r.items().size());}}\n",
+      "options": [
+        "1",
+        "0",
+        "Không compile.",
+        "2"
+      ],
+      "correct": 3,
+      "explanation": "Record giữ alias đến ArrayList truyền vào."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Snapshot component",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(List<String> items){R{items=List.copyOf(items);}}\npublic class QuizCase{ public static void main(String[]args)throws Exception{var xs=new ArrayList<String>();xs.add(\"a\");R r=new R(xs);xs.add(\"b\");System.out.print(r.items().size());}}\n",
+      "options": [
+        "1",
+        "2",
+        "0",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "List.copyOf trong compact constructor chụp cấu trúc list, không giữ list nguồn."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Read only component list",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(List<String> items){R{items=List.copyOf(items);}}\npublic class QuizCase{ public static void main(String[]args)throws Exception{R r=new R(List.of(\"a\"));try{r.items().add(\"b\");}catch(UnsupportedOperationException e){System.out.print(\"fixed\");}}}\n",
+      "options": [
+        "Không compile.",
+        "fixed",
+        "2",
+        "null"
+      ],
+      "correct": 1,
+      "explanation": "List.copyOf trả list không sửa cấu trúc được."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Compact normalization",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(int x){R{x=Math.max(0,x);}}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(new R(-2).x());}}\n",
+      "options": [
+        "null",
+        "Không compile.",
+        "0",
+        "-2"
+      ],
+      "correct": 2,
+      "explanation": "Compact constructor normalize tham số trước assignment tự động."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Compact validation",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(int x){R{if(x<0)throw new IllegalArgumentException();}}\npublic class QuizCase{ public static void main(String[]args)throws Exception{try{new R(-1);}catch(IllegalArgumentException e){System.out.print(\"bad\");}}}\n",
+      "options": [
+        "-1",
+        "0",
+        "Không compile.",
+        "bad"
+      ],
+      "correct": 3,
+      "explanation": "Constructor từ chối giá trị theo invariant khai báo."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Extra instance field",
+      "question": "Đoạn này compile được không?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(int x){int y=3;}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(new R(1));}}\n",
+      "options": [
+        "Không; record không được thêm instance field ngoài components.",
+        "Có, in3.",
+        "Có, in0.",
+        "Có, innull."
+      ],
+      "correct": 0,
+      "explanation": "Record có thể khai báo static fields phù hợp, không thêm instance field như y này."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Extending record",
+      "question": "Đoạn này compile được không?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(int x){} class S extends R{S(){super(2);}}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(new S().x());}}\n",
+      "options": [
+        "Có nếu constructor gọi super.",
+        "Không vì R là final.",
+        "Có và in2.",
+        "Có nếu không override equals."
+      ],
+      "correct": 1,
+      "explanation": "Implicit final ngăn subclass record."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Array component equals",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord R(int[] xs){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{R a=new R(new int[]{1}),b=new R(new int[]{1});System.out.print(a.equals(b)+\" \"+Arrays.equals(a.xs(),b.xs()));}}\n",
+      "options": [
+        "true false",
+        "Không compile.",
+        "false true",
+        "true true"
+      ],
+      "correct": 2,
+      "explanation": "Default record equals dùng equality component array theo reference, Arrays.equals so nội dung."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Different record types",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord A(int x){} record B(int x){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(new A(1).equals(new B(1)));}}\n",
+      "options": [
+        "true",
+        "null",
+        "Không compile.",
+        "false"
+      ],
+      "correct": 3,
+      "explanation": "Khác record class nên không equals dù component có cùng giá trị."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Pattern binding",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=\"abc\";if(o instanceof String s)System.out.print(s.length());}}\n",
+      "options": [
+        "3",
+        "abc",
+        "0",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Pattern match String và bind biến s trong nhánh true."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Null type pattern",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=null;System.out.print(o instanceof String s);}}\n",
+      "options": [
+        "Không compile.",
+        "false",
+        "true",
+        "null"
+      ],
+      "correct": 1,
+      "explanation": "Null không match String pattern."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Flow scope and",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=\"abc\";System.out.print(o instanceof String s && s.length()==3);}}\n",
+      "options": [
+        "0",
+        "Không compile.",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "s có scope ở RHS && vì RHS chỉ chạy khi pattern true."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Flow scope or",
+      "question": "Đoạn này compile được không?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=\"abc\";System.out.print(o instanceof String s || s.length()>0);}}\n",
+      "options": [
+        "Có,intrue.",
+        "Có,infalse.",
+        "Có,innull.",
+        "Không; s chưa được xác định khi RHS của || chạy vì pattern false."
+      ],
+      "correct": 3,
+      "explanation": "Flow scoping yêu cầu pattern đã match trên đường thực thi dùng biến."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Sealed rectangle area",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nsealed interface Shape permits Circle,Rect,Triangle{} record Circle(double r)implements Shape{} record Rect(double w,double h)implements Shape{} record Triangle(double b,double h)implements Shape{}\npublic class QuizCase{static double area(Shape s){return switch(s){case Circle c->Math.PI*c.r()*c.r();case Rect r->r.w()*r.h();case Triangle t->0.5*t.b()*t.h();};} public static void main(String[]args)throws Exception{System.out.print(area(new Rect(3,4)));}}\n",
+      "options": [
+        "12.0",
+        "7.0",
+        "6.0",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Rect branch nhân w*h."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Sealed triangle area",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nsealed interface Shape permits Circle,Rect,Triangle{} record Circle(double r)implements Shape{} record Rect(double w,double h)implements Shape{} record Triangle(double b,double h)implements Shape{}\npublic class QuizCase{static double area(Shape s){return switch(s){case Circle c->Math.PI*c.r()*c.r();case Rect r->r.w()*r.h();case Triangle t->0.5*t.b()*t.h();};} public static void main(String[]args)throws Exception{System.out.print(area(new Triangle(3,4)));}}\n",
+      "options": [
+        "Không compile.",
+        "6.0",
+        "12.0",
+        "7.0"
+      ],
+      "correct": 1,
+      "explanation": "Triangle branch tính0.5*b*h."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Guard selection",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{static String f(Object o){return switch(o){case String s when s.length()>3->\"long\";case String s->\"short\";default->\"other\";};} public static void main(String[]args)throws Exception{System.out.print(f(\"abc\"));}}\n",
+      "options": [
+        "other",
+        "Không compile.",
+        "short",
+        "long"
+      ],
+      "correct": 2,
+      "explanation": "String match trước, guard length>3 false nên đến String branch kế."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Explicit null case",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{static String f(Object o){return switch(o){case null->\"nil\";case String s->s;default->\"other\";};} public static void main(String[]args)throws Exception{System.out.print(f(null));}}\n",
+      "options": [
+        "other",
+        "NullPointerException.",
+        "Không compile.",
+        "nil"
+      ],
+      "correct": 3,
+      "explanation": "Case null xử lý selector null tường minh."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Default not null handler",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{static String f(Object o){return switch(o){case String s->s;default->\"other\";};} public static void main(String[]args)throws Exception{try{System.out.print(f(null));}catch(NullPointerException e){System.out.print(\"null-case\");}}}\n",
+      "options": [
+        "null-case",
+        "other",
+        "null",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Default không tự bắt null selector; switch này ném NPE."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Dominated case",
+      "question": "Đoạn switch compile được không?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{static String f(Object o){return switch(o){case CharSequence c->\"C\";case String s->\"S\";default->\"D\";};} public static void main(String[]args)throws Exception{System.out.print(f(\"x\"));}}\n",
+      "options": [
+        "Có,indefault.",
+        "Không; String pattern sau CharSequence bị dominate.",
+        "Có,inS.",
+        "Có,inC."
+      ],
+      "correct": 1,
+      "explanation": "Mọi String đã match CharSequence không guard trước đó."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Record deconstruction",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord P(int x,int y){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=new P(2,3);if(o instanceof P(int x,int y))System.out.print(x+y);}}\n",
+      "options": [
+        "0",
+        "Không compile.",
+        "5",
+        "23"
+      ],
+      "correct": 2,
+      "explanation": "Java21 record pattern bind hai components."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Nested record pattern",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord P(int x,int y){} record Box(P p){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=new Box(new P(4,5));if(o instanceof Box(P(var x,var y)))System.out.print(x);}}\n",
+      "options": [
+        "5",
+        "9",
+        "Không compile.",
+        "4"
+      ],
+      "correct": 3,
+      "explanation": "Nested pattern lấy component x của Point bên trong Box."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Null record pattern",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nrecord P(int x){}\npublic class QuizCase{ public static void main(String[]args)throws Exception{Object o=null;System.out.print(o instanceof P(int x));}}\n",
+      "options": [
+        "false",
+        "true",
+        "null",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Null không match record pattern."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Unpermitted direct class",
+      "question": "Đoạn này compile được không?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nsealed interface S permits A{} final class A implements S{} final class B implements S{}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(\"B\");}}\n",
+      "options": [
+        "Có vì cùng file là đủ dù permits đã rõ.",
+        "Không; B không nằm trong permits của S.",
+        "Có,inB.",
+        "Có vì B final."
+      ],
+      "correct": 1,
+      "explanation": "Explicit permits chỉ liệt kê A; final không tự cấp quyền implement S."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Non sealed branch",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\nsealed interface S permits Open{} non-sealed class Open implements S{} class Extra extends Open{}\npublic class QuizCase{ public static void main(String[]args)throws Exception{System.out.print(new Extra() instanceof S);}}\n",
+      "options": [
+        "null",
+        "Không compile.",
+        "true",
+        "false"
+      ],
+      "correct": 2,
+      "explanation": "Open được phép và non-sealed nên Extra có thể kế thừa."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Virtual identity",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{Thread t=Thread.ofVirtual().unstarted(()->{});System.out.print(t.isVirtual());t.start();t.join();}}\n",
+      "options": [
+        "false",
+        "null",
+        "Không compile.",
+        "true"
+      ],
+      "correct": 3,
+      "explanation": "Builder ofVirtual tạo virtual thread; join chờ task rỗng kết thúc."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Join visibility",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{int[] a={0};Thread t=Thread.startVirtualThread(()->a[0]=7);t.join();System.out.print(a[0]);}}\n",
+      "options": [
+        "7",
+        "0",
+        "null",
+        "Không compile."
+      ],
+      "correct": 0,
+      "explanation": "Thread termination quan sát qua join tạo quan hệ visibility cần thiết."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Virtual per task executor",
+      "question": "Output là gì?",
+      "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class QuizCase{ public static void main(String[]args)throws Exception{try(var e=Executors.newVirtualThreadPerTaskExecutor()){var a=e.submit(()->2);var b=e.submit(()->3);System.out.print(a.get()+b.get());}}}\n",
+      "options": [
+        "Không compile.",
+        "5",
+        "23",
+        "0"
+      ],
+      "correct": 1,
+      "explanation": "Hai task trả2 và3, get chờ kết quả trước cộng."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Release requirement",
+      "question": "Dùng pattern switch và record pattern của các snippet này với --release17, không preview có hợp lệ không?",
+      "options": [
+        "Có nếu class tên ModernJava.",
+        "Có nếu file UTF-8.",
+        "Không.",
+        "Có mọi tính năng Java21 chạy như17."
+      ],
+      "correct": 2,
+      "explanation": "Target language/API phải khớp; --release không đơn giản là label."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Source top level method",
+      "question": "Trong Java21 truyền thống không bật preview, static area(...) đặt trực tiếp ngoài mọi class như mảnh nguồn có đủ standalone không?",
+      "options": [
+        "Có trong mọi file .java.",
+        "Có vì return switch.",
+        "Chỉ cần import Math.",
+        "Không; cần đặt trong class thích hợp."
+      ],
+      "correct": 3,
+      "explanation": "Bài là các mảnh minh họa; ví dụ kiểm tra đã gói method vào QuizCase."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Source decimal output",
+      "question": "Circle(5) có area=25*PI; định dạng %.2f dùng Locale.ROOT cho kết quả nào?",
+      "options": [
+        "78.54",
+        "25.00",
+        "31.42",
+        "100.00"
+      ],
+      "correct": 0,
+      "explanation": "Làm tròn hai chữ số thập phân; locale được chỉ rõ để tránh dấu phẩy."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Shape invariant",
+      "question": "Record Circle(double r) mặc định có tự từ chối bán kính âm không?",
+      "options": [
+        "Có vì sealed interface.",
+        "Không.",
+        "Có vì tên Circle.",
+        "Có vì double."
+      ],
+      "correct": 1,
+      "explanation": "Cần compact/canonical constructor validation nếu domain yêu cầu."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Shallow copy",
+      "question": "List.copyOf chứa object mutable có làm các object con immutable không?",
+      "options": [
+        "Có vì record final.",
+        "Có nếu import java.util.",
+        "Không.",
+        "Có mọi cấp."
+      ],
+      "correct": 2,
+      "explanation": "Structural snapshot khác deep copy/immutability."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Null list policy",
+      "question": "List.copyOf với list chứa null có policy nào?",
+      "options": [
+        "Giữ nguyên null luôn.",
+        "Tự đổi null thành chuỗi rỗng.",
+        "Tự bỏ mọi null không báo.",
+        "Từ chối null elements theo API."
+      ],
+      "correct": 3,
+      "explanation": "Defensive copy cần khớp contract null của domain."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Record ORM fit",
+      "question": "Vì sao không nên coi record là thay thế tự động mọi JPA entity kiểu truyền thống?",
+      "options": [
+        "Yêu cầu entity lifecycle/construction/finality khác đặc tính record.",
+        "Record không thể có dữ liệu.",
+        "Record chỉ dùng trong browser.",
+        "Record không implement được interface."
+      ],
+      "correct": 0,
+      "explanation": "Record phù hợp nhiều DTO/value models; persistence mapping cần xem đặc tả/provider."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Virtual workloads",
+      "question": "Virtual thread thường có ích nhất ở workload nào?",
+      "options": [
+        "Mọi query DB không cần pool.",
+        "Nhiều task concurrent chờ I/O với limits phù hợp.",
+        "Tăng số CPU vật lý cho tính toán thuần.",
+        "Mọi single-thread loop luôn nhanh1000x."
+      ],
+      "correct": 1,
+      "explanation": "Concurrency scale không đồng nghĩa tăng tốc tính toán CPU bound."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Daemon virtual threads",
+      "question": "Virtual thread có giữ JVM sống như non-daemon platform thread không?",
+      "options": [
+        "Chỉ khi tên thread dài.",
+        "Chỉ khi có record.",
+        "Không; virtual threads là daemon.",
+        "Có luôn."
+      ],
+      "correct": 2,
+      "explanation": "Ứng dụng cần chờ completion có chủ đích, như join hoặc executor lifecycle."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Interruption handling",
+      "question": "Catch InterruptedException rồi bỏ trống như nguồn có nhược điểm gì?",
+      "options": [
+        "Tự dừng mọi task an toàn.",
+        "Tự rollback mọi DB.",
+        "Tự close tất cả sockets.",
+        "Mất tín hiệu cancellation nếu không xử lý/propagate/restore phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Chọn policy theo task lifecycle, không nuốt interruption mặc định."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Binary hierarchy evolution",
+      "question": "Thêm subtype mới vào sealed hierarchy có ảnh hưởng gì đến exhaustive switch đã biên dịch trước?",
+      "options": [
+        "Cần đánh giá tương thích và rebuild; nhánh mới có thể gây lỗi match/runtime nếu binary cũ không bao phủ.",
+        "Luôn tự sinh branch đúng nghiệp vụ.",
+        "Không ảnh hưởng mọi binary.",
+        "Tự chọn Circle cho subtype mới."
+      ],
+      "correct": 0,
+      "explanation": "Exhaustiveness được kiểm tra theo hierarchy lúc compile, không suy ra logic cho domain mới."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Non sealed exhaustiveness",
+      "question": "Sealed root có một nhánh non-sealed, muốn switch bao phủ nhánh đó nên xét gì?",
+      "options": [
+        "Chỉ xử lý null.",
+        "Case cho supertype nhánh để bao phủ các subtype chưa biết hoặc fallback phù hợp.",
+        "Liệt kê vài subtype hiện tại rồi coi đủ mãi.",
+        "Bỏ case vì root sealed."
+      ],
+      "correct": 1,
+      "explanation": "Sealing có thể mở lại ở một nhánh; closed-world cần đọc toàn hierarchy."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Guard exhaustiveness",
+      "question": "Các case String chỉ có guard length>0 có bao phủ mọi String không?",
+      "options": [
+        "Có vì String final.",
+        "Chỉ cần when có boolean.",
+        "Không; String rỗng không thỏa guard.",
+        "Có vì pattern String đã xuất hiện."
+      ],
+      "correct": 2,
+      "explanation": "Exhaustiveness không được suy từ guard tùy ý; cần fallback phù hợp."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Guard ordering",
+      "question": "Đặt unguarded case String trước guarded case String when ... có vấn đề gì?",
+      "options": [
+        "Guard tự chạy trước bất kể thứ tự.",
+        "Tự hợp lệ vì guard cụ thể hơn.",
+        "Chỉ đổi hiệu năng không ảnh hưởng compile.",
+        "Guarded case bị dominate."
+      ],
+      "correct": 3,
+      "explanation": "Order phải đặt trường hợp có điều kiện trước trường hợp bao quát tương ứng."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Record hash mutation",
+      "question": "Record chứa mutable List dùng làm HashMap key rồi list bị sửa có nguy cơ gì?",
+      "options": [
+        "equals/hashCode thay đổi khiến lookup thất bại theo contract hash collection.",
+        "Record final ngăn mọi thay đổi hash.",
+        "Map tự rehash khi list đổi.",
+        "Không bao giờ vì record sinh equals."
+      ],
+      "correct": 0,
+      "explanation": "Shallow immutability chưa đủ cho key ổn định."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Defensive accessor",
+      "question": "Record chứa byte[] cần immutable snapshot thật ở ranh giới; chỉ clone trong constructor đủ chưa?",
+      "options": [
+        "Không thể clone array.",
+        "Chưa nếu accessor mặc định trả array nội bộ, cần bảo vệ đường đọc phù hợp.",
+        "Đủ vì field final.",
+        "Đủ vì byte primitive."
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm soát cả input alias và output alias; equality array cũng cần policy."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Record normalization semantics",
+      "question": "Normalize component trong constructor có ảnh hưởng gì đến equals/hashCode mặc định?",
+      "options": [
+        "Luôn dựa identity.",
+        "Chỉ dựa tên biến local.",
+        "Equality dựa trạng thái components sau normalization.",
+        "Luôn dựa input ban đầu bị bỏ."
+      ],
+      "correct": 2,
+      "explanation": "Invariant/canonicalization nên nhất quán với accessor và API contract."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Floating point dimensions",
+      "question": "Muốn Circle chỉ có bán kính hữu hạn không âm, kiểm tra r<0 đơn lẻ thiếu gì?",
+      "options": [
+        "Mọi số0.",
+        "Mọi số dương.",
+        "Mọi double đều hữu hạn.",
+        "NaN và dương vô cực theo policy hữu hạn."
+      ],
+      "correct": 3,
+      "explanation": "Comparison với NaN không hoạt động như số thường; cần validate finite rõ."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Overflow area",
+      "question": "Rect với double rất lớn có thể area thành Infinity; record/sealed có ngăn không?",
+      "options": [
+        "Không.",
+        "Có vì compiler exhaustive.",
+        "Có vì final components.",
+        "Có vì multiplication typed."
+      ],
+      "correct": 0,
+      "explanation": "Structural type safety không tự kiểm soát miền số học."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Pattern scope early return",
+      "question": "Sau if(!(o instanceof String s)) return; dùng s tiếp theo có thể hợp lệ vì sao?",
+      "options": [
+        "Compiler tự cast mọi Object.",
+        "Các đường đi tiếp đều đã match pattern.",
+        "Mọi biến trong if có scope toàn JVM.",
+        "String luôn non-null kể cả o null."
+      ],
+      "correct": 1,
+      "explanation": "Flow scoping dựa khả năng đi tiếp theo control flow, không chỉ cặp ngoặc."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Nested null patterns",
+      "question": "Nested record pattern yêu cầu component là record con; component null có tự match record con không?",
+      "options": [
+        "Có và tự new record.",
+        "Có vì outer record non-null.",
+        "Không; null không match record pattern.",
+        "Có và bind mọi field0."
+      ],
+      "correct": 2,
+      "explanation": "Cần handling riêng cho null trong cấu trúc nếu domain cho phép."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Virtual concurrency budget",
+      "question": "Đổi fixed pool thành virtual-thread-per-task có loại nhu cầu giới hạn downstream concurrency không?",
+      "options": [
+        "Có vì virtual thread rẻ nên DB vô hạn.",
+        "Có vì không dùng OS threads riêng.",
+        "Có vì mỗi task có record.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Connection pools, remote quotas, memory và admission control vẫn hữu hạn."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Virtual CPU bound",
+      "question": "Chạy10000 task tính CPU nặng trên máy8 core có bảo đảm nhanh hơn8 workers1000 lần không?",
+      "options": [
+        "Không.",
+        "Có theo số thread.",
+        "Có vì daemon.",
+        "Có vì join."
+      ],
+      "correct": 0,
+      "explanation": "Virtual threads không tạo thêm CPU capacity; đo scheduling và workload thật."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "JDK21 pinning scope",
+      "question": "Với JDK21, blocking lâu trong synchronized có điều cần xem xét nào?",
+      "options": [
+        "Luôn deadlock ngay.",
+        "Có thể pin carrier và hạn chế scale; phải đo tần suất/thời gian giữ monitor.",
+        "Mọi synchronized luôn sai trên mọi JDK tương lai.",
+        "Virtual thread không bao giờ có carrier."
+      ],
+      "correct": 1,
+      "explanation": "Phạm vi nhận định là JDK21; không khái quát implementation thay đổi của bản khác."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Virtual thread locals",
+      "question": "Mỗi virtual thread giữ ThreadLocal buffer lớn gây rủi ro gì ở concurrency cao?",
+      "options": [
+        "JVM tự bỏ mọi buffer cần dùng.",
+        "Không có heap allocation.",
+        "Tổng bộ nhớ lớn dù bản thân thread có chi phí thấp.",
+        "ThreadLocal tự chỉ có một bản cho tất cả."
+      ],
+      "correct": 2,
+      "explanation": "Chi phí per-task data có thể vượt chi phí thread; xem lifetime và reuse phù hợp."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Virtual pooling",
+      "question": "Có nên pool virtual threads chỉ để tái sử dụng vì tạo thread vốn đắt như platform threads không?",
+      "options": [
+        "Luôn pool một thread cho mọi request.",
+        "Luôn tăng pool vô hạn cùng DB.",
+        "Không được dùng semaphore với virtual threads.",
+        "Thường không; dùng per-task và giới hạn tài nguyên khan hiếm riêng theo thiết kế."
+      ],
+      "correct": 3,
+      "explanation": "Mục đích virtual threads là chi phí thread thấp; resource budget vẫn phải rõ."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Task failure join",
+      "question": "Worker ném RuntimeException; caller join có tự ném lại exception đó như Future.get không?",
+      "options": [
+        "Không.",
+        "Có luôn.",
+        "Có nếu virtual.",
+        "Có nếu record task."
+      ],
+      "correct": 0,
+      "explanation": "Join chờ kết thúc; cần future/error channel hoặc uncaught handler phù hợp để quan sát lỗi."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Cancellation lifecycle",
+      "question": "Ngắt thread có bảo đảm mọi library blocking operation dừng và external effect bị undo không?",
+      "options": [
+        "Có vì InterruptedException checked.",
+        "Không.",
+        "Có với mọi Java API.",
+        "Có vì virtual thread."
+      ],
+      "correct": 1,
+      "explanation": "Cancellation là hợp tác/phụ thuộc API; cần deadline và cleanup/transaction policy rõ."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Migration validation",
+      "question": "Refactor DTO class sang record cần kiểm tra gì với serializers/framework callers?",
+      "options": [
+        "Không cần vì record là class.",
+        "Chỉ thêm keyword record rồi deploy.",
+        "Constructor/accessor names, reflection/binding, equality và tương thích payload.",
+        "Chỉ số ký tự giảm."
+      ],
+      "correct": 2,
+      "explanation": "Lợi ích boilerplate không bỏ nghĩa vụ giữ public contract."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Record API evolution",
+      "question": "Thêm một component mới vào public record có nên coi là thay đổi tương thích tự động với mọi caller constructor cũ không?",
+      "options": [
+        "Có vì record tự giữ mọi constructor cũ.",
+        "Có vì accessor final.",
+        "Có vì mọi record đều JSON-only.",
+        "Không; canonical constructor signature và data contract thay đổi cần đánh giá."
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm tra source/binary compatibility, constructors bổ sung nếu phù hợp và consumers/serializers của contract."
+    }
+  ]
+}

@@ -1,0 +1,1141 @@
+{
+  "version": 1,
+  "tech": "cpp",
+  "level": "master",
+  "lesson": "system-design",
+  "language": "vi",
+  "sourceHash": "0e4b7b9102b8e406c10b4d782bcd7180b1dcd4e98e6a9b93c8939bfca5d561e8",
+  "status": "approved",
+  "review": "Tự biên soạn, không API. C++17: atomic/CAS, giới hạn stack minh họa, memory reclamation, ObjectPool, CMake/sanitizers và ECS. Không chạy stack gốc đồng thời: thiếu cơ chế bảo vệ node và xử lý ABA. Chỉ chứng minh output mẫu ở chế độ một thread; không claim production-safe hoặc đã chạy ASan/TSan.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "System design scope",
+      "question": "Thiết kế hệ thống C++ lớn cần xét gì ngoài tốc độ một hàm?",
+      "options": [
+        "Ownership, lifetime, concurrency, lỗi, build và khả năng vận hành/kiểm chứng.",
+        "Chỉ số lượng template.",
+        "Chỉ đổi mọi pointer thành atomic.",
+        "Chỉ tăng alignas cho mọi class."
+      ],
+      "correct": 0,
+      "explanation": "Một tối ưu cục bộ không tự thành kiến trúc đúng hoặc chịu tải tốt."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Memory pool intent",
+      "question": "Memory pool thường hướng tới điều gì?",
+      "options": [
+        "Tự tăng RAM vô hạn.",
+        "Tái sử dụng vùng/slot tài nguyên theo mô hình allocation phù hợp.",
+        "Bỏ mọi vòng đời object.",
+        "Tự làm mọi pointer thread safe."
+      ],
+      "correct": 1,
+      "explanation": "Pool cần quản lý ownership, giới hạn và lifecycle rõ."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Object pool used flags",
+      "question": "Trong ObjectPool bài học, used[i] biểu thị gì?",
+      "options": [
+        "Số lần destructor đã chạy.",
+        "Trạng thái atomic toàn hệ thống.",
+        "Slot i đã được đánh dấu cấp cho caller hay chưa.",
+        "Object T ở slot luôn có giá trị bằng i."
+      ],
+      "correct": 2,
+      "explanation": "Flag quản lý sử dụng slot, không tự reset/construct/destroy T mỗi lần."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Acquire full",
+      "question": "Pool không có slot trống thì acquire() trong bài trả gì?",
+      "options": [
+        "Tự cấp phát thêm N slot.",
+        "Địa chỉ ngoài mảng.",
+        "Một exception theo code đã cho.",
+        "nullptr."
+      ],
+      "correct": 3,
+      "explanation": "Caller phải xử lý hết capacity theo hợp đồng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Pool release",
+      "question": "release(obj) trong pool minh họa chủ yếu làm gì?",
+      "options": [
+        "Đánh dấu slot có thể dùng lại khi obj thuộc slot hợp lệ theo tiền điều kiện.",
+        "Luôn gọi destructor T ngay.",
+        "Luôn delete obj.",
+        "Tăng kích thước array."
+      ],
+      "correct": 0,
+      "explanation": "Code chỉ thay used; không phải delete tài nguyên chứa trong T."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Atomic head",
+      "question": "atomic<Node*> head trong stack chủ yếu bảo vệ loại thao tác nào?",
+      "options": [
+        "Tính không tràn của T.",
+        "Truy cập/cập nhật pointer head theo atomic API.",
+        "Mọi truy cập các Node qua mọi pointer tự động.",
+        "Vòng đời của mọi Node đã delete."
+      ],
+      "correct": 1,
+      "explanation": "Atomic pointer không là cơ chế quản lý vòng đời object đích."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "CAS meaning",
+      "question": "Compare-and-exchange thường làm gì khi giá trị hiện tại khớp expected?",
+      "options": [
+        "Xóa expected bất kể kết quả.",
+        "Khóa mọi mutex của process.",
+        "Thay atomic bằng desired theo semantics operation.",
+        "Luôn cấp phát node mới."
+      ],
+      "correct": 2,
+      "explanation": "CAS cung cấp thao tác có điều kiện trên atomic object."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Weak CAS",
+      "question": "compare_exchange_weak có thể thất bại giả dù giá trị khớp không?",
+      "options": [
+        "Không; weak nghĩa là luôn thành công.",
+        "Chỉ nếu pointer null.",
+        "Chỉ khi compiler Debug.",
+        "Có; thường dùng trong vòng retry phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Loop cần xử lý cả thất bại do cạnh tranh và spurious failure theo hợp đồng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "CAS expected failure",
+      "question": "Khi compare_exchange thất bại do không khớp, expected thường được cập nhật thế nào?",
+      "options": [
+        "Nhận giá trị hiện tại đã quan sát từ atomic theo API.",
+        "Luôn về nullptr.",
+        "Luôn giữ nguyên dù không khớp.",
+        "Tự thành desired."
+      ],
+      "correct": 0,
+      "explanation": "Retry loop phải tính tới expected bị cập nhật."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Stack LIFO sample",
+      "question": "Trong một thread, push1,push2,push3 rồi pop đến rỗng cho thứ tự nào?",
+      "options": [
+        "Luôn ngẫu nhiên vì atomic.",
+        "3,2,1.",
+        "1,2,3.",
+        "2,1,3."
+      ],
+      "correct": 1,
+      "explanation": "Atomic không làm mất semantics LIFO của chuỗi một thread hợp lệ."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Memory reclamation",
+      "question": "Memory reclamation trong cấu trúc đồng thời giải quyết gì?",
+      "options": [
+        "Chỉ sắp xếp node theo địa chỉ.",
+        "Tự biến raw pointer thành string.",
+        "Khi nào có thể thu hồi node mà thread khác không còn truy cập được.",
+        "Chỉ tăng kích thước counter."
+      ],
+      "correct": 2,
+      "explanation": "Đây là trách nhiệm riêng ngoài CAS cập nhật liên kết."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "ABA idea",
+      "question": "Vấn đề ABA của CAS nói tới tình huống nào?",
+      "options": [
+        "So sánh hai string palindrome.",
+        "Một atomic không được khởi tạo.",
+        "Mọi phép cộng có ba số.",
+        "Giá trị đổi A→B→A khiến CAS chỉ nhìn giá trị A không thấy lịch sử thay đổi."
+      ],
+      "correct": 3,
+      "explanation": "Tái sử dụng địa chỉ node là một bối cảnh có thể gây ABA."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "CMake role",
+      "question": "CMake chủ yếu phục vụ điều gì?",
+      "options": [
+        "Cấu hình/generate quy trình build cho dự án theo target.",
+        "Tự chứng minh không có data race.",
+        "Thay compiler bằng runtime AI.",
+        "Tự sửa mọi lỗi lifetime."
+      ],
+      "correct": 0,
+      "explanation": "Build system và kiểm chứng runtime có trách nhiệm khác nhau."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Out of source build",
+      "question": "cmake -S . -B build thường có ý định gì?",
+      "options": [
+        "Đổi mọi target thành shared library.",
+        "Dùng source hiện tại và thư mục build riêng.",
+        "Xóa mọi source trong thư mục hiện tại.",
+        "Chỉ chạy unit test không build."
+      ],
+      "correct": 1,
+      "explanation": "Tách artifact build giúp quản lý cấu hình dễ hơn."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "ASan goal",
+      "question": "AddressSanitizer chủ yếu giúp phát hiện nhóm lỗi nào?",
+      "options": [
+        "Chỉ race giữa thread.",
+        "Mọi lỗi logic nghiệp vụ dù không chạy.",
+        "Nhiều lỗi truy cập bộ nhớ như out-of-bounds/use-after-free trong lượt chạy có instrument.",
+        "Mọi sai số benchmark tự động."
+      ],
+      "correct": 2,
+      "explanation": "Không có báo lỗi trong một lượt không chứng minh chương trình hoàn toàn đúng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "TSan goal",
+      "question": "ThreadSanitizer thường hỗ trợ việc gì?",
+      "options": [
+        "Tự biến mutex thành lock-free.",
+        "Chứng minh mọi lịch chạy không deadlock.",
+        "Tự giải phóng leaked node.",
+        "Phát hiện data race trong lượt chạy được instrument trên môi trường hỗ trợ."
+      ],
+      "correct": 3,
+      "explanation": "Cần công cụ/target hỗ trợ và workload kích hoạt đường truy cập liên quan."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "ECS entity",
+      "question": "Trong ECS, entity thường đóng vai trò gì?",
+      "options": [
+        "Định danh để gắn các component theo thiết kế.",
+        "Bắt buộc một class kế thừa mọi hành vi.",
+        "Luôn một OS thread.",
+        "Luôn một singleton toàn game."
+      ],
+      "correct": 0,
+      "explanation": "Entity ID giúp tách danh tính khỏi các nhóm dữ liệu/hành vi."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "ECS component",
+      "question": "Component trong ECS thường chứa gì?",
+      "options": [
+        "Một virtual function cho mọi entity bắt buộc.",
+        "Dữ liệu của một khía cạnh như Position hoặc Velocity.",
+        "Luôn một thread xử lý riêng.",
+        "Mọi hệ thống build của game."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế cụ thể có thể khác, nhưng dữ liệu thường được tách theo nhóm cần xử lý."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "ECS system",
+      "question": "System trong ECS thường làm gì?",
+      "options": [
+        "Tự làm mọi component thread safe.",
+        "Luôn chạy độc lập không phụ thuộc dữ liệu.",
+        "Xử lý các entity/component phù hợp một truy vấn/hành vi.",
+        "Chỉ cấp phát entity ID."
+      ],
+      "correct": 2,
+      "explanation": "Cách lên lịch cần xét dữ liệu đọc/ghi thực tế."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Lock free definition",
+      "question": "Lock-free thường bảo đảm tiến triển theo nghĩa nào?",
+      "options": [
+        "Mỗi operation hoàn tất trong đúng1 instruction.",
+        "Không cần memory reclamation.",
+        "Không dùng atomic nào.",
+        "Hệ thống có operation tiến triển theo điều kiện mô hình, không mặc định mọi thread đều không thể đói."
+      ],
+      "correct": 3,
+      "explanation": "Lock-free khác wait-free và không có nghĩa nhanh hơn trong mọi workload."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "CAS success",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\n\nint main(){\nstd::atomic<int>n{3};int expected=3;bool ok=n.compare_exchange_strong(expected,7);std::cout<<ok<<\" \"<<n.load()<<\" \"<<expected;\n}\n",
+      "options": [
+        "1 7 3",
+        "0 3 7",
+        "1 3 7",
+        "0 7 3"
+      ],
+      "correct": 0,
+      "explanation": "n khớp expected3 nên đổi sang7; expected giữ giá trị3 trong trường hợp thành công này."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "CAS mismatch",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\n\nint main(){\nstd::atomic<int>n{3};int expected=2;bool ok=n.compare_exchange_strong(expected,7);std::cout<<ok<<\" \"<<n.load()<<\" \"<<expected;\n}\n",
+      "options": [
+        "0 7 3",
+        "0 3 3",
+        "1 7 2",
+        "0 3 2"
+      ],
+      "correct": 1,
+      "explanation": "Expected2 không khớp n3; n giữ3 và expected cập nhật3."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "CAS loop update",
+      "question": "Output là gì trong một thread?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\n\nint main(){\nstd::atomic<int>n{3};int old=n.load();while(!n.compare_exchange_weak(old,old+1)){}std::cout<<n.load();\n}\n",
+      "options": [
+        "3",
+        "Có thể7 vì weak luôn đổi nhiều lần.",
+        "4",
+        "0"
+      ],
+      "correct": 2,
+      "explanation": "Thất bại giả không commit desired; loop chỉ kết thúc khi CAS đặt old+1 thành công."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Atomic pointer default state",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\nstruct Node{int value;};\nint main(){\nstd::atomic<Node*>head{nullptr};std::cout<<(head.load()==nullptr);\n}\n",
+      "options": [
+        "0",
+        "Địa chỉ cố định0x1.",
+        "Không thể dùng atomic pointer.",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "Head được khởi tạo nullptr rõ ràng."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Sequential linked stack",
+      "question": "Output là gì khi chỉ chạy một thread như code dưới?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\nstruct Stack{struct Node{int n;Node*next;};std::atomic<Node*>head{nullptr};void push(int n){Node*p=new Node{n,nullptr};p->next=head.load();while(!head.compare_exchange_weak(p->next,p)){} }bool pop(int&n){Node*p=head.load();while(p&&!head.compare_exchange_weak(p,p->next)){}if(!p)return false;n=p->n;delete p;return true;}};\nint main(){\nStack s;s.push(1);s.push(2);s.push(3);int n;while(s.pop(n))std::cout<<n;\n}\n",
+      "options": [
+        "321",
+        "123",
+        "231",
+        "Luôn data race vì có atomic."
+      ],
+      "correct": 0,
+      "explanation": "Push vào đầu, pop đầu trong một thread; đây không là chứng minh an toàn nhiều thread."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Empty stack pop output",
+      "question": "Output là gì khi stack rỗng và chỉ một thread?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\nstruct Stack{struct Node{int n;Node*next;};std::atomic<Node*>head{nullptr};bool pop(int&n){Node*p=head.load();while(p&&!head.compare_exchange_weak(p,p->next)){}if(!p)return false;n=p->n;delete p;return true;}};\nint main(){\nStack s;int n=9;bool ok=s.pop(n);std::cout<<ok<<\" \"<<n;\n}\n",
+      "options": [
+        "Dereference null chắc chắn.",
+        "0 9",
+        "1 0",
+        "0 0"
+      ],
+      "correct": 1,
+      "explanation": "Guard node null trả false trước ghi output nên val giữ9."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Acquire flag transitions",
+      "question": "Pool có2 slot ban đầu đều trống, gọi acquire3 lần không release. Lần3 theo code bài trả gì?",
+      "options": [
+        "Tự thêm slot thứ3.",
+        "Địa chỉ ngẫu nhiên do atomic.",
+        "nullptr.",
+        "Địa chỉ slot thứ3 ngoài array."
+      ],
+      "correct": 2,
+      "explanation": "Pool cố định dung lượng; vòng quét không thấy used=false thì trả null."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Pool simple reuse",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\nstruct Pool{std::array<int,2>values{};std::array<bool,2>used{};int*acquire(){for(std::size_t i=0;i<2;++i)if(!used[i]){used[i]=true;return &values[i];}return nullptr;}void release(int*p){std::size_t i=p-values.data();if(i<2)used[i]=false;}};\nint main(){\nPool pool;int*a=pool.acquire();pool.release(a);int*b=pool.acquire();std::cout<<(a==b);\n}\n",
+      "options": [
+        "0",
+        "Không được so pointer trong cùng array.",
+        "Mỗi lần acquire luôn cấp phát heap mới.",
+        "1"
+      ],
+      "correct": 3,
+      "explanation": "Release đánh dấu slot0 rảnh nên acquire tiếp quét và nhận lại cùng slot."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Pool full test",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\nstruct Pool{std::array<int,2>v{};std::array<bool,2>used{};int*acquire(){for(std::size_t i=0;i<2;++i)if(!used[i]){used[i]=true;return &v[i];}return nullptr;}};\nint main(){\nPool p;(void)p.acquire();(void)p.acquire();std::cout<<(p.acquire()==nullptr);\n}\n",
+      "options": [
+        "1",
+        "0",
+        "2",
+        "Không có output."
+      ],
+      "correct": 0,
+      "explanation": "Hai lần đầu chiếm đủ2 slot, lần3 null."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Pool value not reset",
+      "question": "Output là gì?",
+      "code": "#include <iostream>\n#include <array>\n#include <atomic>\n#include <cstddef>\n#include <vector>\n#include <memory>\n#include <utility>\nstruct Pool{std::array<int,1>v{};bool used=false;int*acquire(){if(used)return nullptr;used=true;return &v[0];}void release(int*p){if(p==&v[0])used=false;}};\nint main(){\nPool p;int*a=p.acquire();*a=7;p.release(a);int*b=p.acquire();std::cout<<*b;\n}\n",
+      "options": [
+        "Pool tự constructor int9.",
+        "7",
+        "0",
+        "Giá trị rác vì acquire luôn hủy int."
+      ],
+      "correct": 1,
+      "explanation": "Release chỉ thay flag; acquire không khởi tạo lại giá trị của slot đã sống."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Pool destructor timing",
+      "question": "ObjectPool chứa array<T,N> sẵn. release chỉ đổi used. Destructor T có được gọi mỗi release theo code đó không?",
+      "options": [
+        "Có nếu T có virtual method.",
+        "Có; raw pointer tự delete khi không còn dùng.",
+        "Không; vòng đời các T vẫn gắn với array trừ khi thiết kế khác rõ ràng.",
+        "Có; used=false tự gọi destructor."
+      ],
+      "correct": 2,
+      "explanation": "Đánh dấu slot không thay thế destroy/construct object nếu API cần vòng đời mỗi lần thuê riêng."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Pool acquire complexity",
+      "question": "acquire quét từ0 đến N-1 tìm slot trống có worst-case complexity theo N là gì?",
+      "options": [
+        "O(1) bắt buộc vì đã preallocate.",
+        "O(log N).",
+        "O(N log N).",
+        "O(N)."
+      ],
+      "correct": 3,
+      "explanation": "Preallocation không tự biến tìm slot bằng quét thành constant time."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Freelist alternative",
+      "question": "Muốn lấy/trả slot pool thường O(1) theo thiết kế tuần tự, có thể cân nhắc gì?",
+      "options": [
+        "Free list/index stack với invariant và kiểm tra handle rõ.",
+        "Quét toàn pool hai lần.",
+        "Sort toàn pool mỗi acquire.",
+        "Đổi used thành string."
+      ],
+      "correct": 0,
+      "explanation": "Độ phức tạp cần xét cả đồng bộ và kiểm tra thực tế, không chỉ tên cấu trúc."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Pool concurrent flag",
+      "question": "Hai thread cùng đọc/ghi used[i] bool thường không khóa trong acquire có tự an toàn không?",
+      "options": [
+        "Chỉ cần alignas(64) cho pool.",
+        "Không; có thể data race và cấp trùng slot.",
+        "Có; array tự thread safe cho cùng phần tử.",
+        "Có vì bool là atomic."
+      ],
+      "correct": 1,
+      "explanation": "Cần thiết kế đồng bộ quyền cấp slot và dữ liệu/lifetime đi kèm."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Pointer belongs precondition",
+      "question": "release trong bài tính obj-&pool[0]. Tiền điều kiện quan trọng nào cần đúng trước phép trừ?",
+      "options": [
+        "Chỉ cần địa chỉ hex lớn hơn0.",
+        "Chỉ cần used có ít nhất một true.",
+        "Pointer thuộc cùng array/miền pointer hợp lệ theo hợp đồng đó.",
+        "Chỉ cần pointer khác nullptr."
+      ],
+      "correct": 2,
+      "explanation": "Phép kiểm tra idx<N sau đó không tự hợp lệ hóa phép trừ pointer không cùng mảng."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Zero capacity case",
+      "question": "Với ObjectPool<T,0>, dùng &pool[0] trong release có nên mặc định hợp lệ không?",
+      "options": [
+        "Có; std::array<T,0> tự có một phần tử.",
+        "Có nếu pointer null.",
+        "Chỉ cần thêm volatile.",
+        "Không; cần xử lý/loại N=0 hoặc thiết kế không truy cập phần tử0 khi không có."
+      ],
+      "correct": 3,
+      "explanation": "Zero-capacity là ca biên riêng; không tạo phần tử vì cú pháp array."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Pool saturation policy",
+      "question": "Hệ thống dùng pool cố định đầy nên làm gì?",
+      "options": [
+        "Có chính sách rõ như từ chối, chờ có giới hạn hoặc fallback có kiểm soát.",
+        "Dereference nullptr để tự báo lỗi.",
+        "Luôn cấp thêm vô hạn mà không đo.",
+        "Coi acquire luôn thành công."
+      ],
+      "correct": 0,
+      "explanation": "Capacity là giới hạn cần phản ánh trong API và backpressure."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Atomic pointer lifetime misconception",
+      "question": "Head đã là atomic thì node trỏ tới có tự sống đến khi mọi reader xong không?",
+      "options": [
+        "Có nếu memory_order_seq_cst.",
+        "Không.",
+        "Có; atomic pointer tự reference-count node.",
+        "Có nếu Node chỉ có int."
+      ],
+      "correct": 1,
+      "explanation": "Liveness của pointee cần ownership/reclamation riêng."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Linearization push",
+      "question": "Trong push kiểu Treiber theo mô hình đúng, thao tác nào thường là linearization point?",
+      "options": [
+        "Lúc new bắt đầu cấp phát.",
+        "Lúc caller chuẩn bị giá trị trước lời gọi.",
+        "CAS thành công gắn node mới vào head.",
+        "Lúc viết comment push."
+      ],
+      "correct": 2,
+      "explanation": "Linearization point giải thích hiệu ứng logic; vẫn phải giải quyết reclamation/lifetime để implementation đúng."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Linearization pop",
+      "question": "Trong pop mô hình stack CAS đúng, bước logic loại node đầu thường là gì?",
+      "options": [
+        "Lúc đọc data sau khi đã giải phóng node.",
+        "Lúc gọi cout ở caller.",
+        "Lúc khai báo val.",
+        "CAS thành công chuyển head sang next."
+      ],
+      "correct": 3,
+      "explanation": "Không nhầm điểm commit liên kết với thời điểm được phép delete node."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "CAS next expected",
+      "question": "push dùng compare_exchange_weak(node->next,node). Khi thất bại do head đã đổi, điều gì giúp lần thử sau nối đúng head vừa quan sát?",
+      "options": [
+        "expected là node->next được CAS cập nhật theo API.",
+        "CAS tự tạo node thứ hai.",
+        "head luôn về null khi thất bại.",
+        "Node data tự trở thành pointer."
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế expected giúp vòng retry, nhưng không tự chứng minh mọi phần của thuật toán an toàn."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "CAS retry progress",
+      "question": "Một thread có thể thất bại CAS nhiều lần trong cấu trúc lock-free dù thread khác vẫn thành công không?",
+      "options": [
+        "Chỉ nếu có data race trên atomic object.",
+        "Có; lock-free không bảo đảm mỗi thread hoàn tất trong số bước bị chặn cố định.",
+        "Không; mỗi thread luôn thắng lượt kế.",
+        "Không; weak CAS không được fail."
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt system-wide progress với per-thread wait-freedom."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Allocator inside push",
+      "question": "push dùng new Node. Chỉ vì head update dùng CAS có đủ gọi toàn bộ push lock-free trên mọi allocator/target không?",
+      "options": [
+        "Có; atomic pointer luôn lock-free.",
+        "Chỉ cần đổi tên class LockFreeStack.",
+        "Không; allocator và atomic implementation có thể có blocking.",
+        "Có; new tự là lock-free theo chuẩn."
+      ],
+      "correct": 2,
+      "explanation": "Xem toàn đường operation và giả định môi trường, không chỉ đoạn CAS."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Stack remaining nodes",
+      "question": "Nếu stack gốc bị hủy khi vẫn còn node mà không có cleanup destructor, hậu quả gì?",
+      "options": [
+        "Atomic head destructor tự delete cả danh sách.",
+        "Mọi node tự thành stack local.",
+        "Node tự về object pool dù không có pool.",
+        "Các node heap còn lại có thể leak."
+      ],
+      "correct": 3,
+      "explanation": "Ví dụ main pop hết nên không suy thành leak ở mọi lần chạy; API tổng quát vẫn cần chính sách cleanup."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Sanitizer result scope",
+      "question": "Một lượt chạy ASan không báo lỗi có chứng minh không còn lỗi bộ nhớ trong mọi đường code không?",
+      "options": [
+        "Không; chỉ là bằng chứng trên các đường/lịch chạy đã kiểm tra với công cụ đó.",
+        "Có; ASan chứng minh toàn bộ ngôn ngữ.",
+        "Có nếu chương trình có atomic.",
+        "Chỉ cần chạy đúng một input."
+      ],
+      "correct": 0,
+      "explanation": "Kết hợp kiểm thử, reasoning, review và công cụ phù hợp; không ghi nhận đã chạy công cụ khi chưa chạy."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Race versus lifetime tools",
+      "question": "Vì sao ASan và TSan có vai trò bổ sung nhau?",
+      "options": [
+        "Vì bật một cái chứng minh mọi safety.",
+        "Chúng nhắm các nhóm lỗi khác nhau như truy cập bộ nhớ và data race.",
+        "Vì cả hai chỉ đo thời gian.",
+        "Vì TSan tự sửa ABA còn ASan tự sửa deadlock."
+      ],
+      "correct": 1,
+      "explanation": "Khả năng hỗ trợ/phối hợp phụ thuộc toolchain; không giả định luôn bật cùng nhau được."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "CMake target scope",
+      "question": "Trong dự án CMake, khai báo include/link options theo target thường giúp gì?",
+      "options": [
+        "Tự chia source thành microservice.",
+        "Tự làm executable chạy nhanh hơn.",
+        "Giữ dependency/usage requirements theo phạm vi rõ hơn thay vì global tràn sang mọi target.",
+        "Tự loại bỏ mọi warning của compiler."
+      ],
+      "correct": 2,
+      "explanation": "Build graph rõ giúp tái lập cấu hình và quản lý các thành phần."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Sanitizer release comparison",
+      "question": "Có nên dùng số benchmark build sanitizer làm cam kết tốc độ release không?",
+      "options": [
+        "Có; sanitizer không có overhead theo chuẩn.",
+        "Có nếu output giống nhau.",
+        "Chỉ cần đổi nhãn ms.",
+        "Không; instrumentation thay đổi chi phí và điều kiện chạy."
+      ],
+      "correct": 3,
+      "explanation": "Đo correctness và performance với cấu hình phù hợp từng mục tiêu, ghi rõ flags."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "ECS position velocity",
+      "question": "Movement system cần Position và Velocity. Truy vấn nên chọn entity nào?",
+      "options": [
+        "Entity có đủ component cần thiết theo hợp đồng system.",
+        "Mọi entity kể cả không có Position.",
+        "Chỉ entity ID lớn nhất.",
+        "Chỉ entity tạo cuối."
+      ],
+      "correct": 0,
+      "explanation": "Query requirements giúp tránh đọc component không tồn tại."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "ECS component locality",
+      "question": "Lưu Position liên tiếp để system duyệt cả nhóm thường nhằm gì?",
+      "options": [
+        "Tự làm entity ID ổn định khi reuse.",
+        "Cải thiện truy cập dữ liệu liên tiếp cho workload đó.",
+        "Tự loại bỏ mọi đồng bộ thread.",
+        "Bảo đảm mọi engine nhanh gấp10."
+      ],
+      "correct": 1,
+      "explanation": "Data-oriented layout là giả thuyết tối ưu cần đo, không là proof mọi thuộc tính khác."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Entity ID reuse",
+      "question": "Entity cũ bị hủy, slot ID được cấp lại. Handle chỉ chứa index cũ có thể gặp gì?",
+      "options": [
+        "Mọi ECS cấm reuse nên không thể xảy ra.",
+        "Chỉ ảnh hưởng màu UI.",
+        "Nhầm entity mới với entity cũ; generation/version giúp kiểm tra stale handle.",
+        "Index tự biết lịch sử object."
+      ],
+      "correct": 2,
+      "explanation": "Danh tính logic cần tách khỏi vị trí storage được tái sử dụng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Component vector growth",
+      "question": "Lưu pointer tới component trong vector rồi vector tái cấp phát có nguy cơ gì?",
+      "options": [
+        "Pointer tự cập nhật theo entity ID.",
+        "Chỉ iterator mới mất, pointer không.",
+        "Const pointer giữ component bất tử.",
+        "Pointer cũ mất hiệu lực."
+      ],
+      "correct": 3,
+      "explanation": "Dùng handle/lookup hoặc storage có stability phù hợp và công bố invalidation."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Structural changes iteration",
+      "question": "System đang duyệt storage dense mà xóa/thêm component ngay có thể làm gì?",
+      "options": [
+        "Mất hiệu lực iterator hoặc bỏ sót/xử lý lặp; cần quy tắc mutation/deferred commands phù hợp.",
+        "Luôn an toàn vì gọi là ECS.",
+        "Tự sort entity ID.",
+        "Chỉ thay size_t nên không ảnh hưởng."
+      ],
+      "correct": 0,
+      "explanation": "Cấu trúc lưu trữ quyết định quy tắc truy cập khi thay đổi cấu trúc."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "ECS parallel schedule",
+      "question": "Hai system cùng ghi Position của các entity chồng nhau có được chạy song song không đồng bộ chỉ vì khác class không?",
+      "options": [
+        "Chỉ cần scheduler đặt tên thread khác nhau.",
+        "Không; cần phân hoạch dữ liệu hoặc dependency/synchronization đúng.",
+        "Có; mỗi class tự có bản sao Position.",
+        "Có; ECS tự atomic mọi field."
+      ],
+      "correct": 1,
+      "explanation": "Xét tập dữ liệu đọc/ghi thực tế, không chỉ danh tính system."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Read read ECS parallel",
+      "question": "Hai system chỉ đọc cùng component bất biến trong giai đoạn đó, lifetime/publication đúng, có mặc định data race chỉ vì đọc chung không?",
+      "options": [
+        "Có nếu component chứa float.",
+        "Không và do đó system thứ ba cũng được ghi tùy ý.",
+        "Không.",
+        "Có; mọi truy cập chung đều race."
+      ],
+      "correct": 2,
+      "explanation": "Read-read không xung đột, nhưng mọi writer và thay đổi storage phải được xét chung."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Pool value initialization",
+      "question": "Trong array<int,N> pool không có initializer và int chưa được ghi, có được dựa vào mọi phần tử bằng0 không?",
+      "options": [
+        "Có; mọi array local tự zero.",
+        "Có vì used được {}.",
+        "Có nếu N là template argument.",
+        "Không; cần khởi tạo/ghi trước đọc theo quy tắc object đó."
+      ],
+      "correct": 3,
+      "explanation": "Khởi tạo used không đồng thời khởi tạo dữ liệu pool bằng0."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Pool T allocations",
+      "question": "Pool chứa sẵn array<T,N> có chứng minh toàn hệ thống không còn heap allocation lúc dùng T không?",
+      "options": [
+        "Không; T và các thao tác của nó vẫn có thể tự cấp phát.",
+        "Có; tên pool cấm new trong mọi member T.",
+        "Có nếu pool dùng stack local.",
+        "Chỉ nếu N lớn hơn100."
+      ],
+      "correct": 0,
+      "explanation": "Phạm vi claim zero-allocation phải bao gồm đường thao tác và kiểu phần tử thực."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Alignment and races",
+      "question": "alignas cho head/counter có tự giải quyết data race hay reclamation của node không?",
+      "options": [
+        "Chỉ cần alignas trên Node::next.",
+        "Không; layout và đồng bộ/lifetime là trách nhiệm khác nhau.",
+        "Có; alignment tự tạo happens-before.",
+        "Có nếu giá trị64."
+      ],
+      "correct": 1,
+      "explanation": "Alignment có thể ảnh hưởng layout/cache nhưng không bảo vệ object đã delete."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Resource metrics",
+      "question": "Để đánh giá pool thay new/delete có lợi cho game frame time, nên theo dõi gì?",
+      "options": [
+        "Chỉ elapsed một frame ngẫu nhiên.",
+        "Chỉ độ dài tên class.",
+        "Phân phối latency/frame time, allocation, bộ nhớ và workload đại diện, cùng correctness.",
+        "Chỉ số dòng code pool."
+      ],
+      "correct": 2,
+      "explanation": "Pool có tradeoff capacity, init cost và fragmentation; cần số liệu đúng phạm vi."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "System design baseline",
+      "question": "Trước khi thay mutex-protected stack bằng thuật toán phức tạp hơn, nên có gì?",
+      "options": [
+        "Chỉ kết luận lock-free luôn nhanh hơn.",
+        "Chỉ thêm atomic vào head.",
+        "Chỉ bỏ destructor để benchmark đẹp.",
+        "Baseline đúng, workload/cạnh tranh đại diện, mục tiêu và phép kiểm chứng correctness/performance."
+      ],
+      "correct": 3,
+      "explanation": "Chọn cấu trúc đơn giản đủ đáp ứng trước khi trả chi phí complexity cao hơn."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Original pop reclamation gap",
+      "question": "Thread A load head thành node p rồi dừng; B pop và delete p; A tiếp tục đọc p->next để CAS. Lỗi nền tảng gì?",
+      "options": [
+        "A có thể dereference node đã bị giải phóng; atomic head không giữ node sống.",
+        "Không lỗi vì CAS tự kiểm tra mọi dereference trước đó.",
+        "Chỉ có thể mất một lần tăng counter.",
+        "Không lỗi nếu Node chỉ chứa int."
+      ],
+      "correct": 0,
+      "explanation": "Ví dụ stack thiếu memory reclamation an toàn cho nhiều thread; không chạy use-after-free để đoán output."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "CAS does not undo access",
+      "question": "CAS cuối cùng thất bại có tự làm việc đọc node->next trên node đã chết trước CAS thành hợp lệ không?",
+      "options": [
+        "Chỉ cần expected khác nullptr.",
+        "Không; lần dereference sai đã xảy ra trước kết quả CAS.",
+        "Có; failure rollback mọi truy cập bộ nhớ.",
+        "Có nếu dùng compare_exchange_strong."
+      ],
+      "correct": 1,
+      "explanation": "Kiểm tra nguyên tử về liên kết không phục hồi lifetime đã kết thúc."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Seq cst not reclamation",
+      "question": "Đổi mọi thao tác head sang memory_order_seq_cst có tự sửa việc delete node khi reader khác còn dùng không?",
+      "options": [
+        "Có nếu CAS strong.",
+        "Chỉ cần thêm fence sau delete.",
+        "Không; ordering mạnh không thay cơ chế bảo vệ/thu hồi vòng đời node.",
+        "Có; seq_cst tự reference-count mọi node."
+      ],
+      "correct": 2,
+      "explanation": "Phân biệt publication/order với safe reclamation; source đã dùng order mặc định mạnh vẫn chưa giải quyết lifetime."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "ABA reused address",
+      "question": "A thấy head địa chỉ p, B tháo p và node khác, allocator dùng lại địa chỉ p cho node mới. CAS của A chỉ so pointer có thể gặp gì?",
+      "options": [
+        "CAS tự nhận diện object identity xuyên mọi lần cấp phát.",
+        "Không thể reuse địa chỉ theo C++.",
+        "Chỉ do weak CAS thất bại giả, không liên quan ABA.",
+        "Nhận thấy p như cũ nhưng lịch sử/cấu trúc đã đổi, cần phân tích ABA và reclamation."
+      ],
+      "correct": 3,
+      "explanation": "Địa chỉ bằng nhau không chứng minh cùng object/lịch sử liên kết."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Version tag limits",
+      "question": "Gắn version tag vào pointer có tự thay toàn bộ hazard/epoch reclamation và bảo đảm tuyệt đối không ABA mãi mãi không?",
+      "options": [
+        "Không; còn vòng đời dereference, tính atomic của cặp và khả năng tag hữu hạn quay vòng.",
+        "Có; một bit tag bảo đảm vô hạn lần reuse.",
+        "Có; tag làm delete bị trì hoãn tự động.",
+        "Chỉ cần type alias TaggedPointer."
+      ],
+      "correct": 0,
+      "explanation": "Tag có thể là một phần giải pháp trong giả định rõ, không là proof đầy đủ cho mọi lịch chạy."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Hazard pointer validation",
+      "question": "Vì sao bảo vệ node bằng hazard pointer không chỉ là load head rồi publish hazard một lần mà bỏ kiểm tra lại?",
+      "options": [
+        "Vì compare_exchange_weak không dùng được với hazard.",
+        "Head/node có thể đã đổi hoặc bị thu hồi giữa các bước; giao thức cần publish/validate và ordering đúng trước dùng.",
+        "Hazard pointer tự làm mọi object không bao giờ delete.",
+        "Vì hazard chỉ là mutex."
+      ],
+      "correct": 1,
+      "explanation": "Dùng triển khai/giao thức được kiểm chứng; không ghép vài atomic store rồi gọi là safe reclamation."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Epoch stalled reader",
+      "question": "Epoch reclamation có thể chịu tradeoff gì khi một reader giữ epoch hoạt động quá lâu?",
+      "options": [
+        "Không có ảnh hưởng vì epoch chỉ là tên biến.",
+        "Tự chuyển thành wait-free bounded-memory.",
+        "Bộ nhớ retired có thể bị giữ lâu do chưa đủ điều kiện thu hồi.",
+        "Mọi reader lập tức bị delete."
+      ],
+      "correct": 2,
+      "explanation": "Xem progress và giới hạn memory dưới các giả định về thread dừng/chậm."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Generic pop exception",
+      "question": "Trong stack source, sau CAS tháo node, val=node->data có thể throw với T nào đó trước delete node. Cần xem gì?",
+      "options": [
+        "Không vấn đề vì atomic nuốt exception của T.",
+        "Tự rollback head trong destructor atomic.",
+        "Chỉ cần noexcept cho pop mà không sửa body.",
+        "Exception safety của node bị tháo và semantics phần tử/kết quả; code generic hiện chưa tự bảo đảm cleanup."
+      ],
+      "correct": 3,
+      "explanation": "Memory reclamation đồng thời và exception safety là hai yêu cầu cần giải quyết phối hợp, không tự có từ template<T>."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Concurrent destruction",
+      "question": "Thêm destructor duyệt delete các node có đủ làm stack safe nếu worker vẫn push/pop đồng thời không?",
+      "options": [
+        "Không; phải dừng/đồng bộ người dùng và bảo đảm reclamation/lifetime trước teardown.",
+        "Có; destructor tự join mọi thread dùng địa chỉ stack.",
+        "Có nếu head seq_cst.",
+        "Chỉ cần destructor virtual."
+      ],
+      "correct": 0,
+      "explanation": "Cleanup một thread không thay giao thức kết thúc truy cập từ thread khác."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Foreign pointer bounds check",
+      "question": "release tính idx=obj-&pool[0] rồi if(idx<N). Vì sao if này không phải kiểm tra ownership an toàn cho pointer tùy ý?",
+      "options": [
+        "Chỉ vì compiler luôn bỏ if.",
+        "Phép trừ khác mảng đã có thể undefined behavior trước khi kiểm tra idx.",
+        "Vì size_t không so sánh được với N.",
+        "Vì mọi pointer khác mảng tự cho idx0."
+      ],
+      "correct": 1,
+      "explanation": "Nếu cần nhận input có thể sai, dùng handle/index được kiểm tra trước truy cập và quy tắc ownership rõ."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Stale pool release",
+      "question": "Client A giữ pointer cũ tới slot đã release; B acquire lại slot đó; A release pointer cũ lần nữa. Rủi ro gì?",
+      "options": [
+        "Pool tự đổi pointer cũ thành nullptr.",
+        "Chỉ cần dùng const T*.",
+        "Có thể đánh dấu slot của B rảnh và cấp trùng; cần chống stale/double release theo hợp đồng.",
+        "Không rủi ro vì địa chỉ giống nhau nghĩa là owner vẫn A."
+      ],
+      "correct": 2,
+      "explanation": "Địa chỉ slot không mang generation ownership; handle versioned có thể giúp nhận diện phiên cấp phát."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Pool type lifecycle policy",
+      "question": "Muốn release thực sự hủy T và acquire khởi tạo lại T, có thể chỉ đổi used bool trong array<T,N> sẵn như source không?",
+      "options": [
+        "Có; bool false tự gọi destructor.",
+        "Có; std::array tự construct lại khi lấy địa chỉ.",
+        "Chỉ cần memset toàn object T bất kỳ.",
+        "Không; cần thiết kế storage/lifetime construction-destruction phù hợp, gồm alignment và lỗi constructor."
+      ],
+      "correct": 3,
+      "explanation": "Không dùng memset như thay thế semantics khởi tạo/hủy cho kiểu tùy ý."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Atomic flag pool incomplete proof",
+      "question": "Đổi used[i] thành atomic<bool> có tự biến toàn bộ pool generic thành thread safe không?",
+      "options": [
+        "Không; cần claim slot bằng operation đúng và xử lý lifetime, publication, release/handle và dữ liệu T.",
+        "Có; mọi field T tự atomic theo flag.",
+        "Có nếu dùng load rồi store tách rời không CAS.",
+        "Chỉ cần thêm memory_order_relaxed mọi nơi."
+      ],
+      "correct": 0,
+      "explanation": "Atomic hóa một field không tự chứng minh giao thức ownership và tất cả truy cập liên quan."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Wait free versus lock free",
+      "question": "Một CAS retry loop có bảo đảm wait-free chỉ vì không có mutex không?",
+      "options": [
+        "Chỉ cần malloc không lỗi.",
+        "Không; một thread có thể retry không giới hạn dưới contention theo mô hình.",
+        "Có; mọi loop không mutex đều có số bước hữu hạn cố định.",
+        "Có nếu compare_exchange_strong."
+      ],
+      "correct": 1,
+      "explanation": "Xem định nghĩa progress và giả định allocator/primitive, không suy từ việc không thấy lock keyword."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Sanitizer does not establish linearizability",
+      "question": "TSan không báo race có đủ chứng minh concurrent stack linearizable và không ABA không?",
+      "options": [
+        "Có nếu chạy một thread.",
+        "Chỉ cần ASan cùng im lặng.",
+        "Không; lỗi logic atomic/progress có thể không là data race mà công cụ đó phát hiện.",
+        "Có; TSan mô hình hóa mọi operation abstraction."
+      ],
+      "correct": 2,
+      "explanation": "Cần specification, reasoning và kiểm tra lịch sử thao tác phù hợp ngoài dynamic race detection."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Model workload limitations",
+      "question": "Stress test stack chỉ push tất cả rồi join, sau đó chỉ pop có bao phủ concurrent pop reclamation gap không?",
+      "options": [
+        "Có; càng nhiều phần tử tự bao phủ mọi lịch chạy.",
+        "Có nếu counter cuối đúng.",
+        "Chỉ cần tăng số node lên1 triệu.",
+        "Không; không kích hoạt các pop chồng nhau/đọc node khi thread khác delete."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế test theo rủi ro/lịch tương tác thực, đồng thời tránh dùng code biết sai làm production."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "ECS stale queued event",
+      "question": "Event giữ entity index, entity bị hủy rồi index reuse trước lúc xử lý event. Cần gì để tránh tác động entity mới?",
+      "options": [
+        "Handle có generation/identity được kiểm tra và chính sách event tới entity đã chết.",
+        "Chỉ kiểm tra index<size.",
+        "Chỉ đổi payload thành const.",
+        "Chỉ dùng vector reserve."
+      ],
+      "correct": 0,
+      "explanation": "Biên storage không chứng minh đúng danh tính logic."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "ECS scheduler conflict model",
+      "question": "Scheduler chỉ nhìn tên system mà không mô tả tập đọc/ghi component có đủ bảo đảm song song an toàn không?",
+      "options": [
+        "Chỉ cần launch::async.",
+        "Không; cần dependency/access model và xét structural mutation/lifetime.",
+        "Có; hai class khác tên luôn độc lập.",
+        "Có nếu mỗi system có mutex riêng không dùng chung dữ liệu."
+      ],
+      "correct": 1,
+      "explanation": "Phân hoạch dữ liệu và barriers phải phù hợp invariant, không chỉ số thread."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Pool benchmark real workload",
+      "question": "Benchmark pool chỉ acquire/release cùng slot trong cache nóng có đủ khẳng định game production nhanh hơn ở p99 không?",
+      "options": [
+        "Có nếu benchmark in ít ms.",
+        "Chỉ cần bỏ new/delete khỏi tên hàm.",
+        "Không; cần workload đại diện gồm churn, saturation, số thread, footprint và thao tác T thực.",
+        "Có; cache nóng đại diện mọi lần chạy."
+      ],
+      "correct": 2,
+      "explanation": "Báo phạm vi phép đo; tối ưu locality có thể đổi memory/latency tradeoff."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Production readiness evidence",
+      "question": "Bằng chứng nào phù hợp nhất trước dùng stack/pool trong hệ thống thật?",
+      "options": [
+        "Chỉ output mẫu321.",
+        "Chỉ có atomic và tên LockFree.",
+        "Chỉ compiler không warning.",
+        "Hợp đồng ownership/lifetime/progress rõ, triển khai được review, test ca biên/đồng thời, công cụ phù hợp và benchmark đúng workload."
+      ],
+      "correct": 3,
+      "explanation": "Ví dụ giáo trình và một chương trình chạy được chưa đủ chứng minh an toàn đồng thời hay năng lực hệ thống."
+    }
+  ]
+}

@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "docker",
+  "level": "mid",
+  "lesson": "docker-advanced",
+  "language": "vi",
+  "sourceHash": "62aaefe3e3e5e462150fa7896dfc2bc68dfc153160e7454af67f0977c92ee8a9",
+  "status": "approved",
+  "review": "Tự soạn trực tiếp 80 câu theo hai stage Node/Alpine, artifact, USER và HEALTHCHECK trong bài; đối chiếu Docker docs. Làm rõ node_modules vẫn có thể chứa devDependencies, healthcheck không tự restart và image nhỏ cần đo thực tế. Không build hoặc chạy container, không gọi API tạo nội dung.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Hai stage",
+      "question": "Dockerfile mẫu có hai stage tên gì?",
+      "options": [
+        "builder và production",
+        "development và test",
+        "base và cache",
+        "compile và deploy"
+      ],
+      "correct": 0,
+      "explanation": "Tên stage được đặt bằng AS trong hai chỉ dẫn FROM."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Vai trò builder",
+      "question": "Stage builder chủ yếu phục vụ gì?",
+      "options": [
+        "Lưu database production",
+        "Cài dependencies và tạo output build",
+        "Chạy load balancer",
+        "Quản lý registry"
+      ],
+      "correct": 1,
+      "explanation": "npm ci và npm run build nằm trong builder."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Base image",
+      "question": "Hai stage chọn cùng base nào trong nguồn?",
+      "options": [
+        "ubuntu:22.04",
+        "alpine:latest",
+        "node:20-alpine",
+        "node:20-slim"
+      ],
+      "correct": 2,
+      "explanation": "Đây là phiên bản trong ví dụ, cần đánh giá vòng đời khi áp dụng thật."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Thư mục làm việc",
+      "question": "WORKDIR của cả hai stage là gì?",
+      "options": [
+        "/srv",
+        "/var/www",
+        "/workspace",
+        "/app"
+      ],
+      "correct": 3,
+      "explanation": "Các đường dẫn tương đối sau đó dựa trên /app."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Cài dependencies",
+      "question": "Builder dùng lệnh nào để cài dependencies?",
+      "options": [
+        "npm ci",
+        "npm update",
+        "npm prune",
+        "npm audit fix"
+      ],
+      "correct": 0,
+      "explanation": "npm ci cần manifest và lockfile phù hợp."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Tạo output",
+      "question": "Lệnh tạo output ứng dụng trong builder là gì?",
+      "options": [
+        "npm install -g",
+        "npm run build",
+        "node dist/server.js",
+        "docker compose up"
+      ],
+      "correct": 1,
+      "explanation": "Script build phải tồn tại trong package.json."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Sao chép giữa stage",
+      "question": "--from=builder trong COPY chọn nguồn nào?",
+      "options": [
+        "Container production đang chạy",
+        "Registry tên builder",
+        "Filesystem stage builder",
+        "Thư mục builder trên host"
+      ],
+      "correct": 2,
+      "explanation": "COPY lấy artifact từ stage được chỉ định."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Output ứng dụng",
+      "question": "Thư mục output nào được chuyển sang production?",
+      "options": [
+        "/app/src",
+        "/app/tests",
+        "/app/coverage",
+        "/app/dist"
+      ],
+      "correct": 3,
+      "explanation": "Mẫu chạy dist/server.js nên cần output phù hợp."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Dependencies runtime",
+      "question": "Thư mục dependency nào cũng được copy sang production?",
+      "options": [
+        "/app/node_modules",
+        "/app/.git",
+        "/app/.cache",
+        "/app/.npmrc"
+      ],
+      "correct": 0,
+      "explanation": "Sao chép toàn bộ node_modules không tự lọc devDependencies."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Manifest runtime",
+      "question": "File manifest nào được copy riêng sang stage cuối?",
+      "options": [
+        "vite.config.js",
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json"
+      ],
+      "correct": 1,
+      "explanation": "Nguồn chỉ copy package.json ở bước này."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Tên người dùng",
+      "question": "Người dùng được tạo cho ứng dụng tên gì?",
+      "options": [
+        "www-data",
+        "builder",
+        "appuser",
+        "node"
+      ],
+      "correct": 2,
+      "explanation": "USER appuser chọn người dùng này ở stage production."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "UID",
+      "question": "UID được chỉ định cho appuser là bao nhiêu?",
+      "options": [
+        "0",
+        "1000",
+        "65534",
+        "1001"
+      ],
+      "correct": 3,
+      "explanation": "UID cụ thể giúp kiểm soát tương thích quyền filesystem."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Nhóm ứng dụng",
+      "question": "Nhóm tạo trong ví dụ tên gì?",
+      "options": [
+        "appgroup",
+        "node",
+        "nogroup",
+        "production"
+      ],
+      "correct": 0,
+      "explanation": "Lệnh adduser gắn appuser vào appgroup."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Chuyển user",
+      "question": "Chỉ dẫn nào thực sự chọn user cho các bước sau?",
+      "options": [
+        "WORKDIR /app",
+        "USER appuser",
+        "RUN adduser ...",
+        "EXPOSE 3000"
+      ],
+      "correct": 1,
+      "explanation": "Tạo tài khoản và sử dụng tài khoản là hai việc khác nhau."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Endpoint probe",
+      "question": "HEALTHCHECK gọi endpoint nào?",
+      "options": [
+        "http://db:5432/health",
+        "http://registry/health",
+        "http://localhost:3000/health",
+        "http://localhost:80/ready"
+      ],
+      "correct": 2,
+      "explanation": "Probe chạy trong namespace của container ứng dụng."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Chu kỳ probe",
+      "question": "--interval=30s mô tả điều gì?",
+      "options": [
+        "Thời gian giữ image",
+        "Thời gian shutdown Node",
+        "Timeout mọi request",
+        "Khoảng thời gian probe theo cơ chế healthcheck"
+      ],
+      "correct": 3,
+      "explanation": "Interval không phải deadline của mọi request ứng dụng."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Timeout probe",
+      "question": "--timeout=3s áp dụng cho việc gì?",
+      "options": [
+        "Giới hạn thời gian một lần kiểm tra sức khỏe",
+        "Tổng thời gian container tồn tại",
+        "Mọi query database",
+        "Mọi bước build image"
+      ],
+      "correct": 0,
+      "explanation": "Timeout probe khác timeout ứng dụng và mạng."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Ngưỡng lỗi",
+      "question": "--retries=3 được dùng để làm gì?",
+      "options": [
+        "Chạy ba Node server",
+        "Đánh giá lỗi probe liên tiếp theo healthcheck",
+        "Tạo ba container",
+        "Giữ ba image"
+      ],
+      "correct": 1,
+      "explanation": "Healthcheck không phải cấu hình replicas."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Port khai báo",
+      "question": "EXPOSE trong stage cuối mô tả port nào?",
+      "options": [
+        "443",
+        "8080",
+        "3000",
+        "80"
+      ],
+      "correct": 2,
+      "explanation": "EXPOSE cung cấp metadata, không tự publish host port."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Lệnh chạy",
+      "question": "CMD mặc định của stage production là gì?",
+      "options": [
+        "npm run build",
+        "node src/server.ts",
+        "npm ci",
+        "node dist/server.js"
+      ],
+      "correct": 3,
+      "explanation": "Output build và runtime dependencies phải hỗ trợ lệnh này."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Node modules còn dev",
+      "question": "npm ci không có omit=dev trong builder rồi copy toàn bộ node_modules có thể dẫn tới gì?",
+      "options": [
+        "Image cuối vẫn chứa devDependencies",
+        "Docker tự chỉ copy dependencies production",
+        "DevDependencies bị xóa khi USER đổi",
+        "COPY --from tự chạy npm prune"
+      ],
+      "correct": 0,
+      "explanation": "Multi-stage chỉ loại thứ không được chuyển sang stage cuối."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Thiếu lockfile",
+      "question": "COPY package*.json thành công nhưng không có lockfile phù hợp, npm ci có chắc chạy được không?",
+      "options": [
+        "Có, WORKDIR tự tạo dependencies",
+        "Không, npm ci yêu cầu lockfile hợp lệ",
+        "Có, npm ci tự tạo lockfile tùy ý",
+        "Có, base Node tự cung cấp lockfile app"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm manifest/lockfile thật trong context."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Cache source đổi",
+      "question": "Chỉ file source đổi, vì sao dependency layer có thể được dùng lại?",
+      "options": [
+        "npm ci tự bỏ qua mọi thay đổi",
+        "Mọi RUN đều chạy lại bắt buộc",
+        "Manifest được copy và cài trước source",
+        "Docker không đọc source trong build"
+      ],
+      "correct": 2,
+      "explanation": "Cache phụ thuộc inputs của từng bước và builder."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Cache lock đổi",
+      "question": "package-lock.json đổi có thể ảnh hưởng bước nào?",
+      "options": [
+        "Chỉ EXPOSE",
+        "Chỉ USER",
+        "Không ảnh hưởng vì tên file giữ nguyên",
+        "Bước copy manifest, npm ci và các bước phụ thuộc sau"
+      ],
+      "correct": 3,
+      "explanation": "Nội dung input là một phần quyết định cache."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Stage cuối sạch",
+      "question": "FROM thứ hai có mặc nhiên kế thừa toàn filesystem builder không?",
+      "options": [
+        "Không, đây là stage mới dựa trên base được chọn",
+        "Có, mọi stage tự cộng dồn",
+        "Chỉ kế thừa /app/src",
+        "Chỉ kế thừa .git"
+      ],
+      "correct": 0,
+      "explanation": "Chỉ artifact được COPY hoặc có sẵn trong base mới hiện diện."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Source không copy",
+      "question": "Không copy /app/src sang stage cuối có nghĩa mọi source chắc chắn vắng mặt không?",
+      "options": [
+        "Có, Node image mã hóa source",
+        "Không, source có thể nằm trong dist, source map hoặc dependencies",
+        "Có, multi-stage bảo đảm không còn mã nguồn",
+        "Có, USER tự xóa source"
+      ],
+      "correct": 1,
+      "explanation": "Cần kiểm artifact thực thay suy luận từ tên thư mục."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Quyền COPY",
+      "question": "COPY không có --chown có tự gán owner appuser theo USER phía sau không?",
+      "options": [
+        "Có, tên appgroup áp cho mọi file",
+        "Có, WORKDIR tạo quyền ghi tự động",
+        "Không, USER phía sau không đổi owner file đã copy",
+        "Có, USER đổi owner toàn filesystem"
+      ],
+      "correct": 2,
+      "explanation": "Owner và quyền truy cập cần được thiết kế riêng."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Đọc code root owned",
+      "question": "File owner root có luôn ngăn appuser đọc không?",
+      "options": [
+        "Có, chỉ owner mới đọc được mọi file",
+        "Có, non-root không đọc /app",
+        "Không, mọi file đều luôn đọc được",
+        "Không, còn phụ thuộc mode, nhóm và quyền thư mục"
+      ],
+      "correct": 3,
+      "explanation": "Không nên đồng nhất owner root với lỗi quyền trong mọi trường hợp."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Ghi thư mục",
+      "question": "Appuser cần ghi uploads trong /app nhưng thư mục không cho phép ghi. Sửa nguyên nhân nào?",
+      "options": [
+        "Chuẩn bị quyền/mount thư mục ghi đúng yêu cầu",
+        "Đổi EXPOSE sang 80",
+        "Tăng healthcheck retries",
+        "Đổi tên stage builder"
+      ],
+      "correct": 0,
+      "explanation": "Cần cấp quyền vừa đủ cho đường dẫn có nhu cầu ghi."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Build tools runtime",
+      "question": "Compiler chỉ dùng khi build nên thường thuộc phạm vi nào?",
+      "options": [
+        "Mọi container đều phải có compiler",
+        "Builder, tránh mang sang runtime nếu không cần",
+        "Bắt buộc stage cuối để Node đọc JS",
+        "Registry thay vì image"
+      ],
+      "correct": 1,
+      "explanation": "Phân loại dependency theo công việc từng stage."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Dev trước build",
+      "question": "Bỏ devDependencies ngay trước npm run build có thể gây lỗi gì?",
+      "options": [
+        "Output tự chuyển thành source",
+        "USER không còn tồn tại",
+        "Thiếu compiler hoặc công cụ build được khai là devDependency",
+        "Mọi build luôn thành công nhanh hơn"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ loại dependencies sau khi xác định nhu cầu từng stage."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Build output path",
+      "question": "Build tạo thư mục build thay vì dist nhưng COPY giữ nguyên có thể thế nào?",
+      "options": [
+        "Docker tự đoán đường dẫn mới",
+        "CMD tự đổi thành build/server.js",
+        "npm ci tự sửa Dockerfile",
+        "COPY thất bại hoặc thiếu artifact mong muốn"
+      ],
+      "correct": 3,
+      "explanation": "Đường dẫn output là hợp đồng giữa build và runtime."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Entry file thiếu",
+      "question": "dist có tồn tại nhưng không chứa server.js, điều gì có thể xảy ra?",
+      "options": [
+        "Container không chạy ứng dụng đúng theo CMD",
+        "Docker tự tạo server.js",
+        "HEALTHCHECK sinh entry file",
+        "EXPOSE chọn file đầu tiên"
+      ],
+      "correct": 0,
+      "explanation": "Cần kiểm cấu trúc artifact thực."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Build script thiếu",
+      "question": "package.json không có script build ảnh hưởng gì?",
+      "options": [
+        "USER appuser thay thế script",
+        "RUN npm run build có thể thất bại",
+        "Docker bỏ qua vì là builder",
+        "Stage cuối tự build bù"
+      ],
+      "correct": 1,
+      "explanation": "Tên script không tạo tác vụ nếu chưa khai báo."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Probe tool",
+      "question": "HEALTHCHECK dùng wget, image runtime phải đáp ứng điều kiện nào?",
+      "options": [
+        "Có curl thì wget luôn chạy được",
+        "EXPOSE sẽ cài wget",
+        "Có công cụ wget tương thích và quyền thực thi",
+        "Chỉ builder có wget là đủ"
+      ],
+      "correct": 2,
+      "explanation": "Probe là lệnh thật trong filesystem stage cuối."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Probe user",
+      "question": "HEALTHCHECK runtime thường cần chạy được dưới quyền nào theo config ảnh này?",
+      "options": [
+        "Luôn root bất kể USER",
+        "User Git tác giả Dockerfile",
+        "User trên registry",
+        "User được cấu hình cho container, ở đây appuser nếu không override"
+      ],
+      "correct": 3,
+      "explanation": "Probe phải hoạt động với quyền runtime thực tế."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Probe exit code",
+      "question": "Với wget ... || exit 1, khi wget thất bại shell thể hiện điều gì?",
+      "options": [
+        "Lần kiểm tra trả lỗi qua exit code 1",
+        "Container tự được tạo lại ngay",
+        "Image bị xóa",
+        "Ứng dụng được rollback tự động"
+      ],
+      "correct": 0,
+      "explanation": "Trạng thái health và hành động điều phối là hai bước riêng."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Unhealthy không restart",
+      "question": "HEALTHCHECK báo unhealthy có tự bảo đảm Docker standalone restart container không?",
+      "options": [
+        "Có, EXPOSE kích hoạt phục hồi",
+        "Không, cần chính sách hoặc bộ điều phối thích hợp",
+        "Có, retries tự đồng nghĩa restart",
+        "Có, mọi healthcheck là restart policy"
+      ],
+      "correct": 1,
+      "explanation": "Healthcheck cung cấp tín hiệu, không tự là mọi cơ chế phục hồi."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Start period",
+      "question": "Nguồn có khai --start-period cho probe không?",
+      "options": [
+        "Có, timeout gộp cả startup",
+        "Có, retries tạo grace period cố định",
+        "Chưa",
+        "Có, interval chính là start-period"
+      ],
+      "correct": 2,
+      "explanation": "Ứng dụng khởi động chậm cần cấu hình probe phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Localhost probe scope",
+      "question": "Probe localhost pass có chứng minh khách bên ngoài truy cập được không?",
+      "options": [
+        "Có, localhost pass là internet pass",
+        "Có, wget tự kiểm DNS public",
+        "Có, EXPOSE bảo đảm đường mạng",
+        "Không, còn publish port, routing, firewall và bind interface"
+      ],
+      "correct": 3,
+      "explanation": "Health nội bộ không kiểm toàn tuyến bên ngoài."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Liveness nghiệp vụ",
+      "question": "Endpoint /health trả 200 có chứng minh mọi luồng nghiệp vụ đúng không?",
+      "options": [
+        "Không, nó chỉ kiểm điều endpoint được thiết kế kiểm",
+        "Có, 200 bảo đảm toàn ứng dụng",
+        "Có, wget chạy mọi API",
+        "Có, retries bằng số chức năng"
+      ],
+      "correct": 0,
+      "explanation": "Cần hiểu hợp đồng của health endpoint."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Probe và dependency",
+      "question": "Probe thất bại khi DB lỗi tạm thời có nhất thiết nên restart app liên tục không?",
+      "options": [
+        "Không, cần bỏ mọi probe",
+        "Không, cần phân biệt readiness, liveness và chiến lược phục hồi",
+        "Có, mọi lỗi DB phải restart app",
+        "Có, restart tự khôi phục transaction"
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế probe cần tránh vòng phục hồi gây thêm tải."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Artifact không live",
+      "question": "Image mới build cùng tag có tự thay container cũ đang chạy không?",
+      "options": [
+        "Có, multi-stage cập nhật PID 1",
+        "Có, COPY --from theo dõi builder suốt đời",
+        "Không, cần thao tác rollout hoặc recreate phù hợp",
+        "Có, tag theo dõi filesystem trực tiếp"
+      ],
+      "correct": 2,
+      "explanation": "Image artifact và container instance có lifecycle khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Override CMD",
+      "question": "Không có ENTRYPOINT riêng trong snippet, runtime command có thể thay CMD không?",
+      "options": [
+        "Không, CMD là bất biến",
+        "Chỉ khi sửa source Node",
+        "Chỉ khi đổi tên stage",
+        "Có, theo cấu hình ENTRYPOINT kế thừa và lệnh chạy thực"
+      ],
+      "correct": 3,
+      "explanation": "Cần xét cấu hình image hoàn chỉnh, kể cả phần kế thừa từ base."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Exec form shell",
+      "question": "CMD dạng JSON có mặc nhiên mở shell để nội suy biến không?",
+      "options": [
+        "Không, truyền argv trực tiếp theo exec form",
+        "Có, luôn chạy sh -c",
+        "Có, mọi JSON đều shell-expand",
+        "Chỉ khi USER là non-root"
+      ],
+      "correct": 0,
+      "explanation": "Ứng dụng hoặc shell rõ ràng mới xử lý nội suy tương ứng."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Signal dừng",
+      "question": "Node cần xử lý shutdown đúng vì sao?",
+      "options": [
+        "Để healthcheck không cần endpoint",
+        "Để xử lý request đang dở và giải phóng tài nguyên trước deadline",
+        "Để image tự nhỏ hơn",
+        "Để sửa UID runtime"
+      ],
+      "correct": 1,
+      "explanation": "Exec form hỗ trợ truyền signal nhưng không tự viết logic shutdown."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Tag base mutable",
+      "question": "node:20-alpine có phải tham chiếu immutable theo bytes không?",
+      "options": [
+        "Có, hậu tố alpine khóa vĩnh viễn",
+        "Có, stage cùng tên bảo đảm bytes",
+        "Không, tag có thể được cập nhật",
+        "Có, số major là hash"
+      ],
+      "correct": 2,
+      "explanation": "Digest và chính sách cập nhật giúp quản lý nguồn artifact."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Alpine native modules",
+      "question": "Native module xây cho glibc có chắc chạy trên Alpine musl không?",
+      "options": [
+        "Có, mọi Linux ABI giống nhau",
+        "Có, Node tự chuyển mọi binary",
+        "Có, copy node_modules tự biên dịch lại",
+        "Không, cần tương thích libc/platform"
+      ],
+      "correct": 3,
+      "explanation": "Cùng hệ Linux không bảo đảm mọi thư viện nhị phân tương thích."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Cùng base lợi ích",
+      "question": "Hai stage cùng họ base có thể giảm loại rủi ro nào?",
+      "options": [
+        "Một số khác biệt ABI/libc giữa build và runtime",
+        "Mọi lỗi nghiệp vụ",
+        "Mọi CVE hiện tại",
+        "Mọi cấu hình thiếu"
+      ],
+      "correct": 0,
+      "explanation": "Vẫn cần kiểm platform, dependency và artifact thực."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Không auto prune",
+      "question": "COPY --from=builder node_modules có chạy npm prune ngầm không?",
+      "options": [
+        "Chỉ khi CMD trỏ dist",
+        "Không",
+        "Có, mọi COPY lọc devDependencies",
+        "Chỉ khi USER được khai báo"
+      ],
+      "correct": 1,
+      "explanation": "COPY sao chép dữ liệu, không tự thực thi trình quản lý package."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Source host modules",
+      "question": "Nếu COPY . . mang node_modules host vào builder có thể gây gì?",
+      "options": [
+        "Tự chuyển dependencies sang production-only",
+        "Không ảnh hưởng vì npm ci đã chạy trước",
+        "Đè dependencies vừa cài bằng bản host không tương thích",
+        "Luôn làm image tái lập hơn"
+      ],
+      "correct": 2,
+      "explanation": "Cần .dockerignore thật để kiểm soát context."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Ignore comments không đủ",
+      "question": "Dockerfile mẫu có làm .dockerignore thật xuất hiện tự động không?",
+      "options": [
+        "Có, FROM tạo file ignore",
+        "Có, stage builder tự loại .env",
+        "Có, npm ci tạo rules Docker",
+        "Không, cần quản lý file ignore riêng"
+      ],
+      "correct": 3,
+      "explanation": "Build context cần được kiểm soát độc lập."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Build secret",
+      "question": "ARG hoặc COPY secret vào builder có tự an toàn tuyệt đối nhờ không copy file đó sang stage cuối không?",
+      "options": [
+        "Không, còn cache, logs, metadata và artifact dẫn xuất",
+        "Có, multi-stage mã hóa builder",
+        "Có, secret chỉ thuộc stage tên builder",
+        "Có, USER ở stage cuối xóa mọi dấu vết"
+      ],
+      "correct": 0,
+      "explanation": "Dùng cơ chế build secret phù hợp và kiểm thông tin bị ghi ra."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Giới hạn tài nguyên",
+      "question": "Dockerfile này có đặt CPU/memory limit cho container runtime không?",
+      "options": [
+        "Có, interval healthcheck đặt CPU quota",
+        "Chưa",
+        "Có, Alpine tự giới hạn RAM",
+        "Có, UID là memory quota"
+      ],
+      "correct": 1,
+      "explanation": "Resource budget cần cấu hình tại runtime hoặc bộ điều phối."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Một GB xuống 200 MB",
+      "question": "Ví dụ có chứng minh đã đạt mục tiêu nhỏ hơn 200 MB không?",
+      "options": [
+        "Có, Alpine luôn nhỏ hơn 200 MB với mọi app",
+        "Có, bỏ src đủ suy ra size",
+        "Chưa, cần đo artifact thật",
+        "Có, hai stage bảo đảm mức đó"
+      ],
+      "correct": 2,
+      "explanation": "Kích thước còn phụ thuộc base, dependencies và output."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Không TLS tự động",
+      "question": "Dùng probe HTTP localhost có đồng nghĩa đã cấu hình HTTPS cho người dùng không?",
+      "options": [
+        "Có, Docker tự cấp certificate",
+        "Có, non-root bắt buộc TLS",
+        "Có, EXPOSE tự đổi HTTP sang HTTPS",
+        "Không, nguồn không thể hiện tuyến TLS bên ngoài"
+      ],
+      "correct": 3,
+      "explanation": "Health probe và bảo vệ kết nối khách là các phạm vi khác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "User trong builder",
+      "question": "USER appuser ở stage cuối có đổi quyền các RUN trước đó trong builder không?",
+      "options": [
+        "Không, nó không tác động ngược sang stage khác",
+        "Có, USER áp toàn Dockerfile từ đầu",
+        "Chỉ đổi npm ci",
+        "Chỉ đổi npm run build"
+      ],
+      "correct": 0,
+      "explanation": "Cấu hình stage có phạm vi và thứ tự thực thi."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Copy package module type",
+      "question": "package.json ở runtime có thể quan trọng với JavaScript vì điều gì?",
+      "options": [
+        "Nó thay thế file dist/server.js",
+        "Metadata như type có thể ảnh hưởng cách Node xử lý module",
+        "Nó tự cài mọi dependency khi được COPY",
+        "Nó tự chạy migrations"
+      ],
+      "correct": 1,
+      "explanation": "Chỉ copy output mà bỏ metadata cần thiết có thể đổi runtime behavior."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Quyền port thấp",
+      "question": "App chạy port 3000 có mặc nhiên cần capability bind port dưới 1024 không?",
+      "options": [
+        "Có, mọi non-root cần privileged",
+        "Có, HEALTHCHECK yêu cầu SYS_ADMIN",
+        "Không, 3000 không thuộc nhóm port thấp đó",
+        "Có, mọi HTTP app cần NET_ADMIN"
+      ],
+      "correct": 2,
+      "explanation": "Chỉ cấp quyền thật sự cần cho môi trường."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Build success giới hạn",
+      "question": "Build exit 0 có chứng minh container khởi động thành công chưa?",
+      "options": [
+        "Có, RUN build tự chạy CMD mãi",
+        "Có, EXPOSE kiểm port thật",
+        "Có, tạo appuser kiểm toàn app",
+        "Chưa, build và runtime là hai giai đoạn"
+      ],
+      "correct": 3,
+      "explanation": "Cần kiểm phù hợp cho cả artifact và hành vi runtime."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Tối ưu deps đúng",
+      "question": "Cần build bằng TypeScript nhưng runtime không cần compiler. Phương án hợp lý là gì?",
+      "options": [
+        "Giữ công cụ build ở builder, chuẩn bị runtime dependencies đã lọc và copy output",
+        "Omit mọi devDependency trước build mà không xem scripts",
+        "Copy toàn bộ thư mục host để khỏi thiếu",
+        "Cài compiler thủ công trong container sau mỗi deploy"
+      ],
+      "correct": 0,
+      "explanation": "Phải giữ đủ công cụ build và đủ dependency runtime theo hai hợp đồng riêng."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Đọc ghi có giới hạn",
+      "question": "Appuser chạy được code nhưng ghi cache thất bại. Cách sửa nên nhắm đâu?",
+      "options": [
+        "Bỏ healthcheck để che lỗi",
+        "Chỉ đường dẫn cache và quyền/mount cần thiết",
+        "Chuyển toàn container thành privileged",
+        "Cấp chmod 777 cho toàn filesystem"
+      ],
+      "correct": 1,
+      "explanation": "Least privilege sửa quyền đúng tài nguyên thay mở rộng toàn hệ thống."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Probe sai tool",
+      "question": "App phục vụ bình thường nhưng probe báo wget not found. Kết luận nào đúng?",
+      "options": [
+        "Registry push thất bại",
+        "Port 3000 bắt buộc sai",
+        "Probe thiếu dependency runtime, chưa đủ cơ sở kết luận app hỏng",
+        "Ứng dụng đã mất mọi request"
+      ],
+      "correct": 2,
+      "explanation": "Cần phân biệt lỗi công cụ kiểm tra với sức khỏe ứng dụng."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Probe tác dụng phụ",
+      "question": "Endpoint health thực hiện thao tác ghi mỗi 30 giây. Cần xem xét gì?",
+      "options": [
+        "Chỉ tăng UID",
+        "Chỉ đổi tên builder",
+        "Coi mọi healthcheck là miễn phí",
+        "Tính an toàn, chi phí và tác dụng phụ của probe lặp lại"
+      ],
+      "correct": 3,
+      "explanation": "Probe là traffic thật và có thể ảnh hưởng dữ liệu hoặc tải."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Native deps đa nền tảng",
+      "question": "Build node_modules cho amd64 rồi copy sang runtime arm64 có thể gây gì?",
+      "options": [
+        "Lỗi binary/ABI dù JavaScript source giống nhau",
+        "Docker tự dịch mọi native module",
+        "COPY tự chạy lại npm ci cho arm64",
+        "USER appuser chuyển CPU instruction set"
+      ],
+      "correct": 0,
+      "explanation": "Artifact build phải phù hợp platform runtime."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Secret không chỉ file",
+      "question": "Builder dùng secret để tạo file cấu hình nằm trong dist. Không copy file secret gốc đã đủ chưa?",
+      "options": [
+        "Đủ vì registry không đọc dist",
+        "Chưa, artifact dẫn xuất vẫn có thể chứa secret",
+        "Đủ vì dist chỉ là JavaScript",
+        "Đủ vì stage khác owner"
+      ],
+      "correct": 1,
+      "explanation": "Cần đánh giá dữ liệu xuất hiện trong output, logs và metadata."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Crash với unhealthy",
+      "question": "Process chính chết khác healthcheck unhealthy thế nào về restart policy thông thường?",
+      "options": [
+        "Unhealthy xóa image còn exit không làm gì",
+        "Healthcheck luôn thay thế process chính",
+        "Restart policy theo process exit khác với tín hiệu health cần cơ chế xử lý riêng",
+        "Hai trạng thái luôn kích hoạt cùng hành động"
+      ],
+      "correct": 2,
+      "explanation": "Phải hiểu chính sách thực tế của runtime hoặc orchestrator."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Readiness và liveness",
+      "question": "DB tạm quá tải, restart mọi app làm tăng kết nối. Probe nên được thiết kế ra sao?",
+      "options": [
+        "Cho mọi DB timeout thành crash app ngay",
+        "Bỏ mọi timeout và probe",
+        "Coi probe 200 là đủ mọi dependency",
+        "Tách khả năng phục vụ khỏi tình trạng process và có chính sách tránh restart dây chuyền"
+      ],
+      "correct": 3,
+      "explanation": "Đánh giá failure mode giúp tránh khuếch đại sự cố."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Root owned không đồng nghĩa root runtime",
+      "question": "Files do root copy nhưng có quyền đọc phù hợp, USER appuser vẫn có thể chạy không?",
+      "options": [
+        "Có, ownership và runtime identity là hai trục cần xét cùng mode",
+        "Không, COPY root buộc process root",
+        "Có nhưng UID process tự thành 0",
+        "Không, USER chỉ đổi nhãn không đổi quyền"
+      ],
+      "correct": 0,
+      "explanation": "Không cần mở quyền ghi code chỉ để cho phép đọc/chạy."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Build artifact provenance",
+      "question": "Muốn chứng minh image triển khai đúng bản đã kiểm, cần nối thông tin nào?",
+      "options": [
+        "Chỉ healthcheck interval",
+        "Revision, inputs, digest artifact và cấu hình runtime được kiểm",
+        "Chỉ tên stage production",
+        "Chỉ tag latest"
+      ],
+      "correct": 1,
+      "explanation": "Tên artifact hoặc build success không tự tạo chuỗi bằng chứng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Image nhỏ và an toàn",
+      "question": "Image nhỏ hơn sau multi-stage có tự chứng minh không còn CVE không?",
+      "options": [
+        "Có, Alpine loại mọi lỗ hổng kernel",
+        "Có, không copy src là đủ",
+        "Không, vẫn cần đánh giá dependency/base và cập nhật theo rủi ro",
+        "Có, dưới 200 MB không có CVE"
+      ],
+      "correct": 2,
+      "explanation": "Giảm bề mặt có lợi nhưng không phải bảo đảm an toàn tuyệt đối."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Host dependency contamination",
+      "question": "npm ci đúng nhưng COPY . . sau đó làm runtime lỗi native module. Cần kiểm gì trước?",
+      "options": [
+        "Chỉ tăng retries probe",
+        "Chỉ đổi EXPOSE",
+        "Chỉ thay tên image",
+        "Context/.dockerignore và khả năng node_modules host ghi đè kết quả cài"
+      ],
+      "correct": 3,
+      "explanation": "Thứ tự COPY và đầu vào không được kiểm soát có thể phá tính đúng dependency."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Immutable input tradeoff",
+      "question": "Pin base digest nhưng không có quy trình cập nhật có đánh đổi gì?",
+      "options": [
+        "Tái lập rõ hơn nhưng có thể giữ bản có lỗ hổng lâu",
+        "Tự động luôn nhận mọi security patch",
+        "Không cần scan nữa",
+        "Mọi npm dependency cũng tự bị pin"
+      ],
+      "correct": 0,
+      "explanation": "Reproducibility và freshness cần chính sách phối hợp."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Rollback và config",
+      "question": "Image cũ được giữ nhưng secrets/schema mới không tương thích. Rollback cần gì?",
+      "options": [
+        "Chỉ kiểm kích thước image",
+        "Kế hoạch phối hợp image, config và dữ liệu tương thích",
+        "Chỉ đổi tag về tên cũ",
+        "Chỉ restart container nhiều lần"
+      ],
+      "correct": 1,
+      "explanation": "Khả năng phục hồi không chỉ là giữ một artifact cũ."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Cold start",
+      "question": "App cần khởi tạo lâu, probe liên tục fail ban đầu. Nên cân nhắc gì?",
+      "options": [
+        "Xóa endpoint health khỏi mọi môi trường",
+        "Đổi CMD thành wget để luôn khỏe",
+        "Grace/start period, loại probe và thời gian khởi tạo đo thực tế",
+        "Tăng quyền root để probe pass"
+      ],
+      "correct": 2,
+      "explanation": "Probe phải phản ánh startup hợp lệ và vẫn phát hiện lỗi thật."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Size metric",
+      "question": "Muốn so sánh tối ưu image cần so sánh cùng điều kiện nào?",
+      "options": [
+        "Chỉ số dòng Dockerfile",
+        "Chỉ tên Alpine so với Debian",
+        "Chỉ số stage ít hơn",
+        "Cùng artifact/chức năng và cách đo size rõ ràng"
+      ],
+      "correct": 3,
+      "explanation": "Kích thước nén, kích thước local và build context là các đại lượng khác nhau."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Filesystem readonly",
+      "question": "Muốn chạy read-only nhưng app cần /tmp, nên làm gì?",
+      "options": [
+        "Tách đường dẫn ghi cần thiết ra tmpfs hoặc mount có giới hạn",
+        "Cấp privileged để bỏ mọi hạn chế",
+        "Bỏ USER và chạy root",
+        "Coi read-only tự tạo /tmp writable"
+      ],
+      "correct": 0,
+      "explanation": "Read-only cần tương thích hợp đồng ghi của app và probe."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Shutdown deadline",
+      "question": "Request dài hơn thời gian chờ stop có thể bị cắt. Cần phối hợp gì?",
+      "options": [
+        "Chỉ thêm EXPOSE",
+        "Draining, signal handling và deadline phù hợp ở app/runtime/routing",
+        "Chỉ gộp RUN layers",
+        "Chỉ tăng GID"
+      ],
+      "correct": 1,
+      "explanation": "Đóng gói ứng dụng không tự bảo đảm graceful shutdown."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Capacity proof",
+      "question": "Multi-stage, non-root và healthcheck có đủ chứng minh phục vụ hàng triệu người dùng không?",
+      "options": [
+        "Có, mỗi probe tương đương một triệu request",
+        "Có, image nhỏ suy ra throughput cao",
+        "Không, cần workload, tài nguyên và bằng chứng tải của toàn hệ thống",
+        "Có, ba kỹ thuật này xác định capacity"
+      ],
+      "correct": 2,
+      "explanation": "Các kỹ thuật đóng gói/vận hành không thay kiểm chứng năng lực hệ thống."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Dependency runtime và quyền cache",
+      "question": "Build tạo dist thành công nhưng runtime thiếu module bị khai nhầm devDependency, đồng thời appuser không ghi được thư mục cache. Cần sửa thế nào?",
+      "options": [
+        "Copy mọi file host rồi chạy privileged để bỏ hết kiểm tra",
+        "Chỉ tăng retries healthcheck để module tự xuất hiện",
+        "Chỉ đổi tên stage production thành runtime",
+        "Phân loại/copy đúng runtime dependencies và cấp vùng ghi cache tối thiểu phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Build output, dependency runtime và quyền filesystem là các hợp đồng cần cùng đúng."
+    }
+  ]
+}

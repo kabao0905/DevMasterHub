@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "nodejs",
+  "level": "mid",
+  "lesson": "realtime",
+  "language": "vi",
+  "sourceHash": "4aa4cc261aeead072bc498ae76a1604aed382f6ed9f2411b0545648c4a9e8f3d",
+  "status": "approved",
+  "review": "Tự biên soạn không API. Socket.IO4 docs rooms/delivery/middlewares/CORS đối chiếu source. Không cài socket.io, không chạy live connections; tình huống người nhận giả định sockets đang connected và đúng namespace, không tự coi emit là delivery/persistence acknowledgment. Nêu rõ nguồn chưa authorize join/publish, room không phải quyền và socket.id không phải account identity.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Realtime transport",
+      "question": "WebSocket hỗ trợ đặc điểm giao tiếp nào?",
+      "options": [
+        "Hai chiều trên kết nối được thiết lập.",
+        "Chỉ server nhận file một lần.",
+        "Chỉ SQL queries.",
+        "Chỉ HTML rendering."
+      ],
+      "correct": 0,
+      "explanation": "Ứng dụng vẫn cần message schema,security và lifecycle."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "SocketIO relation",
+      "question": "Socket.IO có đồng nghĩa client WebSocket thuần luôn nói chuyện được trực tiếp với server Socket.IO không?",
+      "options": [
+        "Có nếu JSON payload.",
+        "Không; Socket.IO có protocol riêng ngoài transport.",
+        "Có vì cùng dùng JavaScript.",
+        "Có nếu port3000."
+      ],
+      "correct": 1,
+      "explanation": "Chọn client/server protocol tương thích."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Connection event",
+      "question": "io.on(\"connection\",...) trong nguồn chạy khi nào?",
+      "options": [
+        "Mỗi database transaction.",
+        "Mỗi lần server new Date.",
+        "Một Socket.IO connection được thiết lập theo namespace/config.",
+        "Mỗi CSS request."
+      ],
+      "correct": 2,
+      "explanation": "Trong callback có socket của kết nối đó."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Socket identifier",
+      "question": "socket.id nên được hiểu chủ yếu là gì?",
+      "options": [
+        "Password user.",
+        "User ID bền vững mọi reconnect.",
+        "Tenant ID đã authorize.",
+        "Định danh socket connection theo lifecycle, không tự account identity."
+      ],
+      "correct": 3,
+      "explanation": "Phải gắn authenticated identity theo policy riêng."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Event listener",
+      "question": "socket.on(\"chat-message\",handler) dùng để gì?",
+      "options": [
+        "Đăng ký handler cho event đó.",
+        "Tự gửi chat history.",
+        "Tự tạo room có quyền.",
+        "Tự mã hóa password."
+      ],
+      "correct": 0,
+      "explanation": "Event handler cần validate input và quyền."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Event emit",
+      "question": "emit(event,data) nhằm gì?",
+      "options": [
+        "Tự verify JWT.",
+        "Phát event theo target/operator và contract.",
+        "Tự persist dữ liệu mọi lúc.",
+        "Tự tạo DB index."
+      ],
+      "correct": 1,
+      "explanation": "Emission không tự chứng minh client đã xử lý thành công."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Join room",
+      "question": "socket.join(room) thường làm gì?",
+      "options": [
+        "Tạo room password mặc định.",
+        "Lưu mọi tin nhắn cũ.",
+        "Thêm socket vào room theo adapter.",
+        "Đăng nhập tài khoản tự động."
+      ],
+      "correct": 2,
+      "explanation": "Membership là cơ chế routing, không tự authorization."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Leave room",
+      "question": "socket.leave(room) dùng để gì?",
+      "options": [
+        "Đóng toàn server.",
+        "Xóa account.",
+        "Xóa mọi message khỏi DB.",
+        "Gỡ membership của socket khỏi room đó."
+      ],
+      "correct": 3,
+      "explanation": "Leave room và disconnect socket là hành động khác nhau."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Global namespace emit",
+      "question": "io.emit trong namespace hiện tại hướng tới ai?",
+      "options": [
+        "Các sockets được kết nối trong namespace đó.",
+        "Mọi user kể cả offline chắc chắn.",
+        "Mọi namespace tự động.",
+        "Mọi process ngoài hệ."
+      ],
+      "correct": 0,
+      "explanation": "Scope namespace/adapter và delivery guarantees vẫn áp dụng."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Direct socket emit",
+      "question": "Server socket.emit gửi tới ai theo cách dùng thông thường?",
+      "options": [
+        "Mọi browser cùng account tự động.",
+        "Client của socket đó.",
+        "Mọi clients trong mọi room.",
+        "Chỉ database."
+      ],
+      "correct": 1,
+      "explanation": "Muốn multi-device user cần ánh xạ/room phù hợp."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Room broadcast excluding sender",
+      "question": "socket.to(room).emit loại ai khỏi recipients?",
+      "options": [
+        "Mọi admin.",
+        "Không ai.",
+        "Socket gửi.",
+        "Mọi socket cùng tenant."
+      ],
+      "correct": 2,
+      "explanation": "Người nhận còn phải thuộc room/namespace tương ứng."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Room broadcast including sender",
+      "question": "io.to(room).emit có tự loại sender đang thuộc room không?",
+      "options": [
+        "Có luôn.",
+        "Chỉ loại nếu event làchat.",
+        "Chỉ loại nếu room String.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Server operator không có exclusion sender như socket.to."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Room visibility",
+      "question": "Rooms trong Socket.IO là khái niệm được quản lý chủ yếu ở đâu?",
+      "options": [
+        "Server-side.",
+        "Chỉ CSS browser.",
+        "Chỉ SQL schema.",
+        "Chỉ JWT header."
+      ],
+      "correct": 0,
+      "explanation": "Client gửi yêu cầu join qua event riêng, server quyết định membership."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Namespace",
+      "question": "Namespace giúp tổ chức gì?",
+      "options": [
+        "Tự tạo database.",
+        "Không gian connections/events có scope riêng.",
+        "Chỉ đổi màu room.",
+        "Tự bảo mật mọi tenant."
+      ],
+      "correct": 1,
+      "explanation": "Namespace separation vẫn cần authentication/authorization phù hợp."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Shared HTTP server",
+      "question": "Nguồn gắn new Server(server,...) với object server nào?",
+      "options": [
+        "PrismaClient.",
+        "Worker thread.",
+        "HTTP server được tạo từ Express app.",
+        "JVM server."
+      ],
+      "correct": 2,
+      "explanation": "HTTP app và Socket.IO cùng hạ tầng server, nhưng event error boundaries khác nhau."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Custom join event",
+      "question": "join-room trong nguồn là gì?",
+      "options": [
+        "Reserved built-in luôn tự authorize.",
+        "Một SQL statement.",
+        "Một HTTP status.",
+        "Event do ứng dụng tự định nghĩa để yêu cầu join."
+      ],
+      "correct": 3,
+      "explanation": "Tên event không thêm quyền hoặc validation."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Chat input event",
+      "question": "Client gửi room và message bằng event nào trong nguồn?",
+      "options": [
+        "chat-message.",
+        "new-message.",
+        "disconnect.",
+        "connection-error luôn."
+      ],
+      "correct": 0,
+      "explanation": "Handler server phát event khác tới room recipients."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Chat output event",
+      "question": "Server nguồn phát tin chat cho room bằng event nào?",
+      "options": [
+        "login.",
+        "new-message.",
+        "chat-message-request bắt buộc.",
+        "join-room."
+      ],
+      "correct": 1,
+      "explanation": "Tên event là một phần contract client/server."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Disconnect event",
+      "question": "socket.on(\"disconnect\",...) trong nguồn dùng để quan sát gì?",
+      "options": [
+        "Mọi users offline toàn hệ.",
+        "Mọi HTTP response đã nhận.",
+        "Kết nối socket đã bị ngắt theo lifecycle.",
+        "Mọi message đã persist."
+      ],
+      "correct": 2,
+      "explanation": "Một account có thể còn nhiều socket khác."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Reconnect limits",
+      "question": "Auto-reconnect có tự biến chat thành lịch sử bền vững không?",
+      "options": [
+        "Có vì socket.id.",
+        "Có vì room name.",
+        "Có vì timestamp.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Persistence,replay và delivery semantics cần thiết kế."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Exclude sender recipients",
+      "question": "Room R có sockets A,B,C; A gọi socket.to(R).emit, target recipients là ai?",
+      "options": [
+        "B vàC.",
+        "A,B,C.",
+        "ChỉA.",
+        "Không ai."
+      ],
+      "correct": 0,
+      "explanation": "Socket operator loại A, kể cả A đang ở room."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Include sender recipients",
+      "question": "Room R có A,B,C; server gọi io.to(R).emit, target recipients là ai?",
+      "options": [
+        "Mọi offline account.",
+        "A,B,C.",
+        "B vàC vì luôn loạiA.",
+        "ChỉA."
+      ],
+      "correct": 1,
+      "explanation": "io.to broadcast tới room không có exclusion sender mặc định."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Publisher outside room",
+      "question": "Socket A không thuộc R, R có B,C; A handler gọi socket.to(R).emit có target ai?",
+      "options": [
+        "ChỉA.",
+        "Tự join A trước.",
+        "B,C theo routing, nếu app không chặn quyền.",
+        "Không ai vì publisher bắt buộc ở room theo cơ chế."
+      ],
+      "correct": 2,
+      "explanation": "Membership không là điều kiện authorization tự động cho mọi publish operation."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Room union",
+      "question": "R1 có A,B; R2 có B,C; io.to(R1).to(R2).emit target thế nào?",
+      "options": [
+        "A,B,B,C.",
+        "ChỉB.",
+        "ChỉA,C.",
+        "A,B,C mỗi socket một lần trong broadcast này."
+      ],
+      "correct": 3,
+      "explanation": "Chained rooms tạo union, không intersection hay duplicate B trong cùng emit."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Source join notice",
+      "question": "Sau socket.join(room), nguồn socket.to(room).emit user-joined có gửi notice lại socket vừa join không?",
+      "options": [
+        "Không.",
+        "Có bắt buộc.",
+        "Chỉ khi room có một người.",
+        "Chỉ khi username An."
+      ],
+      "correct": 0,
+      "explanation": "Notice dùng socket.to nên loại socket sender."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Source chat echo",
+      "question": "Sender đã thuộc room; nguồn io.to(room).emit new-message có target cả sender không?",
+      "options": [
+        "Chỉ nếu room lànamespace.",
+        "Có.",
+        "Không vì mọi broadcast loại sender.",
+        "Chỉ nếu sender reconnect."
+      ],
+      "correct": 1,
+      "explanation": "Cần client tránh tự append hai lần khi đã optimistic render."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Private room self exclusion",
+      "question": "Room tên socket.id chỉ chứa chính socket đó; socket.to(socket.id).emit target ai?",
+      "options": [
+        "Mọi sockets.",
+        "Mọi offline user.",
+        "Không ai.",
+        "Chính socket đó."
+      ],
+      "correct": 2,
+      "explanation": "Socket operator loại self; io.to(id) hoặc socket.emit mới phù hợp theo mục đích."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Private room direct target",
+      "question": "Room ID A chỉ chứa socket A; io.to(A).emit target ai?",
+      "options": [
+        "Không ai vì mọi ID room loại self.",
+        "Mọi socket cùng IP.",
+        "Mọi users tênA.",
+        "A."
+      ],
+      "correct": 3,
+      "explanation": "Đây là routing theo room membership, không tự lookup account."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Room leave scope",
+      "question": "A,B ở R; A leave(R), B vẫn connected trong R; io.to(R).emit target ai?",
+      "options": [
+        "B.",
+        "A,B.",
+        "ChỉA.",
+        "Không ai vì room bị xóa luôn khiA leave."
+      ],
+      "correct": 0,
+      "explanation": "Leave một socket không xóa membership sockets khác."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Offline recipient",
+      "question": "Một client disconnected khỏi server hiện tại; io.to(room).emit mặc định có hứa giữ event cho nó sau reconnect không?",
+      "options": [
+        "Có nếu room có password.",
+        "Không.",
+        "Có với mọi event.",
+        "Có nếu message String."
+      ],
+      "correct": 1,
+      "explanation": "Server không mặc định buffer tất cả missed events cho offline clients."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Automatic own room",
+      "question": "Mặc định socket mới tự tham gia room nào có thể dùng cho targeted messages?",
+      "options": [
+        "Room mọi user chung password.",
+        "Mọi room trong namespace.",
+        "Room theo socket.id.",
+        "Room admin mọi lúc."
+      ],
+      "correct": 2,
+      "explanation": "App không nên cho join tùy ý vào room nhạy cảm chỉ vì biết tên."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Disconnect membership",
+      "question": "Khi socket disconnect, memberships thông thường thế nào?",
+      "options": [
+        "Tồn tại vĩnh viễn như account.",
+        "Tự copy sang mọi socket mới.",
+        "Tự xóa mọi room toàn server.",
+        "Tự rời các rooms của socket đó."
+      ],
+      "correct": 3,
+      "explanation": "App vẫn có thể cần cleanup state/domain riêng ngoài adapter membership."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Disconnecting inspection",
+      "question": "Muốn xem các rooms trước khi chúng được rời lúc disconnect, event nào phù hợp?",
+      "options": [
+        "disconnecting.",
+        "disconnect sau khi rooms đã clear theo lifecycle thường gặp.",
+        "new-message.",
+        "join-room."
+      ],
+      "correct": 0,
+      "explanation": "Docs phân biệt thời điểm disconnecting và disconnect."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Account identity",
+      "question": "Source user:socket.id trong new-message có chứng minh tên tài khoản đã xác thực chưa?",
+      "options": [
+        "Có vì Cors*.",
+        "Chưa.",
+        "Có vì ID server cấp.",
+        "Có vì timestamp server."
+      ],
+      "correct": 1,
+      "explanation": "Connection identity khác authenticated account identity."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Client user field",
+      "question": "Client gửi payload có user:\"admin\"; source new-message dùng user từ đâu?",
+      "options": [
+        "Luôn JWT email dù source chưa verify.",
+        "Database User tự lookup.",
+        "socket.id do server handler chọn.",
+        "Luôn user client gửi."
+      ],
+      "correct": 2,
+      "explanation": "Không bịa auth logic chưa có; dùng socket.id vẫn chưa là account auth."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Server timestamp",
+      "question": "new Date() trong source biểu đạt gì về message?",
+      "options": [
+        "Thời điểm DB commit bắt buộc.",
+        "Thời điểm mọi client đã đọc.",
+        "Sequence ID duy nhất.",
+        "Thời điểm server tạo payload theo clock hiện tại, không tự total order toàn hệ."
+      ],
+      "correct": 3,
+      "explanation": "Clock timestamps không thay stable event identity/order."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Event argument validation",
+      "question": "Client gửi chat-message với undefined/null thay object, handler destructuring nguồn có nguy cơ gì?",
+      "options": [
+        "TypeError/error path chưa được kiểm soát.",
+        "Tự reject400 HTTP chuẩn luôn.",
+        "Tự đổi thành message rỗng.",
+        "Tự skip event không báo."
+      ],
+      "correct": 0,
+      "explanation": "Validate payload và catch/handle ở đúng event boundary."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Message type",
+      "question": "message là object tùy ý có nên render trực tiếp như HTML chỉ vì đến qua Socket.IO không?",
+      "options": [
+        "Có nếu room name đúng.",
+        "Không; validate type/size và render an toàn theo UI context.",
+        "Có vì WebSocket là trusted.",
+        "Có vì io.emit."
+      ],
+      "correct": 1,
+      "explanation": "Transport không làm nội dung do user gửi trở nên an toàn."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Join permission source",
+      "question": "join-room nguồn có kiểm tra account được phép vào room chưa?",
+      "options": [
+        "Có vì CORS*.",
+        "Có vì room làString.",
+        "Chưa.",
+        "Có vì socket.join."
+      ],
+      "correct": 2,
+      "explanation": "App phải kiểm tra permission trước thay membership."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Publish permission source",
+      "question": "Nguồn chat-message có xác minh sender được publish vào room nhận từ payload chưa?",
+      "options": [
+        "Có vì io.to.",
+        "Có vì sender phải làmember tự động.",
+        "Có vì event tênchat.",
+        "Chưa."
+      ],
+      "correct": 3,
+      "explanation": "Kiểm tra quyền publish riêng, không chỉ quyền subscribe/join."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Room key policy",
+      "question": "Room cho tenant/user nhạy cảm nên được chọn thế nào?",
+      "options": [
+        "Server derive/validate từ identity và quyền, có namespace/prefix policy.",
+        "Tin mọi room string client yêu cầu.",
+        "Dùng email không auth để public join.",
+        "Dùng socket.id làm password."
+      ],
+      "correct": 0,
+      "explanation": "Room key là routing identifier, không secret đủ để bảo vệ dữ liệu."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Multiple devices",
+      "question": "Muốn gửi notification tới mọi tab/device đã auth của một account nên dùng gì?",
+      "options": [
+        "Mọi IP giống nhau được coi cùng user.",
+        "Room account do server authorize và join cho các sockets liên quan.",
+        "Chỉ socket.id của tab đầu.",
+        "Mọi io.emit toàn app."
+      ],
+      "correct": 1,
+      "explanation": "One account có thể có nhiều connections."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Wildcard CORS",
+      "question": "cors.origin=\"*\" trong nguồn có làm chỉ người có quyền room được kết nối không?",
+      "options": [
+        "Có vì chỉBrowser.",
+        "Có vì server làExpress.",
+        "Không.",
+        "Có vì CORS thay auth."
+      ],
+      "correct": 2,
+      "explanation": "CORS và authorization khác trách nhiệm."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "CORS transport scope",
+      "question": "Trong Socket.IO, CORS browser chủ yếu áp dụng transport nào?",
+      "options": [
+        "Mọi native clients đều bị CORS.",
+        "Chỉ SQL.",
+        "Chỉ JWT parsing.",
+        "HTTP long-polling, không tự áp cùng hạn chế cho WebSocket."
+      ],
+      "correct": 3,
+      "explanation": "Cần origin/connection policy phù hợp, không dựa CORS làm authentication."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Connection middleware scope",
+      "question": "io.use auth middleware thường chạy theo đơn vị nào?",
+      "options": [
+        "Mỗi connection, không tự mỗi event message.",
+        "Mỗi field trong payload.",
+        "Mọi CPU instruction.",
+        "Mỗi room recipient luôn."
+      ],
+      "correct": 0,
+      "explanation": "Per-event authorization và token/account state còn cần policy."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Middleware continuation",
+      "question": "io.use middleware không gọi next và không hoàn tất error path có thể gây gì?",
+      "options": [
+        "Tự lưu history.",
+        "Connection treo đến timeout theo lifecycle.",
+        "Tự authenticate thànhadmin.",
+        "Tự bỏ qua middleware."
+      ],
+      "correct": 1,
+      "explanation": "Mỗi đường xử lý cần continuation hoặc rejection có kiểm soát."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Handshake token",
+      "question": "Token ở socket.handshake.auth có nên tin ngay vì thuộc handshake không?",
+      "options": [
+        "Có vì client chọn field auth.",
+        "Có vì cóCORS.",
+        "Không; verify/validate theo policy trước gắn identity.",
+        "Có vì Socket.IO đã signed mọi payload."
+      ],
+      "correct": 2,
+      "explanation": "Handshake auth data vẫn đến từ caller."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Long session expiry",
+      "question": "Token hợp lệ lúc connect nhưng hết hạn sau đó, cần định nghĩa gì?",
+      "options": [
+        "Không bao giờ kiểm tra lại vì connection còn sống.",
+        "Tự sửa exp client.",
+        "Tự choADMIN đến khi server restart.",
+        "Policy revalidation/refresh/disconnect và quyền theo event."
+      ],
+      "correct": 3,
+      "explanation": "Connection-level auth là snapshot tại một boundary, không tự cập nhật mãi."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Per user limits",
+      "question": "Rate limit chỉ theo socket.id có giới hạn gì?",
+      "options": [
+        "Reconnect/nhiều sockets có thể tránh quota account nếu không có scope bổ sung.",
+        "Socket.id luôn account ID vĩnh viễn.",
+        "Tự giới hạn mọi device củauser.",
+        "Không có thể reconnect."
+      ],
+      "correct": 0,
+      "explanation": "Chọn identity và resource budget theo policy, cùng limits trước authentication khi cần."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Payload limit",
+      "question": "Một message rất lớn cần được kiểm soát ở đâu?",
+      "options": [
+        "Chỉ room name.",
+        "Transport/parser và application schema/resource boundaries phù hợp.",
+        "Chỉ CSS renderer.",
+        "Chỉ timestamp."
+      ],
+      "correct": 1,
+      "explanation": "Không để buffer/parse/fanout làm tăng tài nguyên không giới hạn."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Ordering versus arrival",
+      "question": "Socket.IO giữ thứ tự events nếu chúng đến có đồng nghĩa mọi event chắc chắn đến không?",
+      "options": [
+        "Có vì timestamp.",
+        "Có nếu payload JSON.",
+        "Không.",
+        "Có vì cùng TCP."
+      ],
+      "correct": 2,
+      "explanation": "Ordering và delivery guarantee là thuộc tính khác nhau."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Default arrival guarantee",
+      "question": "Delivery mặc định Socket.IO được mô tả thế nào?",
+      "options": [
+        "Exactly once durable mọi lúc.",
+        "At least once từ mọi server không cấu hình.",
+        "Mọi event đều có DBtransaction.",
+        "At most once."
+      ],
+      "correct": 3,
+      "explanation": "Disconnect có thể làm mất event; không tự retry/replay server events đã miss."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Missed server events",
+      "question": "Muốn user reconnect nhận missed chat server events, cần gì theo contract?",
+      "options": [
+        "Persistence/replay offset hoặc recovery có cấu hình/phạm vi phù hợp.",
+        "Chỉ bật CORS*.",
+        "Chỉ socket.join.",
+        "Chỉ gọinewDate."
+      ],
+      "correct": 0,
+      "explanation": "Reconnect một mình không tạo durable history."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Client buffer distinction",
+      "question": "Client đang offline có thể buffer event chờ reconnect; có nên suy server cũng buffer mọi event offline cho client không?",
+      "options": [
+        "Có vì event name giống nhau.",
+        "Không.",
+        "Có vì đối xứng tuyệt đối.",
+        "Có vì cùng library."
+      ],
+      "correct": 1,
+      "explanation": "Client-side buffering và server-side replay cần phân biệt."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Retry duplicate",
+      "question": "Client retry khi không nhận ack có thể tạo duplicate action vì sao?",
+      "options": [
+        "Socket.IO luôn tự dedupe mọi business action.",
+        "Timestamp luôn unique đủ để dedupe.",
+        "Server có thể đã xử lý nhưng ack mất.",
+        "Timeout chứng minh server chưa nhận."
+      ],
+      "correct": 2,
+      "explanation": "Cần event ID/idempotency theo phạm vi tác động."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Acknowledgment semantics",
+      "question": "Ack application chỉ thật sự biểu đạt điều gì?",
+      "options": [
+        "Mọi DB đã durable mặc định.",
+        "Mọi user đã đọcmessage.",
+        "Mọi proxy đã hết buffer.",
+        "Điểm hoàn tất mà server/client code đã quy định trước khi gọi ack."
+      ],
+      "correct": 3,
+      "explanation": "Ack trước/after persistence tạo contract khác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Typing persistence",
+      "question": "Typing indicator có nên dùng cùng yêu cầu durable replay như payment event không?",
+      "options": [
+        "Không nhất thiết; dữ liệu tạm cần expiry/rate/coalescing theo nhu cầu.",
+        "Có mọi event giống nhau.",
+        "Typing phải lưu vĩnh viễn.",
+        "Payment có thể drop tùy ý vì realtime."
+      ],
+      "correct": 0,
+      "explanation": "Thiết kế theo semantics quan trọng của từng event."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Namespace room scope",
+      "question": "Room R trong namespace / và room R trong /admin có tự là cùng nhóm recipients không?",
+      "options": [
+        "Chỉ khi room có3 members.",
+        "Không.",
+        "Có vì cùng StringR.",
+        "Có vì cùng HTTP server."
+      ],
+      "correct": 1,
+      "explanation": "Namespace có scope routing/rooms riêng; quyền vẫn cần kiểm tra."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Presence multiple sockets",
+      "question": "Một trong ba sockets của cùng user disconnect có đủ kết luận user offline hoàn toàn không?",
+      "options": [
+        "Có vì socket.id đổi.",
+        "Có vì CORS.",
+        "Không.",
+        "Có vì disconnect event."
+      ],
+      "correct": 2,
+      "explanation": "Presence phải xét account/device/session và heartbeat/lifecycle phù hợp."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Optimistic UI duplicates",
+      "question": "Client tự append message ngay khi send rồi nhận server echo như nguồn; cần làm gì?",
+      "options": [
+        "Luôn bỏ mọi servermessage.",
+        "Luôn append hai bản.",
+        "Chỉ đổi timestamp thànhString.",
+        "Correlate client/server message ID và reconcile để tránh hiển thị trùng."
+      ],
+      "correct": 3,
+      "explanation": "Dedupe/render reconciliation khác delivery transport."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Private room access",
+      "question": "Cho client join tùy ý room trùng ID socket người khác có nguy cơ gì?",
+      "options": [
+        "Rò targeted messages nếu server dùng room đó và không chặn membership trái phép.",
+        "Socket.IO tự cấm mọi tên room theo ID người khác.",
+        "Chỉ đổi màu UI.",
+        "Không ảnh hưởng vì room names là secret."
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế default own room không là authorization policy cho custom join event."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Multi node membership",
+      "question": "Hai Socket.IO servers dùng default local adapter riêng có tự broadcast rooms xuyên node chưa?",
+      "options": [
+        "Có vì HTTP port giống.",
+        "Chưa; cần adapter/distribution phù hợp.",
+        "Có vì room string giống.",
+        "Có vì cùng account."
+      ],
+      "correct": 1,
+      "explanation": "Shared routing hạ tầng và application durable state là hai phần riêng."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Pubsub durability",
+      "question": "Thêm pub/sub adapter có tự có durable chat history và exactly-once business processing không?",
+      "options": [
+        "Có vì Redis tên cache.",
+        "Có vì io.to.",
+        "Không.",
+        "Có vì nhiều nodes."
+      ],
+      "correct": 2,
+      "explanation": "Broadcast distribution khác persistence,replay và idempotency."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Revoked membership",
+      "question": "User bị thu quyền room khi connection còn sống; cần xử lý gì?",
+      "options": [
+        "Giữ quyền cũ mãi vì đã join.",
+        "Chỉ hide button client.",
+        "Chỉ đổi room display name.",
+        "Enforce quyền hiện tại trên events và cập nhật/loại membership theo policy."
+      ],
+      "correct": 3,
+      "explanation": "Authorization phải bao quát thay đổi trong lifecycle connection."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Exactly once effects",
+      "question": "Muốn retry message không tạo hai order trong DB, cần gì ngoài ack?",
+      "options": [
+        "Idempotency key và atomic persistence/processing contract.",
+        "Chỉ event ordering.",
+        "Chỉ auto reconnect.",
+        "Chỉ timestamp local."
+      ],
+      "correct": 0,
+      "explanation": "Delivery attempt và hiệu ứng nghiệp vụ cần thiết kế cùng nhau."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Replay authorization",
+      "question": "Client gửi lastOffset khi reconnect; server replay nên kiểm tra gì?",
+      "options": [
+        "Chỉ payload cóString.",
+        "Quyền/tenant của stream cùng offset validity và retention policy.",
+        "Tin offset làquyền đọc mọi stream.",
+        "Replay toàn DB cho tiện."
+      ],
+      "correct": 1,
+      "explanation": "Cursor/offset không tự là authorization credential."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Slow consumers",
+      "question": "Một client đọc chậm trong room fanout lớn cần resource policy gì?",
+      "options": [
+        "Tăng mọi timeouts vô hạn.",
+        "Bỏ limits vì WebSocket.",
+        "Bounded buffering/backpressure/drop hoặc disconnect theo semantics event.",
+        "Giữ vô hạn messages trong RAM mỗisocket."
+      ],
+      "correct": 2,
+      "explanation": "Chọn mất dữ liệu tạm hay durable replay theo loại event, không một policy cho mọi dữ liệu."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Room explosion",
+      "question": "Client tạo/join lượng rooms không giới hạn có rủi ro gì?",
+      "options": [
+        "Rooms không bao giờ dùng memory.",
+        "Tự xóa mọi old room hữu ích theo nghiệp vụ.",
+        "Chỉ gây lỗi CSS.",
+        "Tốn membership metadata/fanout work; cần quotas và quyền."
+      ],
+      "correct": 3,
+      "explanation": "Control-plane events cũng cần rate/resource limits."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Event error boundary",
+      "question": "Socket.IO handler throw/reject có tự được Express error middleware HTTP xử lý đúng không?",
+      "options": [
+        "Không thể giả định; có event-specific error/lifecycle boundary.",
+        "Có vì cùng HTTP server.",
+        "Có vì importExpress.",
+        "Có vì middleware có4 params."
+      ],
+      "correct": 0,
+      "explanation": "Các event systems có composition/error paths riêng."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Cancellation external work",
+      "question": "Socket disconnect khi DB write đang chạy có tự rollback tác động đó không?",
+      "options": [
+        "Có vì JS Promise.",
+        "Không.",
+        "Có vì connection đã đóng.",
+        "Có vì socket.rooms clear."
+      ],
+      "correct": 1,
+      "explanation": "Cần ownership/cancellation/idempotency; transaction đã commit không tự bị undo."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Global time ordering",
+      "question": "new Date từ nhiều nodes có đủ bảo đảm total order duy nhất cho messages cùng conversation không?",
+      "options": [
+        "Có vì mọi clocks tuyệt đối đồng bộ.",
+        "Có vì socket.id.",
+        "Không; cần sequence/ordering authority và conflict policy theo yêu cầu.",
+        "Có vì ISOString sort đẹp."
+      ],
+      "correct": 2,
+      "explanation": "Timestamp không thay event identity và ordering semantics."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Safe rendering",
+      "question": "Server echo message người dùng sang browser có cần chống XSS tại renderer không?",
+      "options": [
+        "Không vì cóWebSocket.",
+        "Không vì cótimestamp.",
+        "Không vì server làNode.",
+        "Có; encode/render text hoặc sanitize theo context được phép."
+      ],
+      "correct": 3,
+      "explanation": "Transport không làm HTML/script user gửi trở nên trusted."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Origin credential policy",
+      "question": "Wildcard CORS có nên được coi là cách bảo vệ credentialed app hoặc native clients không?",
+      "options": [
+        "Không; origin/credentials/auth policy phải được cấu hình theo trust boundary.",
+        "Có vì mọi native clients bị browser CORS.",
+        "Có vì Socket.IO alwaysTLS.",
+        "Chỉ cần room prefixadmin."
+      ],
+      "correct": 0,
+      "explanation": "CORS có phạm vi browser/polling; vẫn cần authentication/authorization đúng."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Tenant room collision",
+      "question": "Room tên order:7 nhưng hai tenant đều có order7 cần gì?",
+      "options": [
+        "Chỉ gửi kèmtenant trong message sau khi lộ data.",
+        "Derive scoped room key và authorize tenant/resource đúng.",
+        "Tin order ID local unique toàn hệ.",
+        "Broadcast vào cùng room cho mọi tenant."
+      ],
+      "correct": 1,
+      "explanation": "Routing key phải phản ánh domain scope, không chỉ display identifier."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Presence uncertainty",
+      "question": "Mất mạng đột ngột có bảo đảm server lập tức biết chính xác user offline không?",
+      "options": [
+        "Có vì CORS.",
+        "Có vì disconnect listener.",
+        "Không; heartbeat/timeouts và nhiều devices làm presence có độ trễ/uncertainty.",
+        "Có vì TCP luôn báo ngay mọi failure."
+      ],
+      "correct": 2,
+      "explanation": "Presence là thông tin có semantics thời gian, không nguồn truth tuyệt đối ngay lập tức."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Fanout capacity",
+      "question": "Một room triệu recipients có thể có chi phí thế nào dù chỉ gọi emit một lần?",
+      "options": [
+        "Luôn O(1) tổng network bytes.",
+        "Không dùng memory.",
+        "Tự sharding mọi tài nguyên.",
+        "Serialization/routing/network fanout và slow-consumer pressure lớn theo workload."
+      ],
+      "correct": 3,
+      "explanation": "Capacity cần đo graph recipients/payload/rate, không suy từ số lời gọi JS."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Reconnect storms",
+      "question": "Rolling deploy làm nhiều clients reconnect đồng thời nên cân nhắc gì?",
+      "options": [
+        "Backoff/jitter,connection admission,auth capacity và graceful drain.",
+        "Retry liên tục không giới hạn mọi client.",
+        "Tắt mọi rate limits.",
+        "Tin auto-reconnect tự tránh mọi tải đột biến."
+      ],
+      "correct": 0,
+      "explanation": "Resilience phải xét hành vi tập thể của clients và downstream dependencies."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Transport confidentiality",
+      "question": "Dùng WSS/TLS có đồng nghĩa server không thể đọc nội dung message như end-to-end encryption không?",
+      "options": [
+        "Có vì Socket.IOprotocol.",
+        "Không.",
+        "Có vì đã encrypted trên đường truyền.",
+        "Có vì room name."
+      ],
+      "correct": 1,
+      "explanation": "Transport encryption và end-to-end payload encryption là các mô hình trust khác nhau."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Persist emit crash gap",
+      "question": "Server commit chat message vào DB rồi crash trước emit; cần gì để không bỏ mất notification theo contract durable?",
+      "options": [
+        "Chỉ gọi new Date trước commit.",
+        "Tin emit xảy ra atomic vớiDB tự động.",
+        "Outbox/replay mechanism và idempotent delivery phù hợp.",
+        "Chỉ swap tên event."
+      ],
+      "correct": 2,
+      "explanation": "Database commit và network emission không tự là một transaction."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Protocol evolution",
+      "question": "Server đổi shape new-message trong khi clients cũ còn connected cần làm gì?",
+      "options": [
+        "Tin mọi clients tự đổi code ngay.",
+        "Chỉ rename room.",
+        "Chỉ tăng port.",
+        "Quản lý compatibility/version/schema validation và rollout phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "Connections dài làm nhiều phiên bản contract cùng tồn tại, cần thử thực tế theo client/server versions."
+    }
+  ]
+}

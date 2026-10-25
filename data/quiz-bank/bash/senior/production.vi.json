@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "bash",
+  "level": "senior",
+  "lesson": "production",
+  "language": "vi",
+  "sourceHash": "5360e7747428403a2dcb300989f0023622a7bf0d189b90eea6fd61d809e7ddae",
+  "status": "approved",
+  "review": "Tự soạn theo parser/log/main chính xác. IFS dùng locale quote thay ANSI-C quote nên chưa tạo newline/tab như có thể định; verbose/dry-run chưa dùng; do_deploy/do_rollback/do_status thiếu. Declaration có thể che status substitution. Không chạy triển khai hoặc ghi /var/log.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Strict options",
+      "question": "Template bật tổ hợp nào?",
+      "options": [
+        "set -euo pipefail",
+        "Chỉ set -x",
+        "set +e +u",
+        "Không option nào"
+      ],
+      "correct": 0,
+      "explanation": "Các cờ có phạm vi và ngoại lệ, không tự chứng minh mọi logic đúng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Readonly binding",
+      "question": "readonly SCRIPT_DIR ngăn điều gì?",
+      "options": [
+        "Mọi network request",
+        "Gán lại binding đó trong shell",
+        "Mọi process sửa file trong thư mục",
+        "Mọi lần đọc source"
+      ],
+      "correct": 1,
+      "explanation": "Readonly biến không làm filesystem bất biến."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Script directory intent",
+      "question": "SCRIPT_DIR có ý định giữ gì?",
+      "options": [
+        "Tên deployment",
+        "Đường dẫn registry",
+        "Thư mục chứa source script theo cách tính trong mẫu",
+        "Home của mọi user"
+      ],
+      "correct": 2,
+      "explanation": "Thư mục script có thể khác cwd người gọi."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Bash source metadata",
+      "question": "BASH_SOURCE trong Bash là gì?",
+      "options": [
+        "Executable ngoài",
+        "Một file JSON bắt buộc",
+        "Network interface",
+        "Array chứa thông tin source filename theo ngữ cảnh"
+      ],
+      "correct": 3,
+      "explanation": "Đây là feature Bash, không có trong mọi POSIX sh."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Log destination",
+      "question": "LOG_FILE trong mẫu là gì?",
+      "options": [
+        "/var/log/myapp/script.log",
+        "./access.log",
+        "/tmp/config.yml",
+        "/etc/crontab"
+      ],
+      "correct": 0,
+      "explanation": "Parent directory và quyền ghi cần được chuẩn bị."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Verbose default",
+      "question": "VERBOSE ban đầu là gì?",
+      "options": [
+        "production",
+        "false",
+        "true",
+        "1"
+      ],
+      "correct": 1,
+      "explanation": "Source đặt flag nhưng chưa dùng để điều khiển log."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Dry run default",
+      "question": "DRY_RUN ban đầu là gì?",
+      "options": [
+        "staging",
+        "readonly",
+        "false",
+        "true"
+      ],
+      "correct": 2,
+      "explanation": "Gán flag chưa tạo hành vi mô phỏng."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Environment default",
+      "question": "ENV mặc định của template là gì?",
+      "options": [
+        "production",
+        "test",
+        "dev",
+        "staging"
+      ],
+      "correct": 3,
+      "explanation": "Parser có thể gán lại từ option."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Usage responsibility",
+      "question": "Function usage làm gì?",
+      "options": [
+        "In hướng dẫn CLI nhiều dòng",
+        "Tự chạy mọi command liệt kê",
+        "Tự tạo deployment",
+        "Tự kiểm mọi environment"
+      ],
+      "correct": 0,
+      "explanation": "Nội dung help không tự trở thành implementation."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Argument count loop",
+      "question": "[[ $# -gt 0 ]] kiểm gì?",
+      "options": [
+        "Có container đang chạy",
+        "Còn positional arguments để parse",
+        "CPU lớn hơn0",
+        "File dài hơn0 byte"
+      ],
+      "correct": 1,
+      "explanation": "shift làm thay đổi danh sách đối số đang xét."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Environment switches",
+      "question": "Parser dùng alias nào cho environment?",
+      "options": [
+        "--stage và --prod",
+        "-E và --environment",
+        "-e và --env",
+        "-p và --port"
+      ],
+      "correct": 2,
+      "explanation": "Phải xét đúng các pattern case được viết."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Verbose switch action",
+      "question": "Nhánh -v|--verbose trực tiếp làm gì?",
+      "options": [
+        "Tự bật xtrace",
+        "Tự chuyển log sang stderr",
+        "Chạy do_status",
+        "Gán VERBOSE=true rồi shift"
+      ],
+      "correct": 3,
+      "explanation": "Các hành vi bổ sung phải được lập trình riêng."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Dry run switch action",
+      "question": "Nhánh -n|--dry-run trực tiếp làm gì?",
+      "options": [
+        "Gán DRY_RUN=true rồi shift",
+        "Tự chặn mọi side effect",
+        "Tự exit0",
+        "Tự mô phỏng mọi executable"
+      ],
+      "correct": 0,
+      "explanation": "Đây là option ứng dụng, không tự đổi shell sang syntax-check mode."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Help action",
+      "question": "Nhánh -h|--help làm gì?",
+      "options": [
+        "Gọi do_status",
+        "usage rồi exit0",
+        "Deploy rồi usage",
+        "Gán ENV=help"
+      ],
+      "correct": 1,
+      "explanation": "Exit kết thúc script theo đường này."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Unknown option action",
+      "question": "Argument bắt đầu - không được hỗ trợ được xử lý thế nào?",
+      "options": [
+        "Bỏ qua luôn",
+        "Được coi là COMMAND",
+        "In Unknown/usage rồi exit1",
+        "Tự sửa chính tả"
+      ],
+      "correct": 2,
+      "explanation": "Parser có nhánh lỗi input rõ cho nhóm này."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Positional command storage",
+      "question": "Nhánh * lưu argument thường vào biến nào?",
+      "options": [
+        "VERBOSE",
+        "LOG_FILE",
+        "SCRIPT_DIR",
+        "COMMAND"
+      ],
+      "correct": 3,
+      "explanation": "Source chưa ngăn nhiều positional command."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Shift meaning",
+      "question": "shift không tham số làm gì?",
+      "options": [
+        "Bỏ đối số đầu rồi dịch phần còn lại",
+        "Xóa mọi biến",
+        "Đảo array",
+        "Đổi branch"
+      ],
+      "correct": 0,
+      "explanation": "Shift tác động positional parameters trong scope đang chạy."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Log level input",
+      "question": "Function log lấy level từ đâu?",
+      "options": [
+        "Status tee",
+        "Đối số đầu của lời gọi log",
+        "ENV bắt buộc",
+        "Tên script"
+      ],
+      "correct": 1,
+      "explanation": "Sau đó shift để phần còn lại là message."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Tee append behavior",
+      "question": "tee -a có ý định gì trong log?",
+      "options": [
+        "Truncate mỗi lần",
+        "Tự rotate log",
+        "Ghi nối file và gửi dữ liệu ra stdout",
+        "Chỉ ghi stderr"
+      ],
+      "correct": 2,
+      "explanation": "Tee nhân bản stream, không tự có policy retention."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Main dispatch input",
+      "question": "main chọn helper dựa trên gì?",
+      "options": [
+        "Chỉ VERBOSE",
+        "SCRIPT_DIR",
+        "Timestamp",
+        "COMMAND"
+      ],
+      "correct": 3,
+      "explanation": "Các nhánh gọi do_deploy/do_rollback/do_status."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "IFS quoting distinction",
+      "question": "Source dùng $ rồi double quotes cho chuỗi backslash-n/backslash-t. Vì sao khác ANSI-C quoting?",
+      "options": [
+        "Đó là locale double quoting, không tự xử lý hai escape như ANSI-C quote",
+        "Hai kiểu luôn đồng nhất",
+        "IFS không thể chứa newline",
+        "Double quotes luôn tạo readonly"
+      ],
+      "correct": 0,
+      "explanation": "Cú pháp quote quyết định dữ liệu byte nhận được."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "IFS bytes without translation",
+      "question": "Nếu không có bản dịch đổi chuỗi, IFS từ $\"\\n\\t\" chứa gì?",
+      "options": [
+        "Một NUL",
+        "Backslash, n, backslash, t",
+        "Chỉ newline và tab",
+        "Một dấu cách"
+      ],
+      "correct": 1,
+      "explanation": "Backslash trước n/t không được double quotes diễn giải như ANSI-C escape."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "IFS join separator",
+      "question": "Với IFS literal như trên, \"$*\" nối nhiều đối số bằng gì?",
+      "options": [
+        "Newline thực",
+        "Dấu phẩy",
+        "Backslash là ký tự đầu IFS",
+        "Dấu cách mặc định bất kể IFS"
+      ],
+      "correct": 2,
+      "explanation": "Quoted $* dùng ký tự đầu của IFS làm separator."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "One message argument",
+      "question": "log INFO \"hello world\" có một message argument. \"$*\" có tự tách hello/world vì IFS lạ không?",
+      "options": [
+        "Có, mọi dấu cách luôn bị đổi",
+        "Có, tee tự tách",
+        "Chỉ nếu verbose true",
+        "Không, một argument đã giữ nguyên không bị tách lại ở phép join đó"
+      ],
+      "correct": 3,
+      "explanation": "Join các arguments khác tách từ bên trong một argument."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Multiple message arguments",
+      "question": "Với IFS literal đó, log INFO hello world có thể tạo msg thế nào?",
+      "options": [
+        "hello rồi backslash rồi world",
+        "hello space world bắt buộc",
+        "helloworld",
+        "Chỉ hello"
+      ],
+      "correct": 0,
+      "explanation": "Source join phần còn lại bằng \"$*\"."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Actual newline tab policy",
+      "question": "Muốn đặt IFS thành newline/tab thực trong Bash cần loại quote nào phù hợp?",
+      "options": [
+        "command -v IFS",
+        "ANSI-C quoting với escape tương ứng",
+        "Locale double quoting hiện tại",
+        "Chỉ thêm readonly"
+      ],
+      "correct": 1,
+      "explanation": "Chỉ nên đổi IFS khi thiết kế cần, ở phạm vi phù hợp."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Missing env value",
+      "question": "Gọi --env mà không có value dưới -u có thể lỗi ở đâu?",
+      "options": [
+        "Usage luôn chạy trước expansion",
+        "Readonly tự kiểm arity",
+        "Đọc \"$2\" chưa đặt",
+        "Tee tự kiểm thiếu option"
+      ],
+      "correct": 2,
+      "explanation": "Cần kiểm số đối số trước khi lấy option value."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Env consumes following flag",
+      "question": "Input --env -v deploy có thể làm ENV nhận gì theo parser?",
+      "options": [
+        "staging luôn luôn",
+        "production",
+        "Chuỗi rỗng",
+        "-v"
+      ],
+      "correct": 3,
+      "explanation": "Parser chưa phân biệt thiếu value với một option kế tiếp."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Environment allowlist gap",
+      "question": "--env typo deploy có được kiểm chỉ staging|production chưa?",
+      "options": [
+        "Chưa, mô tả help không tự tạo validation",
+        "Rồi, dấu | trong help là enum",
+        "Rồi, mọi ENV đều được Bash xác thực",
+        "Rồi, tee kiểm môi trường"
+      ],
+      "correct": 0,
+      "explanation": "Cần validation trong luồng thực thi."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Equals long option",
+      "question": "Parser có nhánh hỗ trợ --env=production không?",
+      "options": [
+        "Có, heredoc kích hoạt parser",
+        "Không, dạng đó có thể rơi vào unknown option",
+        "Có, --env tự tách =",
+        "Có, shift2 tự phân tích ="
+      ],
+      "correct": 1,
+      "explanation": "Không suy khả năng từ CLI khác."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Repeated env option",
+      "question": "Input --env staging --env production deploy cho ENV cuối nào nếu parse hết?",
+      "options": [
+        "Array hai environment",
+        "Tự lỗi mọi option lặp",
+        "production",
+        "staging"
+      ],
+      "correct": 2,
+      "explanation": "Gán sau ghi đè trước trong source."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Multiple commands overwrite",
+      "question": "Input deploy status khiến COMMAND cuối là gì?",
+      "options": [
+        "deploy",
+        "Một chuỗi deploy status",
+        "Luôn lỗi arity tự động",
+        "status"
+      ],
+      "correct": 3,
+      "explanation": "Mỗi positional argument gán lại COMMAND."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Options after command",
+      "question": "Input deploy -v có tiếp tục xử lý -v không?",
+      "options": [
+        "Có, vòng parser chưa dừng sau positional command",
+        "Không, Bash tự dừng mọi parser ở positional đầu",
+        "Chỉ nếu log file tồn tại",
+        "Nó tự được chuyển cho do_deploy"
+      ],
+      "correct": 0,
+      "explanation": "Đây là hành vi cụ thể của while/case hiện tại."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Double dash gap",
+      "question": "Source có nhánh coi -- là kết thúc option parsing chưa?",
+      "options": [
+        "Có, mọi parser đều hỗ trợ sẵn",
+        "Chưa, -- có thể vào nhánh unknown",
+        "Có, case luôn hiểu sentinel đó",
+        "Có, shift tự thêm semantics"
+      ],
+      "correct": 1,
+      "explanation": "Sentinel cần được hiện thực nếu contract yêu cầu."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "No command path",
+      "question": "Không có COMMAND, main xử lý thế nào nếu log đầu thành công?",
+      "options": [
+        "Mặc định help exit0",
+        "Tự gọi do_status",
+        "usage rồi exit1",
+        "Mặc định deploy"
+      ],
+      "correct": 2,
+      "explanation": "Mẫu dùng chuỗi rỗng default cho case."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Help stops main",
+      "question": "Vào nhánh --help có chạy main phía sau không?",
+      "options": [
+        "Có vì exit chỉ thoát case",
+        "Chỉ khi verbose",
+        "Có vì heredoc gọi main",
+        "Không vì exit0 kết thúc script"
+      ],
+      "correct": 3,
+      "explanation": "Các khởi tạo đầu file đã xảy ra, nhưng main chưa được gọi."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Verbose unused",
+      "question": "VERBOSE=true đã làm log tự thêm chi tiết trong source chưa?",
+      "options": [
+        "Chưa, không có nhánh sử dụng nó",
+        "Rồi, tên VERBOSE có magic",
+        "Rồi, tee đọc mọi biến shell",
+        "Rồi, echo tự đổi log level"
+      ],
+      "correct": 0,
+      "explanation": "Flag cần được nối vào behavior."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Dry run unused",
+      "question": "DRY_RUN=true có chặn main gọi do_deploy chưa?",
+      "options": [
+        "Rồi, tee chặn cả helper",
+        "Chưa",
+        "Rồi, Bash tự ngăn mọi function",
+        "Rồi, option ứng dụng -n tự là set -n"
+      ],
+      "correct": 1,
+      "explanation": "Không được quảng bá dry-run an toàn chỉ vì parser có flag."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Missing helpers",
+      "question": "do_deploy/do_rollback/do_status có được định nghĩa trong mẫu chưa?",
+      "options": [
+        "Có, tên command sinh implementation",
+        "Có, readonly sinh helper",
+        "Chưa",
+        "Có, case tự tạo chúng"
+      ],
+      "correct": 2,
+      "explanation": "Template cần bổ sung code hoặc load dependency phù hợp."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Unknown command dispatch",
+      "question": "COMMAND=unknown khiến main làm gì nếu log đầu thành công?",
+      "options": [
+        "Tự chạy executable unknown",
+        "Chọn deploy",
+        "Exit0",
+        "usage rồi exit1"
+      ],
+      "correct": 3,
+      "explanation": "Nhánh positional và validation command nằm ở hai bước."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Completion message timing",
+      "question": "Completed successfully được in ở đâu?",
+      "options": [
+        "Sau khi helper trở về và luồng không bị failure làm dừng",
+        "Trước mọi helper",
+        "Ngay khi parser gặp command",
+        "Sau mọi usage exit1"
+      ],
+      "correct": 0,
+      "explanation": "Nó phụ thuộc status/luồng của implementation helper."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Log parent directory gap",
+      "question": "Source có tạo /var/log/myapp trước tee chưa?",
+      "options": [
+        "Có, help heredoc tạo log folder",
+        "Chưa",
+        "Có, readonly tạo directory",
+        "Có, tee -a tạo mọi parent"
+      ],
+      "correct": 1,
+      "explanation": "Tee không thay chuẩn bị đường dẫn/quyền."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Log permission pipeline",
+      "question": "Tee lỗi ghi file nhưng echo thành công; pipefail có thể làm log pipeline trả gì?",
+      "options": [
+        "Tự dùng quyền root",
+        "Tự chuyển sang file khác",
+        "Status lỗi của tee",
+        "Luôn0 vì echo thành công"
+      ],
+      "correct": 2,
+      "explanation": "Cần policy log failure rõ ràng."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Info output stream",
+      "question": "Info trong source đưa dữ liệu ra đâu?",
+      "options": [
+        "Chỉ stderr",
+        "Chỉ file",
+        "Webhook",
+        "Stdout và file qua tee"
+      ],
+      "correct": 3,
+      "explanation": "Log stdout có thể ảnh hưởng giao thức dữ liệu của CLI."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Error helper stream",
+      "question": "Function error có tự dùng stderr vì tên error không?",
+      "options": [
+        "Không, vẫn gọi log theo pipeline hiện tại",
+        "Có, đó là keyword Bash",
+        "Có, chữ ERROR đổi descriptor",
+        "Chỉ khi message rỗng"
+      ],
+      "correct": 0,
+      "explanation": "Tên function không tạo redirection."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Local date status masking",
+      "question": "local ts=$(date ...) có thể che điều gì?",
+      "options": [
+        "Mọi side effect được rollback",
+        "Status lỗi date trong status của declaration local",
+        "Mọi newline nội bộ thành NUL",
+        "LOG_FILE tự đổi"
+      ],
+      "correct": 1,
+      "explanation": "Tách khai báo và gán khi cần kiểm status command substitution."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Readonly path status masking",
+      "question": "readonly SCRIPT_DIR=$(...) có tự xác nhận mọi cd/pwd thành công không?",
+      "options": [
+        "Có, readonly tạo mọi thư mục",
+        "Có, binding không thể rỗng",
+        "Không, declaration status có thể che lỗi bên trong",
+        "Có, readonly xác thực path"
+      ],
+      "correct": 2,
+      "explanation": "Khóa biến khác kiểm thao tác sinh giá trị."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Source location versus cwd",
+      "question": "Tại sao không giả pwd luôn là thư mục chứa script?",
+      "options": [
+        "Vì pwd không chạy trong Bash",
+        "Vì script luôn ở root",
+        "Vì shebang tự cd",
+        "Người gọi có thể chạy script từ cwd khác"
+      ],
+      "correct": 3,
+      "explanation": "Mục đích dùng source metadata là tách hai khái niệm."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Symlink resolution scope",
+      "question": "dirname source rồi cd/pwd có tự giải quyết mọi symlink của file như realpath đầy đủ không?",
+      "options": [
+        "Không, cần policy canonicalization nếu yêu cầu",
+        "Có, dirname luôn theo mọi link",
+        "Có, readonly tự canonicalize",
+        "Script không thể là symlink"
+      ],
+      "correct": 0,
+      "explanation": "Không đồng nhất dirname/pwd với mọi dạng giải đường dẫn."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Arguments after parsing",
+      "question": "Sau vòng parser shift hết, main \"$@\" thường nhận gì?",
+      "options": [
+        "COMMAND tự trở lại $1",
+        "Không còn positional args; nó dùng biến đã parse",
+        "Tự khôi phục argv đầu",
+        "Chỉ -v"
+      ],
+      "correct": 1,
+      "explanation": "Shift tác động positional parameters trong scope script."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Log shift purpose",
+      "question": "Log đọc level rồi shift để làm gì?",
+      "options": [
+        "Tăng exit status",
+        "Gọi main lại",
+        "Bỏ level khỏi các message arguments",
+        "Xóa level khỏi file log"
+      ],
+      "correct": 2,
+      "explanation": "Function xử lý các đối số của lời gọi chính nó."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Info argument forwarding",
+      "question": "info chuyển log \"INFO\" \"$@\" để giữ gì?",
+      "options": [
+        "Luôn gộp thành một từ ngay trong info",
+        "Tự escape JSON",
+        "Tự readonly message",
+        "Ranh giới từng argument khi chuyển tiếp"
+      ],
+      "correct": 3,
+      "explanation": "Log sau đó join theo $* là bước riêng."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Multiline log input",
+      "question": "Message chứa newline được ghi raw có thể gây gì?",
+      "options": [
+        "Tạo nhiều dòng trông như record khác",
+        "Tee tự escape JSON",
+        "Bash luôn từ chối newline",
+        "Tự đổi thành space"
+      ],
+      "correct": 0,
+      "explanation": "Cần framing/serialization nếu log là dữ liệu cần parse."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "No rotation automatic",
+      "question": "tee -a có tự rotate hoặc giới hạn size không?",
+      "options": [
+        "Có, timestamp cắt log mỗi ngày",
+        "Không",
+        "Có, -a nghĩa auto rotate",
+        "Có, readonly đặt size limit"
+      ],
+      "correct": 1,
+      "explanation": "Retention là policy riêng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Parser implementation",
+      "question": "Source thực sự dùng cách parse nào?",
+      "options": [
+        "JSON parser",
+        "Docker CLI parser",
+        "While/case thủ công",
+        "Getopts đã được gọi tường minh"
+      ],
+      "correct": 2,
+      "explanation": "Key point nêu các lựa chọn không có nghĩa mọi lựa chọn đã được dùng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Getopts long options",
+      "question": "Có nên mặc định getopts Bash builtin hỗ trợ nguyên mọi long option như --verbose không?",
+      "options": [
+        "Có, mọi dạng đều tự có",
+        "Bash cấm mọi -- string",
+        "While không parse được short option",
+        "Không, long forms cần thiết kế/parser phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Chọn công cụ theo contract CLI."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Sourcing execution",
+      "question": "Source file này vào shell khác có thể gọi main cuối file không?",
+      "options": [
+        "Có nếu không có guard phân biệt source/execute",
+        "Không, source tự bỏ mọi call",
+        "Không, shebang ngăn source",
+        "Chỉ khi LOG_FILE writable"
+      ],
+      "correct": 0,
+      "explanation": "Script thực thi ngay khác thư viện chỉ định nghĩa helper."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Readonly resource access",
+      "question": "LOG_FILE readonly có ngăn process khác sửa file không?",
+      "options": [
+        "Có, path string thay file lock",
+        "Không, quyền filesystem là ranh giới riêng",
+        "Có, readonly khóa inode toàn máy",
+        "Có, tee đặt immutable flag"
+      ],
+      "correct": 1,
+      "explanation": "Binding và tài nguyên được tham chiếu khác nhau."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Helper false success",
+      "question": "Helper được bổ sung chỉ echo ERROR rồi trả0 có thể khiến main in thành công không?",
+      "options": [
+        "Không, tên do_deploy tự validate",
+        "Chỉ nếu command không biết",
+        "Có nếu không có failure khác",
+        "Không, Bash tự dò chữ ERROR"
+      ],
+      "correct": 2,
+      "explanation": "Hợp đồng status cần khớp ý nghĩa thông báo."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Shellcheck scope",
+      "question": "ShellCheck theo theory có vai trò gì?",
+      "options": [
+        "Tự deploy lên production",
+        "Tự kiểm service thật",
+        "Tự xác nhận dry-run không side effect",
+        "Phân tích tĩnh vấn đề shell, không thay toàn bộ test behavior"
+      ],
+      "correct": 3,
+      "explanation": "Template thiếu helper vẫn cần implementation và kiểm hành vi."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Parser arity repair",
+      "question": "Muốn --env thiếu value báo lỗi CLI rõ thay vì unbound $2 cần gì?",
+      "options": [
+        "Kiểm arity và value trước gán/shift",
+        "Chỉ quote $2 vì quote tạo value",
+        "Bỏ -u rồi mặc định production",
+        "Chỉ sửa help"
+      ],
+      "correct": 0,
+      "explanation": "Validation phải nằm trong luồng thực thi."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "One command contract",
+      "question": "Muốn chấp nhận đúng một command cần bổ sung gì?",
+      "options": [
+        "Chỉ đặt readonly trước khi parse",
+        "Phát hiện positional thừa/thiếu thay vì ghi đè im lặng",
+        "Đổi tên COMMAND",
+        "Chỉ in usage ở log đầu"
+      ],
+      "correct": 1,
+      "explanation": "Số lượng và ý nghĩa argument là contract CLI."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Real dry run",
+      "question": "Để --dry-run không tác động ngoài theo scope, cần gì?",
+      "options": [
+        "In Dry run rồi chạy mọi command thật",
+        "Bỏ thông báo Completed",
+        "Gate các side effect và kiểm behavior của đường mô phỏng",
+        "Chỉ gán flag true"
+      ],
+      "correct": 2,
+      "explanation": "Feature phải có implementation và bằng chứng hành vi."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Verbose channel design",
+      "question": "CLI có output máy đọc và verbose log nên thiết kế gì?",
+      "options": [
+        "Thêm echo stdout vô điều kiện",
+        "Chỉ đặt biến VERBOSE",
+        "Bỏ mọi message lỗi",
+        "Mức log/kênh rõ, không trộn log tùy chọn vào dữ liệu chuẩn"
+      ],
+      "correct": 3,
+      "explanation": "Tách dữ liệu và chẩn đoán theo giao thức caller."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "IFS fix scope",
+      "question": "Sửa IFS đúng có tự làm template hoàn chỉnh không?",
+      "options": [
+        "Không, còn parser/helper/flags/status/log chưa đầy đủ",
+        "Có, IFS sinh mọi helper",
+        "Mọi lỗi chỉ do IFS",
+        "Bash tự thêm validation"
+      ],
+      "correct": 0,
+      "explanation": "Sửa một nguyên nhân không hoàn tất các feature khác."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Early validation dependencies",
+      "question": "Help/input lỗi nên phụ thuộc file log bắt buộc thế nào?",
+      "options": [
+        "Tự chmod toàn hệ thống",
+        "Quy định đường thông tin sớm và trì hoãn dependency không cần cho nó",
+        "Luôn ghi /var/log trước mọi parse",
+        "Bỏ mọi lỗi log vô điều kiện"
+      ],
+      "correct": 1,
+      "explanation": "Tránh để lỗi dependency che lỗi input dễ hiểu."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Audit log failure",
+      "question": "Nếu audit log là yêu cầu bắt buộc, tee ghi lỗi nên được xử lý thế nào?",
+      "options": [
+        "Đưa secret ra nơi công khai thay audit",
+        "Bỏ log im lặng",
+        "Theo policy stop/fail rõ và giữ chẩn đoán",
+        "Luôn success vì stdout có text"
+      ],
+      "correct": 2,
+      "explanation": "Policy phụ thuộc yêu cầu thật, không do tee tự quyết."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Check before readonly",
+      "question": "Cách nào kiểm SCRIPT_DIR rõ hơn declaration chứa substitution?",
+      "options": [
+        "Thêm readonly lần nữa",
+        "Thay pwd bằng echo không kiểm",
+        "Chỉ kiểm không có space",
+        "Tách tính giá trị, kiểm status/path rồi đặt readonly"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm dữ liệu trước khi khóa binding."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Helper status interface",
+      "question": "Helper do_deploy cần contract nào để main báo đúng?",
+      "options": [
+        "Status thành công/thất bại và chẩn đoán lỗi nhất quán",
+        "Luôn echo success",
+        "Trả số dòng log thay failure",
+        "Luôn exit0"
+      ],
+      "correct": 0,
+      "explanation": "Đây là giao diện điều phối với tác vụ."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Library main guard",
+      "question": "File vừa làm thư viện vừa làm CLI cần gì?",
+      "options": [
+        "Đặt main readonly",
+        "Guard main theo source/execute và kiểm side effect lúc nạp",
+        "Thêm shebang thứhai",
+        "Đổi đuôi lib"
+      ],
+      "correct": 1,
+      "explanation": "Tên file không tự tạo chế độ thư viện."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Log framing protection",
+      "question": "Log input ngoài cần policy nào để record không bị giả mạo bằng newline?",
+      "options": [
+        "Bỏ mọi lỗi",
+        "Chỉ tee -a tự thành JSON",
+        "Escape/serialize field và newline theo format, giữ quyền dữ liệu",
+        "In raw rồi tin timestamp"
+      ],
+      "correct": 2,
+      "explanation": "Tee không xác thực schema."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Argument joining loss",
+      "question": "\"$*\" có bảo toàn đủ argv để tái tạo nguyên ranh giới không?",
+      "options": [
+        "Có vì separator không bao giờ nằm trong data",
+        "Có vì echo tự quote",
+        "Có vì IFS không ảnh hưởng",
+        "Không nói chung, cần serialization giữ ranh giới nếu yêu cầu"
+      ],
+      "correct": 3,
+      "explanation": "Chuỗi hiển thị không tự là argv encoding lossless."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Resources and interrupts",
+      "question": "Khi helper dùng tài nguyên tạm, strict mode cần được bổ sung gì?",
+      "options": [
+        "Ownership/cleanup và chính sách gián đoạn phù hợp",
+        "Chỉ readonly DRY_RUN",
+        "Chỉ tăng log level",
+        "Chỉ emoji"
+      ],
+      "correct": 0,
+      "explanation": "-e không là resource manager."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Config trust boundary",
+      "question": "ENV được dùng chọn tài nguyên nên validate khi nào?",
+      "options": [
+        "Không cần vì viết hoa",
+        "Trước các side effect phụ thuộc environment",
+        "Chỉ trong help",
+        "Sau khi deploy xong"
+      ],
+      "correct": 1,
+      "explanation": "Quoting/default không thay validation."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Parser test matrix",
+      "question": "Bộ case nào kiểm parser có ý nghĩa?",
+      "options": [
+        "Chỉ đếm dấu ;;",
+        "Chỉ kiểm có while",
+        "Thiếu value, lặp option, unknown, positional thừa/thiếu, help và value có space",
+        "Chỉ deploy mặc định"
+      ],
+      "correct": 2,
+      "explanation": "Phải kiểm các nhánh và boundary input."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Dry run verification",
+      "question": "Phép kiểm nào chứng minh dry-run giữ side effects trong phạm vi đã định?",
+      "options": [
+        "Chỉ kiểm flag true",
+        "Chỉ grep help",
+        "Chỉ nhìn tên biến",
+        "Stub/fixture ghi lại calls và assert không gọi thao tác bị cấm theo contract"
+      ],
+      "correct": 3,
+      "explanation": "Kiểm hành vi khác kiểm declaration."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "JSON output contamination",
+      "question": "CLI trả JSON nhưng info cũng ra stdout có thể gây gì?",
+      "options": [
+        "Toàn output không còn JSON hợp lệ nếu bị trộn log",
+        "Parser JSON luôn bỏ mọi INFO line",
+        "Tee tự bọc log thành JSON field",
+        "Timestamp làm parser tự hiểu"
+      ],
+      "correct": 0,
+      "explanation": "Kênh output phải bám giao thức caller."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Static analysis limits",
+      "question": "ShellCheck không cảnh báo có đủ xác nhận deployment nghiệp vụ đúng không?",
+      "options": [
+        "Có, readonly thay test",
+        "Không, còn cần kiểm behavior/status và tác dụng phụ theo scope",
+        "Có, linter gọi mọi service",
+        "Có, parse được là mọi branch pass"
+      ],
+      "correct": 1,
+      "explanation": "Phân tích tĩnh và kiểm hành vi có vai trò riêng."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Interpreter compatibility",
+      "question": "Dùng BASH_SOURCE, [[ và pipefail có bảo đảm chạy bằng mọi /bin/sh không?",
+      "options": [
+        "Có, mọi sh là Bash mới",
+        "Log path quyết định grammar",
+        "Không, cần đúng interpreter/feature hoặc port rõ ràng",
+        "Có, shebang luôn thắng khi caller ép sh file"
+      ],
+      "correct": 2,
+      "explanation": "Interpreter thực tế quyết định cú pháp."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Template completion",
+      "question": "Để hoàn thành bài tập CLI cần gì?",
+      "options": [
+        "Chỉ đổi title production-grade",
+        "Chỉ có set -euo pipefail",
+        "Chỉ tạo log file rỗng",
+        "Implement helper/flags, validation/config/log/failure/cleanup và kiểm behavior"
+      ],
+      "correct": 3,
+      "explanation": "Tên gọi không thay tiêu chí chức năng."
+    }
+  ]
+}

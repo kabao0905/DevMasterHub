@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "zig",
+  "level": "mid",
+  "lesson": "comptime",
+  "language": "vi",
+  "sourceHash": "8726fc926986c810bb9af5213731af2f0f42ee885c14e189218b874002eb5fcf",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo Matrix(comptime T,rows,cols) và bài generic add, scope Zig 0.13.0. Phân biệt tạo kiểu với dữ liệu runtime; source var m chưa mutate/chưa dùng cần sửa intent, không giả mẫu đã compile. Full review 80 stems/key/distractors/explanations; chỉ source/docs và serializer checks.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Comptime",
+      "question": "comptime chỉ định điều gì trong tham số Matrix?",
+      "options": [
+        "Giá trị phải biết khi biên dịch",
+        "Giá trị chỉ đọc từ stdin khi chạy",
+        "Mọi giá trị được heap allocate",
+        "Mọi function tự bất đồng bộ"
+      ],
+      "correct": 0,
+      "explanation": "Thời điểm khả dụng là ràng buộc của tham số."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Type parameter",
+      "question": "T của Matrix được khai báo có kiểu nào?",
+      "options": [
+        "bool",
+        "type",
+        "usize",
+        "f32"
+      ],
+      "correct": 1,
+      "explanation": "T là giá trị kiểu dùng để tạo kiểu dữ liệu khác."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Rows type",
+      "question": "rows và cols trong source có kiểu nào?",
+      "options": [
+        "[]u8",
+        "bool",
+        "usize",
+        "f64"
+      ],
+      "correct": 2,
+      "explanation": "Đây là các kích thước biết lúc biên dịch."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Return type",
+      "question": "Matrix trả về loại giá trị nào?",
+      "options": [
+        "Một mảng số đã có toàn dữ liệu",
+        "Một string đã format",
+        "Một allocator",
+        "Một type"
+      ],
+      "correct": 3,
+      "explanation": "Factory type khác factory instance."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Nested arrays",
+      "question": "Field data có dạng kiểu nào trong nguồn?",
+      "options": [
+        "[rows][cols]T",
+        "[]T không có shape",
+        "T đơn lẻ",
+        "[rows+cols]u8 luôn luôn"
+      ],
+      "correct": 0,
+      "explanation": "Chiều outer biểu diễn rows, inner biểu diễn cols."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Specialization",
+      "question": "Matrix(f32,2,2) dùng element type nào?",
+      "options": [
+        "type",
+        "f32",
+        "i32",
+        "usize"
+      ],
+      "correct": 1,
+      "explanation": "Kiểu phần tử được truyền làm T."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Shape",
+      "question": "Mat2x2 trong nguồn có shape data nào?",
+      "options": [
+        "1 hàng, 2 cột",
+        "2 hàng, mọi số cột runtime",
+        "2 hàng, 2 cột",
+        "4 hàng, 1 cột"
+      ],
+      "correct": 2,
+      "explanation": "Shape được xác định bởi tham số comptime."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Instance",
+      "question": "m trong nguồn có vai trò gì?",
+      "options": [
+        "Bản thân function Matrix",
+        "Tên allocator",
+        "Một error set",
+        "Một giá trị instance của Mat2x2"
+      ],
+      "correct": 3,
+      "explanation": "Type và instance không cùng vai trò."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Initializer",
+      "question": "Giá trị data nguồn minh họa ma trận nào?",
+      "options": [
+        "Ma trận đơn vị 2x2",
+        "Ma trận mọi phần tử bằng 1",
+        "Ma trận mọi phần tử bằng 0",
+        "Vector hàng dài 4"
+      ],
+      "correct": 0,
+      "explanation": "Đường chéo chính là 1, ngoài đường chéo là 0."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Data 0 0",
+      "question": "data[0][0] của initializer nguồn bằng gì?",
+      "options": [
+        "4.0",
+        "1.0",
+        "0.0",
+        "2.0"
+      ],
+      "correct": 1,
+      "explanation": "Đây là phần tử đầu đường chéo chính."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Data 0 1",
+      "question": "data[0][1] của initializer nguồn bằng gì?",
+      "options": [
+        "2.0",
+        "-1.0",
+        "0.0",
+        "1.0"
+      ],
+      "correct": 2,
+      "explanation": "Phần tử ngoài đường chéo chính bằng 0."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Tên alias",
+      "question": "const Mat2x2 = Matrix(...) ràng buộc tên với gì?",
+      "options": [
+        "Một object heap mặc định",
+        "Một số lượng thread",
+        "Một slice runtime",
+        "Kiểu được Matrix tạo"
+      ],
+      "correct": 3,
+      "explanation": "Tên kiểu const không làm mọi instance immutable."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Generic add",
+      "question": "Bài tập yêu cầu generic function thực hiện gì?",
+      "options": [
+        "Cộng hai giá trị số theo kiểu được hỗ trợ",
+        "Tự nối mọi string và số bằng cùng phép +",
+        "Cấp phát mọi kiểu trên heap",
+        "Tạo TCP connection"
+      ],
+      "correct": 0,
+      "explanation": "Cần định nghĩa rõ phạm vi kiểu hỗ trợ."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Integer float",
+      "question": "Hai nhóm kiểu bài tập muốn hỗ trợ là gì?",
+      "options": [
+        "Chỉ string và allocator",
+        "Số nguyên và số thực",
+        "Chỉ bool và void",
+        "Chỉ pointer và error set"
+      ],
+      "correct": 1,
+      "explanation": "Không suy mọi T đều hỗ trợ phép +."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Runtime",
+      "question": "Một giá trị người dùng nhập sau khi build thuộc giai đoạn nào?",
+      "options": [
+        "Chỉ giai đoạn link",
+        "Chỉ giai đoạn type declaration",
+        "Runtime",
+        "Comptime của binary đã build xong"
+      ],
+      "correct": 2,
+      "explanation": "Input tương lai không tự có lúc biên dịch."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Type introspection",
+      "question": "@TypeOf thường dùng để lấy gì?",
+      "options": [
+        "Giá trị byte input tiếp theo",
+        "Dung lượng RAM hệ thống",
+        "Một allocation mới",
+        "Kiểu của biểu thức theo phân tích Zig"
+      ],
+      "correct": 3,
+      "explanation": "Đây là thông tin kiểu, không phải syscall."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Compile error",
+      "question": "@compileError trong nhánh được kiểm dùng để làm gì?",
+      "options": [
+        "Báo lỗi biên dịch có chủ đích",
+        "Trả error union runtime mặc định",
+        "Tự retry build",
+        "In diagnostic runtime vào stdout"
+      ],
+      "correct": 0,
+      "explanation": "Compile-time diagnostic khác error value khi chạy."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Known length",
+      "question": "Vì sao rows/cols cần comptime trong source?",
+      "options": [
+        "Vì m là var",
+        "Chúng dùng trong kiểu fixed array của field data",
+        "Vì mọi usize đều tự comptime",
+        "Vì print bắt mọi biến comptime"
+      ],
+      "correct": 1,
+      "explanation": "Kích thước array trong kiểu cần giá trị biết lúc compile."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Literal và input",
+      "question": "Số literal 2 truyền cho rows có thể biết lúc compile không?",
+      "options": [
+        "Chỉ nếu allocator cấp đủ memory",
+        "Chỉ nếu in ra trước",
+        "Có",
+        "Không, mọi số chỉ biết khi chạy"
+      ],
+      "correct": 2,
+      "explanation": "Literal cung cấp giá trị compile-time phù hợp."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Không GC",
+      "question": "Generic type factory có tự cung cấp garbage collector cho instance không?",
+      "options": [
+        "Có, mọi type return tự có GC",
+        "Có, chỉ f32 mới có GC",
+        "Chỉ khi shape 2x2",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Generic và quản lý lifetime là hai cơ chế khác nhau."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Type vs instance",
+      "question": "Gọi Matrix(f32,2,2) có tự điền mọi phần tử data bằng 0 không?",
+      "options": [
+        "Không, nó tạo type; instance cần khởi tạo theo contract",
+        "Có, mọi type factory tạo zero matrix",
+        "Có, const type alias tự tạo một instance global",
+        "Chỉ nếu rows=cols"
+      ],
+      "correct": 0,
+      "explanation": "Không nhầm declaration và dữ liệu instance."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Runtime matrix values",
+      "question": "Shape biết comptime có làm mọi element value phải biết comptime không?",
+      "options": [
+        "Chỉ nếu T=f32",
+        "Không, instance có thể chứa dữ liệu runtime phù hợp kiểu",
+        "Có, mọi field của generic type luôn compile-time constant",
+        "Có, chỉ matrix literal được phép"
+      ],
+      "correct": 1,
+      "explanation": "Kiểu biết lúc compile không loại dữ liệu runtime."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Different dimensions",
+      "question": "Matrix(f32,2,3) có data kiểu nào?",
+      "options": [
+        "[6]f32 tự động cùng kiểu",
+        "[]f32 không shape",
+        "[2][3]f32",
+        "[3][2]f32"
+      ],
+      "correct": 2,
+      "explanation": "Cách biểu diễn nested arrays là một phần kiểu."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Different T",
+      "question": "Matrix(i32,2,2) khác Matrix(f32,2,2) ở đâu?",
+      "options": [
+        "Chỉ tên biến caller",
+        "Hai kiểu luôn đồng nhất vì cùng shape",
+        "Một bên tự có GC",
+        "Element type của data và các phép dùng dữ liệu phải theo kiểu đó"
+      ],
+      "correct": 3,
+      "explanation": "Cùng shape không có nghĩa cùng type."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Shape mismatch init",
+      "question": "Initializer 2 hàng mỗi hàng 3 phần tử có tự phù hợp [2][2]T không?",
+      "options": [
+        "Không, shape initializer phải khớp kiểu",
+        "Có, compiler tự cắt mọi phần tử dư",
+        "Có, const tự đổi cols thành 3",
+        "Chỉ nếu các giá trị bằng 0"
+      ],
+      "correct": 0,
+      "explanation": "Không biến dữ liệu sai shape thành đúng ngầm."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Index matrix",
+      "question": "Với [2][3]T, data[1][2] chọn gì?",
+      "options": [
+        "Một slice toàn hàng đầu",
+        "Hàng thứ hai, cột thứ ba",
+        "Hàng thứ ba, cột thứ hai",
+        "Phần tử ngoài bounds mọi trường hợp"
+      ],
+      "correct": 1,
+      "explanation": "Index thông thường bắt đầu từ 0."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Size elements",
+      "question": "[2][3]T chứa bao nhiêu element T?",
+      "options": [
+        "2",
+        "3",
+        "6",
+        "5"
+      ],
+      "correct": 2,
+      "explanation": "Nhân số hàng và số cột theo shape."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Zero dimensions",
+      "question": "Source Matrix có tự cấm rows=0 hoặc cols=0 không?",
+      "options": [
+        "Có, usize tự chỉ nhận số dương",
+        "Có, mọi array zero length bị cấm",
+        "Chỉ nếu dùng f32",
+        "Không, chưa có validation cấm dimensions zero"
+      ],
+      "correct": 3,
+      "explanation": "Quy tắc domain cần được thêm nếu muốn cấm."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "usize zero",
+      "question": "Giá trị 0 có thuộc miền usize không?",
+      "options": [
+        "Có",
+        "Không, usize bắt đầu từ 1",
+        "Chỉ khi comptime",
+        "Chỉ trên target 64 bit"
+      ],
+      "correct": 0,
+      "explanation": "Unsigned không có nghĩa strictly positive."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Runtime rows",
+      "question": "rows đọc từ stdin runtime có truyền trực tiếp vào comptime rows của Matrix được không?",
+      "options": [
+        "Chỉ nếu rows dưới 10",
+        "Không, cần thiết kế runtime representation hoặc tập shape biết trước",
+        "Có, lưu vào const là đủ",
+        "Có, usize tự được compiler biết"
+      ],
+      "correct": 1,
+      "explanation": "Comptime không quay ngược thời gian để lấy input."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Known config",
+      "question": "Rows lấy từ cấu hình build được cung cấp lúc biên dịch có thể phù hợp comptime không?",
+      "options": [
+        "Chỉ nếu tên biến rows",
+        "Chỉ khi data chưa khởi tạo",
+        "Có, nếu giá trị thực sự biết trong context compile-time",
+        "Không, mọi cấu hình đều runtime"
+      ],
+      "correct": 2,
+      "explanation": "Nguồn và thời điểm cung cấp cấu hình cần rõ."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Generic add type",
+      "question": "Với add(comptime T:type,a:T,b:T)T, hai input theo contract nào?",
+      "options": [
+        "Mọi hai kiểu bất kỳ tự giữ nguyên rồi cộng",
+        "Chỉ kiểu literal string",
+        "Tự đổi thành anyerror",
+        "Cùng kiểu T hoặc coercion phù hợp context T"
+      ],
+      "correct": 3,
+      "explanation": "Chữ ký generic vẫn ràng buộc kiểu cụ thể."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Add integer",
+      "question": "add(i32,2,3) theo phép cộng thông thường có kết quả gì?",
+      "options": [
+        "5 kiểu i32",
+        "String \"23\"",
+        "5 kiểu bool",
+        "Một array 2 phần tử"
+      ],
+      "correct": 0,
+      "explanation": "T được chọn rõ trong lời gọi."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Add float",
+      "question": "add(f64,1.5,2.0) theo toán học cho gì?",
+      "options": [
+        "Một error set",
+        "3.5",
+        "3 do mọi generic cộng nguyên",
+        "1.52 như nối string"
+      ],
+      "correct": 1,
+      "explanation": "Hợp đồng dùng toán tử + cho f64."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Unsupported T",
+      "question": "Một struct tùy ý truyền cho generic a+b có được bảo đảm hỗ trợ chỉ vì là type không?",
+      "options": [
+        "Có, mọi struct là numeric nếu có hai field",
+        "Chỉ nếu đặt tên T",
+        "Không, body cần phép toán hợp lệ cho T được chọn",
+        "Có, comptime tự tạo mọi operator"
+      ],
+      "correct": 2,
+      "explanation": "Generic không thay năng lực của kiểu."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Bool add",
+      "question": "Muốn generic chỉ hỗ trợ integer/float, có nên mặc định bool cũng được cộng như số không?",
+      "options": [
+        "Có, bool luôn numeric 0/1 ngầm trong Zig",
+        "Có, anytype tự đổi bool thành i32",
+        "Chỉ nếu caller const",
+        "Không, cần kiểm phạm vi hỗ trợ theo API"
+      ],
+      "correct": 3,
+      "explanation": "Không áp coercion bool của ngôn ngữ khác."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Anytype",
+      "question": "Tham số anytype hỗ trợ gì?",
+      "options": [
+        "Suy kiểu tham số khi function được dùng theo context",
+        "Chứa một dynamic type tag tự động ở mọi runtime value",
+        "Bỏ mọi kiểm tra body function",
+        "Tự heap box mọi input"
+      ],
+      "correct": 0,
+      "explanation": "Type inference không phải dynamic unchecked dispatch."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Anytype restrictions",
+      "question": "Function anytype dùng phép + có nhận mọi kiểu mà không lỗi không?",
+      "options": [
+        "Chỉ nếu function pub",
+        "Không, specialization vẫn cần body hợp lệ cho kiểu input",
+        "Có, anytype vô hiệu hóa type checking",
+        "Có, compiler tự nối mọi representation"
+      ],
+      "correct": 1,
+      "explanation": "Generic body vẫn có ràng buộc semantics."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Var m nguồn",
+      "question": "Source khai báo var m nhưng không mutate và không dùng m. Cần xử lý ý định nào?",
+      "options": [
+        "Đổi tên m thành matrix để tự hết unused",
+        "Comptime khiến mọi local var tự được miễn diagnostic",
+        "Dùng giá trị m có chủ đích và chọn const nếu không cần mutation",
+        "Chỉ giữ dòng print cố định làm m được dùng tự động"
+      ],
+      "correct": 2,
+      "explanation": "Không coi print message là việc dùng instance."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Const m",
+      "question": "Đổi var m sang const có tự giải quyết việc giá trị vẫn không được dùng không?",
+      "options": [
+        "Có, mọi const được coi là đã dùng",
+        "Có, const tự in data",
+        "Chỉ nếu matrix đơn vị",
+        "Không, mutability và unused value là hai vấn đề riêng"
+      ],
+      "correct": 3,
+      "explanation": "Cần nối giá trị tới mục tiêu chương trình."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Print fixed message",
+      "question": "Dòng \"Matrix initialized!\" không tham chiếu m có tự kiểm data[0][0] không?",
+      "options": [
+        "Không, nội dung message không đọc field đó",
+        "Có, chữ Matrix làm compiler kiểm toàn m",
+        "Có, std.debug.print tự inspect mọi local",
+        "Chỉ nếu m const"
+      ],
+      "correct": 0,
+      "explanation": "Diagnostic/trình bày khác phép sử dụng dữ liệu cụ thể."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Comptime validation",
+      "question": "Muốn cấm dimension zero ngay lúc tạo type, nên dùng gì theo thiết kế?",
+      "options": [
+        "Dùng allocator để tự sửa shape",
+        "Kiểm comptime parameter và báo compile error có chủ đích khi vi phạm",
+        "Đợi print runtime rồi đổi nhãn",
+        "Đổi usize sang u8 để tự cấm 0"
+      ],
+      "correct": 1,
+      "explanation": "Validation ở đúng giai đoạn cải thiện contract generic."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Runtime validation",
+      "question": "Nếu dữ liệu element nhập runtime cần nằm trong 0..1, comptime shape có tự kiểm chúng chưa?",
+      "options": [
+        "Rồi, type f32 tự cấm ngoài 0..1",
+        "Chỉ cần đặt tên identity",
+        "Chưa, cần runtime validation theo dữ liệu thật",
+        "Rồi, shape=2x2 tự bảo đảm mọi value hợp lệ"
+      ],
+      "correct": 2,
+      "explanation": "Type/domain value là các hợp đồng khác nhau."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Overflow add",
+      "question": "Generic add(i32,...) có tự dùng số nguyên vô hạn khi input runtime không?",
+      "options": [
+        "Có, comptime T làm mọi phép tính vô hạn",
+        "Có, anytype tự widen mọi kết quả",
+        "Chỉ nếu return const",
+        "Không, cần overflow policy phù hợp i32"
+      ],
+      "correct": 3,
+      "explanation": "Specialization không tự thay miền arithmetic của kiểu."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Float precision",
+      "question": "Generic add(f64,...) có bảo đảm mọi số thập phân cộng chính xác tuyệt đối không?",
+      "options": [
+        "Không, precision của f64 vẫn áp dụng",
+        "Có, comptime loại mọi sai số runtime",
+        "Có, generic tự dùng phân số hữu tỷ",
+        "Chỉ nếu input dương"
+      ],
+      "correct": 0,
+      "explanation": "Generic không xóa representation limits."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Mixed types",
+      "question": "Caller có i32 và f64 runtime, muốn gọi add với một T. Cần gì?",
+      "options": [
+        "Dùng const để signedness/precision tự khớp",
+        "Chọn conversion/semantics rõ hoặc thiết kế API hỗ trợ mixed types có chủ đích",
+        "Bỏ T để mọi numeric giữ hai kiểu rồi tự có đáp án duy nhất",
+        "Đổi tên biến thành cùng tên"
+      ],
+      "correct": 1,
+      "explanation": "Không suy một policy numeric promotion chung ngoài contract Zig."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Comptime function call",
+      "question": "Một function không ghi keyword comptime ở declaration có thể được đánh giá ở context comptime khi hợp lệ không?",
+      "options": [
+        "Chỉ nếu trả void",
+        "Chỉ nếu dùng heap",
+        "Có, nếu input và body phù hợp compile-time evaluation",
+        "Không, mọi function đều runtime trừ tên có comptime"
+      ],
+      "correct": 2,
+      "explanation": "Context evaluation khác cú pháp tên function."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Comptime side effects",
+      "question": "Comptime có cho phép tùy ý đọc input bàn phím runtime của lần chạy tương lai không?",
+      "options": [
+        "Có, compiler giữ kết nối tới stdin của executable tương lai",
+        "Có, const tự tạo input đã biết",
+        "Chỉ nếu output là type",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Không trộn compile-time execution với tương lai runtime."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "TypeInfo",
+      "question": "@typeInfo(T) thường phục vụ gì?",
+      "options": [
+        "Xem thông tin phân loại/cấu trúc kiểu tại compile-time",
+        "Đọc giá trị từng phần tử matrix runtime",
+        "Cấp phát một object T",
+        "Tự đo tốc độ mọi phép +"
+      ],
+      "correct": 0,
+      "explanation": "Reflection kiểu khác dữ liệu instance."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Unsupported diagnostic",
+      "question": "Thông báo compile error rõ cho T không hỗ trợ có lợi ích gì?",
+      "options": [
+        "Tự giảm mọi binary xuống 0 byte",
+        "Giúp caller hiểu contract thay vì chờ lỗi operator sâu hơn",
+        "Tự làm T hỗ trợ phép toán",
+        "Tự sửa mọi input runtime"
+      ],
+      "correct": 1,
+      "explanation": "Diagnostic không là implementation của phép toán thiếu."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Shape alias",
+      "question": "Đặt alias Mat2x2 có thay shape của một instance khác type không?",
+      "options": [
+        "Có, chữ 2 trong tên làm compiler sửa data",
+        "Chỉ nếu dùng var",
+        "Không, alias là tên cho type được tạo",
+        "Có, mọi matrix trong scope tự thành 2x2"
+      ],
+      "correct": 2,
+      "explanation": "Tên người dùng không là phép chuyển dữ liệu."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Transpose",
+      "question": "Đổi tên Matrix(2,3) thành Mat3x2 có tự transpose data không?",
+      "options": [
+        "Có, tên alias quyết định shape thực",
+        "Có, comptime tự chọn shape theo tên",
+        "Chỉ nếu f32",
+        "Không, phải đổi type/logic và dữ liệu phù hợp nếu muốn transpose"
+      ],
+      "correct": 3,
+      "explanation": "Semantics đến từ tham số/body, không từ nhãn alias."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Zero cost giới hạn",
+      "question": "Comptime type generation có chứng minh mọi instance không cần storage runtime không?",
+      "options": [
+        "Không, data của instance vẫn cần representation/storage theo cách dùng",
+        "Có, mọi field generic biến mất",
+        "Có, type factory tự giữ data ngoài memory",
+        "Chỉ nếu shape vuông"
+      ],
+      "correct": 0,
+      "explanation": "Không có chi phí dispatch không có nghĩa dữ liệu miễn phí."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Specialization volume",
+      "question": "Tạo nhiều specialization shape/T có thể cần cân nhắc gì?",
+      "options": [
+        "Chỉ số ký tự tên alias",
+        "Build time và code/type complexity tùy cách dùng, không chỉ tốc độ runtime",
+        "Mọi specialization đều miễn phí tuyệt đối ở mọi giai đoạn",
+        "Mọi T đều chung một unchecked runtime body"
+      ],
+      "correct": 1,
+      "explanation": "Chi phí compile-time và runtime khác nhau."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Index safety",
+      "question": "Comptime shape có làm mọi runtime index vào data hợp lệ không?",
+      "options": [
+        "Có, generic tự wrap index",
+        "Chỉ nếu matrix đơn vị",
+        "Không, index vẫn phải nằm trong bounds",
+        "Có, fixed array bỏ mọi bounds contract"
+      ],
+      "correct": 2,
+      "explanation": "Known bounds không bảo đảm input index đúng."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Dimension max",
+      "question": "Muốn giới hạn tổng số phần tử, chỉ kiểm rows và cols riêng nhỏ hơn max có luôn đủ không?",
+      "options": [
+        "Có, mỗi dimension hợp lệ bảo đảm mọi tích hợp lệ",
+        "Có, usize tự vô hạn khi comptime",
+        "Chỉ nếu rows=cols",
+        "Không, tích và overflow/miền tổng cần được xét"
+      ],
+      "correct": 3,
+      "explanation": "Giới hạn shape cần theo yêu cầu representation/tài nguyên."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Distinct runtime shape",
+      "question": "Ứng dụng cần cùng một variable giữ matrix với nhiều shape runtime tùy input. Fixed generic type riêng có tự đáp ứng không?",
+      "options": [
+        "Không trực tiếp, cần runtime view/container hoặc tagged design phù hợp",
+        "Có, var thay đổi type mỗi lần gán",
+        "Có, const type alias tự đổi theo input",
+        "Chỉ cần anytype field runtime"
+      ],
+      "correct": 0,
+      "explanation": "Mutability không thay kiểu đã xác định."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Matrix generic values",
+      "question": "Matrix(i32,2,2) có nhận initializer chứa 1.5 nguyên vẹn như i32 không?",
+      "options": [
+        "Chỉ nếu field tên data",
+        "Không, element values phải biểu diễn/coerce hợp lệ theo i32",
+        "Có, generic tự lưu phần lẻ riêng",
+        "Có, rows=cols làm mọi numeric hợp lệ"
+      ],
+      "correct": 1,
+      "explanation": "Element representation vẫn ràng buộc dữ liệu."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Unit matrix meaning",
+      "question": "Shape 2x2 có tự chứng minh data là ma trận đơn vị không?",
+      "options": [
+        "Có, tên Mat2x2 đủ xác định values",
+        "Chỉ nếu m const",
+        "Không, cần các giá trị đường chéo/off-diagonal đúng",
+        "Có, mọi square matrix tự là identity"
+      ],
+      "correct": 2,
+      "explanation": "Structural shape không là invariant numeric tự động."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Generic test phạm vi",
+      "question": "Một lời gọi add(i32,1,2) đúng có đủ suy mọi T và mọi range đúng không?",
+      "options": [
+        "Có, generic đúng một specialization nghĩa mọi specialization đúng",
+        "Có, comptime tự chứng minh mọi nghiệp vụ",
+        "Chỉ nếu return type T",
+        "Không, cần contract theo kiểu/phép toán và miền dữ liệu"
+      ],
+      "correct": 3,
+      "explanation": "Phạm vi bằng chứng phải tương ứng specialization và miền giá trị."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Rows runtime làm type",
+      "question": "CLI đọc rows/cols khi chạy rồi muốn gọi Matrix(f32,rows,cols) để tạo kiểu mới. Thiết kế nào phù hợp?",
+      "options": [
+        "Dùng representation runtime với shape/stride/storage contract hoặc chọn trong tập specialization biết trước; không ép input tương lai thành comptime",
+        "Lưu rows/cols vào const là đủ cho mọi type expression",
+        "Đổi usize thành u8 để compiler biết input",
+        "Print dimensions trước declaration type để build thấy giá trị"
+      ],
+      "correct": 0,
+      "explanation": "Compile-time type và runtime shape cần ranh giới rõ."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Generic add mixed policy",
+      "question": "API add(T,a,b) được dùng với số nguyên tiền và f64 tỉ lệ, caller muốn tự giữ mọi precision mà không chọn T. Cần gì?",
+      "options": [
+        "Đổi tên function thành safeAdd để có arithmetic vô hạn",
+        "Định nghĩa conversion/representation và kết quả theo domain, hoặc tách API phù hợp; comptime không tự chọn policy tiền",
+        "Dùng anytype là tự bảo đảm không mất precision mọi input",
+        "Ép mọi input thành u8 để thống nhất kiểu"
+      ],
+      "correct": 1,
+      "explanation": "Generic flexibility không thay quyết định representation numeric."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Shape zero domain",
+      "question": "Matrix cho phép rows=0 theo kiểu array nhưng thuật toán sau luôn đọc data[0][0]. Muốn contract chỉ nhận shape nonempty nên làm gì?",
+      "options": [
+        "Dùng ReleaseFast để data[0][0] hợp lệ với empty",
+        "Chỉ đặt tên alias NonEmpty để thay shape",
+        "Kiểm comptime dimensions và báo lỗi rõ hoặc thiết kế thuật toán hỗ trợ empty trước truy cập",
+        "Coi usize đã cấm 0 nên không cần guard"
+      ],
+      "correct": 2,
+      "explanation": "Giới hạn kiểu cơ bản không tự là invariant thuật toán."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Kích thước quá lớn",
+      "question": "Factory nhận rows/cols comptime rất lớn, rồi dùng tích để kiểm/cấp storage. Cần xét gì?",
+      "options": [
+        "Comptime tự tạo memory vô hạn vì chưa runtime",
+        "Mỗi usize hợp lệ bảo đảm tích luôn fit",
+        "Đổi data thành const để bỏ storage cost",
+        "Miền tích/overflow và giới hạn tài nguyên/target, không chỉ từng dimension hợp lệ"
+      ],
+      "correct": 3,
+      "explanation": "Biết kích thước lúc compile không có nghĩa mọi kích thước thực tế hợp lý."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Unsupported type branch",
+      "question": "Generic add định hỗ trợ integer/float nhưng một caller truyền struct Point. Cách thiết kế diagnostic phù hợp?",
+      "options": [
+        "Phân loại/kiểm T ở compile-time và báo contract rõ hoặc cung cấp operation riêng cho Point",
+        "Dùng @compileError để compiler tự sinh phép + cho Point",
+        "Chỉ đổi tên fields của Point thành x/y",
+        "Bỏ return type để mọi operator tự hợp lệ"
+      ],
+      "correct": 0,
+      "explanation": "Reflection/diagnostic không thay implementation phép toán không có."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Source m chưa dùng",
+      "question": "Mẫu Matrix tạo var m nhưng chỉ print message cố định. Muốn thực sự minh họa instance mà không né diagnostic tùy tiện cần gì?",
+      "options": [
+        "Đổi message thành Matrix valid để data được kiểm tự động",
+        "Chọn const nếu không mutate và dùng data cụ thể cho tính/hiển thị có ý nghĩa; sửa cả intent lẫn luồng dữ liệu",
+        "Chỉ đổi var thành const rồi không cần dùng m",
+        "Thêm phép tự gán vô nghĩa để coi mọi yêu cầu đã đủ"
+      ],
+      "correct": 1,
+      "explanation": "Use/mutation intent khác một chuỗi thông báo không đọc instance."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Shape đúng value sai",
+      "question": "Initializer 2x2 đúng kiểu nhưng các off-diagonal khác 0; code gọi đó là identity để dùng thuật toán. Cần gì?",
+      "options": [
+        "Đổi alias thành Identity2x2 tự sửa values",
+        "Dùng comptime T làm mọi off-diagonal thành 0",
+        "Kiểm invariant giá trị theo mục tiêu, không coi shape/type đúng là identity numeric",
+        "Mọi Matrix(T,2,2) tự là identity"
+      ],
+      "correct": 2,
+      "explanation": "Structural typing không tự chứng minh tính chất đại số của dữ liệu."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Matrix transpose nhầm",
+      "question": "Team đổi alias sang Matrix(f32,3,2) nhưng giữ initializer 2 hàng 3 cột và gọi đó là transpose. Cách sửa?",
+      "options": [
+        "Compiler tự transpose mọi initializer khi shape khác",
+        "Cùng 6 element nghĩa nested shapes luôn tương đương kiểu",
+        "Chỉ đổi message output thành 3x2",
+        "Căn shape và logic ánh xạ data[j][i] theo thiết kế, không chỉ đổi tên/type alias"
+      ],
+      "correct": 3,
+      "explanation": "Số phần tử bằng nhau chưa đủ cùng cấu trúc hay phép biến đổi."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Type known data runtime",
+      "question": "Mô hình cần matrix fixed 2x2 nhưng dữ liệu từ cảm biến runtime; team cho rằng comptime Matrix không dùng được. Nhận định đúng?",
+      "options": [
+        "Factory type biết comptime còn instance values có thể runtime; validate dữ liệu và dùng kiểu đã chọn",
+        "Mọi field của type sinh comptime bắt buộc là literal",
+        "Chỉ đổi data sang string mới cho runtime",
+        "Dùng var sẽ làm cả rows/cols runtime trong kiểu"
+      ],
+      "correct": 0,
+      "explanation": "Thời điểm biết kiểu và biết giá trị field khác nhau."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Add overflow runtime",
+      "question": "add(i32,a,b) dùng input gần max; compile specialization thành công. Có thể hứa sum luôn biểu diễn được không?",
+      "options": [
+        "Chỉ in sum nhiều chữ số là đủ",
+        "Không, cần overflow policy/range hoặc kiểu đủ miền, specialization không chứng minh mọi input runtime",
+        "Có, comptime T làm mọi phép + dùng integer vô hạn",
+        "Có, compile thành công nghĩa mọi giá trị runtime đã được xét"
+      ],
+      "correct": 1,
+      "explanation": "Phân tích kiểu không thay bảo đảm miền giá trị của phép tính."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Float zero cost",
+      "question": "Team nói generic add(f64) zero-cost nên mọi tổng thập phân chính xác tuyệt đối và không cần policy so sánh. Cần phân biệt gì?",
+      "options": [
+        "Comptime loại mọi rounding runtime cho input tương lai",
+        "Dùng const làm IEEE values thành số học thực vô hạn",
+        "Chi phí abstraction khác representation/precision của f64; chọn so sánh và làm tròn theo mục tiêu",
+        "Zero-cost tự chuyển f64 thành phân số chính xác"
+      ],
+      "correct": 2,
+      "explanation": "Hiệu năng abstraction và tính chính xác numeric là hai khía cạnh riêng."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Compile-time config và deployed input",
+      "question": "Rows lấy từ build config còn values từ request runtime; thay rows trong request có tự đổi kiểu binary đã build không?",
+      "options": [
+        "Có, field tên rows tự làm compiler chạy lại",
+        "Có, const request đổi specialization sau deploy",
+        "Chỉ nếu type factory public",
+        "Không, phải giữ schema runtime phù hợp type đã build hoặc chọn thiết kế dynamic/dispatch rõ"
+      ],
+      "correct": 3,
+      "explanation": "Cấu hình build không trở thành biến kiểu runtime tự động."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Anytype chấp nhận quá rộng",
+      "question": "Helper anytype dùng a+b, không ghi contract; bool/string/pointer callers gặp lỗi khác nhau. Cách cải thiện?",
+      "options": [
+        "Nêu phạm vi kiểu và kiểm/thiết kế operation phù hợp, cung cấp diagnostic rõ thay vì hứa mọi giá trị bất kỳ",
+        "Anytype đã bảo đảm mọi phép toán nên lỗi phải do caller không dùng const",
+        "Chuyển mọi input thành địa chỉ để cộng như số",
+        "Bỏ body type checking để giữ generic"
+      ],
+      "correct": 0,
+      "explanation": "Type inference vẫn cần semantics operator hợp lệ."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Inline unroll và runtime work",
+      "question": "Một inline loop theo dimension comptime chạy operation trên data runtime. Có thể coi mọi việc trong loop đã hoàn tất lúc build chưa?",
+      "options": [
+        "Chỉ nếu loop có 2 lượt",
+        "Không, unroll/control specialization có thể biết comptime nhưng operation trên dữ liệu runtime vẫn thực hiện khi chạy",
+        "Có, inline tự biến input cảm biến tương lai thành literal",
+        "Có, comptime rows làm data values biết hết"
+      ],
+      "correct": 1,
+      "explanation": "Phân biệt code generation và dữ liệu mà code xử lý."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Target usize",
+      "question": "Dimensions/size calculations dùng usize; team hardcode giả định luôn 64 bit khi cross-build sang target 32 bit. Cần gì?",
+      "options": [
+        "Đổi alias matrix là đủ mở rộng địa chỉ đích",
+        "Dùng f32 element làm usize tự thành 64 bit",
+        "Xét target-dependent range và giới hạn arithmetic/storage, không suy từ host",
+        "Comptime usize luôn bằng host 64 bit cho mọi target"
+      ],
+      "correct": 2,
+      "explanation": "Kiểu phụ thuộc target không được suy từ máy biên dịch đơn thuần."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Many specializations",
+      "question": "API cho caller tạo tùy ý hàng nghìn shape/T và nhóm chỉ tối ưu runtime call overhead. Cần cân nhắc thêm gì?",
+      "options": [
+        "Comptime không dùng tài nguyên build nên không có tradeoff",
+        "Mọi specialization tự dùng cùng unchecked body runtime",
+        "Chỉ đổi tên type ngắn hơn để giải quyết mọi chi phí",
+        "Build time/code size/type complexity và thiết kế representation phù hợp use case, không hứa mọi specialization miễn phí"
+      ],
+      "correct": 3,
+      "explanation": "Di chuyển việc sang compile-time không làm mọi chi phí biến mất."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Validation ở sai giai đoạn",
+      "question": "Factory kiểm shape lúc comptime, caller bỏ validation giá trị matrix runtime vì cho rằng mọi thứ đã được kiểm. Cần gì?",
+      "options": [
+        "Giữ shape/type checks và value/domain checks ở giai đoạn có dữ liệu tương ứng",
+        "Mọi runtime value tự hợp lệ vì type đã tạo thành công",
+        "Chỉ cần format output để values hợp domain",
+        "Comptime tự xem toàn bộ request tương lai"
+      ],
+      "correct": 0,
+      "explanation": "Bảo đảm cấu trúc không thay kiểm invariant dữ liệu."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Matrix chứa slice",
+      "question": "Generic Matrix(T,2,2) dùng T=[]const u8; team copy instance rồi free backing strings của bản gốc, nghĩ generic đã deep clone. Nhận định?",
+      "options": [
+        "Đổi Mat2x2 sang const sẽ giữ strings sống",
+        "Array/struct copy chứa slice descriptors vẫn có thể alias; cần ownership/clone/lifetime theo element type",
+        "Mọi generic nested array tự deep copy mọi pointee",
+        "Comptime type factory tự thêm reference counting"
+      ],
+      "correct": 1,
+      "explanation": "Generic container không tự suy ownership tài nguyên gián tiếp."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Arithmetic compile vs runtime",
+      "question": "add với literal comptime vượt miền kiểu bị diagnostic; cùng kiểu input runtime vẫn cần range policy. Vì sao không coi chỉ một lỗi literal đã giải mọi overflow?",
+      "options": [
+        "Đổi input thành const luôn làm nó compile-time literal",
+        "ReleaseFast tự dùng rộng hơn T khi gần overflow",
+        "Compiler có thể phát hiện case biết trước, còn input runtime cần arithmetic/validation phù hợp miền",
+        "Mọi overflow runtime được biến thành compile error trước khi input tồn tại"
+      ],
+      "correct": 2,
+      "explanation": "Thời điểm biết dữ liệu quyết định loại kiểm khả dụng."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Generic matrix sum",
+      "question": "Ứng dụng dùng Matrix(i32,R,C) với dimensions từ build config và values runtime, cần tổng không overflow và không cho shape rỗng. Thiết kế nào đúng?",
+      "options": [
+        "Chỉ comptime dimensions là đủ chứng minh mọi tổng i32 hợp lệ",
+        "Chuyển mọi values thành const để không cần kiểm numeric range",
+        "Đổi alias thành SafeMatrix để tự có nonempty và sum chính xác",
+        "Kiểm dimensions comptime theo domain, giữ instance runtime đúng shape và dùng accumulator/overflow policy đủ miền cho values"
+      ],
+      "correct": 3,
+      "explanation": "Bài toán phối hợp type generation, invariant shape và arithmetic runtime theo cùng mục tiêu."
+    }
+  ]
+}

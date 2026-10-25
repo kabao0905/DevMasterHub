@@ -1,0 +1,1132 @@
+{
+  "version": 1,
+  "tech": "solidity",
+  "level": "junior",
+  "lesson": "security",
+  "language": "vi",
+  "sourceHash": "cdfdca143bd3821798ec33e7864d589d9a691a4d1db82f422aae9c41757553e3",
+  "status": "approved",
+  "review": "Soạn trực tiếp theo SecureVault và Solidity 0.8.20 security considerations. Suy luận CEI/guard/call success/rollback và đường state liên quan; nguồn chưa có deposit hay cấp balance. Không coi CEI/guard là bảo đảm toàn giao thức; không exploit, deploy, RPC hoặc transaction.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Reentrancy",
+      "question": "Reentrancy liên quan điều gì?",
+      "options": [
+        "Control quay lại contract trước khi tương tác ngoài trước đó hoàn tất",
+        "Mọi lần gọi cùng hàm ở hai giao dịch độc lập",
+        "Chỉ lỗi cộng uint256 vượt giới hạn",
+        "Chỉ một giao dịch bị chậm chờ block"
+      ],
+      "correct": 0,
+      "explanation": "External interaction có thể mở callback vào luồng chưa hoàn tất."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "CEI",
+      "question": "CEI viết tắt cho thứ tự nào?",
+      "options": [
+        "Constructor, Ether, Interface",
+        "Checks, Effects, Interactions",
+        "Calls, Events, Initialization",
+        "Checks, Encryption, Imports"
+      ],
+      "correct": 1,
+      "explanation": "Kiểm trước, cập nhật state liên quan rồi tương tác ngoài."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Checks nguồn",
+      "question": "Điều kiện amount > 0 thuộc nhóm nào?",
+      "options": [
+        "Interactions",
+        "Khởi tạo constructor",
+        "Checks",
+        "Effects"
+      ],
+      "correct": 2,
+      "explanation": "Đây là điều kiện trước khi tiếp tục rút."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Effects nguồn",
+      "question": "balances[msg.sender] = 0 thuộc nhóm nào?",
+      "options": [
+        "Interactions",
+        "Event decoding",
+        "Compiler configuration",
+        "Effects"
+      ],
+      "correct": 3,
+      "explanation": "Nó thay accounting trước external call."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Interaction nguồn",
+      "question": "msg.sender.call{value: amount}(...) là bước nào?",
+      "options": [
+        "Interactions",
+        "Chỉ đọc mapping nội bộ",
+        "Chỉ kiểm quyền owner",
+        "Chỉ khai báo event"
+      ],
+      "correct": 0,
+      "explanation": "Control có thể đi vào code của recipient."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Guard state",
+      "question": "Biến nào dùng làm khóa trong mẫu?",
+      "options": [
+        "owner",
+        "locked",
+        "amount",
+        "success"
+      ],
+      "correct": 1,
+      "explanation": "locked là state bool của modifier."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Guard đầu",
+      "question": "require(!locked) yêu cầu gì?",
+      "options": [
+        "Vault luôn đủ Ether",
+        "Caller là deployer",
+        "Chưa có luồng giữ khóa này",
+        "Caller bắt buộc là EOA"
+      ],
+      "correct": 2,
+      "explanation": "Guard kiểm trạng thái luồng, không thay mọi điều kiện khác."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Khóa trước body",
+      "question": "Modifier đặt locked = true khi nào?",
+      "options": [
+        "Sau khi gửi Ether xong mới lần đầu",
+        "Chỉ trong constructor",
+        "Chỉ khi recipient là EOA",
+        "Trước phần thân withdraw"
+      ],
+      "correct": 3,
+      "explanation": "Khóa phải có hiệu lực lúc external interaction diễn ra."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Mở khóa",
+      "question": "Sau body hoàn tất bình thường, modifier làm gì?",
+      "options": [
+        "Đặt locked = false",
+        "Xóa toàn bộ balances",
+        "Gửi thêm amount lần nữa",
+        "Đặt owner bằng caller"
+      ],
+      "correct": 0,
+      "explanation": "Khóa này ngăn lồng trong luồng, không khóa vĩnh viễn sau một call thành công."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Placeholder",
+      "question": "_; trong noReentrant đại diện gì?",
+      "options": [
+        "Một event xác nhận rút",
+        "Phần thân hàm được bọc",
+        "Một callback bắt buộc tới recipient",
+        "Một phép xóa locked"
+      ],
+      "correct": 1,
+      "explanation": "Code trước/sau placeholder bao phần thân hàm."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Amount snapshot",
+      "question": "amount nhận giá trị nào ở đầu withdraw?",
+      "options": [
+        "Gas limit",
+        "balances của deployer",
+        "balances[msg.sender]",
+        "Toàn bộ address(this).balance"
+      ],
+      "correct": 2,
+      "explanation": "Mẫu rút sổ của caller, không mặc định rút hết tiền vault."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Người nhận",
+      "question": "Ether trong external call được gửi tới ai?",
+      "options": [
+        "address(0)",
+        "Owner ngầm định",
+        "Mọi khóa trong balances",
+        "msg.sender"
+      ],
+      "correct": 3,
+      "explanation": "Caller cũng là khóa sổ được dùng trong mẫu."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Success",
+      "question": "Biến bool success phản ánh gì?",
+      "options": [
+        "Trạng thái thành công của low-level call",
+        "Caller chắc chắn là người tốt",
+        "Vault đã qua audit",
+        "Mọi invariant của giao thức đúng"
+      ],
+      "correct": 0,
+      "explanation": "Low-level success có ý nghĩa hữu hạn của lời gọi đó."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Call failure",
+      "question": "require(success) nhằm làm gì?",
+      "options": [
+        "Chỉ ghi log lỗi rồi vẫn thành công",
+        "Revert nếu external transfer call thất bại",
+        "Tự thử lại vô hạn",
+        "Tự mint phần Ether thiếu"
+      ],
+      "correct": 1,
+      "explanation": "Không bỏ qua kết quả low-level call."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Private locked",
+      "question": "private trên locked có ý nghĩa chính gì?",
+      "options": [
+        "Ngăn callback vào mọi hàm public",
+        "Tự làm external call an toàn",
+        "Hạn chế truy cập tên biến theo visibility Solidity",
+        "Mã hóa state khóa khỏi node"
+      ],
+      "correct": 2,
+      "explanation": "Visibility không thay guard hoặc bảo mật dữ liệu on-chain."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Nguồn số dư",
+      "question": "Mẫu SecureVault có hàm deposit ghi balances không?",
+      "options": [
+        "Có, getter balances tự ghi",
+        "Có, call gửi Ether tự tăng balances",
+        "Có, noReentrant tự tạo số dư",
+        "Không"
+      ],
+      "correct": 3,
+      "explanation": "Đây là đoạn rút tiền, chưa đầy đủ lifecycle nạp."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Default balance",
+      "question": "Một địa chỉ chưa được code nào ghi balances có số dư gì?",
+      "options": [
+        "0",
+        "Toàn Ether trong ví",
+        "Toàn Ether trong vault",
+        "null"
+      ],
+      "correct": 0,
+      "explanation": "Default của uint256 trong mapping là zero."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Phân quyền",
+      "question": "Theo key point, dùng biến nào để kiểm caller trực tiếp thay vì tx.origin?",
+      "options": [
+        "block.number",
+        "msg.sender",
+        "block.timestamp",
+        "msg.value"
+      ],
+      "correct": 1,
+      "explanation": "tx.origin theo caller gốc và có boundary khác."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Guard library",
+      "question": "ReentrancyGuard của thư viện có vai trò gì?",
+      "options": [
+        "Tự kiểm mọi quyền admin",
+        "Tự cấp tiền cho balances",
+        "Cung cấp cơ chế chặn các đường tái nhập được áp guard đó",
+        "Tự sửa mọi lỗi accounting"
+      ],
+      "correct": 2,
+      "explanation": "Cần áp đúng phạm vi và kết hợp invariant/CEI."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Trước hay sau",
+      "question": "Nguồn đặt số dư về 0 trước hay sau external call?",
+      "options": [
+        "Sau",
+        "Chỉ sau khi nhận callback",
+        "Không bao giờ đặt về 0",
+        "Trước"
+      ],
+      "correct": 3,
+      "explanation": "Đây là phần quan trọng của CEI trong ví dụ."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Chưa nạp",
+      "question": "Với instance mới chỉ có đúng source, A gọi withdraw khi balances[A] vẫn 0. Điều gì xảy ra?",
+      "options": [
+        "Revert tại kiểm amount > 0",
+        "Tự rút toàn Ether trong ví A",
+        "Gửi 0 rồi thành công",
+        "Tự cấp balance từ address(this).balance"
+      ],
+      "correct": 0,
+      "explanation": "Mẫu chưa có đường ghi balance dương."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Không nhận diện EOA",
+      "question": "Mẫu noReentrant có tự cấm mọi contract caller không?",
+      "options": [
+        "Chỉ indexed address mới gọi được",
+        "Không, nó kiểm locked chứ không loại caller theo loại địa chỉ",
+        "Có, private bool chỉ chấp nhận EOA",
+        "Có, require amount dương loại mọi contract"
+      ],
+      "correct": 1,
+      "explanation": "Contract recipient có thể có callback nhưng không tự bị cấm."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Callback thời điểm",
+      "question": "Trong lúc recipient callback từ call nguồn, locked có giá trị gì nếu đang đi theo luồng bình thường?",
+      "options": [
+        "Bằng amount",
+        "Chưa được khởi tạo",
+        "true",
+        "false vì body đã chạy"
+      ],
+      "correct": 2,
+      "explanation": "Code mở khóa nằm sau body, chưa đến lúc external call chưa xong."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Tái gọi withdraw",
+      "question": "Callback cố gọi withdraw cùng instance trong lúc locked true. Bị chặn ở đâu?",
+      "options": [
+        "Chỉ ở phép chuyển Ether thứ hai",
+        "Ở public getter balances",
+        "Không bị chặn vì sender khác",
+        "require(!locked) của modifier"
+      ],
+      "correct": 3,
+      "explanation": "Khóa state dùng chung cho modifier này trong instance."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Khác recipient",
+      "question": "Callback qua một contract khác rồi quay về withdraw có tự vượt khóa chỉ vì msg.sender đổi không?",
+      "options": [
+        "Không, guard kiểm state locked của vault",
+        "Có, khóa chỉ gắn địa chỉ caller đầu",
+        "Có, balances của caller mới luôn dương",
+        "Chỉ cần có nhiều contract trung gian"
+      ],
+      "correct": 0,
+      "explanation": "Cơ chế guard nguồn không là mapping khóa theo user."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Balance trong callback",
+      "question": "Trong external call nguồn, balances của caller ban đầu đã có giá trị nào?",
+      "options": [
+        "Chưa thể đọc đến khi transaction xong",
+        "0",
+        "Giá trị amount cũ",
+        "Tự tăng bằng msg.value"
+      ],
+      "correct": 1,
+      "explanation": "Effects được thực hiện trước interactions."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Guard và CEI",
+      "question": "Nếu chỉ bỏ guard nhưng giữ code CEI hiện tại, callback cùng caller thấy balance đã zero có thể rút lại amount cũ qua cùng hàm không?",
+      "options": [
+        "Có, call mặc định mint lại balance",
+        "Chỉ cần public getter lấy amount cũ",
+        "Không theo đường này, amount mới là 0 nên require chặn",
+        "Có, local amount của outer call tự trở thành balance mới"
+      ],
+      "correct": 2,
+      "explanation": "Điều này không chứng minh mọi đường khác trong một contract mở rộng đều an toàn."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Chuyển thất bại rollback",
+      "question": "Balance đã zero nhưng external call trả false rồi require(success) revert. Balance của outer call sau rollback ra sao?",
+      "options": [
+        "Vẫn zero vĩnh viễn",
+        "Tăng gấp đôi amount",
+        "Chuyển sang số dư của owner",
+        "Trở về giá trị trước lời gọi"
+      ],
+      "correct": 3,
+      "explanation": "State effects của call bị revert được hoàn tác."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Khóa rollback",
+      "question": "Nếu withdraw revert sau locked = true, có bắt buộc locked bị kẹt true vĩnh viễn không?",
+      "options": [
+        "Không, thay đổi khóa của call revert cũng rollback",
+        "Có, vì chưa chạy dòng mở khóa",
+        "Có, private bool không rollback",
+        "Chỉ nếu caller là EOA"
+      ],
+      "correct": 0,
+      "explanation": "Không cần chạy dòng cuối để rollback state của một call lỗi."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Success bình thường",
+      "question": "Với balance đủ, tiền đủ và recipient chấp nhận, state cuối nguồn là gì?",
+      "options": [
+        "Toàn mapping bị xóa",
+        "Balance caller 0 và locked false",
+        "Balance giữ nguyên và locked true",
+        "Balance tăng amount và locked false"
+      ],
+      "correct": 1,
+      "explanation": "Giả định không có thay đổi khác và withdraw hoàn tất bình thường."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Tiền thực thiếu",
+      "question": "Sổ caller dương nhưng vault không có đủ Ether để call gửi amount. Nguồn sẽ làm gì khi call false?",
+      "options": [
+        "Tự vay Ether của caller",
+        "Tự giảm amount đến khi đủ",
+        "Revert qua require(success), hoàn tác effects trong call",
+        "Giữ sổ zero và coi đã rút"
+      ],
+      "correct": 2,
+      "explanation": "Bookkeeping và tài sản thực cần invariant phù hợp."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Không deposit ngầm",
+      "question": "Gửi Ether bằng một cơ chế ngoài logic ghi sổ có tự tăng balances[A] không?",
+      "options": [
+        "Có, EVM tự phân bổ Ether vào mapping",
+        "Có, public mapping đồng bộ address.balance",
+        "Chỉ cần sender là A",
+        "Không, mapping chỉ tăng nếu code ghi nó"
+      ],
+      "correct": 3,
+      "explanation": "Ether balance thực và accounting không tự là cùng dữ liệu."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Call gas",
+      "question": "Low-level call không giới hạn gas tường minh có chỉ chuyển đúng 2.300 gas cố định như transfer không?",
+      "options": [
+        "Không, chuyển gas theo quy tắc call/EVM và gas còn lại",
+        "Có, mọi chuyển Ether luôn đúng 2.300",
+        "Có, bool success giới hạn callback",
+        "Chỉ khi recipient là contract"
+      ],
+      "correct": 0,
+      "explanation": "Không dùng giả định gas stipend như phòng vệ duy nhất."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Call returndata",
+      "question": "Nguồn bỏ phần return data bằng tuple rỗng. Điều gì vẫn được kiểm?",
+      "options": [
+        "Mọi event do recipient emit",
+        "Bool success của low-level call",
+        "Mọi dữ liệu nghiệp vụ recipient trả về",
+        "Danh tính thật của recipient ngoài chain"
+      ],
+      "correct": 1,
+      "explanation": "Chỉ kiểm những dữ liệu code thực dùng."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Success không audit",
+      "question": "Call success true có chứng minh toàn contract không có reentrancy không?",
+      "options": [
+        "Có, vì call tự bảo vệ storage",
+        "Chỉ khi amount lớn hơn 0",
+        "Không, chỉ kết quả call đó; cần xét toàn luồng/invariants",
+        "Có, true đồng nghĩa mọi kiểm soát đúng"
+      ],
+      "correct": 2,
+      "explanation": "Không mở rộng tín hiệu runtime cục bộ thành bảo đảm toàn hệ thống."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Reorder sai",
+      "question": "Đổi balance = 0 xuống sau external call làm mất phần nào của CEI?",
+      "options": [
+        "Checks bị biến thành constructor",
+        "Interaction trở thành view",
+        "Modifier tự bị xóa",
+        "Effects chưa hoàn tất trước interaction"
+      ],
+      "correct": 3,
+      "explanation": "Recipient có thể thấy accounting cũ trong callback."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Chỉ khóa tên hàm",
+      "question": "Đổi tên withdraw thành safeWithdraw có tạo phòng vệ tái nhập không?",
+      "options": [
+        "Không, cần logic guard/invariant thực",
+        "Có, EVM nhận biết tiền tố safe",
+        "Có, ABI tên mới ngăn mọi contract gọi",
+        "Chỉ khi hàm public"
+      ],
+      "correct": 0,
+      "explanation": "Tên hàm không enforce hành vi."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Tx origin phishing",
+      "question": "Vì sao tx.origin không nên thay msg.sender cho quyền owner tổng quát?",
+      "options": [
+        "Vì tx.origin không tồn tại trong Solidity",
+        "Contract trung gian có thể giữ tx.origin của owner trong khi caller trực tiếp khác",
+        "Vì tx.origin luôn bằng địa chỉ vault",
+        "Vì tx.origin là giá trị gas"
+      ],
+      "correct": 1,
+      "explanation": "Quyền nên kiểm đúng boundary caller theo thiết kế."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Sequential calls",
+      "question": "Hai withdraw độc lập theo thứ tự sau một lần rút hết thành công: lần thứ hai không có nạp thêm sẽ thế nào?",
+      "options": [
+        "Tự rút lại lượng cũ từ local amount",
+        "Tự nhận Ether từ caller để bù",
+        "Revert do amount 0, không phải khóa còn true",
+        "Luôn bị kẹt vì guard không mở lại"
+      ],
+      "correct": 2,
+      "explanation": "Guard mở lại nhưng bookkeeping đã thay đổi."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "External wrapper",
+      "question": "Một hàm mới gọi withdraw nội bộ trong lúc cũng áp cùng guard và giữ locked true có thể gặp gì?",
+      "options": [
+        "Guard tự biết đó là lời gọi an toàn nên bỏ qua",
+        "Private bool chỉ áp trên external calls",
+        "Chỉ cần tăng gas là hết lỗi khóa",
+        "Lời gọi withdraw bị guard chặn; cần bố trí entry point/helper phù hợp"
+      ],
+      "correct": 3,
+      "explanation": "Nesting guard có thể chặn cả lời gọi hợp lệ nếu cấu trúc sai."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Helper design",
+      "question": "Cách tách nhiều entry point dùng chung logic rút với cùng guard thường là gì?",
+      "options": [
+        "Entry point được guard gọi helper nội bộ có invariant rõ",
+        "Mọi helper public đều bỏ kiểm vì đã có một guard",
+        "Đặt locked false ngay trước external call",
+        "Dùng tx.origin để bỏ qua khóa nội bộ"
+      ],
+      "correct": 0,
+      "explanation": "Cấu trúc call cần giữ khóa trong lúc chuyển control."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Cross function",
+      "question": "Guard trên withdraw có tự bảo vệ một hàm public mới không dùng guard nhưng sửa cùng state không?",
+      "options": [
+        "Chỉ nếu tên hàm có chữ balance",
+        "Không",
+        "Có, modifier tự áp toàn contract",
+        "Có, private locked cấm mọi lời gọi khác"
+      ],
+      "correct": 1,
+      "explanation": "Phải xét mọi đường truy cập shared state."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Cross contract",
+      "question": "CEI chỉ trong vault có tự kiểm invariant của mọi contract bên ngoài không?",
+      "options": [
+        "Có, msg.sender.call cấm recipient gọi nơi khác",
+        "Chỉ cần recipient cùng chain",
+        "Không, cần xét dependencies/callbacks và trạng thái liên quan",
+        "Có, EVM tự đồng bộ invariant kinh tế"
+      ],
+      "correct": 2,
+      "explanation": "Phạm vi reentrancy có thể vượt một hàm hoặc một contract."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "View callback",
+      "question": "Một getter public có thể bị gọi trong callback ngay khi state đang ở giữa luồng không?",
+      "options": [
+        "Không, mọi view tự chờ transaction kết thúc",
+        "Không, public getter tự áp noReentrant",
+        "Chỉ caller owner mới đọc được",
+        "Có, nếu không bị code ngăn; cần xét giá trị quan sát và invariants liên quan"
+      ],
+      "correct": 3,
+      "explanation": "Read-only observation cũng cần hiểu theo thời điểm execution."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Read current source",
+      "question": "Getter balances của nguồn trong callback phản ánh gì cho caller ban đầu?",
+      "options": [
+        "Balance đã được đặt về 0 theo effects",
+        "Balance trước giao dịch vì view chỉ đọc block cũ",
+        "Local amount trong stack được trả thay mapping",
+        "Một lỗi bắt buộc vì locked private"
+      ],
+      "correct": 0,
+      "explanation": "Lời gọi on-chain trong cùng execution thấy state theo luồng hiện tại."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Không auth bằng guard",
+      "question": "NoReentrant có thay kiểm quyền quản trị ở một hàm admin mới không?",
+      "options": [
+        "Chỉ cần hàm admin payable",
+        "Không, chống tái nhập và authorization khác mục tiêu",
+        "Có, locked false nghĩa caller được phép mọi thao tác",
+        "Có, guard tự biết owner"
+      ],
+      "correct": 1,
+      "explanation": "Khóa luồng không quyết định mọi quyền nghiệp vụ."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Payable withdraw",
+      "question": "Withdraw nguồn không payable. Gửi value khác 0 kèm call có phải cách nạp balance trước rút không?",
+      "options": [
+        "Có, EVM cộng value vào balances trước body",
+        "Chỉ cần value bằng amount",
+        "Không, hàm không được thiết kế nhận value và không ghi nạp",
+        "Có, payable ngầm từ .call bên trong"
+      ],
+      "correct": 2,
+      "explanation": "Payability của external call bên trong không làm entry point payable."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Không transfer thay CEI",
+      "question": "Thay call bằng transfer có loại nhu cầu CEI/guard/invariant không?",
+      "options": [
+        "Có, 2.300 gas tự chứng minh toàn protocol an toàn",
+        "Có, transfer tự cập nhật balances mapping",
+        "Chỉ cần recipient là ví hôm nay",
+        "Không, không nên dùng giả định stipend làm bảo vệ tổng quát"
+      ],
+      "correct": 3,
+      "explanation": "Cơ chế chuyển Ether và logic accounting đều cần review."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "All-or-nothing recipient",
+      "question": "Recipient từ chối Ether. Với require(success), người rút có bị xóa sổ nhưng không nhận tiền trong cùng call revert không?",
+      "options": [
+        "Không, effects bị rollback",
+        "Có, vì xóa sổ xảy ra trước",
+        "Chỉ nếu amount lớn hơn 1 Ether",
+        "Có, guard chỉ rollback locked"
+      ],
+      "correct": 0,
+      "explanation": "Cần phân biệt thứ tự code với kết quả commit khi lỗi."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Ignore false",
+      "question": "Bỏ require(success) sau call false có thể dẫn đến gì trong mẫu?",
+      "options": [
+        "Tự tạo allowance cho người rút",
+        "Hàm hoàn tất với balance đã zero dù chuyển thất bại",
+        "EVM tự revert vì bool tên success",
+        "Call tự khôi phục mọi effects bên caller"
+      ],
+      "correct": 1,
+      "explanation": "Low-level false phải được xử lý theo semantics mong muốn."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Private không secret",
+      "question": "Người quan sát chain có thể suy locked dù khai báo private không?",
+      "options": [
+        "Chỉ owner đọc được slot",
+        "Chỉ khi có getter public",
+        "Có, private không mã hóa storage",
+        "Không, compiler giấu khỏi mọi node"
+      ],
+      "correct": 2,
+      "explanation": "Mục đích guard không dựa vào khóa bí mật."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Khóa per instance",
+      "question": "Hai instance SecureVault riêng có mặc định dùng chung locked không?",
+      "options": [
+        "Có, private bool là global toàn chain",
+        "Có, cùng bytecode dùng chung mapping",
+        "Chỉ nếu cùng deployer",
+        "Không, mỗi instance có state riêng"
+      ],
+      "correct": 3,
+      "explanation": "Guard state thuộc ngữ cảnh storage của từng instance."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Balance không total vault",
+      "question": "balances[A] bằng 3, balances[B] bằng 4 và tiền thực đủ. A withdraw theo nguồn gửi bao nhiêu?",
+      "options": [
+        "3",
+        "7",
+        "4",
+        "Toàn bộ gas còn lại"
+      ],
+      "correct": 0,
+      "explanation": "Lượng gửi lấy theo key caller."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Local variable persistence",
+      "question": "Sau withdraw xong, amount local có tự lưu làm số dư để lần rút sau dùng lại không?",
+      "options": [
+        "Chỉ khi recipient là contract",
+        "Không",
+        "Có, uint256 local luôn storage",
+        "Có, vì amount từng được dùng trong call"
+      ],
+      "correct": 1,
+      "explanation": "Biến local không thay mapping persistent."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Require before external",
+      "question": "Vì sao kiểm amount > 0 trước external call có ích?",
+      "options": [
+        "Tự làm locked không cần thiết với mọi hàm",
+        "Tự bảo đảm toàn vault đủ tiền trong mọi trường hợp",
+        "Chặn yêu cầu không có entitlement trước khi chuyển control",
+        "Tự xác thực mọi token recipient"
+      ],
+      "correct": 2,
+      "explanation": "Một check không thay các invariant khác."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Guard reset sớm",
+      "question": "Đặt locked = false ngay trước .call có giữ mục tiêu guard trong interaction không?",
+      "options": [
+        "Có, vì balance đã đọc vào local",
+        "Có, private khiến callback không thấy khóa",
+        "Chỉ cần call trả bool",
+        "Không, callback có thể gặp khóa mở"
+      ],
+      "correct": 3,
+      "explanation": "Khóa cần bao khoảng thời gian external control có thể quay lại."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Callback caught",
+      "question": "Recipient thử reenter, lời gọi lồng revert nhưng recipient bắt lỗi rồi trả bình thường. Outer call có bắt buộc false không?",
+      "options": [
+        "Không, outer call có thể thành công nếu recipient xử lý lỗi và hoàn tất bình thường",
+        "Có, mọi revert lồng luôn bắt buộc phá cả transaction",
+        "Có, modifier không cho bắt lỗi",
+        "Chỉ nếu amount là zero"
+      ],
+      "correct": 0,
+      "explanation": "Kết quả phụ thuộc propagation/handling của từng call frame."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Callback propagates",
+      "question": "Nếu recipient để lỗi tái nhập propagate khiến call của vault false, nguồn xử lý thế nào?",
+      "options": [
+        "Gửi Ether lần nữa không qua call",
+        "Require success revert outer withdraw và rollback",
+        "Vẫn thành công vì guard đã chặn tấn công",
+        "Chỉ khóa caller vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "Phòng vệ và khả năng rút thành công cần phân tích riêng."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Guard apply",
+      "question": "Chỉ import ReentrancyGuard mà không kế thừa/áp đúng modifier có tự bảo vệ withdraw không?",
+      "options": [
+        "Có, thư mục security tự enforce",
+        "Chỉ cần đổi tên bool thành _status",
+        "Không",
+        "Có, compiler tự gắn guard vào mọi call"
+      ],
+      "correct": 2,
+      "explanation": "Cần wiring chính xác theo API/version thư viện."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Sum invariant",
+      "question": "Nếu thêm deposit, invariant sổ tổng và tiền thực cần xét khi nào?",
+      "options": [
+        "Chỉ lúc deploy",
+        "Chỉ khi frontend đọc balances",
+        "Chỉ khi locked bằng false ở cuối ngày",
+        "Trên mọi đường nạp/rút/chuyển liên quan và callback boundary"
+      ],
+      "correct": 3,
+      "explanation": "Một đường ghi bị bỏ sót có thể phá accounting chung."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Tái nhập bị bắt lỗi",
+      "question": "A có entitlement, recipient A thử reenter withdraw, bắt lỗi guard rồi chấp nhận tiền. Với nguồn và không lỗi khác, kết quả nào phù hợp?",
+      "options": [
+        "Outer withdraw có thể thành công, A nhận amount một lần, balance 0 và khóa mở lại",
+        "Mọi callback thử reenter tự làm outer transaction thất bại bắt buộc",
+        "Balance A tự phục hồi dù outer thành công",
+        "Khóa bị kẹt vì một call lồng từng revert"
+      ],
+      "correct": 0,
+      "explanation": "Phải tách lỗi call lồng đã được xử lý và kết quả outer call."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "Recipient từ chối",
+      "question": "Recipient để lỗi guard propagate, outer .call false rồi require success fail. Sổ và khóa outer ra sao?",
+      "options": [
+        "Amount đã gửi luôn giữ bên recipient dù outer revert",
+        "Rollback về trạng thái trước withdraw, không giữ xóa sổ hoặc khóa mới",
+        "Sổ 0 nhưng khóa false vì chỉ guard được rollback",
+        "Sổ cũ nhưng khóa true vĩnh viễn"
+      ],
+      "correct": 1,
+      "explanation": "Rollback cần được theo dõi qua call frames liên quan."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Chuyển trước xóa sau",
+      "question": "Một bản sửa bỏ guard và đưa balance = 0 xuống sau .call để trông rõ hơn. Rủi ro phối hợp nào xuất hiện?",
+      "options": [
+        "Public mapping khóa mọi callback",
+        "Chỉ gây lỗi hiển thị event không ảnh hưởng tài sản",
+        "Callback thấy entitlement cũ trước effects và có thể gọi lại đường rút",
+        "Low-level call tự làm amount bằng 0 nên an toàn"
+      ],
+      "correct": 2,
+      "explanation": "Mất cả guard và CEI mở lại khoảng accounting cũ."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "CEI nhưng đường khác",
+      "question": "Withdraw giữ CEI/guard nhưng thêm moveBalance không guard, callback có thể sửa shared accounting. Cần review gì?",
+      "options": [
+        "Chỉ withdraw vì đã có modifier",
+        "Chỉ biến locked có private hay không",
+        "Chỉ gas price của call",
+        "Toàn bộ entry points và invariants shared state trong khoảng interaction"
+      ],
+      "correct": 3,
+      "explanation": "Phòng vệ một hàm không tự bảo vệ cả state machine."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Tổng sổ cập nhật muộn",
+      "question": "Vault mở rộng zero balances[A] trước call nhưng giảm totalLiability sau call; một contract khác đọc totalLiability trong callback. Vấn đề nào cần xét?",
+      "options": [
+        "Invariant giữa tổng và từng sổ chưa đồng bộ tại boundary; cần effects nhất quán trước tương tác",
+        "CEI đã hoàn chỉnh vì có một biến được zero",
+        "Getter view luôn đọc state block trước nên không thấy lệch",
+        "Locked tự chặn mọi getter public"
+      ],
+      "correct": 0,
+      "explanation": "Effects cần bao mọi state có liên quan, không chỉ một dòng."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Nguồn không nạp",
+      "question": "App triển khai đúng nguồn rồi gửi Ether riêng và kỳ vọng withdraw hoạt động vì contract có tiền. Vì sao không đúng?",
+      "options": [
+        "Withdraw tự lấy toàn vault balance nếu mapping zero",
+        "Không có đường ghi entitlement vào mapping; tiền thực và sổ không tự đồng bộ",
+        "Address balance tự chia cho caller đầu tiên",
+        "Guard chỉ cần đổi tên để mapping tăng"
+      ],
+      "correct": 1,
+      "explanation": "Cần lifecycle nạp và accounting rõ ràng."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Bỏ success check",
+      "question": "Nhóm giữ CEI và guard nhưng bỏ require success để không lỗi với recipient khó nhận. Hệ quả nào phải sửa?",
+      "options": [
+        "Low-level call luôn revert caller nên check thừa",
+        "Chỉ giảm gas price để recipient luôn nhận",
+        "Có thể commit xóa entitlement dù không chuyển tiền; cần semantics lỗi/credit phù hợp",
+        "Guard tự khôi phục balance khi call false"
+      ],
+      "correct": 2,
+      "explanation": "An toàn tái nhập không thay xử lý thất bại chuyển tiền."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Khóa mở trong callback",
+      "question": "Để hỗ trợ callback hợp lệ, developer mở locked trước .call rồi đóng lại sau. Tại sao không giữ guard?",
+      "options": [
+        "Private bool không thể được callback quan sát nên vẫn khóa",
+        "OnlyOwner trên getter thay thế được guard",
+        "Call trả success sẽ chặn mọi tái nhập trước đó",
+        "Khoảng external control không còn bị khóa; cần thiết kế callback/invariants thay vì vô hiệu cơ chế"
+      ],
+      "correct": 3,
+      "explanation": "Cần giữ phòng vệ đúng khoảng thời gian nhạy cảm."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Hai entry points cùng guard",
+      "question": "WithdrawAll có noReentrant rồi gọi withdraw cũng noReentrant. User hợp lệ bị revert. Cách cấu trúc nào phù hợp?",
+      "options": [
+        "Tách helper nội bộ và guard các entry points theo call graph, giữ khóa bao interactions",
+        "Bỏ mọi guard và rely vào tên hàm",
+        "Mở khóa ngay trước external call để cả hai qua",
+        "Dùng tx.origin cho hàm trong để bỏ require"
+      ],
+      "correct": 0,
+      "explanation": "Khóa dùng chung cần phù hợp cấu trúc gọi thực."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Tx origin owner",
+      "question": "Hàm admin dùng tx.origin == owner, owner gọi contract trung gian không tin cậy; nó gọi admin. Thiếu boundary nào?",
+      "options": [
+        "CEI tự sửa mọi vấn đề authorization",
+        "Caller trực tiếp chưa được xác thực theo quyền mong muốn; dùng policy msg.sender/capability phù hợp",
+        "Owner gốc không thể đi qua contract khác",
+        "Private balances tự chặn contract trung gian"
+      ],
+      "correct": 1,
+      "explanation": "Xác thực caller và chống callback là các yêu cầu riêng."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Rút từng người và DoS",
+      "question": "Một hệ thống mở rộng push payout cho cả list trong một transaction, một recipient luôn revert. Hướng thiết kế cần xét?",
+      "options": [
+        "Dùng tx.origin làm recipient chung",
+        "Tăng list để lỗi được bỏ qua",
+        "Tách entitlement/rút độc lập hoặc xử lý lỗi phù hợp để một người không khóa mọi người",
+        "Bỏ kiểm success và xóa sổ mọi người"
+      ],
+      "correct": 2,
+      "explanation": "Khả năng nhận tiền của một recipient không nên vô tình phá toàn luồng khác."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Tiền thực thiếu sổ",
+      "question": "Sổ tổng 100 nhưng tài sản thực 60 do bug đường khác; guard/CEI của withdraw vẫn đúng cục bộ. Kết luận nào đúng?",
+      "options": [
+        "Guard tự bảo đảm totalLiability không vượt Ether",
+        "Reentrancy là nguyên nhân duy nhất có thể có",
+        "Đổi call sang transfer tự mint phần thiếu",
+        "Cần sửa invariant solvency và các đường accounting; guard không tạo phần tiền thiếu"
+      ],
+      "correct": 3,
+      "explanation": "Phòng vệ tái nhập không là chứng minh đầy đủ tài sản được bảo toàn."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Storage reset và khóa",
+      "question": "Người dùng thấy withdraw revert rồi gọi lại, sợ locked true vì dòng cuối không chạy. Giải thích đúng?",
+      "options": [
+        "Call bị revert rollback thay đổi locked; cần chẩn đoán điều kiện thất bại thay vì reset khóa tùy tiện",
+        "Mọi revert kẹt khóa nên phải mở public unlock",
+        "Chỉ owner có thể gọi bool getter để rollback",
+        "Private state chỉ rollback khi nhận event"
+      ],
+      "correct": 0,
+      "explanation": "Không thêm đường mở khóa không kiểm soát để chữa một giả định sai."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Read-only dependency",
+      "question": "Vault khác dùng một getter trong lúc SecureVault đang giữa tương tác để định giá quyền rút. Cần xem gì ngoài modifier withdraw?",
+      "options": [
+        "Vì view không ghi nên không bao giờ có tác động kinh tế",
+        "Trạng thái quan sát tại callback và invariant giữa các contract/luồng định giá",
+        "Chỉ số lần modifier được import",
+        "Chỉ mức visibility của getter"
+      ],
+      "correct": 1,
+      "explanation": "Dữ liệu quan sát có thể ảnh hưởng hành vi của dependency khác."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Transfer stipend slogan",
+      "question": "Đội bỏ CEI vì thay .call bằng .transfer và cho rằng mọi tương tác sau đó không thể tái nhập. Hướng đánh giá đúng?",
+      "options": [
+        "Transfer tự zero mọi mapping trước callback",
+        "Chỉ cần pragma 0.8.20 là stipend không đổi mãi",
+        "Giữ invariant/CEI và review nhận tiền theo gas/chain; không dùng stipend làm bảo đảm tổng quát",
+        "Mọi recipient luôn nhận transfer thành công với bất kỳ code"
+      ],
+      "correct": 2,
+      "explanation": "Cách gửi và tính đúng accounting đều cần thiết kế."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Guard khác instance",
+      "question": "Callback từ vault A gọi vault B dùng cùng source; nhóm tưởng locked của A chặn B. Điều đúng?",
+      "options": [
+        "Cùng tên private bool làm khóa toàn chain",
+        "Cùng compiler tự chia sẻ lock slot vật lý",
+        "Chỉ khi B public mới có lock riêng",
+        "Hai instance có state riêng; cần xét invariant/call graph liên contract nếu chúng liên quan"
+      ],
+      "correct": 3,
+      "explanation": "Guard cục bộ không là mutex toàn blockchain."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Entitlement chủ thể",
+      "question": "Wrapper C gọi withdraw thay user A nhưng vault ghi balances[A], không balances[C]. Vì sao call không rút được phần A?",
+      "options": [
+        "Nguồn dùng msg.sender làm key và recipient; cần cơ chế ủy quyền/beneficiary riêng có kiểm quyền nếu muốn",
+        "tx.origin tự được dùng thay msg.sender ở mapping",
+        "Public mapping tự tìm tài khoản có balance dương",
+        "Chỉ cần wrapper truyền gas cao hơn"
+      ],
+      "correct": 0,
+      "explanation": "Đường ủy quyền phải được thiết kế chứ không suy từ wrapper."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "External call trước checks",
+      "question": "Một bản mở rộng gọi recipient để hỏi có muốn rút không trước require amount/guard. Rủi ro gì cần xử lý?",
+      "options": [
+        "Chỉ bool return mới có thể tái nhập",
+        "Đã chuyển control trước các kiểm/effects cần thiết; phải xem callback và thứ tự bảo vệ toàn luồng",
+        "Call đầu chỉ hỏi nên không bao giờ có callback",
+        "Guard đặt ở cuối sẽ chặn hồi tố lời gọi đầu"
+      ],
+      "correct": 1,
+      "explanation": "Bất kỳ external interaction có thể mở luồng điều khiển ngoài ý muốn."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Private lock bảo mật sai",
+      "question": "Team xóa CEI vì locked private không ai biết giá trị nên attacker không canh được. Sai ở đâu?",
+      "options": [
+        "Attacker chỉ cần ABI để chỉnh trực tiếp locked",
+        "Public balances là nơi duy nhất có thể đọc on-chain",
+        "State không bí mật và safety cần logic guard/invariant, không dựa vào giấu biến",
+        "Private tự mã hóa toàn block nên lập luận đúng"
+      ],
+      "correct": 2,
+      "explanation": "Mục tiêu khóa là enforce thực thi, không giữ secret."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Thêm deposit callback",
+      "question": "Vault thêm nạp token có callback, còn withdraw có guard cũ. Cần bảo vệ mở rộng thế nào?",
+      "options": [
+        "Giữ guard duy nhất trên withdraw vì token không thể gọi contract",
+        "Chỉ kiểm amount > 0 rồi bỏ qua return",
+        "Đổi token thành IERC20 là tự an toàn",
+        "Phân tích external token interaction, các entry points và accounting chung, áp cơ chế phù hợp theo toàn luồng"
+      ],
+      "correct": 3,
+      "explanation": "Không chuyển bảo đảm của một hàm Ether sang mọi integration mới."
+    }
+  ]
+}

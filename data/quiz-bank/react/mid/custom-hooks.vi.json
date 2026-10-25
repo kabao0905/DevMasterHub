@@ -1,0 +1,1139 @@
+{
+  "version": 1,
+  "tech": "react",
+  "level": "mid",
+  "lesson": "custom-hooks",
+  "language": "vi",
+  "sourceHash": "b59cc6587f5acfa2eb6569f3e4109a32b25a2215535a18154569e75ef5cf3998",
+  "status": "approved",
+  "review": "Tự viết không API. react.dev reuse logic/useCallback/useSyncExternalStore và source useFetch/useLocalStorage. Hook calls có state riêng, không biến localStorage thành reactive store tự động. Đánh giá race, cleanup, parse/quota/SSR, key change và null payload trong nguồn. Chỉ chạy examples DOM/pure data cục bộ không fetch hoặc browser storage thật.",
+  "questions": [
+    {
+      "id": "easy-01",
+      "difficulty": "easy",
+      "objective": "Hook naming",
+      "question": "Custom hook dùng React hooks thường có tên bắt đầu bằng gì?",
+      "options": [
+        "use theo convention như useFetch.",
+        "new bắt buộc.",
+        "SQL.",
+        "onClick bất kể nội dung."
+      ],
+      "correct": 0,
+      "explanation": "Tên giúp người đọc và tooling nhận biết Rules of Hooks áp dụng."
+    },
+    {
+      "id": "easy-02",
+      "difficulty": "easy",
+      "objective": "Reuse scope",
+      "question": "Custom hooks chủ yếu tái sử dụng gì?",
+      "options": [
+        "Database transaction của mọi user.",
+        "Logic stateful.",
+        "Một state instance toàn cục mặc định.",
+        "DOM node đang mounted duy nhất."
+      ],
+      "correct": 1,
+      "explanation": "Mỗi invocation có state riêng trừ khi hook kết nối shared store bên ngoài."
+    },
+    {
+      "id": "easy-03",
+      "difficulty": "easy",
+      "objective": "Hook composition",
+      "question": "Custom hook có thể kết hợp gì?",
+      "options": [
+        "Chỉ class inheritance.",
+        "Chỉ SQL queries trực tiếp browser.",
+        "Các built-in hooks và custom hooks khác theo rules.",
+        "Chỉ một CSS selector."
+      ],
+      "correct": 2,
+      "explanation": "Composition gom logic thành API tái dùng."
+    },
+    {
+      "id": "easy-04",
+      "difficulty": "easy",
+      "objective": "Source fetch return",
+      "question": "useFetch nguồn trả những gì?",
+      "options": [
+        "Chỉ JSX ul.",
+        "Token và password.",
+        "seconds và interval.",
+        "data, loading, error, refetch."
+      ],
+      "correct": 3,
+      "explanation": "Caller quyết định render UI theo kết quả hook."
+    },
+    {
+      "id": "easy-05",
+      "difficulty": "easy",
+      "objective": "Source initial data",
+      "question": "data của useFetch khởi tạo là gì?",
+      "options": [
+        "null.",
+        "[] luôn.",
+        "{} luôn.",
+        "Response object."
+      ],
+      "correct": 0,
+      "explanation": "Caller không nên giả định mọi successful response luôn là array."
+    },
+    {
+      "id": "easy-06",
+      "difficulty": "easy",
+      "objective": "Source initial loading",
+      "question": "loading của useFetch khởi tạo thế nào?",
+      "options": [
+        "Một Promise.",
+        "true.",
+        "false.",
+        "undefined."
+      ],
+      "correct": 1,
+      "explanation": "Effect sau mount gọi refetch."
+    },
+    {
+      "id": "easy-07",
+      "difficulty": "easy",
+      "objective": "Refetch role",
+      "question": "refetch trong useFetch làm gì?",
+      "options": [
+        "Reset mọi app state.",
+        "Tạo DOM node mới.",
+        "Bắt đầu fetch lại URL và cập nhật trạng thái.",
+        "Tự thay URL browser."
+      ],
+      "correct": 2,
+      "explanation": "Nó là callback được caller dùng cho retry."
+    },
+    {
+      "id": "easy-08",
+      "difficulty": "easy",
+      "objective": "Callback hook",
+      "question": "Nguồn dùng hook nào để giữ refetch identity khi URL không đổi?",
+      "options": [
+        "useId.",
+        "useImperativeHandle.",
+        "useReducer bắt buộc.",
+        "useCallback."
+      ],
+      "correct": 3,
+      "explanation": "Dependency[ url ] mô tả giá trị callback dùng."
+    },
+    {
+      "id": "easy-09",
+      "difficulty": "easy",
+      "objective": "Source HTTP check",
+      "question": "useFetch nguồn kiểm response trước r.json() thế nào?",
+      "options": [
+        "Nếu !r.ok thì throw Error(r.statusText).",
+        "Mọi status đều coi thành công.",
+        "Chỉ kiểm content-length.",
+        "Dùng JWT decode."
+      ],
+      "correct": 0,
+      "explanation": "Khác ví dụ fetch chỉ parse JSON mà bỏ HTTP status."
+    },
+    {
+      "id": "easy-10",
+      "difficulty": "easy",
+      "objective": "Fetch error",
+      "question": "catch(setError) trong nguồn lưu gì?",
+      "options": [
+        "Một token mới.",
+        "Lỗi/rejection value nhận được.",
+        "Mọi records trong database.",
+        "Tên CSS class."
+      ],
+      "correct": 1,
+      "explanation": "UI cần quyết định cách hiển thị error an toàn và hữu ích."
+    },
+    {
+      "id": "easy-11",
+      "difficulty": "easy",
+      "objective": "Finally source",
+      "question": "finally trong refetch nguồn làm gì?",
+      "options": [
+        "Tự hủy requests cũ.",
+        "Deep clone data.",
+        "setLoading(false).",
+        "Xóa localStorage."
+      ],
+      "correct": 2,
+      "explanation": "Chưa có request ownership guard trong source."
+    },
+    {
+      "id": "easy-12",
+      "difficulty": "easy",
+      "objective": "Storage read",
+      "question": "useLocalStorage nguồn đọc giá trị ban đầu khi nào?",
+      "options": [
+        "Trong mọi CSS repaint.",
+        "Chỉ sau mỗi click browser back.",
+        "Chỉ trong server action.",
+        "Trong lazy initializer của useState."
+      ],
+      "correct": 3,
+      "explanation": "Initializer đọc key lúc instance được khởi tạo."
+    },
+    {
+      "id": "easy-13",
+      "difficulty": "easy",
+      "objective": "Storage serialization",
+      "question": "Nguồn lưu value bằng cách nào?",
+      "options": [
+        "JSON.stringify trước setItem.",
+        "Ghi object trực tiếp như database transaction.",
+        "Luôn dùng HTML innerHTML.",
+        "Hash password bằng btoa."
+      ],
+      "correct": 0,
+      "explanation": "localStorage lưu chuỗi; JSON có giới hạn về kiểu."
+    },
+    {
+      "id": "easy-14",
+      "difficulty": "easy",
+      "objective": "Storage parse",
+      "question": "Nguồn phục hồi stored string bằng gì?",
+      "options": [
+        "Number cho mọi kiểu.",
+        "JSON.parse.",
+        "eval bắt buộc.",
+        "CSS parser."
+      ],
+      "correct": 1,
+      "explanation": "Parse có thể throw nếu dữ liệu không phải JSON hợp lệ."
+    },
+    {
+      "id": "easy-15",
+      "difficulty": "easy",
+      "objective": "Storage write effect",
+      "question": "Effect ghi storage phụ thuộc gì trong nguồn?",
+      "options": [
+        "Chỉ users.length.",
+        "seconds và query.",
+        "key và value.",
+        "Chỉ error."
+      ],
+      "correct": 2,
+      "explanation": "Đổi key/value sẽ yêu cầu effect đồng bộ storage."
+    },
+    {
+      "id": "easy-16",
+      "difficulty": "easy",
+      "objective": "Hook call location",
+      "question": "Có nên gọi useFetch chỉ khi if(enabled) thay đổi giữa các render?",
+      "options": [
+        "Có; custom hook không theo Rules of Hooks.",
+        "Có; tên có use tự sửa thứ tự.",
+        "Chỉ cần URL là string.",
+        "Không; giữ call order ổn định và thiết kế enabled input trong hook nếu cần."
+      ],
+      "correct": 3,
+      "explanation": "Custom hooks cũng phải tuân rules của hooks chúng gọi."
+    },
+    {
+      "id": "easy-17",
+      "difficulty": "easy",
+      "objective": "Logic versus markup",
+      "question": "Custom hook có bắt buộc render JSX không?",
+      "options": [
+        "Không; thường trả data/callbacks để components render.",
+        "Có; phải trả một div.",
+        "Có; phải trả Card.",
+        "Chỉ trả được string."
+      ],
+      "correct": 0,
+      "explanation": "Hook API không bị giới hạn vào một kiểu container UI."
+    },
+    {
+      "id": "easy-18",
+      "difficulty": "easy",
+      "objective": "Retry source UI",
+      "question": "UserList nguồn khi error truthy hiển thị gì?",
+      "options": [
+        "Một Server Component.",
+        "Button Retry gọi refetch.",
+        "Một table users đầy đủ.",
+        "Spinner vĩnh viễn không button."
+      ],
+      "correct": 1,
+      "explanation": "Nhánh loading được xét trước, rồi error."
+    },
+    {
+      "id": "easy-19",
+      "difficulty": "easy",
+      "objective": "Local state theme",
+      "question": "Hook useLocalStorage(\"theme\",\"dark\") trả setter cho điều gì?",
+      "options": [
+        "Một CSS engine tự đổi toàn app.",
+        "Auth token đã verify.",
+        "Value state của invocation đó, được effect ghi vào storage.",
+        "Mọi theme trong mọi tab tự cập nhật đồng bộ."
+      ],
+      "correct": 2,
+      "explanation": "Caller vẫn phải áp dụng theme vào UI."
+    },
+    {
+      "id": "easy-20",
+      "difficulty": "easy",
+      "objective": "Cleanup ownership",
+      "question": "Hook tạo subscription/timeout cần cân nhắc gì?",
+      "options": [
+        "Chỉ tên hàm phải ngắn.",
+        "Không cleanup vì custom hook là singleton.",
+        "Chỉ key trên div.",
+        "Cleanup tài nguyên tương ứng theo lifecycle."
+      ],
+      "correct": 3,
+      "explanation": "Đóng gói logic cũng cần đóng gói trách nhiệm dọn tài nguyên."
+    },
+    {
+      "id": "medium-21",
+      "difficulty": "medium",
+      "objective": "Independent counters",
+      "question": "Click button A một lần thì p hiển thị gì?",
+      "code": "import React from\"react\";function useCounter(){const[n,setN]=React.useState(0);return[n,()=>setN(v=>v+1)];}export default function App(){const[a,incA]=useCounter();const[b]=useCounter();return <><button onClick={incA}>A</button><p>{a}:{b}</p></>;}",
+      "options": [
+        "1:0.",
+        "1:1.",
+        "0:1.",
+        "0:0."
+      ],
+      "correct": 0,
+      "explanation": "Hai lần gọi useCounter có state độc lập."
+    },
+    {
+      "id": "medium-22",
+      "difficulty": "medium",
+      "objective": "Shared one call",
+      "question": "Hai buttons dùng cùng setter từ một useCounter call; click mỗi button một lần thì p là gì?",
+      "code": "import React from\"react\";function useCounter(){const[n,setN]=React.useState(0);return[n,()=>setN(v=>v+1)];}export default function App(){const[n,inc]=useCounter();return <><button onClick={inc}>A</button><button onClick={inc}>B</button><p>{n}</p></>;}",
+      "options": [
+        "4.",
+        "2.",
+        "1.",
+        "0."
+      ],
+      "correct": 1,
+      "explanation": "Ở đây caller truyền cùng state/callback tới hai controls."
+    },
+    {
+      "id": "medium-23",
+      "difficulty": "medium",
+      "objective": "Custom toggle",
+      "question": "Click button một lần, text là gì?",
+      "code": "import React from\"react\";function useToggle(){const[v,setV]=React.useState(false);return[v,()=>setV(x=>!x)];}export default function App(){const[v,toggle]=useToggle();return <button onClick={toggle}>{v?\"on\":\"off\"}</button>;}",
+      "options": [
+        "undefined.",
+        "false.",
+        "on.",
+        "off."
+      ],
+      "correct": 2,
+      "explanation": "Hook kết hợp state với action toggle."
+    },
+    {
+      "id": "medium-24",
+      "difficulty": "medium",
+      "objective": "Derived return",
+      "question": "Click increment, double hiển thị gì?",
+      "code": "import React from\"react\";function useDouble(){const[n,setN]=React.useState(1);return{double:n*2,inc:()=>setN(v=>v+1)};}export default function App(){const{double,inc}=useDouble();return <button onClick={inc}>{double}</button>;}",
+      "options": [
+        "2.",
+        "1.",
+        "0.",
+        "4."
+      ],
+      "correct": 3,
+      "explanation": "Hook có thể trả giá trị suy ra từ state."
+    },
+    {
+      "id": "medium-25",
+      "difficulty": "medium",
+      "objective": "Initializer input",
+      "question": "Hook useCounter(initial) dùng useState(initial). Đổi prop initial nhưng giữ instance có tự reset state không?",
+      "code": "import React from\"react\";function useCounter(initial){return React.useState(initial);}function Child({initial}){const[n]=useCounter(initial);return <p>{n}</p>;}export default function App(){const[x,setX]=React.useState(2);return <><button onClick={()=>setX(9)}>Change</button><Child initial={x}/></>;}",
+      "options": [
+        "Không.",
+        "Có ở mọi render.",
+        "Chỉ cần tên hook useCounter.",
+        "Chỉ cần useCallback."
+      ],
+      "correct": 0,
+      "explanation": "State initializer không tự subscribe input."
+    },
+    {
+      "id": "medium-26",
+      "difficulty": "medium",
+      "objective": "Callback latest dependency",
+      "question": "Sau click Change rồi Read, p hiển thị gì?",
+      "code": "import React from\"react\";function useRead(label){return React.useCallback(()=>label,[label]);}export default function App(){const[label,setLabel]=React.useState(\"A\");const[out,setOut]=React.useState(\"\");const read=useRead(label);return <><button onClick={()=>setLabel(\"B\")}>Change</button><button onClick={()=>setOut(read())}>Read</button><p>{out}</p></>;}",
+      "options": [
+        "undefined.",
+        "B.",
+        "A.",
+        "AB."
+      ],
+      "correct": 1,
+      "explanation": "Callback phụ thuộc label nên lấy closure mới."
+    },
+    {
+      "id": "medium-27",
+      "difficulty": "medium",
+      "objective": "Callback stale empty deps",
+      "question": "Sau Change rồi Read, p hiển thị gì?",
+      "code": "import React from\"react\";function useRead(label){return React.useCallback(()=>label,[]);}export default function App(){const[label,setLabel]=React.useState(\"A\");const[out,setOut]=React.useState(\"\");const read=useRead(label);return <><button onClick={()=>setLabel(\"B\")}>Change</button><button onClick={()=>setOut(read())}>Read</button><p>{out}</p></>;}",
+      "options": [
+        "AB.",
+        "undefined.",
+        "A.",
+        "B."
+      ],
+      "correct": 2,
+      "explanation": "Thiếu dependency label giữ closure ban đầu."
+    },
+    {
+      "id": "medium-28",
+      "difficulty": "medium",
+      "objective": "Nullable data",
+      "question": "useFetch thành công với JSON null và error=null. UserList gọi users.map có an toàn không?",
+      "options": [
+        "Có; success tự đổi null thành[].",
+        "Có; React tự tạo map trên null.",
+        "Chỉ cần loading=false.",
+        "Không; cần kiểm tra shape/contract của data."
+      ],
+      "correct": 3,
+      "explanation": "HTTP success và JSON parsing không xác nhận schema array."
+    },
+    {
+      "id": "medium-29",
+      "difficulty": "medium",
+      "objective": "Source no cancellation",
+      "question": "useFetch nguồn có AbortController hay cleanup hủy request không?",
+      "options": [
+        "Không.",
+        "Có; useCallback tự abort mọi request cũ.",
+        "Có; finally tự cancel fetch.",
+        "Có; dependency URL là signal."
+      ],
+      "correct": 0,
+      "explanation": "Nguồn có race nếu URL thay đổi hoặc refetch chồng nhau."
+    },
+    {
+      "id": "medium-30",
+      "difficulty": "medium",
+      "objective": "Refetch return promise",
+      "question": "refetch nguồn gọi fetch chain nhưng không return nó. await refetch() ở caller có chờ network không?",
+      "options": [
+        "Chỉ khi URL không đổi.",
+        "Không; callback trả undefined trong implementation này.",
+        "Có; mọi Promise tạo bên trong tự thành return.",
+        "Có; useCallback tự return Promise nội bộ."
+      ],
+      "correct": 1,
+      "explanation": "Muốn caller await cần return/async contract phù hợp."
+    },
+    {
+      "id": "medium-31",
+      "difficulty": "medium",
+      "objective": "Stale URL response",
+      "question": "Fetch URL A chậm hơn B; B hoàn tất rồi A hoàn tất. Nguồn có thể hiện gì?",
+      "options": [
+        "Luôn lỗi duplicate key.",
+        "Không response nào được ghi.",
+        "Data A ghi đè dù URL hiện tại là B.",
+        "Luôn B vì React tự sort responses."
+      ],
+      "correct": 2,
+      "explanation": "Không có request id/ignore/cancellation guard."
+    },
+    {
+      "id": "medium-32",
+      "difficulty": "medium",
+      "objective": "Refetch overlap",
+      "question": "Hai refetch cùng URL chồng nhau có thể làm loading sai khi nào?",
+      "options": [
+        "Không thể vì callback identity ổn định.",
+        "Chỉ khi key là number.",
+        "Chỉ ở server render.",
+        "Một request finally tắt loading trong khi request kia vẫn pending."
+      ],
+      "correct": 3,
+      "explanation": "Identity callback không khóa concurrency."
+    },
+    {
+      "id": "medium-33",
+      "difficulty": "medium",
+      "objective": "Error stale data",
+      "question": "Nguồn setError(null) khi refetch nhưng không setData(null). Điều gì có thể tồn tại?",
+      "options": [
+        "Data cũ trong state trong lúc request mới chạy.",
+        "State tự xóa mọi data.",
+        "Data tự thành HTTP Response.",
+        "useCallback xóa dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "Giữ data cũ có thể là policy hợp lý nhưng UI/contract cần rõ ràng."
+    },
+    {
+      "id": "medium-34",
+      "difficulty": "medium",
+      "objective": "Status text limitation",
+      "question": "Error(r.statusText) có luôn là thông báo đủ hữu ích không?",
+      "options": [
+        "Chỉ cần stringify token.",
+        "Không; có thể rỗng và thiếu code/chi tiết theo contract.",
+        "Có; mọi HTTP response có message đầy đủ.",
+        "Có; statusText chứa stacktrace server an toàn."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế lỗi có cấu trúc phù hợp, tránh lộ chi tiết nhạy cảm."
+    },
+    {
+      "id": "medium-35",
+      "difficulty": "medium",
+      "objective": "Parse false value",
+      "question": "stored là chuỗi JSON \"false\". Nguồn stored ? JSON.parse(stored) : initialValue trả gì?",
+      "options": [
+        "Chuỗi false luôn.",
+        "undefined.",
+        "Boolean false.",
+        "initialValue vì parsed value falsy."
+      ],
+      "correct": 2,
+      "explanation": "Điều kiện xét stored string, không xét giá trị sau parse."
+    },
+    {
+      "id": "medium-36",
+      "difficulty": "medium",
+      "objective": "Parse zero value",
+      "question": "stored là chuỗi \"0\". Nguồn chọn giá trị nào?",
+      "options": [
+        "initialValue.",
+        "Chuỗi rỗng.",
+        "null.",
+        "Number0."
+      ],
+      "correct": 3,
+      "explanation": "Chuỗi0 truthy rồi JSON.parse trả number0."
+    },
+    {
+      "id": "medium-37",
+      "difficulty": "medium",
+      "objective": "Missing storage",
+      "question": "getItem trả null. Nguồn khởi tạo theo gì?",
+      "options": [
+        "initialValue.",
+        "JSON.parse(null) được gọi bắt buộc.",
+        "Chuỗi null.",
+        "{} luôn."
+      ],
+      "correct": 0,
+      "explanation": "Nhánh falsy dùng initialValue."
+    },
+    {
+      "id": "medium-38",
+      "difficulty": "medium",
+      "objective": "Empty storage string",
+      "question": "getItem trả chuỗi rỗng. Nguồn làm gì?",
+      "options": [
+        "Luôn setError.",
+        "Dùng initialValue vì string rỗng falsy.",
+        "Parse thành object{}.",
+        "Parse thành0."
+      ],
+      "correct": 1,
+      "explanation": "Nguồn không phân biệt missing null với empty invalid string ở nhánh này."
+    },
+    {
+      "id": "medium-39",
+      "difficulty": "medium",
+      "objective": "Invalid JSON",
+      "question": "Storage có chuỗi \"oops\". Nguồn có catch JSON.parse không?",
+      "options": [
+        "Có; useState tự validate JSON.",
+        "Có; useEffect nuốt lỗi trước render.",
+        "Không; initializer có thể throw.",
+        "Có; React tự đổi về initialValue."
+      ],
+      "correct": 2,
+      "explanation": "Cần policy cho dữ liệu cũ/hỏng và xử lý lỗi storage."
+    },
+    {
+      "id": "medium-40",
+      "difficulty": "medium",
+      "objective": "Storage key change",
+      "question": "Đổi key prop từa sangb, cùng mounted invocation: nguồn có tự đọc b để thay value không?",
+      "options": [
+        "Có; dependency effect tự đọc keyb.",
+        "Có; useState tái khởi tạo mỗi render.",
+        "Chỉ nếu initialValue dark.",
+        "Không; initializer không chạy lại chỉ vì key đổi."
+      ],
+      "correct": 3,
+      "explanation": "Effect có thể ghi value hiện tại vào key mới, cần thiết kế key-change semantics."
+    },
+    {
+      "id": "medium-41",
+      "difficulty": "medium",
+      "objective": "Storage write exception",
+      "question": "setItem có thể ném lỗi mà hook cần xử lý vì sao?",
+      "options": [
+        "Quota/quyền truy cập hoặc môi trường không hỗ trợ.",
+        "Vì React luôn mã hóa JSON quá chậm.",
+        "Vì string không thể lưu.",
+        "Vì effect không được gọi functions."
+      ],
+      "correct": 0,
+      "explanation": "Storage là API bên ngoài với failure modes."
+    },
+    {
+      "id": "medium-42",
+      "difficulty": "medium",
+      "objective": "Serialization date",
+      "question": "JSON.stringify({at:new Date(0)}) rồi parse có giữ at là Date instance không?",
+      "options": [
+        "Chỉ nếu key tênat.",
+        "Không; thường thành chuỗi ISO theo toJSON.",
+        "Có; JSON có kiểu Date native.",
+        "Chỉ khi useCallback stable."
+      ],
+      "correct": 1,
+      "explanation": "Serialization cần schema/reviver khi muốn phục hồi kiểu đặc biệt."
+    },
+    {
+      "id": "medium-43",
+      "difficulty": "medium",
+      "objective": "Serialization undefined",
+      "question": "JSON.stringify({x:undefined}) cho chuỗi nào?",
+      "options": [
+        "{\"x\":null}.",
+        "undefined string luôn.",
+        "{}.",
+        "{\"x\":undefined}."
+      ],
+      "correct": 2,
+      "explanation": "Object properties có undefined bị bỏ trong JSON."
+    },
+    {
+      "id": "medium-44",
+      "difficulty": "medium",
+      "objective": "Serialization BigInt",
+      "question": "JSON.stringify({x:1n}) thông thường gây gì?",
+      "options": [
+        "Tự thành number1 an toàn với mọi độ lớn.",
+        "Tự thành chuỗi1n.",
+        "Luôn{}.",
+        "TypeError nếu không có xử lý chuyển kiểu phù hợp."
+      ],
+      "correct": 3,
+      "explanation": "JSON không hỗ trợ BigInt trực tiếp theo mặc định."
+    },
+    {
+      "id": "medium-45",
+      "difficulty": "medium",
+      "objective": "Circular data",
+      "question": "Ghi object có vòng tham chiếu qua JSON.stringify thông thường có thể gì?",
+      "options": [
+        "Throw.",
+        "Tự lưu graph đầy đủ.",
+        "Tự ngắt vòng luôn an toàn.",
+        "Chỉ render chậm hơn."
+      ],
+      "correct": 0,
+      "explanation": "Hook generic cần giới hạn/validate kiểu dữ liệu lưu."
+    },
+    {
+      "id": "medium-46",
+      "difficulty": "medium",
+      "objective": "Same key separate state",
+      "question": "Hai components gọi useLocalStorage cùng key. Có tự dùng chung React state instance không?",
+      "options": [
+        "Chỉ khi initialValue giống nhau.",
+        "Không.",
+        "Có; key storage thay key component.",
+        "Có; mọi custom hook là singleton."
+      ],
+      "correct": 1,
+      "explanation": "Cùng backend storage không tự tạo subscription đồng bộ state."
+    },
+    {
+      "id": "medium-47",
+      "difficulty": "medium",
+      "objective": "Storage event same tab",
+      "question": "Browser storage event có mặc nhiên phát cho chính document vừa setItem không?",
+      "options": [
+        "Có; React tự giả event.",
+        "Chỉ nếu key theme.",
+        "Không theo cơ chế storage event thông thường.",
+        "Có; luôn đồng bộ gọi mọi handlers trong tab nguồn."
+      ],
+      "correct": 2,
+      "explanation": "Thiết kế store cần cập nhật subscribers cùng tab theo cách riêng nếu cần."
+    },
+    {
+      "id": "medium-48",
+      "difficulty": "medium",
+      "objective": "Server initializer",
+      "question": "useLocalStorage nguồn chạy trong server render có rủi ro gì?",
+      "options": [
+        "Server tự đọc browser của user.",
+        "useState không được dùng trong client.",
+        "JSON.parse tự tạo localStorage.",
+        "localStorage không tồn tại trong môi trường server thông thường."
+      ],
+      "correct": 3,
+      "explanation": "Thiết kế SSR/hydration snapshot và browser boundary có chủ đích."
+    },
+    {
+      "id": "medium-49",
+      "difficulty": "medium",
+      "objective": "Debounce hook purpose",
+      "question": "useDebounce(value,delay) thường trả giá trị khi nào?",
+      "options": [
+        "Sau khi value ổn định đủ delay theo thiết kế timer.",
+        "Luôn ngay lập tức và vẫn gọi mọi API như cũ.",
+        "Chỉ sau khi đóng tab.",
+        "Chỉ khi key đổi."
+      ],
+      "correct": 0,
+      "explanation": "Cleanup timeout cũ tránh phát giá trị đã lỗi thời."
+    },
+    {
+      "id": "medium-50",
+      "difficulty": "medium",
+      "objective": "Debounce cleanup",
+      "question": "Effect đặt timeout cho value cũ rồi value đổi cần làm gì?",
+      "options": [
+        "Đổi document.title là đủ.",
+        "Clear timeout cũ trước setup mới theo cleanup.",
+        "Giữ mọi timeout cũ để cùng chạy.",
+        "Gán props.value trực tiếp."
+      ],
+      "correct": 1,
+      "explanation": "Dọn timer là phần cốt lõi của debounce."
+    },
+    {
+      "id": "medium-51",
+      "difficulty": "medium",
+      "objective": "Delay dependency",
+      "question": "useDebounce dùng delay trong effect; delay có thể đổi thì cần gì?",
+      "options": [
+        "Dùng key random mỗi ms.",
+        "Chỉ phụ thuộc tên hook.",
+        "Dependency/logic phản ánh delay hiện tại.",
+        "Cố tình bỏ delay để không bao giờ đổi."
+      ],
+      "correct": 2,
+      "explanation": "Reactive inputs thực sự dùng phải được mô tả đúng."
+    },
+    {
+      "id": "medium-52",
+      "difficulty": "medium",
+      "objective": "Media query subscription",
+      "question": "useMediaQuery tạo MediaQueryList listener cần dọn gì?",
+      "options": [
+        "Mọi cookies của origin.",
+        "Mọi CSS rules toàn trang.",
+        "State của app khác.",
+        "Listener tương ứng khi query đổi/unmount."
+      ],
+      "correct": 3,
+      "explanation": "Cleanup đúng listener tránh leak và callbacks lỗi thời."
+    },
+    {
+      "id": "medium-53",
+      "difficulty": "medium",
+      "objective": "Intersection cleanup",
+      "question": "Hook IntersectionObserver khi bỏ theo dõi target cần cân nhắc gì?",
+      "options": [
+        "unobserve/disconnect phù hợp với ownership của observer.",
+        "Chỉ đổi ref.current rồi quên observer cũ.",
+        "Gọi JSON.parse(target).",
+        "Đổi key của body."
+      ],
+      "correct": 0,
+      "explanation": "Target và tài nguyên observer có lifecycle riêng."
+    },
+    {
+      "id": "medium-54",
+      "difficulty": "medium",
+      "objective": "Hook return API",
+      "question": "Custom hook có buộc trả tuple không?",
+      "options": [
+        "Chỉ trả Promise.",
+        "Không; có thể trả object/tuple/value theo API rõ ràng.",
+        "Có; mọi hook phải có2phần tử.",
+        "Chỉ trả JSX."
+      ],
+      "correct": 1,
+      "explanation": "Thiết kế API theo cách caller sử dụng."
+    },
+    {
+      "id": "medium-55",
+      "difficulty": "medium",
+      "objective": "Naming ordinary helper",
+      "question": "Function thuần không dùng hooks có nên đặt use* chỉ để nghe giống React không?",
+      "options": [
+        "Chỉ tên mới quyết định function dùng state.",
+        "Không function nào được bắt đầu bằng use.",
+        "Không nên; convention ngụ ý hook constraints và logic liên quan.",
+        "Luôn bắt buộc use* với mọi function JS."
+      ],
+      "correct": 2,
+      "explanation": "Tên phản ánh contract; function thường có thể gọi ở nơi hook không được gọi."
+    },
+    {
+      "id": "medium-56",
+      "difficulty": "medium",
+      "objective": "Event call hook",
+      "question": "Click handler có được gọi useFetch mới để bắt đầu request không?",
+      "options": [
+        "Có; hook chạy ở bất kỳ function nào.",
+        "Chỉ cần await trước hook.",
+        "Chỉ cần gọi trong try.",
+        "Không; gọi hook top level, rồi dùng action/refetch nó trả về."
+      ],
+      "correct": 3,
+      "explanation": "Hook call và callback action là hai loại khác nhau."
+    },
+    {
+      "id": "medium-57",
+      "difficulty": "medium",
+      "objective": "Memo purpose",
+      "question": "useCallback có tự thực thi refetch khi URL đổi không?",
+      "options": [
+        "Không; nó trả function được cache, effect nguồn mới gọi refetch.",
+        "Có; useCallback tự gọi function mỗi lần dependency đổi.",
+        "Có; nó là fetch client.",
+        "Chỉ nếu function có finally."
+      ],
+      "correct": 0,
+      "explanation": "Caching reference khác chạy side effect."
+    },
+    {
+      "id": "medium-58",
+      "difficulty": "medium",
+      "objective": "Fetch duplicate callers",
+      "question": "Hai useFetch cùng URL trong hai components có tự deduplicate network không?",
+      "options": [
+        "Chỉ cần data=null.",
+        "Không theo implementation nguồn.",
+        "Có; React tự cache mọi fetch ở client hooks.",
+        "Có; useCallback dùng global URL cache."
+      ],
+      "correct": 1,
+      "explanation": "Cần cache/store/data library hoặc tầng dedup được thiết kế."
+    },
+    {
+      "id": "medium-59",
+      "difficulty": "medium",
+      "objective": "Effect function identity",
+      "question": "Bỏ useCallback nhưng vẫn effect[refetch] trong implementation tạo refetch mới mỗi render có rủi ro gì?",
+      "options": [
+        "Tự deep compare function body.",
+        "Chỉ mất tên error.",
+        "Effect chạy lại liên tục khi state updates tạo render mới.",
+        "Không thể rerender."
+      ],
+      "correct": 2,
+      "explanation": "Cần cấu trúc dependencies/logic phù hợp, không che loop bằng suppress lint."
+    },
+    {
+      "id": "medium-60",
+      "difficulty": "medium",
+      "objective": "Source users shape",
+      "question": "UserList nguồn có schema validation trước users.map không?",
+      "options": [
+        "Có; r.json xác nhận mọi item cóid/name.",
+        "Có; useState(null) là schema.",
+        "Chỉ key=id tự validate.",
+        "Không."
+      ],
+      "correct": 3,
+      "explanation": "Response body cần contract/validation theo mức tin cậy."
+    },
+    {
+      "id": "hard-61",
+      "difficulty": "hard",
+      "objective": "Logic sharing nuance",
+      "question": "Hai useOnlineStatus calls có cùng trạng thái online có mâu thuẫn với state riêng từng hook call không?",
+      "options": [
+        "Không; chúng có thể cùng subscribe một external source chung.",
+        "Có; custom hooks không thể đọc cùng nguồn ngoài.",
+        "Có; một hook call phải bị bỏ.",
+        "Không; vì mọi hook luôn dùng chung state bất kể implementation."
+      ],
+      "correct": 0,
+      "explanation": "Tái dùng logic và kết nối cùng store khác với tự chia sẻ local useState."
+    },
+    {
+      "id": "hard-62",
+      "difficulty": "hard",
+      "objective": "External store API",
+      "question": "Để kết nối external store với React đồng bộ snapshot/subscription, API nào nên cân nhắc?",
+      "options": [
+        "key={store.name} tự tạo listener.",
+        "useSyncExternalStore.",
+        "useState(store) một lần là đủ mọi thay đổi.",
+        "JSON.stringify mọi render để tự subscribe."
+      ],
+      "correct": 1,
+      "explanation": "Đây là API dành cho external subscription với snapshot semantics."
+    },
+    {
+      "id": "hard-63",
+      "difficulty": "hard",
+      "objective": "Snapshot stability",
+      "question": "getSnapshot của useSyncExternalStore luôn trả object mới dù store không đổi có thể gây gì?",
+      "options": [
+        "Tự thành server snapshot.",
+        "Chỉ đổi CSS.",
+        "Render loop/cập nhật không cần thiết; snapshot cần được cache khi dữ liệu không đổi.",
+        "Tự tối ưu sâu trong mọi trường hợp."
+      ],
+      "correct": 2,
+      "explanation": "Snapshot equality là một phần contract API."
+    },
+    {
+      "id": "hard-64",
+      "difficulty": "hard",
+      "objective": "Key change overwrite",
+      "question": "Hook storage nguồn đổi key từa sangb nhưng value vẫn củaa. Effect có thể gây hậu quả gì?",
+      "options": [
+        "Tự merge valuesa/b như database.",
+        "Không thể ghi vì initializer chưa chạy lại.",
+        "Xóa mọi storage keys khác.",
+        "Ghi valuea lênb trước khi có logic đọc/điều phối key mới."
+      ],
+      "correct": 3,
+      "explanation": "Cần định nghĩa semantics key change và tránh overwrite dữ liệu không chủ đích."
+    },
+    {
+      "id": "hard-65",
+      "difficulty": "hard",
+      "objective": "Storage atomicity",
+      "question": "Hai tabs cùng read-modify-write một JSON counter trong localStorage có bảo đảm cộng không mất update không?",
+      "options": [
+        "Không; chuỗi read-modify-write không là transaction liên tab.",
+        "Có; setItem làm cả chuỗi logic atomic.",
+        "Có; React state là distributed lock.",
+        "Chỉ cần key giống nhau."
+      ],
+      "correct": 0,
+      "explanation": "Một operation ghi và một giao dịch gồm nhiều bước không đồng nghĩa."
+    },
+    {
+      "id": "hard-66",
+      "difficulty": "hard",
+      "objective": "Hydration mismatch",
+      "question": "SSR dùng initial theme dark nhưng client initializer đọc light từ storage có thể cần xử lý gì?",
+      "options": [
+        "Server đọc localStorage trực tiếp.",
+        "Nhất quán initial HTML/hydration và đồng bộ browser preference theo thiết kế.",
+        "Bỏ mọi hydration warnings mà không xét UI.",
+        "Ghi đè storage dark vô điều kiện ở server."
+      ],
+      "correct": 1,
+      "explanation": "Server/client snapshots cần được điều phối, không suy browser API có mặt ở server."
+    },
+    {
+      "id": "hard-67",
+      "difficulty": "hard",
+      "objective": "Stale error race",
+      "question": "RequestA lỗi sau khiB thành công; source catch(setError) có thể làm gì?",
+      "options": [
+        "Chỉ cập nhật key.",
+        "Tự rollbackB trên server.",
+        "Hiện lỗiA thay cho kết quả hiện tạiB.",
+        "Luôn bỏ lỗiA tự động vì URL đổi."
+      ],
+      "correct": 2,
+      "explanation": "Guard success/error/finally theo request hiện tại."
+    },
+    {
+      "id": "hard-68",
+      "difficulty": "hard",
+      "objective": "Concurrent refetch contract",
+      "question": "Cần nhiều callers await refetch để điều phối; ngoài returnPromise còn cần quyết định gì?",
+      "options": [
+        "Chỉ tên callback ngắn hơn.",
+        "Luôn swallow mọi error và báo success.",
+        "Đổi useState thành biến module chung tùy tiện.",
+        "Cancellation, race ownership và error propagation contract."
+      ],
+      "correct": 3,
+      "explanation": "Một API tái dùng phải mô tả cả completion và failure behavior."
+    },
+    {
+      "id": "hard-69",
+      "difficulty": "hard",
+      "objective": "Cache key context",
+      "question": "Cache useFetch chỉ theo URL có thể thiếu gì khi dữ liệu phụ thuộc account/tenant?",
+      "options": [
+        "Identity/context liên quan và policy invalidation.",
+        "Chỉ độ dài URL.",
+        "Chỉ tên component.",
+        "Không thiếu vì cùng URL luôn cùng quyền/dữ liệu."
+      ],
+      "correct": 0,
+      "explanation": "Không để cache dữ liệu riêng tư lẫn giữa phiên/tenant."
+    },
+    {
+      "id": "hard-70",
+      "difficulty": "hard",
+      "objective": "Sensitive storage",
+      "question": "Dùng useLocalStorage để lưu mọi response có chứa dữ liệu nhạy cảm có phải mặc định an toàn không?",
+      "options": [
+        "Chỉ cần key bắt đầu use.",
+        "Không; cần policy minimization/retention/access phù hợp.",
+        "Có; hook tự encrypt dữ liệu.",
+        "Có; JSON.stringify xóa thông tin nhạy cảm."
+      ],
+      "correct": 1,
+      "explanation": "Hook abstraction không tự tăng bảo mật của storage."
+    },
+    {
+      "id": "hard-71",
+      "difficulty": "hard",
+      "objective": "Schema evolution",
+      "question": "Storage schema cũ khác phiên bản mới nên xử lý thế nào?",
+      "options": [
+        "Đổi CSS màu theme.",
+        "Dùng random key mỗi render.",
+        "Version/validate/migrate hoặc fallback có chủ đích, không blind parse rồi tin shape.",
+        "Chỉ JSON.parse là validation đầy đủ."
+      ],
+      "correct": 2,
+      "explanation": "JSON hợp lệ vẫn có thể sai cấu trúc nghiệp vụ."
+    },
+    {
+      "id": "hard-72",
+      "difficulty": "hard",
+      "objective": "Lazy purity storage",
+      "question": "Đọc storage trong initializer có nghĩa initializer được phép ghi analytics không lặp an toàn không?",
+      "options": [
+        "Có; initializer exactly once trong mọi chế độ.",
+        "Có; use prefix miễn rules.",
+        "Chỉ khi initialValue là string.",
+        "Không; cần giữ initializer không side effect như ghi analytics."
+      ],
+      "correct": 3,
+      "explanation": "Dev checks/remounts có thể gọi lại; external reads cũng cần môi trường/SSR phù hợp."
+    },
+    {
+      "id": "hard-73",
+      "difficulty": "hard",
+      "objective": "Subscription cleanup strict",
+      "question": "Custom hook subscribe event trong effect cần hoạt động đúng qua setup→cleanup→setup vì sao?",
+      "options": [
+        "StrictMode dev và lifecycle thực có thể kiểm tra/tái đồng bộ tài nguyên.",
+        "Vì mọi event luôn phát hai lần production.",
+        "Vì React tự xóa callbacks không cần handle.",
+        "Chỉ vì useCallback không tồn tại."
+      ],
+      "correct": 0,
+      "explanation": "Cleanup phải hủy đúng subscription của setup tương ứng."
+    },
+    {
+      "id": "hard-74",
+      "difficulty": "hard",
+      "objective": "Debounce versus cancellation",
+      "question": "Debounce request và cancel request cũ giải quyết cùng một việc hoàn toàn không?",
+      "options": [
+        "Chỉ khác tên hook.",
+        "Không; debounce trì hoãn phát tác vụ, cancellation xử lý tác vụ đã bắt đầu theo API hỗ trợ.",
+        "Có; cả hai tự rollback server.",
+        "Có; cả hai là server authentication."
+      ],
+      "correct": 1,
+      "explanation": "Có thể cần phối hợp để giảm calls và tránh stale results."
+    },
+    {
+      "id": "hard-75",
+      "difficulty": "hard",
+      "objective": "Hook factory calling",
+      "question": "Return một function từ hook rồi gọi function đó như hook có điều kiện để tạo state mới có đúng không?",
+      "options": [
+        "Có; chỉ cần function tênuse.",
+        "Chỉ cần try/catch bên ngoài.",
+        "Không; phải giữ Rules of Hooks và tránh runtime hook factories thay đổi call structure.",
+        "Có; closure miễn rules."
+      ],
+      "correct": 2,
+      "explanation": "Abstraction không được phá call order của built-in hooks."
+    },
+    {
+      "id": "hard-76",
+      "difficulty": "hard",
+      "objective": "Source theme side effect",
+      "question": "UserList gọi useLocalStorage(theme,dark) nhưng không dùng theme vào DOM; có chứng minh giao diện đã đổi theme không?",
+      "options": [
+        "Có; key theme tự đổi CSS toàn app.",
+        "Có; localStorage gửi browser stylesheet.",
+        "Chỉ cần tên biến theme.",
+        "Không; state/storage có nhưng chưa áp dụng vào presentation."
+      ],
+      "correct": 3,
+      "explanation": "Đọc đúng hành vi nguồn, không suy ngầm feature chưa triển khai."
+    },
+    {
+      "id": "hard-77",
+      "difficulty": "hard",
+      "objective": "Online not server reachable",
+      "question": "navigator.onLine=true có chứng minh API cụ thể đang truy cập được không?",
+      "options": [
+        "Không; đây là tín hiệu kết nối browser, endpoint vẫn có thể lỗi.",
+        "Có; mọi API trên Internet chắc chắn200.",
+        "Có; DNS luôn hợp lệ.",
+        "Chỉ cần useSyncExternalStore."
+      ],
+      "correct": 0,
+      "explanation": "UI online hint không thay xử lý lỗi request thực tế."
+    },
+    {
+      "id": "hard-78",
+      "difficulty": "hard",
+      "objective": "Observer target replacement",
+      "question": "Ref target đổi nhưng effect chỉ phụ thuộc object ref ổn định có thể bỏ lỡ gì?",
+      "options": [
+        "Chỉ key storage bị ảnh hưởng.",
+        "Node hiện tại thay mà subscription vẫn gắn node cũ nếu không điều phối target change.",
+        "React tự chuyển mọi native observer.",
+        "Không thể thay DOM node với cùng ref."
+      ],
+      "correct": 1,
+      "explanation": "ref.current mutation không tự trigger render/subscription lifecycle."
+    },
+    {
+      "id": "hard-79",
+      "difficulty": "hard",
+      "objective": "Generic hook boundaries",
+      "question": "Một hook useMount chỉ nhận callback và cố tình bỏ dependencies có thể che lỗi gì?",
+      "options": [
+        "Tự đảm bảo callback exactly once toàn app.",
+        "Tự tạo abort cho mọi tasks.",
+        "Reactive values bị stale và lifecycle không còn khớp dữ liệu dùng.",
+        "Tự sửa mọi closures."
+      ],
+      "correct": 2,
+      "explanation": "API quá chung che synchronization requirements; ưu tiên hooks biểu đạt nghiệp vụ rõ."
+    },
+    {
+      "id": "hard-80",
+      "difficulty": "hard",
+      "objective": "Hook behavior test",
+      "question": "Để kiểm tra custom storage/fetch hook, cách nào có giá trị hơn chỉ count hook calls?",
+      "options": [
+        "Chỉ so tên bắt đầu use.",
+        "Chỉ snapshot imports.",
+        "Chỉ assert không có CSS.",
+        "Điều khiển external source/failures/races và quan sát values/actions/cleanup theo contract."
+      ],
+      "correct": 3,
+      "explanation": "Test hành vi ở boundary với dependencies được kiểm soát, không cần gọi dịch vụ thật."
+    }
+  ]
+}
