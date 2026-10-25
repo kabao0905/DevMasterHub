@@ -70,6 +70,8 @@ export function xuatDuLieu({ thuMucDuLieu = path.join(GOC, 'data'), thuMucRa = p
     }))
   })));
 
+  // Bank file names carry a content hash; drop stale versions before writing the current ones.
+  fs.rmSync(path.join(thuMucRa, 'quiz-bank'), { recursive: true, force: true });
   const timKiem = [];
   for (const t of congNghe) {
     for (const l of t.levels || []) {
