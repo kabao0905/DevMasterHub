@@ -14,6 +14,8 @@ const boChay = taoBoChay();
 const { taiTheoChuyenHuong, layTieuDe } = require('./lib/net-guard.js');
 const { trichNoiDungTrang } = require('./lib/trich-trang.js');
 const { moPhongBi } = require('./lib/phong-bi.js');
+const { taoXacThucJwt } = require('./lib/supabase-jwt.js');
+const { taoBoNhoTam } = require('./lib/bo-nho-tam.js');
 const { docSse } = require('./lib/doc-sse.js');
 
 try {
@@ -37,6 +39,7 @@ const coHan = ms => AbortSignal.timeout(ms);
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nlkljhpqwepabglrqkmz.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_0s-SglEeMENWRqgbC2QWuQ_w0pzWJMe';
+const xacThucJwt = taoXacThucJwt({ supabaseUrl: SUPABASE_URL });
 
 const DIST_DIR = process.env.DIST_DIR || path.join(__dirname, 'dist');
 const CHE_DO_DEV = process.argv.includes('--dev');
@@ -114,6 +117,14 @@ async function requireUser(req, res, next) {
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) {
     return res.status(401).json({ error: 'Bạn cần đăng nhập để dùng tính năng AI.', code: 'AUTH_REQUIRED' });
+  }
+  try {
+    req.user = await xacThucJwt(token);
+    return next();
+  } catch (err) {
+    if (err.code === 'INVALID') {
+      return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', code: 'AUTH_EXPIRED' });
+    }
   }
   try {
     const r = await fetch(SUPABASE_URL + '/auth/v1/user', {
@@ -648,6 +659,8 @@ async function layWeWorkRemotely() {
   }).filter(Boolean);
 }
 
+const boNhoViec = taoBoNhoTam({ songMs: 15 * 60_000, toiDa: 500 });
+
 app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (req, res) => {
   try {
     const { search, location = '', limit = 15 } = req.query;
@@ -662,18 +675,23 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
     const { cleanTechQuery, coreTech } = lamSachTuKhoa(queryLower);
 
     const tenNguon = ['VietnamWorks', 'RemoteOK', 'Arbeitnow', 'Remotive', 'WeWorkRemotely'];
-    const ketQua = await Promise.allSettled([
-      layVietnamWorks(cleanTechQuery, coreTech, isVi),
-      layRemoteOK(coreTech || cleanTechQuery),
-      layArbeitnow(cleanTechQuery),
-      layRemotive(cleanTechQuery),
-      layWeWorkRemotely()
-    ]);
-    const rawJobs = ketQua.flatMap((r, i) => {
-      if (r.status === 'fulfilled') return r.value.filter(j => j.url);
-      console.warn(`[Jobs] ${tenNguon[i]} fetch failed:`, r.reason && r.reason.message);
-      return [];
-    });
+    const { rawJobs } = await boNhoViec.lay(`${isVi ? 'vi' : 'en'}|${cleanTechQuery}|${coreTech || ''}`, async () => {
+      const ketQua = await Promise.allSettled([
+        layVietnamWorks(cleanTechQuery, coreTech, isVi),
+        layRemoteOK(coreTech || cleanTechQuery),
+        layArbeitnow(cleanTechQuery),
+        layRemotive(cleanTechQuery),
+        layWeWorkRemotely()
+      ]);
+      return {
+        coNguon: ketQua.some(r => r.status === 'fulfilled'),
+        rawJobs: ketQua.flatMap((r, i) => {
+          if (r.status === 'fulfilled') return r.value.filter(j => j.url);
+          console.warn(`[Jobs] ${tenNguon[i]} fetch failed:`, r.reason && r.reason.message);
+          return [];
+        })
+      };
+    }, { nenLuu: v => v.coNguon });
 
     let synonyms = [...new Set([cleanTechQuery, queryLower, coreTech].filter(Boolean))];
     for (const [k, synList] of Object.entries(TECH_ROLE_SYNONYMS)) {

@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
+const { generateKeyPairSync, sign } = require('node:crypto');
 
 const fetchThat = globalThis.fetch;
 const KHOA_AI = ['OPENROUTER_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY', 'CLAUDE_API_KEY', 'GROQ_API_KEY'];
@@ -396,6 +397,60 @@ test('/api/jobs: moi request ra nguon viec lam deu co timeout', async () => {
     const ra = s.daGoi.filter(g => !g.url.endsWith('/auth/v1/user'));
     assert.ok(ra.length >= 4);
     for (const g of ra) assert.ok(g.opts.signal, g.url + ' thieu timeout');
+  } finally { s.dong(); }
+});
+
+test('/api/jobs: cung tu khoa trong 15 phut thi dung lai ket qua, khong goi lai cac nguon', async () => {
+  const s = await moServer({ traLoi: vnWorks([]) });
+  try {
+    const a = await (await fetch(s.goc + '/api/jobs?search=react')).json();
+    const truoc = s.daGoi.length;
+    assert.ok(truoc >= 4);
+    const b = await (await fetch(s.goc + '/api/jobs?search=react&limit=1')).json();
+    assert.strictEqual(s.daGoi.length, truoc);
+    assert.deepStrictEqual(b.jobs, a.jobs.slice(0, 1));
+    await fetch(s.goc + '/api/jobs?search=python');
+    assert.ok(s.daGoi.length > truoc);
+  } finally { s.dong(); }
+});
+
+test('/api/jobs: moi nguon deu loi thi khong luu, lan sau thu lai', async () => {
+  const s = await moServer({ traLoi: () => { throw new Error('mat mang'); } });
+  try {
+    await fetch(s.goc + '/api/jobs?search=react');
+    const truoc = s.daGoi.length;
+    await fetch(s.goc + '/api/jobs?search=react');
+    assert.ok(s.daGoi.length > truoc);
+  } finally { s.dong(); }
+});
+
+test('JWT Supabase that: server tu kiem chu ky, khong goi /auth/v1/user; token bi sua thi 401', async () => {
+  const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+  const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'k1', alg: 'ES256', use: 'sig' };
+  const s = await moServer({
+    khoa: { OPENROUTER_API_KEY: 'or' },
+    traLoi: u => (u.endsWith('/.well-known/jwks.json') ? json({ keys: [jwk] }) : u.includes('openrouter.ai') && json({ choices: [{ message: { content: 'ok' } }] }))
+  });
+  try {
+    const iss = (process.env.SUPABASE_URL || 'https://nlkljhpqwepabglrqkmz.supabase.co').replace(/\/$/, '') + '/auth/v1';
+    const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url');
+    const ky = than => {
+      const p = b64({ alg: 'ES256', typ: 'JWT', kid: 'k1' }) + '.' + b64(than);
+      return p + '.' + sign('sha256', Buffer.from(p), { key: privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+    };
+    const bay = Math.floor(Date.now() / 1000);
+    const than = { sub: 'u9', role: 'authenticated', aud: 'authenticated', iss, exp: bay + 600, iat: bay };
+    const goi = token => fetch(s.goc + '/api/ai', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+      body: JSON.stringify({ messages: [{ role: 'user', content: 'hi' }] })
+    });
+    assert.strictEqual((await goi(ky(than))).status, 200);
+    const t = ky(than).split('.');
+    assert.strictEqual((await goi(`${t[0]}.${b64({ ...than, sub: 'admin' })}.${t[2]}`)).status, 401);
+    assert.strictEqual((await goi(ky({ ...than, exp: bay - 120 }))).status, 401);
+    assert.strictEqual(s.daGoi.filter(g => g.url.endsWith('/auth/v1/user')).length, 0);
+    assert.strictEqual(s.daGoi.filter(g => g.url.endsWith('/.well-known/jwks.json')).length, 1);
   } finally { s.dong(); }
 });
 
