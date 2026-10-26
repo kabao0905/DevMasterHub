@@ -2,7 +2,7 @@ import { ngayDiaPhuong } from './ngay-hoc';
 
 export const NGHI_MS = 5 * 60_000;
 export const NHIP_MS = 15_000;
-const GHI_SAU_GIAY = 30;
+export const GHI_SAU_GIAY = 300;
 
 export type Mon = { techId: string; lessonId: string };
 export type DongMoi = { tech_id: string; lesson_id: string; started_at: string; ended_at: string; duration_seconds: number };
@@ -25,6 +25,7 @@ export class DongHoHoc {
     bayGio: () => number;
     ghi: CongCuGhi;
     daGhi: (ngay: string, giay: number) => void;
+    daDem?: (ngay: string, giay: number) => void;
   }) {}
 
   get giayChoGhi() { return Math.floor(this.choGhi + this.choMonCu.reduce((s, x) => s + x.giay, 0)); }
@@ -50,7 +51,11 @@ export class DongHoHoc {
     const now = this.o.bayGio();
     if (this.dangHoc && dangHien) {
       const ketThuc = Math.min(now, this.lanThaoTac + NGHI_MS);
-      if (ketThuc > this.lanDem) this.choGhi += (ketThuc - this.lanDem) / 1000;
+      if (ketThuc > this.lanDem) {
+        const them = (ketThuc - this.lanDem) / 1000;
+        this.choGhi += them;
+        this.o.daDem?.(ngayDiaPhuong(new Date(now)), them);
+      }
     }
     this.lanDem = now;
   }

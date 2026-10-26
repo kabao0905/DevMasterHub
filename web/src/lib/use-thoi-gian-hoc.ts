@@ -70,7 +70,8 @@ export function useDongHoHoc() {
           return !error;
         }
       },
-      daGhi: (ngay, giay) => qc.setQueryData<Record<string, number>>(khoaTruyVan(uid), m => (m ? { ...m, [ngay]: (m[ngay] ?? 0) + giay } : m))
+      daGhi: () => {},
+      daDem: (ngay, giay) => qc.setQueryData<Record<string, number>>(khoaTruyVan(uid), m => (m ? { ...m, [ngay]: (m[ngay] ?? 0) + giay } : m))
     });
 
     const dangHien = () => document.visibilityState === 'visible';

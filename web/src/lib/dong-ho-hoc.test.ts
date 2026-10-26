@@ -1,4 +1,5 @@
-import { DongHoHoc, NGHI_MS, type CongCuGhi } from './dong-ho-hoc';
+import { DongHoHoc, GHI_SAU_GIAY, NGHI_MS, type CongCuGhi } from './dong-ho-hoc';
+import { voiKeepalive } from './supabase';
 
 const PHUT = 60_000;
 
@@ -49,7 +50,7 @@ test('ghi lan sau cap nhat cung dong voi tong cong don, khong chen dong moi', as
   expect(capNhat).toEqual([[7, expect.objectContaining({ duration_seconds: 120 })]]);
 });
 
-test('chua du 30 giay thi chua ghi (tru khi ep ghi luc roi trang)', async () => {
+test('chua du 5 phut thi chua ghi DB (tru khi ep ghi luc roi trang); du 5 phut thi ghi', async () => {
   const { dh, troi, chen } = taoDongHo();
   dh.batDau({ techId: 'ai', lessonId: 'ai' });
   troi(15_000);
@@ -57,6 +58,42 @@ test('chua du 30 giay thi chua ghi (tru khi ep ghi luc roi trang)', async () => 
   expect(chen).toHaveLength(0);
   await dh.ghi(true);
   expect(chen).toHaveLength(1);
+
+  const b = taoDongHo();
+  b.dh.batDau({ techId: 'python', lessonId: 'a' });
+  b.troi(4 * PHUT);
+  await b.dh.ghi();
+  expect(b.chen).toHaveLength(0);
+  b.troi(PHUT);
+  await b.dh.ghi();
+  expect(b.chen).toEqual([expect.objectContaining({ duration_seconds: GHI_SAU_GIAY })]);
+});
+
+test('daDem bao so giay vua dem moi nhip de giao dien cap nhat ngay, khong cho ghi DB', async () => {
+  let bayGio = new Date(2026, 9, 12, 9, 0).getTime();
+  const dem: [string, number][] = [];
+  const chen: unknown[] = [];
+  const dh = new DongHoHoc({
+    bayGio: () => bayGio,
+    ghi: { chen: async d => { chen.push(d); return 1; }, capNhat: async () => true },
+    daGhi: () => {},
+    daDem: (ngay, giay) => dem.push([ngay, giay])
+  });
+  dh.batDau({ techId: 'python', lessonId: 'a' });
+  for (let i = 0; i < 4; i++) { bayGio += 15_000; dh.thaoTac(); dh.dem(true); }
+  bayGio += 15_000; dh.dem(false);
+  expect(dem).toEqual(Array(4).fill(['2026-10-12', 15]));
+  await dh.ghi();
+  expect(chen).toHaveLength(0);
+});
+
+test('chi request ghi learning_sessions moi kem keepalive de khong mat khi dong tab', async () => {
+  const goi: [string, RequestInit | undefined][] = [];
+  const f = voiKeepalive((async (input: RequestInfo | URL, init?: RequestInit) => { goi.push([String(input), init]); return new Response('{}'); }) as typeof fetch);
+  await f('https://x.supabase.co/rest/v1/learning_sessions?id=eq.1', { method: 'PATCH', body: '{}' });
+  await f('https://x.supabase.co/rest/v1/learning_sessions?select=id', { method: 'GET' });
+  await f('https://x.supabase.co/rest/v1/project_submissions', { method: 'POST', body: '{}' });
+  expect(goi.map(([, init]) => init?.keepalive ?? false)).toEqual([true, false, false]);
 });
 
 test('roi may qua 5 phut thi chi tinh toi moc 5 phut sau thao tac cuoi', async () => {

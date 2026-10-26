@@ -287,17 +287,19 @@ test('da chon muc tieu thi khong hien lai bang chao mung; bam muc tieu tren lich
   expect(await screen.findByRole('button', { name: /Mục tiêu: 45 phút\/ngày/ })).toBeInTheDocument();
 });
 
-test('mo mot mon hoc thi dong ho chay va ghi thoi gian hoc cho mon do', async () => {
+test('mo mot mon hoc thi dong ho chay va ghi thoi gian hoc cho mon do (5 phut/lan ghi)', async () => {
   Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
   try {
     const gia = daDangNhap();
     veApp('/roadmap/python', { gia, json: JSON_GIA });
     await screen.findByRole('heading', { name: /Python/ });
-    act(() => { vi.advanceTimersByTime(45_000); });
+    act(() => { vi.advanceTimersByTime(4 * 60_000); });
+    expect(ghiThoiGian(gia)).toHaveLength(0);
+    act(() => { vi.advanceTimersByTime(75_000); });
     vi.useRealTimers();
     await waitFor(() => expect(ghiThoiGian(gia)).toHaveLength(1));
-    expect(ghiThoiGian(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'python', duration_seconds: 30 });
+    expect(ghiThoiGian(gia)[0].payload).toMatchObject({ user_id: 'u1', tech_id: 'python', duration_seconds: 300 });
   } finally {
     vi.useRealTimers();
     delete (document as { visibilityState?: unknown }).visibilityState;
