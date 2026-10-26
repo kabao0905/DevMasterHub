@@ -409,6 +409,41 @@ test('ngan hang: AI tat van boc dung 1 de/2 trung binh/1 kho; cham, doi de khong
   expect(goiAi).toHaveLength(0);
 });
 
+test('ngan hang khi hoc bang tieng Anh: dich 4 cau vua rut, giu dung dap an, khong goi AI', async () => {
+  const u = userEvent.setup();
+  const urls: string[] = [];
+  const { goiAi, qc } = mo('/lesson/python/newbie/a?tab=quiz', {
+    bank: BANK, lang: 'en',
+    dich: url => {
+      urls.push(url);
+      const html = new URL(url).searchParams.get('q') ?? '';
+      return new Response(JSON.stringify([[[html.replace(/<p>([^<]*)<\/p>/g, '<p>EN $1</p>'), 'x']]]));
+    }
+  });
+  await u.click(await screen.findByRole('button', { name: /Bắt đầu quiz|Start quiz/ }));
+  await waitFor(() => expect(screen.getAllByRole('group', { name: /Câu \d|Question \d/ })).toHaveLength(4));
+  const drawn = qc.getQueryData<{ questions: { id: string; question: string; options: string[]; correct: number }[] }>(['quiz', 'u1', 'python.newbie.a', 'en', '/test-bank.json'])!.questions;
+  for (const c of drawn) {
+    const goc = BANK.questions.find(q => q.id === c.id)!;
+    expect(c.question).toBe(`EN ${goc.question}`);
+    expect(c.options[c.correct]).toBe(`EN ${goc.options[goc.correct]}`);
+  }
+  expect(urls.length).toBeGreaterThan(0);
+  expect(urls.every(x => x.includes('tl=en'))).toBe(true);
+  expect(goiAi).toHaveLength(0);
+});
+
+test('ngan hang khi may dich loi: van lam quiz bang cau tieng Viet, khong bao loi', async () => {
+  const u = userEvent.setup();
+  const { goiAi, qc } = mo('/lesson/python/newbie/a?tab=quiz', { bank: BANK, lang: 'en', dich: () => new Response('', { status: 429 }) });
+  await u.click(await screen.findByRole('button', { name: /Bắt đầu quiz|Start quiz/ }));
+  await waitFor(() => expect(screen.getAllByRole('group', { name: /Câu \d|Question \d/ })).toHaveLength(4));
+  const drawn = qc.getQueryData<{ questions: { id: string; question: string }[] }>(['quiz', 'u1', 'python.newbie.a', 'en', '/test-bank.json'])!.questions;
+  for (const c of drawn) expect(c.question).toBe(BANK.questions.find(q => q.id === c.id)!.question);
+  expect(screen.queryByText(/Không tạo được quiz|Ngân hàng câu hỏi/)).not.toBeInTheDocument();
+  expect(goiAi).toHaveLength(0);
+});
+
 test('ngan hang hong hoac thieu cau: bao loi, khong tu goi AI mat phi', async () => {
   const u = userEvent.setup();
   const { goiAi } = mo('/lesson/python/newbie/a?tab=quiz', { bank: { ...BANK, questions: BANK.questions.slice(0, 4) } });

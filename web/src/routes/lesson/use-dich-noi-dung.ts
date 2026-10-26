@@ -46,7 +46,7 @@ export function ghiCacheDich(lang: string, ma: string, text: string): void {
   ghiDs(lang, ds);
 }
 
-async function dichMay(html: string, lang: string, signal: AbortSignal): Promise<string> {
+export async function dichMay(html: string, lang: string, signal: AbortSignal): Promise<string> {
   const ma = bam(html);
   const daLuu = docCacheDich(lang, ma);
   if (daLuu) return daLuu;
