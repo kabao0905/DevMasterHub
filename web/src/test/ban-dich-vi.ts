@@ -5,7 +5,6 @@ export const BAN_DICH_VI: BanDich = {
     "loadingBankQuiz": "Đang lấy câu hỏi từ ngân hàng…",
     "bankLoadFailed": "Không tải được ngân hàng câu hỏi.",
     "bankInvalid": "Ngân hàng câu hỏi chưa hợp lệ.",
-    "bankQuizIntro": "Ngân hàng 80 câu cho bài “{title}”. Mỗi lượt gồm 1 câu dễ, 2 câu trung bình và 1 câu khó; hạn chế lặp cho đến khi hết vòng.",
     "startBankQuiz": "Bắt đầu quiz",
     "quizDifficulty_easy": "Dễ",
     "quizDifficulty_medium": "Trung bình",

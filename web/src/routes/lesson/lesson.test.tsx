@@ -377,7 +377,8 @@ const BANK = { ...BANK_SEED, lesson: 'a' } as QuestionBank;
 test('ngan hang: AI tat van boc dung 1 de/2 trung binh/1 kho; cham, doi de khong lap, quay lai giu lua chon', async () => {
   const u = userEvent.setup();
   const { goiAi, router, qc } = mo('/lesson/python/newbie/a?tab=quiz', { bank: BANK, aiEnabled: false, bang: XONG_PY('a') });
-  expect(await screen.findByText(/Ngân hàng 80 câu/)).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'Bắt đầu quiz' })).toBeInTheDocument();
+  expect(screen.queryByText(/Ngân hàng 80 câu|AI soạn/)).not.toBeInTheDocument();
   await u.click(screen.getByRole('button', { name: 'Bắt đầu quiz' }));
   await screen.findByRole('button', { name: 'Nộp bài (0/4)' });
   const groups = screen.getAllByRole('group', { name: /Câu \d/ });

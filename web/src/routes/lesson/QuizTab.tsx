@@ -61,7 +61,7 @@ function NoiDungQuiz({ lesson, quizBai, aiEnabled }: { lesson: BaiDayDu; quizBai
             <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-pink text-pink-ink" aria-hidden="true"><ListChecks className="size-5" /></span>
             <div className="min-w-0">
               <h2 className="font-display text-xl font-extrabold tracking-tight">{t('knowledgeCheck')}</h2>
-              <p className="mt-1 text-muted-foreground">{t(tuNganHang ? 'bankQuizIntro' : 'quizIntro', { n: SO_CAU, title: translateTitle(lesson.title) })}</p>
+              {!tuNganHang && <p className="mt-1 text-muted-foreground">{t('quizIntro', { n: SO_CAU, title: translateTitle(lesson.title) })}</p>}
             </div>
           </div>
           {!tuNganHang && aiEnabled === false
