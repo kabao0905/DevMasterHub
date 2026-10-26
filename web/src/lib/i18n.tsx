@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { duongTinh } from './duong-tinh';
 
 export type NgonNgu = { name: string; flag: string; code: string };
 export type BanDich = {
@@ -39,7 +40,7 @@ export function ngonNguBanDau(ngonNguTrinhDuyet: string | readonly string[] = ng
 }
 
 const taiMacDinh = async (lang: string): Promise<BanDich> => {
-  const r = await fetch(`/i18n/${lang}.json`);
+  const r = await fetch(duongTinh(`/i18n/${lang}.json`));
   if (!r.ok) throw new Error(`Không tải được bản dịch ${lang} (HTTP ${r.status})`);
   return r.json();
 };

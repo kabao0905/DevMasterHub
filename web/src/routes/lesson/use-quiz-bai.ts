@@ -7,6 +7,7 @@ import { taoQuiz, type CauHoi, type TrangThaiQuiz } from '@/lib/ai';
 import type { BaiDayDu, CapDayDu, CongNgheDayDu } from '@/lib/curriculum';
 import { drawQuiz, validateBank, type QuestionBank } from '../../../../shared/quiz-bank.mjs';
 import { dichMay } from './use-dich-noi-dung';
+import { duongTinh } from '@/lib/duong-tinh';
 
 export type BaiDangMo = { tech: CongNgheDayDu; level: CapDayDu; lesson: BaiDayDu };
 
@@ -44,7 +45,7 @@ export function useQuizBai({ tech, level, lesson }: BaiDangMo) {
         const content = await qc.fetchQuery({
           queryKey: ['quiz-bank', bank.url],
           queryFn: async ({ signal: bankSignal }) => {
-            const response = await fetch(bank.url, { signal: bankSignal });
+            const response = await fetch(duongTinh(bank.url), { signal: bankSignal });
             if (!response.ok) throw new Error(t('bankLoadFailed'));
             const value: unknown = await response.json();
             const errors = validateBank(value, { tech: tech.id, level: level.id, lesson: lesson.id, language: nganHangGoc, sourceHash: bank.sourceHash });
