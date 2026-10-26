@@ -93,22 +93,28 @@ ALTER TABLE public.saved_ideas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users manage their own
-CREATE POLICY "profiles_own" ON public.profiles FOR ALL USING (auth.uid() = id);
+CREATE POLICY "profiles_own" ON public.profiles FOR ALL TO authenticated
+  USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
 
 -- Lesson progress: users manage their own
-CREATE POLICY "progress_own" ON public.lesson_progress FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "progress_own" ON public.lesson_progress FOR ALL TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 
 -- Learning sessions: users manage their own
-CREATE POLICY "sessions_own" ON public.learning_sessions FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "sessions_own" ON public.learning_sessions FOR ALL TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 
 -- Career chats: users manage their own
-CREATE POLICY "chats_own" ON public.career_chats FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "chats_own" ON public.career_chats FOR ALL TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 
 -- Saved ideas: users manage their own
-CREATE POLICY "ideas_own" ON public.saved_ideas FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "ideas_own" ON public.saved_ideas FOR ALL TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 
 -- Project submissions: users manage their own
-CREATE POLICY "submissions_own" ON public.project_submissions FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "submissions_own" ON public.project_submissions FOR ALL TO authenticated
+  USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);
 
 -- ═══════════════════════════════════════════
 -- Auto-create profile on signup (trigger)
@@ -140,10 +146,9 @@ CREATE TRIGGER on_auth_user_created
 -- Indexes for performance
 -- ═══════════════════════════════════════════
 
-CREATE INDEX IF NOT EXISTS idx_progress_user ON public.lesson_progress(user_id);
-CREATE INDEX IF NOT EXISTS idx_sessions_user ON public.learning_sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_submissions_user ON public.project_submissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_ideas_user ON public.saved_ideas(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_started ON public.learning_sessions(user_id, started_at);
+CREATE INDEX IF NOT EXISTS idx_submissions_user_submitted ON public.project_submissions(user_id, submitted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ideas_user_saved ON public.saved_ideas(user_id, saved_at DESC);
 
 -- ═══════════════════════════════════════════
 -- Disable email confirmation (username-based auth)
