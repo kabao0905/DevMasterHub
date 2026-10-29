@@ -624,6 +624,57 @@ async function layRemotive(tuKhoa) {
   }));
 }
 
+async function layITviec(tuKhoa, isVi) {
+  const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+  const timJsonLd = html => {
+    const ds = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    return ds.map(m => { try { return JSON.parse(m[1]); } catch { return null; } }).filter(Boolean);
+  };
+  const r = await fetch(`https://itviec.com/it-jobs?query=${encodeURIComponent(tuKhoa || 'developer')}`, {
+    headers: { 'User-Agent': UA, 'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8' },
+    signal: coHan(JOBS_TIMEOUT_MS)
+  });
+  if (!r.ok) return [];
+  const list = timJsonLd(await r.text()).find(j => j['@type'] === 'ItemList');
+  const urls = (list?.itemListElement || []).map(x => x.url).filter(Boolean).slice(0, 5);
+  const tins = await Promise.all(urls.map(async url => {
+    try {
+      const d = await fetch(url, { headers: { 'User-Agent': UA }, signal: coHan(15000) });
+      if (!d.ok) return null;
+      const j = timJsonLd(await d.text()).find(x => x['@type'] === 'JobPosting');
+      return j ? { j, url } : null;
+    } catch { return null; }
+  }));
+  return tins.filter(Boolean).map(({ j, url }) => {
+    const loc0 = Array.isArray(j.jobLocation) ? j.jobLocation[0] : j.jobLocation;
+    const city = String(loc0?.address?.addressLocality || loc0?.address?.addressRegion || '').toLowerCase();
+    const isHcm = /hồ chí minh|ho chi minh|hcm|sài gòn|sai gon|thủ đức|quận \d+|bình thạnh|phú nhuận|tân bình|tân phú/i.test(city);
+    const isHn = /hà nội|ha noi|hanoi|cầu giấy|đống đa|hoàn kiếm|ba đình|hai bà trưng|nam từ liêm|bắc từ liêm|thanh xuân|long biên/i.test(city);
+    const isDanang = /đà nẵng|da nang|danang/i.test(city);
+    const sal = j.baseSalary?.value || {};
+    const salary = sal.minValue && sal.maxValue && j.baseSalary?.currency
+      ? `${sal.minValue}-${sal.maxValue} ${j.baseSalary.currency}/${String(sal.unitText || 'MONTH').toLowerCase()}`
+      : '';
+    return {
+      title: j.title || 'Developer',
+      company_name: j.hiringOrganization?.name || (isVi ? 'Công ty Công nghệ' : 'Tech Company'),
+      company_logo: chiNhanHttp(j.hiringOrganization?.logo),
+      url,
+      location: loc0?.address?.addressLocality || (isVi ? 'Việt Nam' : 'Vietnam'),
+      isHcm, isHn, isDanang,
+      is_remote: /remote/i.test(String(j.jobLocationType || '')),
+      employment_type: String(j.employmentType || 'FULL_TIME').toUpperCase().replace(/_/g, ''),
+      salary,
+      description_snippet: tomTat(j.description, 220),
+      posted_at: j.datePosted || '',
+      source: 'ITviec',
+      tags: typeof j.skills === 'string'
+        ? j.skills.split(',').map(s => s.trim()).filter(Boolean)
+        : (Array.isArray(j.skills) ? j.skills : [])
+    };
+  });
+}
+
 async function layWeWorkRemotely() {
   const r = await fetch('https://weworkremotely.com/categories/remote-programming-jobs.rss', {
     headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, signal: coHan(JOBS_TIMEOUT_MS)
@@ -674,10 +725,11 @@ app.get('/api/jobs', sameOrigin, rateLimit({ max: 20, scope: 'jobs' }), async (r
     const targetCity = doanThanhPho(queryLower);
     const { cleanTechQuery, coreTech } = lamSachTuKhoa(queryLower);
 
-    const tenNguon = ['VietnamWorks', 'RemoteOK', 'Arbeitnow', 'Remotive', 'WeWorkRemotely'];
+    const tenNguon = ['VietnamWorks', 'ITviec', 'RemoteOK', 'Arbeitnow', 'Remotive', 'WeWorkRemotely'];
     const { rawJobs } = await boNhoViec.lay(`${isVi ? 'vi' : 'en'}|${cleanTechQuery}|${coreTech || ''}`, async () => {
       const ketQua = await Promise.allSettled([
         layVietnamWorks(cleanTechQuery, coreTech, isVi),
+        layITviec(cleanTechQuery || coreTech, isVi),
         layRemoteOK(coreTech || cleanTechQuery),
         layArbeitnow(cleanTechQuery),
         layRemotive(cleanTechQuery),
